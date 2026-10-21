@@ -8,31 +8,30 @@ use axum::response::{IntoResponse, Response};
 
 use crate::color_scheme::ColorScheme;
 use crate::site_settings::SiteSettings;
-use crate::stylesheet::color_definitions::{SchemeColors, css};
-use crate::stylesheet::fonts;
+use crate::stylesheet::manager;
 use crate::{AppError, AppState};
 
+/// A scheme's color definitions (None: the theme's own palette, else the
+/// base one) under the default theme, compiled (crate::stylesheet).
+/// None for a scheme that is gone.
 async fn scheme_css(
+    state: &AppState,
     conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
     id: Option<i32>,
 ) -> Result<Option<String>, AppError> {
-    let colors = match id {
-        None => SchemeColors::from_hex(|_| None),
-        Some(id) => {
-            let Some(scheme) = ColorScheme::find(conn, id).await? else {
-                return Ok(None);
-            };
-            let resolved = scheme.resolved_colors()?;
-            SchemeColors::from_hex(|name| {
-                resolved
-                    .iter()
-                    .find(|(n, _)| n == name)
-                    .map(|(_, hex)| hex.clone())
-            })
-            .with_defined(&resolved)
-        }
+    if let Some(id) = id
+        && ColorScheme::find(conn, id).await?.is_none()
+    {
+        return Ok(None);
+    }
+    let cx = manager::Cx {
+        config: &state.config,
+        settings,
     };
-    Ok(Some(css(&colors)))
+    Ok(Some(
+        manager::color_definitions(conn, &cx, None, id).await? + "\n",
+    ))
 }
 
 /// The stylesheet, revalidated by its ETag on every use: it follows the
@@ -66,11 +65,8 @@ pub async fn light(
     .bind(theme_id as i32)
     .fetch_optional(&mut *conn)
     .await?;
-    let body = scheme_css(&mut conn, scheme_id).await?;
-    Ok(stylesheet(
-        &headers,
-        body.map(|css| css + &font_css(&state, &settings)),
-    ))
+    let body = scheme_css(&state, &mut conn, &settings, scheme_id).await?;
+    Ok(stylesheet(&headers, body))
 }
 
 /// The default theme's dark scheme (`dark_scheme_id`), if it has one.
@@ -87,11 +83,8 @@ pub async fn dark(State(state): State<AppState>, headers: HeaderMap) -> Result<R
             .flatten();
     match id.filter(|id| *id > 0) {
         Some(id) => {
-            let body = scheme_css(&mut conn, Some(id)).await?;
-            Ok(stylesheet(
-                &headers,
-                body.map(|css| css + &font_css(&state, &settings)),
-            ))
+            let body = scheme_css(&state, &mut conn, &settings, Some(id)).await?;
+            Ok(stylesheet(&headers, body))
         }
         None => Ok(StatusCode::NOT_FOUND.into_response()),
     }
@@ -113,23 +106,40 @@ pub async fn scheme(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let body = scheme_css(&mut conn, Some(id)).await?;
-    Ok(stylesheet(
-        &headers,
-        body.map(|css| css + &font_css(&state, &settings)),
-    ))
+    let body = scheme_css(&state, &mut conn, &settings, Some(id)).await?;
+    Ok(stylesheet(&headers, body))
 }
 
-/// The font definitions Rails adds to every color definitions file.
-fn font_css(state: &AppState, settings: &SiteSettings) -> String {
-    let setting = |name| {
-        settings
-            .get(name)
-            .map(|v| v.to_s().to_string())
-            .unwrap_or_default()
+/// `/stylesheets/:target_:theme_id_:digest.css` (StylesheetsController#
+/// show for the theme targets): a theme's compiled stylesheet, whatever
+/// digest the link named (the port keeps no older ones).
+pub async fn theme(
+    State(state): State<AppState>,
+    Path(file): Path<String>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let Some(name) = file.strip_suffix(".css") else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
     };
-    let fonts_dir = format!("{}/fonts", state.config.globals.relative_url_root());
-    fonts::css(&setting("base_font"), &setting("heading_font"), &fonts_dir)
+    let Some((target, rest)) = manager::THEME_TARGETS
+        .iter()
+        .find_map(|t| name.strip_prefix(&format!("{t}_")).map(|rest| (*t, rest)))
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let theme_id = rest.split('_').next().and_then(|id| id.parse::<i32>().ok());
+    let Some(theme_id) = theme_id else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cx = manager::Cx {
+        config: &state.config,
+        settings: &settings,
+    };
+    let css = manager::theme_css(&mut conn, &cx, theme_id, target).await?;
+    Ok(stylesheet(&headers, css.map(|css| css + "\n")))
 }
 
 /// The discourse-fonts files this port has (static/fonts/README).

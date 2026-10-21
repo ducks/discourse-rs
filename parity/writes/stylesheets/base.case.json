@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "light-scheme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "dark-scheme"}
+  ]
+}

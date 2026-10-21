@@ -1,0 +1,108 @@
+$primary: #ffffff !default; $secondary: #1a1a1a !default; $tertiary: #6568e6 !default; $quaternary: #e45735 !default; $header_background: #1a1a1a !default; $header_primary: #ffffff !default; $highlight: #ffff4d !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default; $selected: #3b3e56 !default; $hover: #333548 !default; $tertiary-med-or-tertiary: #6568e6 !default;  $public_image_path: "http://localhost:3048/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
+
+
+// Color definitions from chat
+
+:root {
+  --chat-skeleton-animation-rgb: #{hexToRGB($primary-50)};
+}
+
+
+
+
+// Color definitions from discourse-events
+
+/* stylelint-disable scss/no-global-function-names */
+:root {
+  --calendar-normal: #{dark-light-choose(
+      lighten($tertiary, 55%),
+      darken($tertiary, 25%)
+    )};
+  --calendar-close-to-working-hours: #{dark-light-choose(
+      desaturate(lighten($tertiary, 45%), 15%),
+      darken($tertiary, 15%)
+    )};
+  --calendar-in-working-hours: #{dark-light-choose(
+      desaturate(lighten($tertiary, 40%), 20%),
+      darken($tertiary, 10%)
+    )};
+  --fc-border-color: var(--primary-low);
+  --fc-button-text-color: var(--d-button-default-text-color);
+  --fc-button-bg-color: var(--d-button-default-bg-color);
+  --fc-button-border-color: transparent;
+  --fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--tertiary);
+  --fc-button-active-border-color: transparent;
+  --fc-event-border-color: var(--primary-low);
+  --fc-today-bg-color: var(--highlight-medium);
+  --fc-page-bg-color: var(--secondary);
+  --fc-list-event-hover-bg-color: var(--secondary);
+  --fc-neutral-bg-color: var(--primary-low);
+}
+
+
+
+
+// Color definitions from Horizon
+
+html{--accent-color: #6568e6 !important;--accent-text-color: #fff;--56763fce-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) oklch(from #6568e6 10% 0.025 h) !important;--background-color: var(--56763fce-csstools-light-dark-toggle--0, oklch(from #6568e6 96% calc(c * 0.125) h)) !important;--56763fce-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) oklch(from #1a1a1a l c h) !important;--d-content-background: var(--56763fce-csstools-light-dark-toggle--1, oklch(from #1a1a1a calc(2 * l) c h)) !important;--56763fce-csstools-light-dark-toggle--2: var(--csstools-color-scheme--light) oklch(from #6568e6 l calc(c * 0.25) h) !important;--header_primary-low-mid: var(--56763fce-csstools-light-dark-toggle--2, oklch(from #6568e6 73.5% calc(c * 0.5) h)) !important;--56763fce-csstools-light-dark-toggle--3: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.35) calc(c * 0.25) h) !important;--header_primary-medium: var(--56763fce-csstools-light-dark-toggle--3, oklch(from #6568e6 54% calc(c * 0.5) h)) !important;--56763fce-csstools-light-dark-toggle--4: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.7) calc(c * 0.25) h) !important;--d-sidebar-border-color: var(--56763fce-csstools-light-dark-toggle--4, oklch(from #6568e6 88% calc(c * 0.25) h)) !important;--56763fce-csstools-light-dark-toggle--5: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.5) calc(c * 0.25) h) !important;--d-sidebar-link-color: var(--56763fce-csstools-light-dark-toggle--5, oklch(from #6568e6 calc(l * 0.8) calc(c * 0.25) h)) !important;--d-sidebar-active-color: #ffffff !important;--56763fce-csstools-light-dark-toggle--6: var(--csstools-color-scheme--light) oklch(from #6568e6 l calc(c * 0.9) h) !important;--d-sidebar-suffix-color: var(--56763fce-csstools-light-dark-toggle--6, oklch(from #6568e6 l calc(c * 0.9) h)) !important;--56763fce-csstools-light-dark-toggle--7: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.7) calc(c * 0.25) h) !important;--d-selected: var(--56763fce-csstools-light-dark-toggle--7, oklch(from #6568e6 92% calc(c * 0.5) h)) !important;--56763fce-csstools-light-dark-toggle--8: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.2) c h) !important;--d-nav-color--active: var(--56763fce-csstools-light-dark-toggle--8, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--9: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.2) c h) !important;--d-nav-color--hover: var(--56763fce-csstools-light-dark-toggle--9, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--10: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.95) c h) !important;--link-color: var(--56763fce-csstools-light-dark-toggle--10, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--11: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.5) calc(c * 2.25) h) !important;--link-color-hover: var(--56763fce-csstools-light-dark-toggle--11, oklch(from #6568e6 l c h)) !important;--tertiary-hover: #6568e6 !important;--56763fce-csstools-light-dark-toggle--12: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.5) calc(c * 0.25) h) !important;--search-color: var(--56763fce-csstools-light-dark-toggle--12, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--13: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.75) calc(c * 0.5) h) !important;--button-box-shadow: var(--56763fce-csstools-light-dark-toggle--13, oklch(from #6568e6 calc(l * 1.5) calc(c * 0.35) h)) !important;--d-sidebar-highlight-hover-icon: var(--d-sidebar-link-color) !important;--d-sidebar-highlight-hover-background: var(--d-selected) !important;--d-sidebar-link-icon-color: var(--d-sidebar-link-color) !important;--d-sidebar-header-color: var(--d-sidebar-link-color) !important;--d-sidebar-header-icon-color: var(--d-sidebar-link-color) !important;--d-sidebar-active-suffix-color: var(--d-sidebar-suffix-color) !important;--d-sidebar-background: var(--background-color) !important;--d-sidebar-footer-fade: var(--background-color) !important;--d-sidebar-prefix-background: var(--d-selected) !important;--56763fce-csstools-light-dark-toggle--14: var(--csstools-color-scheme--light) oklch(from var(--d-selected) calc(l * 0.7) c h) !important;--d-sidebar-active-prefix-background: var(--56763fce-csstools-light-dark-toggle--14, oklch(from var(--d-selected) calc(l * 0.85) c h)) !important;--56763fce-csstools-light-dark-toggle--15: var(--csstools-color-scheme--light) oklch(from var(--d-selected) calc(l * 0.7) c h) !important;--d-sidebar-highlight-prefix-background: var(--56763fce-csstools-light-dark-toggle--15, oklch(from var(--d-selected) calc(l * 0.85) c h)) !important;--d-sidebar-highlight-suffix-color: var( --d-sidebar-active-suffix-color ) !important;--d-sidebar-highlight-color: var(--primary) !important;--d-sidebar-highlight-background: var(--d-selected) !important;--d-sidebar-section-link-icon-size: 1em !important;--d-hover: oklch(from var(--d-selected) l c h / 0.75) !important;--d-input-bg-color: var(--d-content-background) !important;--discourse_id-text: var(--accent-text-color) !important;--discourse_id-text-hover: var(--accent-text-color) !important;--discourse_id-icon: var(--accent-text-color) !important;--discourse_id-icon-hover: var(--accent-text-color) !important;--discourse_id-border: var(--discourse_id-background) !important;}
+
+@supports (color: lab(from red l 1 1% / calc(alpha + 0.1))) and (color: light-dark(red, red)){
+html{--background-color: light-dark( oklch(from #6568e6 96% calc(c * 0.125) h), oklch(from #6568e6 10% 0.025 h) ) !important;--d-content-background: light-dark( oklch(from #1a1a1a calc(2 * l) c h), oklch(from #1a1a1a l c h) ) !important;--header_primary-low-mid: light-dark( oklch(from #6568e6 73.5% calc(c * 0.5) h), oklch(from #6568e6 l calc(c * 0.25) h) ) !important;--header_primary-medium: light-dark( oklch(from #6568e6 54% calc(c * 0.5) h), oklch(from #6568e6 calc(l * 1.35) calc(c * 0.25) h) ) !important;--d-sidebar-border-color: light-dark( oklch(from #6568e6 88% calc(c * 0.25) h), oklch(from #6568e6 calc(l * 0.7) calc(c * 0.25) h) ) !important;--d-sidebar-link-color: light-dark( oklch(from #6568e6 calc(l * 0.8) calc(c * 0.25) h), oklch(from #6568e6 calc(l * 1.5) calc(c * 0.25) h) ) !important;--d-sidebar-suffix-color: light-dark( oklch(from #6568e6 l calc(c * 0.9) h), oklch(from #6568e6 l calc(c * 0.9) h) ) !important;--d-selected: light-dark( oklch(from #6568e6 92% calc(c * 0.5) h), oklch(from #6568e6 calc(l * 0.7) calc(c * 0.25) h) ) !important;--d-nav-color--active: light-dark( oklch(from #6568e6 l c h), oklch(from #6568e6 calc(l * 1.2) c h) ) !important;--d-nav-color--hover: light-dark( oklch(from #6568e6 l c h), oklch(from #6568e6 calc(l * 1.2) c h) ) !important;--link-color: light-dark( oklch(from #6568e6 l c h), oklch(from #6568e6 calc(l * 0.95) c h) ) !important;--link-color-hover: light-dark( oklch(from #6568e6 l c h), oklch(from #6568e6 calc(l * 1.5) calc(c * 2.25) h) ) !important;--search-color: light-dark( oklch(from #6568e6 l c h), oklch(from #6568e6 calc(l * 1.5) calc(c * 0.25) h) ) !important;--button-box-shadow: light-dark( oklch(from #6568e6 calc(l * 1.5) calc(c * 0.35) h), oklch(from #6568e6 calc(l * 0.75) calc(c * 0.5) h) ) !important;--d-sidebar-active-prefix-background: light-dark( oklch(from var(--d-selected) calc(l * 0.85) c h), oklch(from var(--d-selected) calc(l * 0.7) c h) ) !important;--d-sidebar-highlight-prefix-background: light-dark( oklch(from var(--d-selected) calc(l * 0.85) c h), oklch(from var(--d-selected) calc(l * 0.7) c h) ) !important;}
+}@supports not (color: light-dark(tan, tan)){html *{--56763fce-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) oklch(from #6568e6 10% 0.025 h) !important;--background-color: var(--56763fce-csstools-light-dark-toggle--0, oklch(from #6568e6 96% calc(c * 0.125) h)) !important;--56763fce-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) oklch(from #1a1a1a l c h) !important;--d-content-background: var(--56763fce-csstools-light-dark-toggle--1, oklch(from #1a1a1a calc(2 * l) c h)) !important;--56763fce-csstools-light-dark-toggle--2: var(--csstools-color-scheme--light) oklch(from #6568e6 l calc(c * 0.25) h) !important;--header_primary-low-mid: var(--56763fce-csstools-light-dark-toggle--2, oklch(from #6568e6 73.5% calc(c * 0.5) h)) !important;--56763fce-csstools-light-dark-toggle--3: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.35) calc(c * 0.25) h) !important;--header_primary-medium: var(--56763fce-csstools-light-dark-toggle--3, oklch(from #6568e6 54% calc(c * 0.5) h)) !important;--56763fce-csstools-light-dark-toggle--4: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.7) calc(c * 0.25) h) !important;--d-sidebar-border-color: var(--56763fce-csstools-light-dark-toggle--4, oklch(from #6568e6 88% calc(c * 0.25) h)) !important;--56763fce-csstools-light-dark-toggle--5: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.5) calc(c * 0.25) h) !important;--d-sidebar-link-color: var(--56763fce-csstools-light-dark-toggle--5, oklch(from #6568e6 calc(l * 0.8) calc(c * 0.25) h)) !important;--56763fce-csstools-light-dark-toggle--6: var(--csstools-color-scheme--light) oklch(from #6568e6 l calc(c * 0.9) h) !important;--d-sidebar-suffix-color: var(--56763fce-csstools-light-dark-toggle--6, oklch(from #6568e6 l calc(c * 0.9) h)) !important;--56763fce-csstools-light-dark-toggle--7: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.7) calc(c * 0.25) h) !important;--d-selected: var(--56763fce-csstools-light-dark-toggle--7, oklch(from #6568e6 92% calc(c * 0.5) h)) !important;--56763fce-csstools-light-dark-toggle--8: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.2) c h) !important;--d-nav-color--active: var(--56763fce-csstools-light-dark-toggle--8, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--9: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.2) c h) !important;--d-nav-color--hover: var(--56763fce-csstools-light-dark-toggle--9, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--10: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.95) c h) !important;--link-color: var(--56763fce-csstools-light-dark-toggle--10, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--11: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.5) calc(c * 2.25) h) !important;--link-color-hover: var(--56763fce-csstools-light-dark-toggle--11, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--12: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 1.5) calc(c * 0.25) h) !important;--search-color: var(--56763fce-csstools-light-dark-toggle--12, oklch(from #6568e6 l c h)) !important;--56763fce-csstools-light-dark-toggle--13: var(--csstools-color-scheme--light) oklch(from #6568e6 calc(l * 0.75) calc(c * 0.5) h) !important;--button-box-shadow: var(--56763fce-csstools-light-dark-toggle--13, oklch(from #6568e6 calc(l * 1.5) calc(c * 0.35) h)) !important;--56763fce-csstools-light-dark-toggle--14: var(--csstools-color-scheme--light) oklch(from var(--d-selected) calc(l * 0.7) c h) !important;--d-sidebar-active-prefix-background: var(--56763fce-csstools-light-dark-toggle--14, oklch(from var(--d-selected) calc(l * 0.85) c h)) !important;--56763fce-csstools-light-dark-toggle--15: var(--csstools-color-scheme--light) oklch(from var(--d-selected) calc(l * 0.7) c h) !important;--d-sidebar-highlight-prefix-background: var(--56763fce-csstools-light-dark-toggle--15, oklch(from var(--d-selected) calc(l * 0.85) c h)) !important;}}:where(.uc-modernize-foundation-theme){--d-sidebar-active-background: var(--d-selected) !important}
+/*# sourceMappingURL=common.css.map */
+
+// Body font definition
+@font-face {
+  font-family: 'Inter';
+  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  font-weight: 100 900;
+}
+
+html {
+  font-variation-settings: normal;
+  font-feature-settings: 'calt' 0;
+}
+
+:root {
+  --font-family: Inter, Arial, sans-serif;
+}
+
+// Heading font definition
+@font-face {
+  font-family: 'Inter';
+  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  font-weight: 100 900;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-variation-settings: normal;
+  font-feature-settings: 'calt' 0;
+}
+
+:root {
+  --heading-font-family: Inter, Arial, sans-serif;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url("http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url("http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
+  font-weight: 700;
+}
+
+html {
+  font-variation-settings: normal;
+  font-feature-settings: normal;
+  font-variant-ligatures: none;
+}
+
+:root {
+  --d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace;
+}
+

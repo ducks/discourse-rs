@@ -1,0 +1,88 @@
+@use "lib/viewport";
+
+#reply-control.hide-preview:not(.draft) {
+  @include viewport.from(sm) {
+    .user-selector,
+    .title-and-category {
+      :where(body:not(.uc-enable-composer-redesign) &) {
+        padding: 0 var(--space-2);
+        width: calc(100% - var(--space-2) * 2) !important;
+      }
+    }
+
+    .reply-to,
+    .submit-panel {
+      :where(body:not(.uc-enable-composer-redesign) &) {
+        padding-inline: var(--space-2);
+      }
+    }
+
+    .d-editor-textarea-wrapper {
+      border: 0;
+      border-radius: 0;
+
+      :where(body:not(.uc-enable-composer-redesign) &) {
+        border-bottom: 1px solid var(--content-border-color) !important;
+      }
+
+      &.in-focus {
+        outline: 0;
+      }
+    }
+  }
+}
+
+.d-editor-button-bar {
+  .btn:hover,
+  .toolbar-popup-menu-options.is-expanded {
+    .discourse-no-touch & {
+      background: var(--tertiary-very-low);
+      color: var(--accent-color);
+
+      .d-icon {
+        color: inherit;
+      }
+
+      // to have parity with regular select-kit styling used elsewhere
+      .select-kit-row {
+        .d-icon {
+          color: var(--primary-high);
+        }
+
+        &:hover {
+          .d-icon {
+            color: var(--primary);
+          }
+        }
+      }
+    }
+  }
+
+  .toolbar-popup-menu-options.is-expanded {
+    border-radius: var(--d-border-radius);
+  }
+}
+
+.discourse-no-touch .translation-selector-dropdown {
+  .select-kit-header.btn-default {
+    background: var(--background-color);
+  }
+}
+
+#reply-control.composer-action-add_translation {
+  .d-editor-translation-preview-wrapper {
+    border-color: var(--d-sidebar-border-color);
+  }
+
+  .d-editor-translation-preview-wrapper__header {
+    top: 6.5rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--background-color);
+    color: var(--accent-color);
+    border-radius: var(--d-border-radius-large);
+  }
+
+  .topic-title-translator input {
+    width: 47.25vw;
+  }
+}

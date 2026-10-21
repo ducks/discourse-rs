@@ -136,6 +136,10 @@
     {%- if chrome.admin_stylesheet %}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "admin.css") }}">
     {%- endif %}
+    {#- discourse_stylesheet_link_tag for the theme targets. -#}
+    {%- if !chrome.theme_stylesheets.is_empty() %}
+    {{ chrome.theme_stylesheets|safe }}
+    {%- endif %}
     {#- The current-user-mention-css initializer: the viewer's own mentions. -#}
     {% if let Some(v) = viewer %}
     <style id="current-user-mention-css">.mention[href="{{ base_path }}/u/{{ v.username }}" i] { background: var(--tertiary-400); }</style>

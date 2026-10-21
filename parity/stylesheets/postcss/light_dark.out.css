@@ -1,0 +1,30 @@
+:root{--csstools-color-scheme--light:initial;color-scheme:light}.a .b,.c{--9cca9d40-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) blue;--x: var(--9cca9d40-csstools-light-dark-toggle--0, red);color:red;}
+
+@supports (color: light-dark(red, red)){
+.a .b,.c{--x: light-dark(red,blue);}
+}@supports not (color: light-dark(tan, tan)){:is(.a .b,.c) *{--9cca9d40-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) blue;--x: var(--9cca9d40-csstools-light-dark-toggle--0, red)}}a::before{--9cca9d40-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) blue;--x: var(--9cca9d40-csstools-light-dark-toggle--1, red);}
+
+@supports (color: light-dark(red, red)){
+a::before{--x: light-dark(red, blue);}
+}@supports not (color: light-dark(tan, tan)){:is(a::before) *{--9cca9d40-csstools-light-dark-toggle--1: var(--csstools-color-scheme--light) blue;--x: var(--9cca9d40-csstools-light-dark-toggle--1, red)}}.d{--9cca9d40-csstools-light-dark-toggle--2: var(--csstools-color-scheme--light) blue !important;--x: var(--9cca9d40-csstools-light-dark-toggle--2, red) !important;--9cca9d40-csstools-light-dark-toggle--3: var(--csstools-color-scheme--light) var(--z) !important;--y: var(--9cca9d40-csstools-light-dark-toggle--3, green) !important;--w: var(--q);--9cca9d40-csstools-light-dark-toggle--4:var(--csstools-color-scheme--light) blue;color:var(--9cca9d40-csstools-light-dark-toggle--4, red);color:light-dark(red, blue);--9cca9d40-csstools-light-dark-toggle--5:var(--csstools-color-scheme--light) var(--b);background:var(--9cca9d40-csstools-light-dark-toggle--5, var(--a));--9cca9d40-csstools-light-dark-toggle--6: var(--csstools-color-scheme--light) red;--v: var(--9cca9d40-csstools-light-dark-toggle--6, oklch(from var(--a) l c h));}
+
+@supports (color: light-dark(red, red)){
+.d{--x: light-dark(red, blue) !important;--y: light-dark(green, var(--z)) !important;background:light-dark(var(--a), var(--b));}
+}
+
+@supports (color: lab(from red l 1 1% / calc(alpha + 0.1))) and (color: light-dark(red, red)){
+.d{--v: light-dark(oklch(from var(--a) l c h), red);}
+}@supports not (color: light-dark(tan, tan)){.d *{--9cca9d40-csstools-light-dark-toggle--2: var(--csstools-color-scheme--light) blue !important;--x: var(--9cca9d40-csstools-light-dark-toggle--2, red) !important;--9cca9d40-csstools-light-dark-toggle--3: var(--csstools-color-scheme--light) var(--z) !important;--y: var(--9cca9d40-csstools-light-dark-toggle--3, green) !important;--9cca9d40-csstools-light-dark-toggle--6: var(--csstools-color-scheme--light) red;--v: var(--9cca9d40-csstools-light-dark-toggle--6, oklch(from var(--a) l c h))}}.e{color:red}
+
+@supports (color: lab(from red l 1 1% / calc(alpha + 0.1))){
+.e{color:var(--x, oklch(from red l c h))}
+}.f{--m: red;--n: 1}
+
+@supports (color: lab(from red l 1 1% / calc(alpha + 0.1))){
+.f{--m: oklch(from var(--x) l c h);--n: oklch(from var(--x) l c h)}
+}@media(width < 10px){.g{--9cca9d40-csstools-light-dark-toggle--7: var(--csstools-color-scheme--light) blue;--x: var(--9cca9d40-csstools-light-dark-toggle--7, red);}
+
+@supports (color: light-dark(red, red)){
+.g{--x: light-dark(red,blue);}
+}@supports not (color: light-dark(tan, tan)){.g *{--9cca9d40-csstools-light-dark-toggle--7: var(--csstools-color-scheme--light) blue;--x: var(--9cca9d40-csstools-light-dark-toggle--7, red)}}}.h{--csstools-color-scheme--light:initial;color-scheme:light dark}@media (prefers-color-scheme: dark){.h{--csstools-color-scheme--light: }}.i{--csstools-color-scheme--light: ;color-scheme:only dark}
+/*# sourceMappingURL=x.css.map */

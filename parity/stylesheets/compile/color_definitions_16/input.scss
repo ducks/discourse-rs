@@ -1,0 +1,97 @@
+$primary: #f2f2f2 !default; $secondary: #2d303e !default; $tertiary: #bd93f9 !default; $quaternary: #8be9fd !default; $header_background: #373A47 !default; $header_primary: #f2f2f2 !default; $highlight: #ffff4d !default; $danger: #ff5555 !default; $success: #50fa7b !default; $love: #ff79c6 !default; $primary_very_low: #373A47 !default; $primary_low: #414350 !default; $primary_low_mid: #8C8D94 !default; $primary_medium: #A3A4AA !default; $primary_high: #CCCCCF !default; $primary-50: #3F414E !default; $primary-100: #535460 !default; $primary-200: #666972 !default; $primary-300: #7A7C84 !default; $primary-400: #8D8F96 !default; $primary-500: #A2A3A9 !default; $primary-600: #B6B7BC !default; $primary-700: #C7C7C7 !default; $primary-800: #DEDFE0 !default; $primary-900: #F5F5F5 !default; $secondary_low: #CCCCCF !default; $secondary_medium: #91939A !default; $secondary_high: #6A6C76 !default; $secondary_very_high: #3D404C !default; $tertiary_low: #4A4463 !default; $tertiary_medium: #6E5D92 !default; $tertiary_high: #9275C1 !default; $quaternary_low: #6AA8BA !default; $highlight_low: #686D55 !default; $highlight_medium: #52592B !default; $highlight_high: #C0C879 !default; $danger_low: #957279 !default; $success_low: #386D50 !default; $success_medium: #44B366 !default; $love_low: #6C4667 !default; $selected: #4A4463 !default; $hover: #61597f !default;  $public_image_path: "http://localhost:3048/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
+
+
+// Color definitions from chat
+
+:root {
+  --chat-skeleton-animation-rgb: #{hexToRGB($primary-50)};
+}
+
+
+
+
+// Color definitions from discourse-events
+
+/* stylelint-disable scss/no-global-function-names */
+:root {
+  --calendar-normal: #{dark-light-choose(
+      lighten($tertiary, 55%),
+      darken($tertiary, 25%)
+    )};
+  --calendar-close-to-working-hours: #{dark-light-choose(
+      desaturate(lighten($tertiary, 45%), 15%),
+      darken($tertiary, 15%)
+    )};
+  --calendar-in-working-hours: #{dark-light-choose(
+      desaturate(lighten($tertiary, 40%), 20%),
+      darken($tertiary, 10%)
+    )};
+  --fc-border-color: var(--primary-low);
+  --fc-button-text-color: var(--d-button-default-text-color);
+  --fc-button-bg-color: var(--d-button-default-bg-color);
+  --fc-button-border-color: transparent;
+  --fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--tertiary);
+  --fc-button-active-border-color: transparent;
+  --fc-event-border-color: var(--primary-low);
+  --fc-today-bg-color: var(--highlight-medium);
+  --fc-page-bg-color: var(--secondary);
+  --fc-list-event-hover-bg-color: var(--secondary);
+  --fc-neutral-bg-color: var(--primary-low);
+}
+
+
+// Body font definition
+@font-face {
+  font-family: 'Inter';
+  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  font-weight: 100 900;
+}
+
+html {
+  font-variation-settings: normal;
+  font-feature-settings: 'calt' 0;
+}
+
+:root {
+  --font-family: Inter, Arial, sans-serif;
+}
+
+// Heading font definition
+@font-face {
+  font-family: 'Inter';
+  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  font-weight: 100 900;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-variation-settings: normal;
+  font-feature-settings: 'calt' 0;
+}
+
+:root {
+  --heading-font-family: Inter, Arial, sans-serif;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url("http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url("http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
+  font-weight: 700;
+}
+
+html {
+  font-variation-settings: normal;
+  font-feature-settings: normal;
+  font-variant-ligatures: none;
+}
+
+:root {
+  --d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace;
+}
+

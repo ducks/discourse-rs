@@ -310,38 +310,17 @@ pub async fn set_field(
         None => (None, false),
     };
     if let Some(change) = change {
-        refuse_unported(conn, theme_id, &change).await?;
+        refuse_unported(&change)?;
         changes.push(change);
     }
     Ok(kept.then_some(key))
 }
 
 /// The fields whose save the port cannot bake as Rails does.
-async fn refuse_unported(
-    conn: &mut PgConnection,
-    theme_id: i32,
-    change: &FieldChange,
-) -> Result<(), AppError> {
+fn refuse_unported(change: &FieldChange) -> Result<(), AppError> {
     let (target_id, name) = (change.target_id(), change.name());
     if matches!(change, FieldChange::Destroy { .. }) {
         return Ok(());
-    }
-    if basic_scss(target_id, name) {
-        return Err(Unsupported("theme scss fields (stylesheet compile)").into());
-    }
-    if target_id == EXTRA_SCSS {
-        let has_scss: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM theme_fields WHERE theme_id = $1 \
-             AND target_id = ANY($2) AND name = ANY($3))",
-        )
-        .bind(theme_id)
-        .bind(&BASIC_TARGETS[..])
-        .bind(&SCSS_FIELDS[..])
-        .fetch_one(&mut *conn)
-        .await?;
-        if has_scss {
-            return Err(Unsupported("theme scss fields (stylesheet compile)").into());
-        }
     }
     if target_id == EXTRA_JS {
         return Err(Unsupported("theme javascript (ThemeJavascriptCompiler)").into());
@@ -725,6 +704,9 @@ async fn validate_svg_sprite(
     Ok(None)
 }
 
+/// Compiles so far, so two in the same microsecond get their own digest.
+static COMPILES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
 #[derive(sqlx::FromRow)]
 struct BakeRow {
     theme_id: i32,
@@ -768,23 +750,41 @@ pub async fn ensure_baked(
         } else if f.target_id == EXTRA_JS || f.target_id == TESTS_JS {
             (Some("baked".into()), None, cv)
         } else if basic_scss(f.target_id, &f.name) {
-            // ensure_scss_compiles!: the compiled CSS's digest, which no
-            // two compiles share, and the value's own checks.
-            let error = if optimized_link(&f.value) {
+            // ensure_scss_compiles!: the field compiled with the default
+            // importer's colors, its error the compile's message, else the
+            // value's own checks; value_baked digests the CSS with its
+            // source map, which names the compile's temporary directory,
+            // so no two compiles share it.
+            let cx = crate::stylesheet::manager::Cx {
+                config: env.cx.urls.config,
+                settings: env.cx.settings,
+            };
+            let compiled = crate::stylesheet::manager::field_compile_error(
+                conn,
+                &cx,
+                f.theme_id,
+                f.target_id,
+                &f.name,
+            )
+            .await?;
+            let error = if let Some(message) = compiled {
+                Some(message)
+            } else if optimized_link(&f.value) {
                 Some(t(env, "themes.errors.optimized_link"))
             } else if ember_selector(&f.value) {
                 Some(t(env, "themes.ember_selector_error"))
             } else {
-                f.error.clone()
+                None
             };
             let digest = format!(
                 "{:x}",
                 Sha1::digest(
                     format!(
-                        "{}|{}|{}",
+                        "{}|{}|{}|{}",
                         f.value,
                         field_id,
-                        chrono::Utc::now().timestamp_micros()
+                        crate::clock::now().timestamp_micros(),
+                        COMPILES.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
                     )
                     .as_bytes(),
                 )

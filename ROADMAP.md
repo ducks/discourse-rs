@@ -41,7 +41,7 @@ that own them:
 - Anonymous mode: 72: 133, 211
 - Users, groups, categories and tags: 64 (68): 130, 156, 157, 184, 252
 - Chat: 63 (66): 160-162, 215, 216, 218, 224, 227
-- Site settings and themes: 62 (78): 164, 169-171, 173
+- Site settings and themes: 62 (78): 164, 169a, 170, 171, 173
 - Uploads, media, CDN, S3: 62 (66): 121, 123, 139-141, 256
 - Locales and content localization: 60 (64): 167, 168
 - Badges, about, drafts, messages: 41 (42): 180-183
@@ -644,10 +644,11 @@ then by what running a forum needs (milestone 6). Briefs:
     SHA1 of CSS whose source map names the compile's temporary
     directory, so no two compiles share it and cases compare it as
     `<digest>` (the `digests` key). Refused: new or changed scss values
-    (their compile errors), extra_js (ThemeJavascriptCompiler), inline
-    scripts (AssetProcessor), migrations, uploads and svg sprites,
-    other locales' translations, settings that request a refresh,
-    destroying a theme's own color schemes), 90f.
+    (their compile errors; since done in 169), extra_js
+    (ThemeJavascriptCompiler), inline scripts (AssetProcessor),
+    migrations, uploads and svg sprites, other locales' translations,
+    settings that request a refresh, destroying a theme's own color
+    schemes), 90f.
     ~~`feat/theme-imports`~~ (done) M, split: 90f1.
     ~~`feat/theme-imports`~~ (done) M (Admin::ThemesController#import of
     zip, tar, tar.gz and gz bundles through
@@ -1479,13 +1480,13 @@ have handlers now.
     routes/deleted_posts.rs:55; plugins/chat/direct_messages.rs:237;
     plugins/chat/membership.rs:128; plugins/chat/messages.rs:636;
     plugins/chat/channels.rs:642), the preferences' status
-    (preferences_view/mod.rs:927) and PUT /u's `status`
+    (preferences_view/mod.rs:942) and PUT /u's `status`
     (user_updater.rs's REFUSED)
 131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
     (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar
     (user_updater.rs:554,556), random avatars at signup (signup.rs:406),
-    system_user_avatar_template (site.rs:479), renaming or merging the
+    system_user_avatar_template (site.rs:481), renaming or merging the
     system user with the logo as its avatar (username_changer.rs:171;
     user_merger.rs:229), the update_gravatar and create_avatar_thumbnails
     jobs. Split, stacked:
@@ -1922,7 +1923,7 @@ have handlers now.
     (current_user.rs:1202,1225), view_user_route profile-hidden
     (routes/users.rs:673), setting another user's topic notification
     level (routes/topic_notifications.rs:56)
-157. `feat/groups-rest` M: group flair uploads (site.rs:744; groups.rs:32;
+157. `feat/groups-rest` M: group flair uploads (site.rs:746; groups.rs:32;
     routes/groups.rs:620; group_writes.rs:565;
     routes/admin_groups.rs:1251; a flaired group in the search menu,
     routes/search_menu.rs:199), group custom fields and associated
@@ -2014,7 +2015,7 @@ have handlers now.
     and reseeding (routes/site_texts.rs:65,863), the unsubscribe pages
     (routes/email.rs:45), email templates
     (routes/admin_email_templates.rs:222), theme translations
-    (theme_writes.rs:353; routes/themes.rs:1064,1469), MessageFormat
+    (theme_writes.rs:332; routes/themes.rs:1064,1469), MessageFormat
     keys (routes/site_texts.rs:946), the default_locale entry
     (admin_site_settings.rs:246) and the setup wizard's locale
     (wizard.rs:354), slugs by transliteration
@@ -2030,16 +2031,39 @@ have handlers now.
     routes/admin_config_about.rs:241), category and tag localizations
     (category_writes.rs:274; routes/tag_admin.rs:319), 90c's sidebar
     content localization
-169. `feat/theme-scss` L: new or changed scss fields
-    (theme_writes.rs:330,343), so imported bundles with stylesheets
-    (90f1), and recompiling theme fields on restore (91c). Needs: an
-    SCSS compiler with Discourse's theme pipeline
-    (grass, as 88's email style uses, plus the color definitions, theme
-    variables and imports Stylesheet::Compiler adds) and the stylesheet
-    routes the port doesn't serve
-170. `feat/theme-javascript` L: extra_js (theme_writes.rs:347,553),
+169. ~~`feat/theme-scss`~~ (done) L: theme SCSS compiled as Rails
+    compiles it (stylesheet/): grass, patched to print what dart-sass
+    1.104 prints (crates/grass_compiler/PATCHES.md), against the vendored
+    core stylesheets, with Stylesheet::Importer's colors, public image
+    path, variables and mixins, Theme#scss_variables (settings and upload
+    variables) and with_scss_load_paths' entry points, then
+    AssetProcessor#post_css (autoprefixer's added and removed prefixes
+    for Discourse's browsers, the light-dark() polyfill with progressive
+    custom properties, postcss-nesting and the toggles' hash). New or
+    changed scss fields save with their compile error
+    (ensure_scss_compiles!), imported bundles with stylesheets too (90f1);
+    the theme targets are served at /stylesheets/:target_:theme_:digest.css
+    and linked as discourse_stylesheet_link_tag links them; the color
+    definitions compile (the plugins' and the themes' color_definitions,
+    WCAG, the fonts) in place of the hand port; members pick light and
+    dark palettes in the interface preferences, previewed through
+    /color-scheme-stylesheet. Measured in parity/writes/stylesheets (byte
+    for byte but the toggles' hash and the source map annotation, which
+    name Rails' digests) and parity/stylesheets/compile. Left, split into
+    169a.
+    169a. `feat/theme-scss-rest` S: recompiling theme fields on restore
+    (91c; backup_restore/restorer.rs:1044, left while the restore code is
+    being changed on another branch), Rtlcss for right-to-left locales
+    (html.rs:909), autoprefixer's other rewrites
+    (stylesheet/postcss.rs:1136: value and selector prefixes,
+    transitions, @supports, old flexbox properties), the polyfill's
+    light-dark() custom properties and `color-scheme: light dark` outside
+    a style rule (postcss.rs:1793), objects settings as SCSS variables
+    (stylesheet/manager.rs:114), source maps. Another theme's
+    stylesheets are 258a's
+170. `feat/theme-javascript` L: extra_js (theme_writes.rs:326,532),
     so imported bundles with javascripts/ (90f1), inline scripts in
-    theme html (:872, AssetProcessor), theme settings migrations (:350;
+    theme html (:872, AssetProcessor), theme settings migrations (:329;
     an import's `skip_migrations` has nothing to skip until then).
     Needs: ThemeJavascriptCompiler's toolchain in
     process (Rails runs rollup, Babel and the Ember template compiler
@@ -2048,9 +2072,9 @@ have handlers now.
     (routes/themes.rs:1144,1355,1410, Discourse.request_refresh!; 100
     was dropped, so the refresh goes over /bus),
     destroying a theme's own color schemes (theme_writes.rs:1860), a
-    field over 1 MiB (:358), html that does not parse (:870), settings
+    field over 1 MiB (:337), html that does not parse (:870), settings
     YAML that does not parse (:1239, Psych's message), svg sprites
-    libxml2 rejects or whose file is gone (:711,720, their error texts),
+    libxml2 rejects or whose file is gone (:690,699, their error texts),
     pax tar headers in imported bundles (theme_import.rs:426); git themes
     (90f1): cloning a repository for a remote import
     (theme_import.rs:1827,1833), update checks and updates
@@ -2118,7 +2142,7 @@ have handlers now.
     Psych-compatible YAML emitter
 180. `feat/about-rest` S: the about page's visitor stats, banner image
     and localized settings (about.rs:125,302; about_view.rs:151), the
-    welcome banner below the site header (html.rs:1665)
+    welcome banner below the site header (html.rs:1701)
 181. `feat/badges-rest` S: badge counts past a thousand, emoji in long
     descriptions, more grants than the first page, the title picker,
     grants without a time or topic (badges_page.rs:20,42,352,391,403,
@@ -2389,7 +2413,7 @@ route table has been made, so this list may be short.
     by external id; unstaging is 154, accepting an invite with an
     external login 251, Patreon's reward groups 202) L: OAuth2 and OIDC logins (/auth/:provider),
     DiscourseConnect (/session/sso*), the authenticators on /site.json
-    and associated accounts (site.rs:1233; user_private.rs:130;
+    and associated accounts (site.rs:1235; user_private.rs:130;
     admin_user_show.rs:185; current_user.rs:641,644;
     reports/lists.rs:297), external ids (web_hooks/payloads.rs:95;
     notifications.rs:544; session/api_key.rs:135;
@@ -2872,7 +2896,7 @@ route table has been made, so this list may be short.
     palettes, and the interface preferences refuse the theme selector
     (preferences_view/interface.rs:85; another theme draws its own
     stylesheets and palettes, /color-scheme-stylesheet refuses one at
-    routes/stylesheets.rs:223). The dark logos (site_logo_dark_url and
+    routes/stylesheets.rs:233). The dark logos (site_logo_dark_url and
     site_mobile_logo_dark_url in Header::Logo's light/dark picture,
     application_logo_dark_url, a category's uploaded_logo_dark) are not
     drawn, so a dark page keeps the light logos
@@ -3028,7 +3052,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
 226. `feat/chat-site-integration` M: chat's keys on core: /site.json's
     markdown_additional_options.chat (emitted as `{}`),
     hashtag_configurations (chat-composer, the channel type in
-    topic-composer) and hashtag_icons.channel (site.rs:452,1022), GET
+    topic-composer) and hashtag_icons.channel (site.rs:454,1024), GET
     /notifications/totals with chat_notifications (not routed),
     chat_quoted notifications from posts quoting messages
     (PostNotificationHandler) and the transcript post stripper, the
@@ -3068,7 +3092,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     validation, results visibility, public defaulting to
     poll_default_public, bar or pie, the groups chooser, automatic close,
     dynamic, Insert as BBCode; the menu's condition gains
-    pm_with_non_human_user (html.rs:1118). The rich editor's node view
+    pm_with_non_human_user (html.rs:1156). The rich editor's node view
     follows 196
 230. `feat/poll-rest` M: poll's server leftovers: reduce_cooked in emails
     (the options without ids, the link_to_poll link, polls of trashed
@@ -3150,7 +3174,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     `/discourse-presence/translate/<post>` subscription and announce
     (static/js/topic-presence.js:132-141,171-179), the
     presence.translating strings in the composer's data
-    (html.rs:1097-1103). The whisper state follows 196's whisper toggle
+    (html.rs:1135-1103). The whisper state follows 196's whisper toggle
     (topic-presence.js:139)
 239. `feat/local-dates-cook-rest` S: the dates the markdown refuses and
     Rails cooks, each recorded against Rails: times moment reads through
@@ -3206,7 +3230,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     (auth/oauth2.rs:567, OIDC's too). The additional and required JSON
     path registries wait for 203-206 (only third-party plugins fill them)
 246. `feat/oauth2-oidc-admin-login-tabs` S: admin_config_login_routes
-    with `oauth2` and `oidc` (site.rs:506 returns `[]`), the
+    with `oauth2` and `oidc` (site.rs:508 returns `[]`), the
     /admin/config/login-and-authentication/oauth2 and /oidc tabs with
     their setting areas (routes/admin_config.rs:669-707), the admin
     sidebar's links and labels. Their list and objects settings need 164

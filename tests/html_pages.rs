@@ -265,42 +265,30 @@ async fn pages_carry_where_their_live_updates_start() {
     assert_eq!(messages[0].data["topic_id"], 35);
 }
 
-/// The site's color schemes as stylesheets, each custom property as Rails
-/// compiled it on the reference: the default theme has no scheme of its
-/// own (the base light palette) and dark mode uses the Dark scheme.
+/// The site's color schemes as stylesheets: the default theme has no
+/// scheme of its own (the base light palette) and dark mode uses the Dark
+/// scheme. parity/writes/stylesheets compares them with the reference's
+/// byte for byte.
 #[tokio::test]
 async fn color_definitions_are_the_sites_schemes() {
-    use discourse_rs::stylesheet::color_definitions::properties;
     let db = TestDb::new().await;
-    for (path, rails) in [
-        (
-            "/assets/color_definitions_light.css",
-            include_str!("../parity/stylesheets/color_definitions_light-default.css"),
-        ),
-        (
-            "/assets/color_definitions_dark.css",
-            include_str!("../parity/stylesheets/color_definitions_dark-13.css"),
-        ),
+    for (path, primary) in [
+        ("/assets/color_definitions_light.css", "--primary: #222;"),
+        ("/assets/color_definitions_dark.css", "--primary: #dddddd;"),
         // The same scheme by id, as a member's own palette is linked.
         (
             "/assets/color_definitions_scheme/13.css",
-            include_str!("../parity/stylesheets/color_definitions_dark-13.css"),
+            "--primary: #dddddd;",
         ),
     ] {
         let (status, content_type, css) = get(&db.pool, path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {css}");
         assert_eq!(content_type, "text/css; charset=utf-8");
-        let rails = properties(rails);
-        for (name, value) in properties(&css) {
-            if name == "--topic-timeline-handle-color" {
-                continue;
-            }
-            let theirs = rails
-                .iter()
-                .find(|(n, _)| *n == name)
-                .map(|(_, v)| v.as_str());
-            assert_eq!(theirs, Some(value.as_str()), "{path} {name}");
-        }
+        assert!(
+            css.starts_with(":root{--csstools-color-scheme--light:"),
+            "{path}"
+        );
+        assert!(css.contains(primary), "{path}");
     }
     for path in [
         "/assets/color_definitions_scheme/999.css",

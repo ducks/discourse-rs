@@ -123,7 +123,7 @@ impl Urls<'_> {
 
     /// `GlobalPath#upload_cdn_path`: behind `s3_cdn_url`, the store's CDN
     /// url first.
-    fn upload_cdn_path(&self, path: &str) -> Result<String, UrlError> {
+    pub fn upload_cdn_path(&self, path: &str) -> Result<String, UrlError> {
         let path = crate::file_store::upload_cdn_url(self.config, self.settings, path)?;
         Ok(if path.starts_with("http") || path.starts_with("//") {
             path

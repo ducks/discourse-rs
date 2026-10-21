@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_styled.zip"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "common_theme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "desktop_theme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "mobile_theme"},
+    {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "light-scheme"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields"
+  ],
+  "digests": ["theme_fields.value_baked"]
+}

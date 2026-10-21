@@ -1,0 +1,1253 @@
+{
+  "name": "custom",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Styled",
+          "theme_fields": [
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: \"#ff6600\"\nshow_border: true\nwidth: 3\nratio:\n  default: 1.5\n  type: float\nlabel: \"it's a \\\"test\\\"\"\nchoice:\n  type: enum\n  default: b\n  choices:\n    - a\n    - b\nitems:\n  type: list\n  default: \"one|two\"\n"
+            },
+            {
+              "name": "buttons",
+              "target": "extra_scss",
+              "value": "@mixin pill($r) {\n  border-radius: $r;\n  padding: 0.5em 1em;\n}\n.styled-button {\n  @include pill(999px);\n  background: lighten($tertiary, 10%);\n  color: darken($tertiary, 20%);\n  &:hover { background: mix($primary, $secondary, 30%); }\n}\n"
+            },
+            {
+              "name": "scss",
+              "target": "common",
+              "value": "@import \"buttons\";\n.styled {\n  color: $accent;\n  border: if($show_border == \"true\", #{$width}px solid rgba($primary, 0.25), none);\n  background-image: url($hero);\n  width: calc(100% - #{$width * 2}px);\n  transform: scale($ratio);\n  &::after { content: $label; }\n  .nested > a { text-decoration: underline dotted; user-select: none; }\n  @media (max-width: 600px) { display: none; }\n}\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\n.items { content: \"#{$items}\"; }\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\n:root {\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\n}\n.dark { color-scheme: dark; }\n@supports (display: grid) { .grid { display: grid; } }\n"
+            },
+            {
+              "name": "scss",
+              "target": "desktop",
+              "value": ".styled { max-width: 960px; .side { float: right; } }\n"
+            },
+            {
+              "name": "scss",
+              "target": "mobile",
+              "value": ".styled { padding: 0.25em; font-size: $font-down-1; }\n"
+            },
+            {
+              "name": "color_definitions",
+              "target": "common",
+              "value": ":root {\n  --styled-accent: #{$tertiary};\n  --styled-mix: #{mix($primary, $secondary, 30%)};\n  --styled-rgb: #{hexToRGB($primary)};\n}\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/themes/upload_asset.json",
+      "params": {
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "true",
+          "theme_fields": [
+            {
+              "name": "hero",
+              "target": "common",
+              "type_id": "2",
+              "upload_id": "{{responses.1.body.upload_id}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "common_theme"
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "desktop_theme"
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "mobile_theme"
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "light-scheme"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json",
+      "params": {
+        "name": "accent",
+        "value": "#00aa00"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json",
+      "params": {
+        "name": "show_border",
+        "value": "false"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      },
+      "stylesheet": "common_theme"
+    }
+  ],
+  "started_at": "2026-10-21T09:14:59.817199",
+  "transaction_started_at": "2026-10-21T09:14:58.568166",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Styled",
+          "description": null,
+          "created_at": "2026-10-21T09:14:59.834Z",
+          "updated_at": "2026-10-21T09:14:59.834Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "accent",
+              "humanized_name": "Accent",
+              "type": "string",
+              "default": "#ff6600",
+              "value": "#ff6600",
+              "textarea": false
+            },
+            {
+              "setting": "show_border",
+              "humanized_name": "Show border",
+              "type": "bool",
+              "default": true,
+              "value": true
+            },
+            {
+              "setting": "width",
+              "humanized_name": "Width",
+              "type": "integer",
+              "default": 3,
+              "value": 3
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1.5,
+              "value": 1.5
+            },
+            {
+              "setting": "label",
+              "humanized_name": "Label",
+              "type": "string",
+              "default": "it's a \"test\"",
+              "value": "it's a \"test\"",
+              "textarea": false
+            },
+            {
+              "setting": "choice",
+              "humanized_name": "Choice",
+              "type": "enum",
+              "default": "b",
+              "value": "b",
+              "valid_values": [
+                "a",
+                "b"
+              ]
+            },
+            {
+              "setting": "items",
+              "humanized_name": "Items",
+              "type": "list",
+              "default": "one|two",
+              "value": "one|two",
+              "list_type": null
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "errors": [
+            "Undefined variable."
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "color_definitions",
+              "target": "common",
+              "value": ":root {\n  --styled-accent: #{$tertiary};\n  --styled-mix: #{mix($primary, $secondary, 30%)};\n  --styled-rgb: #{hexToRGB($primary)};\n}\n",
+              "type_id": 1,
+              "file_path": "common/color_definitions.scss"
+            },
+            {
+              "name": "scss",
+              "target": "common",
+              "value": "@import \"buttons\";\n.styled {\n  color: $accent;\n  border: if($show_border == \"true\", #{$width}px solid rgba($primary, 0.25), none);\n  background-image: url($hero);\n  width: calc(100% - #{$width * 2}px);\n  transform: scale($ratio);\n  &::after { content: $label; }\n  .nested > a { text-decoration: underline dotted; user-select: none; }\n  @media (max-width: 600px) { display: none; }\n}\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\n.items { content: \"#{$items}\"; }\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\n:root {\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\n}\n.dark { color-scheme: dark; }\n@supports (display: grid) { .grid { display: grid; } }\n",
+              "error": "Undefined variable.",
+              "type_id": 1,
+              "file_path": "common/common.scss"
+            },
+            {
+              "name": "scss",
+              "target": "desktop",
+              "value": ".styled { max-width: 960px; .side { float: right; } }\n",
+              "type_id": 1,
+              "file_path": "desktop/desktop.scss"
+            },
+            {
+              "name": "scss",
+              "target": "mobile",
+              "value": ".styled { padding: 0.25em; font-size: $font-down-1; }\n",
+              "type_id": 1,
+              "file_path": "mobile/mobile.scss"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: \"#ff6600\"\nshow_border: true\nwidth: 3\nratio:\n  default: 1.5\n  type: float\nlabel: \"it's a \\\"test\\\"\"\nchoice:\n  type: enum\n  default: b\n  choices:\n    - a\n    - b\nitems:\n  type: list\n  default: \"one|two\"\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "buttons",
+              "target": "extra_scss",
+              "value": "@mixin pill($r) {\n  border-radius: $r;\n  padding: 0.5em 1em;\n}\n.styled-button {\n  @include pill(999px);\n  background: lighten($tertiary, 10%);\n  color: darken($tertiary, 20%);\n  &:hover { background: mix($primary, $secondary, 30%); }\n}\n",
+              "type_id": 1,
+              "file_path": "stylesheets/buttons.scss"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 201,
+      "body": {
+        "upload_id": 36
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Styled",
+          "description": null,
+          "created_at": "2026-10-21T09:14:59.834Z",
+          "updated_at": "2026-10-21T09:14:59.834Z",
+          "default": true,
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "accent",
+              "humanized_name": "Accent",
+              "type": "string",
+              "default": "#ff6600",
+              "value": "#ff6600",
+              "textarea": false
+            },
+            {
+              "setting": "show_border",
+              "humanized_name": "Show border",
+              "type": "bool",
+              "default": true,
+              "value": true
+            },
+            {
+              "setting": "width",
+              "humanized_name": "Width",
+              "type": "integer",
+              "default": 3,
+              "value": 3
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1.5,
+              "value": 1.5
+            },
+            {
+              "setting": "label",
+              "humanized_name": "Label",
+              "type": "string",
+              "default": "it's a \"test\"",
+              "value": "it's a \"test\"",
+              "textarea": false
+            },
+            {
+              "setting": "choice",
+              "humanized_name": "Choice",
+              "type": "enum",
+              "default": "b",
+              "value": "b",
+              "valid_values": [
+                "a",
+                "b"
+              ]
+            },
+            {
+              "setting": "items",
+              "humanized_name": "Items",
+              "type": "list",
+              "default": "one|two",
+              "value": "one|two",
+              "list_type": null
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "errors": [
+            "Undefined variable."
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "color_definitions",
+              "target": "common",
+              "value": ":root {\n  --styled-accent: #{$tertiary};\n  --styled-mix: #{mix($primary, $secondary, 30%)};\n  --styled-rgb: #{hexToRGB($primary)};\n}\n",
+              "type_id": 1,
+              "file_path": "common/color_definitions.scss"
+            },
+            {
+              "name": "scss",
+              "target": "common",
+              "value": "@import \"buttons\";\n.styled {\n  color: $accent;\n  border: if($show_border == \"true\", #{$width}px solid rgba($primary, 0.25), none);\n  background-image: url($hero);\n  width: calc(100% - #{$width * 2}px);\n  transform: scale($ratio);\n  &::after { content: $label; }\n  .nested > a { text-decoration: underline dotted; user-select: none; }\n  @media (max-width: 600px) { display: none; }\n}\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\n.items { content: \"#{$items}\"; }\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\n:root {\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\n}\n.dark { color-scheme: dark; }\n@supports (display: grid) { .grid { display: grid; } }\n",
+              "error": "Undefined variable.",
+              "type_id": 1,
+              "file_path": "common/common.scss"
+            },
+            {
+              "name": "hero",
+              "target": "common",
+              "value": "",
+              "type_id": 2,
+              "upload_id": 36,
+              "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+              "filename": "small.png",
+              "file_path": "assets/hero.png"
+            },
+            {
+              "name": "scss",
+              "target": "desktop",
+              "value": ".styled { max-width: 960px; .side { float: right; } }\n",
+              "type_id": 1,
+              "file_path": "desktop/desktop.scss"
+            },
+            {
+              "name": "scss",
+              "target": "mobile",
+              "value": ".styled { padding: 0.25em; font-size: $font-down-1; }\n",
+              "type_id": 1,
+              "file_path": "mobile/mobile.scss"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: \"#ff6600\"\nshow_border: true\nwidth: 3\nratio:\n  default: 1.5\n  type: float\nlabel: \"it's a \\\"test\\\"\"\nchoice:\n  type: enum\n  default: b\n  choices:\n    - a\n    - b\nitems:\n  type: list\n  default: \"one|two\"\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "buttons",
+              "target": "extra_scss",
+              "value": "@mixin pill($r) {\n  border-radius: $r;\n  padding: 0.5em 1em;\n}\n.styled-button {\n  @include pill(999px);\n  background: lighten($tertiary, 10%);\n  color: darken($tertiary, 20%);\n  &:hover { background: mix($primary, $secondary, 30%); }\n}\n",
+              "type_id": 1,
+              "file_path": "stylesheets/buttons.scss"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": "/* SCSS compilation error: Undefined operation \"3 * 2\". */\n"
+    },
+    {
+      "status": 200,
+      "body": ".styled{max-width:960px}.styled .side{float:right}\n/*# sourceMappingURL=desktop_theme_1_c6d71061b023c5b0615c2555e449670663bea39a.css.map?__ws=localhost */\n"
+    },
+    {
+      "status": 200,
+      "body": ".styled{padding:.25em;font-size:var(--font-down-1)}\n/*# sourceMappingURL=mobile_theme_1_b92e1a9ff192a132ac37dfc1032487601f3e20f4.css.map?__ws=localhost */\n"
+    },
+    {
+      "status": 200,
+      "body": ":root{--csstools-color-scheme--light:initial;color-scheme:light;--scheme-type: light;--primary: #222;--secondary: #fff;--tertiary: #08c;--quaternary: #e45735;--header_background: #fff;--header_primary: #333;--highlight: #ffff4d;--danger: #c80001;--success: #090;--love: #fa6c8d;--d-selected: #d1f0ff;--d-selected-text-color: var(--primary);--d-selected-hover: rgb(85.568627451%, 95.2941176471%, 100%);--d-hover: #f2f2f2;--always-black-rgb: 0, 0, 0;--primary-rgb: 34, 34, 34;--primary-low-rgb: 233, 233, 233;--primary-very-low-rgb: 248, 248, 248;--secondary-rgb: 255, 255, 255;--header_background-rgb: 255, 255, 255;--tertiary-rgb: 0, 136, 204;--highlight-rgb: 255, 255, 77;--success-rgb: 0, 153, 0;--primary-very-low: rgb(97.4%, 97.4%, 97.4%);--primary-low: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-low-mid: rgb(74%, 74%, 74%);--primary-medium: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-very-high: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--primary-50: rgb(97.4%, 97.4%, 97.4%);--primary-100: rgb(94.8%, 94.8%, 94.8%);--primary-200: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-300: rgb(82.6666666667%, 82.6666666667%, 82.6666666667%);--primary-400: rgb(74%, 74%, 74%);--primary-500: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--primary-600: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-700: rgb(46.2666666667%, 46.2666666667%, 46.2666666667%);--primary-800: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-900: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--header_primary-low: rgb(95.078914592%, 95.078914592%, 95.078914592%);--header_primary-low-mid: rgb(81.4861951499%, 81.4861951499%, 81.4861951499%);--header_primary-medium: rgb(68.7022561493%, 68.7022561493%, 68.7022561493%);--header_primary-high: rgb(57.2712842531%, 57.2712842531%, 57.2712842531%);--header_primary-very-high: rgb(36.8781778292%, 36.8781778292%, 36.8781778292%);--secondary-low: rgb(30%, 30%, 30%);--secondary-medium: rgb(50%, 50%, 50%);--secondary-high: rgb(65%, 65%, 65%);--secondary-very-high: rgb(93%, 93%, 93%);--tertiary-very-low: rgb(88%, 96%, 100%);--tertiary-low: rgb(82%, 94%, 100%);--tertiary-medium: #66ccff;--tertiary-high: rgb(4%, 68%, 100%);--tertiary-hover: #006699;--tertiary-25: rgb(91.6%, 97.2%, 100%);--tertiary-50: rgb(88%, 96%, 100%);--tertiary-100: rgb(85.6%, 95.2%, 100%);--tertiary-200: rgb(84.4%, 94.8%, 100%);--tertiary-300: rgb(82%, 94%, 100%);--tertiary-400: rgb(68.8%, 89.6%, 100%);--tertiary-500: rgb(55.6%, 85.2%, 100%);--tertiary-600: #66ccff;--tertiary-700: rgb(28%, 76%, 100%);--tertiary-800: rgb(16%, 72%, 100%);--tertiary-900: rgb(4%, 68%, 100%);--quaternary-low: rgb(96.8235294118%, 80.2352941176%, 76.2352941176%);--highlight-bg: rgb(100%, 100%, 79.0588235294%);--highlight-low: rgb(100%, 100%, 79.0588235294%);--highlight-medium: #ffffa6;--highlight-high: #a6a600;--danger-low: rgb(100%, 87.8431372549%, 87.9039215686%);--danger-low-mid: rgba(100%, 39.2156862745%, 39.5196078431%, 0.7);--danger-medium: rgb(100%, 14.9019607843%, 15.3274509804%);--danger-hover: rgb(62.7450980392%, 0%, 0.3137254902%);--success-very-low: rgb(86%, 100%, 86%);--success-low: rgb(72%, 100%, 72%);--success-medium: rgb(30%, 100%, 30%);--success-hover: rgb(0%, 48%, 0%);--love-low: rgb(99.7058823529%, 91.3529411765%, 93.2941176471%);--wiki: green;--blend-primary-secondary-5: rgb(97.5135318245%, 97.5135318245%, 97.5135318245%);--primary-med-or-secondary-med: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-med-or-secondary-high: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high-or-secondary-low: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-low-mid-or-secondary-high: rgb(74%, 74%, 74%);--primary-low-mid-or-secondary-low: rgb(74%, 74%, 74%);--primary-or-primary-low-mid: #222;--highlight-low-or-medium: rgb(100%, 100%, 79.0588235294%);--tertiary-or-tertiary-low: #08c;--tertiary-low-or-tertiary-high: rgb(82%, 94%, 100%);--tertiary-med-or-tertiary: #66ccff;--secondary-or-primary: #fff;--tertiary-or-white: #08c;--facebook-or-white: #0866ff;--twitter-or-white: #000;--hljs-attr: #015692;--hljs-attribute: #803378;--hljs-addition: #2f6f44;--hljs-bg: rgb(94.8%, 94.8%, 94.8%);--inline-code-bg: rgb(94.8%, 94.8%, 94.8%);--hljs-comment: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--hljs-deletion: #c02d2e;--hljs-keyword: #015692;--hljs-title: #b75501;--hljs-name: #b75501;--hljs-punctuation: #535a60;--hljs-symbol: #54790d;--hljs-variable: #54790d;--hljs-string: #54790d;--google: #fff;--google-hover: rgb(95%, 95%, 95%);--instagram: #e1306c;--instagram-hover: rgb(67.30454207%, 9.7542814594%, 29.2628443783%);--facebook: #0866ff;--facebook-hover: rgb(0%, 27.8336111773%, 73.137254902%);--cas: #70ba61;--twitter: #000;--github: #100e0f;--github-hover: rgb(27.6078431373%, 24.1568627451%, 25.8823529412%);--discord: #7289da;--discord-hover: rgb(28.8631857237%, 40.4670632298%, 81.3328927076%);--discourse_id-text: var(--d-button-primary-text-color);--discourse_id-text-hover: var(--d-button-primary-text-color--hover);--discourse_id-background: var(--d-button-primary-bg-color);--discourse_id-background-hover: var(--d-button-primary-bg-color--hover);--discourse_id-icon: var(--d-button-primary-icon-color);--discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);--discourse_id-border: var(--d-button-border);--gold: rgb(231, 195, 0);--silver: #c0c0c0;--bronze: #cd7f32;--d-link-color: var(--tertiary);--title-color--read: var(--primary-medium);--content-border-color: var(--primary-low);--input-border-color: var(--primary-400);--table-border-color: var(--content-border-color);--metadata-color: var(--primary-medium);--d-badge-card-background-color: var(--secondary);--mention-background-color: var(--primary-low);--title-color: var(--primary);--title-color--header: var(--header_primary);--excerpt-color: var(--primary-high);--shadow-modal: 0 8px 60px rgba(0, 0, 0, 0.6);--shadow-composer: 0 -1px 40px rgba(0, 0, 0, 0.22);--shadow-card: 0 4px 14px rgba(0, 0, 0, 0.15);--shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, 0.1);--shadow-menu-panel: var(--shadow-dropdown);--shadow-header: 0 0 0 1px var(--content-border-color);--shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, 0.2);--shadow-focus-danger: 0 0 6px 0 var(--danger);--shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);--float-kit-arrow-stroke-color: var(--primary-low);--float-kit-arrow-fill-color: var(--secondary);--topic-timeline-border-color: rgb(82%, 94%, 100%);--f752920c-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--f752920c-csstools-light-dark-toggle--0, var(--tertiary-400));}\n\n@supports (color: light-dark(red, red)){\n:root{--topic-timeline-handle-color: light-dark( var(--tertiary-400), var(--tertiary) );}\n}@supports not (color: light-dark(tan, tan)){:root *{--f752920c-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--f752920c-csstools-light-dark-toggle--0, var(--tertiary-400));}}:root{--chat-skeleton-animation-rgb: 248, 248, 248}:root{--calendar-normal: rgb(90%, 96.6666666667%, 100%);--calendar-close-to-working-hours: rgb(72.25%, 89.25%, 97.75%);--calendar-in-working-hours: rgb(64%, 85.3333333333%, 96%);--fc-border-color: var(--primary-low);--fc-button-text-color: var(--d-button-default-text-color);--fc-button-bg-color: var(--d-button-default-bg-color);--fc-button-border-color: transparent;--fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);--fc-button-hover-border-color: transparent;--fc-button-active-bg-color: var(--tertiary);--fc-button-active-border-color: transparent;--fc-event-border-color: var(--primary-low);--fc-today-bg-color: var(--highlight-medium);--fc-page-bg-color: var(--secondary);--fc-list-event-hover-bg-color: var(--secondary);--fc-neutral-bg-color: var(--primary-low)}:root{--styled-accent: #08c;--styled-mix: rgb(74%, 74%, 74%);--styled-rgb: 34, 34, 34}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}html{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--font-family: Inter, Arial, sans-serif}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}h1,h2,h3,h4,h5,h6{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--heading-font-family: Inter, Arial, sans-serif}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\") format(\"woff2\");font-weight:400}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\") format(\"woff2\");font-weight:700}html{font-variation-settings:normal;font-feature-settings:normal;font-variant-ligatures:none}:root{--d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace}\n/*# sourceMappingURL=color_definitions_light-default_-1_1_f49fea970d11614a385719da47354fa081e71721.css.map?__ws=localhost */\n"
+    },
+    {
+      "status": 200,
+      "body": {
+        "accent": "#00aa00"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "show_border": false
+      }
+    },
+    {
+      "status": 200,
+      "body": "/* SCSS compilation error: Undefined operation \"3 * 2\". */\n"
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "-1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-07-25T05:58:21.4293"
+          },
+          "after": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-10-21T09:15:01.741049"
+          }
+        }
+      ]
+    },
+    "stylesheet_cache": {
+      "inserted": [
+        {
+          "id": 145,
+          "digest": "b10b4f852cd9037941bf3b330529a3e5d81ab7f1",
+          "target": "common_theme_1",
+          "content": "/* SCSS compilation error: Undefined variable. */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:00.520944",
+          "source_map": null,
+          "updated_at": "2026-10-21T09:15:00.520944"
+        },
+        {
+          "id": 146,
+          "digest": "59b92f81741aba44522a904756eee3f3d5c4dc62",
+          "target": "mobile_theme_1",
+          "content": ".styled{padding:.25em;font-size:var(--font-down-1)}\n/*# sourceMappingURL=mobile_theme_1_59b92f81741aba44522a904756eee3f3d5c4dc62.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:00.697008",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_d605ca47a10f6f74d12b307587cb62f5/discourse-styled/_entry_loadpath/theme-entrypoint/mobile.scss\",\"app/assets/stylesheets/common/foundation/variables.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,aAAA,CAAA,4BC2Ec\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"// --------------------------------------------------\\n// Variables used throughout the theme\\n// this file is injected into every theme CSS file\\n// --------------------------------------------------\\n\\n// Layout dimensions\\n// --------------------------------------------------\\n\\n@use \\\"sass:color\\\";\\n@use \\\"sass:math\\\";\\n@use \\\"sass:meta\\\";\\n@use \\\"math\\\" as discourse-math;\\n\\n$small-width: 800px !default;\\n$medium-width: 995px !default;\\n$large-width: 1110px !default;\\n$topic-body-width: 690px;\\n$topic-body-width-padding: 11px;\\n$topic-avatar-width: 45px;\\n$reply-area-max-width: 1475px !default;\\n$d-sidebar-width: 17em !default;\\n$d-sidebar-narrow-width: 14em !default;\\n\\n// Brand color variables\\n// --------------------------------------------------\\n\\n$google: #fff !default;\\n$google-hover: color.adjust($google, $lightness: -5%) !default;\\n$instagram: #e1306c !default;\\n$instagram-hover: color.adjust($instagram, $lightness: -15%) !default;\\n$facebook: #0866ff !default;\\n$facebook-hover: color.adjust($facebook, $lightness: -15%) !default;\\n$cas: #70ba61 !default;\\n$twitter: #000 !default;\\n$github: #100e0f !default;\\n$github-hover: color.adjust($github, $lightness: 20%) !default;\\n$discord: #7289da !default;\\n$discord-hover: color.adjust($discord, $lightness: -10%) !default;\\n\\n// Discourse brand colors (used in wizard, omniauth confirm, etc.)\\n$discourse-brand: #7b5fe2 !default;\\n$discourse-brand-100: #f4f2fc !default;\\n$discourse-brand-300: #b8a4ff !default;\\n$discourse-brand-400: #8b6df8 !default;\\n$discourse-brand-800: #3a275e !default;\\n$discourse-brand-light: #e1d5ff !default;\\n$discourse-bg-light: #f9f8fc !default;\\n$discourse-bg-dark: #02030a !default;\\n\\n// Badge color variables\\n// --------------------------------------------------\\n\\n$gold: rgb(231, 195, 0) !default;\\n$silver: #c0c0c0 !default;\\n$bronze: #cd7f32 !default;\\n\\n// Fonts\\n// --------------------------------------------------\\n\\n$base-font-family: var(--font-family) !default;\\n$base-font-size-smallest: var(--base-font-size-smallest) !default;\\n$base-font-size-smaller: var(--base-font-size-smaller) !default;\\n$base-font-size: var(--base-font-size) !default;\\n$base-font-size-larger: var(--base-font-size-larger) !default;\\n$base-font-size-largest: var(--base-font-size-largest) !default;\\n$heading-font-family: var(--heading-font-family) !default;\\n\\n// Font-size definitions, multiplier ^ (step / interval)\\n$font-up-6: var(--font-up-6) !default;\\n$font-up-5: var(--font-up-5) !default;\\n$font-up-4: var(--font-up-4) !default;\\n$font-up-3: var(--font-up-3) !default;\\n$font-up-2: var(--font-up-2) !default;\\n$font-up-1: var(--font-up-1) !default;\\n$font-0: var(--font-0);\\n$font-down-1: var(--font-down-1) !default;\\n$font-down-2: var(--font-down-2) !default;\\n$font-down-3: var(--font-down-3) !default;\\n$font-down-4: var(--font-down-4) !default;\\n$font-down-5: var(--font-down-5) !default;\\n$font-down-6: var(--font-down-6) !default;\\n\\n// Common line-heights\\n$line-height-small: var(--line-height-small) !default;\\n$line-height-medium: var(--line-height-medium) !default;\\n$line-height-large: var(--line-height-large) !default;\\n\\n// Z-index\\n// --------------------------------------------------\\n\\n$z-layers: (\\n  \\\"max\\\": 9999,\\n  \\\"modal\\\": (\\n    \\\"dialog\\\": 1700,\\n    \\\"tooltip\\\": 1600,\\n    \\\"popover\\\": 1500,\\n    \\\"dropdown\\\": 1400,\\n    \\\"content\\\": 1300,\\n    \\\"overlay\\\": 1200,\\n  ),\\n  // below modals, so dialogs opened from the page behind it stay reachable\\n  \\\"design-wizard\\\": 1160,\\n  \\\"fullscreen\\\": 1150,\\n  \\\"mobile-header\\\": 1150,\\n  \\\"mobile-composer\\\": 1100,\\n  \\\"ipad-header-nav\\\": 1020,\\n  \\\"header\\\": 1000,\\n  \\\"footer-nav\\\": 900,\\n  \\\"tooltip\\\": 600,\\n  \\\"usercard\\\": 500,\\n  \\\"composer\\\": (\\n    \\\"dropdown\\\": 700,\\n    \\\"tooltip\\\": 600,\\n    \\\"popover\\\": 500,\\n    \\\"content\\\": 400,\\n  ),\\n  \\\"dropdown\\\": 300,\\n  \\\"chat-drawer\\\": 200,\\n  \\\"timeline\\\": 100,\\n  \\\"base\\\": 1,\\n);\\n\\n@function map-has-nested-keys($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    @if not map-has-key($map, $key) {\\n      @return false;\\n    }\\n\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return true;\\n}\\n\\n@function map-deep-get($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return $map;\\n}\\n\\n@function z($layers...) {\\n  @if not map-has-nested-keys($z-layers, $layers...) {\\n    @warn \\\"No layer defined for `#{meta.inspect($layers...)}` in $z-layers map- Check variables.scss, property omitted.\\\";\\n  }\\n\\n  @return map-deep-get($z-layers, $layers...);\\n}\\n\\n// Color utilities\\n// --------------------------------------------------\\n\\n// w3c definition of color brightness https://www.w3.org/TR/AERT#color-contrast\\n@function dc-color-brightness($color) {\\n  @return (\\n    (color.red($color) * 0.299) + (color.green($color) * 0.587) +\\n      (color.blue($color) * 0.114)\\n  );\\n}\\n\\n// Uses an approximation of sRGB blending, GAMMA=2 instead of GAMMA=2.2\\n@function srgb-scale($foreground, $background, $percent) {\\n  $ratio: math.div($percent, 100%);\\n  $iratio: 1 - $ratio;\\n  $f_r2: color.red($foreground) * color.red($foreground);\\n  $f_g2: color.green($foreground) * color.green($foreground);\\n  $f_b2: color.blue($foreground) * color.blue($foreground);\\n  $b_r2: color.red($background) * color.red($background);\\n  $b_g2: color.green($background) * color.green($background);\\n  $b_b2: color.blue($background) * color.blue($background);\\n  $r_r2: $f_r2 * $ratio + $b_r2 * $iratio;\\n  $r_g2: $f_g2 * $ratio + $b_g2 * $iratio;\\n  $r_b2: $f_b2 * $ratio + $b_b2 * $iratio;\\n  $r_r: discourse-math.sqrt($r_r2);\\n  $r_g: discourse-math.sqrt($r_g2);\\n  $r_b: discourse-math.sqrt($r_b2);\\n\\n  @return rgb($r_r, $r_g, $r_b);\\n}\\n\\n// Replaces dark-light-diff($primary,50%)\\n@function blend-two-colors($color1, $color2, $percent) {\\n  @return srgb-scale($color1, $color2, $percent);\\n}\\n\\n@function blend-header-primary-background($percent) {\\n  @return srgb-scale($header_primary, $header_background, $percent);\\n}\\n\\n@function dark-light-diff(\\n  $adjusted-color,\\n  $comparison-color,\\n  $lightness,\\n  $darkness\\n) {\\n  @if dc-color-brightness($adjusted-color) <\\n    dc-color-brightness($comparison-color)\\n  {\\n    @return color.scale($adjusted-color, $lightness: $lightness);\\n  } @else {\\n    @return color.scale($adjusted-color, $lightness: $darkness);\\n  }\\n}\\n\\n@function dark-light-choose($light-theme-result, $dark-theme-result) {\\n  @if is-light-color-scheme() {\\n    @return $light-theme-result;\\n  } @else {\\n    @return $dark-theme-result;\\n  }\\n}\\n\\n@function is-light-color-scheme() {\\n  @if dc-color-brightness($primary) < dc-color-brightness($secondary) {\\n    @return true;\\n  } @else {\\n    @return false;\\n  }\\n}\\n\\n@function is-dark-color-scheme() {\\n  @return not is-light-color-scheme();\\n}\\n\\n@import \\\"color_transformations\\\";\\n\"]}",
+          "updated_at": "2026-10-21T09:15:00.697008"
+        },
+        {
+          "id": 147,
+          "digest": "dc097f8f58f2f3abe721f795b91dadc6a64d51ad",
+          "target": "desktop_theme_1",
+          "content": ".styled{max-width:960px}.styled .side{float:right}\n/*# sourceMappingURL=desktop_theme_1_dc097f8f58f2f3abe721f795b91dadc6a64d51ad.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:00.879129",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_5683bdc32abc13daac9deb7fa13409cb/discourse-styled/_entry_loadpath/theme-entrypoint/desktop.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,eAAA,CAAA,cAAA,WAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { max-width: 960px; .side { float: right; } }\\n\"]}",
+          "updated_at": "2026-10-21T09:15:00.879129"
+        },
+        {
+          "id": 148,
+          "digest": "98a01f627e114d6163ce6755284131735bcf535f",
+          "target": "common_theme_1",
+          "content": "/* SCSS compilation error: Undefined operation \"3 * 2\". */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:01.256563",
+          "source_map": null,
+          "updated_at": "2026-10-21T09:15:01.256563"
+        },
+        {
+          "id": 149,
+          "digest": "b92e1a9ff192a132ac37dfc1032487601f3e20f4",
+          "target": "mobile_theme_1",
+          "content": ".styled{padding:.25em;font-size:var(--font-down-1)}\n/*# sourceMappingURL=mobile_theme_1_b92e1a9ff192a132ac37dfc1032487601f3e20f4.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:01.514137",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_f73cfe78847b1a2f8c9a6ad9135bec46/discourse-styled/_entry_loadpath/theme-entrypoint/mobile.scss\",\"app/assets/stylesheets/common/foundation/variables.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,aAAA,CAAA,4BC2Ec\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"// --------------------------------------------------\\n// Variables used throughout the theme\\n// this file is injected into every theme CSS file\\n// --------------------------------------------------\\n\\n// Layout dimensions\\n// --------------------------------------------------\\n\\n@use \\\"sass:color\\\";\\n@use \\\"sass:math\\\";\\n@use \\\"sass:meta\\\";\\n@use \\\"math\\\" as discourse-math;\\n\\n$small-width: 800px !default;\\n$medium-width: 995px !default;\\n$large-width: 1110px !default;\\n$topic-body-width: 690px;\\n$topic-body-width-padding: 11px;\\n$topic-avatar-width: 45px;\\n$reply-area-max-width: 1475px !default;\\n$d-sidebar-width: 17em !default;\\n$d-sidebar-narrow-width: 14em !default;\\n\\n// Brand color variables\\n// --------------------------------------------------\\n\\n$google: #fff !default;\\n$google-hover: color.adjust($google, $lightness: -5%) !default;\\n$instagram: #e1306c !default;\\n$instagram-hover: color.adjust($instagram, $lightness: -15%) !default;\\n$facebook: #0866ff !default;\\n$facebook-hover: color.adjust($facebook, $lightness: -15%) !default;\\n$cas: #70ba61 !default;\\n$twitter: #000 !default;\\n$github: #100e0f !default;\\n$github-hover: color.adjust($github, $lightness: 20%) !default;\\n$discord: #7289da !default;\\n$discord-hover: color.adjust($discord, $lightness: -10%) !default;\\n\\n// Discourse brand colors (used in wizard, omniauth confirm, etc.)\\n$discourse-brand: #7b5fe2 !default;\\n$discourse-brand-100: #f4f2fc !default;\\n$discourse-brand-300: #b8a4ff !default;\\n$discourse-brand-400: #8b6df8 !default;\\n$discourse-brand-800: #3a275e !default;\\n$discourse-brand-light: #e1d5ff !default;\\n$discourse-bg-light: #f9f8fc !default;\\n$discourse-bg-dark: #02030a !default;\\n\\n// Badge color variables\\n// --------------------------------------------------\\n\\n$gold: rgb(231, 195, 0) !default;\\n$silver: #c0c0c0 !default;\\n$bronze: #cd7f32 !default;\\n\\n// Fonts\\n// --------------------------------------------------\\n\\n$base-font-family: var(--font-family) !default;\\n$base-font-size-smallest: var(--base-font-size-smallest) !default;\\n$base-font-size-smaller: var(--base-font-size-smaller) !default;\\n$base-font-size: var(--base-font-size) !default;\\n$base-font-size-larger: var(--base-font-size-larger) !default;\\n$base-font-size-largest: var(--base-font-size-largest) !default;\\n$heading-font-family: var(--heading-font-family) !default;\\n\\n// Font-size definitions, multiplier ^ (step / interval)\\n$font-up-6: var(--font-up-6) !default;\\n$font-up-5: var(--font-up-5) !default;\\n$font-up-4: var(--font-up-4) !default;\\n$font-up-3: var(--font-up-3) !default;\\n$font-up-2: var(--font-up-2) !default;\\n$font-up-1: var(--font-up-1) !default;\\n$font-0: var(--font-0);\\n$font-down-1: var(--font-down-1) !default;\\n$font-down-2: var(--font-down-2) !default;\\n$font-down-3: var(--font-down-3) !default;\\n$font-down-4: var(--font-down-4) !default;\\n$font-down-5: var(--font-down-5) !default;\\n$font-down-6: var(--font-down-6) !default;\\n\\n// Common line-heights\\n$line-height-small: var(--line-height-small) !default;\\n$line-height-medium: var(--line-height-medium) !default;\\n$line-height-large: var(--line-height-large) !default;\\n\\n// Z-index\\n// --------------------------------------------------\\n\\n$z-layers: (\\n  \\\"max\\\": 9999,\\n  \\\"modal\\\": (\\n    \\\"dialog\\\": 1700,\\n    \\\"tooltip\\\": 1600,\\n    \\\"popover\\\": 1500,\\n    \\\"dropdown\\\": 1400,\\n    \\\"content\\\": 1300,\\n    \\\"overlay\\\": 1200,\\n  ),\\n  // below modals, so dialogs opened from the page behind it stay reachable\\n  \\\"design-wizard\\\": 1160,\\n  \\\"fullscreen\\\": 1150,\\n  \\\"mobile-header\\\": 1150,\\n  \\\"mobile-composer\\\": 1100,\\n  \\\"ipad-header-nav\\\": 1020,\\n  \\\"header\\\": 1000,\\n  \\\"footer-nav\\\": 900,\\n  \\\"tooltip\\\": 600,\\n  \\\"usercard\\\": 500,\\n  \\\"composer\\\": (\\n    \\\"dropdown\\\": 700,\\n    \\\"tooltip\\\": 600,\\n    \\\"popover\\\": 500,\\n    \\\"content\\\": 400,\\n  ),\\n  \\\"dropdown\\\": 300,\\n  \\\"chat-drawer\\\": 200,\\n  \\\"timeline\\\": 100,\\n  \\\"base\\\": 1,\\n);\\n\\n@function map-has-nested-keys($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    @if not map-has-key($map, $key) {\\n      @return false;\\n    }\\n\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return true;\\n}\\n\\n@function map-deep-get($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return $map;\\n}\\n\\n@function z($layers...) {\\n  @if not map-has-nested-keys($z-layers, $layers...) {\\n    @warn \\\"No layer defined for `#{meta.inspect($layers...)}` in $z-layers map- Check variables.scss, property omitted.\\\";\\n  }\\n\\n  @return map-deep-get($z-layers, $layers...);\\n}\\n\\n// Color utilities\\n// --------------------------------------------------\\n\\n// w3c definition of color brightness https://www.w3.org/TR/AERT#color-contrast\\n@function dc-color-brightness($color) {\\n  @return (\\n    (color.red($color) * 0.299) + (color.green($color) * 0.587) +\\n      (color.blue($color) * 0.114)\\n  );\\n}\\n\\n// Uses an approximation of sRGB blending, GAMMA=2 instead of GAMMA=2.2\\n@function srgb-scale($foreground, $background, $percent) {\\n  $ratio: math.div($percent, 100%);\\n  $iratio: 1 - $ratio;\\n  $f_r2: color.red($foreground) * color.red($foreground);\\n  $f_g2: color.green($foreground) * color.green($foreground);\\n  $f_b2: color.blue($foreground) * color.blue($foreground);\\n  $b_r2: color.red($background) * color.red($background);\\n  $b_g2: color.green($background) * color.green($background);\\n  $b_b2: color.blue($background) * color.blue($background);\\n  $r_r2: $f_r2 * $ratio + $b_r2 * $iratio;\\n  $r_g2: $f_g2 * $ratio + $b_g2 * $iratio;\\n  $r_b2: $f_b2 * $ratio + $b_b2 * $iratio;\\n  $r_r: discourse-math.sqrt($r_r2);\\n  $r_g: discourse-math.sqrt($r_g2);\\n  $r_b: discourse-math.sqrt($r_b2);\\n\\n  @return rgb($r_r, $r_g, $r_b);\\n}\\n\\n// Replaces dark-light-diff($primary,50%)\\n@function blend-two-colors($color1, $color2, $percent) {\\n  @return srgb-scale($color1, $color2, $percent);\\n}\\n\\n@function blend-header-primary-background($percent) {\\n  @return srgb-scale($header_primary, $header_background, $percent);\\n}\\n\\n@function dark-light-diff(\\n  $adjusted-color,\\n  $comparison-color,\\n  $lightness,\\n  $darkness\\n) {\\n  @if dc-color-brightness($adjusted-color) <\\n    dc-color-brightness($comparison-color)\\n  {\\n    @return color.scale($adjusted-color, $lightness: $lightness);\\n  } @else {\\n    @return color.scale($adjusted-color, $lightness: $darkness);\\n  }\\n}\\n\\n@function dark-light-choose($light-theme-result, $dark-theme-result) {\\n  @if is-light-color-scheme() {\\n    @return $light-theme-result;\\n  } @else {\\n    @return $dark-theme-result;\\n  }\\n}\\n\\n@function is-light-color-scheme() {\\n  @if dc-color-brightness($primary) < dc-color-brightness($secondary) {\\n    @return true;\\n  } @else {\\n    @return false;\\n  }\\n}\\n\\n@function is-dark-color-scheme() {\\n  @return not is-light-color-scheme();\\n}\\n\\n@import \\\"color_transformations\\\";\\n\"]}",
+          "updated_at": "2026-10-21T09:15:01.514137"
+        },
+        {
+          "id": 150,
+          "digest": "c6d71061b023c5b0615c2555e449670663bea39a",
+          "target": "desktop_theme_1",
+          "content": ".styled{max-width:960px}.styled .side{float:right}\n/*# sourceMappingURL=desktop_theme_1_c6d71061b023c5b0615c2555e449670663bea39a.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:01.7334",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_f01f66a06bc09311e97c6772d7d8d0cc/discourse-styled/_entry_loadpath/theme-entrypoint/desktop.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,eAAA,CAAA,cAAA,WAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { max-width: 960px; .side { float: right; } }\\n\"]}",
+          "updated_at": "2026-10-21T09:15:01.7334"
+        },
+        {
+          "id": 151,
+          "digest": "f49fea970d11614a385719da47354fa081e71721",
+          "target": "color_definitions_light-default_-1_1",
+          "content": ":root{--csstools-color-scheme--light:initial;color-scheme:light;--scheme-type: light;--primary: #222;--secondary: #fff;--tertiary: #08c;--quaternary: #e45735;--header_background: #fff;--header_primary: #333;--highlight: #ffff4d;--danger: #c80001;--success: #090;--love: #fa6c8d;--d-selected: #d1f0ff;--d-selected-text-color: var(--primary);--d-selected-hover: rgb(85.568627451%, 95.2941176471%, 100%);--d-hover: #f2f2f2;--always-black-rgb: 0, 0, 0;--primary-rgb: 34, 34, 34;--primary-low-rgb: 233, 233, 233;--primary-very-low-rgb: 248, 248, 248;--secondary-rgb: 255, 255, 255;--header_background-rgb: 255, 255, 255;--tertiary-rgb: 0, 136, 204;--highlight-rgb: 255, 255, 77;--success-rgb: 0, 153, 0;--primary-very-low: rgb(97.4%, 97.4%, 97.4%);--primary-low: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-low-mid: rgb(74%, 74%, 74%);--primary-medium: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-very-high: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--primary-50: rgb(97.4%, 97.4%, 97.4%);--primary-100: rgb(94.8%, 94.8%, 94.8%);--primary-200: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-300: rgb(82.6666666667%, 82.6666666667%, 82.6666666667%);--primary-400: rgb(74%, 74%, 74%);--primary-500: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--primary-600: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-700: rgb(46.2666666667%, 46.2666666667%, 46.2666666667%);--primary-800: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-900: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--header_primary-low: rgb(95.078914592%, 95.078914592%, 95.078914592%);--header_primary-low-mid: rgb(81.4861951499%, 81.4861951499%, 81.4861951499%);--header_primary-medium: rgb(68.7022561493%, 68.7022561493%, 68.7022561493%);--header_primary-high: rgb(57.2712842531%, 57.2712842531%, 57.2712842531%);--header_primary-very-high: rgb(36.8781778292%, 36.8781778292%, 36.8781778292%);--secondary-low: rgb(30%, 30%, 30%);--secondary-medium: rgb(50%, 50%, 50%);--secondary-high: rgb(65%, 65%, 65%);--secondary-very-high: rgb(93%, 93%, 93%);--tertiary-very-low: rgb(88%, 96%, 100%);--tertiary-low: rgb(82%, 94%, 100%);--tertiary-medium: #66ccff;--tertiary-high: rgb(4%, 68%, 100%);--tertiary-hover: #006699;--tertiary-25: rgb(91.6%, 97.2%, 100%);--tertiary-50: rgb(88%, 96%, 100%);--tertiary-100: rgb(85.6%, 95.2%, 100%);--tertiary-200: rgb(84.4%, 94.8%, 100%);--tertiary-300: rgb(82%, 94%, 100%);--tertiary-400: rgb(68.8%, 89.6%, 100%);--tertiary-500: rgb(55.6%, 85.2%, 100%);--tertiary-600: #66ccff;--tertiary-700: rgb(28%, 76%, 100%);--tertiary-800: rgb(16%, 72%, 100%);--tertiary-900: rgb(4%, 68%, 100%);--quaternary-low: rgb(96.8235294118%, 80.2352941176%, 76.2352941176%);--highlight-bg: rgb(100%, 100%, 79.0588235294%);--highlight-low: rgb(100%, 100%, 79.0588235294%);--highlight-medium: #ffffa6;--highlight-high: #a6a600;--danger-low: rgb(100%, 87.8431372549%, 87.9039215686%);--danger-low-mid: rgba(100%, 39.2156862745%, 39.5196078431%, 0.7);--danger-medium: rgb(100%, 14.9019607843%, 15.3274509804%);--danger-hover: rgb(62.7450980392%, 0%, 0.3137254902%);--success-very-low: rgb(86%, 100%, 86%);--success-low: rgb(72%, 100%, 72%);--success-medium: rgb(30%, 100%, 30%);--success-hover: rgb(0%, 48%, 0%);--love-low: rgb(99.7058823529%, 91.3529411765%, 93.2941176471%);--wiki: green;--blend-primary-secondary-5: rgb(97.5135318245%, 97.5135318245%, 97.5135318245%);--primary-med-or-secondary-med: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-med-or-secondary-high: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high-or-secondary-low: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-low-mid-or-secondary-high: rgb(74%, 74%, 74%);--primary-low-mid-or-secondary-low: rgb(74%, 74%, 74%);--primary-or-primary-low-mid: #222;--highlight-low-or-medium: rgb(100%, 100%, 79.0588235294%);--tertiary-or-tertiary-low: #08c;--tertiary-low-or-tertiary-high: rgb(82%, 94%, 100%);--tertiary-med-or-tertiary: #66ccff;--secondary-or-primary: #fff;--tertiary-or-white: #08c;--facebook-or-white: #0866ff;--twitter-or-white: #000;--hljs-attr: #015692;--hljs-attribute: #803378;--hljs-addition: #2f6f44;--hljs-bg: rgb(94.8%, 94.8%, 94.8%);--inline-code-bg: rgb(94.8%, 94.8%, 94.8%);--hljs-comment: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--hljs-deletion: #c02d2e;--hljs-keyword: #015692;--hljs-title: #b75501;--hljs-name: #b75501;--hljs-punctuation: #535a60;--hljs-symbol: #54790d;--hljs-variable: #54790d;--hljs-string: #54790d;--google: #fff;--google-hover: rgb(95%, 95%, 95%);--instagram: #e1306c;--instagram-hover: rgb(67.30454207%, 9.7542814594%, 29.2628443783%);--facebook: #0866ff;--facebook-hover: rgb(0%, 27.8336111773%, 73.137254902%);--cas: #70ba61;--twitter: #000;--github: #100e0f;--github-hover: rgb(27.6078431373%, 24.1568627451%, 25.8823529412%);--discord: #7289da;--discord-hover: rgb(28.8631857237%, 40.4670632298%, 81.3328927076%);--discourse_id-text: var(--d-button-primary-text-color);--discourse_id-text-hover: var(--d-button-primary-text-color--hover);--discourse_id-background: var(--d-button-primary-bg-color);--discourse_id-background-hover: var(--d-button-primary-bg-color--hover);--discourse_id-icon: var(--d-button-primary-icon-color);--discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);--discourse_id-border: var(--d-button-border);--gold: rgb(231, 195, 0);--silver: #c0c0c0;--bronze: #cd7f32;--d-link-color: var(--tertiary);--title-color--read: var(--primary-medium);--content-border-color: var(--primary-low);--input-border-color: var(--primary-400);--table-border-color: var(--content-border-color);--metadata-color: var(--primary-medium);--d-badge-card-background-color: var(--secondary);--mention-background-color: var(--primary-low);--title-color: var(--primary);--title-color--header: var(--header_primary);--excerpt-color: var(--primary-high);--shadow-modal: 0 8px 60px rgba(0, 0, 0, 0.6);--shadow-composer: 0 -1px 40px rgba(0, 0, 0, 0.22);--shadow-card: 0 4px 14px rgba(0, 0, 0, 0.15);--shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, 0.1);--shadow-menu-panel: var(--shadow-dropdown);--shadow-header: 0 0 0 1px var(--content-border-color);--shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, 0.2);--shadow-focus-danger: 0 0 6px 0 var(--danger);--shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);--float-kit-arrow-stroke-color: var(--primary-low);--float-kit-arrow-fill-color: var(--secondary);--topic-timeline-border-color: rgb(82%, 94%, 100%);--f752920c-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--f752920c-csstools-light-dark-toggle--0, var(--tertiary-400));}\n\n@supports (color: light-dark(red, red)){\n:root{--topic-timeline-handle-color: light-dark( var(--tertiary-400), var(--tertiary) );}\n}@supports not (color: light-dark(tan, tan)){:root *{--f752920c-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--f752920c-csstools-light-dark-toggle--0, var(--tertiary-400));}}:root{--chat-skeleton-animation-rgb: 248, 248, 248}:root{--calendar-normal: rgb(90%, 96.6666666667%, 100%);--calendar-close-to-working-hours: rgb(72.25%, 89.25%, 97.75%);--calendar-in-working-hours: rgb(64%, 85.3333333333%, 96%);--fc-border-color: var(--primary-low);--fc-button-text-color: var(--d-button-default-text-color);--fc-button-bg-color: var(--d-button-default-bg-color);--fc-button-border-color: transparent;--fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);--fc-button-hover-border-color: transparent;--fc-button-active-bg-color: var(--tertiary);--fc-button-active-border-color: transparent;--fc-event-border-color: var(--primary-low);--fc-today-bg-color: var(--highlight-medium);--fc-page-bg-color: var(--secondary);--fc-list-event-hover-bg-color: var(--secondary);--fc-neutral-bg-color: var(--primary-low)}:root{--styled-accent: #08c;--styled-mix: rgb(74%, 74%, 74%);--styled-rgb: 34, 34, 34}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}html{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--font-family: Inter, Arial, sans-serif}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}h1,h2,h3,h4,h5,h6{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--heading-font-family: Inter, Arial, sans-serif}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\") format(\"woff2\");font-weight:400}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\") format(\"woff2\");font-weight:700}html{font-variation-settings:normal;font-feature-settings:normal;font-variant-ligatures:none}:root{--d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace}\n/*# sourceMappingURL=color_definitions_light-default_-1_1_f49fea970d11614a385719da47354fa081e71721.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:02.230732",
+          "source_map": "{\"version\":3,\"sources\":[\"app/assets/stylesheets/color_definitions.scss\",\"_color_definitions_entrypoint.scss\"],\"names\":[],\"mappings\":\"AAGA,MACE,sCAAA,CAAA,kBAAA,CAEA,oBAAA,CACA,eAAA,CACA,iBAAA,CACA,gBAAA,CACA,qBAAA,CACA,yBAAA,CACA,sBAAA,CACA,oBAAA,CACA,iBAAA,CACA,eAAA,CACA,eAAA,CACA,qBAAA,CACA,uCAAA,CACA,4DAAA,CACA,kBAAA,CACA,2BAAA,CACA,yBAAA,CACA,gCAAA,CACA,qCAAA,CACA,8BAAA,CACA,sCAAA,CACA,2BAAA,CACA,6BAAA,CACA,wBAAA,CACA,4CAAA,CACA,kEAAA,CACA,qCAAA,CACA,qEAAA,CACA,mEAAA,CACA,wEAAA,CACA,sCAAA,CACA,uCAAA,CACA,kEAAA,CACA,kEAAA,CACA,iCAAA,CACA,kEAAA,CACA,kEAAA,CACA,kEAAA,CACA,kEAAA,CACA,kEAAA,CACA,sEAAA,CACA,6EAAA,CACA,4EAAA,CACA,0EAAA,CACA,+EAAA,CACA,mCAAA,CACA,sCAAA,CACA,oCAAA,CACA,yCAAA,CACA,wCAAA,CACA,mCAAA,CACA,0BAAA,CACA,mCAAA,CACA,yBAAA,CACA,sCAAA,CACA,kCAAA,CACA,uCAAA,CACA,uCAAA,CACA,mCAAA,CACA,uCAAA,CACA,uCAAA,CACA,uBAAA,CACA,mCAAA,CACA,mCAAA,CACA,kCAAA,CACA,qEAAA,CACA,+CAAA,CACA,gDAAA,CACA,2BAAA,CACA,yBAAA,CACA,uDAAA,CACA,iEAAA,CACA,0DAAA,CACA,sDAAA,CACA,uCAAA,CACA,kCAAA,CACA,qCAAA,CACA,iCAAA,CACA,+DAAA,CACA,aAAA,CACA,gFAAA,CACA,mFAAA,CACA,oFAAA,CACA,oFAAA,CACA,uDAAA,CACA,sDAAA,CACA,kCAAA,CACA,0DAAA,CACA,gCAAA,CACA,oDAAA,CACA,mCAAA,CACA,4BAAA,CACA,yBAAA,CACA,4BAAA,CACA,wBAAA,CACA,oBAAA,CACA,yBAAA,CACA,wBAAA,CACA,mCAAA,CACA,0CAAA,CACA,mEAAA,CACA,wBAAA,CACA,uBAAA,CACA,qBAAA,CACA,oBAAA,CACA,2BAAA,CACA,sBAAA,CACA,wBAAA,CACA,sBAAA,CACA,cAAA,CACA,kCAAA,CACA,oBAAA,CACA,mEAAA,CACA,mBAAA,CACA,wDAAA,CACA,cAAA,CACA,eAAA,CACA,iBAAA,CACA,mEAAA,CACA,kBAAA,CACA,oEAAA,CACA,uDAAA,CACA,oEAAA,CACA,2DAAA,CACA,wEAAA,CACA,uDAAA,CACA,oEAAA,CACA,6CAAA,CACA,wBAAA,CACA,iBAAA,CACA,iBAAA,CACA,+BAAA,CACA,0CAAA,CACA,0CAAA,CACA,wCAAA,CACA,iDAAA,CACA,uCAAA,CACA,iDAAA,CACA,8CAAA,CACA,6BAAA,CACA,4CAAA,CACA,oCAAA,CACA,6CAAA,CACA,kDAAA,CACA,6CAAA,CACA,kDAAA,CACA,2CAAA,CACA,sDAAA,CACA,iDAAA,CACA,8CAAA,CACA,uDAAA,CACA,kDAAA,CACA,8CAAA,CACA,kDAAA,CACA,6FAAA,CAAA,iGAAA,CAAA;;AA7JF;AAAA,MA6JE,iFAAA,CAAA;AAAA,CAAA,4CAAA,QAAA,6FAAA,CAAA,kGAAA,CAAA,CC3JF,MACE,4CAAA,CASF,MACE,iDAAA,CAIA,8DAAA,CAIA,0DAAA,CAIA,qCAAA,CACA,0DAAA,CACA,sDAAA,CACA,qCAAA,CACA,mEAAA,CACA,2CAAA,CACA,4CAAA,CACA,4CAAA,CACA,2CAAA,CACA,4CAAA,CACA,oCAAA,CACA,gDAAA,CACA,yCAAA,CAQF,MAAA,qBAAA,CAAA,gCAAA,CAAA,wBAAA,CAIA,WACE,mBAAA,CACA,mFAAA,CACA,mBAAA,CAGF,KACE,8BAAA,CACA,8BAAA,CAGF,MACE,uCAAA,CAIF,WACE,mBAAA,CACA,mFAAA,CACA,mBAAA,CAGF,kBACE,8BAAA,CACA,8BAAA,CAGF,MACE,+CAAA,CAGF,WACE,4BAAA,CACA,2FAAA,CACA,eAAA,CAEF,WACE,4BAAA,CACA,wFAAA,CACA,eAAA,CAGF,KACE,8BAAA,CACA,4BAAA,CACA,2BAAA,CAGF,MACE,uEAAA\",\"file\":\"output.css\",\"sourcesContent\":[\"// This file maps all SCSS color variables to CSS custom properties.\\n// It is compiled to CSS separately from the rest of the app.\\n// The source variables come from color_transformations.scss and variables.scss\\n:root {\\n  color-scheme: #{schemeType()};\\n\\n  --scheme-type: #{schemeType()};\\n  --primary: #{$primary};\\n  --secondary: #{$secondary};\\n  --tertiary: #{$tertiary};\\n  --quaternary: #{$quaternary};\\n  --header_background: #{$header_background};\\n  --header_primary: #{$header_primary};\\n  --highlight: #{$highlight};\\n  --danger: #{$danger};\\n  --success: #{$success};\\n  --love: #{$love};\\n  --d-selected: #{$selected};\\n  --d-selected-text-color: var(--primary);\\n  --d-selected-hover: #{$selected-hover};\\n  --d-hover: #{$hover};\\n  --always-black-rgb: 0, 0, 0;\\n  --primary-rgb: #{hexToRGB($primary)};\\n  --primary-low-rgb: #{hexToRGB($primary-low)};\\n  --primary-very-low-rgb: #{hexToRGB($primary-very-low)};\\n  --secondary-rgb: #{hexToRGB($secondary)};\\n  --header_background-rgb: #{hexToRGB($header_background)};\\n  --tertiary-rgb: #{hexToRGB($tertiary)};\\n  --highlight-rgb: #{hexToRGB($highlight)};\\n  --success-rgb: #{hexToRGB($success)};\\n  --primary-very-low: #{$primary-very-low};\\n  --primary-low: #{$primary-low};\\n  --primary-low-mid: #{$primary-low-mid};\\n  --primary-medium: #{$primary-medium};\\n  --primary-high: #{$primary-high};\\n  --primary-very-high: #{$primary-very-high};\\n  --primary-50: #{$primary-50};\\n  --primary-100: #{$primary-100};\\n  --primary-200: #{$primary-200};\\n  --primary-300: #{$primary-300};\\n  --primary-400: #{$primary-400};\\n  --primary-500: #{$primary-500};\\n  --primary-600: #{$primary-600};\\n  --primary-700: #{$primary-700};\\n  --primary-800: #{$primary-800};\\n  --primary-900: #{$primary-900};\\n  --header_primary-low: #{$header_primary-low};\\n  --header_primary-low-mid: #{$header_primary-low-mid};\\n  --header_primary-medium: #{$header_primary-medium};\\n  --header_primary-high: #{$header_primary-high};\\n  --header_primary-very-high: #{$header_primary-very-high};\\n  --secondary-low: #{$secondary-low};\\n  --secondary-medium: #{$secondary-medium};\\n  --secondary-high: #{$secondary-high};\\n  --secondary-very-high: #{$secondary-very-high};\\n  --tertiary-very-low: #{$tertiary-very-low};\\n  --tertiary-low: #{$tertiary-low};\\n  --tertiary-medium: #{$tertiary-medium};\\n  --tertiary-high: #{$tertiary-high};\\n  --tertiary-hover: #{$tertiary-hover};\\n  --tertiary-25: #{$tertiary-25};\\n  --tertiary-50: #{$tertiary-50};\\n  --tertiary-100: #{$tertiary-100};\\n  --tertiary-200: #{$tertiary-200};\\n  --tertiary-300: #{$tertiary-300};\\n  --tertiary-400: #{$tertiary-400};\\n  --tertiary-500: #{$tertiary-500};\\n  --tertiary-600: #{$tertiary-600};\\n  --tertiary-700: #{$tertiary-700};\\n  --tertiary-800: #{$tertiary-800};\\n  --tertiary-900: #{$tertiary-900};\\n  --quaternary-low: #{$quaternary-low};\\n  --highlight-bg: #{$highlight-bg};\\n  --highlight-low: #{$highlight-low};\\n  --highlight-medium: #{$highlight-medium};\\n  --highlight-high: #{$highlight-high};\\n  --danger-low: #{$danger-low};\\n  --danger-low-mid: #{$danger-low-mid};\\n  --danger-medium: #{$danger-medium};\\n  --danger-hover: #{$danger-hover};\\n  --success-very-low: #{$success-very-low};\\n  --success-low: #{$success-low};\\n  --success-medium: #{$success-medium};\\n  --success-hover: #{$success-hover};\\n  --love-low: #{$love-low};\\n  --wiki: #{$wiki};\\n  --blend-primary-secondary-5: #{$blend-primary-secondary-5};\\n  --primary-med-or-secondary-med: #{$primary-med-or-secondary-med};\\n  --primary-med-or-secondary-high: #{$primary-med-or-secondary-high};\\n  --primary-high-or-secondary-low: #{$primary-high-or-secondary-low};\\n  --primary-low-mid-or-secondary-high: #{$primary-low-mid-or-secondary-high};\\n  --primary-low-mid-or-secondary-low: #{$primary-low-mid-or-secondary-low};\\n  --primary-or-primary-low-mid: #{$primary-or-primary-low-mid};\\n  --highlight-low-or-medium: #{$highlight-low-or-medium};\\n  --tertiary-or-tertiary-low: #{$tertiary-or-tertiary-low};\\n  --tertiary-low-or-tertiary-high: #{$tertiary-low-or-tertiary-high};\\n  --tertiary-med-or-tertiary: #{$tertiary-med-or-tertiary};\\n  --secondary-or-primary: #{$secondary-or-primary};\\n  --tertiary-or-white: #{$tertiary-or-white};\\n  --facebook-or-white: #{$facebook-or-white};\\n  --twitter-or-white: #{$twitter-or-white};\\n  --hljs-attr: #{$hljs-attr};\\n  --hljs-attribute: #{$hljs-attribute};\\n  --hljs-addition: #{$hljs-addition};\\n  --hljs-bg: #{$hljs-bg};\\n  --inline-code-bg: #{$inline-code-bg};\\n  --hljs-comment: #{$hljs-comment};\\n  --hljs-deletion: #{$hljs-deletion};\\n  --hljs-keyword: #{$hljs-keyword};\\n  --hljs-title: #{$hljs-title};\\n  --hljs-name: #{$hljs-name};\\n  --hljs-punctuation: #{$hljs-punctuation};\\n  --hljs-symbol: #{$hljs-symbol};\\n  --hljs-variable: #{$hljs-variable};\\n  --hljs-string: #{$hljs-string};\\n  --google: #{$google};\\n  --google-hover: #{$google-hover};\\n  --instagram: #{$instagram};\\n  --instagram-hover: #{$instagram-hover};\\n  --facebook: #{$facebook};\\n  --facebook-hover: #{$facebook-hover};\\n  --cas: #{$cas};\\n  --twitter: #{$twitter};\\n  --github: #{$github};\\n  --github-hover: #{$github-hover};\\n  --discord: #{$discord};\\n  --discord-hover: #{$discord-hover};\\n  --discourse_id-text: var(--d-button-primary-text-color);\\n  --discourse_id-text-hover: var(--d-button-primary-text-color--hover);\\n  --discourse_id-background: var(--d-button-primary-bg-color);\\n  --discourse_id-background-hover: var(--d-button-primary-bg-color--hover);\\n  --discourse_id-icon: var(--d-button-primary-icon-color);\\n  --discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);\\n  --discourse_id-border: var(--d-button-border);\\n  --gold: #{$gold};\\n  --silver: #{$silver};\\n  --bronze: #{$bronze};\\n  --d-link-color: var(--tertiary);\\n  --title-color--read: var(--primary-medium);\\n  --content-border-color: var(--primary-low);\\n  --input-border-color: var(--primary-400);\\n  --table-border-color: var(--content-border-color);\\n  --metadata-color: var(--primary-medium);\\n  --d-badge-card-background-color: var(--secondary);\\n  --mention-background-color: var(--primary-low);\\n  --title-color: var(--primary);\\n  --title-color--header: var(--header_primary);\\n  --excerpt-color: var(--primary-high);\\n  --shadow-modal: 0 8px 60px rgba(0, 0, 0, #{$shadow-opacity-modal});\\n  --shadow-composer: 0 -1px 40px rgba(0, 0, 0, #{$shadow-opacity-composer});\\n  --shadow-card: 0 4px 14px rgba(0, 0, 0, #{$shadow-opacity-card});\\n  --shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, #{$shadow-opacity-dropdown});\\n  --shadow-menu-panel: var(--shadow-dropdown);\\n  --shadow-header: 0 0 0 1px var(--content-border-color);\\n  --shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, #{$shadow-opacity-footer-nav});\\n  --shadow-focus-danger: 0 0 6px 0 var(--danger);\\n  --shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);\\n  --float-kit-arrow-stroke-color: var(--primary-low);\\n  --float-kit-arrow-fill-color: var(--secondary);\\n  --topic-timeline-border-color: #{$tertiary-low-or-tertiary-high};\\n  --topic-timeline-handle-color: light-dark(\\n    var(--tertiary-400),\\n    var(--tertiary)\\n  );\\n}\\n\",\"$primary: #222 !default; $secondary: #fff !default; $tertiary: #08c !default; $quaternary: #e45735 !default; $header_background: #fff !default; $header_primary: #333 !default; $highlight: #ffff4d !default; $selected: #d1f0ff !default; $hover: #f2f2f2 !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default;  $public_image_path: \\\"http://localhost:3048/images\\\";  @import \\\"common/foundation/variables\\\"; @import \\\"common/foundation/mixins\\\"; @import \\\"color_definitions\\\";\\n\\n\\n// Color definitions from chat\\n\\n:root {\\n  --chat-skeleton-animation-rgb: #{hexToRGB($primary-50)};\\n}\\n\\n\\n\\n\\n// Color definitions from discourse-events\\n\\n/* stylelint-disable scss/no-global-function-names */\\n:root {\\n  --calendar-normal: #{dark-light-choose(\\n      lighten($tertiary, 55%),\\n      darken($tertiary, 25%)\\n    )};\\n  --calendar-close-to-working-hours: #{dark-light-choose(\\n      desaturate(lighten($tertiary, 45%), 15%),\\n      darken($tertiary, 15%)\\n    )};\\n  --calendar-in-working-hours: #{dark-light-choose(\\n      desaturate(lighten($tertiary, 40%), 20%),\\n      darken($tertiary, 10%)\\n    )};\\n  --fc-border-color: var(--primary-low);\\n  --fc-button-text-color: var(--d-button-default-text-color);\\n  --fc-button-bg-color: var(--d-button-default-bg-color);\\n  --fc-button-border-color: transparent;\\n  --fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);\\n  --fc-button-hover-border-color: transparent;\\n  --fc-button-active-bg-color: var(--tertiary);\\n  --fc-button-active-border-color: transparent;\\n  --fc-event-border-color: var(--primary-low);\\n  --fc-today-bg-color: var(--highlight-medium);\\n  --fc-page-bg-color: var(--secondary);\\n  --fc-list-event-hover-bg-color: var(--secondary);\\n  --fc-neutral-bg-color: var(--primary-low);\\n}\\n\\n\\n\\n\\n// Color definitions from Styled\\n\\n:root{--styled-accent: #08c;--styled-mix: rgb(74%, 74%, 74%);--styled-rgb: 34, 34, 34}\\n/*# sourceMappingURL=common.css.map */\\n\\n// Body font definition\\n@font-face {\\n  font-family: 'Inter';\\n  src: url(\\\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 100 900;\\n}\\n\\nhtml {\\n  font-variation-settings: normal;\\n  font-feature-settings: 'calt' 0;\\n}\\n\\n:root {\\n  --font-family: Inter, Arial, sans-serif;\\n}\\n\\n// Heading font definition\\n@font-face {\\n  font-family: 'Inter';\\n  src: url(\\\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 100 900;\\n}\\n\\nh1, h2, h3, h4, h5, h6 {\\n  font-variation-settings: normal;\\n  font-feature-settings: 'calt' 0;\\n}\\n\\n:root {\\n  --heading-font-family: Inter, Arial, sans-serif;\\n}\\n\\n@font-face {\\n  font-family: 'JetBrains Mono';\\n  src: url(\\\"http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 400;\\n}\\n@font-face {\\n  font-family: 'JetBrains Mono';\\n  src: url(\\\"http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 700;\\n}\\n\\nhtml {\\n  font-variation-settings: normal;\\n  font-feature-settings: normal;\\n  font-variant-ligatures: none;\\n}\\n\\n:root {\\n  --d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace;\\n}\\n\\n\"]}",
+          "updated_at": "2026-10-21T09:15:02.230732"
+        },
+        {
+          "id": 152,
+          "digest": "e6f279b0786473f734956103b0aaf21493f3c5c3",
+          "target": "common_theme_1",
+          "content": "/* SCSS compilation error: Undefined operation \"3 * 2\". */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:03.926574",
+          "source_map": null,
+          "updated_at": "2026-10-21T09:15:03.926574"
+        },
+        {
+          "id": 153,
+          "digest": "dc6341411d2ed13109413bf869fb9d978da2f398",
+          "target": "mobile_theme_1",
+          "content": ".styled{padding:.25em;font-size:var(--font-down-1)}\n/*# sourceMappingURL=mobile_theme_1_dc6341411d2ed13109413bf869fb9d978da2f398.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:04.107659",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_d3bbaf022dfc37c0ad8b819fb385fddc/discourse-styled/_entry_loadpath/theme-entrypoint/mobile.scss\",\"app/assets/stylesheets/common/foundation/variables.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,aAAA,CAAA,4BC2Ec\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"// --------------------------------------------------\\n// Variables used throughout the theme\\n// this file is injected into every theme CSS file\\n// --------------------------------------------------\\n\\n// Layout dimensions\\n// --------------------------------------------------\\n\\n@use \\\"sass:color\\\";\\n@use \\\"sass:math\\\";\\n@use \\\"sass:meta\\\";\\n@use \\\"math\\\" as discourse-math;\\n\\n$small-width: 800px !default;\\n$medium-width: 995px !default;\\n$large-width: 1110px !default;\\n$topic-body-width: 690px;\\n$topic-body-width-padding: 11px;\\n$topic-avatar-width: 45px;\\n$reply-area-max-width: 1475px !default;\\n$d-sidebar-width: 17em !default;\\n$d-sidebar-narrow-width: 14em !default;\\n\\n// Brand color variables\\n// --------------------------------------------------\\n\\n$google: #fff !default;\\n$google-hover: color.adjust($google, $lightness: -5%) !default;\\n$instagram: #e1306c !default;\\n$instagram-hover: color.adjust($instagram, $lightness: -15%) !default;\\n$facebook: #0866ff !default;\\n$facebook-hover: color.adjust($facebook, $lightness: -15%) !default;\\n$cas: #70ba61 !default;\\n$twitter: #000 !default;\\n$github: #100e0f !default;\\n$github-hover: color.adjust($github, $lightness: 20%) !default;\\n$discord: #7289da !default;\\n$discord-hover: color.adjust($discord, $lightness: -10%) !default;\\n\\n// Discourse brand colors (used in wizard, omniauth confirm, etc.)\\n$discourse-brand: #7b5fe2 !default;\\n$discourse-brand-100: #f4f2fc !default;\\n$discourse-brand-300: #b8a4ff !default;\\n$discourse-brand-400: #8b6df8 !default;\\n$discourse-brand-800: #3a275e !default;\\n$discourse-brand-light: #e1d5ff !default;\\n$discourse-bg-light: #f9f8fc !default;\\n$discourse-bg-dark: #02030a !default;\\n\\n// Badge color variables\\n// --------------------------------------------------\\n\\n$gold: rgb(231, 195, 0) !default;\\n$silver: #c0c0c0 !default;\\n$bronze: #cd7f32 !default;\\n\\n// Fonts\\n// --------------------------------------------------\\n\\n$base-font-family: var(--font-family) !default;\\n$base-font-size-smallest: var(--base-font-size-smallest) !default;\\n$base-font-size-smaller: var(--base-font-size-smaller) !default;\\n$base-font-size: var(--base-font-size) !default;\\n$base-font-size-larger: var(--base-font-size-larger) !default;\\n$base-font-size-largest: var(--base-font-size-largest) !default;\\n$heading-font-family: var(--heading-font-family) !default;\\n\\n// Font-size definitions, multiplier ^ (step / interval)\\n$font-up-6: var(--font-up-6) !default;\\n$font-up-5: var(--font-up-5) !default;\\n$font-up-4: var(--font-up-4) !default;\\n$font-up-3: var(--font-up-3) !default;\\n$font-up-2: var(--font-up-2) !default;\\n$font-up-1: var(--font-up-1) !default;\\n$font-0: var(--font-0);\\n$font-down-1: var(--font-down-1) !default;\\n$font-down-2: var(--font-down-2) !default;\\n$font-down-3: var(--font-down-3) !default;\\n$font-down-4: var(--font-down-4) !default;\\n$font-down-5: var(--font-down-5) !default;\\n$font-down-6: var(--font-down-6) !default;\\n\\n// Common line-heights\\n$line-height-small: var(--line-height-small) !default;\\n$line-height-medium: var(--line-height-medium) !default;\\n$line-height-large: var(--line-height-large) !default;\\n\\n// Z-index\\n// --------------------------------------------------\\n\\n$z-layers: (\\n  \\\"max\\\": 9999,\\n  \\\"modal\\\": (\\n    \\\"dialog\\\": 1700,\\n    \\\"tooltip\\\": 1600,\\n    \\\"popover\\\": 1500,\\n    \\\"dropdown\\\": 1400,\\n    \\\"content\\\": 1300,\\n    \\\"overlay\\\": 1200,\\n  ),\\n  // below modals, so dialogs opened from the page behind it stay reachable\\n  \\\"design-wizard\\\": 1160,\\n  \\\"fullscreen\\\": 1150,\\n  \\\"mobile-header\\\": 1150,\\n  \\\"mobile-composer\\\": 1100,\\n  \\\"ipad-header-nav\\\": 1020,\\n  \\\"header\\\": 1000,\\n  \\\"footer-nav\\\": 900,\\n  \\\"tooltip\\\": 600,\\n  \\\"usercard\\\": 500,\\n  \\\"composer\\\": (\\n    \\\"dropdown\\\": 700,\\n    \\\"tooltip\\\": 600,\\n    \\\"popover\\\": 500,\\n    \\\"content\\\": 400,\\n  ),\\n  \\\"dropdown\\\": 300,\\n  \\\"chat-drawer\\\": 200,\\n  \\\"timeline\\\": 100,\\n  \\\"base\\\": 1,\\n);\\n\\n@function map-has-nested-keys($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    @if not map-has-key($map, $key) {\\n      @return false;\\n    }\\n\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return true;\\n}\\n\\n@function map-deep-get($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return $map;\\n}\\n\\n@function z($layers...) {\\n  @if not map-has-nested-keys($z-layers, $layers...) {\\n    @warn \\\"No layer defined for `#{meta.inspect($layers...)}` in $z-layers map- Check variables.scss, property omitted.\\\";\\n  }\\n\\n  @return map-deep-get($z-layers, $layers...);\\n}\\n\\n// Color utilities\\n// --------------------------------------------------\\n\\n// w3c definition of color brightness https://www.w3.org/TR/AERT#color-contrast\\n@function dc-color-brightness($color) {\\n  @return (\\n    (color.red($color) * 0.299) + (color.green($color) * 0.587) +\\n      (color.blue($color) * 0.114)\\n  );\\n}\\n\\n// Uses an approximation of sRGB blending, GAMMA=2 instead of GAMMA=2.2\\n@function srgb-scale($foreground, $background, $percent) {\\n  $ratio: math.div($percent, 100%);\\n  $iratio: 1 - $ratio;\\n  $f_r2: color.red($foreground) * color.red($foreground);\\n  $f_g2: color.green($foreground) * color.green($foreground);\\n  $f_b2: color.blue($foreground) * color.blue($foreground);\\n  $b_r2: color.red($background) * color.red($background);\\n  $b_g2: color.green($background) * color.green($background);\\n  $b_b2: color.blue($background) * color.blue($background);\\n  $r_r2: $f_r2 * $ratio + $b_r2 * $iratio;\\n  $r_g2: $f_g2 * $ratio + $b_g2 * $iratio;\\n  $r_b2: $f_b2 * $ratio + $b_b2 * $iratio;\\n  $r_r: discourse-math.sqrt($r_r2);\\n  $r_g: discourse-math.sqrt($r_g2);\\n  $r_b: discourse-math.sqrt($r_b2);\\n\\n  @return rgb($r_r, $r_g, $r_b);\\n}\\n\\n// Replaces dark-light-diff($primary,50%)\\n@function blend-two-colors($color1, $color2, $percent) {\\n  @return srgb-scale($color1, $color2, $percent);\\n}\\n\\n@function blend-header-primary-background($percent) {\\n  @return srgb-scale($header_primary, $header_background, $percent);\\n}\\n\\n@function dark-light-diff(\\n  $adjusted-color,\\n  $comparison-color,\\n  $lightness,\\n  $darkness\\n) {\\n  @if dc-color-brightness($adjusted-color) <\\n    dc-color-brightness($comparison-color)\\n  {\\n    @return color.scale($adjusted-color, $lightness: $lightness);\\n  } @else {\\n    @return color.scale($adjusted-color, $lightness: $darkness);\\n  }\\n}\\n\\n@function dark-light-choose($light-theme-result, $dark-theme-result) {\\n  @if is-light-color-scheme() {\\n    @return $light-theme-result;\\n  } @else {\\n    @return $dark-theme-result;\\n  }\\n}\\n\\n@function is-light-color-scheme() {\\n  @if dc-color-brightness($primary) < dc-color-brightness($secondary) {\\n    @return true;\\n  } @else {\\n    @return false;\\n  }\\n}\\n\\n@function is-dark-color-scheme() {\\n  @return not is-light-color-scheme();\\n}\\n\\n@import \\\"color_transformations\\\";\\n\"]}",
+          "updated_at": "2026-10-21T09:15:04.107659"
+        },
+        {
+          "id": 154,
+          "digest": "8abd1e9646901aa79e4c0130fc8c1fcf997258e7",
+          "target": "desktop_theme_1",
+          "content": ".styled{max-width:960px}.styled .side{float:right}\n/*# sourceMappingURL=desktop_theme_1_8abd1e9646901aa79e4c0130fc8c1fcf997258e7.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:04.283341",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_d4afda84074cbbb1a91f87f4f6241740/discourse-styled/_entry_loadpath/theme-entrypoint/desktop.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,eAAA,CAAA,cAAA,WAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { max-width: 960px; .side { float: right; } }\\n\"]}",
+          "updated_at": "2026-10-21T09:15:04.283341"
+        },
+        {
+          "id": 155,
+          "digest": "8f5c6e94202700ae06e517c15ea171e5ffeaaff4",
+          "target": "common_theme_1",
+          "content": "/* SCSS compilation error: Undefined operation \"3 * 2\". */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:04.700818",
+          "source_map": null,
+          "updated_at": "2026-10-21T09:15:04.700818"
+        },
+        {
+          "id": 156,
+          "digest": "2f2eed16c66934d32a234922a26d9a7ba9729e81",
+          "target": "mobile_theme_1",
+          "content": ".styled{padding:.25em;font-size:var(--font-down-1)}\n/*# sourceMappingURL=mobile_theme_1_2f2eed16c66934d32a234922a26d9a7ba9729e81.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:04.871541",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_77d0e469ef880870336f6a1eeeccb6a8/discourse-styled/_entry_loadpath/theme-entrypoint/mobile.scss\",\"app/assets/stylesheets/common/foundation/variables.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,aAAA,CAAA,4BC2Ec\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"// --------------------------------------------------\\n// Variables used throughout the theme\\n// this file is injected into every theme CSS file\\n// --------------------------------------------------\\n\\n// Layout dimensions\\n// --------------------------------------------------\\n\\n@use \\\"sass:color\\\";\\n@use \\\"sass:math\\\";\\n@use \\\"sass:meta\\\";\\n@use \\\"math\\\" as discourse-math;\\n\\n$small-width: 800px !default;\\n$medium-width: 995px !default;\\n$large-width: 1110px !default;\\n$topic-body-width: 690px;\\n$topic-body-width-padding: 11px;\\n$topic-avatar-width: 45px;\\n$reply-area-max-width: 1475px !default;\\n$d-sidebar-width: 17em !default;\\n$d-sidebar-narrow-width: 14em !default;\\n\\n// Brand color variables\\n// --------------------------------------------------\\n\\n$google: #fff !default;\\n$google-hover: color.adjust($google, $lightness: -5%) !default;\\n$instagram: #e1306c !default;\\n$instagram-hover: color.adjust($instagram, $lightness: -15%) !default;\\n$facebook: #0866ff !default;\\n$facebook-hover: color.adjust($facebook, $lightness: -15%) !default;\\n$cas: #70ba61 !default;\\n$twitter: #000 !default;\\n$github: #100e0f !default;\\n$github-hover: color.adjust($github, $lightness: 20%) !default;\\n$discord: #7289da !default;\\n$discord-hover: color.adjust($discord, $lightness: -10%) !default;\\n\\n// Discourse brand colors (used in wizard, omniauth confirm, etc.)\\n$discourse-brand: #7b5fe2 !default;\\n$discourse-brand-100: #f4f2fc !default;\\n$discourse-brand-300: #b8a4ff !default;\\n$discourse-brand-400: #8b6df8 !default;\\n$discourse-brand-800: #3a275e !default;\\n$discourse-brand-light: #e1d5ff !default;\\n$discourse-bg-light: #f9f8fc !default;\\n$discourse-bg-dark: #02030a !default;\\n\\n// Badge color variables\\n// --------------------------------------------------\\n\\n$gold: rgb(231, 195, 0) !default;\\n$silver: #c0c0c0 !default;\\n$bronze: #cd7f32 !default;\\n\\n// Fonts\\n// --------------------------------------------------\\n\\n$base-font-family: var(--font-family) !default;\\n$base-font-size-smallest: var(--base-font-size-smallest) !default;\\n$base-font-size-smaller: var(--base-font-size-smaller) !default;\\n$base-font-size: var(--base-font-size) !default;\\n$base-font-size-larger: var(--base-font-size-larger) !default;\\n$base-font-size-largest: var(--base-font-size-largest) !default;\\n$heading-font-family: var(--heading-font-family) !default;\\n\\n// Font-size definitions, multiplier ^ (step / interval)\\n$font-up-6: var(--font-up-6) !default;\\n$font-up-5: var(--font-up-5) !default;\\n$font-up-4: var(--font-up-4) !default;\\n$font-up-3: var(--font-up-3) !default;\\n$font-up-2: var(--font-up-2) !default;\\n$font-up-1: var(--font-up-1) !default;\\n$font-0: var(--font-0);\\n$font-down-1: var(--font-down-1) !default;\\n$font-down-2: var(--font-down-2) !default;\\n$font-down-3: var(--font-down-3) !default;\\n$font-down-4: var(--font-down-4) !default;\\n$font-down-5: var(--font-down-5) !default;\\n$font-down-6: var(--font-down-6) !default;\\n\\n// Common line-heights\\n$line-height-small: var(--line-height-small) !default;\\n$line-height-medium: var(--line-height-medium) !default;\\n$line-height-large: var(--line-height-large) !default;\\n\\n// Z-index\\n// --------------------------------------------------\\n\\n$z-layers: (\\n  \\\"max\\\": 9999,\\n  \\\"modal\\\": (\\n    \\\"dialog\\\": 1700,\\n    \\\"tooltip\\\": 1600,\\n    \\\"popover\\\": 1500,\\n    \\\"dropdown\\\": 1400,\\n    \\\"content\\\": 1300,\\n    \\\"overlay\\\": 1200,\\n  ),\\n  // below modals, so dialogs opened from the page behind it stay reachable\\n  \\\"design-wizard\\\": 1160,\\n  \\\"fullscreen\\\": 1150,\\n  \\\"mobile-header\\\": 1150,\\n  \\\"mobile-composer\\\": 1100,\\n  \\\"ipad-header-nav\\\": 1020,\\n  \\\"header\\\": 1000,\\n  \\\"footer-nav\\\": 900,\\n  \\\"tooltip\\\": 600,\\n  \\\"usercard\\\": 500,\\n  \\\"composer\\\": (\\n    \\\"dropdown\\\": 700,\\n    \\\"tooltip\\\": 600,\\n    \\\"popover\\\": 500,\\n    \\\"content\\\": 400,\\n  ),\\n  \\\"dropdown\\\": 300,\\n  \\\"chat-drawer\\\": 200,\\n  \\\"timeline\\\": 100,\\n  \\\"base\\\": 1,\\n);\\n\\n@function map-has-nested-keys($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    @if not map-has-key($map, $key) {\\n      @return false;\\n    }\\n\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return true;\\n}\\n\\n@function map-deep-get($map, $keys...) {\\n  @each $key in $keys {\\n    /* stylelint-disable-next-line scss/no-global-function-names */\\n    $map: map-get($map, $key);\\n  }\\n\\n  @return $map;\\n}\\n\\n@function z($layers...) {\\n  @if not map-has-nested-keys($z-layers, $layers...) {\\n    @warn \\\"No layer defined for `#{meta.inspect($layers...)}` in $z-layers map- Check variables.scss, property omitted.\\\";\\n  }\\n\\n  @return map-deep-get($z-layers, $layers...);\\n}\\n\\n// Color utilities\\n// --------------------------------------------------\\n\\n// w3c definition of color brightness https://www.w3.org/TR/AERT#color-contrast\\n@function dc-color-brightness($color) {\\n  @return (\\n    (color.red($color) * 0.299) + (color.green($color) * 0.587) +\\n      (color.blue($color) * 0.114)\\n  );\\n}\\n\\n// Uses an approximation of sRGB blending, GAMMA=2 instead of GAMMA=2.2\\n@function srgb-scale($foreground, $background, $percent) {\\n  $ratio: math.div($percent, 100%);\\n  $iratio: 1 - $ratio;\\n  $f_r2: color.red($foreground) * color.red($foreground);\\n  $f_g2: color.green($foreground) * color.green($foreground);\\n  $f_b2: color.blue($foreground) * color.blue($foreground);\\n  $b_r2: color.red($background) * color.red($background);\\n  $b_g2: color.green($background) * color.green($background);\\n  $b_b2: color.blue($background) * color.blue($background);\\n  $r_r2: $f_r2 * $ratio + $b_r2 * $iratio;\\n  $r_g2: $f_g2 * $ratio + $b_g2 * $iratio;\\n  $r_b2: $f_b2 * $ratio + $b_b2 * $iratio;\\n  $r_r: discourse-math.sqrt($r_r2);\\n  $r_g: discourse-math.sqrt($r_g2);\\n  $r_b: discourse-math.sqrt($r_b2);\\n\\n  @return rgb($r_r, $r_g, $r_b);\\n}\\n\\n// Replaces dark-light-diff($primary,50%)\\n@function blend-two-colors($color1, $color2, $percent) {\\n  @return srgb-scale($color1, $color2, $percent);\\n}\\n\\n@function blend-header-primary-background($percent) {\\n  @return srgb-scale($header_primary, $header_background, $percent);\\n}\\n\\n@function dark-light-diff(\\n  $adjusted-color,\\n  $comparison-color,\\n  $lightness,\\n  $darkness\\n) {\\n  @if dc-color-brightness($adjusted-color) <\\n    dc-color-brightness($comparison-color)\\n  {\\n    @return color.scale($adjusted-color, $lightness: $lightness);\\n  } @else {\\n    @return color.scale($adjusted-color, $lightness: $darkness);\\n  }\\n}\\n\\n@function dark-light-choose($light-theme-result, $dark-theme-result) {\\n  @if is-light-color-scheme() {\\n    @return $light-theme-result;\\n  } @else {\\n    @return $dark-theme-result;\\n  }\\n}\\n\\n@function is-light-color-scheme() {\\n  @if dc-color-brightness($primary) < dc-color-brightness($secondary) {\\n    @return true;\\n  } @else {\\n    @return false;\\n  }\\n}\\n\\n@function is-dark-color-scheme() {\\n  @return not is-light-color-scheme();\\n}\\n\\n@import \\\"color_transformations\\\";\\n\"]}",
+          "updated_at": "2026-10-21T09:15:04.871541"
+        },
+        {
+          "id": 157,
+          "digest": "d9385d9c70514e9c405d6031bbddcc7b4e394c21",
+          "target": "desktop_theme_1",
+          "content": ".styled{max-width:960px}.styled .side{float:right}\n/*# sourceMappingURL=desktop_theme_1_d9385d9c70514e9c405d6031bbddcc7b4e394c21.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:05.081916",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_d114ace790612a333dd0bfe88621acf0/discourse-styled/_entry_loadpath/theme-entrypoint/desktop.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,eAAA,CAAA,cAAA,WAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".styled { max-width: 960px; .side { float: right; } }\\n\"]}",
+          "updated_at": "2026-10-21T09:15:05.081916"
+        },
+        {
+          "id": 158,
+          "digest": "918ad00b28b12e105cffc3d6b6e09a712dc4b22d",
+          "target": "color_definitions_light-default_-1_1",
+          "content": ":root{--csstools-color-scheme--light:initial;color-scheme:light;--scheme-type: light;--primary: #222;--secondary: #fff;--tertiary: #08c;--quaternary: #e45735;--header_background: #fff;--header_primary: #333;--highlight: #ffff4d;--danger: #c80001;--success: #090;--love: #fa6c8d;--d-selected: #d1f0ff;--d-selected-text-color: var(--primary);--d-selected-hover: rgb(85.568627451%, 95.2941176471%, 100%);--d-hover: #f2f2f2;--always-black-rgb: 0, 0, 0;--primary-rgb: 34, 34, 34;--primary-low-rgb: 233, 233, 233;--primary-very-low-rgb: 248, 248, 248;--secondary-rgb: 255, 255, 255;--header_background-rgb: 255, 255, 255;--tertiary-rgb: 0, 136, 204;--highlight-rgb: 255, 255, 77;--success-rgb: 0, 153, 0;--primary-very-low: rgb(97.4%, 97.4%, 97.4%);--primary-low: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-low-mid: rgb(74%, 74%, 74%);--primary-medium: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-very-high: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--primary-50: rgb(97.4%, 97.4%, 97.4%);--primary-100: rgb(94.8%, 94.8%, 94.8%);--primary-200: rgb(91.3333333333%, 91.3333333333%, 91.3333333333%);--primary-300: rgb(82.6666666667%, 82.6666666667%, 82.6666666667%);--primary-400: rgb(74%, 74%, 74%);--primary-500: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--primary-600: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-700: rgb(46.2666666667%, 46.2666666667%, 46.2666666667%);--primary-800: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-900: rgb(26.3333333333%, 26.3333333333%, 26.3333333333%);--header_primary-low: rgb(95.078914592%, 95.078914592%, 95.078914592%);--header_primary-low-mid: rgb(81.4861951499%, 81.4861951499%, 81.4861951499%);--header_primary-medium: rgb(68.7022561493%, 68.7022561493%, 68.7022561493%);--header_primary-high: rgb(57.2712842531%, 57.2712842531%, 57.2712842531%);--header_primary-very-high: rgb(36.8781778292%, 36.8781778292%, 36.8781778292%);--secondary-low: rgb(30%, 30%, 30%);--secondary-medium: rgb(50%, 50%, 50%);--secondary-high: rgb(65%, 65%, 65%);--secondary-very-high: rgb(93%, 93%, 93%);--tertiary-very-low: rgb(88%, 96%, 100%);--tertiary-low: rgb(82%, 94%, 100%);--tertiary-medium: #66ccff;--tertiary-high: rgb(4%, 68%, 100%);--tertiary-hover: #006699;--tertiary-25: rgb(91.6%, 97.2%, 100%);--tertiary-50: rgb(88%, 96%, 100%);--tertiary-100: rgb(85.6%, 95.2%, 100%);--tertiary-200: rgb(84.4%, 94.8%, 100%);--tertiary-300: rgb(82%, 94%, 100%);--tertiary-400: rgb(68.8%, 89.6%, 100%);--tertiary-500: rgb(55.6%, 85.2%, 100%);--tertiary-600: #66ccff;--tertiary-700: rgb(28%, 76%, 100%);--tertiary-800: rgb(16%, 72%, 100%);--tertiary-900: rgb(4%, 68%, 100%);--quaternary-low: rgb(96.8235294118%, 80.2352941176%, 76.2352941176%);--highlight-bg: rgb(100%, 100%, 79.0588235294%);--highlight-low: rgb(100%, 100%, 79.0588235294%);--highlight-medium: #ffffa6;--highlight-high: #a6a600;--danger-low: rgb(100%, 87.8431372549%, 87.9039215686%);--danger-low-mid: rgba(100%, 39.2156862745%, 39.5196078431%, 0.7);--danger-medium: rgb(100%, 14.9019607843%, 15.3274509804%);--danger-hover: rgb(62.7450980392%, 0%, 0.3137254902%);--success-very-low: rgb(86%, 100%, 86%);--success-low: rgb(72%, 100%, 72%);--success-medium: rgb(30%, 100%, 30%);--success-hover: rgb(0%, 48%, 0%);--love-low: rgb(99.7058823529%, 91.3529411765%, 93.2941176471%);--wiki: green;--blend-primary-secondary-5: rgb(97.5135318245%, 97.5135318245%, 97.5135318245%);--primary-med-or-secondary-med: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-med-or-secondary-high: rgb(56.6666666667%, 56.6666666667%, 56.6666666667%);--primary-high-or-secondary-low: rgb(39.3333333333%, 39.3333333333%, 39.3333333333%);--primary-low-mid-or-secondary-high: rgb(74%, 74%, 74%);--primary-low-mid-or-secondary-low: rgb(74%, 74%, 74%);--primary-or-primary-low-mid: #222;--highlight-low-or-medium: rgb(100%, 100%, 79.0588235294%);--tertiary-or-tertiary-low: #08c;--tertiary-low-or-tertiary-high: rgb(82%, 94%, 100%);--tertiary-med-or-tertiary: #66ccff;--secondary-or-primary: #fff;--tertiary-or-white: #08c;--facebook-or-white: #0866ff;--twitter-or-white: #000;--hljs-attr: #015692;--hljs-attribute: #803378;--hljs-addition: #2f6f44;--hljs-bg: rgb(94.8%, 94.8%, 94.8%);--inline-code-bg: rgb(94.8%, 94.8%, 94.8%);--hljs-comment: rgb(65.3333333333%, 65.3333333333%, 65.3333333333%);--hljs-deletion: #c02d2e;--hljs-keyword: #015692;--hljs-title: #b75501;--hljs-name: #b75501;--hljs-punctuation: #535a60;--hljs-symbol: #54790d;--hljs-variable: #54790d;--hljs-string: #54790d;--google: #fff;--google-hover: rgb(95%, 95%, 95%);--instagram: #e1306c;--instagram-hover: rgb(67.30454207%, 9.7542814594%, 29.2628443783%);--facebook: #0866ff;--facebook-hover: rgb(0%, 27.8336111773%, 73.137254902%);--cas: #70ba61;--twitter: #000;--github: #100e0f;--github-hover: rgb(27.6078431373%, 24.1568627451%, 25.8823529412%);--discord: #7289da;--discord-hover: rgb(28.8631857237%, 40.4670632298%, 81.3328927076%);--discourse_id-text: var(--d-button-primary-text-color);--discourse_id-text-hover: var(--d-button-primary-text-color--hover);--discourse_id-background: var(--d-button-primary-bg-color);--discourse_id-background-hover: var(--d-button-primary-bg-color--hover);--discourse_id-icon: var(--d-button-primary-icon-color);--discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);--discourse_id-border: var(--d-button-border);--gold: rgb(231, 195, 0);--silver: #c0c0c0;--bronze: #cd7f32;--d-link-color: var(--tertiary);--title-color--read: var(--primary-medium);--content-border-color: var(--primary-low);--input-border-color: var(--primary-400);--table-border-color: var(--content-border-color);--metadata-color: var(--primary-medium);--d-badge-card-background-color: var(--secondary);--mention-background-color: var(--primary-low);--title-color: var(--primary);--title-color--header: var(--header_primary);--excerpt-color: var(--primary-high);--shadow-modal: 0 8px 60px rgba(0, 0, 0, 0.6);--shadow-composer: 0 -1px 40px rgba(0, 0, 0, 0.22);--shadow-card: 0 4px 14px rgba(0, 0, 0, 0.15);--shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, 0.1);--shadow-menu-panel: var(--shadow-dropdown);--shadow-header: 0 0 0 1px var(--content-border-color);--shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, 0.2);--shadow-focus-danger: 0 0 6px 0 var(--danger);--shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);--float-kit-arrow-stroke-color: var(--primary-low);--float-kit-arrow-fill-color: var(--secondary);--topic-timeline-border-color: rgb(82%, 94%, 100%);--a7c6f32f-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--a7c6f32f-csstools-light-dark-toggle--0, var(--tertiary-400));}\n\n@supports (color: light-dark(red, red)){\n:root{--topic-timeline-handle-color: light-dark( var(--tertiary-400), var(--tertiary) );}\n}@supports not (color: light-dark(tan, tan)){:root *{--a7c6f32f-csstools-light-dark-toggle--0: var(--csstools-color-scheme--light) var(--tertiary);--topic-timeline-handle-color: var(--a7c6f32f-csstools-light-dark-toggle--0, var(--tertiary-400));}}:root{--chat-skeleton-animation-rgb: 248, 248, 248}:root{--calendar-normal: rgb(90%, 96.6666666667%, 100%);--calendar-close-to-working-hours: rgb(72.25%, 89.25%, 97.75%);--calendar-in-working-hours: rgb(64%, 85.3333333333%, 96%);--fc-border-color: var(--primary-low);--fc-button-text-color: var(--d-button-default-text-color);--fc-button-bg-color: var(--d-button-default-bg-color);--fc-button-border-color: transparent;--fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);--fc-button-hover-border-color: transparent;--fc-button-active-bg-color: var(--tertiary);--fc-button-active-border-color: transparent;--fc-event-border-color: var(--primary-low);--fc-today-bg-color: var(--highlight-medium);--fc-page-bg-color: var(--secondary);--fc-list-event-hover-bg-color: var(--secondary);--fc-neutral-bg-color: var(--primary-low)}:root{--styled-accent: #08c;--styled-mix: rgb(74%, 74%, 74%);--styled-rgb: 34, 34, 34}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}html{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--font-family: Inter, Arial, sans-serif}@font-face{font-family:\"Inter\";src:url(\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\") format(\"woff2\");font-weight:100 900}h1,h2,h3,h4,h5,h6{font-variation-settings:normal;font-feature-settings:\"calt\" 0}:root{--heading-font-family: Inter, Arial, sans-serif}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\") format(\"woff2\");font-weight:400}@font-face{font-family:\"JetBrains Mono\";src:url(\"http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\") format(\"woff2\");font-weight:700}html{font-variation-settings:normal;font-feature-settings:normal;font-variant-ligatures:none}:root{--d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace}\n/*# sourceMappingURL=color_definitions_light-default_-1_1_918ad00b28b12e105cffc3d6b6e09a712dc4b22d.css.map?__ws=localhost */",
+          "theme_id": -1,
+          "created_at": "2026-10-21T09:15:05.531304",
+          "source_map": "{\"version\":3,\"sources\":[\"app/assets/stylesheets/color_definitions.scss\",\"_color_definitions_entrypoint.scss\"],\"names\":[],\"mappings\":\"AAGA,MACE,sCAAA,CAAA,kBAAA,CAEA,oBAAA,CACA,eAAA,CACA,iBAAA,CACA,gBAAA,CACA,qBAAA,CACA,yBAAA,CACA,sBAAA,CACA,oBAAA,CACA,iBAAA,CACA,eAAA,CACA,eAAA,CACA,qBAAA,CACA,uCAAA,CACA,4DAAA,CACA,kBAAA,CACA,2BAAA,CACA,yBAAA,CACA,gCAAA,CACA,qCAAA,CACA,8BAAA,CACA,sCAAA,CACA,2BAAA,CACA,6BAAA,CACA,wBAAA,CACA,4CAAA,CACA,kEAAA,CACA,qCAAA,CACA,qEAAA,CACA,mEAAA,CACA,wEAAA,CACA,sCAAA,CACA,uCAAA,CACA,kEAAA,CACA,kEAAA,CACA,iCAAA,CACA,kEAAA,CACA,kEAAA,CACA,kEAAA,CACA,kEAAA,CACA,kEAAA,CACA,sEAAA,CACA,6EAAA,CACA,4EAAA,CACA,0EAAA,CACA,+EAAA,CACA,mCAAA,CACA,sCAAA,CACA,oCAAA,CACA,yCAAA,CACA,wCAAA,CACA,mCAAA,CACA,0BAAA,CACA,mCAAA,CACA,yBAAA,CACA,sCAAA,CACA,kCAAA,CACA,uCAAA,CACA,uCAAA,CACA,mCAAA,CACA,uCAAA,CACA,uCAAA,CACA,uBAAA,CACA,mCAAA,CACA,mCAAA,CACA,kCAAA,CACA,qEAAA,CACA,+CAAA,CACA,gDAAA,CACA,2BAAA,CACA,yBAAA,CACA,uDAAA,CACA,iEAAA,CACA,0DAAA,CACA,sDAAA,CACA,uCAAA,CACA,kCAAA,CACA,qCAAA,CACA,iCAAA,CACA,+DAAA,CACA,aAAA,CACA,gFAAA,CACA,mFAAA,CACA,oFAAA,CACA,oFAAA,CACA,uDAAA,CACA,sDAAA,CACA,kCAAA,CACA,0DAAA,CACA,gCAAA,CACA,oDAAA,CACA,mCAAA,CACA,4BAAA,CACA,yBAAA,CACA,4BAAA,CACA,wBAAA,CACA,oBAAA,CACA,yBAAA,CACA,wBAAA,CACA,mCAAA,CACA,0CAAA,CACA,mEAAA,CACA,wBAAA,CACA,uBAAA,CACA,qBAAA,CACA,oBAAA,CACA,2BAAA,CACA,sBAAA,CACA,wBAAA,CACA,sBAAA,CACA,cAAA,CACA,kCAAA,CACA,oBAAA,CACA,mEAAA,CACA,mBAAA,CACA,wDAAA,CACA,cAAA,CACA,eAAA,CACA,iBAAA,CACA,mEAAA,CACA,kBAAA,CACA,oEAAA,CACA,uDAAA,CACA,oEAAA,CACA,2DAAA,CACA,wEAAA,CACA,uDAAA,CACA,oEAAA,CACA,6CAAA,CACA,wBAAA,CACA,iBAAA,CACA,iBAAA,CACA,+BAAA,CACA,0CAAA,CACA,0CAAA,CACA,wCAAA,CACA,iDAAA,CACA,uCAAA,CACA,iDAAA,CACA,8CAAA,CACA,6BAAA,CACA,4CAAA,CACA,oCAAA,CACA,6CAAA,CACA,kDAAA,CACA,6CAAA,CACA,kDAAA,CACA,2CAAA,CACA,sDAAA,CACA,iDAAA,CACA,8CAAA,CACA,uDAAA,CACA,kDAAA,CACA,8CAAA,CACA,kDAAA,CACA,6FAAA,CAAA,iGAAA,CAAA;;AA7JF;AAAA,MA6JE,iFAAA,CAAA;AAAA,CAAA,4CAAA,QAAA,6FAAA,CAAA,kGAAA,CAAA,CC3JF,MACE,4CAAA,CASF,MACE,iDAAA,CAIA,8DAAA,CAIA,0DAAA,CAIA,qCAAA,CACA,0DAAA,CACA,sDAAA,CACA,qCAAA,CACA,mEAAA,CACA,2CAAA,CACA,4CAAA,CACA,4CAAA,CACA,2CAAA,CACA,4CAAA,CACA,oCAAA,CACA,gDAAA,CACA,yCAAA,CAQF,MAAA,qBAAA,CAAA,gCAAA,CAAA,wBAAA,CAIA,WACE,mBAAA,CACA,mFAAA,CACA,mBAAA,CAGF,KACE,8BAAA,CACA,8BAAA,CAGF,MACE,uCAAA,CAIF,WACE,mBAAA,CACA,mFAAA,CACA,mBAAA,CAGF,kBACE,8BAAA,CACA,8BAAA,CAGF,MACE,+CAAA,CAGF,WACE,4BAAA,CACA,2FAAA,CACA,eAAA,CAEF,WACE,4BAAA,CACA,wFAAA,CACA,eAAA,CAGF,KACE,8BAAA,CACA,4BAAA,CACA,2BAAA,CAGF,MACE,uEAAA\",\"file\":\"output.css\",\"sourcesContent\":[\"// This file maps all SCSS color variables to CSS custom properties.\\n// It is compiled to CSS separately from the rest of the app.\\n// The source variables come from color_transformations.scss and variables.scss\\n:root {\\n  color-scheme: #{schemeType()};\\n\\n  --scheme-type: #{schemeType()};\\n  --primary: #{$primary};\\n  --secondary: #{$secondary};\\n  --tertiary: #{$tertiary};\\n  --quaternary: #{$quaternary};\\n  --header_background: #{$header_background};\\n  --header_primary: #{$header_primary};\\n  --highlight: #{$highlight};\\n  --danger: #{$danger};\\n  --success: #{$success};\\n  --love: #{$love};\\n  --d-selected: #{$selected};\\n  --d-selected-text-color: var(--primary);\\n  --d-selected-hover: #{$selected-hover};\\n  --d-hover: #{$hover};\\n  --always-black-rgb: 0, 0, 0;\\n  --primary-rgb: #{hexToRGB($primary)};\\n  --primary-low-rgb: #{hexToRGB($primary-low)};\\n  --primary-very-low-rgb: #{hexToRGB($primary-very-low)};\\n  --secondary-rgb: #{hexToRGB($secondary)};\\n  --header_background-rgb: #{hexToRGB($header_background)};\\n  --tertiary-rgb: #{hexToRGB($tertiary)};\\n  --highlight-rgb: #{hexToRGB($highlight)};\\n  --success-rgb: #{hexToRGB($success)};\\n  --primary-very-low: #{$primary-very-low};\\n  --primary-low: #{$primary-low};\\n  --primary-low-mid: #{$primary-low-mid};\\n  --primary-medium: #{$primary-medium};\\n  --primary-high: #{$primary-high};\\n  --primary-very-high: #{$primary-very-high};\\n  --primary-50: #{$primary-50};\\n  --primary-100: #{$primary-100};\\n  --primary-200: #{$primary-200};\\n  --primary-300: #{$primary-300};\\n  --primary-400: #{$primary-400};\\n  --primary-500: #{$primary-500};\\n  --primary-600: #{$primary-600};\\n  --primary-700: #{$primary-700};\\n  --primary-800: #{$primary-800};\\n  --primary-900: #{$primary-900};\\n  --header_primary-low: #{$header_primary-low};\\n  --header_primary-low-mid: #{$header_primary-low-mid};\\n  --header_primary-medium: #{$header_primary-medium};\\n  --header_primary-high: #{$header_primary-high};\\n  --header_primary-very-high: #{$header_primary-very-high};\\n  --secondary-low: #{$secondary-low};\\n  --secondary-medium: #{$secondary-medium};\\n  --secondary-high: #{$secondary-high};\\n  --secondary-very-high: #{$secondary-very-high};\\n  --tertiary-very-low: #{$tertiary-very-low};\\n  --tertiary-low: #{$tertiary-low};\\n  --tertiary-medium: #{$tertiary-medium};\\n  --tertiary-high: #{$tertiary-high};\\n  --tertiary-hover: #{$tertiary-hover};\\n  --tertiary-25: #{$tertiary-25};\\n  --tertiary-50: #{$tertiary-50};\\n  --tertiary-100: #{$tertiary-100};\\n  --tertiary-200: #{$tertiary-200};\\n  --tertiary-300: #{$tertiary-300};\\n  --tertiary-400: #{$tertiary-400};\\n  --tertiary-500: #{$tertiary-500};\\n  --tertiary-600: #{$tertiary-600};\\n  --tertiary-700: #{$tertiary-700};\\n  --tertiary-800: #{$tertiary-800};\\n  --tertiary-900: #{$tertiary-900};\\n  --quaternary-low: #{$quaternary-low};\\n  --highlight-bg: #{$highlight-bg};\\n  --highlight-low: #{$highlight-low};\\n  --highlight-medium: #{$highlight-medium};\\n  --highlight-high: #{$highlight-high};\\n  --danger-low: #{$danger-low};\\n  --danger-low-mid: #{$danger-low-mid};\\n  --danger-medium: #{$danger-medium};\\n  --danger-hover: #{$danger-hover};\\n  --success-very-low: #{$success-very-low};\\n  --success-low: #{$success-low};\\n  --success-medium: #{$success-medium};\\n  --success-hover: #{$success-hover};\\n  --love-low: #{$love-low};\\n  --wiki: #{$wiki};\\n  --blend-primary-secondary-5: #{$blend-primary-secondary-5};\\n  --primary-med-or-secondary-med: #{$primary-med-or-secondary-med};\\n  --primary-med-or-secondary-high: #{$primary-med-or-secondary-high};\\n  --primary-high-or-secondary-low: #{$primary-high-or-secondary-low};\\n  --primary-low-mid-or-secondary-high: #{$primary-low-mid-or-secondary-high};\\n  --primary-low-mid-or-secondary-low: #{$primary-low-mid-or-secondary-low};\\n  --primary-or-primary-low-mid: #{$primary-or-primary-low-mid};\\n  --highlight-low-or-medium: #{$highlight-low-or-medium};\\n  --tertiary-or-tertiary-low: #{$tertiary-or-tertiary-low};\\n  --tertiary-low-or-tertiary-high: #{$tertiary-low-or-tertiary-high};\\n  --tertiary-med-or-tertiary: #{$tertiary-med-or-tertiary};\\n  --secondary-or-primary: #{$secondary-or-primary};\\n  --tertiary-or-white: #{$tertiary-or-white};\\n  --facebook-or-white: #{$facebook-or-white};\\n  --twitter-or-white: #{$twitter-or-white};\\n  --hljs-attr: #{$hljs-attr};\\n  --hljs-attribute: #{$hljs-attribute};\\n  --hljs-addition: #{$hljs-addition};\\n  --hljs-bg: #{$hljs-bg};\\n  --inline-code-bg: #{$inline-code-bg};\\n  --hljs-comment: #{$hljs-comment};\\n  --hljs-deletion: #{$hljs-deletion};\\n  --hljs-keyword: #{$hljs-keyword};\\n  --hljs-title: #{$hljs-title};\\n  --hljs-name: #{$hljs-name};\\n  --hljs-punctuation: #{$hljs-punctuation};\\n  --hljs-symbol: #{$hljs-symbol};\\n  --hljs-variable: #{$hljs-variable};\\n  --hljs-string: #{$hljs-string};\\n  --google: #{$google};\\n  --google-hover: #{$google-hover};\\n  --instagram: #{$instagram};\\n  --instagram-hover: #{$instagram-hover};\\n  --facebook: #{$facebook};\\n  --facebook-hover: #{$facebook-hover};\\n  --cas: #{$cas};\\n  --twitter: #{$twitter};\\n  --github: #{$github};\\n  --github-hover: #{$github-hover};\\n  --discord: #{$discord};\\n  --discord-hover: #{$discord-hover};\\n  --discourse_id-text: var(--d-button-primary-text-color);\\n  --discourse_id-text-hover: var(--d-button-primary-text-color--hover);\\n  --discourse_id-background: var(--d-button-primary-bg-color);\\n  --discourse_id-background-hover: var(--d-button-primary-bg-color--hover);\\n  --discourse_id-icon: var(--d-button-primary-icon-color);\\n  --discourse_id-icon-hover: var(--d-button-primary-icon-color--hover);\\n  --discourse_id-border: var(--d-button-border);\\n  --gold: #{$gold};\\n  --silver: #{$silver};\\n  --bronze: #{$bronze};\\n  --d-link-color: var(--tertiary);\\n  --title-color--read: var(--primary-medium);\\n  --content-border-color: var(--primary-low);\\n  --input-border-color: var(--primary-400);\\n  --table-border-color: var(--content-border-color);\\n  --metadata-color: var(--primary-medium);\\n  --d-badge-card-background-color: var(--secondary);\\n  --mention-background-color: var(--primary-low);\\n  --title-color: var(--primary);\\n  --title-color--header: var(--header_primary);\\n  --excerpt-color: var(--primary-high);\\n  --shadow-modal: 0 8px 60px rgba(0, 0, 0, #{$shadow-opacity-modal});\\n  --shadow-composer: 0 -1px 40px rgba(0, 0, 0, #{$shadow-opacity-composer});\\n  --shadow-card: 0 4px 14px rgba(0, 0, 0, #{$shadow-opacity-card});\\n  --shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, #{$shadow-opacity-dropdown});\\n  --shadow-menu-panel: var(--shadow-dropdown);\\n  --shadow-header: 0 0 0 1px var(--content-border-color);\\n  --shadow-footer-nav: 0 0 2px 0 rgba(0, 0, 0, #{$shadow-opacity-footer-nav});\\n  --shadow-focus-danger: 0 0 6px 0 var(--danger);\\n  --shadow-docked-composer: 0 4px 30px rgb(0, 0, 0, 0.15);\\n  --float-kit-arrow-stroke-color: var(--primary-low);\\n  --float-kit-arrow-fill-color: var(--secondary);\\n  --topic-timeline-border-color: #{$tertiary-low-or-tertiary-high};\\n  --topic-timeline-handle-color: light-dark(\\n    var(--tertiary-400),\\n    var(--tertiary)\\n  );\\n}\\n\",\"$primary: #222 !default; $secondary: #fff !default; $tertiary: #08c !default; $quaternary: #e45735 !default; $header_background: #fff !default; $header_primary: #333 !default; $highlight: #ffff4d !default; $selected: #d1f0ff !default; $hover: #f2f2f2 !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default;  $public_image_path: \\\"http://localhost:3048/images\\\";  @import \\\"common/foundation/variables\\\"; @import \\\"common/foundation/mixins\\\"; @import \\\"color_definitions\\\";\\n\\n\\n// Color definitions from chat\\n\\n:root {\\n  --chat-skeleton-animation-rgb: #{hexToRGB($primary-50)};\\n}\\n\\n\\n\\n\\n// Color definitions from discourse-events\\n\\n/* stylelint-disable scss/no-global-function-names */\\n:root {\\n  --calendar-normal: #{dark-light-choose(\\n      lighten($tertiary, 55%),\\n      darken($tertiary, 25%)\\n    )};\\n  --calendar-close-to-working-hours: #{dark-light-choose(\\n      desaturate(lighten($tertiary, 45%), 15%),\\n      darken($tertiary, 15%)\\n    )};\\n  --calendar-in-working-hours: #{dark-light-choose(\\n      desaturate(lighten($tertiary, 40%), 20%),\\n      darken($tertiary, 10%)\\n    )};\\n  --fc-border-color: var(--primary-low);\\n  --fc-button-text-color: var(--d-button-default-text-color);\\n  --fc-button-bg-color: var(--d-button-default-bg-color);\\n  --fc-button-border-color: transparent;\\n  --fc-button-hover-bg-color: var(--d-button-default-bg-color--hover);\\n  --fc-button-hover-border-color: transparent;\\n  --fc-button-active-bg-color: var(--tertiary);\\n  --fc-button-active-border-color: transparent;\\n  --fc-event-border-color: var(--primary-low);\\n  --fc-today-bg-color: var(--highlight-medium);\\n  --fc-page-bg-color: var(--secondary);\\n  --fc-list-event-hover-bg-color: var(--secondary);\\n  --fc-neutral-bg-color: var(--primary-low);\\n}\\n\\n\\n\\n\\n// Color definitions from Styled\\n\\n:root{--styled-accent: #08c;--styled-mix: rgb(74%, 74%, 74%);--styled-rgb: 34, 34, 34}\\n/*# sourceMappingURL=common.css.map */\\n\\n// Body font definition\\n@font-face {\\n  font-family: 'Inter';\\n  src: url(\\\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 100 900;\\n}\\n\\nhtml {\\n  font-variation-settings: normal;\\n  font-feature-settings: 'calt' 0;\\n}\\n\\n:root {\\n  --font-family: Inter, Arial, sans-serif;\\n}\\n\\n// Heading font definition\\n@font-face {\\n  font-family: 'Inter';\\n  src: url(\\\"http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 100 900;\\n}\\n\\nh1, h2, h3, h4, h5, h6 {\\n  font-variation-settings: normal;\\n  font-feature-settings: 'calt' 0;\\n}\\n\\n:root {\\n  --heading-font-family: Inter, Arial, sans-serif;\\n}\\n\\n@font-face {\\n  font-family: 'JetBrains Mono';\\n  src: url(\\\"http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 400;\\n}\\n@font-face {\\n  font-family: 'JetBrains Mono';\\n  src: url(\\\"http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19\\\") format(\\\"woff2\\\");\\n  font-weight: 700;\\n}\\n\\nhtml {\\n  font-variation-settings: normal;\\n  font-feature-settings: normal;\\n  font-variant-ligatures: none;\\n}\\n\\n:root {\\n  --d-font-family--monospace: JetBrains Mono, Consolas, Monaco, monospace;\\n}\\n\\n\"]}",
+          "updated_at": "2026-10-21T09:15:05.531304"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 175,
+          "name": "hero",
+          "error": null,
+          "value": "",
+          "type_id": 2,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": 36,
+          "created_at": "2026-10-21T09:15:01.000483",
+          "updated_at": "2026-10-21T09:15:01.000483",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 170,
+          "name": "buttons",
+          "error": null,
+          "value": "@mixin pill($r) {\n  border-radius: $r;\n  padding: 0.5em 1em;\n}\n.styled-button {\n  @include pill(999px);\n  background: lighten($tertiary, 10%);\n  color: darken($tertiary, 20%);\n  &:hover { background: mix($primary, $secondary, 30%); }\n}\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 5,
+          "upload_id": null,
+          "created_at": "2026-10-21T09:14:59.839536",
+          "updated_at": "2026-10-21T09:14:59.839536",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 169,
+          "name": "yaml",
+          "error": null,
+          "value": "accent: \"#ff6600\"\nshow_border: true\nwidth: 3\nratio:\n  default: 1.5\n  type: float\nlabel: \"it's a \\\"test\\\"\"\nchoice:\n  type: enum\n  default: b\n  choices:\n    - a\n    - b\nitems:\n  type: list\n  default: \"one|two\"\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-10-21T09:14:59.836668",
+          "updated_at": "2026-10-21T09:14:59.836668",
+          "value_baked": "baked",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 174,
+          "name": "color_definitions",
+          "error": null,
+          "value": ":root {\n  --styled-accent: #{$tertiary};\n  --styled-mix: #{mix($primary, $secondary, 30%)};\n  --styled-rgb: #{hexToRGB($primary)};\n}\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-21T09:14:59.846733",
+          "updated_at": "2026-10-21T09:14:59.846733",
+          "value_baked": "1a9835815649d1179d9636e743a0b75f3929d09d",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 171,
+          "name": "scss",
+          "error": "Undefined operation \"3 * 2\".",
+          "value": "@import \"buttons\";\n.styled {\n  color: $accent;\n  border: if($show_border == \"true\", #{$width}px solid rgba($primary, 0.25), none);\n  background-image: url($hero);\n  width: calc(100% - #{$width * 2}px);\n  transform: scale($ratio);\n  &::after { content: $label; }\n  .nested > a { text-decoration: underline dotted; user-select: none; }\n  @media (max-width: 600px) { display: none; }\n}\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\n.items { content: \"#{$items}\"; }\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\n:root {\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\n}\n.dark { color-scheme: dark; }\n@supports (display: grid) { .grid { display: grid; } }\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-10-21T09:14:59.842313",
+          "updated_at": "2026-10-21T09:14:59.842313",
+          "value_baked": "5f5f8758f5f22d523e531f58123b6db9161683a4",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 172,
+          "name": "scss",
+          "error": null,
+          "value": ".styled { max-width: 960px; .side { float: right; } }\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 1,
+          "upload_id": null,
+          "created_at": "2026-10-21T09:14:59.844191",
+          "updated_at": "2026-10-21T09:14:59.844191",
+          "value_baked": "0ee71e5b4700a42f2e254f4b9cf3f229ea12ef5c",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 173,
+          "name": "scss",
+          "error": null,
+          "value": ".styled { padding: 0.25em; font-size: $font-down-1; }\n",
+          "type_id": 1,
+          "theme_id": 1,
+          "target_id": 2,
+          "upload_id": null,
+          "created_at": "2026-10-21T09:14:59.845423",
+          "updated_at": "2026-10-21T09:14:59.845423",
+          "value_baked": "fe4ec34670296f8cdabe5927a4260c0a72781221",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_settings": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "accent",
+          "value": "#00aa00",
+          "theme_id": 1,
+          "data_type": 2,
+          "created_at": "2026-10-21T09:15:03.368253",
+          "json_value": null,
+          "updated_at": "2026-10-21T09:15:03.368253"
+        },
+        {
+          "id": 2,
+          "name": "show_border",
+          "value": "false",
+          "theme_id": 1,
+          "data_type": 3,
+          "created_at": "2026-10-21T09:15:04.338156",
+          "json_value": null,
+          "updated_at": "2026-10-21T09:15:04.338156"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Styled",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-21T09:14:59.834933",
+          "updated_at": "2026-10-21T09:14:59.834933",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "upload_references": {
+      "inserted": [
+        {
+          "id": 36,
+          "target_id": 175,
+          "upload_id": 36,
+          "created_at": "2026-10-21T09:15:01.007482",
+          "updated_at": "2026-10-21T09:15:01.007513",
+          "target_type": "ThemeField"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png",
+          "etag": null,
+          "sha1": "043b0aa221f492e60cda981a865188e2c0afe6e0",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": null,
+          "filesize": 48867,
+          "extension": "png",
+          "created_at": "2026-10-21T09:15:00.92531",
+          "updated_at": "2026-10-21T09:15:00.930027",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "small.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 469,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wuqxHBTxySqSnjRY552YZDRhV+s=",
+            "created_at": "2026-10-21T09:14:59.11343",
+            "rotated_at": "2026-10-21T09:14:59.112614",
+            "updated_at": "2026-10-21T09:14:59.11343",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wuqxHBTxySqSnjRY552YZDRhV+s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 469,
+            "seen_at": "2026-10-21T09:14:59.823",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wuqxHBTxySqSnjRY552YZDRhV+s=",
+            "created_at": "2026-10-21T09:14:59.11343",
+            "rotated_at": "2026-10-21T09:14:59.112614",
+            "updated_at": "2026-10-21T09:14:59.11343",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wuqxHBTxySqSnjRY552YZDRhV+s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Styled",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Styled\",\"description\":null,\"created_at\":\"2026-10-21T09:14:59.834Z\",\"updated_at\":\"2026-10-21T09:14:59.834Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"accent\",\"humanized_name\":\"Accent\",\"type\":\"string\",\"default\":\"#ff6600\",\"value\":\"#ff6600\",\"textarea\":false},{\"setting\":\"show_border\",\"humanized_name\":\"Show border\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"width\",\"humanized_name\":\"Width\",\"type\":\"integer\",\"default\":3,\"value\":3},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1.5,\"value\":1.5},{\"setting\":\"label\",\"humanized_name\":\"Label\",\"type\":\"string\",\"default\":\"it's a \\\"test\\\"\",\"value\":\"it's a \\\"test\\\"\",\"textarea\":false},{\"setting\":\"choice\",\"humanized_name\":\"Choice\",\"type\":\"enum\",\"default\":\"b\",\"value\":\"b\",\"valid_values\":[\"a\",\"b\"]},{\"setting\":\"items\",\"humanized_name\":\"Items\",\"type\":\"list\",\"default\":\"one|two\",\"value\":\"one|two\",\"list_type\":null}],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"errors\":[\"Undefined variable.\"],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"color_definitions\",\"target\":\"common\",\"value\":\":root {\\n  --styled-accent: #{$tertiary};\\n  --styled-mix: #{mix($primary, $secondary, 30%)};\\n  --styled-rgb: #{hexToRGB($primary)};\\n}\\n\",\"type_id\":1,\"file_path\":\"common/color_definitions.scss\"},{\"name\":\"scss\",\"target\":\"common\",\"value\":\"@import \\\"buttons\\\";\\n.styled {\\n  color: $accent;\\n  border: if($show_border == \\\"true\\\", #{$width}px solid rgba($primary, 0.25), none);\\n  background-image: url($hero);\\n  width: calc(100% - #{$width * 2}px);\\n  transform: scale($ratio);\\n  \\u0026::after { content: $label; }\\n  .nested \\u003e a { text-decoration: underline dotted; user-select: none; }\\n  @media (max-width: 600px) { display: none; }\\n}\\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\\n.items { content: \\\"#{$items}\\\"; }\\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\\n:root {\\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\\n}\\n.dark { color-scheme: dark; }\\n@supports (display: grid) { .grid { display: grid; } }\\n\",\"error\":\"Undefined variable.\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".styled { max-width: 960px; .side { float: right; } }\\n\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"},{\"name\":\"scss\",\"target\":\"mobile\",\"value\":\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"type_id\":1,\"file_path\":\"mobile/mobile.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: \\\"#ff6600\\\"\\nshow_border: true\\nwidth: 3\\nratio:\\n  default: 1.5\\n  type: float\\nlabel: \\\"it's a \\\\\\\"test\\\\\\\"\\\"\\nchoice:\\n  type: enum\\n  default: b\\n  choices:\\n    - a\\n    - b\\nitems:\\n  type: list\\n  default: \\\"one|two\\\"\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"buttons\",\"target\":\"extra_scss\",\"value\":\"@mixin pill($r) {\\n  border-radius: $r;\\n  padding: 0.5em 1em;\\n}\\n.styled-button {\\n  @include pill(999px);\\n  background: lighten($tertiary, 10%);\\n  color: darken($tertiary, 20%);\\n  \\u0026:hover { background: mix($primary, $secondary, 30%); }\\n}\\n\",\"type_id\":1,\"file_path\":\"stylesheets/buttons.scss\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-21T09:15:00.352457",
+          "ip_address": null,
+          "updated_at": "2026-10-21T09:15:00.352457",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Styled",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Styled\",\"default\":true,\"theme_fields\":[{\"name\":\"color_definitions\",\"target\":\"common\",\"value\":\":root {\\n  --styled-accent: #{$tertiary};\\n  --styled-mix: #{mix($primary, $secondary, 30%)};\\n  --styled-rgb: #{hexToRGB($primary)};\\n}\\n\",\"type_id\":1,\"file_path\":\"common/color_definitions.scss\"},{\"name\":\"scss\",\"target\":\"common\",\"value\":\"@import \\\"buttons\\\";\\n.styled {\\n  color: $accent;\\n  border: if($show_border == \\\"true\\\", #{$width}px solid rgba($primary, 0.25), none);\\n  background-image: url($hero);\\n  width: calc(100% - #{$width * 2}px);\\n  transform: scale($ratio);\\n  \\u0026::after { content: $label; }\\n  .nested \\u003e a { text-decoration: underline dotted; user-select: none; }\\n  @media (max-width: 600px) { display: none; }\\n}\\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\\n.items { content: \\\"#{$items}\\\"; }\\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\\n:root {\\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\\n}\\n.dark { color-scheme: dark; }\\n@supports (display: grid) { .grid { display: grid; } }\\n\",\"error\":\"Undefined variable.\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"hero\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/hero.png\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".styled { max-width: 960px; .side { float: right; } }\\n\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"},{\"name\":\"scss\",\"target\":\"mobile\",\"value\":\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"type_id\":1,\"file_path\":\"mobile/mobile.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: \\\"#ff6600\\\"\\nshow_border: true\\nwidth: 3\\nratio:\\n  default: 1.5\\n  type: float\\nlabel: \\\"it's a \\\\\\\"test\\\\\\\"\\\"\\nchoice:\\n  type: enum\\n  default: b\\n  choices:\\n    - a\\n    - b\\nitems:\\n  type: list\\n  default: \\\"one|two\\\"\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"buttons\",\"target\":\"extra_scss\",\"value\":\"@mixin pill($r) {\\n  border-radius: $r;\\n  padding: 0.5em 1em;\\n}\\n.styled-button {\\n  @include pill(999px);\\n  background: lighten($tertiary, 10%);\\n  color: darken($tertiary, 20%);\\n  \\u0026:hover { background: mix($primary, $secondary, 30%); }\\n}\\n\",\"type_id\":1,\"file_path\":\"stylesheets/buttons.scss\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-21T09:15:01.773798",
+          "ip_address": null,
+          "updated_at": "2026-10-21T09:15:01.773798",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Styled\",\"theme_fields\":[{\"name\":\"color_definitions\",\"target\":\"common\",\"value\":\":root {\\n  --styled-accent: #{$tertiary};\\n  --styled-mix: #{mix($primary, $secondary, 30%)};\\n  --styled-rgb: #{hexToRGB($primary)};\\n}\\n\",\"type_id\":1,\"file_path\":\"common/color_definitions.scss\"},{\"name\":\"scss\",\"target\":\"common\",\"value\":\"@import \\\"buttons\\\";\\n.styled {\\n  color: $accent;\\n  border: if($show_border == \\\"true\\\", #{$width}px solid rgba($primary, 0.25), none);\\n  background-image: url($hero);\\n  width: calc(100% - #{$width * 2}px);\\n  transform: scale($ratio);\\n  \\u0026::after { content: $label; }\\n  .nested \\u003e a { text-decoration: underline dotted; user-select: none; }\\n  @media (max-width: 600px) { display: none; }\\n}\\n.choice-#{$choice} { opacity: 0.5; margin: -0.5em; }\\n.items { content: \\\"#{$items}\\\"; }\\n.boxed { -webkit-box-shadow: 0 0 1px red; box-shadow: 0 0 1px red; backdrop-filter: blur(2px); }\\n@-webkit-keyframes styled-spin { from { opacity: 0; } }\\n@keyframes styled-spin { from { opacity: 0; } to { opacity: 1; } }\\n:root {\\n  --styled-bg: light-dark(#{$secondary}, #{$primary});\\n  --styled-fg: #{scale-color($tertiary, $lightness: -25%)};\\n}\\n.dark { color-scheme: dark; }\\n@supports (display: grid) { .grid { display: grid; } }\\n\",\"error\":\"Undefined variable.\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".styled { max-width: 960px; .side { float: right; } }\\n\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"},{\"name\":\"scss\",\"target\":\"mobile\",\"value\":\".styled { padding: 0.25em; font-size: $font-down-1; }\\n\",\"type_id\":1,\"file_path\":\"mobile/mobile.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: \\\"#ff6600\\\"\\nshow_border: true\\nwidth: 3\\nratio:\\n  default: 1.5\\n  type: float\\nlabel: \\\"it's a \\\\\\\"test\\\\\\\"\\\"\\nchoice:\\n  type: enum\\n  default: b\\n  choices:\\n    - a\\n    - b\\nitems:\\n  type: list\\n  default: \\\"one|two\\\"\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"buttons\",\"target\":\"extra_scss\",\"value\":\"@mixin pill($r) {\\n  border-radius: $r;\\n  padding: 0.5em 1em;\\n}\\n.styled-button {\\n  @include pill(999px);\\n  background: lighten($tertiary, 10%);\\n  color: darken($tertiary, 20%);\\n  \\u0026:hover { background: mix($primary, $secondary, 30%); }\\n}\\n\",\"type_id\":1,\"file_path\":\"stylesheets/buttons.scss\"}]}",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Styled: accent",
+          "topic_id": null,
+          "new_value": "#00aa00",
+          "admin_only": true,
+          "created_at": "2026-10-21T09:15:04.295016",
+          "ip_address": null,
+          "updated_at": "2026-10-21T09:15:04.295016",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "#ff6600",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Styled: show_border",
+          "topic_id": null,
+          "new_value": "false",
+          "admin_only": true,
+          "created_at": "2026-10-21T09:15:05.096999",
+          "ip_address": null,
+          "updated_at": "2026-10-21T09:15:05.096999",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "t",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 2,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-21T09:15:00.93721"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_visits": {
+      "inserted": [
+        {
+          "id": 5,
+          "mobile": false,
+          "user_id": 1,
+          "time_read": 0,
+          "posts_read": 0,
+          "visited_at": "2026-10-21"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-21T09:15:02.561454",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T22:32:51.276926",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "refresh_latest_new_feature",
+      {}
+    ]
+  ],
+  "next_ids": {
+    "stylesheet_cache": 145,
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "theme_settings": 1,
+    "themes": 1,
+    "upload_references": 36,
+    "uploads": 36,
+    "user_histories": 74,
+    "user_uploads": 36,
+    "user_visits": 5
+  },
+  "digests": [
+    "theme_fields.value_baked"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "9a2c0a790f8849317695e4e2deec2f050ba93646109b3643081e40827206c8ab",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
