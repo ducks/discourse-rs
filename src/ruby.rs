@@ -241,6 +241,34 @@ pub fn inspect_value(value: &serde_json::Value) -> String {
     }
 }
 
+/// `inspect` of what `JSON.parse` returns (Hash#inspect with string keys
+/// as Ruby 3.4 writes it: `{"key" => value}`), as `to_s` gives it.
+pub fn inspect_json(value: &serde_json::Value) -> String {
+    use serde_json::Value;
+    match value {
+        Value::Null => "nil".into(),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) if n.is_f64() => float_to_s(n.as_f64().unwrap_or_default()),
+        Value::Number(n) => n.to_string(),
+        Value::String(s) => inspect_string(s),
+        Value::Array(items) => format!(
+            "[{}]",
+            items
+                .iter()
+                .map(inspect_json)
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+        Value::Object(map) => format!(
+            "{{{}}}",
+            map.iter()
+                .map(|(k, v)| format!("{} => {}", inspect_string(k), inspect_json(v)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+    }
+}
+
 /// `ActiveRecord::Base.sanitize_sql_like`: `%`, `_` and `\` escaped with
 /// a backslash.
 pub fn sanitize_sql_like(s: &str) -> String {

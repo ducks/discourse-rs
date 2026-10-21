@@ -100,9 +100,10 @@ pub async fn theme_files(conn: &mut PgConnection, theme_id: i32) -> Result<Theme
     Ok(ThemeFiles::from_exported(exported))
 }
 
-/// A setting's value as Ruby's `to_s` writes it into SCSS.
-fn setting_to_s(type_name: &str, value: &Value) -> Result<String, Unsupported> {
-    Ok(match value {
+/// A setting's value as Ruby's `to_s` writes it into SCSS (an objects
+/// setting's array of hashes as its `inspect`).
+fn setting_to_s(type_name: &str, value: &Value) -> String {
+    match value {
         Value::Null => String::new(),
         Value::Bool(b) => b.to_string(),
         Value::String(s) => s.clone(),
@@ -110,10 +111,8 @@ fn setting_to_s(type_name: &str, value: &Value) -> Result<String, Unsupported> {
             crate::ruby::float_to_s(n.as_f64().unwrap_or_default())
         }
         Value::Number(n) => n.to_string(),
-        Value::Array(_) | Value::Object(_) => {
-            return Err(Unsupported("an objects theme setting in SCSS (169a)"));
-        }
-    })
+        Value::Array(_) | Value::Object(_) => crate::ruby::inspect_json(value),
+    }
 }
 
 /// `Theme#scss_variables`: the theme's upload variables, then its
@@ -166,7 +165,7 @@ pub async fn scss_variables(
         .await?;
         out.push_str(&scss::to_scss_variable(
             &setting.name,
-            &setting_to_s(setting.type_name, &value)?,
+            &setting_to_s(setting.type_name, &value),
         ));
     }
     Ok(Some(out))
@@ -489,13 +488,18 @@ mod tests {
 
     #[test]
     fn settings_write_as_ruby_to_s() {
-        assert_eq!(setting_to_s("bool", &Value::Bool(true)).unwrap(), "true");
-        assert_eq!(setting_to_s("integer", &serde_json::json!(5)).unwrap(), "5");
+        assert_eq!(setting_to_s("bool", &Value::Bool(true)), "true");
+        assert_eq!(setting_to_s("integer", &serde_json::json!(5)), "5");
+        assert_eq!(setting_to_s("float", &serde_json::json!(1.0)), "1.0");
+        assert_eq!(setting_to_s("upload", &Value::Null), "");
+        // What Ruby 3.4 prints on the reference for
+        // `[{"a"=>1.0,"b"=>nil,"c"=>[true, "x\""],"d e"=>{}}].to_s`.
         assert_eq!(
-            setting_to_s("float", &serde_json::json!(1.0)).unwrap(),
-            "1.0"
+            setting_to_s(
+                "objects",
+                &serde_json::json!([{"a": 1.0, "b": null, "c": [true, "x\""], "d e": {}}])
+            ),
+            r#"[{"a" => 1.0, "b" => nil, "c" => [true, "x\""], "d e" => {}}]"#
         );
-        assert_eq!(setting_to_s("upload", &Value::Null).unwrap(), "");
-        assert!(setting_to_s("objects", &serde_json::json!([{"a": 1}])).is_err());
     }
 }
