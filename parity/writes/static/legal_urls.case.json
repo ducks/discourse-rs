@@ -1,0 +1,21 @@
+{
+  "settings": {
+    "tos_url": "https://example.com/terms",
+    "privacy_policy_url": "https://example.com/privacy"
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tos"
+    },
+    {
+      "method": "GET",
+      "path": "/privacy"
+    },
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    }
+  ]
+}

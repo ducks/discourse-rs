@@ -84,30 +84,6 @@ pub struct AboutHtml {
     pub main: String,
 }
 
-/// `Discourse.tos_url` / `privacy_policy_url`: the setting, else the
-/// legal topic's path while the topic exists.
-async fn legal_url(
-    conn: &mut sqlx::PgConnection,
-    settings: &SiteSettings,
-    base_path: &str,
-    url_setting: &str,
-    topic_setting: &str,
-    path: &str,
-) -> Result<Option<String>, AppError> {
-    if let Some(url) = settings.get(url_setting)?.presence() {
-        return Ok(Some(url));
-    }
-    let topic_id = settings.get(topic_setting)?.to_i();
-    if topic_id <= 0 {
-        return Ok(None);
-    }
-    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1)")
-        .bind(i32::try_from(topic_id).unwrap_or(0))
-        .fetch_one(&mut *conn)
-        .await?;
-    Ok(exists.then(|| format!("{base_path}{path}")))
-}
-
 /// GET /about (about#index as HTML): Ember's about page from the same
 /// document /about.json serves, with crawlable_meta_data for its title
 /// and the site description.
@@ -151,7 +127,7 @@ pub async fn page(
         settings: crate::topic_list_view::ListSettings::load(&settings)?,
     };
     let faq_url = settings.get("faq_url")?.to_s().to_string();
-    let tos_url = legal_url(
+    let tos_url = super::invite_redeem::legal_url(
         &mut conn,
         &settings,
         base_path,
@@ -160,7 +136,7 @@ pub async fn page(
         "/tos",
     )
     .await?;
-    let privacy_policy_url = legal_url(
+    let privacy_policy_url = super::invite_redeem::legal_url(
         &mut conn,
         &settings,
         base_path,

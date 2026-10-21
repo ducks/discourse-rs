@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 263a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3073,6 +3073,45 @@ route table has been made, so this list may be short.
     DiscourseConnect provider payload (:1177). A reset with a password
     the server refuses (the same as the current one, a common one) is
     154's (routes/accounts.rs:728)
+
+263. ~~`fix/faq-guidelines`~~ (done) S: GET /faq and /guidelines answered
+    404, so the sidebar's FAQ link (sidebar.rs:779) was dead. Now
+    static#show for /faq, /guidelines and its /rules and /conduct
+    aliases, /tos and /privacy, each also as `.html` and `.json`
+    (routes/static_pages.rs): the login wall sending the guidelines to
+    /login (the legal pages stay open, and none of them are behind the
+    login or required fields gates), rename_faq_to_guidelines (per user,
+    UpcomingChanges.enabled_for_user?) sending /faq (without a faq_url),
+    /rules and /conduct to /guidelines, faq_url, tos_url and
+    privacy_policy_url sending their page elsewhere (/guidelines always
+    shows the topic), the topic guidelines_topic_id, tos_topic_id or
+    privacy_topic_id names (not found when unset or deleted). An XHR (what
+    StaticPage.find asks for) gets show.html.erb byte for byte
+    (static_page_view.rs); a page load gets the Ember route around it
+    (templates/faq.gjs or tos.gjs) with its titleToken, `static-<route>`
+    body class, the sidebar's FAQ or Guidelines link active, and
+    WatchRead's POST /u/read-faq once a member who has not read the
+    guidelines scrolls to their end. Discourse.tos_url and
+    privacy_policy_url no longer link a deleted topic (Site, the about
+    page, the signup disclaimer). The fresh_install seed's "Guidelines"
+    topic (guidelines_topic_id 4) is the demo's page; it has no terms or
+    privacy topics, so those 404 as on Rails. Measured in
+    parity/writes/static (11 cases, the recorder now clearing
+    Discourse's url cache between cases) and against rs-ref-c: the
+    normalized #main-outlet DOM matches anonymous, as user1 and as admin
+    but for Ember's user and group card shells the port leaves out
+    everywhere; screenshots 0.00-0.03% desktop (/guidelines rows in
+    parity/screens/pages and summary.json) and mobile. Left, split into
+    263a.
+    263a. `feat/static-pages-rest` S: a page load of the `.html` and
+    `.json` paths, which Rails serves in its layout for Ember's router to
+    not-find (routes/static_pages.rs:269); the first post's translation
+    under content localization (:166); a topic without posts, a first
+    post or a stored slug (:176,185,191; Rails raises or computes the
+    slug); plugins' add_topic_static_page pages wait on milestone 5. The
+    redirects go to Discourse.base_url's host like the port's other
+    redirects, where Rails' redirect_to uses the request's host
+    (routes/static_pages.rs:59)
 
 ### Phase 11: the bundled plugins' gaps (210)
 

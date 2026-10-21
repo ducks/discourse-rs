@@ -210,6 +210,7 @@ pub mod site_settings;
 pub mod site_state;
 pub mod site_texts;
 pub mod staff_action_logs;
+pub mod static_page_view;
 pub mod stylesheet;
 pub mod svg_sprite;
 pub mod svg_sprite_xml;

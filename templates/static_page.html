@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
+{% block content %}
+{{ main|safe }}
+{%- if watch_read %}
+<script>
+  // WatchRead: once the guidelines' last paragraph is in view, the member
+  // has read them (POST /u/read-faq), as currentUser.read_faq then says.
+  Discourse.onPage(function () {
+    var done = false;
+    function check() {
+      var last = document.querySelector("[itemprop='mainContentOfPage'] > *:last-child");
+      if (done || !last) {
+        return;
+      }
+      var rect = last.getBoundingClientRect();
+      if (rect.top < 0 || rect.left < 0 || rect.bottom > window.innerHeight || rect.right > window.innerWidth) {
+        return;
+      }
+      done = true;
+      var headers = {};
+      try {
+        headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
+      } catch (e) {
+        // No token: the server refuses the request.
+      }
+      fetch("{{ base_path }}/u/read-faq", { method: "POST", headers: headers, credentials: "same-origin" });
+    }
+    // Its constructor checks before the page is drawn, so only scrolling
+    // or resizing counts.
+    window.addEventListener("resize", check, false);
+    window.addEventListener("scroll", check, false);
+    return function () {
+      window.removeEventListener("resize", check, false);
+      window.removeEventListener("scroll", check, false);
+    };
+  });
+</script>
+{%- endif %}
+{% endblock %}

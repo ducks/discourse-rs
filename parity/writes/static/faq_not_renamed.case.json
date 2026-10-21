@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "settings": {
+    "rename_faq_to_guidelines": false
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/faq"
+    },
+    {
+      "method": "GET",
+      "path": "/rules"
+    },
+    {
+      "method": "GET",
+      "path": "/conduct"
+    },
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    }
+  ]
+}

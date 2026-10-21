@@ -267,6 +267,9 @@ def reset_plugin_caches
   # Theme's in-process cache (user selectable themes, components, cached
   # settings), which setup SQL and the rollback leave stale.
   Theme.clear_cache!
+  # Discourse.tos_url and privacy_policy_url, which a case's tos_topic_id
+  # or privacy_topic_id fills and the rollback leaves behind.
+  Discourse.clear_urls!
 end
 
 # Every file and directory under public/backups.

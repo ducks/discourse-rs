@@ -33,7 +33,8 @@ fn exempt(path: &str) -> bool {
             // StaticController skips the gate; /login renders below.
             | "/signup"
             | "/password-reset"
-    ) || path.starts_with("/assets/")
+    ) || super::static_pages::is_page(path)
+        || path.starts_with("/assets/")
         || path.starts_with("/fonts/")
         || path.starts_with("/highlight-js/")
         || path.starts_with("/letter_avatar_proxy/")

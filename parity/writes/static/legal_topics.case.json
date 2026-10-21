@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "settings": {
+    "tos_topic_id": 35,
+    "privacy_topic_id": 41
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tos"
+    },
+    {
+      "method": "GET",
+      "path": "/privacy.html"
+    },
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    }
+  ]
+}

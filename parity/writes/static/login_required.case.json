@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "login_required": true,
+    "tos_topic_id": 35
+  },
+  "keep_headers": ["Location"],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/guidelines"
+    },
+    {
+      "method": "GET",
+      "path": "/faq"
+    },
+    {
+      "method": "GET",
+      "path": "/rules"
+    },
+    {
+      "method": "GET",
+      "path": "/tos"
+    }
+  ]
+}

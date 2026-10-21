@@ -48,6 +48,9 @@ pub enum Active {
     /// review.index: the Review link, its href the route's query (the
     /// params that differ from their defaults, `?sort_order=score`).
     Review(String),
+    /// The static pages by route (faq, guidelines, rules, conduct, tos,
+    /// privacy): the FAQ link names the faq or guidelines route.
+    Static(String),
 }
 
 impl Active {
@@ -69,6 +72,7 @@ impl Active {
             Active::Groups => "groups".into(),
             Active::Badges => "badges".into(),
             Active::Review(query) => format!("review:{query}"),
+            Active::Static(route) => format!("static:{route}"),
         }
     }
 
@@ -77,6 +81,7 @@ impl Active {
             Some(("category", id)) => id.parse().map(Active::Category).unwrap_or(Active::None),
             Some(("tag", name)) => Active::Tag(name.to_string()),
             Some(("review", query)) => Active::Review(query.to_string()),
+            Some(("static", route)) => Active::Static(route.to_string()),
             Some(("chat-channel", id)) => {
                 id.parse().map(Active::ChatChannel).unwrap_or(Active::None)
             }
@@ -854,6 +859,8 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
             "users" => *cx.active == Active::Users,
             "groups" => *cx.active == Active::Groups,
             "badges" => *cx.active == Active::Badges,
+            // The faq_url link is a plain href, never active.
+            "faq" | "guidelines" => !plain && *cx.active == Active::Static(name.to_string()),
             _ => false,
         },
         ..Default::default()
