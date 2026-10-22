@@ -167,6 +167,11 @@
   font-size: var(--font-down-1);
 }
 
+/* _topic-list.scss:491 */
+.table-heading {
+  border-bottom: var(--d-table-border-top-height) solid var(--table-border-color);
+}
+
 .topic-post-badges {
   white-space: nowrap;
   align-self: center;
