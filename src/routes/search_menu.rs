@@ -225,6 +225,7 @@ pub async fn show(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: ListSettings::load(&settings)?,
     };

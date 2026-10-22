@@ -185,6 +185,7 @@ pub async fn page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&settings)?,
     };

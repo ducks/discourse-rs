@@ -230,6 +230,7 @@ mod tests {
                 .with_timezone(&chrono::Utc),
             categories: &categories,
             expand_all_pinned: false,
+            hide_category: false,
             member_trust_level: Some(1),
             settings: ListSettings {
                 show_pinned_excerpt_desktop: true,

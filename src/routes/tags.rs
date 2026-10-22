@@ -516,8 +516,11 @@ async fn show_list(
         &doc,
         &state.i18n,
         &settings,
-        true,
-        super::list::highlights_last_visited(kind, &params),
+        crate::html::ListRows {
+            expand_all_pinned: true,
+            hide_category: false,
+            highlight_last_visited: super::list::highlights_last_visited(kind, &params),
+        },
         // Tag lists are latest, top, hot or votes: no subset, and no
         // tracking counts to scope.
         &crate::html::ListFooterScope {
@@ -537,6 +540,22 @@ async fn show_list(
         category.as_ref().map(|c| c.name.as_str()),
     );
     page.title = crate::html::document_title(Some(&token), &page.site_title, "");
+    // Navigation's "tags-page" and AddCategoryTagClasses' category and tag
+    // classes, in the order the client ends up with them.
+    let tag_class = format!(
+        "tag-{}",
+        tag.as_ref().map_or(tag_name.as_str(), |t| t.name.as_str())
+    );
+    match &category {
+        Some(c) => {
+            let class = format!("category-{}", c.slug_path(&mut conn).await?.join("-"));
+            page.chrome
+                .discovery_body_classes(&["tags-page", "category", &class, &tag_class]);
+        }
+        None => page
+            .chrome
+            .discovery_body_classes(&[&tag_class, "tags-page"]),
+    }
     page.tag = Some(crate::html::TagHeading {
         name: tag_name.clone(),
         url: match &tag {

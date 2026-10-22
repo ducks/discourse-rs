@@ -109,6 +109,9 @@ pub struct ListContext<'a> {
     pub categories: &'a HashMap<i64, ListCategory>,
     /// `expandAllPinned`: a category's or a tag's list.
     pub expand_all_pinned: bool,
+    /// TopicList#hideCategory: the rows go without their category badge
+    /// (hideUniformCategory, a list of a category with no subcategories).
+    pub hide_category: bool,
     /// The viewer's trust level, for a member.
     pub member_trust_level: Option<i32>,
     pub settings: ListSettings,
@@ -869,8 +872,10 @@ fn row_for(
 
     let pinned_uncategorized =
         flag("pinned") && category.is_some_and(|c| c.id == cx.settings.uncategorized_category_id);
+    // TopicCell: no badge under @hideCategory, nor for a pinned topic in
+    // uncategorized.
     let badge = match category {
-        Some(c) if !pinned_uncategorized => category_badge(cx, c),
+        Some(c) if !cx.hide_category && !pinned_uncategorized => category_badge(cx, c),
         _ => String::new(),
     };
     let tags = tags_html(cx, topic, s(&topic["title"]), &tags_callbacks(cx, topic));
@@ -979,7 +984,11 @@ fn row_for(
     }
 
     if mobile {
-        let category_link = category.map(|c| category_badge(cx, c)).unwrap_or_default();
+        // TopicListItem's mobile stats: the badge unless @hideCategory.
+        let category_link = category
+            .filter(|_| !cx.hide_category)
+            .map(|c| category_badge(cx, c))
+            .unwrap_or_default();
         return mobile_row(
             cx,
             topic,
@@ -1467,6 +1476,7 @@ mod tests {
             now: Utc::now(),
             categories: &categories,
             expand_all_pinned: false,
+            hide_category: false,
             member_trust_level: None,
             settings: settings(false),
         };

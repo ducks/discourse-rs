@@ -337,6 +337,35 @@ pub struct Chrome {
 }
 
 impl Chrome {
+    /// The bodyClass helper: `class` on the body after the others, unless
+    /// the body has it already (classList.add).
+    pub fn add_body_class(&mut self, class: &str) {
+        if !self.body_classes.split(' ').any(|c| c == class) {
+            if !self.body_classes.is_empty() {
+                self.body_classes.push(' ');
+            }
+            self.body_classes.push_str(class);
+        }
+    }
+
+    /// A discovery list's body classes after the chrome's: WelcomeBanner's
+    /// `welcome-banner--enabled`, the list's own (Navigation's
+    /// `navigation-*`, AddCategoryTagClasses'), then
+    /// `welcome-banner--visible`, which WelcomeBanner adds once its search
+    /// is found below the header: drawn on a desktop page that can search,
+    /// welcome-banner.js keeps it current as the page scrolls or narrows.
+    pub fn discovery_body_classes(&mut self, classes: &[&str]) {
+        if self.welcome_banner {
+            self.add_body_class("welcome-banner--enabled");
+        }
+        for class in classes {
+            self.add_body_class(class);
+        }
+        if self.welcome_banner && self.can_search && !crate::mobile::mobile_view() {
+            self.add_body_class("welcome-banner--visible");
+        }
+    }
+
     /// An admin page: the admin panel in place of the forum's sidebar (or
     /// in the mobile view's header menu), no live sidebar counts for links
     /// that are not on the page, `admin-area` on `<html>`, `admin-interface`
@@ -774,6 +803,10 @@ impl Site {
                 classes.push(format!("uc-{}", name.replace('_', "-")));
             }
         }
+        // GlimmerSiteHeader's `staff` for a staff member.
+        if guardian.is_staff() {
+            classes.push("staff".into());
+        }
         self.chrome.show_footer = true;
         self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
         // theme_lookup and customHTML: the default theme's html fields for
@@ -1152,6 +1185,7 @@ impl Site {
             now: chrono::Utc::now(),
             categories: &categories,
             expand_all_pinned: false,
+            hide_category: false,
             member_trust_level: guardian.user().map(|u| u.trust_level),
             settings: crate::topic_list_view::ListSettings::load(settings)?,
         };
@@ -2229,20 +2263,29 @@ fn s(v: &Value) -> String {
     v.as_str().unwrap_or_default().to_string()
 }
 
-/// The latest page from the /latest.json document. `expand_all_pinned` is
-/// a category's or a tag's list, which shows every pinned topic's excerpt;
-/// `highlight_last_visited` a list in the default order, which marks where
-/// the member's last visit was (TopicList#lastVisitedTopic); `footer` the
-/// list's filter and scope, for its footer (list_bottom).
-#[allow(clippy::too_many_arguments)]
+/// How latest_page draws a list's rows.
+#[derive(Clone, Copy, Default)]
+pub struct ListRows {
+    /// A category's or a tag's list, which shows every pinned topic's
+    /// excerpt.
+    pub expand_all_pinned: bool,
+    /// TopicList#hideCategory: the rows without their category badge.
+    pub hide_category: bool,
+    /// A list in the default order, which marks where the member's last
+    /// visit was (TopicList#lastVisitedTopic).
+    pub highlight_last_visited: bool,
+}
+
+/// The latest page from the /latest.json document, its rows drawn as
+/// `shape` says; `footer` the list's filter and scope, for its footer
+/// (list_bottom).
 pub async fn latest_page(
     conn: &mut PgConnection,
     mut site: Site,
     list: &Value,
     i18n: &I18n,
     settings: &SiteSettings,
-    expand_all_pinned: bool,
-    highlight_last_visited: bool,
+    shape: ListRows,
     footer: &ListFooterScope<'_>,
 ) -> Result<LatestPage, HtmlError> {
     let categories = site.list_categories(conn).await?;
@@ -2251,7 +2294,8 @@ pub async fn latest_page(
         base_path: &site.base_path,
         now: crate::clock::now(),
         categories: &categories,
-        expand_all_pinned,
+        expand_all_pinned: shape.expand_all_pinned,
+        hide_category: shape.hide_category,
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
@@ -2260,7 +2304,7 @@ pub async fn latest_page(
         .viewer
         .as_ref()
         .and_then(|v| v.previous_visit_at)
-        .filter(|_| highlight_last_visited);
+        .filter(|_| shape.highlight_last_visited);
     let rows: Vec<String> = list["topic_list"]["topics"]
         .as_array()
         .map(|topics| {
@@ -2551,6 +2595,7 @@ pub async fn topic_page(
         now: chrono::Utc::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };

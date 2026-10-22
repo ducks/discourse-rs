@@ -245,6 +245,7 @@ pub(super) async fn form_templates_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -954,6 +955,7 @@ pub(super) async fn embedding_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };

@@ -979,6 +979,7 @@ pub async fn tag_page_controls(
         now: chrono::Utc::now(),
         categories: &categories_map,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: guardian.user().map(|u| u.trust_level),
         settings: crate::topic_list_view::ListSettings::load(s)?,
     };

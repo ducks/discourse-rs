@@ -880,8 +880,11 @@ pub async fn latest(
         &json,
         &state.i18n,
         &settings,
-        false,
-        highlights_last_visited(ListKind::Latest, &params),
+        crate::html::ListRows {
+            expand_all_pinned: false,
+            hide_category: false,
+            highlight_last_visited: highlights_last_visited(ListKind::Latest, &params),
+        },
         &crate::html::ListFooterScope {
             filter: "latest",
             ..Default::default()
@@ -910,6 +913,8 @@ pub async fn latest(
     };
     page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
+    // Navigation's "navigation-topics": a list of no category or tag.
+    page.chrome.discovery_body_classes(&["navigation-topics"]);
     page.nav = crate::html::nav_items(
         &state.i18n,
         &settings,
@@ -1300,14 +1305,18 @@ pub async fn category(
     )
     .await?;
     site.bus_position = bus_position;
+    let hide_category = hide_uniform_category(&mut conn, &settings, &guardian, category.id).await?;
     let mut page = crate::html::latest_page(
         &mut conn,
         site,
         &doc,
         &state.i18n,
         &settings,
-        true,
-        highlights_last_visited(kind, &params),
+        crate::html::ListRows {
+            expand_all_pinned: true,
+            hide_category,
+            highlight_last_visited: highlights_last_visited(kind, &params),
+        },
         &crate::html::ListFooterScope {
             filter: kind.name(),
             subset: params.last("subset"),
@@ -1336,10 +1345,25 @@ pub async fn category(
         now: chrono::Utc::now(),
         categories: &categories,
         expand_all_pinned: true,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&settings)?,
     };
     page.category_nav = true;
+    if let Some(c) = categories.get(&i64::from(category.id)) {
+        // ApplicationHelper#body_classes' `category-<slug_path>` from Rails'
+        // layout ahead of the client's, then AddCategoryTagClasses' and
+        // Navigation's "navigation-category".
+        let class = format!(
+            "category-{}",
+            crate::topic_list_view::category_full_slug(&list_cx, c)
+        );
+        page.chrome.body_classes = format!("{class} {}", page.chrome.body_classes)
+            .trim_end()
+            .to_string();
+        page.chrome
+            .discovery_body_classes(&["category", &class, "navigation-category"]);
+    }
     page.breadcrumbs =
         crate::html::category_breadcrumbs(&list_cx, &settings, i64::from(category.id), none)?;
     let can_vote = crate::plugins::topic_voting::enabled(&settings)?
@@ -1538,6 +1562,7 @@ async fn categories_response(
             now: crate::clock::now(),
             categories: &categories,
             expand_all_pinned: false,
+            hide_category: false,
             member_trust_level: page.viewer.as_ref().map(|v| v.trust_level),
             settings: crate::topic_list_view::ListSettings::load(&settings)?,
         };
@@ -1592,11 +1617,6 @@ async fn categories_response(
                 state.i18n.t(label).unwrap_or_default()
             );
         }
-        // discovery/categories.gjs: bodyClass "categories-list"; its
-        // Navigation's "navigation-categories".
-        page.chrome
-            .body_classes
-            .push_str(" navigation-categories categories-list");
     }
     page.banner = crate::html::welcome_banner(
         &state.i18n,
@@ -1606,6 +1626,12 @@ async fn categories_response(
         "categories",
     )?;
     page.chrome.welcome_banner = !page.banner.is_empty();
+    if ported && !has_parent {
+        // discovery/categories.gjs: its Navigation's "navigation-categories",
+        // then bodyClass "categories-list".
+        page.chrome
+            .discovery_body_classes(&["navigation-categories", "categories-list"]);
+    }
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;
@@ -1924,8 +1950,11 @@ async fn front_list(
         &doc,
         &state.i18n,
         &settings,
-        false,
-        highlights_last_visited(kind, &params),
+        crate::html::ListRows {
+            expand_all_pinned: false,
+            hide_category: false,
+            highlight_last_visited: highlights_last_visited(kind, &params),
+        },
         &crate::html::ListFooterScope {
             filter: kind.name(),
             subset: params.last("subset"),
@@ -1949,6 +1978,8 @@ async fn front_list(
     );
     page.chrome.welcome_banner = !page.banner.is_empty();
     page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
+    // Navigation's "navigation-topics": a list of no category or tag.
+    page.chrome.discovery_body_classes(&["navigation-topics"]);
     if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {
         page.live_filter = kind.name().to_string();
         page.live_since = live_since;
@@ -1972,6 +2003,38 @@ async fn front_list(
         &settings,
         &vs,
     )?)
+}
+
+/// TopicList.hideUniformCategory: a category's list hides the rows'
+/// category badge unless displayCategoryInList, the category having
+/// children (Site's has_children: a subcategory the viewer can see) or
+/// being the shared drafts category the site gives a viewer who may see
+/// them (SiteSerializer#shared_drafts_category_id).
+pub(crate) async fn hide_uniform_category(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    category_id: i32,
+) -> Result<bool, AppError> {
+    let secure = guardian.secure_category_ids(&mut *conn, settings).await?;
+    let has_children: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM categories WHERE parent_category_id = $1 \
+         AND (NOT read_restricted OR id = ANY($2)))",
+    )
+    .bind(category_id)
+    .bind(&secure)
+    .fetch_one(&mut *conn)
+    .await?;
+    if has_children {
+        return Ok(false);
+    }
+    if let Some(id) = settings.get("shared_drafts_category")?.presence()
+        && guardian.can_see_shared_draft(settings)?
+        && crate::ruby::to_i(&id) == i64::from(category_id)
+    {
+        return Ok(false);
+    }
+    Ok(true)
 }
 
 /// The crawler block for a list page: the site's title, description and

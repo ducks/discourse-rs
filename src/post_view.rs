@@ -2918,6 +2918,7 @@ mod tests {
                 .with_timezone(&Utc),
             categories: &categories,
             expand_all_pinned: false,
+            hide_category: false,
             member_trust_level: None,
             settings: crate::topic_list_view::ListSettings {
                 show_pinned_excerpt_desktop: true,
@@ -3190,6 +3191,7 @@ mod tests {
             now: Utc::now(),
             categories: &categories,
             expand_all_pinned: false,
+            hide_category: false,
             member_trust_level: None,
             settings: crate::topic_list_view::ListSettings {
                 show_pinned_excerpt_desktop: true,

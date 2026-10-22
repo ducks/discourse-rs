@@ -3,6 +3,7 @@
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 {{ banner|safe }}
+{%- if !banner.is_empty() %}<script src="{{ crate::assets::url(base_path, "welcome-banner.js") }}"></script>{% endif %}
 {% if let Some(h) = heading %}{% if !category_nav %}
 <h1 class="category-heading">
   {% if let Some(p) = h.parent %}<a href="{{ p.url }}">{{ p.name }}</a> &rsaquo; {% endif %}<a href="{{ h.url }}">{{ h.name }}</a>
