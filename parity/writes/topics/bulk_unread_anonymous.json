@@ -1,0 +1,59 @@
+{
+  "name": "bulk_unread_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "change_notification_level",
+          "notification_level_id": "1"
+        },
+        "tracked": "false",
+        "include_subcategories": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/reset-new",
+      "params": {
+        "tracked": "false",
+        "dismiss_posts": "true",
+        "dismiss_topics": "true",
+        "untrack": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-22T14:30:11.823383",
+  "transaction_started_at": "2026-10-22T14:30:07.730846",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "a403ea0484b93601ae971c7cec2d14717183621a38ac24078bd9f63c2b47048a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

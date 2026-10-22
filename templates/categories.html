@@ -5,7 +5,7 @@
 {{ banner|safe }}
 {%- if !banner.is_empty() %}<script src="{{ crate::assets::url(base_path, "welcome-banner.js") }}"></script>{% endif %}
 {% if !main.is_empty() %}
-{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, false) %}{% endif %}
+{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, false, self.dismiss_top()) %}{% endif %}
 <div class="container list-container --categories">
   <div class="row full-width"><div id="header-list-area"></div></div>
   <div class="row full-width"><div id="list-area"><div class="contents">{{ main|safe }}</div></div></div>

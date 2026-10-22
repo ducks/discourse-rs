@@ -18,7 +18,7 @@
 <h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
 {% endif %}{% endif %}
 {{ tag_info|safe }}
-{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, self.bulk_select()) %}{% endif %}
+{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, self.bulk_select(), dismiss_top) %}{% endif %}
 <div id="list-updates" class="list-updates"></div>
 <div class="container list-container --topic-list">
  <div class="row full-width">
@@ -58,6 +58,7 @@
 {% if !tag_info.is_empty() %}<script src="{{ crate::assets::url(base_path, "tag-info.js") }}"></script>{% endif %}
 {% if !top_lists.is_empty() %}<script src="{{ crate::assets::url(base_path, "top-period.js") }}"></script>{% endif %}
 {% if self.empty_filter() %}<script src="{{ crate::assets::url(base_path, "empty-topic-filter.js") }}"></script>{% endif %}
+{% if !dismiss_strings.is_empty() %}<script src="{{ crate::assets::url(base_path, "topic-dismiss.js") }}" data-topic-dismiss data-strings="{{ dismiss_strings }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}

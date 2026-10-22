@@ -1,0 +1,33 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/reset-new",
+      "params": {
+        "tracked": "false",
+        "category_id": "4",
+        "include_subcategories": "false",
+        "dismiss_topics": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/reset-new",
+      "params": {
+        "tracked": "false",
+        "dismiss_posts": "true",
+        "untrack": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/reset-new",
+      "params": {
+        "tracked": "false",
+        "dismiss_posts": "true",
+        "dismiss_topics": "true"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "change_notification_level",
+          "notification_level_id": "1"
+        },
+        "tracked": "false",
+        "category_id": "4",
+        "include_subcategories": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "change_notification_level",
+          "notification_level_id": "1"
+        },
+        "tracked": "false",
+        "include_subcategories": "true"
+      }
+    }
+  ]
+}

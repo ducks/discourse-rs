@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "dismiss_posts"
+        },
+        "tracked": "false",
+        "include_subcategories": "true"
+      }
+    }
+  ]
+}
