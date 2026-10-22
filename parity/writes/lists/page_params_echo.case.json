@@ -3,5 +3,7 @@
   "requests": [
     {"method": "GET", "path": "/latest.json?per_page=1&username=bob&period=weekly&groupname=g"},
     {"method": "GET", "path": "/latest.json?per_page=1&order=likes&ascending=false&subset=topics&state=x"}
-  ]
+  ],
+  "ignore": ["/responses/1/body/users"],
+  "unordered_responses": [{"path": "/responses/1/body/topic_list/topics", "ties": ["like_count"], "cut": true}]
 }

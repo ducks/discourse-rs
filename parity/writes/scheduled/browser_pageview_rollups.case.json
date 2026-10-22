@@ -6,5 +6,11 @@
   ],
   "requests": [],
   "enqueue": [["maintain_browser_pageview_rollups", {}]],
-  "run_jobs": ["maintain_browser_pageview_rollups"]
+  "run_jobs": ["maintain_browser_pageview_rollups"],
+  "unordered": {
+    "browser_pageview_country_daily_rollups": ["id"],
+    "browser_pageview_entry_url_daily_rollups": ["id"],
+    "browser_pageview_referrer_daily_rollups": ["id"],
+    "browser_pageview_session_engagement_daily_rollups": ["id"]
+  }
 }
