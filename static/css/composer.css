@@ -38,6 +38,23 @@
   color: var(--primary);
 }
 
+/* common/ui-kit/d-pointer-drag.scss and d-resize-separator.scss: the
+   grippie's touch action, its cursor, and the body's for the length of a
+   resize */
+
+/* d-pointer-drag.scss:9 */
+[data-pointer-drag="none"] {
+  touch-action: none;
+}
+/* d-resize-separator.scss:7 */
+.d-resize-separator[data-resize-axis="vertical"] {
+  cursor: ns-resize;
+}
+/* d-resize-separator.scss:26 */
+body.d-resizing-ns {
+  cursor: ns-resize;
+}
+
 /* common/d-editor.scss */
 
 /* d-editor.scss:3 */

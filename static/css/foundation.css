@@ -645,6 +645,11 @@ form {
   top: 0;
 }
 
+/* discourse.scss:634 */
+.clear-transitions {
+  transition: none !important;
+}
+
 /* discourse.scss:650 */
 .avatar-wrapper {
   background-color: var(--secondary);

@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a, 272a, 273a, 274a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a, 272a, 273a, 274a, 276a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3709,6 +3709,57 @@ route table has been made, so this list may be short.
     /g/:name/members as a page answers the members JSON route's 404
     where Ember redirects to the group's page, its members
     (routes/mod.rs:2467)
+276. ~~`fix/composer-open-padding`~~ (done) S: with the composer open
+    the page could not scroll its end clear of it: Ember's
+    Composer#composeStateChanged puts html.composer-open on the document
+    while the compose state is open (core's compose.scss pads #main-outlet
+    by --composer-height for it) and html.fullscreen-composer while
+    fullscreen, and the port set neither on <html> (fullscreen-composer
+    went on the body). /new-topic scored 27.8% for the reference's 400px
+    padding. composer.js now follows the composer service: open sets the
+    default height (reply 255px, new topic 400px, or the kept one) as the
+    model's composerHeight and --composer-height; collapse sets it to
+    40px and drops composer-open; unshrink and openIfDraft put the
+    model's height back; close drops both classes and the property.
+    Fullscreen is its own compose state, #reply-control.fullscreen
+    without .open, as composer-body's class binding draws it.
+    composer-container's htmlClass composer-has-preview follows the
+    composer showing with its preview. The grippie is DResizeSeparator's
+    now: data-resize-axis and data-pointer-drag in the markup, a primary
+    button drag reported once a frame and clamped to the composer's
+    min-height and the viewport below the header (a press without a move
+    is a click), the arrow keys stepping 16px and Home and End going to
+    the bounds, aria-valuenow, -min and -max measured as
+    resize-measurements does, body.d-resizing-ns and
+    #reply-control.clear-transitions while it lasts, the dragged height
+    the model's (a minimized composer opens again at it) and kept in
+    localStorage once it ends. page.js kept the server's <html> classes
+    on a boosted page change, dropping the composer's state with the
+    on-screen keyboard's: those stay now while the composer does. Core
+    rules that read them and were missing: compose.scss:740's touch
+    block (the progress bar above an open composer, the keyboard-visible
+    composer), topic-footer.scss:116, discourse.scss:634, and the
+    d-pointer-drag and d-resize-separator rules. Compared with
+    playwright against rs-ref-c, desktop 1280x900 and a 390px phone:
+    the html and #reply-control classes, --composer-height, #main-outlet's
+    padding and the composer's box through open, minimize, expand,
+    fullscreen and back, three grippie drags (up 120px, past the minimum,
+    past the maximum), minimize and expand after a drag, close, and a
+    page change with the composer open and minimized, all equal; with
+    the composer open on a topic and on /latest, scrolled to the bottom,
+    the last post's, the footer buttons' and the last row's distance to
+    the composer's top equal. Screenshots against rs-ref-c: /new-topic
+    as user1 27.8% to 0.47 (the rest is the rich editor, 196), the
+    topic's reply composer 1.50 to 1.07, /latest's 0.63 to 0.64. Tests in
+    tests/new_topic.rs. Left, split into 276a.
+    276a. `fix/composer-open-padding-rest` S: the saving compose state
+    (#reply-control.saving, composer-open dropped while a post saves) is
+    not modeled, composer.js keeps .open and disables the button; a
+    closed composer keeps its composer-action-* and topic classes where
+    composer-body drops them; the topic timeline's composer:resized
+    sizing (topic-navigation's heightQuery, the scrollarea's height)
+    does not read the composer; footer-nav.scss's offset waits for the
+    footer nav, which the port does not draw
 
 ### Phase 11: the bundled plugins' gaps (210)
 

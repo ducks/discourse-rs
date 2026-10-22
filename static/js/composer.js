@@ -481,9 +481,11 @@
       setMode("edit", true);
       title.disabled = true;
     }
-    control.classList.remove("closed", "draft");
+    control.classList.remove("closed", "draft", "fullscreen");
     control.classList.add("open");
-    root.style.setProperty("--composer-height", defaultHeight(opts.mode));
+    composerHeight = defaultHeight(opts.mode);
+    root.style.setProperty("--composer-height", composerHeight);
+    composeStateChanged();
     updatePreview();
 
     var resuming = Boolean(opts.draftKey);
@@ -555,7 +557,10 @@
     control.classList.remove("open", "draft", "fullscreen");
     control.classList.add("closed");
     replyArea.hidden = true;
-    document.body.classList.remove("fullscreen-composer");
+    // The composer service's close().
+    root.classList.remove("fullscreen-composer", "composer-open");
+    root.style.removeProperty("--composer-height");
+    syncPreviewClass();
     state = null;
     announce();
   }
@@ -587,23 +592,53 @@
     saveDraft();
     control.classList.remove("open", "fullscreen");
     control.classList.add("draft");
-    document.body.classList.remove("fullscreen-composer");
+    root.style.setProperty("--composer-height", "40px");
+    composeStateChanged();
   }
 
+  // unshrink and openIfDraft: open again at the height it had.
   function expand() {
-    control.classList.remove("draft");
+    control.classList.remove("draft", "fullscreen");
     control.classList.add("open");
+    root.style.setProperty("--composer-height", composerHeight);
+    composeStateChanged();
   }
 
+  // Fullscreen is a compose state of its own: #reply-control.fullscreen
+  // without .open, so html.composer-open goes while it lasts.
   function toggleFullscreen() {
     saveDraft();
-    control.classList.toggle("fullscreen", !control.classList.contains("fullscreen"));
+    var on = !control.classList.contains("fullscreen");
+    control.classList.remove("open", "draft", "fullscreen");
+    control.classList.add(on ? "fullscreen" : "open");
+    composeStateChanged();
+  }
+
+  // The composer's height (model.composerHeight): the default it opened
+  // with, then what the grippie set; a minimized composer opens again at it.
+  var composerHeight = null;
+
+  // Composer#composeStateChanged: html.composer-open while open (the page
+  // is padded by the composer's height so its end scrolls clear of it),
+  // html.fullscreen-composer while fullscreen.
+  function composeStateChanged() {
+    root.classList.toggle("composer-open", control.classList.contains("open"));
+    root.classList.toggle("fullscreen-composer", control.classList.contains("fullscreen"));
+    syncPreviewClass();
     applyFullscreen();
+  }
+
+  // composer-container's htmlClass: html.composer-has-preview while the
+  // composer shows (open, minimized or fullscreen) with its preview.
+  function syncPreviewClass() {
+    root.classList.toggle(
+      "composer-has-preview",
+      !control.classList.contains("closed") && control.classList.contains("show-preview")
+    );
   }
 
   function applyFullscreen() {
     var on = control.classList.contains("fullscreen");
-    document.body.classList.toggle("fullscreen-composer", on);
     var button = control.querySelector(".toggle-fullscreen");
     if (!button) {
       return;
@@ -615,29 +650,215 @@
     );
   }
 
-  // The grippie: drag to resize, the height kept for next time.
-  control.querySelector(".grippie").addEventListener("pointerdown", function (event) {
-    if (!control.classList.contains("open")) {
+  // The grippie, a DResizeSeparator on #reply-control's top edge: a drag
+  // or the arrow keys resize the composer between its min-height and what
+  // the viewport leaves below the header, --composer-height following
+  // (onResizeDrag) and the size kept for next time once it ends
+  // (onResizeEnd).
+  var grippie = control.querySelector(".grippie");
+
+  // lib/resize-measurements: a computed length in pixels, else null.
+  function pixels(declared) {
+    if (!declared || !/px$/.test(declared)) {
+      return null;
+    }
+    var value = parseFloat(declared);
+    return isFinite(value) ? value : null;
+  }
+
+  function measuredSize() {
+    return control.isConnected ? pixels(getComputedStyle(control).height) : null;
+  }
+
+  function measuredMin() {
+    if (!control.isConnected) {
+      return 0;
+    }
+    var min = pixels(getComputedStyle(control).minHeight);
+    return min === null ? 250 : min;
+  }
+
+  // The viewport less the header (viewportCap), or a smaller max-height;
+  // never under the minimum.
+  function measuredMax() {
+    var cap = window.innerHeight - (parseInt(root.style.getPropertyValue("--header-offset"), 10) || 0);
+    if (!control.isConnected) {
+      return cap;
+    }
+    var declared = pixels(getComputedStyle(control).maxHeight);
+    return Math.max(declared === null ? cap : Math.min(declared, cap), measuredMin());
+  }
+
+  // The minimum wins when the two conflict, as the stylesheet's does.
+  function clampSize(size) {
+    return Math.max(Math.min(size, measuredMax()), measuredMin());
+  }
+
+  // aria-valuenow, -min and -max as last measured (refresh).
+  function refreshSeparator(size) {
+    var now = size === undefined ? measuredSize() : size;
+    var min = measuredMin();
+    var max = measuredMax();
+    grippie.setAttribute("aria-valuemin", String(min));
+    grippie.setAttribute("aria-valuemax", String(max));
+    if (now === null) {
+      grippie.removeAttribute("aria-valuenow");
+    } else {
+      grippie.setAttribute("aria-valuenow", String(Math.max(Math.min(now, max), min)));
+    }
+  }
+
+  function onResizeDrag(size) {
+    control.classList.add("clear-transitions");
+    composerHeight = size + "px";
+    root.style.setProperty("--composer-height", size ? composerHeight : "");
+  }
+
+  function onResizeEnd(size) {
+    control.classList.remove("clear-transitions");
+    setItem("composerHeight", size + "px");
+    refreshSeparator(size);
+  }
+
+  // d-pointer-drag and d-resize-edge: the primary button's press, a size
+  // reported once a frame from the latest position, and a press released
+  // where it landed is a click, not a resize. body.d-resizing-ns holds the
+  // cursor for the length of the gesture.
+  var pointerDrag = null;
+  grippie.addEventListener("pointerdown", function (event) {
+    if (event.button !== 0 || pointerDrag) {
+      return;
+    }
+    endKeyboardResize();
+    var startValue = measuredSize();
+    if (startValue === null) {
       return;
     }
     event.preventDefault();
-    var startY = event.clientY;
-    var startHeight = control.getBoundingClientRect().height;
-    function move(e) {
-      var size = Math.max(255, startHeight + (startY - e.clientY));
-      root.style.setProperty("--composer-height", size + "px");
+    pointerDrag = {
+      id: event.pointerId,
+      startY: event.clientY,
+      pendingY: event.clientY,
+      startValue: startValue,
+      started: false,
+      frame: null,
+    };
+    try {
+      grippie.setPointerCapture(event.pointerId);
+    } catch (_) {
+      // A pointer the browser no longer tracks: the document listeners
+      // below still see it.
     }
-    function up(e) {
-      document.removeEventListener("pointermove", move);
-      document.removeEventListener("pointerup", up);
-      setItem(
-        "composerHeight",
-        Math.max(255, startHeight + (startY - e.clientY)) + "px"
-      );
-    }
-    document.addEventListener("pointermove", move);
-    document.addEventListener("pointerup", up);
+    document.body.classList.add("d-resizing-ns");
   });
+
+  // The handle sits on the top edge, so moving up grows the composer.
+  function reportMove(drag, y, final) {
+    var size = clampSize(drag.startValue - (y - drag.startY));
+    drag.started = true;
+    onResizeDrag(size);
+    if (final) {
+      onResizeEnd(size);
+    }
+  }
+
+  grippie.addEventListener("pointermove", function (event) {
+    var drag = pointerDrag;
+    if (!drag || event.pointerId !== drag.id) {
+      return;
+    }
+    drag.pendingY = event.clientY;
+    if (drag.frame === null) {
+      drag.frame = requestAnimationFrame(function () {
+        drag.frame = null;
+        if (pointerDrag === drag) {
+          reportMove(drag, drag.pendingY, false);
+        }
+      });
+    }
+  });
+
+  function endPointerDrag(event) {
+    var drag = pointerDrag;
+    if (!drag || event.pointerId !== drag.id) {
+      return;
+    }
+    pointerDrag = null;
+    if (drag.frame !== null) {
+      cancelAnimationFrame(drag.frame);
+    }
+    document.body.classList.remove("d-resizing-ns");
+    // A cancelled pointer's coordinates are not where it last was.
+    var cancelled = event.type === "pointercancel" || event.type === "lostpointercapture";
+    var y = cancelled ? drag.pendingY : event.clientY;
+    if (!drag.started && y === drag.startY) {
+      return;
+    }
+    reportMove(drag, y, true);
+  }
+  grippie.addEventListener("pointerup", endPointerDrag);
+  grippie.addEventListener("pointercancel", endPointerDrag);
+  grippie.addEventListener("lostpointercapture", endPointerDrag);
+
+  // The keyboard: ArrowUp grows and ArrowDown shrinks by 16px, Home and End
+  // go to the bounds; the size is kept when the key comes up or focus goes.
+  var keyboardResize = null;
+  function endKeyboardResize() {
+    if (!keyboardResize) {
+      return;
+    }
+    var size = keyboardResize.value;
+    keyboardResize = null;
+    onResizeEnd(size);
+  }
+
+  grippie.addEventListener("keydown", function (event) {
+    if (pointerDrag || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+      return;
+    }
+    if (["ArrowUp", "ArrowDown", "Home", "End"].indexOf(event.key) === -1) {
+      return;
+    }
+    if (!keyboardResize) {
+      var startValue = measuredSize();
+      if (startValue === null) {
+        return;
+      }
+      keyboardResize = { key: event.key, value: startValue };
+    }
+    event.preventDefault();
+    var next;
+    if (event.key === "ArrowUp") {
+      next = keyboardResize.value + 16;
+    } else if (event.key === "ArrowDown") {
+      next = keyboardResize.value - 16;
+    } else {
+      next = event.key === "Home" ? measuredMin() : measuredMax();
+    }
+    keyboardResize.value = clampSize(next);
+    onResizeDrag(keyboardResize.value);
+    refreshSeparator(keyboardResize.value);
+  });
+  grippie.addEventListener("keyup", function (event) {
+    if (keyboardResize && event.key === keyboardResize.key) {
+      endKeyboardResize();
+    }
+  });
+  grippie.addEventListener("blur", endKeyboardResize);
+  window.addEventListener("blur", endKeyboardResize);
+  window.addEventListener("pagehide", endKeyboardResize);
+
+  // refresh(): on the viewport changing, and as the composer settles into
+  // a state.
+  window.addEventListener("resize", function () {
+    refreshSeparator();
+  });
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      refreshSeparator();
+    }).observe(control);
+  }
+  refreshSeparator();
 
   // The toolbar: markdown around the selection, or its example text.
   function surround(before, after, example) {
@@ -819,6 +1040,7 @@
     var shown = Boolean(previewToggle) && previewShown();
     control.classList.toggle("show-preview", shown);
     control.classList.toggle("hide-preview", !shown);
+    syncPreviewClass();
     if (!previewToggle) {
       return;
     }
