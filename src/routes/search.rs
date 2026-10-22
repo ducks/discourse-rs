@@ -914,6 +914,7 @@ pub(super) async fn advanced_panel(
         now: crate::clock::now(),
         categories: &all,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
@@ -984,6 +985,7 @@ async fn search_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };

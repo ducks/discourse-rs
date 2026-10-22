@@ -1531,6 +1531,7 @@ pub async fn index_page(
         now: crate::clock::now(),
         categories: &frame.categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: frame.site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(&settings)?,
     };
@@ -1643,6 +1644,7 @@ async fn show_page(
         now: crate::clock::now(),
         categories: &frame.categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: frame.site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(&settings)?,
     };

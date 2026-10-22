@@ -552,6 +552,7 @@ async fn render_title(live: &Live) -> Result<String, AppError> {
         now: chrono::Utc::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: guardian.user().map(|u| u.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
@@ -730,6 +731,7 @@ async fn render_post(
         now: chrono::Utc::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: guardian.user().map(|u| u.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
@@ -1007,6 +1009,7 @@ pub async fn gap(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: guardian.user().map(|u| u.trust_level),
         settings: crate::topic_list_view::ListSettings::load(&settings)?,
     };

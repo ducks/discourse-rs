@@ -258,3 +258,88 @@
   margin-right: 0.25em;
   line-height: var(--line-height-large);
 }
+
+/* select-kit/category-drop.scss: the breadcrumbs' category drops (the
+   rows and footer of an open drop with them) */
+.select-kit.combo-box.category-drop {
+  min-width: auto;
+}
+.select-kit.combo-box.category-drop .badge-category__wrapper {
+  font-size: var(--font-0);
+  font-weight: normal;
+  max-width: 260px;
+}
+.select-kit.combo-box.category-drop .category-drop-header[data-value=""] {
+  color: var(--primary-high);
+}
+.select-kit.combo-box.category-drop .category-drop-header.is-none .selected-name {
+  color: inherit;
+}
+.select-kit.combo-box.category-drop .angle-icon {
+  color: var(--primary-high);
+}
+.select-kit.combo-box.category-drop.has-selection .category-drop-header {
+  border-color: var(--d-nav-border-color--active);
+}
+.select-kit.combo-box.category-drop .select-kit-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.select-kit.combo-box.category-drop .select-kit-row[data-value=all-categories],
+.select-kit.combo-box.category-drop .select-kit-row[data-value=no-categories] {
+  color: var(--tertiary);
+  font-weight: 700;
+}
+.select-kit.combo-box.category-drop .select-kit-row .category-desc {
+  font-weight: normal;
+  color: var(--primary-medium);
+  margin-top: 2px;
+}
+.select-kit.combo-box.category-drop .select-kit-row .category-status {
+  align-items: center;
+}
+.select-kit.combo-box.category-drop .select-kit-row .topic-count {
+  margin-left: .5em;
+  font-weight: normal;
+  color: var(--primary-medium);
+  font-size: var(--font-down-1);
+}
+.select-kit.combo-box.category-drop .category-drop-footer {
+  align-items: center;
+  border-top: 1px solid var(--content-border-color);
+  display: flex;
+  font-size: var(--font-down-1);
+  height: 30px;
+  justify-content: space-between;
+  width: 100%;
+}
+.select-kit.combo-box.category-drop .category-drop-footer a,
+.select-kit.combo-box.category-drop .category-drop-footer span {
+  color: var(--primary-high);
+  margin: 0 10px;
+}
+.select-kit.combo-box.category-drop .category-drop-footer a.active,
+.select-kit.combo-box.category-drop .category-drop-footer span.active {
+  display: none;
+}
+
+/* select-kit/tag-drop.scss (its narrow viewport rules are in mobile.css) */
+.select-kit.combo-box.tag-drop {
+  min-width: auto;
+}
+.select-kit.combo-box.tag-drop .tag-drop-header,
+.select-kit.combo-box.tag-drop .selected-name {
+  color: var(--primary-high);
+}
+.select-kit.combo-box.tag-drop .select-kit-row[data-value=all-tags],
+.select-kit.combo-box.tag-drop .select-kit-row[data-value=no-tags] {
+  color: var(--tertiary);
+  font-weight: 700;
+}
+.select-kit.combo-box.tag-drop .angle-icon {
+  color: var(--primary-high);
+}
+.select-kit.combo-box.tag-drop.has-selection .tag-drop-header {
+  color: var(--d-nav-border-color--active);
+  border-color: var(--d-nav-border-color--active);
+}

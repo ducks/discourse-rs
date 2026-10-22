@@ -1321,3 +1321,170 @@ async fn avatars_js_takes_the_sites_avatar_sizes() {
         &html[..html.find("</head>").unwrap()]
     );
 }
+
+/// The body's classes, as the page draws them.
+fn body_classes(html: &str) -> &str {
+    let open = "<body hx-boost=\"true\" class=\"";
+    let start = html.find(open).expect("body") + open.len();
+    &html[start..start + html[start..].find('"').unwrap()]
+}
+
+async fn mobile_page(pool: &PgPool, path: &str) -> String {
+    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);
+    let response = app
+        .oneshot(
+            Request::get(path)
+                .header(header::HOST, "test.localhost")
+                .header(header::COOKIE, "mobile_view=1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    String::from_utf8_lossy(&bytes).into_owned()
+}
+
+/// The topic list's rows (its body), for what they draw.
+fn list_rows<'a>(html: &'a str, path: &str) -> &'a str {
+    let start = html
+        .find("<tbody class=\"topic-list-body\">")
+        .unwrap_or_else(|| panic!("{path}: no rows"));
+    &html[start..start + html[start..].find("</tbody>").unwrap()]
+}
+
+// Each discovery list's body classes, as rs-ref-b ends up with them:
+// Rails' layout's `category-<slug_path>` first on a category's list, then
+// the chrome's, WelcomeBanner's around Navigation's and
+// AddCategoryTagClasses'.
+#[tokio::test]
+async fn discovery_lists_carry_embers_body_classes() {
+    let db = TestDb::new().await;
+    let uc = "uc-enable-new-checkbox-style uc-floating-dismiss-topics-on-mobile uc-modernize-foundation-theme";
+    for (path, classes) in [
+        (
+            "/latest",
+            "has-sidebar-page welcome-banner--enabled navigation-topics welcome-banner--visible",
+        ),
+        ("/top", "has-sidebar-page navigation-topics"),
+        (
+            "/categories",
+            "has-sidebar-page welcome-banner--enabled navigation-categories categories-list welcome-banner--visible",
+        ),
+        ("/tag/guide/2", "has-sidebar-page tag-guide tags-page"),
+        (
+            "/tags/c/general/4/guide/2",
+            "has-sidebar-page tags-page category category-general tag-guide",
+        ),
+    ] {
+        let (status, _, html) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert_eq!(body_classes(&html), format!("{uc} {classes}"), "{path}");
+    }
+    for (path, slug) in [
+        ("/c/general/4", "general"),
+        ("/c/general/4/none", "general"),
+        ("/c/general/4/l/top", "general"),
+        ("/c/general/sub-general/34", "general-sub-general"),
+        ("/c/site-feedback/2", "site-feedback"),
+    ] {
+        let (status, _, html) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert_eq!(
+            body_classes(&html),
+            format!("category-{slug} {uc} has-sidebar-page category navigation-category"),
+            "{path}"
+        );
+    }
+    // The mobile view: no sidebar, and the banner's search is hidden, so
+    // it isn't visible.
+    let html = mobile_page(&db.pool, "/latest").await;
+    assert_eq!(
+        body_classes(&html),
+        format!("{uc} welcome-banner--enabled navigation-topics")
+    );
+    assert!(html.contains("/assets/welcome-banner.js"));
+    let html = mobile_page(&db.pool, "/c/general/sub-general/34").await;
+    assert_eq!(
+        body_classes(&html),
+        format!("category-general-sub-general {uc} category navigation-category")
+    );
+    // A staff member's: GlimmerSiteHeader's `staff`.
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(st, "admin").await;
+    let html = admin.page("/c/general/4").await;
+    assert_eq!(
+        body_classes(&html),
+        format!(
+            "category-general chat-enabled {uc} staff has-sidebar-page category navigation-category"
+        )
+    );
+    // No banner, no banner classes or script.
+    common::set_setting(&db.pool, "enable_welcome_banner", 5, "f").await;
+    let (_, _, html) = get(&db.pool, "/latest").await;
+    assert_eq!(
+        body_classes(&html),
+        format!("{uc} has-sidebar-page navigation-topics")
+    );
+    assert!(!html.contains("welcome-banner.js"));
+}
+
+// TopicList.hideUniformCategory: the list of a category without
+// subcategories goes without the rows' category badges, desktop and
+// mobile; a parent's, its /none list and a tag's keep them.
+#[tokio::test]
+async fn a_leaf_categorys_rows_hide_the_category_badge() {
+    let db = TestDb::new().await;
+    let badge = "badge-category__wrapper";
+    for path in [
+        "/c/general/4",
+        "/c/general/4/none",
+        "/tag/guide/2",
+        "/latest",
+    ] {
+        let (_, _, html) = get(&db.pool, path).await;
+        assert!(list_rows(&html, path).contains(badge), "{path}");
+        assert!(
+            list_rows(&mobile_page(&db.pool, path).await, path).contains(badge),
+            "{path} mobile"
+        );
+    }
+    for path in ["/c/general/sub-general/34", "/c/site-feedback/2"] {
+        let (_, _, html) = get(&db.pool, path).await;
+        assert!(!list_rows(&html, path).contains(badge), "{path}");
+        let html = mobile_page(&db.pool, path).await;
+        assert!(!list_rows(&html, path).contains(badge), "{path} mobile");
+        assert!(
+            list_rows(&html, path).contains("topic-item-stats__category-tags"),
+            "{path}"
+        );
+    }
+    // A secret subcategory leaves its parent a leaf for a reader who can't
+    // see it, not for an admin.
+    sqlx::query("UPDATE categories SET read_restricted = TRUE WHERE id = 34")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, _, html) = get(&db.pool, "/c/general/4").await;
+    assert!(!list_rows(&html, "/c/general/4 secret sub").contains(badge));
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(st, "admin").await;
+    let html = admin.page("/c/general/4").await;
+    assert!(list_rows(&html, "/c/general/4 admin").contains(badge));
+}
+
+// The breadcrumbs' selected drops take category-drop.scss's and
+// tag-drop.scss's border (--d-nav-border-color--active) and the badge's
+// normal weight at --font-0.
+#[tokio::test]
+async fn the_breadcrumb_drops_are_styled() {
+    let db = TestDb::new().await;
+    let (_, _, css) = get(&db.pool, "/assets/discourse.css").await;
+    for rule in [
+        ".select-kit.combo-box.category-drop.has-selection .category-drop-header {\n  border-color: var(--d-nav-border-color--active);",
+        ".select-kit.combo-box.category-drop .badge-category__wrapper {\n  font-size: var(--font-0);\n  font-weight: normal;",
+        ".select-kit.combo-box.tag-drop.has-selection .tag-drop-header {\n  color: var(--d-nav-border-color--active);",
+    ] {
+        assert!(css.contains(rule), "{rule}");
+    }
+}

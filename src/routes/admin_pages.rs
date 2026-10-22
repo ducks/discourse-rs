@@ -235,6 +235,7 @@ pub async fn dashboard(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -322,6 +323,7 @@ pub async fn user_show(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -589,6 +591,7 @@ pub async fn groups_index(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -814,6 +817,7 @@ pub async fn staff_action_logs_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -858,6 +862,7 @@ pub async fn screened_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -910,6 +915,7 @@ pub async fn search_logs_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -951,6 +957,7 @@ pub async fn email_logs_page(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
@@ -1118,6 +1125,7 @@ pub async fn users_list(
         now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned: false,
+        hide_category: false,
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };

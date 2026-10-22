@@ -196,6 +196,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
     ("tag-info.js", JS, include_str!("../static/js/tag-info.js")),
     (
+        "welcome-banner.js",
+        JS,
+        include_str!("../static/js/welcome-banner.js"),
+    ),
+    (
         "top-period.js",
         JS,
         include_str!("../static/js/top-period.js"),

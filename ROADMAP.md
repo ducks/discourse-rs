@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a, 272a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a, 272a, 273a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3567,6 +3567,62 @@ route table has been made, so this list may be short.
     avatars.js reads (tests/html_pages.rs), not against Ember; the
     browser's preload scanner still fetches the ratio 1 image before the
     redraw, a request Ember doesn't make
+
+273. ~~`fix/list-chrome`~~ (done) S: the discovery lists drew none of
+    Ember's body classes but the categories page's, the breadcrumbs'
+    selected drops lacked their border, and a leaf category's rows kept
+    the category badge (found by the screenshot runs and the new-topic
+    branch). Now each list adds them in the order rs-ref-b's body ends up
+    with (Chrome#discovery_body_classes, which skips one already there as
+    classList.add does): WelcomeBanner's `welcome-banner--enabled`, then
+    Navigation's `navigation-topics` (latest, top, hot, new and the other
+    filters), `navigation-categories categories-list` or, on a category's
+    list, AddCategoryTagClasses' `category category-<fullSlug>` and
+    `navigation-category`, with Rails' layout's `category-<slug_path>`
+    (ApplicationHelper#body_classes) first on the body; a tag's list gets
+    `tag-<name> tags-page`, a tag in a category `tags-page category
+    category-<slug> tag-<name>`; then `welcome-banner--visible` on a
+    desktop page that can search, which static/js/welcome-banner.js keeps
+    as WelcomeBanner's checkViewport does (the banner's search below
+    --header-offset, rechecked as it crosses the header, off below 40rem
+    where the search is hidden). GlimmerSiteHeader's `staff` follows the
+    upcoming change classes for a staff member on every page.
+    select-kit/category-drop.scss and tag-drop.scss were never ported:
+    navs.css has them now, so a selected drop takes
+    --d-nav-border-color--active (rgb(0, 136, 204)) and the breadcrumb's
+    badge its normal weight at --font-0, which was the 2-4px. A category
+    list's rows hide the badge, desktop and mobile, under
+    TopicList.hideUniformCategory (routes/list.rs hide_uniform_category:
+    no subcategory the viewer can see, and not the shared drafts
+    category for one who may see shared drafts, which no list reaches
+    while topic lists refuse shared_drafts_category, topic_query.rs:419);
+    parent categories, /none and tag lists keep it. Compared against
+    rs-ref-b with playwright (anonymous, user1 and admin, 1280 and a
+    390 phone): the body classes of /latest, /top, /hot, /new,
+    /categories, /c/general/4 (and /none, /l/top),
+    /c/general/sub-general/34, /c/site-feedback/2,
+    /c/uncategorized/1, /tag/guide and /tags/c/general/4/guide match but
+    for 273a's chat class, the rows' badges match on all of them, and
+    ui-compare finds no difference in the breadcrumbs' boxes and styles
+    on /c/general/sub-general/34, /c/general/4 and /tag/guide (mobile
+    /c/general/4's drops match in width and border too). Screenshots
+    (summary.json): /c/general/4 0.29% to 0.00, /c/general/sub-general/34
+    0.97 to 0.00, /c/general/4/none 0.33 to 0.02, /c/general/4 as user1
+    0.49 to 0.10, /tag/guide 0.03 to 0.00; mobile /c/general/4 0.67 to
+    0.00, as user1 0.89 to 0.16 (on top of 270's footer); the other list
+    rows held or dropped a hundredth, none got worse.
+    Tests in tests/html_pages.rs. Left, split into 273a.
+    273a. `fix/list-chrome-rest` S: chat's ChatBodyClass
+    `has-preloaded-chat-channels`, which every member page with chat gets
+    once the channels load (src/html.rs:1099 adds only chat-enabled);
+    Rails' `primary-group-<name>` for a member with a primary group
+    (src/html.rs:800); a tag in a category draws no breadcrumbs or pills
+    (src/routes/tags.rs:568); the welcome banner and its classes on a
+    category's or a tag's list under welcome_banner_page_visibility
+    discovery or all_pages (only latest, the filters and categories ask
+    for it, src/html.rs:1914); /tags/intersection/:tag/*additional_tags
+    (`tags-intersection`) is not routed; /filter's `navigation-filter`
+    comes with item 197
 
 ### Phase 11: the bundled plugins' gaps (210)
 
