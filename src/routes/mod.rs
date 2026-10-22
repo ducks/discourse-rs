@@ -2158,6 +2158,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(posts::by_number),
         )
         .route("/raw/{topic_id}/{post_number}", get(posts::raw))
+        .route("/p/{post_id}", get(posts::short_link))
+        .route("/p/{post_id}/{user_id}", get(posts::short_link))
         .route("/posts/{id}/deleted", get(deleted_posts::index))
         .route("/posts/{id}/deleted.json", get(deleted_posts::index))
         .route("/posts/{id}/pending", get(user_activity::pending))

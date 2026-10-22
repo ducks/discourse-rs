@@ -1,5 +1,5 @@
 //! Port of app/controllers/posts_controller.rb#create, #update,
-//! #revisions and #latest_revision.
+//! #revisions, #latest_revision and #short_link.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -588,6 +588,96 @@ pub async fn by_number(
         p.shift_remove("draft_sequence");
     }
     Ok(Json(post).into_response())
+}
+
+/// GET /p/:post_id(/:user_id) (posts#short_link): a 302 to the post's
+/// URL (Post#url, /t/:slug/:topic_id/:post_number), where the topic page
+/// jumps to it. A trashed post is not found (Trashable's default scope);
+/// one the viewer may not see is InvalidAccess. The user id only stuffs
+/// the request for IncomingLink, which this request never records.
+pub async fn short_link(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    Path(params): Path<Vec<(String, String)>>,
+) -> Result<Response, AppError> {
+    let post_id = params
+        .iter()
+        .find(|(k, _)| k == "post_id")
+        .map(|(_, v)| crate::ruby::to_i(v))
+        .unwrap_or(0);
+    let Ok(post_id) = i32::try_from(post_id) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(post) = crate::topic_guardian::PostCtx::load(&mut conn, post_id).await? else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if post.trashed() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    // post.topic, under Topic's default scope too.
+    let topic: Option<(i32, Option<String>)> = sqlx::query_as(
+        "SELECT t.id, t.slug FROM topics t JOIN posts p ON p.topic_id = t.id \
+         WHERE p.id = $1 AND t.deleted_at IS NULL",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    // can_see_post?: an admin sees any; else can_see_post_topic? first.
+    let can_see = if guardian.is_admin() {
+        true
+    } else {
+        let topic_can_see = match &topic {
+            Some((id, _)) => {
+                match crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, *id)
+                    .await?
+                {
+                    Some(ctx) => {
+                        let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
+                        guardian.can_see_topic(&settings, &ctx, true, &secure)?
+                    }
+                    None => false,
+                }
+            }
+            None => false,
+        };
+        guardian.can_see_post(&settings, &post, topic_can_see)?
+    };
+    if !can_see {
+        // InvalidAccess: a page request gets the 403 page.
+        let mut response = super::search::invalid_access(&state);
+        response
+            .extensions_mut()
+            .insert(super::not_found::ErrorPage {
+                status: StatusCode::FORBIDDEN,
+                forbidden: true,
+                custom_message: None,
+            });
+        return Ok(response);
+    }
+    let path = match &topic {
+        // Topic#slug computes one from the title when none is stored.
+        Some((id, Some(slug))) if !slug.is_empty() => {
+            format!("/t/{slug}/{id}/{}", post.post_number)
+        }
+        Some(_) => {
+            return Err(Unsupported("a short link to a topic without a stored slug").into());
+        }
+        None => "/404".to_string(),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("localhost");
+    Ok((
+        StatusCode::FOUND,
+        [(header::LOCATION, format!("http://{host}{base_path}{path}"))],
+    )
+        .into_response())
 }
 
 /// GET /raw/:topic_id/:post_number (posts#markdown_num): a post's raw
