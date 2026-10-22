@@ -4,7 +4,8 @@
  * the New Topic button, and the notification level menu's options,
  * ported from float-kit/d-menu.scss, components/drafts-dropdown-menu.scss,
  * components/notifications-tracking.scss and base/discourse.scss's
- * keyframes, with its loading spinner. The menu's arrow is not rendered.
+ * keyframes, with its loading spinner and the `.content-list` that follows
+ * it there. The menu's arrow is not rendered.
  */
 
 /* base/discourse.scss */
@@ -84,6 +85,37 @@
   height: 10px;
   margin: 0;
   display: inline-block;
+}
+/* discourse.scss:743: the admin badge list and the web hook events */
+.content-list h3 {
+  color: var(--primary-medium);
+  font-size: var(--font-up-1);
+  padding-left: 5px;
+  margin-bottom: 10px;
+}
+.content-list ul {
+  list-style: none;
+  margin: 0;
+}
+.content-list ul li {
+  border-bottom: 1px solid var(--content-border-color);
+}
+.content-list ul li:first-of-type {
+  border-top: 1px solid var(--content-border-color);
+}
+.content-list ul li a {
+  display: block;
+  padding: 10px;
+  color: var(--primary);
+}
+.content-list ul li a:hover {
+  background-color: var(--primary-low);
+  color: var(--primary);
+}
+.content-list ul li a.active {
+  font-weight: bold;
+  color: var(--d-selected-text-color);
+  background: var(--d-selected);
 }
 
 /* float-kit/d-menu.scss */
