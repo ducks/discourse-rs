@@ -226,9 +226,13 @@
   }
 
   // The login and signup routes' beforeModel: the page left for this one
-  // is where a login returns to.
+  // is where a login returns to. That is the URL the transition starts
+  // from: the page navigated away from, or on a page load the one asked
+  // for, which is the login page itself unless a route sent its visitor
+  // here (showLogin from /new-topic, the forgot-password route).
   function keepDestination() {
-    var previous = Discourse.previousUrl;
+    var previous =
+      Discourse.previousUrl !== undefined ? Discourse.previousUrl : location.pathname + location.search;
     if (validDestination(previous)) {
       setCookie("destination_url", previous);
     } else if (document.referrer) {
@@ -2519,6 +2523,11 @@
     S = D.strings || {};
     if (D.page === "login") {
       keepDestination();
+      // A route that sent its visitor here (new-topic's showLogin, the
+      // forgot-password route) ends on the login route's URL.
+      if (location.pathname !== base() + "/login") {
+        history.replaceState(history.state, "", base() + "/login");
+      }
       loginPage();
     } else if (D.page === "signup") {
       keepDestination();
@@ -2529,7 +2538,14 @@
       staticPages();
     }
     if (D.forgot_password) {
-      forgotPassword("");
+      // modal.js is deferred: on a page load it comes after this script.
+      if (Discourse.modal || document.readyState !== "loading") {
+        forgotPassword("");
+      } else {
+        document.addEventListener("DOMContentLoaded", function () {
+          forgotPassword("");
+        });
+      }
     }
   }
 

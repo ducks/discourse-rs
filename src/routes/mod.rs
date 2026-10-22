@@ -60,6 +60,7 @@ mod list;
 mod live;
 mod login_required;
 mod messages;
+mod new_topic;
 mod not_found;
 mod notifications;
 mod omniauth;
@@ -2240,6 +2241,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(login_required::show_login).post(session::enter),
         )
         .route("/signup", get(login_required::show_signup))
+        .route("/new-topic", get(new_topic::new_topic))
+        .route("/new-message", get(new_topic::new_message))
         .route("/search", cached!(get(search::show)))
         .route("/search.json", cached!(get(search::show_json)))
         .route("/search/query", cached!(get(search::query)))

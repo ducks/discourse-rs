@@ -21,7 +21,7 @@ pub struct Column {
 }
 
 /// `encodeURIComponent`, as Ember's router writes a query param.
-fn encode_uri_component(s: &str) -> String {
+pub(crate) fn encode_uri_component(s: &str) -> String {
     let mut out = String::new();
     for b in s.bytes() {
         if b.is_ascii_alphanumeric() || b"-_.!~*'()".contains(&b) {
