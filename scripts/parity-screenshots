@@ -12,9 +12,15 @@
 #   make reset-reference AGENT=rs-parity     # browsing changes its database
 #   nix-shell --run 'cargo build --release'
 #   env $(grep -v '^#' parity/environment) BIND_ADDR=127.0.0.1:8095 \
+#     DISCOURSE_PORT=8095 \
 #     DATABASE_URL="postgresql://localhost:5442/discourse_rs_screens?host=$PGDATA" \
 #     DISCOURSE_SRC=~/discourse/discourse DISCOURSE_RS_JOBS=off \
 #     target/release/discourse-rs &
+#
+# DISCOURSE_PORT is the port's own: Discourse.base_url carries it, and the
+# header logo and the @font-face URLs are absolute. parity/environment's
+# (rs-parity's 3042) would load them from whatever runs there, or nothing,
+# so the run checks that our logo loads before capturing anything.
 #
 # From a git worktree, PGDATA must be the main checkout's .nix-postgres
 # (shell.nix points it at the worktree, where no Postgres runs).
@@ -130,6 +136,9 @@ import html
 import json
 import re
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 import numpy as np
@@ -350,8 +359,23 @@ def apply_settings(browser, base, settings):
         context.close()
 
 
+def check_base_url(base):
+    """Our logo is absolute (Discourse.base_url): a DISCOURSE_PORT other
+    than our own points it, and the fonts, at another server."""
+    page = urllib.request.urlopen(base + "/latest").read().decode()
+    match = re.search(r'<img id="site-logo"[^>]* src="([^"]+)"', page)
+    if not match:
+        return
+    src = html.unescape(match.group(1))
+    try:
+        urllib.request.urlopen(urllib.parse.urljoin(base + "/", src)).read()
+    except (urllib.error.URLError, OSError) as e:
+        sys.exit(f"our logo {src} doesn't load ({e}): run the port with DISCOURSE_PORT set to its own port")
+
+
 pages = parse_pages(pages_file)
 settings = parse_settings(settings_file) if Path(settings_file).exists() else []
+check_base_url(ours)
 results = []
 with sync_playwright() as p:
     browser = p.chromium.launch()

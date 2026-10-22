@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3310,6 +3310,36 @@ route table has been made, so this list may be short.
     header (templates/latest.html:25); EmptyTopicFilter's education in a
     member's empty list footer (templates/latest.html:46, with its
     "Browse latest topics" and per-filter texts)
+
+267. ~~`fix/header-logo-nav-offset`~~ (done) S: screenshot runs against an
+    agent other than rs-parity drew the header logo broken and every
+    list's navigation row 4px above the reference's. Both came from
+    absolute URLs: Discourse.base_url carries the `port` setting, which
+    parity/environment's DISCOURSE_PORT=3042 (rs-parity's) set, so the
+    logo (site_logo_url) and the @font-face URLs pointed at whatever ran
+    on 3042. Pointed at the port itself they still failed for the fonts:
+    /fonts answered without `Access-Control-Allow-Origin: *`, which
+    nginx.sample.conf's font location and development.rb's
+    public_file_server headers send, so a page on another origin than
+    the base URL's (a CDN, 127.0.0.1 against localhost) never loaded
+    Inter and fell back to Arial, whose shorter line boxes made the
+    breadcrumb's select-kits and the welcome banner's search 2px short
+    each. The font route now sends it (stylesheets.rs font), and
+    scripts/parity-screenshots says to run the port with its own
+    DISCOURSE_PORT and refuses to capture when our logo doesn't load.
+    With the fonts in, the categories page's last pixel row came from
+    _topic-list.scss's `.table-heading` border (1px under uc-modernize),
+    which topic-list.css lacked. Measured against rs-ref-a: /categories
+    1.13% to 0.01% (as admin 1.29 to 0.05, as user1 1.40 to 0.08, mobile
+    as user1 1.27 to 0.16), /t/999999 0.61 to 0.00, the topic pages a
+    few hundredths lower, in summary.json and summary-mobile.json; the
+    list controls' boxes all match in ui-compare. Left, split into 267a.
+    267a. `fix/static-cors-rest` S: nginx.sample.conf's other
+    `Access-Control-Allow-Origin: *` locations (/assets, /plugins,
+    /javascripts, /images/emoji, uploads' images, optimized images and
+    stylesheet cache) still answer without it here; nothing the port
+    draws fetches them with CORS today, but a CDN in front would need it
+    as the fonts did
 
 ### Phase 11: the bundled plugins' gaps (210)
 

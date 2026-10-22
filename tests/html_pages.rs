@@ -193,6 +193,30 @@ async fn stylesheet_is_served() {
     assert!(css.contains(".topic-list .posters"));
 }
 
+/// The stylesheets' @font-face URLs are absolute (Discourse.base_url, or
+/// the CDN), so a page on another origin than the base URL's (a CDN,
+/// 127.0.0.1 against localhost) loads the fonts only with CORS, as
+/// nginx.sample.conf's font location allows. Without it the page falls
+/// back to Arial, whose shorter line boxes pull the list up.
+#[tokio::test]
+async fn fonts_allow_any_origin() {
+    let db = TestDb::new().await;
+    let app = discourse_rs::app(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let response = app
+        .oneshot(
+            Request::get("/fonts/InterVariable.woff2?v=0.0.19")
+                .header(header::HOST, "test.localhost")
+                .header(header::ORIGIN, "http://cdn.example.com")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.headers()[header::CONTENT_TYPE], "font/woff2");
+    assert_eq!(response.headers()[header::ACCESS_CONTROL_ALLOW_ORIGIN], "*");
+}
+
 /// Each bundled asset has its route: a page that links one without it
 /// gets a 404 for the script.
 #[tokio::test]
