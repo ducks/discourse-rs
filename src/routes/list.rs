@@ -31,6 +31,17 @@ pub struct ListParams {
     pub(super) pairs: Vec<(String, String)>,
 }
 
+impl ListParams {
+    /// The last value given for `key`, as Rails reads a repeated param.
+    pub(super) fn last(&self, key: &str) -> Option<&str> {
+        self.pairs
+            .iter()
+            .rev()
+            .find(|(k, _)| k == key)
+            .map(|(_, v)| v.as_str())
+    }
+}
+
 impl From<Vec<(String, String)>> for ListParams {
     fn from(pairs: Vec<(String, String)>) -> Self {
         let last = |key: &str| {
@@ -1299,7 +1310,7 @@ pub async fn category(
         highlights_last_visited(kind, &params),
         &crate::html::ListFooterScope {
             filter: kind.name(),
-            subset: params.rest.get("subset").map(String::as_str),
+            subset: params.last("subset"),
             category_id: Some(category.id),
             no_subcategories: none,
             tag_id: None,
@@ -1917,7 +1928,7 @@ async fn front_list(
         highlights_last_visited(kind, &params),
         &crate::html::ListFooterScope {
             filter: kind.name(),
-            subset: params.rest.get("subset").map(String::as_str),
+            subset: params.last("subset"),
             ..Default::default()
         },
     )
