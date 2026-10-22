@@ -132,6 +132,17 @@
   margin-bottom: 100px;
 }
 
+/* _topic-list.scss:474: a top list's PeriodChooser */
+@media (width >= 40rem) {
+  #list-area .top-lists h2 {
+    cursor: pointer;
+    margin: 5px 0 10px;
+  }
+  #list-area .top-lists .period-chooser .select-kit-body {
+    width: 275px;
+  }
+}
+
 /* _topic-list.scss:186: the last visit marker */
 .topic-list > .topic-list-body > .topic-list-item.last-visit {
   border-bottom: none;

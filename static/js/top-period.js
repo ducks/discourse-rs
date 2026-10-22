@@ -35,11 +35,24 @@
     link.click();
   }
 
-  // The list's URL with the period: its other params kept, its page dropped.
+  // The discovery controller's query params, in the order Ember writes them.
+  var QUERY_PARAMS = [
+    "order", "ascending", "status", "state", "search", "max_posts", "min_posts", "q", "before",
+    "bumped_before", "f", "subset", "period", "topic_ids", "group_name", "tags", "match_all_tags",
+    "no_subcategories", "no_tags", "exclude_tag",
+  ];
+
+  // The list's URL with the period: the other query params kept, anything
+  // else (page) dropped.
   function periodUrl(period) {
-    var params = new URLSearchParams(location.search);
-    params.delete("page");
-    params.set("period", period);
+    var current = new URLSearchParams(location.search);
+    current.set("period", period);
+    var params = new URLSearchParams();
+    QUERY_PARAMS.forEach(function (name) {
+      if (current.has(name)) {
+        params.set(name, current.get(name));
+      }
+    });
     return location.pathname + "?" + params.toString();
   }
 
