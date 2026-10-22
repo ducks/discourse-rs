@@ -4508,6 +4508,51 @@
   width: 100%;
 }
 
+/* compose.scss:740: a touch device's composer, and the progress bar
+   above it while it is open */
+@media (hover: none) {
+  .discourse-touch #reply-control,
+  .mobile-device #reply-control {
+    box-shadow: 0 150px 0 0 var(--secondary);
+  }
+  .discourse-touch #reply-control.open,
+  .mobile-device #reply-control.open {
+    z-index: 1100;
+  }
+  .discourse-touch #reply-control.draft,
+  .discourse-touch #reply-control.saving,
+  .mobile-device #reply-control.draft,
+  .mobile-device #reply-control.saving {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .discourse-touch #reply-control .toggle-fullscreen,
+  .mobile-device #reply-control .toggle-fullscreen {
+    display: none;
+  }
+  .discourse-touch #reply-control .submit-panel,
+  .discourse-touch #reply-control .composer-fields,
+  .mobile-device #reply-control .submit-panel,
+  .mobile-device #reply-control .composer-fields {
+    touch-action: pinch-zoom;
+  }
+  .discourse-touch.keyboard-visible #reply-control.open,
+  .mobile-device.keyboard-visible #reply-control.open {
+    height: calc(var(--composer-vh, 1vh)*100);
+  }
+  .discourse-touch.keyboard-visible #reply-control.open .grippie,
+  .mobile-device.keyboard-visible #reply-control.open .grippie {
+    display: none;
+  }
+  .discourse-touch.keyboard-visible #reply-control.open .reply-area,
+  .mobile-device.keyboard-visible #reply-control.open .reply-area {
+    padding-bottom: .375em;
+  }
+  .discourse-touch.composer-open .with-topic-progress,
+  .mobile-device.composer-open .with-topic-progress {
+    bottom: calc(var(--composer-height));
+  }
+}
+
 /* compose.scss:794 */
 .mobile-device #reply-control .grippie {
   display: none;

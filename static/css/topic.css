@@ -2775,6 +2775,13 @@ html.anon #topic-footer-buttons {
   margin-inline: auto;
 }
 
+/* topic-footer.scss:116 */
+@media screen and (min-width: 1475px) {
+  .composer-open:not(.composer-has-preview) .has-sidebar-page .with-topic-progress {
+    max-width: calc(var(--composer-max-width--hide-preview) + var(--d-sidebar-width));
+  }
+}
+
 /* topic-footer.scss:151 */
 #topic-progress-wrapper {
   display: flex;

@@ -95,7 +95,23 @@
         entry.cleanup = null;
       }
     });
-    document.documentElement.className = doc.documentElement.className;
+    // The <html> classes the scripts keep, as Ember's services do across
+    // routes: the on-screen keyboard's, and the composer's state while the
+    // composer stays (hx-preserve keeps it when the new page has one too).
+    var html = document.documentElement;
+    var composerStays = Boolean(doc.getElementById("reply-control"));
+    var kept = ["keyboard-visible"]
+      .concat(composerStays ? ["composer-open", "fullscreen-composer", "composer-has-preview"] : [])
+      .filter(function (name) {
+        return html.classList.contains(name);
+      });
+    html.className = doc.documentElement.className;
+    kept.forEach(function (name) {
+      html.classList.add(name);
+    });
+    if (!composerStays) {
+      html.style.removeProperty("--composer-height");
+    }
     capabilities();
     var body = document.body;
     Array.prototype.slice.call(body.attributes).forEach(function (attr) {

@@ -212,6 +212,24 @@ async fn a_member_gets_the_homepage_with_the_composer_to_open() {
         "{html}"
     );
 
+    // The grippie is a DResizeSeparator resizing the composer's height
+    // (composer.js measures and announces its size). The page's <html> is
+    // drawn closed: composer.js sets html.composer-open and
+    // --composer-height when it opens the composer, as Ember's composer
+    // model and service do.
+    assert!(
+        html.contains(
+            "<div class=\"d-resize-separator grippie\" aria-label=\"Resize composer\" \
+             aria-orientation=\"horizontal\" data-pointer-drag=\"none\" \
+             data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div>"
+        ),
+        "{html}"
+    );
+    let html_tag = &html[html.find("<html").unwrap()..];
+    let html_tag = &html_tag[..html_tag.find('>').unwrap()];
+    assert!(!html_tag.contains("composer-"), "{html_tag}");
+    assert!(!html_tag.contains("--composer-height"), "{html_tag}");
+
     // Without params the homepage's URL is bare.
     let html = page(&st, "/new-topic", Some(&member)).await.body;
     assert_eq!(instruction(&html)["url"], "/latest");
