@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3113,6 +3113,58 @@ route table has been made, so this list may be short.
     redirects, where Rails' redirect_to uses the request's host
     (routes/static_pages.rs:59)
 
+266. ~~`fix/docked-header-topic`~~ (done) S: scrolling down a topic left
+    the header as it was; Ember's docks the topic in it. Now the topic
+    page carries Header::Topic::Info and the minimized logo in a template
+    (header_topic_view.rs) that static/js/header-topic-info.js docks:
+    the title linked back to the first post (scrolled to the top when the
+    page has it, else the boosted link loads the topic's start), its
+    statuses, the category badges without their parents' classes (the
+    grandparent's on the desktop only), renderTags' tags without the
+    list's overlap filter, and for a message (not a warning) the envelope
+    to the viewer's inbox and the participants (users then groups, five
+    beside tags, else ten, and Ember's +N link), two-rows as Ember
+    decides it; HomeLogo minimized draws site_logo_small_url (Chrome's
+    logo_small_url) or the house icon, AuthButtons leaves out sign up and
+    the page title is aria-hidden while docked (titleIsVisibleOnHeader).
+    When: services/header.js topicInfoVisible as ported, with the title's
+    IntersectionObserver at threshold 1, enterTopic's first guess (the
+    first post on the page and no later post asked for), the scroll down
+    latch, and ScrollDirection (paused a second after the page comes in,
+    the 5px tolerance, the 100ms throttle, the bottom of the page), so
+    the mobile view undocks while scrolling up; every page sets it up
+    again, so a boosted navigation starts undocked. A participant's
+    avatar opens their user card (user-card.js Discourse.showUserCard).
+    Stylesheets: header.scss's topic info and participants, the house
+    icon, tagging.scss:130 and :97, badges.scss:84, topic.scss:165, the
+    uc-modernize title size and the fadein keyframes; the `.d-header`
+    gets no class of its own in this Discourse (its contents change).
+    Measured with playwright against rs-ref-b (topic 35 as user1 and
+    anonymous, the pinned and closed 37, the subcategory 38, the messages
+    43 and 90; desktop 1280 and mobile 390): docked or not at the same
+    scroll offsets (67 no, 69 yes; 71 and 73 on mobile), scrolling up
+    undocks on mobile only, the normalized docked DOM matches up to the
+    panel, every docked box and computed font size matches, header
+    screenshots 0.00% but the avatar's new-pms badge (194), and the title
+    goes back to the top. Found by the screenshot run. Left, split into
+    266a.
+    266a. `feat/docked-header-topic-rest` S: a member's pin toggle in the
+    statuses (TopicStatus' pin-toggle-button links and
+    togglePinnedForUser's PUT /t/:id/clear-pin and re-pin) is drawn as a
+    span here as on the title and lists (topic_list_view.rs:1299,1305); a
+    group participant's card is refused
+    (static/js/header-topic-info.js:225); the small logo's dark variant
+    is 258a's (header_topic_view.rs:41); FeaturedLink never draws, since a
+    topic with a featured link refuses at featured_link_root_domain
+    (topic_view.rs:556; header_topic_view.rs:107); a live title edit
+    redraws #topic-title but not the header's template (routes/live.rs:573).
+    Around it, not the header's: the topic page entered at a post number
+    does not scroll to it (DiscourseURL.jumpToPost), so it starts undocked
+    where Ember's starts docked, nor does the address follow the post
+    being read (TopicController#currentPostChanged), so going back to the
+    top leaves `/1` where Ember's drops it; jumping to a post does not
+    highlight it (post:highlight)
+
 262. ~~`fix/pm-topic-view`~~ (done) M: a message's topic page drew as a
     regular topic. topic.gjs's body classes (AddCategoryTagClasses'
     category and tags, AddTopicStatusClasses', `archetype-<archetype>`)
@@ -3148,6 +3200,7 @@ route table has been made, so this list may be short.
     (post_view.rs:1820); the browse more line is drawn once with the
     page's own message read through the posts shown, not kept live from
     the pmTopicTrackingState bus messages; the title's edit pencil and
+<<<<<<< HEAD
     title editing (TopicTitleEditor, the edit-title glyph's styles), the
     header's topic title once scrolled past (with its glyph) and the
     admin menu's wrench (194) are not drawn for any topic
@@ -3218,6 +3271,11 @@ route table has been made, so this list may be short.
     header (templates/latest.html:25); EmptyTopicFilter's education in a
     member's empty list footer (templates/latest.html:46, with its
     "Browse latest topics" and per-filter texts)
+=======
+    title editing (TopicTitleEditor, the edit-title glyph's styles) and
+    the admin menu's wrench (194) are not drawn for any topic; the
+    header's topic title once scrolled past, with its glyph, is 266's
+>>>>>>> fix/docked-header-topic
 
 ### Phase 11: the bundled plugins' gaps (210)
 
@@ -3476,8 +3534,9 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     enable_shared_issues, topic voting's enable_topic_voting
     (categories.rs:311), with `/categories/*/custom_fields` dropped from
     the ignore lists (parity/cases:16,44,201,222-224,242-243)
-236. `feat/topic-voting-ui-rest` M: the docked header's vote box (core's
-    docked header topic info isn't ported either), full-page search's
+236. `feat/topic-voting-ui-rest` M: the docked header's vote box (its
+    header-topic-info__before connector; core's docked topic info is
+    266's, static/js/header-topic-info.js), full-page search's
     Most Votes order (search_view.rs:45; static/js/search-page.js:16),
     votes among the category editor's default view and sort order
     choices (category_edit_view.rs:307, free text today), the

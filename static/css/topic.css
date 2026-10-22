@@ -234,6 +234,11 @@ h6 code {
 .title-wrapper .topic-statuses .d-icon {
   color: var(--primary-medium);
 }
+/* topic.scss:165: the docked header's message envelope */
+.title-wrapper .header-title .private-message-glyph-wrapper {
+  float: left;
+  margin-right: 0.25em;
+}
 /* topic.scss:171 */
 #topic-title {
   z-index: 1;

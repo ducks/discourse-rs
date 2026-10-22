@@ -185,6 +185,10 @@ pub struct Chrome {
     /// `SiteSetting.site_mobile_logo_url` in the mobile view, empty
     /// otherwise or for none (HomeLogo#showMobileLogo).
     pub mobile_logo_url: String,
+    /// `SiteSetting.site_logo_small_url`, the minimized logo the docked
+    /// header shows over a topic (HomeLogo with `@minimized`); empty for
+    /// none.
+    pub logo_small_url: String,
     /// `site.can_search`: the mobile header's search button.
     pub can_search: bool,
     /// `SiteSetting.site_favicon_url` and its type (MiniMime by filename),
@@ -729,6 +733,8 @@ impl Site {
         self.chrome.global_notice =
             crate::readonly::notice(&state.i18n, mode, guardian.user().is_some());
         self.chrome.logo_url = crate::site_icons::site_url(&mut *conn, &urls, "logo").await?;
+        self.chrome.logo_small_url =
+            crate::site_icons::site_url(&mut *conn, &urls, "logo_small").await?;
         // HomeLogo#showMobileLogo
         if crate::mobile::mobile_view() {
             self.chrome.mobile_logo_url =
@@ -2009,6 +2015,9 @@ pub struct TopicPage {
     pub archetype: String,
     /// `#topic-title`'s title wrapper (post_view::topic_title).
     pub title_html: String,
+    /// The docked header's minimized logo and topic info, as a template
+    /// static/js/header-topic-info.js docks (header_topic_view).
+    pub header_topic_info: String,
     /// The posts as Ember renders them (post_view::stream).
     pub posts: Vec<String>,
     /// Around the posts (post_view): the bottom topic map, the timeline,
@@ -2471,6 +2480,14 @@ pub async fn topic_page(
     };
     let timeline = crate::post_view::timeline(&cx, view);
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
+    let header_topic_info = crate::header_topic_view::template(
+        &cx,
+        view,
+        &crate::header_topic_view::MinimizedLogo {
+            small_url: site.chrome.logo_small_url.clone(),
+            title: site.site_title.clone(),
+        },
+    );
     // The counts after screen-track marks this topic read through the
     // posts the page shows (TopicTrackingState#updateSeen).
     let tracking = site.chrome.tracking.as_ref().map(|t| {
@@ -2551,6 +2568,7 @@ pub async fn topic_page(
         canonical_url: page_url(page),
         archetype,
         title_html,
+        header_topic_info,
         posts,
         bottom_map,
         timeline,

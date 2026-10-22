@@ -423,11 +423,6 @@ pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str, custom: &[
         .as_array()
         .map(|t| t.iter().collect())
         .unwrap_or_default();
-    let tag_name = |t: &Value| -> String {
-        t.as_str()
-            .map(str::to_string)
-            .unwrap_or_else(|| t["name"].as_str().unwrap_or_default().to_string())
-    };
     let title = title.to_lowercase();
     let tags: Vec<&Value> = if cx.settings.suppress_overlapping_tags_in_list {
         tags.into_iter()
@@ -436,6 +431,28 @@ pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str, custom: &[
     } else {
         tags
     };
+    tags_list(cx, &tags, custom)
+}
+
+/// `renderTags(topic)` without params, as the docked header calls it:
+/// every tag, and no plugin callback (topic voting's draws nothing on a
+/// topic route).
+pub(crate) fn render_tags(cx: &ListContext, topic: &Value) -> String {
+    let tags: Vec<&Value> = topic["tags"]
+        .as_array()
+        .map(|t| t.iter().collect())
+        .unwrap_or_default();
+    tags_list(cx, &tags, &[])
+}
+
+/// A tag is its name, or an object with one (tags_descriptions on).
+fn tag_name(t: &Value) -> String {
+    t.as_str()
+        .map(str::to_string)
+        .unwrap_or_else(|| t["name"].as_str().unwrap_or_default().to_string())
+}
+
+fn tags_list(cx: &ListContext, tags: &[&Value], custom: &[String]) -> String {
     let custom: Vec<&String> = custom.iter().filter(|c| !c.is_empty()).collect();
     if tags.is_empty() && custom.is_empty() {
         return String::new();

@@ -280,6 +280,12 @@
     }
   });
 
+  // topic-header:trigger-user-card: the docked header's participants open
+  // the card by their avatar (static/js/header-topic-info.js).
+  Discourse.showUserCard = function (username, target) {
+    show(username, target);
+  };
+
   // dom:clean: a new page closes it.
   Discourse.onPage(function () {
     return close;

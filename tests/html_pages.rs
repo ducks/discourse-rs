@@ -1021,3 +1021,86 @@ async fn the_new_list_subset_picks_topics_or_replies() {
         "/new?page=1&per_page=1&subset=topics"
     );
 }
+
+/// The docked header's template (header_topic_view): what
+/// static/js/header-topic-info.js swaps into the header once the topic's
+/// title scrolls out of view.
+fn header_topic_template(html: &str) -> &str {
+    let start = html
+        .find("<template id=\"header-topic-info\">")
+        .expect("the docked header's template");
+    let rest = &html[start..];
+    &rest[..rest.find("</template>").unwrap()]
+}
+
+#[tokio::test]
+async fn topic_page_carries_the_docked_header_topic_info() {
+    let db = TestDb::new().await;
+    let (_, _, html) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35").await;
+    let template = header_topic_template(&html);
+    // HomeLogo minimized: the small logo, 36 wide.
+    assert!(
+        template.contains(
+            "<div class=\"title--minimized title\"><a href=\"/\"><img alt=\"Discourse\" class=\"logo-small\" id=\"site-logo\" src=\""
+        ),
+        "{template}"
+    );
+    assert!(
+        template.contains("/images/discourse-logo-sketch-small.png\" width=\"36\"></a></div>"),
+        "{template}"
+    );
+    // Header::Topic::Info: two rows (topic_featured_link_enabled), the
+    // title linked to the topic, General's badge and the tag.
+    assert!(
+        template.contains(
+            "<div class=\"two-rows extra-info-wrapper\"><div class=\"two-rows extra-info\"><div class=\"title-wrapper\"><h1 class=\"header-title\"><span class=\"topic-statuses\"></span><a class=\"topic-link\" data-topic-id=\"35\" href=\"/t/parity-fixture-replies-and-posters/35\"><span>Parity fixture: replies and posters</span></a><span class=\"header-topic-title-suffix\"></span></h1><div class=\"categories-wrapper\"><a class=\"badge-category__wrapper \""
+        ),
+        "{template}"
+    );
+    assert!(
+        template.contains("<span class=\"badge-category__name\">General</span></span></a></div><div class=\"topic-header-extra\"><ul class='discourse-tags' aria-label=Tags><li><a href='/tag/guide/2'  data-tag-name=guide class='discourse-tag simple'>guide</a></li></ul></div></div></div></div>"),
+        "{template}"
+    );
+    assert!(!template.contains("private-message-glyph"));
+    assert!(html.contains(&format!(
+        r#"<script src="{}"></script>"#,
+        discourse_rs::assets::url("", "header-topic-info.js")
+    )));
+    // What the script finds: the header's logo it swaps, the title it
+    // watches and the first post it scrolls back to.
+    assert!(html.contains("<div class=\"home-logo-wrapper-outlet\">"));
+    assert!(html.contains("<div class=\"container\" id=\"topic-title\"><div class=\"title-wrapper\"><h1 data-topic-id=\"35\">"));
+    assert!(html.contains("id=\"post_1\""));
+    // Only a topic docks it.
+    let (_, _, latest) = get(&db.pool, "/latest").await;
+    assert!(!latest.contains("header-topic-info"));
+}
+
+#[tokio::test]
+async fn the_mobile_docked_header_leaves_out_the_grandparent_badge_only() {
+    let db = TestDb::new().await;
+    let app = discourse_rs::app(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let response = app
+        .oneshot(
+            Request::get("/t/parity-fixture-tagged-in-a-subcategory/38")
+                .header(header::HOST, "test.localhost")
+                .header(header::COOKIE, "mobile_view=1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let html = String::from_utf8_lossy(&bytes).into_owned();
+    assert!(html.contains(" mobile-view "), "the mobile layout");
+    let template = header_topic_template(&html);
+    // A subcategory: the parent's badge, then its own, neither with its
+    // parent's class.
+    let general = template.find("data-category-id=\"4\"").expect("General");
+    let sub = template
+        .find("data-category-id=\"34\"")
+        .expect("Sub General");
+    assert!(general < sub, "{template}");
+    assert!(!template.contains("--has-parent"), "{template}");
+    assert!(template.contains(">howto</a>"), "{template}");
+}
