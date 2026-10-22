@@ -1653,6 +1653,13 @@
   }
 }
 
+/* category-list.scss:634, after :543 as in the bundle */
+@media (width < 40rem) {
+  .navigation-categories .category-list {
+    margin-bottom: 3em;
+  }
+}
+
 /* category-list.scss:643 */
 @media (width < 40rem) {
   .category-list .category.muted a.category-title-link {

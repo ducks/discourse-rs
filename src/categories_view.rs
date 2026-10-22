@@ -4,17 +4,17 @@
 //! (categories-only.gjs, parent-category-row.gjs) beside the latest
 //! topics (categories-topic-list.gjs, latest-topic-list-item.gjs).
 //!
-//! Not drawn yet: category logos, the unread and new counts of
-//! CategoryUnread.
+//! Not drawn yet: category logos.
 
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 
 use crate::Unsupported;
 use crate::topic_list_view::{
-    ListContext, category_badge, category_badge_html, escape, relative_age_tiny, t, t_count,
-    t_with, tags_html, topic_statuses,
+    ListCategory, ListContext, category_badge, category_badge_html, escape, relative_age_tiny, t,
+    t_count, t_with, tags_html, topic_statuses,
 };
+use crate::topic_tracking_report::{Kind, Tracking};
 
 fn s(v: &Value) -> &str {
     v.as_str().unwrap_or_default()
@@ -42,13 +42,53 @@ fn notification_level(level: i64) -> &'static str {
     }
 }
 
+/// CategoryUnread: the category's unread and new topic counts
+/// (Category#unreadTopicsCount, #newTopicsCount, the member's
+/// topicTrackingState.countUnread and countNew), each a link to the
+/// category's list of them; nothing inside for a visitor.
+fn category_unread(
+    cx: &ListContext,
+    tracking: Option<&Tracking>,
+    category: &ListCategory,
+    tag: &str,
+    class: &str,
+) -> String {
+    let mut out = format!("<{tag} class=\"category__badges{class}\">");
+    if let Some(tracking) = tracking {
+        let id = category.id as i32;
+        let url = crate::topic_list_view::category_url(cx, category);
+        for (kind, filter, title) in [
+            (Kind::Unread, "unread", "topic.unread_topics"),
+            (Kind::New, "new", "topic.new_topics"),
+        ] {
+            let count = tracking.count(kind, Some(id), None);
+            if count > 0 {
+                out.push_str(&format!(
+                    "<a class=\"badge new-posts badge-notification\" href=\"{url}/l/{filter}\" title=\"{}\">{}</a>",
+                    escape(&t_count(cx, title, count, &[])),
+                    escape(&t_count(
+                        cx,
+                        &format!("filters.{filter}.lower_title_with_count"),
+                        count,
+                        &[]
+                    ))
+                ));
+            }
+        }
+    }
+    out.push_str(&format!("</{tag}>"));
+    out
+}
+
 /// `.categories-and-latest`, from the category list and latest list
-/// documents; `muted`, the viewer's muted category ids.
+/// documents; `muted`, the viewer's muted category ids; `tracking`, a
+/// member's topic tracking state.
 pub fn render(
     cx: &ListContext,
     category_list: &Value,
     topic_list: &Value,
     muted: &[i64],
+    tracking: Option<&Tracking>,
 ) -> Result<String, Unsupported> {
     let categories: Vec<&Value> = category_list["category_list"]["categories"]
         .as_array()
@@ -57,7 +97,7 @@ pub fn render(
         .collect();
     let mut out =
         String::from("<div class=\"categories-and-latest\"><div class=\"column categories\">");
-    out.push_str(&categories_only(cx, &categories, muted)?);
+    out.push_str(&categories_only(cx, &categories, muted, tracking)?);
     out.push_str("</div><div class=\"column\">");
     out.push_str(&latest_topics(cx, topic_list));
     out.push_str("</div></div>");
@@ -133,6 +173,7 @@ fn categories_only(
     cx: &ListContext,
     categories: &[&Value],
     muted: &[i64],
+    tracking: Option<&Tracking>,
 ) -> Result<String, Unsupported> {
     if categories.is_empty() {
         return Ok(String::new());
@@ -144,7 +185,7 @@ fn categories_only(
     let rows = |list: ListType| -> Result<String, Unsupported> {
         let mut rows = String::new();
         for c in categories {
-            rows.push_str(&row(cx, &muting, c, period, list)?);
+            rows.push_str(&row(cx, &muting, tracking, c, period, list)?);
         }
         Ok(rows)
     };
@@ -187,6 +228,7 @@ fn categories_only(
 fn row(
     cx: &ListContext,
     muting: &Muting,
+    tracking: Option<&Tracking>,
     c: &Value,
     period: &str,
     list: ListType,
@@ -243,8 +285,9 @@ fn row(
         .filter_map(|id| cx.categories.get(&id))
         .map(|sub| {
             format!(
-                "<span class=\"subcategory\">{} <span class=\"category__badges\"></span></span>",
-                category_badge_html(cx, sub, true, true)
+                "<span class=\"subcategory\">{} {}</span>",
+                category_badge_html(cx, sub, true, true),
+                category_unread(cx, tracking, sub, "span", "")
             )
         })
         .collect();
@@ -291,8 +334,9 @@ fn row(
     };
     out.push_str(&format!(
         "<td class=\"topics topic-list-data num\"><div title=\"{}\">{stat_html}</div>\
-         <div class=\"unread-new\"><div class=\"category__badges unread-new\"></div></div></td></tr>",
-        escape(&title)
+         <div class=\"unread-new\">{}</div></td></tr>",
+        escape(&title),
+        category_unread(cx, tracking, category, "div", " unread-new")
     ));
     Ok(out)
 }
@@ -612,7 +656,12 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
             classes.push(class.to_string());
         }
     }
-    if topic["last_read_post_number"].is_number() && cx.member_trust_level.is_some() {
+    // Topic#visited: >= for deleted posts at the end of the topic.
+    let highest = topic["highest_post_number"].as_i64().unwrap_or(1);
+    let visited = topic["last_read_post_number"]
+        .as_i64()
+        .is_some_and(|read| read >= highest);
+    if visited {
         classes.push("visited".to_string());
     }
 
@@ -648,9 +697,18 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
         })
         .unwrap_or_default();
 
-    // dTopicLink
-    let title_html =
+    // dTopicLink: to the first unread post, saying a visited topic is
+    // read to screen readers; then TopicPostBadges to the same post.
+    let last_unread_url = crate::topic_list_view::last_unread_url(cx, topic);
+    let mut title_html =
         crate::topic_list_view::emoji_unescape(s(&topic["fancy_title"]), &cx.settings.emojis, base);
+    if visited {
+        title_html.push_str(&format!(
+            "<span class=\"sr-only\">&nbsp;{}</span>",
+            escape(&t(cx, "topic.sr_read"))
+        ));
+    }
+    let badges = crate::topic_list_view::topic_post_badges(cx, topic, &last_unread_url);
     let tags = tags_html(
         cx,
         topic,
@@ -662,7 +720,6 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
     // ItemRepliesCell
     let posts_count = topic["posts_count"].as_i64().unwrap_or(0);
     let replies = posts_count - 1;
-    let highest = topic["highest_post_number"].as_i64().unwrap_or(1);
     // lastPostUrl and bumpedAtTitle
     let created = date(&topic["created_at"]);
     let bumped = date(&topic["bumped_at"]).or(created);
@@ -682,7 +739,7 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
 
     format!(
         "<div class=\"{}\" data-topic-id=\"{id}\"><div class=\"topic-poster\">{poster}</div>\
-         <div class=\"main-link\"><div class=\"top-row\"><span class=\"topic-statuses\">{}</span> <a href=\"{url}\" class=\"title\" data-topic-id=\"{id}\">{title_html}</a><span class=\"topic-post-badges\"></span></div>\
+         <div class=\"main-link\"><div class=\"top-row\"><span class=\"topic-statuses\">{}</span> <a href=\"{last_unread_url}\" class=\"title\" data-topic-id=\"{id}\">{title_html}</a>{badges}</div>\
          <div class=\"bottom-row\">{category_link}{tags}</div></div>\
          <div class=\"topic-stats\"><div class=\"num posts-map posts topic-list-data\"><a aria-label=\"{}\" class=\"badge-posts\" href=\"{url}/1\"><span class=\"number\">{}</span></a></div>\
          <div class=\"topic-last-activity\"><a href=\"{url}/{highest}\"{bumped_title}>{age}</a></div></div></div>",

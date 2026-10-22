@@ -326,3 +326,11 @@
 .anon .muted-categories-link {
   display: none;
 }
+
+.navigation-categories .category-list {
+  margin-bottom: 3em;
+}
+
+.navigation-categories .category-list .category-list {
+  margin-bottom: 0;
+}

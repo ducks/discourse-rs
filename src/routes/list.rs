@@ -1027,7 +1027,13 @@ async fn categories_response(
                 mobile_style == "categories_with_featured_topics",
             )?
         } else {
-            crate::categories_view::render(&cx, &doc, &latest, &muted)?
+            crate::categories_view::render(
+                &cx,
+                &doc,
+                &latest,
+                &muted,
+                page.chrome.tracking.as_ref(),
+            )?
         };
         page.nav = crate::html::nav_items(
             &state.i18n,
@@ -1054,8 +1060,11 @@ async fn categories_response(
                 state.i18n.t(label).unwrap_or_default()
             );
         }
-        // discovery/categories.gjs: bodyClass "categories-list"
-        page.chrome.body_classes.push_str(" categories-list");
+        // discovery/categories.gjs: bodyClass "categories-list"; its
+        // Navigation's "navigation-categories".
+        page.chrome
+            .body_classes
+            .push_str(" navigation-categories categories-list");
     }
     page.banner = crate::html::welcome_banner(
         &state.i18n,
