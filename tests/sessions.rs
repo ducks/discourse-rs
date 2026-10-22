@@ -1598,6 +1598,80 @@ async fn members_bookmark_from_the_topic_page() {
     );
 }
 
+/// The footer's bookmark button counts every bookmark the member holds in
+/// the topic (TopicBookmarksMenu): with a post's among them it is the
+/// grouped menu's trigger, whose menu is refused; the topic's alone is
+/// BookmarkMenu's toggle.
+#[tokio::test]
+async fn the_footer_bookmark_button_counts_the_topics_bookmarks() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let footer = |body: &str| {
+        let from = body
+            .find(r#"id="topic-footer-buttons""#)
+            .expect("the footer");
+        let at = from
+            + body[from..]
+                .find("bookmark widget-button")
+                .expect("the bookmark button");
+        let start = body[..at].rfind("<button").unwrap();
+        let end = at + body[at..].find("</button>").unwrap();
+        body[start..end].to_string()
+    };
+
+    // The topic's bookmark and two of its posts', one with a reminder.
+    let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
+    let button = footer(&page.body);
+    assert!(button.starts_with(
+        r#"<button class="btn btn-icon-text fk-d-menu__trigger topic-bookmarks-menu-trigger bookmark widget-button bookmark-menu__trigger btn-icon-text btn-default topic-footer-button bookmarked with-reminder" title="Edit bookmarks" aria-expanded="false" data-identifier="topic-bookmarks-menu" data-trigger="" data-unported="the topic's bookmarks menu (TopicBookmarksMenu)" type="button"><svg class="fa d-icon d-icon-bookmark "#
+    ), "{button}");
+    assert!(
+        button.ends_with(r#"<span class="d-button-label">Edit bookmarks</span>"#),
+        "{button}"
+    );
+    assert!(!button.contains("hx-"), "{button}");
+
+    // A post's bookmark alone.
+    let slug: String = sqlx::query_scalar("SELECT slug FROM topics WHERE id = 37")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let page = client.get(&format!("/t/{slug}/37")).await;
+    let button = footer(&page.body);
+    assert!(button.contains(r#"topic-footer-button bookmarked --post-bookmarked-only" title="You&#x27;ve bookmarked this. " "#), "{button}");
+    assert!(
+        button.ends_with(r#"<span class="d-button-label">Edit bookmark</span>"#),
+        "{button}"
+    );
+
+    // The topic's alone: BookmarkMenu, which removes it.
+    sqlx::query(
+        "DELETE FROM bookmarks WHERE bookmarkable_type = 'Post' \
+           AND user_id = (SELECT id FROM users WHERE username = 'user1') \
+           AND bookmarkable_id IN (SELECT id FROM posts WHERE topic_id = 35)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
+    let button = footer(&page.body);
+    assert!(
+        button.contains(r#"fk-d-menu__trigger bookmark-menu-trigger bookmark widget-button"#),
+        "{button}"
+    );
+    assert!(
+        button
+            .contains(r#"data-identifier="bookmark-menu" data-trigger="" hx-delete="/bookmarks/"#),
+        "{button}"
+    );
+    assert!(
+        button.ends_with(r#"<span class="d-button-label">Edit bookmark</span>"#),
+        "{button}"
+    );
+}
+
 /// The post endpoint shows what the viewer may see: no bookmark button for
 /// an anonymous reader, and nothing at all of a post they cannot see.
 #[tokio::test]
