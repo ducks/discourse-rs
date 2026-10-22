@@ -32,7 +32,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | Action | covered | recordable | needs-harness | unported |
 |---|---|---|---|---|
 | PostsController#create | 12 | 9 | 9 | 57 |
-| PostsController#update | 4 | 9 | 3 | 20 |
+| PostsController#update | 5 | 9 | 3 | 19 |
 | PostsController#destroy | 3 | 2 | 0 | 5 |
 | PostsController#recover | 1 | 2 | 0 | 1 |
 | PostsController#revisions (and #latest_revision) | 2 | 10 | 6 | 11 |
@@ -121,7 +121,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (88 sections)** | **574** | **340** | **229** | **516** |
+| **All (88 sections)** | **575** | **340** | **229** | **515** |
 
 ## Cases added from this inventory
 
@@ -237,7 +237,7 @@ its own branch (`git log --merges --grep fix/`), so all 100 match.
 | 913 | regular > updates raw, trailing whitespace stripped | recordable | edit_trailing_whitespace |
 | 921 | regular > extracts links from the new body | recordable | edit_with_link |
 | 931 | regular > deleted post not updatable | recordable | edit_deleted_post (user2 PUT /posts/45 -> 404) |
-| 943 | staff > edit reason limit on a small action | unported | Unsupported("editing posts other than regular ones") |
+| 943 | staff > edit reason limit on a small action | covered | small_action_edit_reason_limit (new, matches) |
 | 976 | staff > posts in deleted topics | unported | Unsupported("editing deleted posts") |
 | 987 | staff > invalid first-post title edit rolls back | unported | title param refused; watched words |
 | 1029 | staff > no bump for whispers | needs-harness | freeze_time |
