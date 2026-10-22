@@ -3212,10 +3212,9 @@ route table has been made, so this list may be short.
     (post_view.rs:1820); the browse more line is drawn once with the
     page's own message read through the posts shown, not kept live from
     the pmTopicTrackingState bus messages; the title's edit pencil and
-<<<<<<< HEAD
-    title editing (TopicTitleEditor, the edit-title glyph's styles), the
-    header's topic title once scrolled past (with its glyph) and the
-    admin menu's wrench (194) are not drawn for any topic
+    title editing (TopicTitleEditor, the edit-title glyph's styles) and
+    the admin menu's wrench (194) are not drawn for any topic; the
+    header's topic title once scrolled past, with its glyph, is 266's
 264. ~~`fix/categories-tracking`~~ (done) S: the categories page ignored a
     member's read state, found by a screenshot run (/categories as anon,
     admin, user1 and mobile). `.category__badges` was always empty; now
@@ -3283,11 +3282,6 @@ route table has been made, so this list may be short.
     header (templates/latest.html:25); EmptyTopicFilter's education in a
     member's empty list footer (templates/latest.html:46, with its
     "Browse latest topics" and per-filter texts)
-=======
-    title editing (TopicTitleEditor, the edit-title glyph's styles) and
-    the admin menu's wrench (194) are not drawn for any topic; the
-    header's topic title once scrolled past, with its glyph, is 266's
->>>>>>> fix/docked-header-topic
 
 ### Phase 11: the bundled plugins' gaps (210)
 
