@@ -54,17 +54,66 @@ that own them:
 Every marker has an open item but one, restoring a backup that needs
 migrations (Not planned).
 
-What a visitor or a new member meets first, by how soon:
-
-- Polls draw as their cooked list with a "0 voters" stub, so nobody can
-  vote (228); building one from the composer is 229.
-- A post with an uploaded video or audio file is refused
-  (posting/create.rs:591, 138, with 141).
-- Checklists can't be checked (242), the staff review queue's claims,
-  notes and client actions are refused (194), user status can't be set
-  (130), chat has no drawer (223).
-
 ## Before the demo
+
+The demo is the core forum, chat and admin; polls are low priority. Its
+bar is tests/new_member_smoke.rs and tests/demo_smoke.rs green with no
+ignored step (below), and the screenshot sweeps (scripts/parity-screenshots)
+showing nothing a scripted walk-through would land on. This list is what is
+left between here and there; check items off as their branches merge.
+
+Blockers, a scripted walk-through would hit them:
+
+- [ ] The open composer doesn't set `html.composer-open`, so a page can't
+  scroll clear of it (/new-topic 27.8% off): fix/composer-open-padding
+  (276), in progress.
+- [ ] /new and /unread draw their Dismiss rows empty, no Dismiss New modal
+  (270a, 188): fix/list-dismiss, in progress.
+- [ ] /admin/badges: core's `.content-list` rules are missing, so the badge
+  list is unstyled (4% desktop, 8-11% mobile), and a system badge's
+  disabled select draws enabled: fix/content-list-css.
+- [ ] /admin/customize/themes: the seed's Foundation and Horizon screenshot
+  uploads 404 on the port (their files exist only on the reference) and
+  the design wizard card is unstyled: fix/theme-screenshot-files.
+- [ ] The topic footer's notifications button sometimes draws as a plain
+  "Watching" box without its bell or caret (seen in both sweeps; cause
+  unknown): fix/footer-notifications-flake.
+- [ ] /password-reset over the homepage when login isn't required answers
+  500 (261a, routes/login_required.rs:1554).
+- [ ] Chat: /chat/direct-messages and /chat/threads answer 405 with a blank
+  page (99's leftovers), and a DM channel drops its "last visit" line when
+  the newest message is the marker (plugins/chat/page.rs:185):
+  fix/chat-last-visit-line; the chat drawer is 223.
+- [ ] The demo servers on 8080 and 8092 run builds from 2026-10-19 and
+  2026-10-20, before every item from 260 on: rebuild and restart them
+  (the owner's call; agents don't touch them).
+
+Visible if clicked, avoid them in a scripted demo:
+
+- [ ] Polls draw a "0 voters" stub and can't be voted on (228); no Build
+  Poll (229).
+- [ ] A post with an uploaded video or audio file is refused
+  (posting/create.rs:591, 138, with 141).
+- [ ] Checklists can't be checked (242); user status can't be set (130).
+- [ ] The review queue's claims, notes and client actions are refused
+  (194), and the topic admin wrench isn't drawn (194, 262a).
+- [ ] The composer's rich editor and its toolbar buttons (196); the
+  profile's About me editor follows it.
+- [ ] The add participant modal on a message (262a); the grouped bookmarks
+  menu (274a).
+
+Polish, from the second screenshot sweep:
+
+- [ ] Admin category settings draw `default_composer_category` as a plain
+  combo box instead of CategoryChooser (2.41%): fix/category-setting-chooser.
+- [ ] Admin font previews all render in Inter: fix/admin-font-previews.
+- [ ] The admin email style Ace editor height and template preview offset:
+  fix/admin-email-editors.
+- [ ] scripts/parity-screenshots: guard against a 164598px capture
+  (PIL's DecompressionBombError) and let scripts/ui-compare log in:
+  chore/screens-tool-guards.
+
+Done:
 
 - [x] The login page and sign-in flow: Ember's full-page login, signup,
   password reset and account-created pages (261), desktop and mobile.
