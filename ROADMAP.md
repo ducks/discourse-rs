@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 271a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 271a, 274a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3494,6 +3494,64 @@ route table has been made, so this list may be short.
     a value and an array or hash, or arrays of hashes (Rails' 400 Bad
     Request; routes/list.rs:182,188,192), and tag_name that is not a
     string (routes/list.rs:208,215)
+274. ~~`fix/profile-polish`~~ (done) S: the profile pages' gaps a
+    screenshot run found. UserNotificationsDropdown (Normal / Mute /
+    Ignore) drew its header spread across the button with a grey bell:
+    dropdown-select-box.scss's `.user-notifications-dropdown` rules (the
+    header's icons without the angle's auto margin, the wrapper
+    centered) were missing, now in kit.css after the box's own; and the
+    bell took `.select-kit .d-icon`'s primary-medium where Rails gives
+    `.btn .d-icon`'s colour, because the port loaded select-kit.scss
+    after buttons.scss while Rails imports common/select-kit before
+    common/components and common/base. select-kit, single-select,
+    combo-box, category-row and category-chooser's rules moved from
+    composer.css to select-kit.css, right after the foundation. On a
+    phone the user nav lacked UserNav's Manage user item for staff
+    (`isMobileView` and `isStaff`, the desktop's Admin button's stand-in),
+    so it never overflowed and overflow-controls.js (DOverflowControls
+    and DHorizontalOverflowNav's revealActive, already ported for every
+    horizontal overflow nav the port draws: the user nav, the activity,
+    messages, notifications, preferences and invites sub-navs, the group
+    nav, the admin and review tabs, search's types) had nothing to
+    reveal; compared with playwright on a 390px phone against rs-ref-a
+    (the user nav, preferences, activity and messages sub-navs), the
+    scroll offset, edge attributes and chevrons match on load and after
+    each chevron. The footer's bookmark button said Edit bookmark with
+    several bookmarks in the topic: it is TopicBookmarksMenu now, its
+    label and title counting every bookmark of the viewer's in the topic
+    (edit_bookmark's count), its icon and classes (with-reminder,
+    --post-bookmarked-only) as its getters have them, the grouped
+    menu's trigger (topic-bookmarks-menu) when a post's bookmark is
+    among them, BookmarkMenu's toggle for the topic's alone, its title
+    carrying the bookmark's name. DUserStat's and CollapsedInfo's
+    template whitespace is drawn (around the stats' values and labels,
+    around the dates and between the inline-flex items of the profile's
+    secondary row). UserSummary#top_categories plucks its categories
+    with no ORDER BY and sorts with Ruby's stable sort_by, so ties keep
+    the table's order; the port ordered them by id. The About me
+    editor's 12px is 196's: Ember draws the bio in the rich editor,
+    whose ProseMirror input is 49px where the port's markdown textarea
+    is 61px; the toolbar's missing toggle, heading and emoji
+    buttons don't change the row's height. Screenshots against rs-ref-a:
+    /u/admin 0.36% to 0.00, /u/user1 0.53 to 0.00, /u/user2/summary as
+    user0 0.55 to 0.03, /u/user0/summary 0.35 to 0.03, the user1
+    activity and user2 solved tabs 0.11 to 0.05, the messages and
+    account preferences as admin 0.10 to 0.04, mobile account
+    preferences as admin 1.00 to 0.11, in summary.json and
+    summary-mobile.json; the rest of pages, pages-mobile, admin-pages
+    and admin-pages-mobile held (the rows that got worse scored the same
+    on main's binary when rerun together: reference state). Left, split
+    into 274a.
+    274a. `fix/profile-polish-rest` S: the grouped bookmarks menu's
+    content (its post rows and their submenu, edit and delete the
+    topic's bookmark, bookmark the topic, clear all): its trigger is
+    drawn and refused (post_view.rs:2300, static/js/topic.js:609); a
+    single bookmark with a reminder titles the footer and post buttons
+    created_generic where Ember says created_with_reminder_generic with
+    BookmarkFormData's formattedReminder (post_view.rs:1399,2237); GET
+    /g/:name/members as a page answers the members JSON route's 404
+    where Ember redirects to the group's page, its members
+    (routes/mod.rs:2467)
 
 ### Phase 11: the bundled plugins' gaps (210)
 
