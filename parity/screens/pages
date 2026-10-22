@@ -25,6 +25,8 @@
 /u/user1
 /tags
 /tag/guide
+/top mask=.top-date-string
+/top?period=weekly mask=.top-date-string
 /search?q=fixture
 /t/999999
 
@@ -32,6 +34,7 @@
 /latest as=admin
 /categories as=admin
 /categories as=user1
+/top?period=weekly as=user1 mask=.top-date-string
 /t/parity-fixture-replies-and-posters/35 as=user0 wait=4000
 /t/parity-fixture-replies-and-posters/35 as=user1 wait=4000
 /t/cooked-content-basics-for-the-stylesheets/91 as=user1 wait=4000

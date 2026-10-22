@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 263a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 263a, 265a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3112,6 +3112,44 @@ route table has been made, so this list may be short.
     redirects go to Discourse.base_url's host like the port's other
     redirects, where Rails' redirect_to uses the request's host
     (routes/static_pages.rs:59)
+
+265. ~~`fix/top-period-chooser`~~ (done) S: the top lists (/top,
+    `?period=`, /c/:slug/l/top, /tag/:tag/l/top) drew no period heading,
+    and the port added an active Top pill Ember draws only when top_menu
+    has top. Now DiscoveryTopics' `.top-lists` PeriodChooser heads every
+    top list from the list JSON's `for_period` (html.rs latest_page,
+    reusing directory_view's chooser, with _topic-list.scss's top-lists
+    rules): the period's name and its date range in the viewer's zone
+    (periodTitle with fullDay false), a row for each of Site.periods, and
+    static/js/top-period.js opening it as select-kit does and going to
+    `?period=` with the discovery query params in Ember's order
+    (DiscoveryListController#changePeriod). ListController.best_period_for
+    now takes the member's previous_visit_at (best_periods_for's daily to
+    yearly ladder) where it took none. The navigation pills are top_menu's
+    alone: NavItem.buildList adds the current list from `args.filterMode`,
+    which DNavigation never passes, so a list the menu lacks (top, and
+    bookmarks, posted, read and the rest) has no pill, and the mobile
+    menu's trigger falls back to the first pill (selectedNavItem). A list
+    with no topics draws no topic list (DiscoveryTopics#hasTopics). /new's
+    `subset` (TopicQuery#list_new with unified new: topics is
+    new_results, replies unread_results) filters the list and rides the
+    next-page URL; the suggested topics' "new topics remaining" links
+    already pointed there. Ember's "see more" footer for top lists is gone
+    upstream (topic-list-bottom draws only the dismiss buttons and the
+    empty-filter education). Measured against rs-ref-a: screenshots of
+    /top, /top?period=weekly (anonymous and as user1, chooser open too),
+    /c/general/4/l/top?period=monthly and /tag/guide/l/top went from
+    0.99-1.30% to 0.01-0.29% (the category's 0.29% is /c/general/4's
+    own), with /top rows in parity/screens/pages and summary.json; the
+    chooser's computed layout matches and a row goes to the same URL.
+    Left, split into 265a.
+    265a. `feat/new-list-subset-toggle` S: /new's All / Topics / Replies
+    toggle (NewListHeaderControlsWrapper, with unified new, which is on
+    for everyone) with the member's new and unread counts within the
+    category or tag, kept live, and its bulk select variant in the list
+    header (templates/latest.html:25); EmptyTopicFilter's education in a
+    member's empty list footer (templates/latest.html:46, with its
+    "Browse latest topics" and per-filter texts)
 
 ### Phase 11: the bundled plugins' gaps (210)
 
