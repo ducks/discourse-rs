@@ -290,7 +290,8 @@ impl Shared {
 
 /// A site's startup: its pool, the schema verified, the port's own schema,
 /// pg-bus, the request tracker's lists, the site icons' optimized copies
-/// (SiteIconManager.ensure_optimized! at boot). The default site also
+/// (SiteIconManager.ensure_optimized! at boot), the core themes' screenshot
+/// files (SystemThemesManager.sync!'s uploads). The default site also
 /// reads back the process's `GLOBAL::` lists, which are saved to its
 /// database.
 pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn Error>> {
@@ -334,6 +335,11 @@ pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn E
             "made the site icons' optimized copies"
         ),
         Err(e) => tracing::error!(site = db, "site icons: {e}"),
+    }
+    match crate::system_themes::ensure_screenshots(&mut conn, &state.config).await {
+        Ok(0) => {}
+        Ok(n) => tracing::info!(site = db, files = n, "stored the core themes' screenshots"),
+        Err(e) => tracing::error!(site = db, "core theme screenshots: {e}"),
     }
     drop(conn);
     Ok(state)

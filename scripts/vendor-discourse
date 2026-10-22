@@ -62,6 +62,12 @@ FILES=(
   public/images/discourse-logo-sketch-small.png
   public/images/default-favicon.ico
   public/images/default-apple-touch-icon.png
+  # The core themes' screenshots, which SystemThemesManager.sync! stores
+  # as the seed's uploads 1 to 4 (crate::system_themes).
+  themes/foundation/screenshots/light.png
+  themes/foundation/screenshots/dark.png
+  themes/horizon/screenshots/light.png
+  themes/horizon/screenshots/dark.png
 )
 
 if [ $# -lt 1 ]; then
