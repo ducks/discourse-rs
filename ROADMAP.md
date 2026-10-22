@@ -64,11 +64,11 @@ left between here and there; check items off as their branches merge.
 
 Blockers, a scripted walk-through would hit them:
 
-- [ ] The open composer doesn't set `html.composer-open`, so a page can't
+- [x] The open composer doesn't set `html.composer-open`, so a page can't
   scroll clear of it (/new-topic 27.8% off): fix/composer-open-padding
-  (276), in progress.
-- [ ] /new and /unread draw their Dismiss rows empty, no Dismiss New modal
-  (270a, 188): fix/list-dismiss, in progress.
+  (276), done: 0.47%, the rest is the rich editor (196).
+- [x] /new and /unread draw their Dismiss rows empty (270a): fix/list-dismiss,
+  done; Ember draws no Dismiss New modal (no caller upstream).
 - [ ] /admin/badges: core's `.content-list` rules are missing, so the badge
   list is unstyled (4% desktop, 8-11% mobile), and a system badge's
   disabled select draws enabled: fix/content-list-css.
