@@ -416,6 +416,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (
+        "header-topic-info.js",
+        JS,
+        include_str!("../static/js/header-topic-info.js"),
+    ),
+    (
         "discourse-reactions.js",
         JS,
         include_str!("../static/js/discourse-reactions.js"),

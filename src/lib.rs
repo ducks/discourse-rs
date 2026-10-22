@@ -114,6 +114,7 @@ pub mod groups_view;
 pub mod guardian;
 pub mod hashtag_decorator;
 pub mod hashtags;
+pub mod header_topic_view;
 pub mod highlight_js;
 pub mod homepage;
 pub mod hotlinked_media;

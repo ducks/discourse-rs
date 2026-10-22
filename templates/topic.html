@@ -4,6 +4,8 @@
 {% block content %}
 <div class="{{ archetype }}">
 <div class="container" id="topic-title">{{ title_html|safe }}</div>
+{#- The docked header's logo and topic info (header-topic-info.js). -#}
+{{ header_topic_info|safe }}
 <div class="container posts">
   {{ bottom_map|safe }}
   {{ timeline|safe }}
@@ -31,6 +33,7 @@
 <script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>
 {% if !dialog_strings.is_empty() %}<script type="application/json" id="dialog-strings">{{ dialog_strings|safe }}</script><script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "topic.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "header-topic-info.js") }}"></script>
 <script type="application/json" id="quote-button-config">{{ quote_config|safe }}</script>
 <script src="{{ crate::assets::url(base_path, "quote-button.js") }}"></script>
 {% if title_html.contains("title-voting") %}<script src="{{ crate::assets::url(base_path, "topic-voting.js") }}"></script>{% endif %}

@@ -352,3 +352,39 @@ async fn a_warning_has_no_envelope() {
     let json: serde_json::Value = serde_json::from_str(&json).unwrap();
     assert!(json.get("is_warning").is_none());
 }
+
+#[tokio::test]
+async fn a_messages_docked_header_shows_its_envelope_and_participants() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1
+        .page("/t/parity-fixture-pm-admin-to-user1-and-user2/43")
+        .await;
+    let start = html
+        .find("<template id=\"header-topic-info\">")
+        .expect("the docked header's template");
+    let template = &html[start..];
+    let template = &template[..template.find("</template>").unwrap()];
+    // Header::Topic::Info: the envelope to the viewer's inbox, the title,
+    // no category, and the participants in the order they were added,
+    // each opening their user card (header-topic-info.js).
+    assert!(template.contains(
+        "<h1 class=\"header-title\"><a aria-label=\"Inbox\" class=\"private-message-glyph-wrapper\" href=\"/u/user1/messages\"><svg class=\"fa d-icon d-icon-envelope svg-icon fa-width-auto private-message-glyph svg-string\""
+    ), "{template}");
+    assert!(template.contains(
+        "</svg></a><span class=\"topic-statuses\"></span><a class=\"topic-link\" data-topic-id=\"43\" href=\"/t/parity-fixture-pm-admin-to-user1-and-user2/43\"><span>Parity fixture: PM admin to user1 and user2</span></a>"
+    ), "{template}");
+    assert!(!template.contains("categories-wrapper"), "{template}");
+    let user = |name: &str, letter: &str| {
+        format!(
+            "<span class=\"trigger-user-card\"><a class=\"icon\" data-auto-route=\"true\" href=\"/u/{name}\" title=\"{name}\"><img alt=\"\" width=\"24\" height=\"24\" src=\"{letter}\" class=\"avatar\" title=\"{name}\"></a></span>"
+        )
+    };
+    assert!(template.contains(&format!(
+        "<div class=\"topic-header-extra\"><div class=\"topic-header-participants\">{}{}{}</div></div>",
+        user("user1", "/letter_avatar_proxy/v4/letter/u/5daacb/24.png"),
+        user("user2", "/letter_avatar_proxy/v4/letter/u/ecb155/24.png"),
+        user("admin", "/letter_avatar_proxy/v4/letter/a/3ec8ea/24.png"),
+    )), "{template}");
+}
