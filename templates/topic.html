@@ -14,7 +14,7 @@
       <div class="posts-wrapper">
         <div class="post-stream" id="posts"{% if !ignored_users.is_empty() %} data-ignored-users="{{ ignored_users }}"{% endif %}>{% for post in posts %}{{ post|safe }}{% endfor %}<div class="post-stream__bottom-boundary"></div></div>
       </div>
-      <div id="topic-bottom"></div>
+      <div id="topic-bottom"></div>{{ reply_where|safe }}
       <div class="loading-container"><div class="topic-timer-info"></div></div>
     </section>
   </div>

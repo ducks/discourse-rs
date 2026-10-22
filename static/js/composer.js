@@ -453,6 +453,12 @@
     }
     state = opts;
     var s = state;
+    // The topic as the reply-where dialog shows it, should the reply be
+    // saved from another topic's page (composer.topic).
+    if (opts.mode === "reply") {
+      var where = document.querySelector('template.reply-where-topic[data-topic-id="' + opts.topicId + '"]');
+      s.whereHtml = where ? where.innerHTML : null;
+    }
     setMode(opts.mode);
     applyDiscardIcon(opts.mode);
     if (opts.mode === "reply" && opts.replyToUsername) {
@@ -834,12 +840,12 @@
   // The new-topic and new-message routes (routes/new-topic.js,
   // new-message.js) as composer.openNewTopic and openNewMessage take
   // their query params.
-  // The dialog service's alert. A page that has no dialog loads it (its
-  // labels with it) the first time one is needed.
+  // The dialog service: a page that has no dialog loads it (its labels
+  // with it) the first time one is needed.
   var dialogLoading = null;
-  function alertText(message) {
+  function withDialog(fn, failed) {
     if (window.Discourse && Discourse.dialog) {
-      Discourse.dialog.alert(message);
+      fn();
       return;
     }
     if (!dialogLoading) {
@@ -858,12 +864,18 @@
         document.head.appendChild(script);
       });
     }
-    dialogLoading.then(
+    dialogLoading.then(fn, function () {
+      dialogLoading = null;
+      failed();
+    });
+  }
+
+  function alertText(message) {
+    withDialog(
       function () {
         Discourse.dialog.alert(message);
       },
       function () {
-        dialogLoading = null;
         window.alert(message);
       }
     );
@@ -1676,7 +1688,18 @@
     });
   }
 
-  function save() {
+  // The composer service's save: a reply saved from another topic's page
+  // asks which topic it goes to first (the reply-where dialog), unless
+  // that topic is closed for a member. Shift with the button saves a
+  // reply without going to it (saveAction's jump).
+  function save(event) {
+    if (!state) {
+      return;
+    }
+    submitPost(!(event && event.shiftKey && state.mode === "reply"), false);
+  }
+
+  function submitPost(jump, force) {
     if (!state) {
       return;
     }
@@ -1684,7 +1707,25 @@
     if (state.mode === "create-topic" && !validateTags(true)) {
       return;
     }
+    if (!force && state.mode === "reply" && askWhere(jump)) {
+      return;
+    }
     var request;
+    var s = state;
+    // Composer#createPost stages the reply in the stream it is read in,
+    // with the preview's cooked: on this topic's page, when it is loaded
+    // to the end. The mobile view draws no preview, so stages nothing. A
+    // staged post is drawn before the save returns, so post:highlight
+    // focuses it; here the live stream brings it.
+    var topicRoute = window.Discourse && Discourse.topicRoute;
+    var staged =
+      state.mode === "reply" &&
+      !!topicRoute &&
+      String(topicRoute.topicId()) === String(state.topicId) &&
+      topicRoute.atTopicEnd() &&
+      !!previewToggle &&
+      previewShown() &&
+      preview.innerHTML.replace(/<span class="marker"><\/span>/g, "") !== "";
     if (state.mode === "edit") {
       request = editPost(state);
     } else {
@@ -1746,20 +1787,141 @@
           );
           return;
         }
-        var mode = state.mode;
+        var json = res.json || {};
+        // Sent for review: PostEnqueued's modal, the draft gone, and no
+        // post to go to.
+        if (json.action === "enqueued") {
+          destroyDraft(s);
+          close();
+          postEnqueued(json);
+          return;
+        }
+        var mode = s.mode;
         close();
-        // A new topic opens; a reply or an edit arrives on the topic page's
-        // live stream.
-        if (mode === "create-topic" && res.json) {
-          var post = res.json.post || res.json;
-          location.href =
-            base + "/t/" + post.topic_slug + "/" + post.topic_id;
+        var post = json.post || json;
+        if (!post.topic_id) {
+          return;
+        }
+        if (!jump) {
+          return;
+        }
+        // DiscourseURL.routeTo(post.url, { keepFilter, skipIfOnScreen }),
+        // whether staged or not: the service reads stagedPost before
+        // Composer#save (after the async beforeSave) has staged anything.
+        var url = base + "/t/" + (post.topic_slug || "topic") + "/" + post.topic_id + (post.post_number > 1 ? "/" + post.post_number : "");
+        if (topicRoute) {
+          topicRoute.routeToPost(url, {
+            highlight: mode === "edit" || staged,
+            arriving: mode === "reply" && String(topicRoute.topicId()) === String(post.topic_id) && topicRoute.atTopicEnd(),
+          });
+        } else {
+          go(url);
         }
       })
       .catch(function () {
         submit.disabled = false;
         showError("Something went wrong.");
       });
+  }
+
+  // The page for a URL, swapped in as a link's (hx-boost).
+  function go(url) {
+    if (!window.htmx) {
+      window.location.assign(url);
+      return;
+    }
+    var link = document.createElement("a");
+    link.href = url;
+    link.hidden = true;
+    document.getElementById("main-outlet").appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  }
+
+  // The reply-where dialog (TopicReplyChoiceDialog) when the reply's topic
+  // isn't the one on the page: reply there, or here, to the page's topic
+  // and no post; cancelling saves the draft. False when there is nothing
+  // to ask: off a topic page, on the reply's own topic, or on a topic
+  // closed to a member.
+  function askWhere(jump) {
+    var here = document.querySelector("#topic template.reply-where-topic");
+    if (!here || String(here.dataset.topicId) === String(state.topicId) || here.dataset.offer !== "true") {
+      return false;
+    }
+    var s = state;
+    if (!s.whereHtml) {
+      showError("Not supported yet: replying from another topic's page to a topic not opened on its own.");
+      return true;
+    }
+    withDialog(
+      function () {
+        var holder = Discourse.dialog.dialog({
+          title: data.labelPostingNotOnTopic,
+          class: "reply-where-modal",
+          bodyHtml:
+            '<button class="btn no-text btn-primary btn-reply-where btn-reply-on-original" type="button">' +
+            s.whereHtml +
+            '</button><button class="btn no-text btn-reply-where btn-reply-here btn-default" type="button">' +
+            here.innerHTML +
+            "</button>",
+          buttons: [{ label: data.labelCancel, class: "btn-default btn-text btn-reply-where__cancel", action: "cancel" }],
+          didCancel: function () {
+            if (state === s) {
+              saveDraft();
+            }
+          },
+        });
+        holder.querySelector(".btn-reply-on-original").addEventListener("click", function () {
+          Discourse.dialog.close();
+          submitPost(jump, true);
+        });
+        holder.querySelector(".btn-reply-here").addEventListener("click", function () {
+          Discourse.dialog.close();
+          s.topicId = here.dataset.topicId;
+          s.replyTo = null;
+          s.whereHtml = here.innerHTML;
+          submitPost(jump, true);
+        });
+      },
+      function () {
+        showError("Something went wrong.");
+      }
+    );
+    return true;
+  }
+
+  // PostEnqueuedModal: the review notice, with the member's pending count.
+  function postEnqueued(json) {
+    var approval = {};
+    try {
+      approval = JSON.parse(data.approval);
+    } catch (_) {}
+    if (!window.Discourse || !Discourse.modal) {
+      return;
+    }
+    var count = json.pending_count || 0;
+    var pending = (count === 1 ? approval.pending_one : approval.pending_other) || "";
+    Discourse.modal.show({
+      className: "post-enqueued-modal",
+      title: approval.title,
+      body: function (body) {
+        var p = document.createElement("p");
+        p.textContent = approval.description || "";
+        body.appendChild(p);
+        var counted = document.createElement("p");
+        counted.innerHTML = pending.replace("%{count}", String(count));
+        body.appendChild(counted);
+      },
+      footer: function (footer, close) {
+        var ok = document.createElement("button");
+        ok.className = "btn btn-primary";
+        ok.type = "button";
+        ok.innerHTML = '<span class="d-button-label"></span>';
+        ok.querySelector(".d-button-label").textContent = approval.ok || "OK";
+        ok.addEventListener("click", close);
+        footer.appendChild(ok);
+      },
+    });
   }
 
   // The toolbar's options menu (ToolbarPopupMenuOptions over
@@ -2072,7 +2234,7 @@
         close();
       }
     } else if (event.target.closest(".save-or-cancel .create")) {
-      save();
+      save(event);
     } else if (control.classList.contains("draft")) {
       expand();
     }

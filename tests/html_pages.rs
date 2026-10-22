@@ -451,6 +451,80 @@ async fn a_topic_entered_at_a_post_draws_what_the_jump_needs() {
     assert!(html.contains(r#" id="post_5">"#));
 }
 
+/// PostStream#loadedAllPosts: a topic entered at a post near its end is
+/// drawn to the end, so it has the footer and the suggested topics, and
+/// new posts land on it (the live stream's tail), where the composer's
+/// save waits for its reply; entered nearer the start, neither.
+#[tokio::test]
+async fn a_topic_entered_near_its_end_is_loaded_to_the_end() {
+    let db = TestDb::new().await;
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(state, "admin").await;
+    let xhr = |r: axum::http::request::Builder| r.header("x-requested-with", "XMLHttpRequest");
+    let csrf = admin
+        .send(xhr(Request::get("/session/csrf.json")), "")
+        .await;
+    let csrf: serde_json::Value = serde_json::from_str(&csrf).unwrap();
+    for n in 0..20 {
+        let reply = Request::post("/posts")
+            .header("x-csrf-token", csrf["csrf"].as_str().unwrap())
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+        let body = admin
+            .send(
+                xhr(reply),
+                &format!("topic_id=35&raw=Reply+{n}+making+the+topic+longer+than+a+page"),
+            )
+            .await;
+        assert!(body.contains("\"post_number\""), "{body}");
+    }
+    let end = admin
+        .page("/t/parity-fixture-replies-and-posters/35/24")
+        .await;
+    assert!(end.contains(r#" id="post_25">"#));
+    assert!(!end.contains(r#" id="post_1">"#));
+    assert!(end.contains(r#" id="topic-footer-buttons""#), "{end}");
+    assert!(end.contains("&amp;tail=1"));
+    let start = admin
+        .page("/t/parity-fixture-replies-and-posters/35/3")
+        .await;
+    assert!(start.contains(r#" id="post_3">"#));
+    assert!(!start.contains(r#" id="post_25">"#));
+    assert!(!start.contains(r#"id="topic-footer-buttons""#));
+    assert!(!start.contains("&amp;tail=1"));
+}
+
+/// What composer.js's save draws from a member's topic page: the topic
+/// as the reply-where dialog shows it (TopicReplyChoiceDialog's button:
+/// its statuses, title, unlinked category badge and tags) and whether the
+/// dialog is offered there (an open topic, or a closed one to staff),
+/// with the composer's labels for it and for PostEnqueued's modal.
+#[tokio::test]
+async fn a_members_topic_page_draws_what_the_composers_save_shows() {
+    let db = TestDb::new().await;
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(state.clone(), "admin").await;
+    let html = admin
+        .page("/t/parity-fixture-tagged-in-a-subcategory/38")
+        .await;
+    assert!(html.contains(TAGGED_REPLY_WHERE), "{html}");
+    assert!(html.contains(r#" data-label-posting-not-on-topic="Which topic do you want to reply to?" data-label-cancel="Cancel" data-approval="{&quot;title&quot;:&quot;Post Needs Approval&quot;,&quot;description&quot;:&quot;We&#x27;ve received your new post but it needs to be approved by a moderator before it will appear. Please be patient.&quot;,&quot;pending_one&quot;:&quot;You have &lt;strong&gt;%{count}&lt;/strong&gt; post pending.&quot;,&quot;pending_other&quot;:&quot;You have &lt;strong&gt;%{count}&lt;/strong&gt; posts pending.&quot;,&quot;ok&quot;:&quot;OK&quot;}""#), "{html}");
+    // A closed topic: offered to staff, with its statuses.
+    let closed = admin.page("/t/parity-fixture-pinned-and-closed/37").await;
+    assert!(closed.contains(CLOSED_REPLY_WHERE), "{closed}");
+    let mut member = Member::logged_in(state, "user1").await;
+    let closed = member.page("/t/parity-fixture-pinned-and-closed/37").await;
+    assert!(
+        closed.contains(
+            r#"<template class="reply-where-topic" data-topic-id="37" data-offer="false">"#
+        )
+    );
+    let (_, _, visitor) = get(&db.pool, "/t/parity-fixture-tagged-in-a-subcategory/38").await;
+    assert!(!visitor.contains("reply-where-topic"));
+}
+
+const TAGGED_REPLY_WHERE: &str = r#"<template class="reply-where-topic" data-topic-id="38" data-offer="true"><div class="topic-title"><div class="topic-title__top-line"><span class="topic-statuses"></span><span class="fancy-title">Parity fixture: tagged in a subcategory</span></div><div class="topic-title__bottom-line"><span class="badge-category__wrapper" style="--category-badge-color: #AB9364;--category-badge-text-color: #FFFFFF;--parent-category-badge-color: #25AAE2;--parent-category-badge-text-color: #FFFFFF;"><span data-category-id="34" data-parent-category-id="4" data-drop-close="true" class="badge-category --has-parent --style-square"><span class="badge-category__name">Sub General</span></span></span><ul class='discourse-tags' aria-label=Tags><li><a href='/tag/howto/1'  data-tag-name=howto class='discourse-tag simple'>howto</a></li></ul></div></div></template>"#;
+const CLOSED_REPLY_WHERE: &str = r##"<template class="reply-where-topic" data-topic-id="37" data-offer="true"><div class="topic-title"><div class="topic-title__top-line"><span class="topic-statuses"><span class="topic-status --closed"><svg class="fa d-icon d-icon-lock svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#lock"></use></svg></span><span class="topic-status --pinned"><svg class="fa d-icon d-icon-thumbtack svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#thumbtack"></use></svg></span></span><span class="fancy-title">Parity fixture: pinned and closed</span></div><div class="topic-title__bottom-line"><span class="badge-category__wrapper" style="--category-badge-color: #808281;--category-badge-text-color: #FFFFFF;"><span data-category-id="2" data-drop-close="true" class="badge-category --style-emoji"><img width="20" height="20" src='/images/emoji/twitter/thought_balloon.png?v=15' title='thought_balloon' alt='thought_balloon' class='emoji'><span class="badge-category__name">Site Feedback</span></span></span></div></div></template>"##;
+
 /// /p/:post_id(/:user_id) (posts#short_link): a 302 to the post's URL,
 /// where the topic page jumps to it; a missing post is not found and one
 /// the viewer may not see (a message's) is forbidden.

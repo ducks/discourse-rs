@@ -3434,13 +3434,41 @@ route table has been made, so this list may be short.
     268a. `feat/small-action-buttons-rest` S: staff deleting a small
     action with replies get Ember's reply-ids dialog (delete replies or
     not, GET /posts/:id/reply-ids, not routed): refused
-    (static/js/topic.js:638; post_view.rs:1532 marks it); after an edit
-    is saved the composer doesn't DiscourseURL.routeTo the post
-    (address /t/:slug/:id/:n, post:highlight's tabindex and focus on the
-    `.small-action-desc` or `.topic-body`), for every edit
-    (static/js/composer.js:1491); Ember's edit warning for a localized
-    post under content_localization_enabled is not asked before the
-    composer opens, as for regular posts (static/js/composer.js:1984)
+    (static/js/topic.js:828; post_view.rs:1531 marks it); ~~after an
+    edit is saved the composer doesn't DiscourseURL.routeTo the post~~
+    (done in `fix/composer-save-jump`: every save goes to its post as
+    the composer service does, through topic.js's routeToPost: an edit
+    of any post (small actions, a first post retitled, under its new
+    slug) or a reply replaces the address with /t/:slug/:id/:n, gets
+    post:highlight's tabindex and focus when the page already drew the
+    post (an edit, or a reply staged from the desktop preview, which
+    the live stream brings), and jumpToPost with skipIfOnScreen
+    (offsetCalculator ported); a post the page doesn't draw is the page
+    around it, swapped in in the address's place without the focus,
+    another topic's is that topic's page, a new topic its page; a reply
+    saved from another topic's page asks the reply-where dialog
+    (TopicReplyChoiceDialog, its buttons drawn by the server,
+    post_view::reply_where_topic); a post sent for review shows
+    PostEnqueuedModal and goes nowhere; a page entered at a post whose
+    window reaches the end is loaded to the end (footer, suggested
+    topics, new posts land there). Compared with playwright against
+    rs-ref-c, desktop 1280 and mobile 390: URL, post top offset, focus
+    and tabindex after each save matched but where noted below); Ember's
+    edit warning for a localized post under content_localization_enabled
+    is not asked before the composer opens, as for regular posts
+    (static/js/composer.js:2390). Left from the save jump: the topic's
+    pending posts (TopicPendingPostSerializer, the stream's pending post
+    with its Delete) are not drawn, on load or after a queued reply; a
+    reply on a page loaded to the end is either left in the window or
+    locked under the header by skipIfOnScreen depending on where the
+    page stands when the jump runs (Ember varied between runs too: 53px
+    and 0px below the header, the port 104px); a staged reply is drawn
+    by the live stream after the save rather than at the click, so the
+    focus scroll can differ by where the page stands; Ember's cloaking
+    drops a far post's highlight tabindex, the port keeps it; the
+    dialog focuses its first footer button (Ember the dialog container)
+    and the modal its body (Ember none); "reply as new topic" is not in
+    the port's composer, so its save is not reached
 271. ~~`fix/list-query-filters`~~ (done) M: the discovery lists read only
     page, per_page, order, ascending, state and subset, so /latest?tags=,
     ?status=closed, ?category=, ?before= and the rest of

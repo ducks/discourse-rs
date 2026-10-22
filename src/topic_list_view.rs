@@ -221,7 +221,7 @@ pub fn icon(name: &str, extra_class: Option<&str>) -> String {
 }
 
 /// The icon Discourse's icon map names `topic.closed`.
-const CLOSED_ICON: &str = "lock";
+pub(crate) const CLOSED_ICON: &str = "lock";
 
 /// JS's `\B` is ASCII-only, which fancy_regex's `\B` is not.
 const ASCII_NOT_BOUNDARY: &str =
