@@ -96,6 +96,27 @@ async fn latest_pages_link_to_the_next_html_page() {
 }
 
 #[tokio::test]
+async fn latest_pages_apply_the_list_filters() {
+    let db = TestDb::new().await;
+    let (status, _, html) = get(&db.pool, "/latest?status=closed").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("Parity fixture: pinned and closed"));
+    assert!(!html.contains("Parity fixture: replies and posters"));
+    let (_, _, html) = get(&db.pool, "/latest?tags=howto&per_page=1").await;
+    assert!(
+        html.contains("Parity fixture: liked and archived"),
+        "{html}"
+    );
+    assert!(
+        html.contains(r#"href="/latest?page=1&#38;per_page=1&#38;tags=howto" rel="next""#),
+        "{html}"
+    );
+    let (status, _, body) = get(&db.pool, "/latest?before=soon").await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body, "before");
+}
+
+#[tokio::test]
 async fn topic_page_renders_posts_and_small_actions() {
     let db = TestDb::new().await;
     let (status, content_type, html) =

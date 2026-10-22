@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?state=watching_first_post"},
+    {"method": "GET", "path": "/latest.json?state=watching&per_page=1"}
+  ]
+}

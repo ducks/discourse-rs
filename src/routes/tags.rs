@@ -156,7 +156,13 @@ pub(super) fn next_url(
         pairs.push("no_subcategories=true".to_string());
     }
     if let Some(o) = &options.order {
-        pairs.push(format!("order={o}"));
+        pairs.push(format!("order={}", crate::ruby::cgi_escape(o)));
+    }
+    if let Some(state) = &options.state {
+        pairs.push(format!("state={}", crate::ruby::cgi_escape(state)));
+    }
+    if let Some(subset) = &options.subset {
+        pairs.push(format!("subset={}", crate::ruby::cgi_escape(subset)));
     }
     pairs.push(format!("page={}", options.page + 1));
     if let Some(p) = options.per_page {
@@ -436,6 +442,7 @@ async fn show_list(
         },
     };
     drop(conn);
+    super::list::refuse_unported_tag_list_params(&params)?;
 
     let (doc, settings) = match list_document_for(
         &state,
@@ -800,10 +807,7 @@ mod tests {
             tags: vec!["howto".into()],
             no_tags: false,
         };
-        let params = ListParams {
-            per_page: Some("1".into()),
-            ..ListParams::default()
-        };
+        let params = ListParams::from(vec![("per_page".to_string(), "1".to_string())]);
         let options = Options {
             per_page: Some(1),
             ..Options::default()

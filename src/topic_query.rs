@@ -74,6 +74,9 @@ pub struct Options {
     /// `options[:category]` resolved to an id: the list is scoped to it and
     /// its subcategories.
     pub category_id: Option<i32>,
+    /// `options[:category]` as the request gave it (an id or a top-level
+    /// slug), resolved by `get_category_id` when no route set category_id.
+    pub category: Option<String>,
     pub no_subcategories: bool,
     /// `options[:tags]`: tag names the topics must all carry
     /// (`match_all_tags`, which TagsController always sets).
@@ -85,6 +88,33 @@ pub struct Options {
     /// `options[:subset]`: the new list's topics or replies, with unified
     /// new.
     pub subset: Option<String>,
+    /// `options[:match_all_tags]`: every tag (TagsController always) rather
+    /// than any of them.
+    pub match_all_tags: bool,
+    /// `opts[:tags].first`, the name remove_muted_tags looks for among the
+    /// user's muted tags (for a `tags` string, its first character, which
+    /// is what Ruby's String#first gives).
+    pub first_tag: Option<String>,
+    /// `options[:exclude_tag]`
+    pub exclude_tag: Option<String>,
+    /// `options[:before]`: created more than this many days ago.
+    pub before: Option<i64>,
+    /// `options[:bumped_before]`: bumped more than this many days ago.
+    pub bumped_before: Option<i64>,
+    /// `param_to_integer_list(:topic_ids)`
+    pub topic_ids: Option<Vec<i64>>,
+    /// `options[:min_posts]`
+    pub min_posts: Option<i64>,
+    /// `options[:max_posts]`
+    pub max_posts: Option<i64>,
+    /// `options[:status]`: TopicsFilter#filter_status.
+    pub status: Option<String>,
+    /// `options[:filter] || options[:f]`: liked or tracked topics.
+    pub filter: Option<String>,
+    /// `options[:search]`: topics with a post matching the term.
+    pub search: Option<String>,
+    /// discourse-solved's `solved` list param (yes or no).
+    pub solved: Option<String>,
 }
 
 #[derive(Debug)]
@@ -153,8 +183,12 @@ pub struct TopicQuery<'a> {
 /// `options[:tag_ids]` (TopicList#tags).
 #[derive(Debug, Clone, Default)]
 pub struct TagScope {
-    clause: Option<String>,
+    clauses: Vec<String>,
+    /// Any of the tags: the topics joined to topic_tags and tags.
+    joins_tags: bool,
     pub tag_ids: Vec<i32>,
+    /// The list is of a tag the user muted (remove_muted_tags keeps it).
+    viewing_muted: bool,
 }
 
 /// The per-user inputs `default_results`, `remove_muted` and the
@@ -223,6 +257,32 @@ impl Filter {
         }
     }
 
+    /// Whether `default_results` gets `unordered: true`, so the default
+    /// order adds no ORDER BY of its own (create_list's unordered lists,
+    /// and unread_results/new_results; unseen_results is ordered).
+    fn ordering_unordered(&self) -> bool {
+        matches!(
+            self,
+            Filter::Top(_)
+                | Filter::Hot
+                | Filter::Votes
+                | Filter::Unread
+                | Filter::New
+                | Filter::Read
+        )
+    }
+
+    /// Whether `default_results` takes `filter` from the request
+    /// (`@options[:filter] || @options[:f]`): the lists built from
+    /// latest_results, unseen_results, unread_results and new_results,
+    /// which pass it no filter of their own. The rest pass create_list's.
+    fn filter_from_request(&self) -> bool {
+        matches!(
+            self,
+            Filter::Latest | Filter::Unseen | Filter::Unread | Filter::New
+        )
+    }
+
     /// `Discourse.filters - Discourse.anonymous_filters`: ListController's
     /// `ensure_logged_in` lists.
     pub fn requires_login(&self) -> bool {
@@ -234,21 +294,6 @@ impl Filter {
                 | Filter::Votes
                 | Filter::VotedBy(_)
                 | Filter::TopicsBy(_)
-        )
-    }
-
-    /// `create_list(..., unordered: true)`: the list brings its own order
-    /// and skips `apply_ordering` and pinning.
-    fn unordered(&self) -> bool {
-        matches!(
-            self,
-            Filter::Top(_)
-                | Filter::Hot
-                | Filter::Votes
-                | Filter::Unread
-                | Filter::New
-                | Filter::Unseen
-                | Filter::Read
         )
     }
 
@@ -297,24 +342,26 @@ impl TopicQuery<'_> {
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
         self.load_user_scope().await?;
+        self.tags.viewing_muted = self.viewing_muted_tag().await?;
         let per_page = self.per_page();
+        let offset = self.options.page * per_page;
         let topics = match &self.filter {
             Filter::Top(_) | Filter::Unseen | Filter::Votes => {
-                let order = self.order_clause()?;
-                self.fetch("TRUE", &order, per_page, self.options.page * per_page)
-                    .await?
+                let order = self.order_clause(None)?;
+                self.fetch("TRUE", &order, per_page, offset).await?
             }
             Filter::Unread => {
                 let clause = format!("{} AND {}", self.unread_filter(), self.max_age_clause());
-                let order = "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC";
-                self.fetch(&clause, order, per_page, self.options.page * per_page)
-                    .await?
+                let order = self.order_clause(Some(
+                    "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC",
+                ))?;
+                self.fetch(&clause, &order, per_page, offset).await?
             }
             Filter::New => {
                 let new = format!(
                     "{} AND {} AND dismissed_topic_users.id IS NULL",
                     self.new_filter(),
-                    self.remove_muted_clause()?
+                    self.remove_muted_clause(true)?
                 );
                 let own_first = "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC";
                 let unread = || format!("{} AND {}", self.unread_filter(), self.max_age_clause());
@@ -326,17 +373,13 @@ impl TopicQuery<'_> {
                     Some("replies") => (unread(), own_first),
                     _ => (format!("(({new}) OR ({}))", unread()), own_first),
                 };
-                self.fetch(&clause, order, per_page, self.options.page * per_page)
-                    .await?
+                let order = self.order_clause(Some(order))?;
+                self.fetch(&clause, &order, per_page, offset).await?
             }
             Filter::Read => {
-                self.fetch(
-                    "tu.last_visited_at IS NOT NULL",
-                    "tu.last_visited_at DESC",
-                    per_page,
-                    self.options.page * per_page,
-                )
-                .await?
+                let order = self.order_clause(Some("tu.last_visited_at DESC"))?;
+                self.fetch("tu.last_visited_at IS NOT NULL", &order, per_page, offset)
+                    .await?
             }
             Filter::Latest
             | Filter::Hot
@@ -369,15 +412,8 @@ impl TopicQuery<'_> {
         {
             return Err(Unsupported("default_tags_muted in topic lists").into());
         }
-        // Core's state filter (notification levels, watching_first_post).
-        if let Some(state) = self.options.state.as_deref()
-            && self.user_id().is_some()
-            && matches!(
-                state,
-                "muted" | "regular" | "tracking" | "watching" | "watching_first_post"
-            )
-        {
-            return Err(Unsupported("the state list filter").into());
+        if self.options.search.is_some() && s.get("search_ignore_accents")?.truthy() {
+            return Err(Unsupported("the search list filter with search_ignore_accents").into());
         }
         if s.get("shared_drafts_category")?.presence().is_some() {
             return Err(Unsupported("shared_drafts_category in topic lists").into());
@@ -393,9 +429,32 @@ impl TopicQuery<'_> {
     /// The category clauses of `default_results`, computed up front since
     /// they need the subcategory ids and the category's default sort.
     async fn category_scope(&mut self) -> Result<CategoryScope, TopicQueryError> {
+        if self.options.category_id.is_none()
+            && let Some(param) = self.options.category.clone()
+        {
+            self.options.category_id = self.get_category_id(&param).await?;
+        }
         let Some(category_id) = self.options.category_id else {
             return Ok(CategoryScope::default());
         };
+        // discourse-events' order_by_event_date custom filter reorders a
+        // category's lists by its topics' event dates.
+        if self
+            .settings
+            .get("sort_categories_by_event_start_date_enabled")?
+            .truthy()
+        {
+            let sorted: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM category_custom_fields WHERE category_id = $1 \
+                 AND name = 'sort_topics_by_event_start_date')",
+            )
+            .bind(category_id)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if sorted {
+                return Err(Unsupported("discourse-events' sort by event start date").into());
+            }
+        }
         let ids: Vec<i32> = if self.options.no_subcategories {
             vec![category_id]
         } else {
@@ -433,18 +492,24 @@ impl TopicQuery<'_> {
                 "(categories.topic_id IS DISTINCT FROM topics.id OR topics.category_id = {category_id})"
             ));
         }
-        // The category's default sort applies to ordered lists (latest,
-        // posted, bookmarks) when no order was given; the rest keep their own.
+        // The category's default sort applies when no order was given and
+        // default_results' `filter` is blank, default, latest or unseen:
+        // the lists that take it from the request (latest, unseen, unread,
+        // new) unless it names another. Otherwise apply_ordering gets
+        // "default", descending.
         let mut order = None;
-        if self.options.order.is_none() && !self.filter.unordered() {
+        let sorts_by_category = self.filter.filter_from_request()
+            && matches!(
+                self.options.filter.as_deref(),
+                None | Some("default") | Some("latest") | Some("unseen")
+            );
+        if self.options.order.is_none() && sorts_by_category {
             let sort: Option<(Option<String>, Option<bool>)> =
                 sqlx::query_as("SELECT sort_order, sort_ascending FROM categories WHERE id = $1")
                     .bind(category_id)
                     .fetch_optional(&mut *self.conn)
                     .await?;
-            if let Some((Some(sort_order), ascending)) = sort
-                && !sort_order.is_empty()
-            {
+            if let Some((Some(sort_order), ascending)) = sort {
                 order = Some((sort_order, ascending.unwrap_or(false)));
             }
         }
@@ -461,17 +526,59 @@ impl TopicQuery<'_> {
         })
     }
 
-    /// `filter_by_tags` with `match_all_tags`: every named tag must exist
-    /// and be visible (synonyms resolve to their target), else the list is
-    /// empty (`result.none`); `no_tags` keeps untagged topics only.
+    /// `get_category_id`: a number (Ruby's to_i of it), else the id of the
+    /// top-level category with that slug, if any.
+    async fn get_category_id(&mut self, param: &str) -> Result<Option<i32>, TopicQueryError> {
+        if crate::ruby::is_blank(param) {
+            return Ok(None);
+        }
+        let id = crate::ruby::to_i(param);
+        if id != 0 {
+            // A to_i past the int column matches no category.
+            return Ok(Some(i32::try_from(id).unwrap_or(-1)));
+        }
+        Ok(sqlx::query_scalar(
+            "SELECT id FROM categories WHERE slug = $1 AND parent_category_id IS NULL ORDER BY id LIMIT 1",
+        )
+        .bind(param)
+        .fetch_optional(&mut *self.conn)
+        .await?)
+    }
+
+    /// `filter_by_tags`, run when tagging is enabled. Tag names resolve to
+    /// visible tags (synonyms to their target). With `match_all_tags`
+    /// every named tag must exist, else the list is empty (`result.none`);
+    /// without it, `joins(:tags)` keeps topics with any of them. `no_tags`
+    /// keeps untagged topics only, and `exclude_tag` drops the topics with
+    /// that tag unless it is hidden from the viewer.
     async fn tag_scope(&mut self) -> Result<TagScope, TopicQueryError> {
+        if !self.settings.get("tagging_enabled")?.truthy() {
+            return Ok(TagScope::default());
+        }
+        let mut scope = self.tags_clause().await?;
+        if let Some(exclude) = self.options.exclude_tag.clone()
+            && !crate::tagging::hidden_tag_names(&mut *self.conn, self.guardian)
+                .await?
+                .contains(&exclude)
+        {
+            scope.clauses.push(format!(
+                "topics.id NOT IN (SELECT topic_tags.topic_id FROM topic_tags \
+                 INNER JOIN tags ON tags.id = topic_tags.tag_id WHERE tags.name = {})",
+                crate::user_search::quote(&exclude)
+            ));
+        }
+        Ok(scope)
+    }
+
+    /// `filter_by_tags`' tags and no_tags clauses.
+    async fn tags_clause(&mut self) -> Result<TagScope, TopicQueryError> {
         if self.options.tags.is_empty() {
             if self.options.no_tags {
                 return Ok(TagScope {
-                    clause: Some(
+                    clauses: vec![
                         "topics.id NOT IN (SELECT DISTINCT topic_id FROM topic_tags)".to_string(),
-                    ),
-                    tag_ids: Vec::new(),
+                    ],
+                    ..TagScope::default()
                 });
             }
             return Ok(TagScope::default());
@@ -483,6 +590,23 @@ impl TopicQuery<'_> {
             &self.options.tags,
         )
         .await?;
+        if !self.options.match_all_tags {
+            let ids = tag_ids
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            return Ok(TagScope {
+                clauses: vec![if ids.is_empty() {
+                    "FALSE".to_string()
+                } else {
+                    format!("tags.id IN ({ids})")
+                }],
+                joins_tags: true,
+                tag_ids,
+                viewing_muted: false,
+            });
+        }
         let clause = if tag_ids.len() == self.options.tags.len() {
             let mut joined = String::new();
             for (index, id) in tag_ids.iter().enumerate() {
@@ -501,9 +625,30 @@ impl TopicQuery<'_> {
             "FALSE".to_string()
         };
         Ok(TagScope {
-            clause: Some(clause),
+            clauses: vec![clause],
             tag_ids,
+            ..TagScope::default()
         })
+    }
+
+    /// remove_muted_tags' check for a list of a tag the user muted: whether
+    /// `opts[:tags].first` names one (not with no_tags).
+    async fn viewing_muted_tag(&mut self) -> Result<bool, TopicQueryError> {
+        let (Some(uid), Some(first)) = (self.user_id(), self.options.first_tag.as_deref()) else {
+            return Ok(false);
+        };
+        if self.options.no_tags || self.user.muted_tag_ids.is_empty() {
+            return Ok(false);
+        }
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM tag_users JOIN tags ON tags.id = tag_users.tag_id \
+             WHERE tag_users.user_id = $1 AND tag_users.notification_level = 0 \
+             AND lower(tags.name) = $2)",
+        )
+        .bind(uid)
+        .bind(first.to_lowercase())
+        .fetch_one(&mut *self.conn)
+        .await?)
     }
 
     /// user_scope once per TopicQuery: a topic's suggested lists run
@@ -578,6 +723,13 @@ impl TopicQuery<'_> {
                 ));
             }
         }
+        // filter_by_tags without match_all_tags: `joins(:tags)`.
+        if self.tags.joins_tags {
+            joins.push_str(
+                " INNER JOIN topic_tags ON topic_tags.topic_id = topics.id \
+                 INNER JOIN tags ON tags.id = topic_tags.tag_id",
+            );
+        }
         match &self.filter {
             Filter::Top(_) => {
                 joins.push_str(" INNER JOIN top_topics ON top_topics.topic_id = topics.id")
@@ -596,7 +748,18 @@ impl TopicQuery<'_> {
     /// visible unless the user may see unlisted topics; then the filter's
     /// own clause and `remove_muted` where the list applies it.
     fn where_clause(&self) -> Result<String, TopicQueryError> {
-        let mut clauses = vec!["topics.deleted_at IS NULL".to_string()];
+        // status=deleted swaps the deleted_at scope for its opposite, or
+        // finds nothing for those who may not see deleted topics.
+        let deleted = self.options.status.as_deref() == Some("deleted");
+        let show_deleted = deleted && self.guardian.can_see_deleted(self.settings)?;
+        let mut clauses = vec![if show_deleted {
+            "topics.deleted_at IS NOT NULL".to_string()
+        } else {
+            "topics.deleted_at IS NULL".to_string()
+        }];
+        if deleted && !show_deleted {
+            clauses.push("FALSE".to_string());
+        }
         let admin_sees_all = self.guardian.is_admin()
             && !self
                 .settings
@@ -613,13 +776,14 @@ impl TopicQuery<'_> {
             clauses.push("COALESCE(categories.topic_id, 0) <> topics.id".to_string());
         }
         clauses.extend(self.category.clauses.iter().cloned());
-        clauses.extend(self.tags.clause.iter().cloned());
+        clauses.extend(self.tags.clauses.iter().cloned());
         // default_results: unlisted topics for those who may see them, and
         // in a list of one's own topics.
         let viewing_own = matches!(self.filter, Filter::TopicsBy(id) if self.user_id() == Some(id));
         if !self.guardian.can_see_unlisted_topics() && !viewing_own {
             clauses.push("topics.visible = TRUE".to_string());
         }
+        clauses.extend(self.request_clauses()?);
         match &self.filter {
             Filter::Top(period) => clauses.push(format!("top_topics.{period}_score > 0")),
             Filter::Unseen => {
@@ -641,13 +805,12 @@ impl TopicQuery<'_> {
             _ => {}
         }
         // discourse-topic-voting's results filter callback: state=my_votes
-        // keeps the user's active votes on the lists it runs for.
+        // keeps the user's active votes. Only latest_results and
+        // unseen_results hand it the request's options; unread_results and
+        // new_results pass their own, empty ones.
         if let Some(uid) = self.user_id()
             && self.options.state.as_deref() == Some("my_votes")
-            && matches!(
-                self.filter,
-                Filter::Latest | Filter::Unseen | Filter::Unread | Filter::New
-            )
+            && matches!(self.filter, Filter::Latest | Filter::Unseen)
             && crate::plugins::topic_voting::enabled(self.settings)?
         {
             clauses.push(format!(
@@ -656,9 +819,177 @@ impl TopicQuery<'_> {
         }
         // New applies remove_muted inside its own (possibly OR'd) clause.
         if self.filter.removes_muted() && self.filter != Filter::New {
-            clauses.push(self.remove_muted_clause()?);
+            clauses.push(self.remove_muted_clause(false)?);
         }
         Ok(clauses.join(" AND "))
+    }
+
+    /// The rest of `default_results`: the request's topic_ids, search,
+    /// state, before, bumped_before, status, filter, max_posts and
+    /// min_posts, then the custom filters (discourse-solved's `solved`).
+    fn request_clauses(&self) -> Result<Vec<String>, TopicQueryError> {
+        let o = &self.options;
+        let uid = self.user_id();
+        let mut clauses = Vec::new();
+        if let Some(ids) = &o.topic_ids {
+            clauses.push(if ids.is_empty() {
+                "FALSE".to_string()
+            } else {
+                format!("topics.id IN ({})", join_ids(ids))
+            });
+        }
+        if let Some(term) = &o.search {
+            let config = crate::search::ts_config(&self.settings.get("default_locale")?.to_s());
+            let ts_query = format!(
+                "REGEXP_REPLACE(TO_TSQUERY('{config}', {})::text, '<->|<\\d+>', '&', 'g')::tsquery",
+                crate::user_search::quote(&crate::search::ts_query_value(term, "", true))
+            );
+            clauses.push(format!(
+                "topics.id IN (SELECT pp.topic_id FROM post_search_data pd \
+                 JOIN posts pp ON pp.id = pd.post_id WHERE pd.search_data @@ {ts_query})"
+            ));
+        }
+        match (o.state.as_deref(), uid) {
+            // A category or tag notification level, not a topic's.
+            (Some("watching_first_post"), None) => clauses.push("FALSE".to_string()),
+            (Some("watching_first_post"), Some(uid)) => {
+                let categories = format!(
+                    "topics.category_id IN (SELECT category_id FROM category_users \
+                     WHERE user_id = {uid} AND notification_level = 4)"
+                );
+                clauses.push(if self.settings.get("tagging_enabled")?.truthy() {
+                    format!(
+                        "(({categories}) OR (topics.id IN (SELECT topic_id FROM topic_tags \
+                         WHERE tag_id IN (SELECT tag_id FROM tag_users \
+                         WHERE user_id = {uid} AND notification_level = 4))))"
+                    )
+                } else {
+                    categories
+                });
+            }
+            (Some(state), Some(uid)) => {
+                if let Some(level) = topic_notification_level(state) {
+                    clauses.push(format!(
+                        "topics.id IN (SELECT topic_id FROM topic_users \
+                         WHERE user_id = {uid} AND notification_level = {level})"
+                    ));
+                }
+            }
+            _ => {}
+        }
+        let now = crate::clock::now_naive();
+        for (days, column) in [(o.before, "created_at"), (o.bumped_before, "bumped_at")] {
+            if let Some(days) = days.filter(|d| *d > 0) {
+                let since = chrono::Duration::try_days(days)
+                    .and_then(|d| now.checked_sub_signed(d))
+                    .filter(|t| chrono::Datelike::year(t) >= 1)
+                    .ok_or(Unsupported(
+                        "a before or bumped_before reaching back past year 1",
+                    ))?;
+                clauses.push(format!("topics.{column} < '{}'", sql_time(since)));
+            }
+        }
+        if let Some(status) = o.status.as_deref() {
+            clauses.extend(self.status_clause(status)?);
+        }
+        if let (Some(filter), Some(uid)) = (o.filter.as_deref(), uid) {
+            match filter {
+                "liked" => clauses.push(format!(
+                    "topics.id IN (SELECT pp.topic_id FROM post_actions pa \
+                     JOIN posts pp ON pp.id = pa.post_id \
+                     WHERE pa.user_id = {uid} AND pa.post_action_type_id = 2 \
+                     AND pa.deleted_at IS NULL)"
+                )),
+                "tracked" => clauses.push(self.tracked_clause(uid)?),
+                _ => {}
+            }
+        }
+        if let Some(max) = o.max_posts {
+            clauses.push(format!("topics.posts_count <= {max}"));
+        }
+        if let Some(min) = o.min_posts {
+            clauses.push(format!("topics.posts_count >= {min}"));
+        }
+        // discourse-solved's TopicQuery custom filter, enabled or not.
+        match o.solved.as_deref() {
+            Some("yes") => clauses.push(solved_clause()),
+            Some("no") => clauses.push(self.unsolved_clause()?),
+            _ => {}
+        }
+        Ok(clauses)
+    }
+
+    /// `TopicsFilter#filter_status`; deleted is where_clause's. An unknown
+    /// status is an invalid filter, which leaves the list as it is.
+    fn status_clause(&self, status: &str) -> Result<Vec<String>, TopicQueryError> {
+        Ok(match status {
+            "open" => vec!["NOT topics.closed AND NOT topics.archived".to_string()],
+            "closed" => vec!["topics.closed".to_string()],
+            "archived" => vec!["topics.archived".to_string()],
+            "listed" => vec!["topics.visible".to_string()],
+            "unlisted" => vec!["NOT topics.visible".to_string()],
+            // joins(:category): topics in a category, which is public.
+            "public" => {
+                vec!["categories.id IS NOT NULL AND NOT categories.read_restricted".to_string()]
+            }
+            "noreplies" => vec!["topics.posts_count = 1".to_string()],
+            "single_user" | "single-user" => vec!["topics.participant_count = 1".to_string()],
+            "scheduled" => vec![format!(
+                "topics.id IN (SELECT topic_timers.timerable_id FROM topic_timers \
+                 WHERE topic_timers.type = 'TopicTimer' AND topic_timers.deleted_at IS NULL \
+                 AND topic_timers.status_type = {})",
+                crate::topic_timer::types::PUBLISH_TO_CATEGORY
+            )],
+            // discourse-solved's status filters, while it is enabled.
+            "solved" if crate::plugins::solved::enabled(self.settings)? => vec![solved_clause()],
+            "unsolved" if crate::plugins::solved::enabled(self.settings)? => {
+                vec![self.unsolved_clause()?]
+            }
+            _ => Vec::new(),
+        })
+    }
+
+    /// discourse-solved's unsolved callback: no accepted answer, and, unless
+    /// solved is allowed on all topics, in a category with accepted answers
+    /// or tagged with one of enable_solved_tags.
+    fn unsolved_clause(&self) -> Result<String, TopicQueryError> {
+        let mut clause = "topics.id NOT IN (SELECT topic_id FROM discourse_solved_solved_topics) \
+             AND topics.archetype <> 'private_message'"
+            .to_string();
+        if !self.settings.get("allow_solved_on_all_topics")?.truthy() {
+            let names = self.settings.get("enable_solved_tags")?.to_s();
+            let names: Vec<String> = names.split('|').map(crate::user_search::quote).collect();
+            clause.push_str(&format!(
+                " AND (topics.id IN (SELECT t.id FROM topics t JOIN category_custom_fields cc \
+                 ON t.category_id = cc.category_id AND cc.name = 'enable_accepted_answers' \
+                 AND cc.value = 'true') \
+                 OR topics.id IN (SELECT topic_id FROM topic_tags WHERE tag_id IN \
+                 (SELECT id FROM tags WHERE name IN ({}))))",
+                names.join(",")
+            ));
+        }
+        Ok(clause)
+    }
+
+    /// `TopicQuery.tracked_filter`: topics in a category the user tracks or
+    /// watches (or whose parent they do), or with such a tag.
+    fn tracked_clause(&self, uid: i32) -> Result<String, TopicQueryError> {
+        let tracked = format!(
+            "SELECT cd.category_id FROM category_users cd \
+             WHERE cd.user_id = {uid} AND cd.notification_level >= 2"
+        );
+        let mut sql = format!(
+            "topics.category_id IN (SELECT c.id FROM categories c \
+             WHERE (c.id IN ({tracked})) OR c.parent_category_id IN ({tracked}))"
+        );
+        if self.settings.get("tagging_enabled")?.truthy() {
+            sql.push_str(&format!(
+                " OR topics.id IN (SELECT tt.topic_id FROM topic_tags tt WHERE tt.tag_id IN \
+                 (SELECT tu.tag_id FROM tag_users tu \
+                 WHERE tu.user_id = {uid} AND tu.notification_level >= 2))"
+            ));
+        }
+        Ok(format!("({sql})"))
     }
 
     fn highest_column(&self) -> &'static str {
@@ -702,12 +1033,23 @@ impl TopicQuery<'_> {
     /// the list is scoped to one, watched tags take precedence, or the
     /// topic is tracked/watched) and muted tags. Anonymous lists have
     /// nothing to remove (the default_* settings are refused up front).
-    fn remove_muted_clause(&self) -> Result<String, TopicQueryError> {
+    ///
+    /// `new_results` passes remove_muted its own options, not the
+    /// request's: no category to exclude, no state, no tags.
+    fn remove_muted_clause(&self, new_results: bool) -> Result<String, TopicQueryError> {
         let Some(uid) = self.user_id() else {
             return Ok("TRUE".to_string());
         };
-        let mut clauses = vec!["(COALESCE(tu.notification_level,1) > 0)".to_string()];
-        let category_id = self.options.category_id.unwrap_or(-1);
+        let mut clauses = Vec::new();
+        // remove_muted_topics, unless the list asks for muted topics.
+        if new_results || self.options.state.as_deref() != Some("muted") {
+            clauses.push("(COALESCE(tu.notification_level,1) > 0)".to_string());
+        }
+        let category_id = if new_results {
+            -1
+        } else {
+            self.options.category_id.unwrap_or(-1)
+        };
         let watched = if self.user.watched_precedence_over_muted {
             format!(
                 " OR EXISTS (SELECT 1 FROM topic_tags watched_topic_tags \
@@ -733,22 +1075,19 @@ impl TopicQuery<'_> {
              AND (topics.category_id IS NULL OR topics.category_id NOT IN ({indirectly_muted}))){watched} \
              OR tu.notification_level > 1)"
         ));
-        if let Some(muted_tags) = self.muted_tags_clause()? {
+        if let Some(muted_tags) = self.muted_tags_clause(new_results)? {
             clauses.push(muted_tags);
         }
         Ok(clauses.join(" AND "))
     }
 
     /// `TopicQuery.remove_muted_tags` for a user.
-    fn muted_tags_clause(&self) -> Result<Option<String>, TopicQueryError> {
+    fn muted_tags_clause(&self, new_results: bool) -> Result<Option<String>, TopicQueryError> {
         if self.user.muted_tag_ids.is_empty() {
             return Ok(None);
         }
         // A list filtered by a tag the user muted shows it anyway.
-        if let Some(first) = self.tags.tag_ids.first()
-            && !self.options.no_tags
-            && self.user.muted_tag_ids.contains(first)
-        {
+        if !new_results && self.tags.viewing_muted {
             return Ok(None);
         }
         let ids = self
@@ -778,12 +1117,22 @@ impl TopicQuery<'_> {
         }))
     }
 
-    /// The list's ORDER BY: `apply_ordering`'s column (the request's order,
-    /// or the category default for ordered lists), then for top/hot the
-    /// block's own order, which is the whole order when nothing was
-    /// requested.
-    fn order_clause(&self) -> Result<String, TopicQueryError> {
+    /// The list's ORDER BY: `apply_ordering`'s (the request's order, else
+    /// the category's default sort or "default"), then the list's own
+    /// order (`list_order`, or top's, hot's and votes' blocks).
+    fn order_clause(&self, list_order: Option<&str>) -> Result<String, TopicQueryError> {
+        // discourse-topic-voting's results filter callback reorders the
+        // latest and unseen lists (TopicQuery.results_filter_callbacks).
+        if self.options.order.as_deref() == Some("votes")
+            && matches!(self.filter, Filter::Latest | Filter::Unseen)
+            && crate::plugins::topic_voting::enabled(self.settings)?
+        {
+            return Ok(crate::plugins::topic_voting::votes_order(
+                self.options.ascending,
+            ));
+        }
         let block = match &self.filter {
+            _ if list_order.is_some() => list_order.map(str::to_string),
             Filter::Top(period) => Some(format!(
                 "COALESCE(top_topics.{period}_score, 0) DESC, topics.bumped_at DESC"
             )),
@@ -797,30 +1146,32 @@ impl TopicQuery<'_> {
             Filter::Votes => Some(crate::plugins::topic_voting::votes_order(false)),
             _ => None,
         };
-        // discourse-topic-voting's results filter callback reorders the
-        // latest and unseen lists (TopicQuery.results_filter_callbacks).
-        if self.options.order.as_deref() == Some("votes")
-            && matches!(self.filter, Filter::Latest | Filter::Unseen)
-            && crate::plugins::topic_voting::enabled(self.settings)?
-        {
-            return Ok(crate::plugins::topic_voting::votes_order(
-                self.options.ascending,
-            ));
+        match (self.apply_ordering()?, block) {
+            (Some(ordered), Some(block)) => Ok(format!("{ordered}, {block}")),
+            (Some(ordered), None) => Ok(ordered),
+            (None, Some(block)) => Ok(block),
+            (None, None) => Err(Unsupported("a topic list without an order").into()),
         }
-        if let Some(block) = &block
-            && self.options.order.is_none()
-        {
-            return Ok(block.clone());
-        }
-        let (order, ascending) = match &self.category.order {
-            Some((o, a)) => (Some(o.as_str()), *a),
-            None => (self.options.order.as_deref(), self.options.ascending),
+    }
+
+    /// `apply_ordering` as default_results runs it: the request's order and
+    /// ascending; with a category and no order, the category's sort when
+    /// it applies, else "default" descending. An order outside
+    /// SORTABLE_MAPPING is "default", which adds nothing descending on an
+    /// unordered list and is bumped_at otherwise.
+    fn apply_ordering(&self) -> Result<Option<String>, TopicQueryError> {
+        let (order, ascending) = match (&self.options.order, &self.category.order) {
+            (Some(order), _) => (Some(order.as_str()), self.options.ascending),
+            (None, Some((order, ascending))) => (Some(order.as_str()), *ascending),
+            (None, None) if self.options.category_id.is_some() => (None, false),
+            (None, None) => (None, self.options.ascending),
         };
-        let ordered = sortable_order(order, ascending, self.settings)?;
-        Ok(match block {
-            Some(block) => format!("{ordered}, {block}"),
-            None => ordered,
-        })
+        let dir = if ascending { "ASC" } else { "DESC" };
+        match sort_column(order, self.settings)? {
+            Some(column) => Ok(Some(format!("{column} {dir}"))),
+            None if !ascending && self.filter.ordering_unordered() => Ok(None),
+            None => Ok(Some(format!("topics.bumped_at {dir}"))),
+        }
     }
 
     /// `unread_results` / `new_results` as `list_suggested_for` runs them
@@ -868,7 +1219,7 @@ impl TopicQuery<'_> {
         let new = format!(
             "{} AND {} AND dismissed_topic_users.id IS NULL",
             self.new_filter(),
-            self.remove_muted_clause()?
+            self.remove_muted_clause(true)?
         );
         let own_first = "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, ";
         let (clause, order) = match filter {
@@ -954,7 +1305,7 @@ impl TopicQuery<'_> {
         let new_clause = format!(
             "{} AND {} AND dismissed_topic_users.id IS NULL",
             self.new_filter(),
-            self.remove_muted_clause()?
+            self.remove_muted_clause(true)?
         );
         let unread_clause = format!("{} AND {}", self.unread_filter(), self.max_age_clause());
         let clause = match (new, unread) {
@@ -987,11 +1338,18 @@ impl TopicQuery<'_> {
             self.where_clause()?,
             joins = self.joins(),
         );
-        Ok(sqlx::query_as(&sql)
+        let mut topics: Vec<TopicRow> = sqlx::query_as(&sql)
             .bind(limit)
             .bind(offset)
             .fetch_all(&mut *self.conn)
-            .await?)
+            .await?;
+        // `joins(:tags)` repeats a topic per matching tag; the eager load of
+        // the category keeps one record per topic, at its first row.
+        if self.tags.joins_tags {
+            let mut seen = std::collections::HashSet::new();
+            topics.retain(|t| seen.insert(t.id));
+        }
+        Ok(topics)
     }
 
     /// `prioritize_pinned_topics`: pinned topics (globally, or in the
@@ -1000,7 +1358,7 @@ impl TopicQuery<'_> {
     async fn prioritize_pinned_topics(&mut self) -> Result<Vec<TopicRow>, TopicQueryError> {
         let per_page = self.per_page();
         let page = self.options.page;
-        let order = self.order_clause()?;
+        let order = self.order_clause(None)?;
         // apply_pinning: only with the default/activity order (the request's,
         // not the category's default sort).
         let apply_pinning = matches!(
@@ -1043,14 +1401,25 @@ impl TopicQuery<'_> {
 }
 
 /// `apply_ordering`'s SORTABLE_MAPPING for a requested order: the column
-/// and direction, bumped_at DESC by default.
+/// and direction, bumped_at for "default" and orders it doesn't map.
 pub fn sortable_order(
     order: Option<&str>,
     ascending: bool,
     settings: &SiteSettings,
 ) -> Result<String, TopicQueryError> {
-    let column = match order {
-        None | Some("default") | Some("activity") => "topics.bumped_at".to_string(),
+    let column = sort_column(order, settings)?.unwrap_or_else(|| "topics.bumped_at".to_string());
+    let dir = if ascending { "ASC" } else { "DESC" };
+    Ok(format!("{column} {dir}"))
+}
+
+/// SORTABLE_MAPPING's column for an order, None for "default" (no order,
+/// or one it doesn't map).
+fn sort_column(
+    order: Option<&str>,
+    settings: &SiteSettings,
+) -> Result<Option<String>, TopicQueryError> {
+    Ok(Some(match order {
+        Some("activity") => "topics.bumped_at".to_string(),
         Some("likes") => "topics.like_count".to_string(),
         Some("op_likes") => {
             "(SELECT like_count FROM posts p3 WHERE p3.topic_id = topics.id AND p3.post_number = 1)"
@@ -1064,11 +1433,35 @@ pub fn sortable_order(
             let uncategorized = settings.get("uncategorized_category_id")?.to_i();
             format!("CASE WHEN categories.id = {uncategorized} THEN '' ELSE categories.name END")
         }
-        Some(_) => return Err(Unsupported("unknown topic list order").into()),
-    };
-    let dir = if ascending { "ASC" } else { "DESC" };
-    Ok(format!("{column} {dir}"))
+        _ => return Ok(None),
+    }))
 }
+
+/// `TopicUser.notification_levels` by name.
+fn topic_notification_level(name: &str) -> Option<i32> {
+    match name {
+        "muted" => Some(0),
+        "regular" => Some(1),
+        "tracking" => Some(2),
+        "watching" => Some(3),
+        _ => None,
+    }
+}
+
+/// discourse-solved's solved callback: topics with an accepted answer.
+fn solved_clause() -> String {
+    "topics.id IN (SELECT topic_id FROM discourse_solved_solved_topics) \
+     AND topics.archetype <> 'private_message'"
+        .to_string()
+}
+
+fn join_ids(ids: &[i64]) -> String {
+    ids.iter()
+        .map(|id| id.to_string())
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
 /// A timestamp as a Postgres literal (UTC, microseconds).
 fn sql_time(t: NaiveDateTime) -> String {
     t.format("%Y-%m-%d %H:%M:%S%.6f").to_string()

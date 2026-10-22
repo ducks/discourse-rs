@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/latest.json?status=deleted"},
+    {"method": "GET", "path": "/latest.json?status=unlisted"},
+    {"method": "GET", "path": "/latest.json?status=public&per_page=2"}
+  ]
+}

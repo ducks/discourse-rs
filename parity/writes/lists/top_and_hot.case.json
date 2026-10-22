@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/top.json?period=all&status=open&per_page=1"},
+    {"method": "GET", "path": "/hot.json?min_posts=2"},
+    {"method": "GET", "path": "/top.json?period=all&per_page=x"}
+  ]
+}

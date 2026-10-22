@@ -442,11 +442,12 @@ pub async fn page(
     // only DLoadMore's next page (user-activity.js, an XHR) asks for a page.
     let next_page_request = wants_json(&headers, false);
     if !next_page_request {
-        params = ListParams {
-            order: params.order.take(),
-            ascending: params.ascending.take(),
-            ..ListParams::default()
-        };
+        params = ListParams::from(
+            std::mem::take(&mut params.pairs)
+                .into_iter()
+                .filter(|(k, _)| k == "order" || k == "ascending")
+                .collect::<Vec<_>>(),
+        );
     }
     let current_page = params
         .page
@@ -552,7 +553,7 @@ pub async fn page(
                     "{base_path}/topics/created-by/{}",
                     user.username.to_lowercase()
                 );
-                let more = super::list::next_url(&list_path, &params, &options, false);
+                let more = super::list::next_url(&list_path, &params, &options, true);
                 super::list::topics_by_list(
                     &state, &mut conn, &settings, &guardian, user.id, options, more,
                 )

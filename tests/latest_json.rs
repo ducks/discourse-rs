@@ -113,6 +113,74 @@ async fn invalid_params_are_bad_requests() {
 }
 
 #[tokio::test]
+async fn list_options_filter_the_topics() {
+    let db = TestDb::new().await;
+    for (path, want) in [
+        ("/latest.json?status=closed", vec![37]),
+        ("/latest.json?status=archived", vec![41]),
+        ("/latest.json?status=open", vec![5, 35, 38]),
+        ("/latest.json?status=deleted", vec![]),
+        ("/latest.json?min_posts=2", vec![35]),
+        ("/latest.json?max_posts=1&exclude_tag=howto", vec![5, 37]),
+        ("/latest.json?topic_ids=35,41,4", vec![35, 41]),
+        ("/latest.json?topic_ids=", vec![]),
+        // Any of the tags; a topic with both shows once.
+        ("/latest.json?tags[]=howto&tags[]=guide", vec![35, 41, 38]),
+        (
+            "/latest.json?tags=howto%20guide&match_all_tags=true",
+            vec![41],
+        ),
+        ("/latest.json?no_tags=true", vec![5, 37]),
+        ("/latest.json?category=34", vec![34, 38]),
+        // An unknown slug filters nothing, and shows the definitions.
+        (
+            "/latest.json?category=nope",
+            vec![5, 35, 41, 38, 37, 34, 3, 1],
+        ),
+        ("/latest.json?state=watching_first_post", vec![]),
+        (
+            "/latest.json?status=nonsense&filter=liked",
+            vec![5, 35, 41, 38, 37],
+        ),
+    ] {
+        let (status, json) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert_eq!(ids(&json), want, "{path}");
+    }
+    let (_, json) = get(&db.pool, "/latest.json?status=open&per_page=1&q=a%20b").await;
+    assert_eq!(
+        json["topic_list"]["more_topics_url"],
+        "/latest?no_definitions=true&page=1&per_page=1&q=a+b&status=open"
+    );
+}
+
+#[tokio::test]
+async fn unported_list_options_are_refused() {
+    let db = TestDb::new().await;
+    for path in [
+        "/latest.json?assigned=me",
+        "/latest.json?tags=a&tags[]=b",
+        "/tag/howto.json?status=closed",
+    ] {
+        let (status, _) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
+    }
+    for (path, param) in [
+        ("/latest.json?status[]=closed", "status"),
+        ("/latest.json?before=-1", "before"),
+        ("/latest.json?topic_ids[a]=1", "topic_ids"),
+        ("/latest.json?no_tags=yes", "no_tags"),
+    ] {
+        let (status, json) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{path}");
+        assert_eq!(
+            json["errors"][0],
+            format!("You supplied invalid parameters to the request: {param}")
+        );
+    }
+}
+
+#[tokio::test]
 async fn posters_and_users_follow_topic_posters_summary() {
     let db = TestDb::new().await;
     let (_, json) = get(&db.pool, "/latest.json").await;

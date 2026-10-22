@@ -213,7 +213,7 @@ pub async fn voted_by(
         "{}/topics/voted-by/{username}",
         state.config.globals.relative_url_root()
     );
-    let more = super::list::next_url(&list_path, &params, &options, false);
+    let more = super::list::next_url(&list_path, &params, &options, true);
     let json = voted_by_list(
         &state, &mut conn, &settings, &guardian, user_id, options, more,
     )
@@ -231,7 +231,7 @@ pub(crate) async fn voted_by_list(
     options: crate::topic_query::Options,
     more_topics_url: String,
 ) -> Result<Value, AppError> {
-    let topics = crate::topic_query::TopicQuery {
+    let mut query = crate::topic_query::TopicQuery {
         conn: &mut *conn,
         settings,
         guardian,
@@ -240,9 +240,11 @@ pub(crate) async fn voted_by_list(
         tags: Default::default(),
         filter: Default::default(),
         user: Default::default(),
-    }
-    .list(crate::topic_query::Filter::VotedBy(user_id))
-    .await?;
+    };
+    let topics = query
+        .list(crate::topic_query::Filter::VotedBy(user_id))
+        .await?;
+    let category_id = query.options.category_id;
     let urls = Urls {
         config: &state.config,
         settings,
@@ -254,7 +256,7 @@ pub(crate) async fn voted_by_list(
         guardian,
         urls: &urls,
         more_topics_url: Some(more_topics_url),
-        category_id: None,
+        category_id,
         group_id: None,
         prefetched: Default::default(),
     }

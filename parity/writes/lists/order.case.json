@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?order=created&ascending=true&per_page=2"},
+    {"method": "GET", "path": "/latest.json?order=bogus&per_page=3"},
+    {"method": "GET", "path": "/latest.json?ascending=true&per_page=3"},
+    {"method": "GET", "path": "/latest.json?ascending=yes"},
+    {"method": "GET", "path": "/latest.json?order%5B%5D=likes"},
+    {"method": "GET", "path": "/top.json?period=all&ascending=true"},
+    {"method": "GET", "path": "/top.json?period=all&order=default"},
+    {"method": "GET", "path": "/c/general/4.json?order=default"}
+  ]
+}

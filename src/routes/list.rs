@@ -17,19 +17,208 @@ use crate::topic_query::{Filter, Options, TopicQuery};
 use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
-/// The TopicQuery.public_valid_options ported so far, and the rest by
-/// name (only topic_ids is checked among them).
-#[derive(Deserialize, Default)]
+/// A list request's query: the params read directly, and every pair for
+/// the TopicQuery options read by name (`build_topic_list_options`).
+#[derive(Deserialize, Default, Clone, Debug)]
+#[serde(from = "Vec<(String, String)>")]
 pub struct ListParams {
     pub(super) page: Option<String>,
-    pub(super) per_page: Option<String>,
     pub(super) order: Option<String>,
     pub(super) ascending: Option<String>,
     /// top lists only; not a TopicQuery option, so never echoed unless given
     pub(super) period: Option<String>,
-    /// Every other param, for the ones checked by name only.
-    #[serde(flatten)]
-    pub(super) rest: std::collections::HashMap<String, String>,
+    /// Every query pair, in order, repeated keys and all.
+    pub(super) pairs: Vec<(String, String)>,
+}
+
+impl From<Vec<(String, String)>> for ListParams {
+    fn from(pairs: Vec<(String, String)>) -> Self {
+        let last = |key: &str| {
+            pairs
+                .iter()
+                .rev()
+                .find(|(k, _)| k == key)
+                .map(|(_, v)| v.clone())
+        };
+        ListParams {
+            page: last("page"),
+            order: last("order"),
+            ascending: last("ascending"),
+            period: last("period"),
+            pairs,
+        }
+    }
+}
+
+/// `TopicQuery.public_valid_options` in its order, the plugins' custom
+/// filters (discourse-assign's assigned, discourse-events'
+/// order_by_event_date, discourse-solved's solved) after them.
+const PUBLIC_OPTIONS: [&str; 26] = [
+    "page",
+    "per_page",
+    "before",
+    "bumped_before",
+    "topic_ids",
+    "category",
+    "order",
+    "ascending",
+    "min_posts",
+    "max_posts",
+    "status",
+    "filter",
+    "state",
+    "search",
+    "q",
+    "f",
+    "subset",
+    "group_name",
+    "tags",
+    "match_all_tags",
+    "no_subcategories",
+    "no_tags",
+    "exclude_tag",
+    "assigned",
+    "order_by_event_date",
+    "solved",
+];
+
+/// The params ListController#page_params carries into the next page's
+/// URL besides the list options.
+const PAGE_PARAMS: [&str; 4] = ["username", "group_name", "groupname", "period"];
+
+/// The list options TagsController's lists handle, the only ones they
+/// take (TagsController#build_topic_list_options re-reads the rest raw).
+pub(super) const TAG_LIST_OPTIONS: [&str; 10] = [
+    "page",
+    "per_page",
+    "order",
+    "ascending",
+    "state",
+    "subset",
+    "tags",
+    "match_all_tags",
+    "no_subcategories",
+    "no_tags",
+];
+
+/// TagsController#build_topic_list_options merges topic_ids, category,
+/// order, ascending, min_posts, max_posts, status, filter, state, search
+/// and q in raw, blank or not, and turns match_all_tags=false into an any
+/// tag list: only the options its lists port are taken, and those as
+/// ListController takes them.
+pub(super) fn refuse_unported_tag_list_params(params: &ListParams) -> Result<(), Unsupported> {
+    let raw = rack_params(&params.pairs)?;
+    for (key, value) in &raw {
+        if PUBLIC_OPTIONS.contains(&key.as_str()) && !TAG_LIST_OPTIONS.contains(&key.as_str()) {
+            return Err(Unsupported(
+                "list filters on tag lists beyond page, per_page, order, ascending, state, subset and tags",
+            ));
+        }
+        if matches!(key.as_str(), "order" | "ascending" | "state") && !value.present() {
+            return Err(Unsupported(
+                "a blank order, ascending or state on tag lists",
+            ));
+        }
+        if key == "match_all_tags" && value.as_str() == Some("false") {
+            return Err(Unsupported("match_all_tags=false on tag lists"));
+        }
+    }
+    Ok(())
+}
+
+/// A query param as Rack parses it: `k=v` a string, `k[]=v` an array,
+/// `k[x]=v` (or deeper) a hash.
+#[derive(Debug, Clone, PartialEq)]
+pub(super) enum Param {
+    Str(String),
+    Arr(Vec<String>),
+    Hash,
+}
+
+impl Param {
+    /// `present?`
+    fn present(&self) -> bool {
+        match self {
+            Param::Str(s) => !crate::ruby::is_blank(s),
+            Param::Arr(a) => !a.is_empty(),
+            Param::Hash => true,
+        }
+    }
+
+    fn as_str(&self) -> Option<&str> {
+        match self {
+            Param::Str(s) => Some(s),
+            _ => None,
+        }
+    }
+}
+
+/// Rack's nested params for the list's keys. A plain `k` overwrites what
+/// came before; `k[]` after a string or hash, or `k[x]` after a string or
+/// array, is Rack's ParameterTypeError, and an array of hashes is not
+/// ported.
+pub(super) fn rack_params(
+    pairs: &[(String, String)],
+) -> Result<std::collections::BTreeMap<String, Param>, Unsupported> {
+    let mut out = std::collections::BTreeMap::new();
+    for (key, value) in pairs {
+        let (name, rest) = match key.find('[') {
+            Some(i) => (&key[..i], &key[i..]),
+            None => (key.as_str(), ""),
+        };
+        if !PUBLIC_OPTIONS.contains(&name) && !PAGE_PARAMS.contains(&name) && name != "tag_name" {
+            continue;
+        }
+        match rest {
+            "" => {
+                out.insert(name.to_string(), Param::Str(value.clone()));
+            }
+            "[]" => match out
+                .entry(name.to_string())
+                .or_insert_with(|| Param::Arr(Vec::new()))
+            {
+                Param::Arr(values) => values.push(value.clone()),
+                _ => {
+                    return Err(Unsupported(
+                        "a list param given both as a value and an array",
+                    ));
+                }
+            },
+            r if r.starts_with("[]") => {
+                return Err(Unsupported("a list param holding an array of hashes"));
+            }
+            _ => match out.entry(name.to_string()).or_insert(Param::Hash) {
+                Param::Hash => {}
+                _ => return Err(Unsupported("a list param given both as a value and a hash")),
+            },
+        }
+    }
+    Ok(out)
+}
+
+/// The request's list params after `build_topic_list_options`' first
+/// step: a present `tag_name` goes in front of `tags`, which becomes an
+/// array without repeats.
+fn list_params(
+    params: &ListParams,
+) -> Result<std::collections::BTreeMap<String, Param>, Unsupported> {
+    let mut raw = rack_params(&params.pairs)?;
+    if let Some(tag_name) = raw.get("tag_name").filter(|p| p.present()) {
+        let Param::Str(tag_name) = tag_name else {
+            return Err(Unsupported("a tag_name list param that is not a string"));
+        };
+        let mut tags = vec![tag_name.clone()];
+        match raw.get("tags") {
+            None => {}
+            Some(Param::Str(s)) => tags.push(s.clone()),
+            Some(Param::Arr(a)) => tags.extend(a.iter().cloned()),
+            Some(Param::Hash) => return Err(Unsupported("tag_name with a tags hash")),
+        }
+        let mut seen = std::collections::HashSet::new();
+        tags.retain(|t| seen.insert(t.clone()));
+        raw.insert("tags".to_string(), Param::Arr(tags));
+    }
+    Ok(raw)
 }
 
 /// Discourse::InvalidParameters from a list's params: JSON as Rails
@@ -48,19 +237,78 @@ pub(super) fn build_options(
     params: &ListParams,
     settings: &SiteSettings,
 ) -> Result<Result<Options, String>, Unsupported> {
-    // topic_ids must be a string or an array: topic_ids[key]= is a hash.
-    for key in params.rest.keys() {
-        match key.as_str() {
-            "topic_ids" | "topic_ids[]" => return Err(Unsupported("the topic_ids list filter")),
-            k if k.starts_with("topic_ids[") => return Ok(Err("topic_ids".into())),
-            _ => {}
-        }
-    }
-    Ok(validated_options(params, settings))
+    build_options_for(params, settings, false)
 }
 
-fn validated_options(params: &ListParams, settings: &SiteSettings) -> Result<Options, String> {
-    let invalid = |name: &str| name.to_string();
+/// build_options, for a tag list when `tag_route`: the route's tag_name
+/// puts `tags` in an array, whatever the query gave, so it is always
+/// valid there (TagsController reads the tags itself).
+pub(super) fn build_options_for(
+    params: &ListParams,
+    settings: &SiteSettings,
+    tag_route: bool,
+) -> Result<Result<Options, String>, Unsupported> {
+    let mut raw = list_params(params)?;
+    if tag_route {
+        raw.remove("tags");
+    }
+    if raw.get("assigned").is_some_and(Param::present) {
+        return Err(Unsupported("discourse-assign's assigned list filter"));
+    }
+    for key in PUBLIC_OPTIONS {
+        if let Some(value) = raw.get(key).filter(|p| p.present())
+            && !valid(key, value, settings)
+        {
+            return Ok(Err(key.to_string()));
+        }
+    }
+    check_next_url_params(&raw, settings)?;
+    Ok(Ok(options_from(&raw, settings)))
+}
+
+/// `TopicQuery.validators` for a present value; options without one
+/// take anything.
+fn valid(key: &str, value: &Param, settings: &SiteSettings) -> bool {
+    let int = |p: &Param| -> Option<i128> {
+        let s = p.as_str()?;
+        let digits = s.strip_prefix('-').unwrap_or(s);
+        if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
+            return None;
+        }
+        // Past i128 is past every range below.
+        Some(s.parse::<i128>().unwrap_or(i128::MAX))
+    };
+    let between = |p: &Param, lo: i128, hi: i128| int(p).is_some_and(|n| (lo..=hi).contains(&n));
+    const PG_MAX_INT: i128 = 2_147_483_647;
+    match key {
+        "page" => {
+            let max = settings
+                .get("max_topic_query_page_param")
+                .map(|v| v.to_i())
+                .unwrap_or(2000);
+            between(value, 0, i128::from(max))
+        }
+        "per_page" => between(value, 1, 100),
+        "before" | "bumped_before" | "min_posts" | "max_posts" => between(value, 0, PG_MAX_INT),
+        "topic_ids" | "tags" => matches!(value, Param::Str(_) | Param::Arr(_)),
+        "category" | "order" | "status" | "filter" | "state" | "search" | "q" | "f" | "subset"
+        | "group_name" | "exclude_tag" => matches!(value, Param::Str(_)),
+        "ascending" | "match_all_tags" | "no_subcategories" | "no_tags" => {
+            matches!(value.as_str(), Some("true") | Some("false"))
+        }
+        _ => true,
+    }
+}
+
+/// The validated params as TopicQuery options.
+fn options_from(
+    raw: &std::collections::BTreeMap<String, Param>,
+    settings: &SiteSettings,
+) -> Options {
+    let get = |key: &str| raw.get(key).filter(|p| p.present());
+    let string = |key: &str| get(key).and_then(Param::as_str).map(str::to_string);
+    let number = |key: &str| get(key).and_then(Param::as_str).map(crate::ruby::to_i);
+    let flag = |key: &str| string(key).as_deref() == Some("true");
     let mut options = Options {
         no_definitions: !settings
             .get("show_category_definitions_in_topic_lists")
@@ -68,84 +316,170 @@ fn validated_options(params: &ListParams, settings: &SiteSettings) -> Result<Opt
             .unwrap_or(false),
         ..Options::default()
     };
-    if let Some(page) = params.page.as_deref().filter(|p| !p.is_empty()) {
-        let max = settings
-            .get("max_topic_query_page_param")
-            .map(|v| v.to_i())
-            .unwrap_or(2000);
-        let digits = page.strip_prefix('-').unwrap_or(page);
-        if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
-            return Err(invalid("page"));
+    options.page = number("page").unwrap_or(0);
+    options.per_page = number("per_page");
+    options.before = number("before");
+    options.bumped_before = number("bumped_before");
+    options.category = string("category");
+    // no_definitions only when `params[:category].blank?`.
+    if options.category.is_some() {
+        options.no_definitions = false;
+    }
+    options.order = string("order");
+    options.ascending = flag("ascending");
+    options.min_posts = number("min_posts");
+    options.max_posts = number("max_posts");
+    options.status = string("status");
+    options.filter = string("filter").or_else(|| string("f"));
+    options.state = string("state");
+    options.search = string("search");
+    options.subset = string("subset");
+    match get("tags") {
+        Some(Param::Str(s)) => {
+            // filter_by_tags splits a string on whitespace; remove_muted_tags
+            // takes its first character.
+            options.tags = s.split_whitespace().map(str::to_string).collect();
+            options.first_tag = s.chars().next().map(String::from);
         }
-        let n: i64 = page.parse().map_err(|_| invalid("page"))?;
-        if !(0..=max).contains(&n) {
-            return Err(invalid("page"));
+        Some(Param::Arr(a)) => {
+            options.tags = a.clone();
+            options.first_tag = a.first().cloned();
         }
-        options.page = n;
+        _ => {}
     }
-    if let Some(per_page) = params.per_page.as_deref().filter(|p| !p.is_empty()) {
-        let n: i64 = per_page.parse().map_err(|_| invalid("per_page"))?;
-        if !(1..=100).contains(&n) {
-            return Err(invalid("per_page"));
-        }
-        options.per_page = Some(n);
-    }
-    if let Some(order) = params.order.as_deref().filter(|o| !o.is_empty()) {
-        options.order = Some(order.to_string());
-    }
-    if let Some(state) = params.rest.get("state").filter(|s| !s.is_empty()) {
-        options.state = Some(state.clone());
-    }
-    if let Some(subset) = params.rest.get("subset").filter(|s| !s.is_empty()) {
-        options.subset = Some(subset.clone());
-    }
-    if let Some(ascending) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
-        options.ascending = match ascending {
-            "true" => true,
-            "false" => false,
-            _ => return Err(invalid("ascending")),
-        };
-    }
-    Ok(options)
+    options.match_all_tags = flag("match_all_tags");
+    options.no_subcategories = flag("no_subcategories");
+    options.no_tags = flag("no_tags");
+    options.exclude_tag = string("exclude_tag");
+    options.solved = string("solved");
+    // param_to_integer_list(:topic_ids), present or not.
+    options.topic_ids = match raw.get("topic_ids") {
+        Some(Param::Str(s)) => Some(
+            crate::ruby::split(s, ",")
+                .into_iter()
+                .map(crate::ruby::to_i)
+                .collect(),
+        ),
+        Some(Param::Arr(a)) => Some(a.iter().map(|s| crate::ruby::to_i(s)).collect()),
+        _ => None,
+    };
+    options
 }
 
-/// `construct_url_with(:next, opts)`: `latest_path(opts + page+1)`, params
-/// sorted by name, `.json` dropped.
+/// `construct_url_with(:next, list_opts)`: the list's path with the list
+/// options (as the request gave them, but the route's own) and
+/// page_params, page + 1, as Hash#to_query writes them (each pair
+/// escaped, sorted). `username_in_path` for the routes whose path holds
+/// the username.
 pub(super) fn next_url(
     list_path: &str,
     params: &ListParams,
     options: &Options,
-    top: bool,
+    username_in_path: bool,
 ) -> String {
-    let mut pairs: Vec<(&str, String)> = Vec::new();
-    if let Some(a) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
-        pairs.push(("ascending", a.to_string()));
+    // The params were parsed once already (build_options).
+    let raw = list_params(params).unwrap_or_default();
+    let mut pairs: Vec<String> = Vec::new();
+    let mut push = |key: &str, value: &Param| match value {
+        Param::Str(s) => pairs.push(format!(
+            "{}={}",
+            crate::ruby::cgi_escape(key),
+            crate::ruby::cgi_escape(s)
+        )),
+        Param::Arr(values) if !values.is_empty() => pairs.push(
+            values
+                .iter()
+                .map(|v| {
+                    format!(
+                        "{}={}",
+                        crate::ruby::cgi_escape(&format!("{key}[]")),
+                        crate::ruby::cgi_escape(v)
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("&"),
+        ),
+        _ => {}
+    };
+    for key in PUBLIC_OPTIONS {
+        let value = match key {
+            "page" => continue,
+            // The route's category is in the path.
+            "category" if options.category_id.is_some() => continue,
+            "per_page" => match (raw.get(key).filter(|p| p.present()), options.per_page) {
+                (Some(p), _) => p.clone(),
+                (None, Some(n)) => Param::Str(n.to_string()),
+                (None, None) => continue,
+            },
+            "no_subcategories" if options.no_subcategories => Param::Str("true".into()),
+            "topic_ids" => match &options.topic_ids {
+                Some(ids) => Param::Arr(ids.iter().map(|id| id.to_string()).collect()),
+                None => continue,
+            },
+            // page_params' group_name wins; the same value.
+            "group_name" => continue,
+            _ => match raw.get(key).filter(|p| p.present()) {
+                Some(p) => p.clone(),
+                None => continue,
+            },
+        };
+        push(key, &value);
     }
     if options.no_definitions {
-        pairs.push(("no_definitions", "true".into()));
+        push("no_definitions", &Param::Str("true".into()));
     }
-    if options.no_subcategories {
-        pairs.push(("no_subcategories", "true".into()));
+    for key in PAGE_PARAMS {
+        if key == "username" && username_in_path {
+            continue;
+        }
+        if let Some(value) = raw.get(key).filter(|p| p.present()) {
+            push(key, value);
+        }
     }
-    if let Some(o) = &options.order {
-        pairs.push(("order", o.clone()));
+    push("page", &Param::Str((options.page + 1).to_string()));
+    pairs.sort();
+    format!("{list_path}?{}", pairs.join("&"))
+}
+
+/// Refusals for what build_options takes but next_url can't write as
+/// Rails does: page_params' values that aren't strings, and those
+/// unicode_usernames encodes first.
+fn check_next_url_params(
+    raw: &std::collections::BTreeMap<String, Param>,
+    settings: &SiteSettings,
+) -> Result<(), Unsupported> {
+    let unicode = settings
+        .get("unicode_usernames")
+        .map_err(|_| Unsupported("unicode_usernames"))?
+        .truthy();
+    for key in PAGE_PARAMS {
+        match raw.get(key).filter(|p| p.present()) {
+            None => {}
+            Some(Param::Str(s)) => {
+                if unicode
+                    && key != "period"
+                    && !s
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
+                {
+                    return Err(Unsupported(
+                        "a username or group name param encoded for unicode_usernames",
+                    ));
+                }
+            }
+            Some(_) => {
+                return Err(Unsupported(
+                    "a username, group name or period param that is not a string",
+                ));
+            }
+        }
     }
-    pairs.push(("page", (options.page + 1).to_string()));
-    if let Some(state) = &options.state {
-        pairs.push(("state", state.clone()));
+    for key in ["order_by_event_date", "solved"] {
+        if matches!(raw.get(key), Some(Param::Hash)) {
+            return Err(Unsupported("a plugin list param given as a hash"));
+        }
     }
-    if let Some(subset) = &options.subset {
-        pairs.push(("subset", subset.clone()));
-    }
-    if let Some(p) = options.per_page.filter(|_| true) {
-        pairs.push(("per_page", p.to_string()));
-    }
-    if top && let Some(period) = params.period.as_deref().filter(|p| !p.is_empty()) {
-        pairs.push(("period", period.to_string()));
-    }
-    pairs.sort_by(|a, b| a.0.cmp(b.0));
-    let query: Vec<String> = pairs.into_iter().map(|(k, v)| format!("{k}={v}")).collect();
-    format!("{list_path}?{}", query.join("&"))
+    Ok(())
 }
 
 /// What TagsController does differently from ListController when it
@@ -210,7 +544,7 @@ pub(super) async fn list_document_for(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let t_settings = t0.elapsed();
-    let mut options = match build_options(params, &settings)? {
+    let mut options = match build_options_for(params, &settings, tag_request.is_some())? {
         Ok(o) => o,
         Err(e) => return Ok(Err(e)),
     };
@@ -253,16 +587,22 @@ pub(super) async fn list_document_for(
     if let Some(c) = category {
         // set_category puts the id in params[:category], which is why
         // no_definitions is never set for category lists.
+        // The category's routes merge `category: id` over the param, and
+        // the `/none` ones `no_subcategories: true` too.
         options.category_id = Some(c.id);
+        options.category = Some(c.id.to_string());
         options.no_definitions = false;
-        options.no_subcategories = no_subcategories;
+        options.no_subcategories |= no_subcategories;
     }
     if let Some(t) = tag_request {
         options.no_definitions = false;
-        options.no_subcategories = no_subcategories;
+        options.no_subcategories |= no_subcategories;
         options.per_page = options.per_page.map(|p| p.clamp(1, 30));
         options.tags = t.tags.clone();
-        options.no_tags = t.no_tags;
+        options.first_tag = t.tags.first().cloned();
+        // `options[:match_all_tags] ||= true`
+        options.match_all_tags = true;
+        options.no_tags |= t.no_tags;
     }
     let urls = Urls {
         config: &state.config,
@@ -281,11 +621,13 @@ pub(super) async fn list_document_for(
     };
     let t_query0 = t0.elapsed();
     let list = query.list(kind.filter(for_period.as_deref())).await?;
+    // `@options[:category_id]`, the category param resolved by default_results.
+    let category_id = query.options.category_id;
 
     let t_query = t0.elapsed();
     let more = match tag_request {
         Some(t) => super::tags::next_url(list_path, params, &options, t),
-        None => next_url(list_path, params, &options, kind == ListKind::Top),
+        None => next_url(list_path, params, &options, false),
     };
     let mut json = TopicListSerializer {
         conn: &mut conn,
@@ -294,7 +636,7 @@ pub(super) async fn list_document_for(
         guardian,
         urls: &urls,
         more_topics_url: Some(more),
-        category_id: options.category_id,
+        category_id,
         group_id: None,
         prefetched: Default::default(),
     }
@@ -587,10 +929,7 @@ mod tests {
 
     #[test]
     fn next_url_sorts_params_and_increments_page() {
-        let p = ListParams {
-            per_page: Some("10".into()),
-            ..ListParams::default()
-        };
+        let p = ListParams::from(vec![("per_page".to_string(), "10".to_string())]);
         let o = Options {
             page: 2,
             per_page: Some(10),
@@ -609,6 +948,129 @@ mod tests {
             next_url("/forum/latest", &ListParams::default(), &o, false),
             "/forum/latest?no_definitions=true&page=1"
         );
+    }
+
+    fn settings() -> SiteSettings {
+        let defs = crate::site_settings::Definitions::vendored().unwrap();
+        SiteSettings::resolve(&defs, vec![], &crate::config::GlobalSettings::default()).unwrap()
+    }
+
+    fn params(query: &str) -> ListParams {
+        ListParams::from(
+            form_urlencoded::parse(query.as_bytes())
+                .into_owned()
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    #[test]
+    fn rack_params_keep_the_shape_rack_gives() {
+        let raw =
+            rack_params(&params("tags[]=a&tags[]=b&status=x&status=y&q[k]=v&other[]=1").pairs)
+                .unwrap();
+        assert_eq!(raw["tags"], Param::Arr(vec!["a".into(), "b".into()]));
+        assert_eq!(raw["status"], Param::Str("y".into()));
+        assert_eq!(raw["q"], Param::Hash);
+        assert!(!raw.contains_key("other"));
+        // A plain value overwrites; an array after a value is Rack's error.
+        let raw = rack_params(&params("tags[]=a&tags=b").pairs).unwrap();
+        assert_eq!(raw["tags"], Param::Str("b".into()));
+        assert!(rack_params(&params("tags=b&tags[]=a").pairs).is_err());
+        assert!(rack_params(&params("tags[][x]=a").pairs).is_err());
+    }
+
+    #[test]
+    fn invalid_values_name_the_param() {
+        let s = settings();
+        let invalid = |q: &str| build_options(&params(q), &s).unwrap().err();
+        assert_eq!(invalid("page=-1").as_deref(), Some("page"));
+        assert_eq!(invalid("page=%2B1").as_deref(), Some("page"));
+        assert_eq!(invalid("per_page=101").as_deref(), Some("per_page"));
+        assert_eq!(invalid("before=2147483648").as_deref(), Some("before"));
+        assert_eq!(invalid("min_posts=1.5").as_deref(), Some("min_posts"));
+        assert_eq!(invalid("topic_ids[a]=1").as_deref(), Some("topic_ids"));
+        assert_eq!(invalid("category[]=4").as_deref(), Some("category"));
+        assert_eq!(invalid("status[]=closed").as_deref(), Some("status"));
+        assert_eq!(
+            invalid("match_all_tags=1").as_deref(),
+            Some("match_all_tags")
+        );
+        assert_eq!(invalid("tags[k]=v").as_deref(), Some("tags"));
+        // A tag list's route tag_name makes tags an array.
+        assert!(
+            build_options_for(&params("tags[0]=x"), &s, true)
+                .unwrap()
+                .is_ok()
+        );
+        // Blank values are not validated.
+        assert_eq!(invalid("page=&per_page=%20&before="), None);
+        // Validated in TopicQuery.public_valid_options' order.
+        assert_eq!(invalid("ascending=x&page=x").as_deref(), Some("page"));
+    }
+
+    #[test]
+    fn options_follow_build_topic_list_options() {
+        let s = settings();
+        let o = build_options(
+            &params(
+                "tags=howto%20guide&topic_ids=3,x,&f=liked&category=general&no_subcategories=false",
+            ),
+            &s,
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(o.tags, ["howto", "guide"]);
+        assert_eq!(o.first_tag.as_deref(), Some("h"));
+        assert_eq!(o.topic_ids, Some(vec![3, 0]));
+        assert_eq!(o.filter.as_deref(), Some("liked"));
+        assert_eq!(o.category.as_deref(), Some("general"));
+        assert!(!o.no_definitions);
+        assert!(!o.no_subcategories);
+        let o = build_options(&params("tag_name=guide&tags=howto&topic_ids="), &s)
+            .unwrap()
+            .unwrap();
+        assert_eq!(o.tags, ["guide", "howto"]);
+        assert_eq!(o.first_tag.as_deref(), Some("guide"));
+        assert_eq!(o.topic_ids, Some(vec![]));
+        assert!(o.no_definitions);
+        assert!(build_options(&params("assigned=me"), &s).is_err());
+    }
+
+    #[test]
+    fn next_url_echoes_the_list_options() {
+        let s = settings();
+        let p = params("per_page=1&q=a%20b&tag_name=guide&tags=howto&topic_ids=1,2&username=bob");
+        let o = build_options(&p, &s).unwrap().unwrap();
+        assert_eq!(
+            next_url("/latest", &p, &o, false),
+            "/latest?no_definitions=true&page=1&per_page=1&q=a+b\
+             &tags%5B%5D=guide&tags%5B%5D=howto\
+             &topic_ids%5B%5D=1&topic_ids%5B%5D=2&username=bob"
+        );
+        assert_eq!(
+            next_url("/topics/created-by/bob", &p, &o, true),
+            "/topics/created-by/bob?no_definitions=true&page=1&per_page=1&q=a+b\
+             &tags%5B%5D=guide&tags%5B%5D=howto\
+             &topic_ids%5B%5D=1&topic_ids%5B%5D=2"
+        );
+        // A route's category is in its path; `/none` merges no_subcategories.
+        let p = params("category=2&no_subcategories=false");
+        let mut o = build_options(&p, &s).unwrap().unwrap();
+        o.category_id = Some(4);
+        o.no_subcategories = true;
+        assert_eq!(
+            next_url("/c/general/4/none", &p, &o, false),
+            "/c/general/4/none?no_subcategories=true&page=1"
+        );
+    }
+
+    #[test]
+    fn tag_lists_refuse_the_options_they_do_not_take() {
+        assert!(refuse_unported_tag_list_params(&params("page=1&tags=a&state=muted")).is_ok());
+        assert!(refuse_unported_tag_list_params(&params("status=closed")).is_err());
+        assert!(refuse_unported_tag_list_params(&params("topic_ids=")).is_err());
+        assert!(refuse_unported_tag_list_params(&params("order=")).is_err());
+        assert!(refuse_unported_tag_list_params(&params("match_all_tags=false")).is_err());
     }
 
     #[test]
@@ -1017,15 +1479,16 @@ async fn categories_response(
         let latest = if mobile {
             serde_json::Value::Null
         } else {
-            let latest_params = ListParams {
-                per_page: Some(
-                    topics_per_page(&mut conn, &settings, &guardian)
-                        .await?
-                        .to_string(),
-                ),
-                order: created_order.then(|| "created".to_string()),
-                ..Default::default()
-            };
+            let mut latest_pairs = vec![(
+                "per_page".to_string(),
+                topics_per_page(&mut conn, &settings, &guardian)
+                    .await?
+                    .to_string(),
+            )];
+            if created_order {
+                latest_pairs.push(("order".to_string(), "created".to_string()));
+            }
+            let latest_params = ListParams::from(latest_pairs);
             // list_document takes its own connection: this one is put back
             // meanwhile.
             drop(conn);
@@ -1611,7 +2074,7 @@ pub async fn topics_by(
         state.config.globals.relative_url_root(),
         user.username.to_lowercase()
     );
-    let more = next_url(&list_path, &params, &options, false);
+    let more = next_url(&list_path, &params, &options, true);
     let doc = topics_by_list(
         &state, &mut conn, &settings, &guardian, user.id, options, more,
     )
@@ -1629,7 +2092,7 @@ pub(crate) async fn topics_by_list(
     options: Options,
     more_topics_url: String,
 ) -> Result<serde_json::Value, AppError> {
-    let topics = TopicQuery {
+    let mut query = TopicQuery {
         conn: &mut *conn,
         settings,
         guardian,
@@ -1638,9 +2101,9 @@ pub(crate) async fn topics_by_list(
         tags: Default::default(),
         filter: Default::default(),
         user: Default::default(),
-    }
-    .list(Filter::TopicsBy(user_id))
-    .await?;
+    };
+    let topics = query.list(Filter::TopicsBy(user_id)).await?;
+    let category_id = query.options.category_id;
     let urls = Urls {
         config: &state.config,
         settings,
@@ -1652,7 +2115,7 @@ pub(crate) async fn topics_by_list(
         guardian,
         urls: &urls,
         more_topics_url: Some(more_topics_url),
-        category_id: None,
+        category_id,
         group_id: None,
         prefetched: Default::default(),
     }

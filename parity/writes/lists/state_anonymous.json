@@ -1,0 +1,133 @@
+{
+  "name": "state_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json?state=watching_first_post"
+    },
+    {
+      "method": "GET",
+      "path": "/latest.json?state=watching&per_page=1"
+    }
+  ],
+  "started_at": "2026-10-22T06:46:42.46785",
+  "transaction_started_at": "2026-10-22T06:46:40.402806",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "topic_list": {
+          "can_create_topic": false,
+          "filter": "latest",
+          "per_page": 30,
+          "top_tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            },
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto"
+            }
+          ],
+          "topics": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "primary_groups": [],
+        "flair_groups": [],
+        "topic_list": {
+          "can_create_topic": false,
+          "filter": "latest",
+          "more_topics_url": "/latest?no_definitions=true&page=1&per_page=1&state=watching",
+          "per_page": 1,
+          "top_tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            },
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto"
+            }
+          ],
+          "topics": [
+            {
+              "fancy_title": "Welcome to Discourse! :wave:",
+              "id": 5,
+              "title": "Welcome to Discourse! :wave:",
+              "slug": "welcome-to-discourse",
+              "posts_count": 1,
+              "reply_count": 0,
+              "highest_post_number": 1,
+              "image_url": null,
+              "created_at": "2026-07-25T05:58:28.320Z",
+              "last_posted_at": "2026-07-25T05:58:28.405Z",
+              "bumped": true,
+              "bumped_at": "2026-07-25T05:58:28.405Z",
+              "archetype": "regular",
+              "unseen": false,
+              "pinned": true,
+              "unpinned": null,
+              "excerpt": "We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;",
+              "visible": true,
+              "closed": false,
+              "archived": false,
+              "bookmarked": null,
+              "liked": null,
+              "unicode_title": "Welcome to Discourse! 👋",
+              "tags": [],
+              "tags_descriptions": {},
+              "views": 0,
+              "like_count": 0,
+              "has_summary": false,
+              "last_poster_username": "system",
+              "category_id": 4,
+              "op_like_count": 0,
+              "pinned_globally": true,
+              "featured_link": null,
+              "has_accepted_answer": false,
+              "can_vote": false,
+              "posters": [
+                {
+                  "extras": "latest single",
+                  "description": "Original Poster, Most Recent Poster",
+                  "user_id": -1,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "13d7b5c7c9b1aeea6f7698171841212e008450b8395e03d4fb5200564722a821",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
