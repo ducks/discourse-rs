@@ -1965,6 +1965,33 @@ async fn members_get_the_composer_and_raw_posts() {
     assert_eq!(client.get("/raw/35/99").await.status, StatusCode::NOT_FOUND);
 }
 
+/// The progress bar's back button (TopicProgress#goBack) jumps to the
+/// reader's last read post: static/js/topic.js looks it up by the holder
+/// id Ember's DiscourseURL.jumpToPost uses, `#post_N`, which the page
+/// draws inside the stream's `[data-post-number]` wrapper.
+#[tokio::test]
+async fn the_back_button_names_a_post_the_page_draws() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state);
+    client.login("admin", "password").await;
+    client.cookies.push(("mobile_view".into(), "1".into()));
+    let page = client
+        .get("/t/parity-fixture-replies-and-posters/35/2")
+        .await
+        .body;
+    assert!(page.contains(r#"<div class="with-topic-progress topic-navigation">"#));
+    // The admin read up to the fourth post (seed/fresh_install.sql).
+    assert!(
+        page.contains(r#" data-last-read-number="4" data-back-label="Back""#),
+        "{page}"
+    );
+    let wrapper = page
+        .find(r#" data-post-number="4"><h2 "#)
+        .expect("the fourth post");
+    assert!(page[wrapper..].contains(r#" id="post_4">"#));
+}
+
 /// The composer's preview: its toggle and where it loads the renderer and
 /// the settings from, which cook as the server does.
 #[tokio::test]

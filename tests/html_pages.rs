@@ -356,6 +356,85 @@ async fn topic_page_has_its_map_timeline_footer_and_suggestions() {
     )));
 }
 
+/// Entering a topic at a post (/t/:slug/:id/:post_number, where
+/// notifications, search results and replies link): the page is served
+/// at that address, whose post number static/js/topic.js reads
+/// (TopicFromParams' nearPost) and later replaces as the reader scrolls,
+/// and each post is drawn as Ember's stream draws it: the
+/// `[data-post-number]` wrapper the closest post is picked from, the
+/// `article#post_N` jumpToPost locks on, and the `.topic-body`
+/// highlightPost focuses.
+#[tokio::test]
+async fn a_topic_entered_at_a_post_draws_what_the_jump_needs() {
+    let db = TestDb::new().await;
+    let path = "/t/parity-fixture-replies-and-posters/35/3";
+    let (status, _, html) = get(&db.pool, path).await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains(r#"<section class="topic-area" data-topic-id="35" id="topic">"#));
+    for n in 1..=5 {
+        let wrapper = html
+            .find(&format!(r#" data-post-number="{n}"><h2 "#))
+            .unwrap_or_else(|| panic!("post {n}'s wrapper"));
+        let post = &html[wrapper..];
+        let article = post
+            .find(&format!(r#" id="post_{n}">"#))
+            .unwrap_or_else(|| panic!("post {n}'s article"));
+        let body = post
+            .find(r#"class="post__body topic-body clearfix""#)
+            .unwrap_or_else(|| panic!("post {n}'s body"));
+        assert!(article < body, "post {n}");
+        if n < 5 {
+            let next = post
+                .find(&format!(r#" data-post-number="{}"><h2 "#, n + 1))
+                .unwrap();
+            assert!(body < next, "post {n}'s body is its own");
+        }
+    }
+    // A post past the last is entered at the nearest (the last).
+    let (status, _, html) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35/99").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#" id="post_5">"#));
+}
+
+/// /p/:post_id(/:user_id) (posts#short_link): a 302 to the post's URL,
+/// where the topic page jumps to it; a missing post is not found and one
+/// the viewer may not see (a message's) is forbidden.
+#[tokio::test]
+async fn a_short_link_redirects_to_its_post() {
+    let db = TestDb::new().await;
+    for path in ["/p/37", "/p/37/3", "/p/37.json"] {
+        let app = discourse_rs::app(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+        let response = app
+            .oneshot(
+                Request::get(path)
+                    .header(header::HOST, "test.localhost")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::FOUND, "{path}");
+        assert_eq!(
+            response.headers()[header::LOCATION],
+            "http://test.localhost/t/parity-fixture-replies-and-posters/35/3",
+            "{path}"
+        );
+    }
+    for path in ["/p/abc", "/p/99999"] {
+        let (status, _, _) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{path}");
+    }
+    sqlx::query("UPDATE posts SET deleted_at = now() WHERE id = 38")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _, _) = get(&db.pool, "/p/38").await;
+    assert_eq!(status, StatusCode::NOT_FOUND, "a trashed post");
+    let (status, content_type, _) = get(&db.pool, "/p/48").await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "a message's post");
+    assert_eq!(content_type, "text/html; charset=utf-8");
+}
+
 /// What a browser gets that accepts compression.
 async fn get_compressed(pool: &PgPool, path: &str) -> axum::response::Response {
     let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);

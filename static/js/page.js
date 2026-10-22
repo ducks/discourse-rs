@@ -10,6 +10,8 @@
 //   Discourse.onPage(fn)  runs fn for this page now and for every page
 //                         swapped in after; fn may return a cleanup, run
 //                         before the page is swapped out.
+//   Discourse.swapped     true once a page has been swapped in: the page
+//                         came by a navigation inside the app, not a load.
 //
 // What stays across pages is marked hx-preserve (the composer); it takes
 // the new page's values of the attributes it lists in data-page-attrs.
@@ -127,6 +129,7 @@
     }
     swapping = false;
     anchor = null;
+    Discourse.swapped = true;
     pages.forEach(run);
   }
 
