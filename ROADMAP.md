@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 263a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 263a, 264a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3112,6 +3112,37 @@ route table has been made, so this list may be short.
     redirects go to Discourse.base_url's host like the port's other
     redirects, where Rails' redirect_to uses the request's host
     (routes/static_pages.rs:59)
+
+264. ~~`fix/categories-tracking`~~ (done) S: the categories page ignored a
+    member's read state, found by a screenshot run (/categories as anon,
+    admin, user1 and mobile). `.category__badges` was always empty; now
+    CategoryUnread draws the "N unread" and "N new" links (to the
+    category's /l/unread and /l/new) beside each category and
+    subcategory from the page's TopicTrackingState report, counted as
+    countUnread and countNew do (subcategories included, a definition
+    topic only for its own category, new skipping muted categories).
+    The Latest column's rows took visited from any last read post and
+    linked the topic; now Topic#visited (read through the highest post),
+    dTopicLink to lastUnreadUrl with its screen reader "read", and
+    TopicPostBadges' unread count and new dot. `.muted-categories` sat
+    38px too high (16px on mobile): the page lacked Navigation's
+    `navigation-categories` body class, whose rule (category-list.scss:634)
+    puts 3em under the categories table, on mobile too (after :543 as in
+    the bundle).
+    Measured against rs-ref-c: the normalized `.categories-and-latest`
+    DOM matches as user1 and admin but for the pin toggle (264a);
+    the muted box's offset from the table matches desktop and mobile
+    (ui-compare and box measurements). Screenshots before/after:
+    desktop anon 7.68/7.68%, admin 8.62/8.65%, user1 5.43/5.40%; mobile
+    anon 9.52/9.52%, user1 5.30/4.80%; what is left of them is the
+    header logo, the nav row 4px higher and text widths, none of it
+    this page's. Left, split into 264a.
+    264a. `feat/categories-tracking-rest` S: TopicStatus' pin toggle for
+    a member (`<a class="pin-toggle-button">` with clearPin and rePin,
+    PUT /t/:id/clear-pin and /re-pin, unported) is drawn as the
+    visitor's span on every list (topic_list_view.rs:1264); the
+    category badges don't follow live tracking updates, which refresh
+    only the nav pills and the sidebar (routes/live.rs:799)
 
 ### Phase 11: the bundled plugins' gaps (210)
 

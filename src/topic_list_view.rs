@@ -333,6 +333,16 @@ pub fn category_badge(cx: &ListContext, category: &ListCategory) -> String {
     category_badge_html(cx, category, true, false)
 }
 
+/// `Category#url`: the parent's slug first.
+pub(crate) fn category_url(cx: &ListContext, category: &ListCategory) -> String {
+    format!(
+        "{}/c/{}/{}",
+        cx.base_path,
+        slug_for(cx, category, 3),
+        category.id
+    )
+}
+
 /// `categoryBadgeHTML`, linked or (`link: false`) a plain span; with
 /// `hide_parent` the parent keeps its colors but not its class and id.
 pub fn category_badge_html(
@@ -347,12 +357,7 @@ pub fn category_badge_html(
         return String::new();
     }
     let parent = category.parent_id.and_then(|id| cx.categories.get(&id));
-    let url = format!(
-        "{}/c/{}/{}",
-        cx.base_path,
-        slug_for(cx, category, 3),
-        category.id
-    );
+    let url = category_url(cx, category);
     // categoryVariables
     let mut style = format!(
         "--category-badge-color: #{};--category-badge-text-color: #{};",

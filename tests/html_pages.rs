@@ -584,6 +584,52 @@ async fn list_titles_follow_the_filter_category_and_tag() {
     assert!(html.contains("<title>Categories - Discourse</title>"));
 }
 
+// The categories page with a member's tracking state: CategoryUnread's
+// unread and new counts beside each category and subcategory, and the
+// latest column's rows as Ember draws them from the read state (visited,
+// the unread count, links to the first unread post).
+#[tokio::test]
+async fn categories_page_draws_the_members_read_state() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let html = user1.page("/categories").await;
+    // Navigation's body class, which spaces the muted categories.
+    assert!(html.contains(" navigation-categories categories-list"));
+    // General: the replies-and-posters topic, read to post 2 of 5.
+    assert!(html.contains(
+        r#"<div class="unread-new"><div class="category__badges unread-new"><a class="badge new-posts badge-notification" href="/c/general/4/l/unread" title="1 unread topic">1 unread</a></div></div>"#
+    ));
+    // Sub General's definition topic is new, counted for it alone
+    // (is_category_topic).
+    assert!(html.contains(
+        r#"<span class="category__badges"><a class="badge new-posts badge-notification" href="/c/general/sub-general/34/l/new" title="1 new topic">1 new</a></span></span>"#
+    ));
+    // The latest column: the unread topic links to its first unread post
+    // with the count; the read one is visited.
+    assert!(html.contains(
+        r#"<a href="/t/parity-fixture-replies-and-posters/35/3" class="title" data-topic-id="35">Parity fixture: replies and posters</a><span class="topic-post-badges"> &nbsp;<a aria-description="you have 3 unread posts in this topic" class="badge badge-notification unread-posts" href="/t/parity-fixture-replies-and-posters/35/3" title="you have 3 unread posts in this topic">3</a></span>"#
+    ));
+    assert!(html.contains(
+        r#"<div class="latest-topic-list-item tag-howto category-general-sub-general visited" data-topic-id="38">"#
+    ));
+    assert!(html.contains(
+        r#"<a href="/t/parity-fixture-tagged-in-a-subcategory/38/1" class="title" data-topic-id="38">Parity fixture: tagged in a subcategory<span class="sr-only">&nbsp;read</span></a><span class="topic-post-badges"></span>"#
+    ));
+
+    // A visitor: the badges' elements stay, empty, and nothing is read.
+    let (_, _, html) = get(&db.pool, "/categories").await;
+    assert!(html.contains(
+        r#"<div class="unread-new"><div class="category__badges unread-new"></div></div>"#
+    ));
+    assert!(html.contains(r#"<span class="category__badges"></span></span>"#));
+    assert!(!html.contains("badge new-posts"));
+    assert!(!html.contains(" visited\""));
+    assert!(html.contains(
+        r#"<a href="/t/parity-fixture-replies-and-posters/35" class="title" data-topic-id="35">Parity fixture: replies and posters</a><span class="topic-post-badges"></span>"#
+    ));
+}
+
 /// A member's session on the in-process router.
 struct Member {
     state: discourse_rs::AppState,
