@@ -1337,6 +1337,11 @@ pub struct LatestPage {
     pub top_lists: String,
     /// DiscoveryTopics' `footer.topic-list-bottom`, drawn (list_bottom).
     pub list_bottom: String,
+    /// TopicDismissButtons in the navigation controls (dismiss_buttons).
+    pub dismiss_top: String,
+    /// topic-dismiss.js' strings (dismiss_strings), empty without the
+    /// buttons.
+    pub dismiss_strings: String,
 }
 
 /// What DiscoveryTopics' footer reads besides the list itself: the list's
@@ -1378,10 +1383,10 @@ fn list_bottom(
     let mut out =
         String::from("<footer class=\"topic-list-bottom\"><div class=\"loading-container\"></div>");
     if all_loaded {
-        // showBottomDismissButtons; the buttons themselves are not drawn
-        // at the top either (templates/macros.html:58).
-        if !crate::mobile::mobile_view() && topics > 5 {
-            out.push_str("<div class=\"row dismiss-container-bottom\"></div>");
+        // showBottomDismissButtons, which TopicDismissButtons draws past
+        // five topics.
+        if !crate::mobile::mobile_view() {
+            out.push_str(&dismiss_buttons(i18n, "bottom", tracking, topics, scope));
         }
         // The member check is `currentUser`; the tracking report is there
         // for every member.
@@ -1443,6 +1448,106 @@ fn list_bottom(
     }
     out.push_str("</footer>");
     out
+}
+
+/// TopicDismissButtons at `position`: `top` in the navigation controls
+/// (always drawn, empty unless there is something to dismiss), `bottom` in
+/// the list's footer past five topics. The discovery controller's
+/// showResetNew and showDismissRead: the new or unread list with topics.
+/// On new, under unified new, the DComboButton (Dismiss all, or the
+/// subset's label) whose menu offers "Dismiss and stop tracking" unless
+/// the subset is topics; otherwise the classic "Dismiss New". On unread,
+/// "Dismiss…", which opens DismissRead (topic-dismiss.js). The row
+/// carries the list's category for the requests the buttons send.
+/// Selecting topics (BulkSelectHelper) is not ported, so the
+/// `_with_selected` labels are never drawn.
+pub fn dismiss_buttons(
+    i18n: &I18n,
+    position: &str,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+    topics: usize,
+    scope: &ListFooterScope,
+) -> String {
+    use crate::topic_list_view::{escape, icon};
+    if position == "bottom" && topics <= 5 {
+        return String::new();
+    }
+    let t = |key: &str| {
+        escape(
+            i18n.t(&format!("js.{key}"))
+                .unwrap_or_else(|| key.rsplit('.').next().unwrap_or(key)),
+        )
+    };
+    // The lists' own checks read no member; only members reach new and
+    // unread, and unified new is a member's.
+    let tracking = tracking.filter(|_| topics > 0);
+    let show_reset_new = scope.filter == "new" && tracking.is_some();
+    let show_dismiss_read = scope.filter == "unread" && tracking.is_some();
+    let mut out = format!("<div class=\"row dismiss-container-{position}\"");
+    if let Some(id) = scope
+        .category_id
+        .filter(|_| show_reset_new || show_dismiss_read)
+    {
+        out.push_str(&format!(" data-category-id=\"{id}\""));
+        if scope.no_subcategories {
+            out.push_str(" data-no-subcategories=\"\"");
+        }
+    }
+    out.push('>');
+    if show_dismiss_read {
+        out.push_str(&format!(
+            "<button class=\"btn btn-default dismiss-read\" id=\"dismiss-topics-{position}\" title=\"{}\" type=\"button\"><span class=\"d-button-label\">{}</span></button>",
+            t("topics.bulk.dismiss_tooltip"),
+            t("topics.bulk.dismiss_button"),
+        ));
+    }
+    if let Some(tracking) = tracking.filter(|_| show_reset_new) {
+        if tracking.unified_new {
+            let (label, has_menu) = match scope.subset {
+                Some("topics") => (t("topics.bulk.dismiss_new_topics"), false),
+                Some("replies") => (t("topics.bulk.dismiss_new_replies"), true),
+                _ => (t("topics.bulk.dismiss_all"), true),
+            };
+            out.push_str(&format!(
+                "<div class=\"d-combo-button{} topic-dismiss-buttons__combo\" role=\"group\"><button class=\"btn d-combo-button-button btn-default dismiss-read topic-dismiss-buttons__button\" id=\"dismiss-new-{position}\" type=\"button\"><span class=\"d-button-label\">{label}</span></button>",
+                if has_menu { " --has-menu" } else { "" },
+            ));
+            if has_menu {
+                out.push_str(&format!(
+                    "<button aria-expanded=\"false\" aria-label=\"{}\" class=\"btn no-text btn-icon fk-d-menu__trigger dismiss-new-menu-trigger d-combo-button-menu btn-default dismiss-read topic-dismiss-buttons__menu\" id=\"dismiss-new-menu-{position}\" data-identifier=\"dismiss-new-menu\" data-trigger=\"\" type=\"button\">{}</button>",
+                    t("topics.bulk.dismiss_new_menu"),
+                    icon("chevron-down", None),
+                ));
+            }
+            out.push_str("</div>");
+        } else {
+            out.push_str(&format!(
+                "<button class=\"btn btn-icon-text btn-default dismiss-read\" id=\"dismiss-new-{position}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+                icon("check", None),
+                t("topics.bulk.dismiss_new"),
+            ));
+        }
+    }
+    out.push_str("</div>");
+    out
+}
+
+/// The strings topic-dismiss.js shows (the stop tracking menu item and
+/// DismissRead), by their js.* key.
+pub fn dismiss_strings(i18n: &I18n) -> String {
+    let strings: serde_json::Map<String, Value> = [
+        "topics.bulk.dismiss_and_stop_tracking",
+        "topics.bulk.dismiss_read",
+        "topics.bulk.also_dismiss_topics",
+        "topics.bulk.dismiss",
+    ]
+    .iter()
+    .map(|key| {
+        let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
+        ((*key).to_string(), Value::String(text.to_string()))
+    })
+    .collect();
+    Value::Object(strings).to_string()
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -2343,6 +2448,18 @@ pub async fn latest_page(
         !list["topic_list"]["more_topics_url"].is_string(),
         footer,
     );
+    let dismiss_top = dismiss_buttons(
+        i18n,
+        "top",
+        site.chrome.tracking.as_ref(),
+        rows.len(),
+        footer,
+    );
+    let dismiss_strings = if dismiss_top.contains("<button") {
+        dismiss_strings(i18n)
+    } else {
+        String::new()
+    };
     Ok(LatestPage {
         title: site.site_title.clone(),
         site_title: site.site_title,
@@ -2367,6 +2484,8 @@ pub async fn latest_page(
         category_nav: false,
         top_lists,
         list_bottom,
+        dismiss_top,
+        dismiss_strings,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -3307,6 +3426,12 @@ impl CategoriesPage {
     pub fn heading_id(&self) -> Option<i32> {
         None
     }
+
+    /// TopicDismissButtons' top row: the categories page has no list to
+    /// dismiss.
+    pub fn dismiss_top(&self) -> &'static str {
+        "<div class=\"row dismiss-container-top\"></div>"
+    }
 }
 
 #[cfg(test)]
@@ -3392,6 +3517,93 @@ mod list_bottom_tests {
         assert_eq!(
             draw(false, Some(&member), 0, false, &scope("unread")).await,
             EMPTY
+        );
+    }
+
+    const CHEVRON: &str = r##"<svg class="fa d-icon d-icon-chevron-down svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#chevron-down"></use></svg>"##;
+
+    /// TopicDismissButtons on new, as Ember draws them (rs-ref-a): under
+    /// unified new the combo, its label and menu by the subset; the
+    /// classic "Dismiss New" otherwise; the bottom row only past five
+    /// topics.
+    #[test]
+    fn new_draws_the_dismiss_combo_by_subset() {
+        let i18n = I18n::vendored().unwrap();
+        let member = tracking(vec![]);
+        let combo = |label: &str, menu: bool| {
+            format!(
+                r#"<div class="row dismiss-container-top"><div class="d-combo-button{} topic-dismiss-buttons__combo" role="group"><button class="btn d-combo-button-button btn-default dismiss-read topic-dismiss-buttons__button" id="dismiss-new-top" type="button"><span class="d-button-label">{label}</span></button>{}</div></div>"#,
+                if menu { " --has-menu" } else { "" },
+                if menu {
+                    format!(
+                        r#"<button aria-expanded="false" aria-label="Dismiss options" class="btn no-text btn-icon fk-d-menu__trigger dismiss-new-menu-trigger d-combo-button-menu btn-default dismiss-read topic-dismiss-buttons__menu" id="dismiss-new-menu-top" data-identifier="dismiss-new-menu" data-trigger="" type="button">{CHEVRON}</button>"#
+                    )
+                } else {
+                    String::new()
+                }
+            )
+        };
+        for (subset, label, menu) in [
+            (None, "Dismiss all", true),
+            (Some("bogus"), "Dismiss all", true),
+            (Some("topics"), "Dismiss new topics", false),
+            (Some("replies"), "Dismiss new replies", true),
+        ] {
+            let new = ListFooterScope {
+                filter: "new",
+                subset,
+                ..Default::default()
+            };
+            assert_eq!(
+                dismiss_buttons(&i18n, "top", Some(&member), 2, &new),
+                combo(label, menu),
+                "{subset:?}"
+            );
+        }
+        let classic = Tracking {
+            unified_new: false,
+            ..tracking(vec![])
+        };
+        assert_eq!(
+            dismiss_buttons(&i18n, "top", Some(&classic), 2, &scope("new")),
+            r##"<div class="row dismiss-container-top"><button class="btn btn-icon-text btn-default dismiss-read" id="dismiss-new-top" type="button"><svg class="fa d-icon d-icon-check svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#check"></use></svg><span class="d-button-label">Dismiss New</span></button></div>"##
+        );
+        // The bottom row is there past five topics only.
+        assert_eq!(
+            dismiss_buttons(&i18n, "bottom", Some(&member), 5, &scope("new")),
+            ""
+        );
+        assert!(
+            dismiss_buttons(&i18n, "bottom", Some(&member), 6, &scope("new"))
+                .contains(r#"id="dismiss-new-bottom""#)
+        );
+    }
+
+    /// Unread's "Dismiss…"; a category's list carries the category for
+    /// the requests; nothing to dismiss leaves the row empty.
+    #[test]
+    fn unread_draws_dismiss_and_empty_lists_draw_none() {
+        let i18n = I18n::vendored().unwrap();
+        let member = tracking(vec![]);
+        let unread = ListFooterScope {
+            filter: "unread",
+            category_id: Some(4),
+            no_subcategories: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            dismiss_buttons(&i18n, "top", Some(&member), 1, &unread),
+            r#"<div class="row dismiss-container-top" data-category-id="4" data-no-subcategories=""><button class="btn btn-default dismiss-read" id="dismiss-topics-top" title="Dismiss just new posts or stop tracking topics" type="button"><span class="d-button-label">Dismiss…</span></button></div>"#
+        );
+        let empty = r#"<div class="row dismiss-container-top"></div>"#;
+        assert_eq!(
+            dismiss_buttons(&i18n, "top", Some(&member), 0, &unread),
+            empty
+        );
+        assert_eq!(dismiss_buttons(&i18n, "top", None, 3, &unread), empty);
+        assert_eq!(
+            dismiss_buttons(&i18n, "top", Some(&member), 3, &scope("latest")),
+            empty
         );
     }
 

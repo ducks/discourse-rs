@@ -12,6 +12,8 @@
 //                         before the page is swapped out.
 //   Discourse.swapped     true once a page has been swapped in: the page
 //                         came by a navigation inside the app, not a load.
+//   Discourse.refresh()   the router's refresh(): this page asked for again
+//                         and swapped in where it stands, no history entry.
 //
 // What stays across pages is marked hx-preserve (the composer); it takes
 // the new page's values of the attributes it lists in data-page-attrs.
@@ -452,6 +454,12 @@
     anchor = target ? reading : scrollAnchor();
     anchorWidth = -1;
   }
+
+  // A list once its topics are dismissed (topic-dismiss.js).
+  Discourse.refresh = function () {
+    generation += 1;
+    redraw(generation);
+  };
 
   syncView();
   viewport.addEventListener("change", syncView);

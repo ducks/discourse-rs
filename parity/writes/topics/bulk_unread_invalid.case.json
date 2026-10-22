@@ -1,0 +1,36 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "new",
+        "operation": {
+          "type": "dismiss_posts"
+        },
+        "tracked": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "unread",
+        "tracked": "false",
+        "include_subcategories": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/bulk",
+      "params": {
+        "filter": "unread",
+        "operation": {
+          "type": "explode"
+        },
+        "tracked": "false"
+      }
+    }
+  ]
+}

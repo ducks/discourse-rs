@@ -211,6 +211,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/empty-topic-filter.js"),
     ),
+    (
+        "topic-dismiss.js",
+        JS,
+        include_str!("../static/js/topic-dismiss.js"),
+    ),
     ("oneboxes.js", JS, include_str!("../static/js/oneboxes.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
     ("lightbox.js", JS, include_str!("../static/js/lightbox.js")),

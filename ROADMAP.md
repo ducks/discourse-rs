@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a, 272a, 273a, 274a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3601,13 +3601,42 @@ route table has been made, so this list may be short.
     as admin 0.37 to 0.12, as user1 0.37 to 0.16, /c/general/4 0.96 to
     0.67, as user1 1.21 to 0.89, those rows updated; the rest unchanged.
     Left, split into 270a.
-    270a. `feat/topic-list-dismiss-buttons` S: TopicDismissButtons'
-    Dismiss... and Dismiss new (the combo with dismiss and stop tracking
-    under unified new) on the new and unread lists: the top row is drawn
-    empty (templates/macros.html:58) and so is the bottom one
-    (src/html.rs:1345); loading more on scroll (DLoadMore with the
-    footer's spinner): the port pages with its "Next page" link instead
-    (templates/latest.html:53)
+    270a. ~~`fix/list-dismiss`~~ (done) S: the new and unread lists (and
+    their category variants) drew TopicDismissButtons' rows empty, so a
+    member could not dismiss from them. Now html::dismiss_buttons draws
+    them as Ember does, in the navigation controls (on every list, empty
+    where there is nothing to dismiss, as DNavigation always renders it)
+    and in the footer past five topics on desktop: under unified new the
+    DComboButton ("Dismiss all", "Dismiss new topics" or "Dismiss new
+    replies" by `subset`) whose menu, but for the topics subset, holds
+    "Dismiss and stop tracking" (a bottom sheet on mobile); the classic
+    "Dismiss New" otherwise; on unread "Dismiss…", which opens DismissRead
+    with its "Stop tracking these topics" checkbox. static/js/topic-dismiss.js
+    sends what the discovery controller sends (Topic.resetNew to PUT
+    /topics/reset-new with tracked, the category and include_subcategories,
+    dismiss_posts, dismiss_topics and untrack; Topic.bulkOperationByFilter
+    to PUT /topics/bulk with filter=unread and dismiss_posts or a change to
+    the regular level), then refreshes the page in place
+    (Discourse.refresh in page.js, the router's refresh), which redraws
+    the list, the nav pills' counts and the sidebar's dots. The server
+    side was 188f's; five new write cases record the exact bodies the
+    buttons send (valid, a category with and without subcategories,
+    stop tracking, invalid filter and operation, anonymous). Compared in
+    playwright against rs-ref-a, desktop and mobile, before and after each
+    click (/new, its topics and replies subsets, /c/general/4/l/new,
+    /unread with and without stop tracking, the bottom row with eleven
+    new topics): the rows', menu's and modal's DOM, the request bodies,
+    the list, pills and sidebar after the refresh, and the buttons',
+    menu's and modal's boxes and styles all match. Ember's DismissNew
+    modal has no caller upstream and is not drawn. Left, split into 270b.
+    270b. `feat/topic-list-load-more` S: loading more on scroll (DLoadMore
+    with the footer's spinner): the port pages with its "Next page" link
+    instead (templates/latest.html:54); the dismiss buttons' selected
+    variants ("Dismiss (n)", topic_ids) wait for the discovery lists'
+    bulk select, which is drawn without its actions (templates/latest.html:36,
+    183); tag new and unread lists, and so their dismiss buttons, are
+    refused (src/routes/tags.rs:292); the messages lists' dismiss buttons
+    are drawn without actions (src/messages_view.rs:353, 183)
 272. ~~`fix/avatar-dpr`~~ (done) S: on a phone or any screen with a
     device pixel ratio above 1.1 every avatar loaded a smaller image than
     Ember's (a Pixel 5's 48px post avatar 48.png where Ember asks for

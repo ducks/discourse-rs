@@ -1395,6 +1395,72 @@ async fn a_members_empty_list_footer_draws_the_education() {
     ), "{page}");
 }
 
+/// TopicDismissButtons on a member's new and unread lists, with their
+/// script, and the lists, pills and sidebar once topic-dismiss.js has sent
+/// what Ember sends (the bodies recorded from rs-ref-a's clicks): the
+/// refreshed page has nothing left to dismiss.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_members_new_and_unread_lists_dismiss() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+
+    // Nothing to dismiss on latest: the row is there, empty.
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"<div class="row dismiss-container-top"></div>"#));
+    assert!(!page.contains("topic-dismiss.js"));
+
+    let page = client.get("/new").await.body;
+    assert!(page.contains(
+        r#"<div class="row dismiss-container-top"><div class="d-combo-button --has-menu topic-dismiss-buttons__combo" role="group"><button class="btn d-combo-button-button btn-default dismiss-read topic-dismiss-buttons__button" id="dismiss-new-top" type="button"><span class="d-button-label">Dismiss all</span></button><button aria-expanded="false" aria-label="Dismiss options""#
+    ), "{page}");
+    assert!(page.contains("/assets/topic-dismiss.js?v="));
+    assert!(
+        page.contains("&#34;topics.bulk.also_dismiss_topics&#34;:&#34;Stop tracking these topics")
+    );
+    assert!(page.contains(">New (2)</a>"));
+
+    let page = client.get("/unread").await.body;
+    assert!(page.contains(
+        r#"<div class="row dismiss-container-top"><button class="btn btn-default dismiss-read" id="dismiss-topics-top" title="Dismiss just new posts or stop tracking topics" type="button"><span class="d-button-label">Dismiss…</span></button></div>"#
+    ));
+    let page = client.get("/c/general/4/l/unread").await.body;
+    assert!(page.contains(r#"<div class="row dismiss-container-top" data-category-id="4">"#));
+
+    // Dismiss… with "Stop tracking these topics" checked.
+    let reply = client
+        .send(
+            Method::PUT,
+            "/topics/bulk",
+            &[("x-requested-with", "XMLHttpRequest")],
+            "filter=unread&operation%5Btype%5D=change_notification_level&operation%5Bnotification_level_id%5D=1&tracked=false&include_subcategories=true",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.json()["topic_ids"], serde_json::json!([35]));
+    let page = client.get("/unread").await.body;
+    assert!(page.contains(r#"<div class="row dismiss-container-top"></div>"#));
+    assert!(page.contains("Nothing left unread... impressive!"));
+    // Topic 35 is no longer tracked, so it no longer counts as new.
+    assert!(page.contains(">New (1)</a>"));
+
+    // Dismiss all.
+    let reply = client
+        .send(
+            Method::PUT,
+            "/topics/reset-new",
+            &[("x-requested-with", "XMLHttpRequest")],
+            "tracked=false&dismiss_posts=true&dismiss_topics=true",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let page = client.get("/new").await.body;
+    assert!(page.contains(r#"<div class="row dismiss-container-top"></div>"#));
+    assert!(page.contains(">New</a>"));
+    assert!(!page.contains(r#"<table class="topic-list">"#));
+}
+
 /// A member's header: every page connects, the unread notification count
 /// arrives first and follows their notification state, and alerts show
 /// with their user content escaped.
