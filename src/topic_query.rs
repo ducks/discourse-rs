@@ -82,6 +82,9 @@ pub struct Options {
     pub no_tags: bool,
     /// `options[:state]`
     pub state: Option<String>,
+    /// `options[:subset]`: the new list's topics or replies, with unified
+    /// new.
+    pub subset: Option<String>,
 }
 
 #[derive(Debug)]
@@ -313,17 +316,15 @@ impl TopicQuery<'_> {
                     self.new_filter(),
                     self.remove_muted_clause()?
                 );
-                let (clause, order) = if self.user.unified_new {
-                    (
-                        format!(
-                            "(({new}) OR ({} AND {}))",
-                            self.unread_filter(),
-                            self.max_age_clause()
-                        ),
-                        "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC",
-                    )
-                } else {
-                    (new, "topics.bumped_at DESC")
+                let own_first = "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC";
+                let unread = || format!("{} AND {}", self.unread_filter(), self.max_age_clause());
+                // list_new: with unified new, the `subset` picks new_results
+                // (topics), unread_results (replies) or both.
+                let (clause, order) = match self.options.subset.as_deref() {
+                    _ if !self.user.unified_new => (new, "topics.bumped_at DESC"),
+                    Some("topics") => (new, "topics.bumped_at DESC"),
+                    Some("replies") => (unread(), own_first),
+                    _ => (format!("(({new}) OR ({}))", unread()), own_first),
                 };
                 self.fetch(&clause, order, per_page, self.options.page * per_page)
                     .await?

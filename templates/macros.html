@@ -31,7 +31,7 @@
       <ul class="nav nav-pills" id="navigation-bar">
         {%- if mobile %}
         <li>
-          <button aria-expanded="false" class="btn no-text fk-d-menu__trigger list-control-toggle-link-trigger" data-identifier="list-control-toggle-link" data-trigger="" type="button"><span class="list-control-toggle-link__text">{% for item in nav %}{% if item.active %}{{ item.label }}{% endif %}{% endfor %}</span><svg class="fa d-icon d-icon-discourse-chevron-expand svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#discourse-chevron-expand"></use></svg></button>
+          <button aria-expanded="false" class="btn no-text fk-d-menu__trigger list-control-toggle-link-trigger" data-identifier="list-control-toggle-link" data-trigger="" type="button"><span class="list-control-toggle-link__text">{{ crate::html::selected_nav_label(nav) }}</span><svg class="fa d-icon d-icon-discourse-chevron-expand svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#discourse-chevron-expand"></use></svg></button>
           <template class="list-control-toggle-link-menu"><ul class="dropdown-menu">
             {%- for item in nav %}
             <li class="{% if item.active %}active {% endif %}{% if item.has_icon %}has-icon {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">

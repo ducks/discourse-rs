@@ -445,7 +445,9 @@ async fn top_page() {
     let (_db, state) = app().await;
     let mut user1 = member(&state, "user1").await;
     let page = user1.page("/top").await;
-    drawn("/top", &page, r#"<li class="active top nav-item_top""#);
+    // top_menu's default has no Top pill; the period chooser heads the list.
+    drawn("/top", &page, r#"<div class="top-lists">"#);
+    assert!(!page.body.contains("nav-item_top"));
 }
 
 #[tokio::test]

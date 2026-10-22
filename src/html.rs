@@ -1268,6 +1268,9 @@ pub struct LatestPage {
     pub category_controls: String,
     /// A category's list: the category navigation instead of the heading.
     pub category_nav: bool,
+    /// A top list (the list JSON's `for_period`): the PeriodChooser above
+    /// the topics, empty on other lists.
+    pub top_lists: String,
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -1828,8 +1831,10 @@ pub fn welcome_banner(
 
 /// The pills of the top-level lists (NavItem.buildList): `top_menu` in
 /// order, the ones that need an account only for a member (who has
-/// `tracking`), unread folded into new with unified new, the active list
-/// added when the menu lacks it, and the member's counts in the labels.
+/// `tracking`), unread folded into new with unified new, and the member's
+/// counts in the labels. A list the menu lacks gets no pill: buildList
+/// would add it from `args.filterMode`, but DNavigation passes
+/// `filterType`, so it adds nothing.
 pub fn nav_items(
     i18n: &I18n,
     settings: &SiteSettings,
@@ -1840,15 +1845,12 @@ pub fn nav_items(
     const MEMBERS_ONLY: [&str; 5] = ["new", "unread", "read", "posted", "bookmarks"];
     let unified_new = tracking.is_some_and(|t| t.unified_new);
     let top_menu = settings.get("top_menu")?.to_s();
-    let mut names: Vec<&str> = top_menu
+    let names: Vec<&str> = top_menu
         .split('|')
         .map(str::trim)
         .filter(|name| !name.is_empty())
         .filter(|name| !(unified_new && *name == "unread"))
         .collect();
-    if !active.is_empty() && !names.contains(&active) {
-        names.push(active);
-    }
     Ok(names
         .into_iter()
         .filter(|name| tracking.is_some() || !MEMBERS_ONLY.contains(name))
@@ -1871,6 +1873,16 @@ pub fn nav_items(
             has_icon: name == "unread",
         })
         .collect())
+}
+
+/// NavigationBar#selectedNavItem's label (the mobile menu's trigger): the
+/// active pill, else the first.
+pub fn selected_nav_label(nav: &[NavItem]) -> &str {
+    nav.iter()
+        .find(|i| i.active)
+        .or(nav.first())
+        .map(|i| i.label.as_str())
+        .unwrap_or_default()
 }
 
 /// NavItem#displayName: `title_with_count` while the member has topics in
@@ -2088,7 +2100,7 @@ pub async fn latest_page(
     let cx = crate::topic_list_view::ListContext {
         i18n,
         base_path: &site.base_path,
-        now: chrono::Utc::now(),
+        now: crate::clock::now(),
         categories: &categories,
         expand_all_pinned,
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
@@ -2118,6 +2130,11 @@ pub async fn latest_page(
                 .collect()
         })
         .unwrap_or_default();
+    // DiscoveryTopics on a top list: `@period` is the list's for_period.
+    let top_lists = list["topic_list"]["for_period"]
+        .as_str()
+        .map(|period| crate::directory_view::period_chooser(&cx, period))
+        .unwrap_or_default();
     // Discovery topics hides the footer while the list can load more.
     if list["topic_list"]["more_topics_url"].is_string() {
         site.chrome.show_footer = false;
@@ -2144,6 +2161,7 @@ pub async fn latest_page(
         admin_controls: String::new(),
         category_controls: String::new(),
         category_nav: false,
+        top_lists,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),

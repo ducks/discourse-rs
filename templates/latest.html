@@ -23,6 +23,11 @@
  <div class="row full-width">
   <div id="list-area">
    <div class="contents">
+  {%- if !top_lists.is_empty() %}
+  <div class="top-lists">{{ top_lists|safe }}</div>
+  {%- endif %}
+  {#- List only once there are topics (DiscoveryTopics#hasTopics). #}
+  {%- if !rows.is_empty() %}
   <table class="topic-list">
     <caption class="sr-only">{{ chrome.t("sr_topic_list_caption") }}</caption>
     <thead class="topic-list-header">
@@ -38,6 +43,7 @@
       {% for row in rows %}{{ row|safe }}{% endfor %}
     </tbody>
   </table>
+  {%- endif %}
    </div>
   </div>
  </div>
@@ -47,6 +53,7 @@
 </div>
 {% if !category_controls.is_empty() %}<script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>{% endif %}
 {% if !tag_info.is_empty() %}<script src="{{ crate::assets::url(base_path, "tag-info.js") }}"></script>{% endif %}
+{% if !top_lists.is_empty() %}<script src="{{ crate::assets::url(base_path, "top-period.js") }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}
