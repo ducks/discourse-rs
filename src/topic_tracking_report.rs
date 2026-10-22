@@ -92,7 +92,24 @@ impl Tracking {
 
     /// `countCategoryByState`
     pub fn count(&self, kind: Kind, category_id: Option<i32>, tag_id: Option<i32>) -> i64 {
-        let subcategories = category_id.map(|id| self.descendants(id));
+        self.count_scoped(kind, category_id, false, tag_id)
+    }
+
+    /// `countCategoryByState` with `noSubcategories`: the category alone.
+    pub fn count_scoped(
+        &self,
+        kind: Kind,
+        category_id: Option<i32>,
+        no_subcategories: bool,
+        tag_id: Option<i32>,
+    ) -> i64 {
+        let subcategories = category_id.map(|id| {
+            if no_subcategories {
+                HashSet::from([id])
+            } else {
+                self.descendants(id)
+            }
+        });
         self.states
             .iter()
             .filter(|t| match kind {
@@ -546,6 +563,13 @@ mod tests {
         // Muted categories are left out of the new count alone.
         assert_eq!(tracking.count(Kind::NewAndUnread, Some(12), Some(7)), 1);
         assert_eq!(tracking.count(Kind::New, None, Some(7)), 0);
+        // noSubcategories: the category alone.
+        assert_eq!(tracking.count_scoped(Kind::New, Some(10), true, None), 1);
+        assert_eq!(
+            tracking.count_scoped(Kind::NewAndUnread, Some(10), true, None),
+            2
+        );
+        assert_eq!(tracking.count_scoped(Kind::New, Some(11), true, None), 1);
         assert_eq!(tracking.lookup("new"), 2);
         let unified = Tracking {
             unified_new: true,

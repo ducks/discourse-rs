@@ -529,6 +529,10 @@ pub async fn latest(
         &settings,
         false,
         highlights_last_visited(ListKind::Latest, &params),
+        &crate::html::ListFooterScope {
+            filter: "latest",
+            ..Default::default()
+        },
     )
     .await?;
     page.banner = crate::html::welcome_banner(
@@ -831,6 +835,13 @@ pub async fn category(
         &settings,
         true,
         highlights_last_visited(kind, &params),
+        &crate::html::ListFooterScope {
+            filter: kind.name(),
+            subset: params.rest.get("subset").map(String::as_str),
+            category_id: Some(category.id),
+            no_subcategories: none,
+            tag_id: None,
+        },
     )
     .await?;
     let heading =
@@ -1441,6 +1452,11 @@ async fn front_list(
         &settings,
         false,
         highlights_last_visited(kind, &params),
+        &crate::html::ListFooterScope {
+            filter: kind.name(),
+            subset: params.rest.get("subset").map(String::as_str),
+            ..Default::default()
+        },
     )
     .await?;
     page.banner = crate::html::welcome_banner(

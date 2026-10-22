@@ -132,6 +132,18 @@
   margin-bottom: 100px;
 }
 
+/* _topic-list.scss:359: DiscoveryTopics' footer (the phone's margin and
+   dismiss buttons are mobile.css's) */
+.topic-list-bottom {
+  margin: var(--space-5) 0;
+}
+
+@media (width >= 40rem) {
+  .topic-list-bottom .dismiss-container-bottom {
+    float: right;
+  }
+}
+
 /* _topic-list.scss:474: a top list's PeriodChooser */
 @media (width >= 40rem) {
   #list-area .top-lists h2 {

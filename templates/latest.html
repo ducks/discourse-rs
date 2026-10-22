@@ -43,8 +43,10 @@
       {% for row in rows %}{{ row|safe }}{% endfor %}
     </tbody>
   </table>
+  <div aria-hidden="true" class="load-more-sentinel"></div>
   {%- endif %}
    </div>
+   {{ list_bottom|safe }}
   </div>
  </div>
   {% if let Some(url) = more_url %}
@@ -54,6 +56,7 @@
 {% if !category_controls.is_empty() %}<script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>{% endif %}
 {% if !tag_info.is_empty() %}<script src="{{ crate::assets::url(base_path, "tag-info.js") }}"></script>{% endif %}
 {% if !top_lists.is_empty() %}<script src="{{ crate::assets::url(base_path, "top-period.js") }}"></script>{% endif %}
+{% if self.empty_filter() %}<script src="{{ crate::assets::url(base_path, "empty-topic-filter.js") }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}

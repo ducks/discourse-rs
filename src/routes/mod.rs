@@ -2562,6 +2562,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/hashtags.js", get(asset))
         .route("/assets/tag-info.js", get(asset))
         .route("/assets/top-period.js", get(asset))
+        .route("/assets/empty-topic-filter.js", get(asset))
         .route("/assets/oneboxes.js", get(asset))
         .route("/assets/cooked.js", get(asset))
         .route("/assets/lightbox.js", get(asset))

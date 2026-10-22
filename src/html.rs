@@ -1296,6 +1296,114 @@ pub struct LatestPage {
     /// A top list (the list JSON's `for_period`): the PeriodChooser above
     /// the topics, empty on other lists.
     pub top_lists: String,
+    /// DiscoveryTopics' `footer.topic-list-bottom`, drawn (list_bottom).
+    pub list_bottom: String,
+}
+
+/// What DiscoveryTopics' footer reads besides the list itself: the list's
+/// filter type (filterTypeForMode: `latest`, `new`, `unread`, `top`...),
+/// /new's `subset` query param, and the category and tag the member's
+/// tracking counts are taken in (newTopicsCount, newRepliesCount).
+#[derive(Default)]
+pub struct ListFooterScope<'a> {
+    pub filter: &'a str,
+    pub subset: Option<&'a str>,
+    pub category_id: Option<i32>,
+    pub no_subcategories: bool,
+    pub tag_id: Option<i32>,
+}
+
+/// SvgDocumentsCheckmark, EmptyTopicFilter's image.
+const DOCUMENTS_CHECKMARK: &str = include_str!("../templates/empty_states/documents_checkmark.svg");
+
+/// DiscoveryTopics' `footer.topic-list-bottom`: DConditionalLoadingSpinner's
+/// container (empty: the list is not loading more when drawn), then, once
+/// the list is all loaded, TopicDismissButtons at the bottom (desktop, more
+/// than five topics) and EmptyTopicFilter's education for a member whose
+/// list is empty (showEmptyFilterEducationInFooter).
+fn list_bottom(
+    i18n: &I18n,
+    base_path: &str,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+    topics: usize,
+    all_loaded: bool,
+    scope: &ListFooterScope,
+) -> String {
+    use crate::topic_list_view::{escape, icon};
+    use crate::topic_tracking_report::Kind;
+    let t = |key: &str| {
+        i18n.t(&format!("js.{key}"))
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("[en.{key}]"))
+    };
+    let mut out =
+        String::from("<footer class=\"topic-list-bottom\"><div class=\"loading-container\"></div>");
+    if all_loaded {
+        // showBottomDismissButtons; the buttons themselves are not drawn
+        // at the top either (templates/macros.html:58).
+        if !crate::mobile::mobile_view() && topics > 5 {
+            out.push_str("<div class=\"row dismiss-container-bottom\"></div>");
+        }
+        // The member check is `currentUser`; the tracking report is there
+        // for every member.
+        if let Some(tracking) = tracking.filter(|_| topics == 0) {
+            let unified_new = tracking.unified_new;
+            let new_filter = scope.filter == "new";
+            let unread_filter = scope.filter == "unread";
+            let title = if unread_filter {
+                t("topics.none.education.unread")
+            } else if new_filter && unified_new {
+                t("topics.none.education.unified_new")
+            } else if new_filter {
+                t("topics.none.education.new")
+            } else {
+                t("topics.none.education.generic")
+            };
+            // ctaLabelWithAction: under unified new a subset with nothing
+            // left offers the other one while it has some.
+            let count = |kind| {
+                tracking.count_scoped(
+                    kind,
+                    scope.category_id,
+                    scope.no_subcategories,
+                    scope.tag_id,
+                )
+            };
+            let other_subset = match scope.subset.filter(|_| unified_new && new_filter) {
+                Some("topics") if count(Kind::Unread) > 0 => {
+                    Some(("replies", "topic.browse_new_replies"))
+                }
+                Some("replies") if count(Kind::New) > 0 => {
+                    Some(("topics", "topic.browse_new_topics"))
+                }
+                _ => None,
+            };
+            let (cta_label, cta_data) = match other_subset {
+                Some((subset, label)) => (t(label), format!(" data-subset=\"{subset}\"")),
+                None => (t("topic.browse_latest_topics"), String::new()),
+            };
+            out.push_str(&format!(
+                "<div class=\"empty-state__container --empty-topic-filter --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{DOCUMENTS_CHECKMARK}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"{cta_data}><span class=\"d-button-label\">{}</span></button></div>",
+                escape(&title),
+                escape(&cta_label),
+            ));
+            if new_filter || unread_filter {
+                let tip = i18n
+                    .t_with(
+                        "js.topics.none.education.topic_tracking_preferences",
+                        &[("basePath", &escape(base_path))],
+                    )
+                    .unwrap_or_default();
+                out.push_str(&format!(
+                    "<div class=\"empty-state__tip\">{} {tip}</div>",
+                    icon("circle-info", None)
+                ));
+            }
+            out.push_str("</div></div>");
+        }
+    }
+    out.push_str("</footer>");
+    out
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -2119,7 +2227,9 @@ fn s(v: &Value) -> String {
 /// The latest page from the /latest.json document. `expand_all_pinned` is
 /// a category's or a tag's list, which shows every pinned topic's excerpt;
 /// `highlight_last_visited` a list in the default order, which marks where
-/// the member's last visit was (TopicList#lastVisitedTopic).
+/// the member's last visit was (TopicList#lastVisitedTopic); `footer` the
+/// list's filter and scope, for its footer (list_bottom).
+#[allow(clippy::too_many_arguments)]
 pub async fn latest_page(
     conn: &mut PgConnection,
     mut site: Site,
@@ -2128,6 +2238,7 @@ pub async fn latest_page(
     settings: &SiteSettings,
     expand_all_pinned: bool,
     highlight_last_visited: bool,
+    footer: &ListFooterScope<'_>,
 ) -> Result<LatestPage, HtmlError> {
     let categories = site.list_categories(conn).await?;
     let cx = crate::topic_list_view::ListContext {
@@ -2145,7 +2256,7 @@ pub async fn latest_page(
         .as_ref()
         .and_then(|v| v.previous_visit_at)
         .filter(|_| highlight_last_visited);
-    let rows = list["topic_list"]["topics"]
+    let rows: Vec<String> = list["topic_list"]["topics"]
         .as_array()
         .map(|topics| {
             let last_visited = previous_visit_at
@@ -2172,6 +2283,14 @@ pub async fn latest_page(
     if list["topic_list"]["more_topics_url"].is_string() {
         site.chrome.show_footer = false;
     }
+    let list_bottom = list_bottom(
+        i18n,
+        &site.base_path,
+        site.chrome.tracking.as_ref(),
+        rows.len(),
+        !list["topic_list"]["more_topics_url"].is_string(),
+        footer,
+    );
     Ok(LatestPage {
         title: site.site_title.clone(),
         site_title: site.site_title,
@@ -2195,6 +2314,7 @@ pub async fn latest_page(
         category_controls: String::new(),
         category_nav: false,
         top_lists,
+        list_bottom,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -3104,11 +3224,215 @@ impl LatestPage {
     pub fn heading_id(&self) -> Option<i32> {
         self.heading.as_ref().map(|h| h.id)
     }
+
+    /// The footer draws EmptyTopicFilter, whose button needs its script.
+    pub fn empty_filter(&self) -> bool {
+        self.list_bottom.contains("--empty-topic-filter")
+    }
 }
 
 impl CategoriesPage {
     /// No category preselected on the categories page.
     pub fn heading_id(&self) -> Option<i32> {
         None
+    }
+}
+
+#[cfg(test)]
+mod list_bottom_tests {
+    use super::*;
+    use crate::topic_tracking_report::{State, Tracking};
+    use std::collections::{HashMap, HashSet};
+
+    fn tracking(states: Vec<State>) -> Tracking {
+        Tracking {
+            states,
+            muted_category_ids: HashSet::new(),
+            parents: HashMap::new(),
+            unified_new: true,
+        }
+    }
+
+    /// A topic new to the member (no read posts) or unread (some read).
+    fn state(topic_id: i32, category_id: i32, last_read: Option<i32>) -> State {
+        State {
+            topic_id,
+            highest_post_number: 3,
+            last_read_post_number: last_read,
+            category_id,
+            is_category_topic: false,
+            notification_level: last_read.map(|_| 2),
+            created_in_new_period: true,
+            tags: Some(vec![]),
+        }
+    }
+
+    fn scope(filter: &str) -> ListFooterScope<'_> {
+        ListFooterScope {
+            filter,
+            ..Default::default()
+        }
+    }
+
+    async fn draw(
+        mobile: bool,
+        tracking: Option<&Tracking>,
+        topics: usize,
+        all_loaded: bool,
+        scope: &ListFooterScope<'_>,
+    ) -> String {
+        let i18n = I18n::vendored().unwrap();
+        crate::mobile::scope(mobile, async {
+            list_bottom(&i18n, "/forum", tracking, topics, all_loaded, scope)
+        })
+        .await
+    }
+
+    const EMPTY: &str =
+        r#"<footer class="topic-list-bottom"><div class="loading-container"></div></footer>"#;
+
+    /// The footer's spinner container is always there; a page that can
+    /// load more draws nothing after it, a loaded one the dismiss buttons'
+    /// row past five topics on desktop.
+    #[tokio::test]
+    async fn the_footer_follows_the_lists_length_and_layout() {
+        let member = tracking(vec![]);
+        for (mobile, viewer, topics, all_loaded, dismiss) in [
+            (false, None, 5, true, false),
+            (false, None, 6, true, true),
+            (false, Some(&member), 30, true, true),
+            (false, None, 30, false, false),
+            (true, None, 6, true, false),
+            (true, Some(&member), 30, true, false),
+        ] {
+            let html = draw(mobile, viewer, topics, all_loaded, &scope("latest")).await;
+            if dismiss {
+                assert_eq!(
+                    html,
+                    r#"<footer class="topic-list-bottom"><div class="loading-container"></div><div class="row dismiss-container-bottom"></div></footer>"#
+                );
+            } else {
+                assert_eq!(html, EMPTY, "{mobile} {topics} {all_loaded}");
+            }
+        }
+        // An anonymous visitor's empty list has no education.
+        assert_eq!(draw(false, None, 0, true, &scope("latest")).await, EMPTY);
+        // Nor does a member's list that can still load more.
+        assert_eq!(
+            draw(false, Some(&member), 0, false, &scope("unread")).await,
+            EMPTY
+        );
+    }
+
+    /// EmptyTopicFilter in a member's empty list footer: the filter's
+    /// education, "Browse latest topics", and on new and unread the
+    /// tracking preferences tip under the base path.
+    #[tokio::test]
+    async fn a_members_empty_list_draws_the_education() {
+        let member = tracking(vec![]);
+        let image = format!(
+            r#"<footer class="topic-list-bottom"><div class="loading-container"></div><div class="empty-state__container --empty-topic-filter --with-image"><div class="empty-state"><div class="empty-state__image">{DOCUMENTS_CHECKMARK}</div>"#
+        );
+        let cta = r#"<div class="empty-state__cta"><button class="btn btn-primary" type="button"><span class="d-button-label">Browse latest topics</span></button></div>"#;
+        let tip = r##"<div class="empty-state__tip"><svg class="fa d-icon d-icon-circle-info svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#circle-info"></use></svg> You can view and change your new topic tracking settings in <a href="/forum/my/preferences/tracking">your preferences</a>.</div>"##;
+        for (mobile, filter, title, with_tip) in [
+            (false, "unread", "Nothing left unread... impressive!", true),
+            (true, "unread", "Nothing left unread... impressive!", true),
+            (
+                false,
+                "new",
+                "Nothing new at the moment... check back soon!",
+                true,
+            ),
+            (
+                false,
+                "latest",
+                "Nothing to see here...check back soon!",
+                false,
+            ),
+            (
+                false,
+                "top",
+                "Nothing to see here...check back soon!",
+                false,
+            ),
+        ] {
+            let html = draw(mobile, Some(&member), 0, true, &scope(filter)).await;
+            let title =
+                format!(r#"<div class="empty-state__title" data-test-title="">{title}</div>"#);
+            let tip = if with_tip { tip } else { "" };
+            assert_eq!(
+                html,
+                format!("{image}{title}{cta}{tip}</div></div></footer>"),
+                "{filter}"
+            );
+        }
+    }
+
+    /// Under unified new, an empty subset offers the other one while the
+    /// member has some of it in the list's scope (ctaLabelWithAction),
+    /// else latest topics.
+    #[tokio::test]
+    async fn an_empty_new_subset_offers_the_other() {
+        // Topic 1 new in category 10, topic 2 unread in category 11.
+        let member = tracking(vec![state(1, 10, None), state(2, 11, Some(1))]);
+        let button = |subset: &str, label: &str| {
+            format!(
+                r#"<button class="btn btn-primary" type="button" data-subset="{subset}"><span class="d-button-label">{label}</span></button>"#
+            )
+        };
+        let latest = r#"<button class="btn btn-primary" type="button"><span class="d-button-label">Browse latest topics</span></button>"#;
+        for (subset, category_id, expected) in [
+            (
+                Some("topics"),
+                None,
+                button("replies", "Browse new replies"),
+            ),
+            (Some("replies"), None, button("topics", "Browse new topics")),
+            (Some("topics"), Some(10), latest.to_string()),
+            (
+                Some("replies"),
+                Some(10),
+                button("topics", "Browse new topics"),
+            ),
+            (Some("replies"), Some(11), latest.to_string()),
+            (None, None, latest.to_string()),
+        ] {
+            let html = draw(
+                false,
+                Some(&member),
+                0,
+                true,
+                &ListFooterScope {
+                    filter: "new",
+                    subset,
+                    category_id,
+                    ..Default::default()
+                },
+            )
+            .await;
+            assert!(
+                html.contains(&expected),
+                "{subset:?} {category_id:?}: {html}"
+            );
+        }
+        // Without unified new the subset is not read.
+        let legacy = Tracking {
+            unified_new: false,
+            ..member
+        };
+        let html = draw(
+            false,
+            Some(&legacy),
+            0,
+            true,
+            &ListFooterScope {
+                filter: "new",
+                subset: Some("topics"),
+                ..Default::default()
+            },
+        )
+        .await;
+        assert!(html.contains(latest), "{html}");
     }
 }

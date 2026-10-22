@@ -511,6 +511,12 @@ async fn show_list(
         &settings,
         true,
         super::list::highlights_last_visited(kind, &params),
+        // Tag lists are latest, top, hot or votes: no subset, and no
+        // tracking counts to scope.
+        &crate::html::ListFooterScope {
+            filter: kind.name(),
+            ..Default::default()
+        },
     )
     .await?;
     if let Some(c) = &category {
