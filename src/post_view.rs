@@ -1483,6 +1483,59 @@ fn small_action_icon(code: &str) -> &'static str {
     }
 }
 
+/// post/small-action's buttons: recover (Post#canRecover), else edit
+/// (`can_edit`), then delete (Post#canDelete). topic.js wires them to the
+/// topic controller's recoverPost, editPost and deletePost by the
+/// article's post id. Staff deleting a post with replies get the
+/// reply-ids dialog in Ember, which isn't ported: the delete says so
+/// (`data-has-replies`) and topic.js refuses it.
+fn small_action_buttons(cx: &PostContext, p: &Value) -> String {
+    if cx.viewer.is_none() {
+        return String::new();
+    }
+    let first = number(p) == 1;
+    let own_deleted = !p["deleted_at"].is_null();
+    let deleted = own_deleted || (first && cx.topic.deleted);
+    let user_deleted = p["user_deleted"] == true;
+    let can_recover_topic = first && (deleted || user_deleted) && cx.topic.can_recover;
+    let can_recover =
+        !can_recover_topic && (own_deleted || user_deleted) && p["can_recover"] == true;
+    let can_delete = p["can_delete"] == true && !own_deleted && (cx.staff || !user_deleted);
+    let button = |class: &str, icon: &str, title: &str, attrs: &str| {
+        format!(
+            "<button class=\"btn no-text btn-icon btn-flat btn-small {class}\"{attrs} title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            escape(&t(cx.list, title)),
+            d_icon(icon, None)
+        )
+    };
+    let mut out = String::new();
+    if can_recover {
+        out.push_str(&button(
+            "small-action-recover",
+            "arrow-rotate-left",
+            "post.controls.undelete",
+            "",
+        ));
+    } else if p["can_edit"] == true {
+        out.push_str(&button(
+            "small-action-edit",
+            "pencil",
+            "post.controls.edit",
+            "",
+        ));
+    }
+    if can_delete {
+        let replies = cx.staff && p["reply_count"].as_i64().unwrap_or(0) > 0;
+        out.push_str(&button(
+            "btn-danger small-action-delete",
+            "trash-can",
+            "post.controls.delete",
+            if replies { " data-has-replies" } else { "" },
+        ));
+    }
+    out
+}
+
 /// post/small-action: an icon, the actor and what they did.
 fn small_action(cx: &PostContext, p: &Value) -> String {
     let number = number(p);
@@ -1560,8 +1613,9 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
             "<div class=\"small-action-custom-message\"><div class=\"cooked\">{custom}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div></div>"
         )
     };
+    let buttons = small_action_buttons(cx, p);
     format!(
-        "<div data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"small-action onscreen-post{}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\"><div class=\"topic-avatar\">{}</div><div class=\"small-action-desc\"><div class=\"small-action-contents\"><a{}>{}</a><p aria-hidden=\"true\">{desc}</p></div><div class=\"small-action-buttons\"></div>{custom}</div></article></div>",
+        "<div data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"small-action onscreen-post{}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\"><div class=\"topic-avatar\">{}</div><div class=\"small-action-desc\"><div class=\"small-action-contents\"><a{}>{}</a><p aria-hidden=\"true\">{desc}</p></div><div class=\"small-action-buttons\">{buttons}</div>{custom}</div></article></div>",
         if p["deleted_at"].is_null() {
             ""
         } else {
@@ -2843,6 +2897,17 @@ mod tests {
     }
 
     fn render(posts: &[Value], now: &str, check: impl Fn(&[String])) {
+        render_as(posts, now, None, false, check);
+    }
+
+    /// The stream as `viewer` (staff or not) sees it.
+    fn render_as(
+        posts: &[Value],
+        now: &str,
+        viewer: Option<&str>,
+        staff: bool,
+        check: impl Fn(&[String]),
+    ) {
         let i18n = crate::i18n::I18n::vendored().unwrap();
         let categories = std::collections::HashMap::new();
         let list = ListContext {
@@ -2932,12 +2997,92 @@ mod tests {
             list: &list,
             settings: &settings,
             topic: &topic,
-            viewer: None,
-            staff: false,
+            viewer,
+            staff,
             can_send_pms: false,
             ignored_users: &[],
         };
         check(&stream(&cx, posts, &Value::Null));
+    }
+
+    fn small_action_json(extra: Value) -> Value {
+        let mut p = serde_json::json!({
+            "id": 47, "post_number": 2, "post_type": 3, "action_code": "archived.enabled",
+            "user_id": 1, "username": "admin", "avatar_template": "/a/{size}.png",
+            "created_at": "2026-10-06T10:00:00Z", "cooked": "", "deleted_at": null,
+            "can_edit": false, "can_delete": false, "can_recover": false,
+        });
+        for (k, v) in extra.as_object().unwrap() {
+            p[k] = v.clone();
+        }
+        p
+    }
+
+    fn small_action_buttons_html(p: Value, viewer: Option<&str>, staff: bool) -> String {
+        let out = std::cell::RefCell::new(String::new());
+        render_as(
+            &[post_json(1, "2026-10-06T09:00:00Z", None), p],
+            "2026-10-06T12:00:00Z",
+            viewer,
+            staff,
+            |html| {
+                let s = &html[1];
+                let start = s.find("<div class=\"small-action-buttons\">").unwrap();
+                let end = start + s[start..].find("</div>").unwrap();
+                *out.borrow_mut() = s[start..end + 6].to_string();
+            },
+        );
+        out.into_inner()
+    }
+
+    #[test]
+    fn small_actions_draw_edit_and_delete_for_who_may() {
+        let edit = r##"<button class="btn no-text btn-icon btn-flat btn-small small-action-edit" title="edit this post" type="button"><svg class="fa d-icon d-icon-pencil svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#pencil"></use></svg><span aria-hidden="true">&#8203;</span></button>"##;
+        let delete = r##"<button class="btn no-text btn-icon btn-flat btn-small btn-danger small-action-delete" title="delete this post" type="button"><svg class="fa d-icon d-icon-trash-can svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#trash-can"></use></svg><span aria-hidden="true">&#8203;</span></button>"##;
+        let may = serde_json::json!({"can_edit": true, "can_delete": true});
+        assert_eq!(
+            small_action_buttons_html(small_action_json(may.clone()), Some("admin"), true),
+            format!(r#"<div class="small-action-buttons">{edit}{delete}</div>"#)
+        );
+        // Anonymous, or a member the serializer gives neither.
+        assert_eq!(
+            small_action_buttons_html(small_action_json(may), None, false),
+            r#"<div class="small-action-buttons"></div>"#
+        );
+        assert_eq!(
+            small_action_buttons_html(
+                small_action_json(serde_json::json!({})),
+                Some("user1"),
+                false
+            ),
+            r#"<div class="small-action-buttons"></div>"#
+        );
+        // Staff deleting one with replies: marked for topic.js to refuse.
+        let replied = serde_json::json!({"can_delete": true, "reply_count": 1});
+        assert!(
+            small_action_buttons_html(small_action_json(replied), Some("admin"), true)
+                .contains(r#"small-action-delete" data-has-replies title="#)
+        );
+    }
+
+    #[test]
+    fn deleted_small_actions_draw_recover_instead() {
+        let recover = r##"<button class="btn no-text btn-icon btn-flat btn-small small-action-recover" title="undelete this post" type="button"><svg class="fa d-icon d-icon-arrow-rotate-left svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#arrow-rotate-left"></use></svg><span aria-hidden="true">&#8203;</span></button>"##;
+        // Post#canRecover over can_edit; Post#canDelete off once deleted.
+        let deleted = serde_json::json!({
+            "deleted_at": "2026-10-06T11:00:00Z", "can_edit": true,
+            "can_delete": true, "can_recover": true,
+        });
+        assert_eq!(
+            small_action_buttons_html(small_action_json(deleted), Some("admin"), true),
+            format!(r#"<div class="small-action-buttons">{recover}</div>"#)
+        );
+        // can_recover without the post being recoverable: edit as usual.
+        let live = serde_json::json!({"can_edit": true, "can_recover": true});
+        assert!(
+            small_action_buttons_html(small_action_json(live), Some("admin"), true)
+                .contains("small-action-edit")
+        );
     }
 
     fn post_json(number: i64, created_at: &str, reply_to: Option<i64>) -> Value {

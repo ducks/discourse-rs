@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 268a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -1639,9 +1639,11 @@ have handlers now.
 137. `feat/post-edit-rest` L (rewritten 2026-10-20: edits within the
     grace period, posts#update's title, repeated edit notifications and
     the notify_post_revision job landed with 188i1 and 188i2; a username
-    change's definition description with 190c): hidden and non-regular
-    posts (posting/revise.rs:236,239), topic fields revised on a reply
-    (:213), deleted posts (routes/posts.rs:352), staff_edit_locks_post
+    change's definition description with 190c): hidden posts and those
+    neither regular nor small actions, whispers and moderator actions
+    (posting/revise.rs:239,244; small actions in 268), topic fields
+    revised on a reply (:218), deleted posts (routes/posts.rs:355),
+    staff_edit_locks_post
     (posting/revise.rs:760; post_owner_changer.rs:772), posts#update's
     image sizes and other fields (routes/posts.rs:304,316), revisions
     changing more than the body, title and edit reason
@@ -3310,6 +3312,48 @@ route table has been made, so this list may be short.
     header (templates/latest.html:25); EmptyTopicFilter's education in a
     member's empty list footer (templates/latest.html:46, with its
     "Browse latest topics" and per-filter texts)
+268. ~~`fix/small-action-buttons`~~ (done) S: small action posts (closed,
+    archived, pinned, unlisted, split...) drew `.small-action-buttons`
+    empty, so staff had no edit, delete or recover on them. Now
+    post/small-action's buttons are drawn as Ember draws them
+    (post_view.rs small_action_buttons): recover when Post#canRecover
+    (recoverable and can_recover, not the topic's), else edit when
+    can_edit, then delete when Post#canDelete (can_delete, not deleted, a
+    member, staff or not user deleted), each a flat small no-text DButton
+    with its icon (arrow-rotate-left, pencil, trash-can), title
+    (post.controls.undelete, edit, delete) and classes, delete with
+    btn-danger; desktop and mobile alike. topic.js wires delete (DELETE
+    /posts/:id with the page as its context, Post#destroy) and recover
+    (PUT /posts/:id/recover), then draws the post again from
+    /live/post/:id; composer.js opens the edit composer on the small
+    action's custom text. Saving it reached revise's refusal of every
+    post but regular ones: posts#update now skips validations for staff
+    editing a small action (PostsController#update's skip_validations)
+    and the revisor takes small actions, with Post's edit reason length
+    check (validates :edit_reason and before_save
+    ensure_edit_reason_length, which holds with validations skipped, for
+    every post) and SearchIndexer's `raw.present?` (a blanked small
+    action isn't indexed). Write cases recorded on rs-ref-b:
+    posts/small_action_edit, _edit_blank, _edit_member (403),
+    _edit_reason_limit (the request spec's 422 then 200, SPEC_COVERAGE
+    row 943), _delete and _delete_recover. Compared with playwright
+    against rs-ref-b: the normalized DOM of the small actions on /t/37,
+    /t/39 and /t/41 as admin and user1, desktop 1280 and mobile (Pixel 5),
+    matches but for the mobile avatar's 72px source (Ember's
+    devicePixelRatio, every avatar's); on /t/39 as admin, delete, recover,
+    edit and save drew the same DOM after each step but for 268a's
+    tabindex. Found by the screenshot run on /t/41. Left, split into
+    268a.
+    268a. `feat/small-action-buttons-rest` S: staff deleting a small
+    action with replies get Ember's reply-ids dialog (delete replies or
+    not, GET /posts/:id/reply-ids, not routed): refused
+    (static/js/topic.js:638; post_view.rs:1532 marks it); after an edit
+    is saved the composer doesn't DiscourseURL.routeTo the post
+    (address /t/:slug/:id/:n, post:highlight's tabindex and focus on the
+    `.small-action-desc` or `.topic-body`), for every edit
+    (static/js/composer.js:1491); Ember's edit warning for a localized
+    post under content_localization_enabled is not asked before the
+    composer opens, as for regular posts (static/js/composer.js:1984)
 
 ### Phase 11: the bundled plugins' gaps (210)
 

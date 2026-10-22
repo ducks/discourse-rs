@@ -1980,6 +1980,18 @@
       });
       return;
     }
+    // A small action's edit: its custom text, by the article's post id.
+    var smallEdit = event.target.closest(".small-action-edit");
+    var smallAction = smallEdit && smallEdit.closest("article.small-action");
+    if (smallAction && topicId) {
+      open({
+        mode: "edit",
+        topicId: topicId,
+        postId: smallAction.dataset.postId,
+        postNumber: smallAction.parentElement.dataset.postNumber,
+      });
+      return;
+    }
     var postReply = event.target.closest(".post-action-menu__reply");
     if (postReply && topicId) {
       open({

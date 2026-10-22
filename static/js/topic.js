@@ -622,6 +622,48 @@
       });
       return;
     }
+    // A small action's delete and recover (the topic controller's
+    // deletePost and recoverPost): DELETE /posts/:id with the page as its
+    // context (Post#destroy), PUT /posts/:id/recover, then the post again
+    // as the server draws it. Staff deleting one with replies get the
+    // reply-ids dialog in Ember, not ported.
+    var smallAction = event.target.closest(
+      ".small-action-delete, .small-action-recover"
+    );
+    if (smallAction) {
+      var article = smallAction.closest("article.small-action");
+      if (!article || smallAction.disabled) {
+        return;
+      }
+      if (smallAction.hasAttribute("data-has-replies")) {
+        var error = document.getElementById("page-error");
+        if (error) {
+          error.textContent =
+            "Not ported yet: deleting a post with replies (the delete replies dialog).";
+          error.hidden = false;
+        }
+        return;
+      }
+      var root =
+        (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+      var postId = article.dataset.postId;
+      var recover = smallAction.classList.contains("small-action-recover");
+      var headers = memberHeaders();
+      var init = { method: recover ? "PUT" : "DELETE", headers: headers, credentials: "same-origin" };
+      if (!recover) {
+        headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+        init.body = "context=" + encodeURIComponent(location.pathname);
+      }
+      smallAction.disabled = true;
+      fetch(root + "/posts/" + postId + (recover ? "/recover" : ""), init).then(function (r) {
+        if (!r.ok) {
+          smallAction.disabled = false;
+          return popupError(r);
+        }
+        htmx.ajax("GET", root + "/live/post/" + postId, { swap: "none" });
+      });
+      return;
+    }
     // A post's copy link, and the footer's share: the URL, absolute.
     var copy = event.target.closest(
       ".post-action-menu__copy-link, .share-and-invite"

@@ -527,6 +527,74 @@ async fn topic_page_staff() {
     ok("/t/35.json as admin", &json);
 }
 
+/// post/small-action's buttons on the archive of topic 41: a member gets
+/// none; staff give it custom text through the composer's save, then
+/// delete it, see it deleted with recover, and recover it. Deleting and
+/// recovering queue index_category_for_search (144) and
+/// notify_mailing_list_subscribers (146) as Rails does, jobs not ported
+/// yet, so those steps don't settle.
+#[tokio::test]
+async fn staff_manage_a_small_action() {
+    let (db, state) = app().await;
+    let path = "/t/parity-fixture-liked-and-archived/41";
+    let edit = r#"<button class="btn no-text btn-icon btn-flat btn-small small-action-edit" title="edit this post" type="button">"#;
+    let delete = r#"<button class="btn no-text btn-icon btn-flat btn-small btn-danger small-action-delete" title="delete this post" type="button">"#;
+    let recover = r#"<button class="btn no-text btn-icon btn-flat btn-small small-action-recover" title="undelete this post" type="button">"#;
+
+    let mut user1 = member(&state, "user1").await;
+    let page = user1.page(path).await;
+    drawn(path, &page, r#"<div class="small-action-buttons"></div>"#);
+
+    let mut admin = member(&state, "admin").await;
+    let page = admin.page(path).await;
+    drawn(path, &page, edit);
+    assert!(page.body.contains(delete), "no delete");
+
+    let saved = admin
+        .put(
+            "/posts/47",
+            &[
+                ("post[raw]", "Archived until the next season."),
+                ("post[topic_id]", "41"),
+                ("post[original_text]", ""),
+            ],
+        )
+        .await;
+    ok("PUT /posts/47", &saved);
+    settle(&db, &state).await;
+    let page = admin.page(path).await;
+    drawn(
+        path,
+        &page,
+        "<div class=\"small-action-custom-message\"><div class=\"cooked\"><p>Archived until the next season.</p>",
+    );
+
+    let deleted = admin
+        .form(Method::DELETE, "/posts/47", &[("context", path)])
+        .await;
+    ok("DELETE /posts/47", &deleted);
+    let html = admin.get("/live/post/47").await;
+    ok("/live/post/47 deleted", &html);
+    assert!(
+        html.body
+            .contains(r#"class="small-action onscreen-post deleted""#)
+    );
+    assert!(html.body.contains(recover), "no recover: {}", html.body);
+    assert!(!html.body.contains("small-action-edit"));
+    assert!(!html.body.contains("small-action-delete"));
+
+    ok(
+        "PUT /posts/47/recover",
+        &admin.put("/posts/47/recover", &[]).await,
+    );
+    let html = admin.get("/live/post/47").await;
+    assert!(
+        html.body.contains(edit) && html.body.contains(delete),
+        "{}",
+        html.body
+    );
+}
+
 // Core forum: search and tags.
 
 #[tokio::test]
