@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/unread.json?order=created&ascending=true"},
+    {"method": "GET", "path": "/new.json?order=created&ascending=true"},
+    {"method": "GET", "path": "/read.json?order=created&ascending=true"},
+    {"method": "GET", "path": "/posted.json?order=created&ascending=true"},
+    {"method": "GET", "path": "/hot.json?state=muted"},
+    {"method": "GET", "path": "/top.json?period=all&state=muted"}
+  ]
+}

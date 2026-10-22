@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE categories SET sort_order = 'created', sort_ascending = false WHERE id = 4"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/c/general/4.json"},
+    {"method": "GET", "path": "/c/general/4.json?f=bogus"},
+    {"method": "GET", "path": "/c/general/4.json?filter=latest"},
+    {"method": "GET", "path": "/c/general/4/l/posted.json"},
+    {"method": "GET", "path": "/c/general/4/l/unread.json"},
+    {"method": "GET", "path": "/c/general/4/l/new.json"},
+    {"method": "GET", "path": "/latest.json?category=4"}
+  ]
+}

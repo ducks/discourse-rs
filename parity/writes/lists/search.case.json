@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?search=fixture"},
+    {"method": "GET", "path": "/latest.json?search=pinned%20closed"},
+    {"method": "GET", "path": "/latest.json?search=zzznothing"},
+    {"method": "GET", "path": "/latest.json?search%5B%5D=x"}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?per_page=2"},
+    {"method": "GET", "path": "/latest.json?page=1&per_page=2"},
+    {"method": "GET", "path": "/latest.json?per_page=05"},
+    {"method": "GET", "path": "/latest.json?per_page=0"},
+    {"method": "GET", "path": "/latest.json?per_page=abc"},
+    {"method": "GET", "path": "/latest.json?page=-1"},
+    {"method": "GET", "path": "/latest.json?page%5B%5D=1"},
+    {"method": "GET", "path": "/latest.json?page=+1"}
+  ]
+}

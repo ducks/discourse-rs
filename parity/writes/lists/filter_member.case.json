@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/latest.json?filter=liked"},
+    {"method": "GET", "path": "/latest.json?f=liked&per_page=1"},
+    {"method": "GET", "path": "/latest.json?filter=tracked"},
+    {"method": "GET", "path": "/latest.json?f=bogus&per_page=1"},
+    {"method": "GET", "path": "/latest.json?filter%5B%5D=liked"}
+  ]
+}

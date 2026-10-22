@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?tags=howto"},
+    {"method": "GET", "path": "/latest.json?tags%5B%5D=howto&tags%5B%5D=guide"},
+    {"method": "GET", "path": "/latest.json?tags=howto%20guide&match_all_tags=true"},
+    {"method": "GET", "path": "/latest.json?tags=howto%20guide&per_page=1"},
+    {"method": "GET", "path": "/latest.json?tags=nope"},
+    {"method": "GET", "path": "/latest.json?match_all_tags=1"},
+    {"method": "GET", "path": "/latest.json?tag_name=guide&tags=howto&per_page=1"},
+    {"method": "GET", "path": "/latest.json?tags%5Bk%5D=v"},
+    {"method": "GET", "path": "/latest.json?tags=HOWTO"}
+  ]
+}

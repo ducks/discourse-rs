@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/latest.json?state=muted"},
+    {"method": "GET", "path": "/latest.json?state=tracking"},
+    {"method": "GET", "path": "/latest.json?state=watching"},
+    {"method": "GET", "path": "/latest.json?state=regular"},
+    {"method": "GET", "path": "/latest.json?state=watching_first_post"},
+    {"method": "GET", "path": "/latest.json?state=bogus&per_page=1"},
+    {"method": "GET", "path": "/latest.json?state%5B%5D=muted"}
+  ]
+}

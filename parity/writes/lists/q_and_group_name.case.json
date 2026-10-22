@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?q=status%3Aclosed&group_name=staff&per_page=1"},
+    {"method": "GET", "path": "/latest.json?q%5B%5D=x"},
+    {"method": "GET", "path": "/latest.json?group_name%5B%5D=x"},
+    {"method": "GET", "path": "/latest.json?f%5B%5D=x"}
+  ]
+}

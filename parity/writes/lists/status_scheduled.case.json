@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO topic_timers (execute_at, status_type, user_id, timerable_id, category_id, created_at, updated_at, public_type) VALUES (now() + interval '1 day', 3, 1, 35, 2, now(), now(), true)",
+    "INSERT INTO topic_timers (execute_at, status_type, user_id, timerable_id, category_id, created_at, updated_at, public_type, deleted_at, deleted_by_id) VALUES (now() + interval '1 day', 3, 1, 38, 2, now(), now(), true, now(), 1)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/latest.json?status=scheduled"}
+  ]
+}

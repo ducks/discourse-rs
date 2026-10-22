@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 271a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3310,6 +3310,58 @@ route table has been made, so this list may be short.
     header (templates/latest.html:25); EmptyTopicFilter's education in a
     member's empty list footer (templates/latest.html:46, with its
     "Browse latest topics" and per-filter texts)
+271. ~~`fix/list-query-filters`~~ (done) M: the discovery lists read only
+    page, per_page, order, ascending, state and subset, so /latest?tags=,
+    ?status=closed, ?category=, ?before= and the rest of
+    TopicQuery.public_valid_options returned every topic where Rails
+    filters (found by the new-topic branch). Now build_topic_list_options
+    (routes/list.rs) parses the query as Rack does (strings, `k[]` arrays,
+    `k[x]` hashes, `tag_name` put in front of `tags`), runs
+    TopicQuery.validators in public_valid_options' order (the first
+    invalid one is the 400 naming it) and hands TopicQuery every option:
+    before and bumped_before (days ago), topic_ids (param_to_integer_list,
+    an empty one matching nothing), category (an id or a top-level slug;
+    an unknown slug filters nothing and keeps the definitions),
+    min_posts, max_posts, status (TopicsFilter#filter_status: open,
+    closed, archived, listed, unlisted, deleted for those who may see
+    deleted topics, public, noreplies, single_user, scheduled, and
+    discourse-solved's solved and unsolved while it is enabled; anything
+    else leaves the list alone), filter or f (liked, tracked), state (the
+    topic notification levels and watching_first_post, and muted lists
+    keep muted topics), search (post_search_data), tags (any of them,
+    `joins(:tags)` with the eager load's one row per topic, or all with
+    match_all_tags; a string splits on whitespace), no_tags,
+    exclude_tag, no_subcategories, discourse-solved's `solved`; q and
+    group_name are only carried along. The next-page URL carries the
+    list options as the request gave them with page_params (username,
+    group_name, groupname, period), escaped and sorted as Hash#to_query
+    writes them. apply_ordering now follows Rails: an order outside
+    SORTABLE_MAPPING is "default" (bumped_at, no pinning) where it was
+    refused, the request's order and ascending apply to top, hot, new,
+    unread and read ahead of their own order, and a category's default
+    sort applies only to latest, unseen, unread and new without a
+    `filter` naming another list (posted and bookmarks keep bumped_at).
+    new_results' remove_muted no longer excludes the list's category or
+    keeps a muted tag's list, and topic voting's my_votes only narrows
+    latest and unseen, as their callbacks' options have it. Compared
+    against rs-ref-b: parity/writes/lists (25 cases, each option valid
+    and invalid, a member's state, filter and muted tag, the category
+    sort, the category and top routes), all matching; tests in
+    tests/latest_json.rs and tests/html_pages.rs. Left, split into 271a.
+    271a. `feat/list-query-filters-rest` S: tag lists take only page,
+    per_page, order, ascending, state, subset and the tags (TagsController
+    merges the rest raw, blank or not, and match_all_tags=false makes an
+    any tag list; routes/list.rs:113,118,123); discourse-assign's
+    `assigned` (routes/list.rs:256, the plugin is not ported);
+    discourse-events' sort by event start date for a category
+    (topic_query.rs:455); `search` with search_ignore_accents
+    (topic_query.rs:416); a before or bumped_before reaching past year 1
+    (topic_query.rs:886); page_params' username or group name under
+    unicode_usernames, or not a string, and plugin params given as hashes
+    (routes/list.rs:465,471,479); list params Rack rejects, given as both
+    a value and an array or hash, or arrays of hashes (Rails' 400 Bad
+    Request; routes/list.rs:182,188,192), and tag_name that is not a
+    string (routes/list.rs:208,215)
 
 ### Phase 11: the bundled plugins' gaps (210)
 

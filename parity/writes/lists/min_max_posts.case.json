@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {"method": "GET", "path": "/latest.json?min_posts=2"},
+    {"method": "GET", "path": "/latest.json?max_posts=1&per_page=2"},
+    {"method": "GET", "path": "/latest.json?min_posts=-5"},
+    {"method": "GET", "path": "/latest.json?max_posts=abc"}
+  ]
+}
