@@ -263,6 +263,13 @@ async fn the_invites_tab_lists_ones_invites() {
     assert!(html.contains("/assets/user-invited.js"));
     let (_, _, html) = user1.page("/u/user1/invited/redeemed").await;
     assert!(html.contains(">user0</a>"), "{html}");
+    // dAvatar at tiny, as Ember draws it (avatars.js scales the source).
+    assert!(
+        html.contains(
+            r#"<img alt="" width="24" height="24" src="/letter_avatar_proxy/v4/letter/u/94ad74/24.png" class="avatar" title="user0">"#
+        ),
+        "{html}"
+    );
     assert!(html.contains("<th class=\"d-table__header-cell\">Days Visited</th>"));
 }
 
