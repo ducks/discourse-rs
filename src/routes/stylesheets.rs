@@ -171,13 +171,17 @@ const FONT_FILES: &[(&str, &[u8])] = &[
     ),
 ];
 
-/// `/fonts/:file`
+/// `/fonts/:file`. The stylesheets' @font-face URLs are absolute (the base
+/// URL or the CDN), and a browser loads a font from another origin only
+/// with CORS: nginx.sample.conf's font location (and development.rb's
+/// public_file_server headers) send `Access-Control-Allow-Origin: *`.
 pub async fn font(Path(file): Path<String>) -> Response {
     match FONT_FILES.iter().find(|(name, _)| *name == file) {
         Some((_, bytes)) => (
             [
                 (header::CONTENT_TYPE, "font/woff2"),
                 (header::CACHE_CONTROL, "max-age=31556952, public, immutable"),
+                (header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"),
             ],
             *bytes,
         )
