@@ -70,7 +70,7 @@ async fn send_notification(state: &AppState, bookmark_id: i32) -> Result<(), App
     };
     let settings =
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
-    let notified = match reminder_target(&mut tx, &settings, &bookmark).await? {
+    let notified = match reminder_target(&mut tx, state, &settings, &bookmark).await? {
         Some(target) => {
             notify(&mut tx, state, &settings, &bookmark, &target).await?;
             true
@@ -78,8 +78,14 @@ async fn send_notification(state: &AppState, bookmark_id: i32) -> Result<(), App
         None => false,
     };
     if notified && bookmark.auto_delete_preference == WHEN_REMINDER_SENT {
-        crate::bookmark_manager::destroy(&state.bus, &mut tx, bookmark.user_id, bookmark.id)
-            .await?;
+        crate::bookmark_manager::destroy(
+            &state.bus,
+            &mut tx,
+            &settings,
+            bookmark.user_id,
+            bookmark.id,
+        )
+        .await?;
     } else {
         clear_reminder(&mut tx, &bookmark).await?;
     }
@@ -87,23 +93,55 @@ async fn send_notification(state: &AppState, bookmark_id: i32) -> Result<(), App
     Ok(())
 }
 
-/// What the reminder points at: the topic, the post number, and the
-/// notification's title and url.
+/// What the reminder points at: the topic and post number (none for a chat
+/// message), and the notification's title and url.
 struct Target {
-    topic_id: i32,
-    post_number: i32,
+    topic: Option<(i32, i32)>,
     title: String,
     url: String,
 }
 
 /// `reminder_conditions` and the data `reminder_handler` sends:
 /// PostBookmarkable's post (and its topic) or TopicBookmarkable's topic
-/// (through its first post), when the owner can see the post.
+/// (through its first post), when the owner can see the post; chat's
+/// message (Chat::MessageBookmarkable) when the owner may join its channel.
 async fn reminder_target(
     conn: &mut PgConnection,
+    state: &AppState,
     settings: &SiteSettings,
     bookmark: &Bookmark,
 ) -> Result<Option<Target>, AppError> {
+    if crate::plugins::chat::bookmarks::is_type(&bookmark.bookmarkable_type) {
+        // A filtered register: no bookmarkable while chat is disabled,
+        // which Rails fails on.
+        if !crate::plugins::chat::bookmarks::registered(settings)? {
+            return Err(
+                Unsupported("reminders for chat message bookmarks while chat is disabled").into(),
+            );
+        }
+        let Some(user) =
+            crate::session::current::SessionUser::load(&mut *conn, bookmark.user_id).await?
+        else {
+            return Ok(None);
+        };
+        let guardian = Guardian::for_user(&mut *conn, &user).await?;
+        let mut chat = crate::plugins::chat::channels::Context {
+            conn: &mut *conn,
+            settings,
+            i18n: &state.i18n,
+            guardian: &guardian,
+            base_path: state.config.globals.relative_url_root(),
+            config: &state.config,
+        };
+        return Ok(chat
+            .reminder(i64::from(bookmark.bookmarkable_id))
+            .await?
+            .map(|(title, url)| Target {
+                topic: None,
+                title,
+                url,
+            }));
+    }
     // Trashed posts and topics are out of their default scopes.
     let post_id: Option<i32> =
         match bookmark.bookmarkable_type.as_str() {
@@ -121,13 +159,7 @@ async fn reminder_target(
             .bind(bookmark.bookmarkable_id)
             .fetch_optional(&mut *conn)
             .await?,
-            other => {
-                return Err(Unsupported(match other {
-                    "ChatMessage" => "reminders for chat message bookmarks",
-                    _ => "reminders for bookmarks of other kinds",
-                })
-                .into());
-            }
+            _ => return Err(Unsupported("reminders for bookmarks of other kinds").into()),
         };
     let Some(post_id) = post_id else {
         return Ok(None);
@@ -147,8 +179,7 @@ async fn reminder_target(
     }
     let slug = slug.ok_or(Unsupported("a reminder for a topic without a slug"))?;
     Ok(Some(Target {
-        topic_id,
-        post_number,
+        topic: Some((topic_id, post_number)),
         title,
         // Post#url
         url: format!("/t/{slug}/{topic_id}/{post_number}"),
@@ -206,12 +237,14 @@ async fn notify(
         json!(bookmark.bookmarkable_type),
     );
     data.insert("bookmarkable_id".into(), json!(bookmark.bookmarkable_id));
-    let notification = crate::notification_create::NewNotification::new(
+    let mut notification = crate::notification_create::NewNotification::new(
         BOOKMARK_REMINDER,
         bookmark.user_id,
         Value::Object(data),
-    )
-    .topic(target.topic_id, Some(target.post_number));
+    );
+    if let Some((topic_id, post_number)) = target.topic {
+        notification = notification.topic(topic_id, Some(post_number));
+    }
     crate::notification_create::create(conn, &state.bus, settings, &notification).await?;
     Ok(())
 }

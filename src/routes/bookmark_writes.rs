@@ -124,7 +124,7 @@ async fn handle(
         }
         Action::TogglePin => bookmark_manager::toggle_pin(&mut tx, user_id, bookmark_id).await?,
         Action::Destroy => {
-            bookmark_manager::destroy(&state.bus, &mut tx, user_id, bookmark_id).await?
+            bookmark_manager::destroy(&state.bus, &mut tx, &settings, user_id, bookmark_id).await?
         }
     };
     let ok = |body: Value| (StatusCode::OK, Json(body)).into_response();
@@ -148,7 +148,10 @@ async fn handle(
                 crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id)
                     .await?;
             }
-            ok(json!({ "success": "OK", "topic_bookmarked": topic_bookmarked }))
+            match topic_bookmarked {
+                Some(b) => ok(json!({ "success": "OK", "topic_bookmarked": b })),
+                None => ok(json!({ "success": "OK" })),
+            }
         }
         Outcome::Invalid(errors) => (
             StatusCode::BAD_REQUEST,

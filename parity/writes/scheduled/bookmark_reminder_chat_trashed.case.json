@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, '2026-10-02 09:00:00', '2026-10-02 09:00:00'), (1, 2, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 1, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, '2026-10-02 09:00:00', '2026-10-02 09:00:00'), (2, 3, true, false, 2, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "SELECT setval('direct_message_channels_id_seq', 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, deleted_at) VALUES (1, 2, 2, '2026-10-02 10:00:00', '2026-10-02 10:00:00', 'Hello from the general chat :smile:', '<p>Hello from the general chat <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>', 1, 2, NULL), (2, 2, 1, '2026-10-02 10:05:00', '2026-10-02 10:05:00', 'long', '<p>A long chat message about <a href=\"https://example.com\">links</a> &amp; things. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>', 1, 1, NULL), (3, 3, 2, '2026-10-02 10:10:00', '2026-10-02 10:10:00', 'A direct message to user1', '<p>A direct message to user1</p>', 1, 2, NULL), (4, 1, 1, '2026-10-02 10:15:00', '2026-10-02 10:15:00', 'Staff only chatter', '<p>Staff only chatter</p>', 1, 1, NULL), (5, 2, 2, '2026-10-02 10:20:00', '2026-10-02 10:20:00', 'Deleted chat message', '<p>Deleted chat message</p>', 1, 2, '2026-10-02 11:00:00')",
+    "SELECT setval('chat_messages_id_seq', 5)",
+    "INSERT INTO bookmarks (id, user_id, bookmarkable_id, bookmarkable_type, name, reminder_at, reminder_set_at, pinned, auto_delete_preference, created_at, updated_at) VALUES (10, 3, 1, 'ChatMessage', 'Chat fixture: named', '2031-02-01 08:00:00', '2026-10-02 11:00:00', NULL, 3, '2026-10-02 11:00:00', '2026-10-02 11:00:00'), (11, 3, 2, 'ChatMessage', NULL, NULL, '2026-10-02 11:01:00', true, 3, '2026-10-02 11:01:00', '2026-10-02 11:01:00'), (12, 3, 3, 'ChatMessage', NULL, NULL, '2026-10-02 11:02:00', NULL, 3, '2026-10-02 11:02:00', '2026-10-02 11:02:00'), (13, 3, 4, 'ChatMessage', NULL, NULL, '2026-10-02 11:03:00', NULL, 3, '2026-10-02 11:03:00', '2026-10-02 11:03:00'), (14, 3, 5, 'ChatMessage', NULL, NULL, '2026-10-02 11:04:00', NULL, 3, '2026-10-02 11:04:00', '2026-10-02 11:04:00')",
+    "SELECT setval('bookmarks_id_seq', 14)",
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day' WHERE id = 14"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "bookmark_reminder_notifications"
+  ]
+}

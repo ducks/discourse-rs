@@ -9,6 +9,7 @@
 
 pub mod actions_view;
 pub mod auto_join;
+pub mod bookmarks;
 pub mod channels;
 pub mod chatables;
 pub mod cook;
@@ -113,7 +114,9 @@ pub(crate) fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> St
 
 /// `ChannelFetcher.generate_allowed_channel_ids_sql`: the ids of the
 /// category channels whose category the viewer may post in, and (unless
-/// excluded) the direct message channels they are in. Anonymous access to
+/// excluded) the direct message channels they are in (those through
+/// Chat::Channel, so not trashed; the category channels come through a
+/// join, trashed or not). Anonymous access to
 /// public channels is not ported.
 pub fn allowed_channel_ids_sql(
     settings: &SiteSettings,
@@ -143,7 +146,7 @@ pub fn allowed_channel_ids_sql(
                  AND chat_channels.chatable_type = 'DirectMessage' \
                INNER JOIN direct_message_users \
                  ON direct_message_users.direct_message_channel_id = direct_message_channels.id \
-               WHERE direct_message_users.user_id = {user_id}"
+               WHERE chat_channels.deleted_at IS NULL AND direct_message_users.user_id = {user_id}"
         ));
     }
     Ok(sql)

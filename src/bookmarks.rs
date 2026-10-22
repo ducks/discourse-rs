@@ -3,9 +3,9 @@
 //! topic_bookmarkable.rb, and UserBookmarkListSerializer with
 //! UserPostBookmarkSerializer and UserTopicBookmarkSerializer.
 //!
-//! Only core's two bookmarkables are ported. A user holding a bookmark of
-//! a plugin-registered type (chat messages) is refused rather than shown a
-//! list without it.
+//! The registered bookmarkables are core's two and, while chat is enabled,
+//! chat's (Chat::MessageBookmarkable, crate::plugins::chat::bookmarks),
+//! each listed by its own query and drawn by its own serializer.
 
 use std::collections::HashMap;
 
@@ -39,6 +39,14 @@ pub enum BookmarksError {
     Unsupported(Unsupported),
     /// What NotificationsError::Review carries.
     Review(crate::AppError),
+    /// A plugin bookmarkable's failure (chat's).
+    Plugin(crate::AppError),
+}
+
+impl From<crate::AppError> for BookmarksError {
+    fn from(e: crate::AppError) -> Self {
+        BookmarksError::Plugin(e)
+    }
 }
 
 impl std::fmt::Display for BookmarksError {
@@ -49,6 +57,7 @@ impl std::fmt::Display for BookmarksError {
             BookmarksError::Url(e) => e.fmt(f),
             BookmarksError::Unsupported(e) => e.fmt(f),
             BookmarksError::Review(e) => e.fmt(f),
+            BookmarksError::Plugin(e) => e.fmt(f),
         }
     }
 }
@@ -246,7 +255,6 @@ impl Bookmarks<'_> {
     /// `BookmarkQuery#count_all`: how many of `user_id`'s bookmarks the
     /// guardian may see.
     pub async fn count_all(&mut self, user_id: i32) -> Result<i64, BookmarksError> {
-        self.refuse_plugin_types(user_id).await?;
         let union = self.list_queries(user_id, false).await?;
         Ok(
             sqlx::query_scalar(&format!("SELECT COUNT(*) FROM ({union}) AS bookmarks"))
@@ -258,21 +266,6 @@ impl Bookmarks<'_> {
         )
     }
 
-    /// Bookmarks of plugin-registered types (chat messages) are not ported.
-    async fn refuse_plugin_types(&mut self, user_id: i32) -> Result<(), BookmarksError> {
-        let plugin_types: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM bookmarks WHERE user_id = $1 \
-             AND bookmarkable_type NOT IN ('Post', 'Topic'))",
-        )
-        .bind(i64::from(user_id))
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if plugin_types {
-            return Err(Unsupported("bookmarks of plugin-registered types (chat messages)").into());
-        }
-        Ok(())
-    }
-
     /// `UserBookmarkList#load`: `BookmarkQuery#list_all` for `user_id`'s
     /// bookmarks as the guardian may see them.
     pub async fn load(
@@ -281,7 +274,6 @@ impl Bookmarks<'_> {
         q: &ListQuery<'_>,
     ) -> Result<BookmarkList, BookmarksError> {
         let per_page = q.per_page.unwrap_or(PER_PAGE).min(PER_PAGE);
-        self.refuse_plugin_types(user_id).await?;
 
         let search = q.search_term.filter(|t| !crate::ruby::is_blank(t));
         let union = self.list_queries(user_id, search.is_some()).await?;
@@ -320,8 +312,10 @@ impl Bookmarks<'_> {
         })
     }
 
-    /// `build_list_queries`: PostBookmarkable.list_query and
-    /// TopicBookmarkable.list_query, joined by UNION. `$1` is the owner;
+    /// `build_list_queries`: PostBookmarkable.list_query,
+    /// TopicBookmarkable.list_query and, while chat is enabled,
+    /// Chat::MessageBookmarkable's when it has one, joined by UNION in
+    /// registration order. `$1` is the owner;
     /// with `search`, `$2` is the tsquery literal and `$3` the ILIKE
     /// pattern (the placeholders are referenced either way, so the binds
     /// keep their types).
@@ -381,6 +375,14 @@ impl Bookmarks<'_> {
                 " AND $2::text IS NOT NULL AND $3::text IS NOT NULL".to_string(),
             )
         };
+        let chat = if crate::plugins::chat::bookmarks::registered(settings)? {
+            crate::plugins::chat::bookmarks::list_query(&mut *self.conn, settings, guardian, search)
+                .await?
+                .map(|q| format!(" UNION {q}"))
+                .unwrap_or_default()
+        } else {
+            String::new()
+        };
         Ok(format!(
             "SELECT bookmarks.* FROM bookmarks \
                INNER JOIN posts ON posts.id = bookmarks.bookmarkable_id AND bookmarks.bookmarkable_type = 'Post' \
@@ -394,7 +396,7 @@ impl Bookmarks<'_> {
                INNER JOIN posts ON posts.topic_id = topics.id AND posts.post_number = 1 \
                LEFT JOIN topic_users ON topic_users.topic_id = topics.id{topic_search_join} \
              WHERE bookmarks.user_id = $1 AND bookmarks.bookmarkable_type = 'Topic' \
-               AND topic_users.user_id = {user_id} AND {topics} AND {posts}{hidden}{allowed}{search_where}"
+               AND topic_users.user_id = {user_id} AND {topics} AND {posts}{hidden}{allowed}{search_where}{chat}"
         ))
     }
 
@@ -424,6 +426,11 @@ impl Bookmarks<'_> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
         let mut out = Vec::with_capacity(list.rows.len());
         for row in &list.rows {
+            let kind = row.bookmarkable_type.as_deref().unwrap_or_default();
+            if crate::plugins::chat::bookmarks::is_type(kind) {
+                out.push(self.chat_item(row, logo_small_url.as_deref()).await?);
+                continue;
+            }
             let Some(b) = bookmarkables.get(&row.id) else {
                 // The list query only returns bookmarks whose post and
                 // topic exist and are not deleted.
@@ -536,28 +543,7 @@ impl Bookmarks<'_> {
             Some(s) if !s.is_empty() => s,
             _ => return Err(Unsupported("topics without a stored slug (Slug.for)").into()),
         };
-        let mut out = Map::new();
-        out.insert("id".into(), json!(row.id));
-        out.insert("created_at".into(), json!(time_json(row.created_at)));
-        out.insert("updated_at".into(), json!(time_json(row.updated_at)));
-        out.insert("name".into(), json!(row.name));
-        out.insert("reminder_at".into(), json!(row.reminder_at.map(time_json)));
-        if let Some(at) = row.reminder_at {
-            // Bookmark#reminder_at_ics, an hour apart.
-            let format = self
-                .i18n
-                .t("datetime_formats.formats.calendar_ics")
-                .unwrap_or("%Y%m%dT%H%M%SZ");
-            out.insert(
-                "reminder_at_ics_start".into(),
-                json!(at.format(format).to_string()),
-            );
-            out.insert(
-                "reminder_at_ics_end".into(),
-                json!((at + chrono::Duration::hours(1)).format(format).to_string()),
-            );
-        }
-        out.insert("pinned".into(), json!(row.pinned));
+        let mut out = self.base_fields(row);
         out.insert("title".into(), json!(b.title));
         // LocalizedFancyTopicTitleMixin: left out when blank.
         let fancy = crate::topic_query::fancy_title(
@@ -643,26 +629,126 @@ impl Bookmarks<'_> {
         }
         // BasicUserSerializer of the post's author.
         let user = match (b.post_user_id, b.username.as_deref()) {
-            (Some(id), Some(username)) => {
-                let mut user = Map::new();
-                user.insert("id".into(), json!(id));
-                user.insert("username".into(), json!(username));
-                if settings.get("enable_names")?.truthy() {
-                    user.insert("name".into(), json!(b.user_name));
-                }
-                user.insert(
-                    "avatar_template".into(),
-                    json!(avatar_template(
-                        self.urls,
-                        id,
-                        username,
-                        b.uploaded_avatar_id,
-                        logo_small_url,
-                    )?),
-                );
-                Value::Object(user)
-            }
+            (Some(id), Some(username)) => self.basic_user(
+                id,
+                username,
+                b.user_name.as_deref(),
+                b.uploaded_avatar_id,
+                logo_small_url,
+            )?,
             _ => Value::Null,
+        };
+        out.insert("user".into(), user);
+        Ok(Value::Object(out))
+    }
+
+    /// UserBookmarkBaseSerializer's attributes before the bookmarkable's.
+    fn base_fields(&self, row: &BookmarkRow) -> Map<String, Value> {
+        let mut out = Map::new();
+        out.insert("id".into(), json!(row.id));
+        out.insert("created_at".into(), json!(time_json(row.created_at)));
+        out.insert("updated_at".into(), json!(time_json(row.updated_at)));
+        out.insert("name".into(), json!(row.name));
+        out.insert("reminder_at".into(), json!(row.reminder_at.map(time_json)));
+        if let Some(at) = row.reminder_at {
+            // Bookmark#reminder_at_ics, an hour apart.
+            let format = self
+                .i18n
+                .t("datetime_formats.formats.calendar_ics")
+                .unwrap_or("%Y%m%dT%H%M%SZ");
+            out.insert(
+                "reminder_at_ics_start".into(),
+                json!(at.format(format).to_string()),
+            );
+            out.insert(
+                "reminder_at_ics_end".into(),
+                json!((at + chrono::Duration::hours(1)).format(format).to_string()),
+            );
+        }
+        out.insert("pinned".into(), json!(row.pinned));
+        out
+    }
+
+    /// BasicUserSerializer of the bookmarkable's author.
+    fn basic_user(
+        &self,
+        id: i32,
+        username: &str,
+        name: Option<&str>,
+        uploaded_avatar_id: Option<i32>,
+        logo_small_url: Option<&str>,
+    ) -> Result<Value, BookmarksError> {
+        let mut user = Map::new();
+        user.insert("id".into(), json!(id));
+        user.insert("username".into(), json!(username));
+        if self.settings.get("enable_names")?.truthy() {
+            user.insert("name".into(), json!(name));
+        }
+        user.insert(
+            "avatar_template".into(),
+            json!(avatar_template(
+                self.urls,
+                id,
+                username,
+                uploaded_avatar_id,
+                logo_small_url,
+            )?),
+        );
+        Ok(Value::Object(user))
+    }
+
+    /// `Bookmark.registered_bookmarkable_from_type` for a chat message
+    /// while chat is disabled: none, which Rails then fails on.
+    fn refuse_unregistered_chat(&self) -> Result<(), BookmarksError> {
+        if !crate::plugins::chat::bookmarks::registered(self.settings)? {
+            return Err(Unsupported("bookmarks of chat messages while chat is disabled").into());
+        }
+        Ok(())
+    }
+
+    /// chat's context, for the viewer.
+    fn chat(&mut self) -> crate::plugins::chat::channels::Context<'_> {
+        crate::plugins::chat::channels::Context {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            i18n: self.i18n,
+            guardian: self.guardian,
+            base_path: self.urls.config.globals.relative_url_root(),
+            config: self.urls.config,
+        }
+    }
+
+    /// Chat::UserMessageBookmarkSerializer
+    async fn chat_item(
+        &mut self,
+        row: &BookmarkRow,
+        logo_small_url: Option<&str>,
+    ) -> Result<Value, BookmarksError> {
+        let message_id = row.bookmarkable_id.unwrap_or(0);
+        let mut chat = self.chat();
+        // The list query only returns bookmarks of messages not trashed.
+        let Some(message) = chat.bookmarked_message(message_id).await? else {
+            return Err(
+                Unsupported("a listed chat message bookmark whose message vanished").into(),
+            );
+        };
+        let m = chat.serialize_bookmarked(&message).await?;
+        let mut out = self.base_fields(row);
+        out.insert("title".into(), json!(m.title));
+        out.insert("fancy_title".into(), json!(m.title));
+        out.insert("excerpt".into(), json!(m.excerpt));
+        out.insert("bookmarkable_id".into(), json!(row.bookmarkable_id));
+        out.insert("bookmarkable_type".into(), json!(row.bookmarkable_type));
+        out.insert("bookmarkable_url".into(), json!(m.url));
+        let user = match &m.user {
+            Some(u) => self.basic_user(
+                u.id,
+                &u.username,
+                u.name.as_deref(),
+                u.uploaded_avatar_id,
+                logo_small_url,
+            )?,
+            None => Value::Null,
         };
         out.insert("user".into(), user);
         Ok(Value::Object(out))
@@ -726,14 +812,27 @@ impl Bookmarks<'_> {
         let Some(bookmark_id) = data["bookmark_id"].as_i64() else {
             return Ok(false);
         };
-        let owned: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM bookmarks WHERE id = $1 AND user_id = $2)",
+        let owned: Option<(Option<String>, Option<i64>)> = sqlx::query_as(
+            "SELECT bookmarkable_type, bookmarkable_id FROM bookmarks WHERE id = $1 AND user_id = $2",
         )
         .bind(bookmark_id)
         .bind(i64::from(user_id))
-        .fetch_one(&mut *self.conn)
+        .fetch_optional(&mut *self.conn)
         .await?;
-        if owned {
+        if let Some((kind, id)) = owned {
+            let kind = kind.unwrap_or_default();
+            if crate::plugins::chat::bookmarks::is_type(&kind) {
+                self.refuse_unregistered_chat()?;
+                // can_see?: the bookmark's message, which Rails reads the
+                // channel of even when the message is trashed (nil).
+                let mut chat = self.chat();
+                let Some(message) = chat.bookmarked_message(id.unwrap_or(0)).await? else {
+                    return Err(
+                        Unsupported("reminders of bookmarks of trashed chat messages").into(),
+                    );
+                };
+                return Ok(chat.can_see_bookmarked(&message).await?);
+            }
             return match self.bookmarkables(&[bookmark_id]).await?.get(&bookmark_id) {
                 Some(b) => self.can_see_post(b, secure).await,
                 None => Ok(false),
@@ -741,17 +840,29 @@ impl Bookmarks<'_> {
         }
         // The bookmark is gone (auto-deleted with its reminder): the
         // notification still shows while its subject is visible.
-        let topic = match data["bookmarkable_type"].as_str() {
-            Some("Post") => false,
-            Some("Topic") => true,
-            Some(_) => {
-                return Err(
-                    Unsupported("bookmarks of plugin-registered types (chat messages)").into(),
-                );
-            }
-            None => return Ok(false),
+        let Some(kind) = data["bookmarkable_type"].as_str().filter(|k| !k.is_empty()) else {
+            return Ok(false);
         };
-        let Some(id) = data["bookmarkable_id"].as_i64() else {
+        let id = data["bookmarkable_id"].as_i64();
+        let topic = match kind {
+            "Post" => false,
+            "Topic" => true,
+            kind if crate::plugins::chat::bookmarks::is_type(kind) => {
+                self.refuse_unregistered_chat()?;
+                let Some(id) = id else {
+                    return Ok(false);
+                };
+                // can_see_bookmarkable? on the message, when not trashed.
+                let mut chat = self.chat();
+                return Ok(match chat.bookmarked_message(id).await? {
+                    Some(message) => chat.can_see_bookmarked(&message).await?,
+                    None => false,
+                });
+            }
+            // registered_bookmarkable_from_type finds none: Rails fails.
+            _ => return Err(Unsupported("bookmarks of unregistered types").into()),
+        };
+        let Some(id) = id else {
             return Ok(false);
         };
         match self.bookmarkable_of(topic, id).await? {

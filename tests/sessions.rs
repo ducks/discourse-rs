@@ -936,7 +936,8 @@ async fn bookmark_lists_follow_what_the_viewer_can_see() {
     assert_eq!(reply.status, StatusCode::OK);
     assert_eq!(reply.json(), serde_json::json!({"bookmarks": []}));
 
-    // A bookmark type only a plugin serializes is refused, not skipped.
+    // Chat lists the bookmarks typed with its polymorphic name
+    // (ChatMessage) of messages that exist: neither holds here.
     sqlx::query(
         "INSERT INTO bookmarks (user_id, bookmarkable_id, bookmarkable_type, created_at, updated_at) \
          VALUES (3, 1, 'Chat::Message', now(), now())",
@@ -944,10 +945,9 @@ async fn bookmark_lists_follow_what_the_viewer_can_see() {
     .execute(&db.pool)
     .await
     .unwrap();
-    assert_eq!(
-        client.get(path).await.status,
-        StatusCode::INTERNAL_SERVER_ERROR
-    );
+    let reply = client.get(path).await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert_eq!(reply.json(), serde_json::json!({"bookmarks": []}));
 }
 
 /// users_controller_spec.rb #user_menu_bookmarks: unread reminders first,

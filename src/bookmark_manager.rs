@@ -1,10 +1,10 @@
-//! BookmarkManager for posts and topics: creating a bookmark (the
-//! bookmarkable's visibility, Bookmark's validations, the topic user's
-//! bookmarked flag), updating, pinning and destroying one.
+//! BookmarkManager for posts, topics and (while chat is enabled) chat
+//! messages: creating a bookmark (the bookmarkable's visibility, Bookmark's
+//! validations, the topic user's bookmarked flag), updating, pinning and
+//! destroying one.
 //!
-//! Refused: bookmarkables other than posts and topics (chat messages),
-//! reminder times in formats other than ISO 8601. The controller's
-//! create_bookmark limit is in the route.
+//! Refused: bookmarkables of other types, reminder times in formats other
+//! than ISO 8601. The controller's create_bookmark limit is in the route.
 
 use chrono::NaiveDateTime;
 use sqlx::PgConnection;
@@ -22,11 +22,12 @@ pub enum Outcome {
     Created(i64),
     /// Updated or pinned.
     Done,
-    /// Destroyed: whether the user still has a bookmark in the topic, and
+    /// Destroyed: whether the user still has a bookmark in the topic (none
+    /// for a chat message, whose bookmark_metadata is empty), and
     /// whether its reminder notifications went with it (the user's
     /// notification state then needs publishing).
     Destroyed {
-        topic_bookmarked: bool,
+        topic_bookmarked: Option<bool>,
         reminders_deleted: bool,
     },
     /// Validation errors: a 400 with `failed_json` and the messages.
@@ -137,10 +138,10 @@ pub async fn create(
         .ok_or(Unsupported("bookmarking anonymously"))?;
     let id = crate::ruby::to_i(bookmarkable_id) as i32;
     // registered_bookmarkable_from_type, then validate_before_create.
-    let topic_id = match bookmarkable_type {
+    let (topic_id, stored_type) = match bookmarkable_type {
         "Post" => {
             match crate::posting::revisions::find_post(&mut *conn, ctx, guardian, id).await? {
-                Some(access) if access.can_see_topic => access.topic_id,
+                Some(access) if access.can_see_topic => (Some(access.topic_id), "Post"),
                 _ => return Ok(Outcome::Forbidden),
             }
         }
@@ -165,14 +166,34 @@ pub async fn create(
                     )
                     .await?
                     {
-                        Some(access) if access.can_see_topic => t.id,
+                        Some(access) if access.can_see_topic => (Some(t.id), "Topic"),
                         _ => return Ok(Outcome::Forbidden),
                     }
                 }
                 _ => return Ok(Outcome::Forbidden),
             }
         }
-        "Chat::Message" => return Err(Unsupported("bookmarking chat messages").into()),
+        kind if crate::plugins::chat::bookmarks::is_type(kind)
+            && crate::plugins::chat::bookmarks::registered(s)? =>
+        {
+            // Chat::MessageBookmarkable.validate_before_create: the message
+            // (not trashed) in a channel the user may join.
+            let base_path = ctx.config.globals.relative_url_root();
+            let mut chat = crate::plugins::chat::channels::Context {
+                conn: &mut *conn,
+                settings: s,
+                i18n: ctx.i18n,
+                guardian,
+                base_path,
+                config: ctx.config,
+            };
+            match chat.bookmarked_message(i64::from(id)).await? {
+                Some(m) if chat.can_see_bookmarked(&m).await? => {
+                    (None, crate::plugins::chat::bookmarks::POLYMORPHIC_NAME)
+                }
+                _ => return Ok(Outcome::Forbidden),
+            }
+        }
         other => {
             let message = ctx
                 .i18n
@@ -192,7 +213,7 @@ pub async fn create(
     )
     .bind(user_id)
     .bind(id)
-    .bind(bookmarkable_type)
+    .bind(stored_type)
     .fetch_one(&mut *conn)
     .await?;
     if exists {
@@ -200,7 +221,7 @@ pub async fn create(
             ctx.i18n
                 .t_with(
                     "bookmarks.errors.already_bookmarked",
-                    &[("type", bookmarkable_type)],
+                    &[("type", stored_type)],
                 )
                 .unwrap_or_default(),
         );
@@ -246,14 +267,16 @@ pub async fn create(
     )
     .bind(user_id)
     .bind(id)
-    .bind(bookmarkable_type)
+    .bind(stored_type)
     .bind(name)
     .bind(reminder_at)
     .bind(preference)
     .fetch_one(&mut *conn)
     .await?;
-    // after_create
-    sync_topic_user(ctx.bus, &mut *conn, user_id, topic_id).await?;
+    // after_create: chat's is a no-op.
+    if let Some(topic_id) = topic_id {
+        sync_topic_user(ctx.bus, &mut *conn, user_id, topic_id).await?;
+    }
     Ok(Outcome::Created(bookmark_id))
 }
 
@@ -352,6 +375,7 @@ pub async fn toggle_pin(
 pub async fn destroy(
     bus: &pg_bus::Bus,
     conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
     user_id: i32,
     bookmark_id: i32,
 ) -> Result<Outcome, AppError> {
@@ -363,15 +387,29 @@ pub async fn destroy(
         Ok(found) => found,
         Err(outcome) => return Ok(outcome),
     };
-    let topic_id: i32 = match kind.as_str() {
-        "Post" => sqlx::query_scalar::<_, i32>(
-            "SELECT topic_id FROM posts WHERE id = $1 AND deleted_at IS NULL",
-        )
-        .bind(id)
-        .fetch_optional(&mut *conn)
-        .await?
-        .ok_or(Unsupported("destroying a bookmark of a deleted post"))?,
-        "Topic" => i32::try_from(id).map_err(|_| Unsupported("topic ids beyond 32 bits"))?,
+    let topic_id: Option<i32> = match kind.as_str() {
+        "Post" => Some(
+            sqlx::query_scalar::<_, i32>(
+                "SELECT topic_id FROM posts WHERE id = $1 AND deleted_at IS NULL",
+            )
+            .bind(id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .ok_or(Unsupported("destroying a bookmark of a deleted post"))?,
+        ),
+        "Topic" => Some(i32::try_from(id).map_err(|_| Unsupported("topic ids beyond 32 bits"))?),
+        // registered_bookmarkable.after_destroy: chat's is a no-op, and
+        // its bookmark_metadata is empty. While chat is disabled there is
+        // no registered bookmarkable, which Rails fails on.
+        kind if crate::plugins::chat::bookmarks::is_type(kind) => {
+            if !crate::plugins::chat::bookmarks::registered(settings)? {
+                return Err(Unsupported(
+                    "destroying chat message bookmarks while chat is disabled",
+                )
+                .into());
+            }
+            None
+        }
         _ => return Err(Unsupported("bookmarkables other than posts and topics").into()),
     };
     let preference: i32 =
@@ -397,7 +435,10 @@ pub async fn destroy(
             > 0
     };
     // after_destroy, then the metadata.
-    let topic_bookmarked = sync_topic_user(bus, &mut *conn, user_id, topic_id).await?;
+    let topic_bookmarked = match topic_id {
+        Some(topic_id) => Some(sync_topic_user(bus, &mut *conn, user_id, topic_id).await?),
+        None => None,
+    };
     Ok(Outcome::Destroyed {
         topic_bookmarked,
         reminders_deleted,

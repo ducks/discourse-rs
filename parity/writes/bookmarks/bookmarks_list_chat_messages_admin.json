@@ -1,0 +1,330 @@
+{
+  "name": "bookmarks_list_chat_messages_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/bookmarks.json"
+    }
+  ],
+  "started_at": "2026-10-22T01:21:17.047287",
+  "transaction_started_at": "2026-10-22T01:21:13.977334",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "user_bookmark_list": {
+          "bookmarks": [
+            {
+              "id": 11,
+              "created_at": "2026-10-02T11:01:00.000Z",
+              "updated_at": "2026-10-02T11:01:00.000Z",
+              "name": null,
+              "reminder_at": null,
+              "pinned": true,
+              "title": "General",
+              "fancy_title": "General",
+              "excerpt": "A long chat message about <a href=\"https://example.com\">links</a> &amp; things. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in r&hellip;",
+              "bookmarkable_id": 2,
+              "bookmarkable_type": "ChatMessage",
+              "bookmarkable_url": "/chat/c/-/2/2",
+              "user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            },
+            {
+              "id": 4,
+              "created_at": "2026-10-01T22:32:02.419Z",
+              "updated_at": "2026-10-01T22:32:02.429Z",
+              "name": "Parity fixture: pinned, in a PM",
+              "reminder_at": null,
+              "pinned": true,
+              "title": "Parity fixture: PM user1 to user0",
+              "fancy_title": "Parity fixture: PM user1 to user0",
+              "excerpt": "A reply from user0 inside the private message, long enough too.",
+              "bookmarkable_id": 49,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pm-user1-to-user0/42/2",
+              "topic_id": 42,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": null,
+              "closed": false,
+              "archived": false,
+              "archetype": "private_message",
+              "highest_post_number": 2,
+              "bumped_at": "2026-10-01T15:39:51.295Z",
+              "slug": "parity-fixture-pm-user1-to-user0",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 3,
+              "created_at": "2026-10-01T22:32:02.391Z",
+              "updated_at": "2026-10-01T22:32:02.391Z",
+              "name": "Parity fixture: with a reminder",
+              "reminder_at": "2031-01-15T09:30:00.000Z",
+              "reminder_at_ics_start": "20310115T093000Z",
+              "reminder_at_ics_end": "20310115T103000Z",
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
+              "bookmarkable_id": 36,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/2",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 3,
+                "username": "user1",
+                "name": "User1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+              }
+            },
+            {
+              "id": 10,
+              "created_at": "2026-10-02T11:00:00.000Z",
+              "updated_at": "2026-10-02T11:00:00.000Z",
+              "name": "Chat fixture: named",
+              "reminder_at": "2031-02-01T08:00:00.000Z",
+              "reminder_at_ics_start": "20310201T080000Z",
+              "reminder_at_ics_end": "20310201T090000Z",
+              "pinned": null,
+              "title": "General",
+              "fancy_title": "General",
+              "excerpt": "Hello from the general chat <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">",
+              "bookmarkable_id": 1,
+              "bookmarkable_type": "ChatMessage",
+              "bookmarkable_url": "/chat/c/-/2/1",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 13,
+              "created_at": "2026-10-02T11:03:00.000Z",
+              "updated_at": "2026-10-02T11:03:00.000Z",
+              "name": null,
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Staff",
+              "fancy_title": "Staff",
+              "excerpt": "Staff only chatter",
+              "bookmarkable_id": 4,
+              "bookmarkable_type": "ChatMessage",
+              "bookmarkable_url": "/chat/c/-/1/4",
+              "user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            },
+            {
+              "id": 5,
+              "created_at": "2026-10-01T22:32:02.441Z",
+              "updated_at": "2026-10-01T22:32:02.468Z",
+              "name": "Parity fixture: reminder sent",
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
+              "bookmarkable_id": 52,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/5",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 5,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 2,
+              "created_at": "2026-10-01T22:32:02.369Z",
+              "updated_at": "2026-10-01T22:32:02.369Z",
+              "name": "Parity fixture: topic bookmark",
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+              "bookmarkable_id": 35,
+              "bookmarkable_type": "Topic",
+              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 1,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "last_read_post_number": 4,
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 1,
+              "created_at": "2026-10-01T13:42:34.774Z",
+              "updated_at": "2026-10-01T13:42:34.774Z",
+              "name": null,
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: pinned and closed",
+              "fancy_title": "Parity fixture: pinned and closed",
+              "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+              "bookmarkable_id": 40,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pinned-and-closed/37/1",
+              "tags": [],
+              "tags_descriptions": {},
+              "topic_id": 37,
+              "linked_post_number": 1,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 2,
+              "closed": true,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 1,
+              "bumped_at": "2026-09-30T07:28:29.358Z",
+              "slug": "parity-fixture-pinned-and-closed",
+              "user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 446,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "il3uH8/MkJgamUMPV3kVxeYUB+g=",
+            "created_at": "2026-10-22T01:21:15.356237",
+            "rotated_at": "2026-10-22T01:21:15.35378",
+            "updated_at": "2026-10-22T01:21:15.356237",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "il3uH8/MkJgamUMPV3kVxeYUB+g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 446,
+            "seen_at": "2026-10-22T01:21:17.057324",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "il3uH8/MkJgamUMPV3kVxeYUB+g=",
+            "created_at": "2026-10-22T01:21:15.356237",
+            "rotated_at": "2026-10-22T01:21:15.35378",
+            "updated_at": "2026-10-22T01:21:15.356237",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "il3uH8/MkJgamUMPV3kVxeYUB+g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, '2026-10-02 09:00:00', '2026-10-02 09:00:00'), (1, 2, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 1, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, '2026-10-02 09:00:00', '2026-10-02 09:00:00'), (2, 3, true, false, 2, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "SELECT setval('direct_message_channels_id_seq', 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, deleted_at) VALUES (1, 2, 2, '2026-10-02 10:00:00', '2026-10-02 10:00:00', 'Hello from the general chat :smile:', '<p>Hello from the general chat <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>', 1, 2, NULL), (2, 2, 1, '2026-10-02 10:05:00', '2026-10-02 10:05:00', 'long', '<p>A long chat message about <a href=\"https://example.com\">links</a> &amp; things. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>', 1, 1, NULL), (3, 3, 2, '2026-10-02 10:10:00', '2026-10-02 10:10:00', 'A direct message to user1', '<p>A direct message to user1</p>', 1, 2, NULL), (4, 1, 1, '2026-10-02 10:15:00', '2026-10-02 10:15:00', 'Staff only chatter', '<p>Staff only chatter</p>', 1, 1, NULL), (5, 2, 2, '2026-10-02 10:20:00', '2026-10-02 10:20:00', 'Deleted chat message', '<p>Deleted chat message</p>', 1, 2, '2026-10-02 11:00:00')",
+    "SELECT setval('chat_messages_id_seq', 5)",
+    "INSERT INTO bookmarks (id, user_id, bookmarkable_id, bookmarkable_type, name, reminder_at, reminder_set_at, pinned, auto_delete_preference, created_at, updated_at) VALUES (10, 3, 1, 'ChatMessage', 'Chat fixture: named', '2031-02-01 08:00:00', '2026-10-02 11:00:00', NULL, 3, '2026-10-02 11:00:00', '2026-10-02 11:00:00'), (11, 3, 2, 'ChatMessage', NULL, NULL, '2026-10-02 11:01:00', true, 3, '2026-10-02 11:01:00', '2026-10-02 11:01:00'), (12, 3, 3, 'ChatMessage', NULL, NULL, '2026-10-02 11:02:00', NULL, 3, '2026-10-02 11:02:00', '2026-10-02 11:02:00'), (13, 3, 4, 'ChatMessage', NULL, NULL, '2026-10-02 11:03:00', NULL, 3, '2026-10-02 11:03:00', '2026-10-02 11:03:00'), (14, 3, 5, 'ChatMessage', NULL, NULL, '2026-10-02 11:04:00', NULL, 3, '2026-10-02 11:04:00', '2026-10-02 11:04:00')",
+    "SELECT setval('bookmarks_id_seq', 14)"
+  ],
+  "recorded_from": {
+    "case": "50ad26dc9645bd18b033ff74fde0308faccc1287f7c548de6518b874b359365a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -178,7 +178,7 @@ async fn destroy_drafts(
 /// `Bookmark.cleanup!`: each bookmarkable's cleanup_deleted, in
 /// registration order: bookmarks on posts and topics deleted over three
 /// days ago (their topics' bookmarked flags resynced), then on chat
-/// messages.
+/// messages while chat is enabled (its register is filtered).
 pub async fn clean_up_bookmarks(state: &AppState) -> Result<(), AppError> {
     let mut tx = state.pool.begin().await?;
     let post_topics: Vec<i32> = sqlx::query_scalar(
@@ -209,13 +209,15 @@ pub async fn clean_up_bookmarks(state: &AppState) -> Result<(), AppError> {
             .await?;
         }
     }
-    sqlx::query(
-        "DELETE FROM bookmarks b USING chat_messages cm \
-         WHERE b.bookmarkable_id = cm.id AND b.bookmarkable_type = 'ChatMessage' \
-           AND (cm.deleted_at < now() - interval '3 days')",
-    )
-    .execute(&mut *tx)
-    .await?;
+    if crate::plugins::chat::bookmarks::registered(&settings(state, &mut tx).await?)? {
+        sqlx::query(
+            "DELETE FROM bookmarks b USING chat_messages cm \
+             WHERE b.bookmarkable_id = cm.id AND b.bookmarkable_type = 'ChatMessage' \
+               AND (cm.deleted_at < now() - interval '3 days')",
+        )
+        .execute(&mut *tx)
+        .await?;
+    }
     tx.commit().await?;
     Ok(())
 }

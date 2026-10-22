@@ -1296,9 +1296,9 @@ with the viewport, guessing from the user agent without it
     with every core type's renderer and the reactions, voting and chat
     ones, the messages tab (UsersController#user_menu_messages, also as
     JSON), the bookmarks tab, the profile tab, show all, dismiss with its
-    confirmation, the menu-panel.scss rules. Left: the review queue tab
-    (refused), the bookmarks tab with a chat message bookmark (refused by
-    the bookmarks list), the do not disturb and user status modals,
+    confirmation, the menu-panel.scss rules, the bookmarks tab with chat
+    message bookmarks and their reminders (161). Left: the review queue tab
+    (refused), the do not disturb and user status modals,
     show_user_menu_avatars (refused)
 96. ~~`feat/mobile-composer`~~ (done) L: the mobile composer's controls
     (the toolbar toggle in place of the preview and fullscreen ones), its
@@ -2003,9 +2003,21 @@ have handlers now.
     (plugins/chat/messages.rs:276,588; plugins/chat/create.rs:99;
     plugins/chat/modify.rs:301; plugins/chat/page.rs:880,1315),
     oneboxes, images and videos in messages (plugins/chat/create.rs:747),
-    chat message bookmarks (bookmarks.rs:270,747;
-    bookmark_manager.rs:168), chat transcripts in posts (crates/markdown's
-    bbcode refusal)
+    ~~chat message bookmarks~~ (done, fix/chat-bookmarks: chat's registered
+    bookmarkable, Chat::MessageBookmarkable, in plugins/chat/bookmarks.rs:
+    its list query and search on /u/:username/bookmarks.json, the
+    activity page and the user menu tab, the summary's bookmark_count,
+    UserMessageBookmarkSerializer, the reminder notifications and their
+    job, creating and destroying one, Bookmark.cleanup! only while chat is
+    enabled; left refused where Rails fails with a NoMethodError: a
+    bookmark of a message in a trashed channel (plugins/chat/bookmarks.rs:209),
+    an unread reminder of a bookmark whose message is trashed
+    (bookmarks.rs:831), chat bookmarks while chat is disabled
+    (bookmarks.rs:704; jobs/bookmark_reminders.rs:119;
+    bookmark_manager.rs:407), bookmarks of unregistered types
+    (bookmarks.rs:863); channels of deleted categories or other chatables
+    (plugins/chat/bookmarks.rs:176,183, with 162)), chat transcripts in
+    posts (crates/markdown's bbcode refusal)
 162. `feat/chat-rest` M: messages of deleted users
     (plugins/chat/notify.rs:76,487; plugins/chat/create.rs:293,721,763;
     plugins/chat/modify.rs:337,342; plugins/chat/summary_email.rs:459;
@@ -3824,8 +3836,8 @@ Logged-in readers, no writes yet.
       done, pending reviewables (194); category group moderators: 149;
       shared drafts: 158
 - [x] Bookmarks: `/u/:username/bookmarks.json` and
-      `/u/:username/user-menu-bookmarks` (core's post and topic bookmarks;
-      the `.ics` feed and plugin bookmarkables are refused)
+      `/u/:username/user-menu-bookmarks` (core's post and topic bookmarks
+      and chat's message bookmarks; the `.ics` feed is refused)
 - [x] The other user-menu endpoints (`/u/:username/user-menu-private-messages`,
       `/review/user-menu-list`): the messages one (95), the review queue
       (194)
