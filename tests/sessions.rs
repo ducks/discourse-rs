@@ -1353,6 +1353,48 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
     assert!(!html.contains("li.nav-item_new > a"));
 }
 
+/// DiscoveryTopics' footer under a member's lists: the spinner's container
+/// under a list with topics, and EmptyTopicFilter's education in an empty
+/// one (with its script), whose call to action under unified new offers
+/// the other /new subset while the list's category has some of it.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_members_empty_list_footer_draws_the_education() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+
+    let page = client.get("/unread").await.body;
+    assert!(page.contains(
+        r#"</div>
+   <footer class="topic-list-bottom"><div class="loading-container"></div></footer>
+  </div>"#
+    ));
+    assert!(!page.contains("empty-topic-filter.js"));
+
+    // Topic 35, user1's one unread, is in General.
+    let page = client.get("/c/general/sub-general/34/l/unread").await.body;
+    assert!(!page.contains(r#"<table class="topic-list">"#));
+    assert!(page.contains(
+        r#"<div class="empty-state__container --empty-topic-filter --with-image"><div class="empty-state"><div class="empty-state__image">"#
+    ));
+    assert!(page.contains(
+        r#"<div class="empty-state__title" data-test-title="">Nothing left unread... impressive!</div><div class="empty-state__cta"><button class="btn btn-primary" type="button"><span class="d-button-label">Browse latest topics</span></button></div><div class="empty-state__tip">"#
+    ));
+    assert!(page.contains(r#"<a href="/my/preferences/tracking">your preferences</a>"#));
+    assert!(page.contains("/assets/empty-topic-filter.js?v="));
+
+    // Sub General's new topic is its definition (topic 34); it has no
+    // new replies.
+    let page = client
+        .get("/c/general/sub-general/34/l/new?subset=replies")
+        .await
+        .body;
+    assert!(page.contains(
+        r#"<div class="empty-state__title" data-test-title="">Nothing new at the moment... check back soon!</div><div class="empty-state__cta"><button class="btn btn-primary" type="button" data-subset="topics"><span class="d-button-label">Browse new topics</span></button></div>"#
+    ), "{page}");
+}
+
 /// A member's header: every page connects, the unread notification count
 /// arrives first and follows their notification state, and alerts show
 /// with their user content escaped.

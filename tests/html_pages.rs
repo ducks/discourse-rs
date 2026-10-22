@@ -93,6 +93,16 @@ async fn latest_pages_link_to_the_next_html_page() {
     assert!(!html.contains("no_definitions"));
     let (_, _, last) = get(&db.pool, "/latest?page=2&per_page=2").await;
     assert!(!last.contains(r#"rel="next""#));
+    // DiscoveryTopics' footer after the list, its spinner's container
+    // empty either way; no education for a visitor.
+    for page in [&html, &last] {
+        assert!(page.contains(
+            r#"<div aria-hidden="true" class="load-more-sentinel"></div>
+   </div>
+   <footer class="topic-list-bottom"><div class="loading-container"></div></footer>
+  </div>"#
+        ));
+    }
 }
 
 #[tokio::test]

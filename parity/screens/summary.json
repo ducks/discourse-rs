@@ -1,5 +1,5 @@
 [
-{"page": "/latest", "diff_pct": 1.25, "status": [200, 200], "size": [[1280, 974], [1280, 963]]},
+{"page": "/latest", "diff_pct": 0.01, "status": [200, 200], "size": [[1280, 974], [1280, 974]]},
 {"page": "/categories", "diff_pct": 0.01, "status": [200, 200], "size": [[1280, 1028], [1280, 1028]]},
 {"page": "/c/general/4", "diff_pct": 0.29, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/c/general/sub-general/34", "diff_pct": 0.97, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
@@ -16,7 +16,7 @@
 {"page": "/top?period=weekly", "diff_pct": 0.01, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/search?q=fixture", "diff_pct": 0.0, "status": [200, 200], "size": [[1280, 912], [1280, 912]]},
 {"page": "/t/999999", "diff_pct": 0.0, "status": [404, 404], "size": [[1280, 996], [1280, 996]]},
-{"page": "/latest as=admin", "diff_pct": 1.07, "status": [200, 200], "size": [[1280, 1195], [1280, 1184]]},
+{"page": "/latest as=admin", "diff_pct": 0.06, "status": [200, 200], "size": [[1280, 1195], [1280, 1195]]},
 {"page": "/categories as=admin", "diff_pct": 0.05, "status": [200, 200], "size": [[1280, 1109], [1280, 1109]]},
 {"page": "/categories as=user1", "diff_pct": 0.08, "status": [200, 200], "size": [[1280, 920], [1280, 920]]},
 {"page": "/top?period=weekly as=user1", "diff_pct": 0.11, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},

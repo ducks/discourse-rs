@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 271a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3310,8 +3310,7 @@ route table has been made, so this list may be short.
     for everyone) with the member's new and unread counts within the
     category or tag, kept live, and its bulk select variant in the list
     header (templates/latest.html:25); EmptyTopicFilter's education in a
-    member's empty list footer (templates/latest.html:46, with its
-    "Browse latest topics" and per-filter texts)
+    member's empty list footer is done (270)
 269. ~~`fix/new-topic-route`~~ (done) S: GET /new-topic and /new-message
     answered 404 (the PWA manifest's New Topic shortcut and embedding's
     create link point there). Now new_topic#index (routes/new_topic.rs)
@@ -3494,6 +3493,44 @@ route table has been made, so this list may be short.
     a value and an array or hash, or arrays of hashes (Rails' 400 Bad
     Request; routes/list.rs:182,188,192), and tag_name that is not a
     string (routes/list.rs:208,215)
+270. ~~`fix/topic-list-footer`~~ (done) S: the discovery lists (/latest,
+    /new, /unread, /top, /hot, the category and tag lists) drew no
+    `footer.topic-list-bottom`, found by a screenshot run: the page footer
+    sat 11px high under /latest. Now DiscoveryTopics' footer closes
+    `#list-area` on every list, as Ember draws it (html.rs list_bottom):
+    DConditionalLoadingSpinner's `.loading-container`, empty (the page is
+    never drawn while loading more), with _topic-list.scss:359's margins;
+    once the list is all loaded, TopicDismissButtons' bottom row on desktop
+    past five topics (showBottomDismissButtons, its buttons left, 270a);
+    and EmptyTopicFilter for a member whose list is empty
+    (showEmptyFilterEducationInFooter, which was 265a's): DEmptyState with
+    SvgDocumentsCheckmark, the unread, unified new, new or generic
+    education, "Browse latest topics" (to /latest), the tracking
+    preferences tip under the base path on new and unread, and under
+    unified new an empty `subset` offering the other one while the
+    member's tracking state has some of it in the list's category
+    (countCategoryByState with noSubcategories, now
+    Tracking::count_scoped), static/js/empty-topic-filter.js sending
+    either button where Ember's action goes. The list also ends with
+    DLoadMore's `.load-more-sentinel`. Ember's old "There are no more
+    latest topics." footer messages (topics.none.*) are gone upstream;
+    nothing draws them. Measured against rs-ref-a: ui-compare finds no
+    difference in the footer's or #list-area's boxes and computed styles
+    on /latest, /c/general/4 and /tag/guide; an empty /unread as a
+    member, desktop and mobile, matches box for box (image, title,
+    button, tip, page footer). Screenshots against summary.json: desktop
+    /latest 1.25 to 0.01% (the port's page 963px tall, now the
+    reference's 974), as admin 1.07 to 0.06; mobile /latest 0.31 to 0.00,
+    as admin 0.37 to 0.12, as user1 0.37 to 0.16, /c/general/4 0.96 to
+    0.67, as user1 1.21 to 0.89, those rows updated; the rest unchanged.
+    Left, split into 270a.
+    270a. `feat/topic-list-dismiss-buttons` S: TopicDismissButtons'
+    Dismiss... and Dismiss new (the combo with dismiss and stop tracking
+    under unified new) on the new and unread lists: the top row is drawn
+    empty (templates/macros.html:58) and so is the bottom one
+    (src/html.rs:1345); loading more on scroll (DLoadMore with the
+    footer's spinner): the port pages with its "Next page" link instead
+    (templates/latest.html:53)
 
 ### Phase 11: the bundled plugins' gaps (210)
 
