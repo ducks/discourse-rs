@@ -205,7 +205,7 @@ async fn a_member_gets_the_homepage_with_the_composer_to_open() {
         "{html}"
     );
     assert!(
-        html.contains(" data-dialog-src=\"/assets/dialog.js?v="),
+        html.contains(" data-dialog-src=\"/assets/dialog.js?v&#x3D;"),
         "{html}"
     );
 
