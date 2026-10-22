@@ -18,6 +18,7 @@ use sha2::{Digest, Sha256};
 const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/vendor/normalize.css"),
     include_str!("../static/css/foundation.css"),
+    include_str!("../static/css/select-kit.css"),
     include_str!("../static/css/buttons.css"),
     include_str!("../static/css/d-icon.css"),
     include_str!("../static/css/header.css"),

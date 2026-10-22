@@ -170,6 +170,17 @@ async fn profile_page_renders_summary_and_activity() {
     assert!(html.contains(r#"<a href="/t/parity-fixture-replies-and-posters/35/2">"#));
     assert!(html.contains(r#"href="/c/general/sub-general/34""#));
     assert!(html.contains(r#"data-badge-slug="member""#));
+    // DUserStat's and CollapsedInfo's whitespace, collapsed.
+    assert!(html.contains(
+        r#"<li class="stats-days-visited"><div class="user-stat"><span class="value"> <span class="number">"#
+    ));
+    assert!(
+        html.contains(r#"</span> </span> <span class="label"> days visited </span></div></li>"#)
+            || html
+                .contains(r#"</span> </span> <span class="label"> day visited </span></div></li>"#)
+    );
+    assert!(html.contains(r#"<span class="label"> <svg class="fa d-icon d-icon-heart "#));
+    assert!(html.contains(r#"<dl> <div><dt class="created-at">Joined</dt><dd class="created-at"> <span class="relative-date date" "#));
 
     // The other tails render the same page; /users is an alias.
     for path in [

@@ -1,0 +1,300 @@
+/*
+ * Select-kit's base rules (common/select-kit: select-kit, single-select,
+ * combo-box, category-row and category-chooser), first ported with the
+ * composer's category chooser. Rails imports common/select-kit before
+ * common/components and common/base, so they sit right after the
+ * foundation here: where a component's rule is as specific (the button's
+ * `.btn .d-icon` against `.select-kit .d-icon`), the component wins, as
+ * on the reference. Each rule is the compiled rule of the source line it
+ * names.
+ */
+
+/* common/select-kit/select-kit.scss */
+
+/* select-kit.scss:3 */
+.select-kit {
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  border: none;
+  box-sizing: border-box;
+  display: inline-block;
+  flex-direction: column;
+  position: relative;
+  vertical-align: middle;
+}
+/* select-kit.scss:16 */
+.select-kit>summary {
+  list-style-type: none;
+  display: block;
+}
+/* select-kit.scss:20 */
+.select-kit>summary::before {
+  content: none !important;
+  margin: 0;
+}
+/* select-kit.scss:45 */
+.select-kit.is-expanded {
+  z-index: 300;
+}
+/* select-kit.scss:48 */
+.select-kit.is-expanded .select-kit-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--d-border-radius);
+  border: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-dropdown);
+  background: var(--secondary);
+  max-width: 600px;
+  overflow: hidden;
+}
+/* select-kit.scss:61 */
+.select-kit.is-expanded .select-kit-collection {
+  box-sizing: border-box;
+  width: 100%;
+}
+/* select-kit.scss:66 */
+.select-kit.is-expanded .select-kit-filter.is-expanded {
+  padding: .25em .5em;
+}
+/* select-kit.scss:97 */
+.select-kit .d-icon {
+  color: var(--primary-medium);
+}
+/* select-kit.scss:101 */
+.select-kit .select-kit-header {
+  border: 1px solid rgba(0,0,0,0);
+  font-size: var(--font-0);
+  line-height: normal;
+  box-sizing: border-box;
+  padding: .5em .65em;
+  font-weight: 500;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+/* select-kit.scss:110 */
+.select-kit .select-kit-header:not(.btn) {
+  border-radius: var(--d-input-border-radius);
+  padding-left: .5em;
+  padding-right: .5em;
+}
+/* select-kit.scss:121 */
+.select-kit .select-kit-header .select-kit-header-wrapper {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+/* select-kit.scss:132 */
+.select-kit .select-kit-header .selected-name {
+  text-align: left;
+  flex: 0 1 auto;
+  align-items: center;
+  color: inherit;
+  display: flex;
+  outline: none;
+  min-width: 0;
+}
+/* select-kit.scss:149 */
+.select-kit .select-kit-header .selected-name .name {
+  display: inline-flex;
+  gap: .5em;
+  min-width: 0;
+}
+/* select-kit.scss:182 */
+.select-kit .select-kit-header .angle-icon {
+  margin-left: auto;
+  margin-right: 0;
+  padding-left: 5px;
+  pointer-events: none;
+  color: var(--primary-medium);
+}
+/* select-kit.scss:204 */
+.select-kit .select-kit-body {
+  display: none;
+  background: var(--secondary);
+  box-sizing: border-box;
+  width: max-content;
+}
+/* select-kit.scss:216 */
+.select-kit .select-kit-row {
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  flex: 1 0 auto;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-start;
+  padding: .5em;
+}
+/* select-kit.scss:235 */
+.select-kit .select-kit-row>* {
+  pointer-events: none;
+}
+/* select-kit.scss:251 */
+.select-kit .select-kit-row.is-highlighted {
+  background: var(--d-hover);
+}
+/* select-kit.scss:255 */
+.select-kit .select-kit-row.is-selected,
+.select-kit .select-kit-row.is-selected.is-highlighted {
+  background: var(--d-selected);
+  color: var(--d-selected-text-color);
+}
+/* select-kit.scss:273 */
+.select-kit .select-kit-collection {
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0;
+  max-height: 250px;
+  width: 100%;
+}
+/* select-kit.scss:313 */
+.select-kit .select-kit-filter {
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+}
+/* select-kit.scss:320 */
+.select-kit .select-kit-filter .filter-input {
+  background: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 0 0px;
+  outline: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 30px;
+}
+
+/* common/select-kit/single-select.scss */
+
+/* single-select.scss:2 */
+.select-kit.single-select .select-kit-filter {
+  display: flex;
+}
+/* single-select.scss:5 */
+.select-kit.single-select .select-kit-filter.is-expanded {
+  border-bottom: 1px solid var(--content-border-color);
+}
+/* single-select.scss:10 */
+.select-kit.single-select.is-expanded .select-kit-header:not(.btn),
+.select-kit.single-select .select-kit-header:not(.btn):focus,
+.select-kit.single-select .select-kit-header:not(.btn):active {
+  border-color: var(--d-input-focused-color);
+  outline: 2px solid var(--d-input-focused-color);
+  outline-offset: -2px;
+}
+
+/* common/select-kit/combo-box.scss */
+
+/* combo-box.scss:3 */
+.select-kit.combo-box .select-kit-body {
+  border-radius: 0;
+}
+/* combo-box.scss:7 */
+.select-kit.combo-box .select-kit-row {
+  margin: 0;
+  min-height: 1px;
+}
+/* combo-box.scss:17 */
+.select-kit.combo-box .select-kit-filter .filter-input,
+.select-kit.combo-box .select-kit-filter .filter-input:focus,
+.select-kit.combo-box .select-kit-filter .filter-input:active {
+  flex: 1;
+}
+/* combo-box.scss:23 */
+.select-kit.combo-box .select-kit-filter .filter-icon {
+  margin-left: .25em;
+}
+/* combo-box.scss:28 */
+.select-kit.combo-box .select-kit-header {
+  background: var(--secondary);
+  border-color: var(--input-border-color);
+}
+/* combo-box.scss:37 */
+.select-kit.combo-box .select-kit-collection {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  min-width: 100px;
+}
+/* combo-box.scss:77 */
+.select-kit.combo-box.tag-drop,
+.select-kit.combo-box.group-dropdown {
+  min-width: auto;
+}
+/* combo-box.scss:82 */
+.select-kit.combo-box.tag-drop {
+  color: var(--primary-high);
+}
+
+/* common/select-kit/category-row.scss */
+
+/* category-row.scss:2 */
+.select-kit .select-kit-row.category-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+/* category-row.scss:6 */
+.select-kit .select-kit-row.category-row .category-status {
+  display: flex;
+  align-items: baseline;
+  max-width: 100%;
+  flex: 1 1 auto;
+  gap: 0 .5em;
+}
+/* category-row.scss:18 */
+.select-kit .select-kit-row.category-row .category-desc {
+  margin: 0;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+}
+/* category-row.scss:24 */
+.select-kit .select-kit-row.category-row .topic-count {
+  white-space: nowrap;
+}
+
+/* common/select-kit/category-chooser.scss */
+
+/* category-chooser.scss:3 */
+.select-kit.combo-box.category-chooser {
+  width: 300px;
+}
+/* category-chooser.scss:6 */
+.select-kit.combo-box.category-chooser .select-kit-row {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+/* category-chooser.scss:17 */
+.select-kit.combo-box.category-chooser .select-kit-row .topic-count {
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+  white-space: nowrap;
+  margin-left: .5em;
+  font-weight: normal;
+}
+/* category-chooser.scss:25 */
+.select-kit.combo-box.category-chooser .select-kit-row .category-status {
+  color: var(--primary);
+  line-height: var(--line-height-large);
+  flex: 1 1 auto;
+}
+/* category-chooser.scss:31 */
+.select-kit.combo-box.category-chooser .select-kit-row .category-desc {
+  flex: 1 1 auto;
+  font-size: var(--font-down-1);
+  line-height: var(--line-height-large);
+}
+
