@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270a, 271a, 272a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3531,6 +3531,42 @@ route table has been made, so this list may be short.
     (src/html.rs:1345); loading more on scroll (DLoadMore with the
     footer's spinner): the port pages with its "Next page" link instead
     (templates/latest.html:53)
+272. ~~`fix/avatar-dpr`~~ (done) S: on a phone or any screen with a
+    device pixel ratio above 1.1 every avatar loaded a smaller image than
+    Ember's (a Pixel 5's 48px post avatar 48.png where Ember asks for
+    144.png). Ember's avatarImg (discourse/lib/avatar-utils) draws width
+    and height at translateSize (tiny and small 24, medium and large 48,
+    extra_large 96, huge 144) and the src at getRawAvatarSize: the size
+    times 1, 2 (ratio above 1.1, below 2.1) or 3, rounded up to the next
+    of avatar_sizes, else the largest (DPR 3: 24 to 72.png, 48 to
+    144.png, 96 and 144 to 288.png). No srcset; Rails' crawler views
+    draw fixed sizes and Ember's first render already reads the ratio,
+    so the visible DOM always has the scaled src. Now static/js/avatars.js
+    loads in every page's head with avatar_sizes (data-sizes) and, as the
+    parser, a swap or a fetched fragment inserts an img with a width
+    whose avatar URL (user_avatar, letter_avatar, letter_avatar_proxy) is
+    at that width or its size at ratio 1, rewrites the size segment to
+    getRawAvatarSize; cooked content keeps its src (Rails cooks quote
+    avatars at 48 for width 24) as do the user API key pages (a fixed
+    24). The redeemed invites list drew its avatar at 20 with
+    loading=lazy and no title; now dAvatar's tiny (24, the display name
+    as title). Compared with playwright against rs-ref-c, desktop 1280
+    at DPR 1, 2 and 3 and the Pixel 5 profile at DPR 1, 2, 2.75 and 3:
+    every avatar's width, height and src size (and the loaded image's
+    natural width) match on /latest, a topic, /u/user1/summary, /u,
+    /about, a topic with a cooked quote, a user card opened from a post,
+    a topic reached from /latest by an in-app link, anonymous and as
+    user1 (/latest, the user menu, notifications, redeemed invites);
+    element screenshots of the topic and profile avatars are identical
+    bytes at each ratio. Found by the small-action branch (268). Left,
+    split into 272a.
+    272a. `fix/avatar-dpr-rest` S: chat's avatars (messages, DM
+    channels, the members list) were not measured, the seed having no
+    messages; the pages not listed above (search, review, groups,
+    admin, badges) were checked only by their markup following the rule
+    avatars.js reads (tests/html_pages.rs), not against Ember; the
+    browser's preload scanner still fetches the ratio 1 image before the
+    redraw, a request Ember doesn't make
 
 ### Phase 11: the bundled plugins' gaps (210)
 

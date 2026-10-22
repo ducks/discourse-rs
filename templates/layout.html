@@ -70,6 +70,8 @@
     <script src="{{ crate::assets::url(base_path, "page.js") }}"></script>
     {#- Dates in the viewer's zone, drawn as the body is parsed. -#}
     <script src="{{ crate::assets::url(base_path, "dates.js") }}"{{ chrome.dates_attrs|safe }}></script>
+    {#- Avatars at the screen's pixel density, drawn as the body is parsed. -#}
+    <script src="{{ crate::assets::url(base_path, "avatars.js") }}" data-sizes="{{ chrome.avatar_sizes }}"></script>
     <script src="{{ crate::assets::url(base_path, "cooked.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "floating-ui.core.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "floating-ui.dom.umd.min.js") }}"></script>

@@ -482,9 +482,16 @@ fn redeemed_table(cx: &ListContext, invites: &[Value], details: bool) -> String 
         } else {
             ""
         };
+        // dAvatar at tiny, titled with the display name (BasicUserSerializer
+        // carries no title or description).
+        let title = match u["name"].as_str() {
+            Some(name) if cx.settings.prioritize_name && !name.trim().is_empty() => name,
+            _ => username,
+        };
         let avatar = format!(
-            "<img loading=\"lazy\" alt=\"\" width=\"20\" height=\"20\" src=\"{prefix}{}\" class=\"avatar\">",
-            escape(&template.replace("{size}", "20"))
+            "<img alt=\"\" width=\"24\" height=\"24\" src=\"{prefix}{}\" class=\"avatar\" title=\"{}\">",
+            escape(&template.replace("{size}", "24")),
+            escape(title)
         );
         out.push_str(&format!(
             "<tr class=\"d-table__row\"><td class=\"d-table__cell --overview\"><a href=\"{path}\">{avatar}</a> <a href=\"{path}\">{}</a></td>",

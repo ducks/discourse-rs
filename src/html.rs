@@ -280,6 +280,10 @@ pub struct Chrome {
     /// What static/js/dates.js reads, as data attributes for its script
     /// tag: the dates.* strings and relative_date_duration.
     pub dates_attrs: String,
+    /// avatar_sizes, for static/js/avatars.js's script tag: the sizes it
+    /// picks an avatar's source from at the screen's pixel density
+    /// (getRawAvatarSize).
+    pub avatar_sizes: String,
     /// User.resolveCurrent's `_saveTimezone`: a member without a timezone
     /// saves the browser's guess as the app boots.
     pub save_timezone: bool,
@@ -895,6 +899,7 @@ impl Site {
         );
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
         self.chrome.dates_attrs = dates_attrs(settings, &state.i18n)?;
+        self.chrome.avatar_sizes = settings.get("avatar_sizes")?.to_s().to_string();
         self.chrome.text_size = settings.get("default_text_size")?.to_s();
         // The member's options the chrome reads: text size, local dates and
         // the composer's.

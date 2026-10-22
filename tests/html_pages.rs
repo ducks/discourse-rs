@@ -1238,3 +1238,86 @@ async fn the_mobile_docked_header_leaves_out_the_grandparent_badge_only() {
     assert!(!template.contains("--has-parent"), "{template}");
     assert!(template.contains(">howto</a>"), "{template}");
 }
+
+/// Avatars are drawn for a device pixel ratio of 1 and redrawn at the
+/// screen's by static/js/avatars.js, as Ember's avatarImg draws them
+/// (getRawAvatarSize): every page's head loads it with avatar_sizes, and
+/// every avatar it should redraw is one it recognizes, an img with a
+/// width whose avatar URL is at that width or that width's size at a
+/// ratio of 1. The redraw itself was measured with playwright against
+/// Rails (ROADMAP.md item 272).
+#[tokio::test]
+async fn avatars_are_drawn_for_avatars_js_to_scale() {
+    let db = TestDb::new().await;
+    let avatar = regex::Regex::new(
+        r#"<img [^>]*\bsrc=['"][^'"]*/(?:user_avatar/[^/]+/[^/]+|letter_avatar/[^/]+|letter_avatar_proxy/v\d+/letter/[^/]+/[^/]+)/(\d+)(?:/|\.png)[^>]*>"#,
+    )
+    .unwrap();
+    let width = regex::Regex::new(r#"\bwidth=['"](\d+)['"]"#).unwrap();
+    // getRawAvatarSize at a ratio of 1 with the default avatar_sizes.
+    let raw = |size: u32| {
+        [24, 48, 72, 96, 144, 288]
+            .into_iter()
+            .find(|s| *s >= size)
+            .unwrap_or(288)
+    };
+    for mobile in [false, true] {
+        for path in [
+            "/latest",
+            "/t/parity-fixture-replies-and-posters/35",
+            "/u/user1/summary",
+            "/u",
+            "/about",
+        ] {
+            let app = discourse_rs::app(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+            let mut request = Request::get(path).header(header::HOST, "test.localhost");
+            if mobile {
+                request = request.header(header::COOKIE, "mobile_view=1");
+            }
+            let response = app
+                .oneshot(request.body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK, "{path}");
+            let bytes = response.into_body().collect().await.unwrap().to_bytes();
+            let html = String::from_utf8_lossy(&bytes).into_owned();
+            let head = &html[..html.find("</head>").unwrap()];
+            assert!(
+                head.contains(r#"<script src="/assets/avatars.js?v="#)
+                    && head.contains(r#" data-sizes="24|48|72|96|144|288"></script>"#),
+                "{path}"
+            );
+            let mut seen = 0;
+            for m in avatar.captures_iter(&html) {
+                let img = &m[0];
+                let drawn: u32 = m[1].parse().unwrap();
+                let w: u32 = width
+                    .captures(img)
+                    .unwrap_or_else(|| panic!("{path}: no width: {img}"))[1]
+                    .parse()
+                    .unwrap();
+                assert!(
+                    drawn == w || drawn == raw(w),
+                    "{path} (mobile {mobile}): {img}"
+                );
+                seen += 1;
+            }
+            assert!(seen > 0, "{path} (mobile {mobile}): no avatars");
+        }
+    }
+}
+
+/// avatars.js picks among the site's avatar_sizes, as getRawAvatarSize
+/// reads the setting.
+#[tokio::test]
+async fn avatars_js_takes_the_sites_avatar_sizes() {
+    let db = TestDb::new().await;
+    // 8: SiteSettings::TypeSupervisor's list.
+    common::set_setting(&db.pool, "avatar_sizes", 8, "24|48|120|240").await;
+    let (_, _, html) = get(&db.pool, "/latest").await;
+    assert!(
+        html.contains(r#" data-sizes="24|48|120|240"></script>"#),
+        "{}",
+        &html[..html.find("</head>").unwrap()]
+    );
+}
