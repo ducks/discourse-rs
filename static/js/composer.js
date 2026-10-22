@@ -466,7 +466,9 @@
     lastDraftSaved = null;
     if (opts.mode === "create-topic") {
       selectCategory(opts.category || data.defaultCategory);
-      setTags([]);
+      // The new-topic route's topicTitle and topicTags.
+      title.value = opts.title || "";
+      setTags(opts.tags || []);
     }
     s.firstPost = opts.mode === "edit" && String(opts.postNumber) === "1";
     if (s.firstPost) {
@@ -493,11 +495,16 @@
       opts.mode === "create-topic" && !resuming
         ? Promise.resolve(null)
         : fetchDraft(s.draftKey);
+    var prefilled = opts.mode === "create-topic" && !resuming && Boolean(opts.title || opts.body);
     // Editing a first post: the topic's title, category and tags, as
     // the topic model holds them in Ember.
     var topicLoad = s.firstPost ? loadTopic(s) : Promise.resolve();
     Promise.all([lookup, topicLoad])
       .then(function (results) {
+        // The new-topic route's topicBody.
+        if (opts.mode === "create-topic" && !resuming && opts.body) {
+          return opts.body;
+        }
         return initialText(s, results[0]);
       })
       .then(function (text) {
@@ -521,10 +528,16 @@
         }
         s.loading = false;
         textarea.disabled = false;
-        if (s.mode === "create-topic" && title.value === "") {
+        // A prefilled composer opened empty, then took the route's title
+        // and body: the title has the focus it took then, and what was
+        // filled in is saved as a draft once it settles.
+        if (s.mode === "create-topic" && (title.value === "" || prefilled)) {
           title.focus();
         } else {
           textarea.focus();
+        }
+        if (prefilled) {
+          scheduleDraft();
         }
       });
   }
@@ -818,6 +831,249 @@
   textarea.addEventListener("input", schedulePreview);
   textarea.addEventListener("input", announce);
 
+  // The new-topic and new-message routes (routes/new-topic.js,
+  // new-message.js) as composer.openNewTopic and openNewMessage take
+  // their query params.
+  // The dialog service's alert. A page that has no dialog loads it (its
+  // labels with it) the first time one is needed.
+  var dialogLoading = null;
+  function alertText(message) {
+    if (window.Discourse && Discourse.dialog) {
+      Discourse.dialog.alert(message);
+      return;
+    }
+    if (!dialogLoading) {
+      dialogLoading = new Promise(function (resolve, reject) {
+        if (!document.getElementById("dialog-strings")) {
+          var strings = document.createElement("script");
+          strings.type = "application/json";
+          strings.id = "dialog-strings";
+          strings.textContent = data.dialogStrings || "{}";
+          document.head.appendChild(strings);
+        }
+        var script = document.createElement("script");
+        script.src = data.dialogSrc;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    dialogLoading.then(
+      function () {
+        Discourse.dialog.alert(message);
+      },
+      function () {
+        dialogLoading = null;
+        window.alert(message);
+      }
+    );
+  }
+
+  function unported(what) {
+    alertText(data.labelUnported + " " + what);
+  }
+
+  // composer.filterTags: staff keep the tags as given; anyone else gets
+  // the ones /tags/list.json finds of them (visible, not staff-only).
+  function filterTags(tags) {
+    if (!tags || tagOpts.staff) {
+      return Promise.resolve(tags);
+    }
+    var query = new URLSearchParams([["only_tags", tags]]);
+    return fetch(base + "/tags/list.json?" + query, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.status);
+        }
+        return r.json();
+      })
+      .then(function (json) {
+        return (json.list_tags || [])
+          .filter(function (t) {
+            return !t.staff;
+          })
+          .map(function (t) {
+            return t.name;
+          })
+          .join(",");
+      });
+  }
+
+  // lib/utilities escapeExpression
+  function escapeExpression(s) {
+    var map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;", "`": "&#x60;", "=": "&#x3D;" };
+    return String(s).replace(/[&<>"'`=]/g, function (c) {
+      return map[c];
+    });
+  }
+
+  function openNewTopic(params, category, sharedDraft) {
+    // CREATE_SHARED_DRAFT, and a category the member can't create topics
+    // in, which Ember's chooser shows read-only (readOnlyCategoryId).
+    if (sharedDraft) {
+      unported("creating a shared draft");
+      return;
+    }
+    if (category && !chooser.querySelector('.category-row[data-value="' + category + '"]')) {
+      unported("a category the composer shows read-only");
+      return;
+    }
+    filterTags(params.tags)
+      .catch(function () {
+        return null;
+      })
+      .then(function (tags) {
+        var opts = { mode: "create-topic", category: category || null, body: params.body };
+        // The composer service: a title within max_topic_title_length, and
+        // tags (escaped, the first max_tags_per_topic, each cut to
+        // max_tag_length) when the member may tag topics.
+        var max = parseInt(data.maxTitleLength, 10);
+        if (params.title && params.title.length <= max) {
+          opts.title = params.title;
+        }
+        if (tags && tagChooser) {
+          opts.tags = escapeExpression(tags)
+            .split(",")
+            .slice(0, tagOpts.maximum)
+            .map(function (tag) {
+              return tag.substring(0, tagOpts.maxLength);
+            });
+        }
+        open(opts);
+      });
+  }
+
+  // The message composer itself is 196's; a group is checked first, as
+  // the route does (Group.messageable).
+  function openNewMessage(params) {
+    var groupname = params.groupname || params.group_name;
+    if (params.username || !groupname) {
+      unported("the message composer");
+      return;
+    }
+    fetch(base + "/groups/" + encodeURIComponent(groupname) + "/messageable.json", {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.status);
+        }
+        return r.json();
+      })
+      .then(
+        function (json) {
+          if (json.messageable) {
+            unported("the message composer");
+          } else {
+            alertText(data.labelCantSendPm.split("%{username}").join(groupname));
+          }
+        },
+        function () {
+          alertText(data.labelCreateMessageError);
+        }
+      );
+  }
+
+  // A page load of either route: the server drew the page the route goes
+  // to and says where it went and what to open (src/routes/new_topic.rs).
+  function routeArrived() {
+    var el = document.getElementById("composer-open");
+    if (!el || !control.isConnected) {
+      return;
+    }
+    el.remove();
+    var go;
+    try {
+      go = JSON.parse(el.textContent);
+    } catch (_) {
+      return;
+    }
+    history.replaceState(history.state, "", go.url);
+    if (!go.open) {
+      return;
+    }
+    if (go.route === "new-topic") {
+      openNewTopic(go.params, go.category, go.sharedDraft);
+    } else {
+      openNewMessage(go.params);
+    }
+  }
+
+  // route-recognizer's parseQueryString, as the router reads a link's
+  // query: only the first two parts of a pair, "true" without `=`, the
+  // last of a name. Null for an array param (`tags[]=`), which the
+  // composer trips over: the server refuses those.
+  function parseQueryString(query) {
+    var params = {};
+    if (!query) {
+      return params;
+    }
+    var decode = function (part) {
+      try {
+        return decodeURIComponent(part.replace(/\+/g, "%20"));
+      } catch (_) {
+        return "";
+      }
+    };
+    var pairs = query.split("&");
+    for (var i = 0; i < pairs.length; i++) {
+      var pair = pairs[i].split("=");
+      var key = decode(pair[0]);
+      if (pair.length === 1) {
+        params[key] = "true";
+      } else if (key.length > 2 && key.slice(-2) === "[]") {
+        return null;
+      } else {
+        params[key] = pair[1] ? decode(pair[1]) : "";
+      }
+    }
+    return params;
+  }
+
+  // A link to either route from another page: the route aborts that
+  // transition and opens the composer where the member is, unless a
+  // category is asked for, whose page the route goes to (the server's).
+  document.addEventListener(
+    "click",
+    function (event) {
+      if (!control.isConnected || event.defaultPrevented || event.button !== 0) {
+        return;
+      }
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      var link = event.target.closest && event.target.closest("a[href]");
+      if (!link || (link.target && link.target !== "_self") || link.hasAttribute("download")) {
+        return;
+      }
+      var url = new URL(link.href, location.href);
+      if (url.origin !== location.origin) {
+        return;
+      }
+      var params = parseQueryString(url.search.slice(1));
+      if (!params) {
+        return;
+      }
+      if (url.pathname === base + "/new-topic") {
+        if (params.category || params.category_id) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        openNewTopic(params, null, false);
+      } else if (url.pathname === base + "/new-message") {
+        event.preventDefault();
+        event.stopPropagation();
+        openNewMessage(params);
+      }
+    },
+    true
+  );
+
   // The category chooser.
   function selectCategory(id) {
     var row = chooser.querySelector('.category-row[data-value="' + id + '"]');
@@ -826,16 +1082,20 @@
     if (!row) {
       return;
     }
+    // A subcategory's header shows its parent's badge before its own, as
+    // the chooser's row does.
     var badges = row.querySelectorAll(".category-status > .badge-category__wrapper");
-    var badge = badges[badges.length - 1].cloneNode(true);
-    var count = badge.querySelector(".topic-count");
-    if (count) {
-      count.remove();
-    }
     header.innerHTML = "";
     var name = document.createElement("span");
     name.className = "name";
-    name.appendChild(badge);
+    badges.forEach(function (b) {
+      var badge = b.cloneNode(true);
+      var count = badge.querySelector(".topic-count");
+      if (count) {
+        count.remove();
+      }
+      name.appendChild(badge);
+    });
     header.appendChild(name);
     header.dataset.value = id;
     header.dataset.name = row.dataset.name;
@@ -1931,12 +2191,7 @@
       return;
     }
     if (!d.canCreatePost) {
-      var message = data.labelUnported + " replying as a new topic";
-      if (Discourse.dialog) {
-        Discourse.dialog.alert(message);
-      } else {
-        window.alert(message);
-      }
+      unported("replying as a new topic");
       return;
     }
     var first = parseInt(d.postNumber, 10) === 1;
@@ -2532,6 +2787,13 @@
         event.stopPropagation();
       }
     }, { passive: false });
+  }
+
+  // Last, once everything it opens with is set up.
+  if (window.Discourse && Discourse.onPage) {
+    Discourse.onPage(routeArrived);
+  } else {
+    routeArrived();
   }
 
   window.composer = { open: open };

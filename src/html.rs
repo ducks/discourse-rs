@@ -400,6 +400,20 @@ impl Chrome {
     }
 }
 
+/// static/js/dialog.js's #dialog-strings: its buttons' labels.
+pub(crate) fn dialog_strings(i18n: &I18n) -> String {
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
+    serde_json::json!({
+        "ok_value": t("ok_value"),
+        "cancel": t("cancel"),
+        "yes_value": t("yes_value"),
+        "no_value": t("no_value"),
+        "modal.close": t("modal.close"),
+    })
+    .to_string()
+    .replace('<', "\\u003c")
+}
+
 /// The search menu's strings (search-menu.js), by the name it reads them
 /// with, from their js.search.* keys.
 fn search_menu_strings(i18n: &I18n) -> String {
@@ -1206,6 +1220,11 @@ impl Site {
             .as_ref(),
             Some((&popup_options, &unported_popup)),
             tag_chooser.as_ref(),
+            &crate::composer_view::RouteData {
+                max_title_length: settings.get("max_topic_title_length")?.to_i(),
+                dialog_src: crate::assets::url(&self.base_path, "dialog.js"),
+                dialog_strings: dialog_strings(&state.i18n),
+            },
         );
         self.categories = Some(categories);
         Ok(html)
@@ -2502,16 +2521,7 @@ pub async fn topic_page(
     let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref(), pm_counts)?;
     let quote_config = quote_button_config(conn, i18n, settings, view, viewer).await?;
     let dialog_strings = if view["archetype"] == "private_message" && viewer.is_some() {
-        let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
-        serde_json::json!({
-            "ok_value": t("ok_value"),
-            "cancel": t("cancel"),
-            "yes_value": t("yes_value"),
-            "no_value": t("no_value"),
-            "modal.close": t("modal.close"),
-        })
-        .to_string()
-        .replace('<', "\\u003c")
+        dialog_strings(i18n)
     } else {
         String::new()
     };

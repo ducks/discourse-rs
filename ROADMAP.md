@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 269a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3282,6 +3282,64 @@ route table has been made, so this list may be short.
     header (templates/latest.html:25); EmptyTopicFilter's education in a
     member's empty list footer (templates/latest.html:46, with its
     "Browse latest topics" and per-filter texts)
+269. ~~`fix/new-topic-route`~~ (done) S: GET /new-topic and /new-message
+    answered 404 (the PWA manifest's New Topic shortcut and embedding's
+    create link point there). Now new_topic#index (routes/new_topic.rs)
+    as Ember's new-topic and new-message routes leave a page load: an
+    anonymous visitor gets the login page, which keeps the URL as the
+    destination_url and takes /login (login.js, the login route's
+    beforeModel reading the URL its transition starts from, so the
+    forgot-password route's login page takes /login too, its
+    ForgotPassword modal now waiting for the deferred modal.js, without
+    which it never opened on a page load), and after logging in lands
+    back on it; a member gets the page the route
+    replaces itself with, the category asked for (`category_id`, else
+    `category` by name then slug, `parent/child` under the parent, among
+    the site's categories) drawn as /c/:slug/:id under the URL /c/:id,
+    else the homepage (discovery.<homepage>) with the query params its
+    route knows (the discovery list's and `filter`, discourse-solved's
+    `solved`; only `filter` for categories) sorted and encoded as Ember's
+    router writes them. Before the composer the page carries
+    `#composer-open`, which composer.js reads: it replaces the URL and
+    opens the composer as openNewTopic does, the title within
+    max_topic_title_length, the body, the tags escaped, cut to
+    max_tags_per_topic and max_tag_length and, for non-staff, kept to
+    those /tags/list.json finds, the category, only for a member who may
+    create topics, saving the draft once it settles. Query params are
+    read as route-recognizer reads them (a pair's first two parts,
+    "true" without `=`, the last of a name). A link to either route from
+    another page opens the composer in place, a category asked for going
+    to its page. /new-message checks a group (Group.messageable, the
+    cant_send_pm and create_message_error alerts); the composer's alerts
+    load dialog.js on a page without it. The composer's category chooser
+    now shows a subcategory's parent badge before its own, as Ember's
+    header does. "Reply as new topic" and the share-target modal open the
+    composer themselves and never use these URLs. Compared with
+    playwright against rs-ref-c, anonymous and as user1 and admin,
+    desktop 1280 and mobile 390: 12 URLs (no params, title, body and
+    tags, each category form, a missing category, a long title, staff
+    tags, the message forms) give the same URL afterwards, page title,
+    page under it and composer state (title, body, category, tags,
+    focus, the saved draft), and the same login, logging in through the
+    form back to the composer, and in-place links from a topic. Found by
+    the screenshot run. Left, split into 269a.
+    269a. `feat/new-topic-route-rest` S: the message composer itself
+    (196; static/js/composer.js:954,970); creating a shared draft
+    (CREATE_SHARED_DRAFT, :917) and a category the composer shows
+    read-only (readOnlyCategoryId, :921); lazy-loaded categories
+    (Category.asyncFindById and asyncFindBySlugPath,
+    routes/new_topic.rs:323); a custom or blank homepage under it (:172);
+    array params (`tags[]=`, :218), which Ember collects into arrays the
+    composer trips over; asked for as JSON (:101); formTemplateInitialValues
+    waits on the composer's form templates. Around it, not the route's:
+    the lists under it ignore the discovery params they are handed
+    (tags, status, q and the rest; routes/list.rs:62 reads page,
+    per_page, order, ascending, state and subset), and the list pages
+    draw no navigation-*, category-* or welcome-banner body classes. A
+    link with a category the site doesn't have goes to the homepage
+    where Ember opens the composer in place, and a link with one keeps
+    the page left in history where Ember's replaceWith replaces it
+    (static/js/composer.js:1062)
 
 ### Phase 11: the bundled plugins' gaps (210)
 
