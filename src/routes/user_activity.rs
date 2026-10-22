@@ -369,6 +369,8 @@ pub async fn bulk_bookmarks(
         return Ok(super::search::invalid_parameters(&state, "operation"));
     }
     let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
     let found: Vec<(i64, i64)> = sqlx::query_as(
         "SELECT id::bigint, user_id::bigint FROM bookmarks WHERE id = ANY($1) ORDER BY id",
     )
@@ -386,7 +388,11 @@ pub async fn bulk_bookmarks(
             break;
         }
         if kind == "delete" {
-            match crate::bookmark_manager::destroy(&state.bus, &mut tx, user_id, id as i32).await? {
+            match crate::bookmark_manager::destroy(
+                &state.bus, &mut tx, &settings, user_id, id as i32,
+            )
+            .await?
+            {
                 crate::bookmark_manager::Outcome::Destroyed {
                     reminders_deleted: deleted,
                     ..
@@ -409,8 +415,6 @@ pub async fn bulk_bookmarks(
     // The reminder notifications' after_commit refresh_notification_count.
     if reminders_deleted {
         let mut conn = state.pool.acquire().await?;
-        let settings =
-            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
         crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id).await?;
     }
     if forbidden {

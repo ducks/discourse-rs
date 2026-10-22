@@ -446,6 +446,68 @@ async fn bookmark_reminders_are_drawn_in_the_members_zone() {
     );
 }
 
+/// A chat message bookmark of user1's in the General channel (whose name
+/// needs escaping), and one in the staff channel user1 has no membership
+/// of.
+async fn chat_bookmarks(db: &TestDb) {
+    for sql in [
+        "UPDATE chat_channels SET name = 'Tom & Jerry' WHERE id = 2",
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES \
+         (1, 2, 2, '2026-10-02 10:00:00', '2026-10-02 10:00:00', 'Hello from chat', '<p>Hello from chat</p>', 1, 2), \
+         (4, 1, 1, '2026-10-02 10:15:00', '2026-10-02 10:15:00', 'Staff only chatter', '<p>Staff only chatter</p>', 1, 1)",
+        "INSERT INTO bookmarks (id, user_id, bookmarkable_id, bookmarkable_type, name, reminder_set_at, auto_delete_preference, created_at, updated_at) VALUES \
+         (10, 3, 1, 'ChatMessage', 'Chat fixture', now(), 3, '2026-10-02 11:00:00', '2026-10-02 11:00:00'), \
+         (13, 3, 4, 'ChatMessage', NULL, now(), 3, '2026-10-02 11:03:00', '2026-10-02 11:03:00')",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+}
+
+/// BookmarkList's row for a bookmark that isn't topic-alike (chat's): a
+/// heading linking to the message with the channel's title, no topic
+/// status, category or tags; the author's avatar and the excerpt.
+#[tokio::test]
+async fn chat_message_bookmarks_are_listed() {
+    let db = TestDb::new().await;
+    chat_bookmarks(&db).await;
+    let mut user1 = client(&db, "user1").await;
+    let page = user1.page("/u/user1/activity/bookmarks").await;
+    assert_eq!(page.status, StatusCode::OK, "{}", page.html);
+    let html = page.html;
+    assert!(
+        html.contains(
+            "<a aria-level=\"2\" class=\"title\" href=\"/chat/c/-/2/1\" role=\"heading\">Tom &amp; Jerry</a>"
+        ),
+        "{html}"
+    );
+    assert!(
+        html.contains("<p class=\"post-excerpt\">Hello from chat</p>"),
+        "{html}"
+    );
+    assert!(!html.contains("Staff only chatter"), "{html}");
+    // The search matches the message.
+    let found = user1.page("/u/user1/activity/bookmarks?q=hello").await.html;
+    assert!(found.contains("href=\"/chat/c/-/2/1\""), "{found}");
+    let (status, menu) = user1.json("/u/user1/user-menu-bookmarks.json").await;
+    assert_eq!(status, StatusCode::OK);
+    let chat: Vec<_> = menu["bookmarks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|b| b["bookmarkable_type"] == "ChatMessage")
+        .map(|b| (b["id"].clone(), b["fancy_title"].clone()))
+        .collect();
+    assert_eq!(
+        chat,
+        vec![(serde_json::json!(10), serde_json::json!("Tom & Jerry"))]
+    );
+    let menu = user1.page("/user-menu?tab=bookmarks").await.html;
+    assert!(
+        menu.contains("<li class=\"bookmark\"><a href=\"/chat/c/-/2/1\" title=\"Chat fixture\">"),
+        "{menu}"
+    );
+}
+
 #[tokio::test]
 async fn no_bookmarks_is_the_empty_state() {
     let db = TestDb::new().await;

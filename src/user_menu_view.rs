@@ -745,9 +745,16 @@ fn notification(cx: &MenuContext, n: &Value) -> Item {
             }
             item.label = None;
             if item.href.is_none() {
-                item.href = data["bookmarkable_url"]
-                    .as_str()
-                    .map(|u| format!("{}{u}", cx.base_path));
+                // getUrl: chat's message URLs carry the base path already.
+                item.href = data["bookmarkable_url"].as_str().map(|u| {
+                    let prefixed = !cx.base_path.is_empty()
+                        && (u == cx.base_path || u.starts_with(&format!("{}/", cx.base_path)));
+                    if prefixed || !u.starts_with('/') || u.starts_with("//") {
+                        u.to_string()
+                    } else {
+                        format!("{}{u}", cx.base_path)
+                    }
+                });
             }
         }
         "custom" => {
