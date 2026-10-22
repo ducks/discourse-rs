@@ -77,8 +77,20 @@ Blockers, a scripted walk-through would hit them:
   the design wizard card is unstyled: fix/theme-screenshot-files (278),
   done: 1.37% to 0.04 desktop, 5.81% to 0.07 mobile.
 - [ ] The topic footer's notifications button sometimes draws as a plain
-  "Watching" box without its bell or caret (seen in both sweeps; cause
-  unknown): fix/footer-notifications-flake.
+  "Watching" box without its bell or caret (seen in both sweeps):
+  fix/footer-notifications-flake narrowed it, cause not found. It shows
+  only in a full-page (beyond the viewport) Chromium capture taken with
+  the sweep's `transition: none !important` rule on every element, on
+  short topics whose footer is in the first screen (/t/41 as admin
+  30-60% of captures, /t/90 as user1 less; never /t/35, /t/91 or
+  mobile). Viewport and element screenshots, resizes and real use always
+  draw the icons. The markup, matched rules, computed styles and boxes
+  equal rs-ref-b's, and rs-ref-b never drops them (0/92). It goes away
+  with the icons `position: static`, with `#topic-footer-buttons`
+  positioned, without the title's voting widget, or with the reference's
+  stylesheets loaded in place of (or beside) ours; it doesn't follow our
+  resize handlers, the body DOM (the reference's sidebar, header and
+  main outlet swapped in still fail) or the footer's markup.
 - [ ] /password-reset over the homepage when login isn't required answers
   500 (261a, routes/login_required.rs:1554).
 - [ ] Chat: /chat/direct-messages and /chat/threads answer 405 with a blank
