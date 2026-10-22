@@ -22,5 +22,9 @@
       "method": "GET",
       "path": "/hashtags/by-ids.json"
     }
+  ],
+  "unordered_responses": [
+    "/responses/*/body/category",
+    "/responses/*/body/channel"
   ]
 }

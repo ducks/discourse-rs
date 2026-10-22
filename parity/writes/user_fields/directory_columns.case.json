@@ -13,5 +13,6 @@
     {"method": "PUT", "path": "/edit-directory-columns.json", "params": {"directory_columns": {"0": {"id": "1", "enabled": "false", "position": "1"}}}},
     {"method": "GET", "path": "/directory-columns"},
     {"method": "GET", "path": "/edit-directory-columns.json"}
-  ]
+  ],
+  "unordered_responses": ["/responses/1/body/directory_columns", "/responses/6/body/directory_columns"]
 }

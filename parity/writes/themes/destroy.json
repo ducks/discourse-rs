@@ -654,14 +654,8 @@
     "themes": 1,
     "user_histories": 74
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields",
-    "/responses/3/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "ea1bc1fa4a34c0f11c060ae28123ddd9829d4a9c1beff7b1f34df543e7d53c3c",
+    "case": "ea9e5ff02937d106f6ba0ef400329147b4e2a8cee879be9dbcdbedcb2327e0ba",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

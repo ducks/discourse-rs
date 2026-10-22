@@ -9669,16 +9669,8 @@
   },
   "jobs": [],
   "next_ids": {},
-  "unordered_responses": [
-    "/responses/0/body/themes/0/theme_fields",
-    "/responses/0/body/themes/1/theme_fields",
-    "/responses/0/body/extras/color_schemes",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields",
-    "/responses/7/body/extras/default_theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "9bbecd9aac32d9b5f23ee1b48216774db72319a8eb657a4aa1bc2f51fde656c1",
+    "case": "18a0b582b51e678370e8d16a3e2bdd293d1c2cbdfba9af91db9be5dcf1988731",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

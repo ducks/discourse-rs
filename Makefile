@@ -158,17 +158,14 @@ vendor-discourse:
 db-load:
 	scripts/db-load $(if $(FORCE),--force) $(DEV_DB)
 
-# The template keeps its tables as loaded: an autovacuum of the template
-# frees the seed's dead tuples, so the copies' updates land in that space
-# and unordered scans (which Rails' recordings also are) change order.
-# The writes recordings were matched against a template whose only
-# planner statistics were theme_fields', so it is analyzed and no other
-# table is: statistics decide the plan, and so the order, of the queries
-# that have no ORDER BY.
+# The template keeps its tables as loaded (no autovacuum), so every run
+# starts from the same heap layout and statistics and a failure reproduces.
+# The writes cases do not depend on that state: what Rails leaves
+# unordered is compared as unordered (README, Parity), and the parity
+# profile passes against analyzed, vacuumed, VACUUM FULL and fresh copies.
 db-test:
 	scripts/db-load --force $(TEST_DB)
 	psql -X -q -v ON_ERROR_STOP=1 -d $(TEST_DB) -c "DO \$$\$$ DECLARE r record; BEGIN FOR r IN SELECT schemaname, tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') LOOP EXECUTE format('ALTER TABLE %I.%I SET (autovacuum_enabled = false, toast.autovacuum_enabled = false)', r.schemaname, r.tablename); END LOOP; END \$$\$$"
-	psql -X -q -v ON_ERROR_STOP=1 -d $(TEST_DB) -c "ANALYZE theme_fields"
 	scripts/drop-stale-test-dbs
 
 parity:

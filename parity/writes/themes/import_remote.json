@@ -772,13 +772,8 @@
   "redis": {
     "ssh_key_ssh-rsa AAAAfancy": "-----BEGIN RSA PRIVATE KEY-----\nfancy\n-----END RSA PRIVATE KEY-----\n"
   },
-  "unordered_responses": [
-    "/responses/5/body/theme/theme_fields",
-    "/responses/6/body/theme/theme_fields",
-    "/responses/7/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "6344facd2b746c9fb323d1f151fe686a8677243bfbaba2b8002745fa443b34bb",
+    "case": "a8fbb776f98049feeab4a3112698f4d60ba4ab32a9554eb79a69fad9b5204ca7",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

@@ -528,11 +528,8 @@
     "INSERT INTO topics (id, title, user_id, archetype, category_id, created_at, updated_at, bumped_at, last_post_user_id) VALUES (9701, 'Moderator topic for the activity report', 4, 'regular', 4, now() - interval '2 days', now() - interval '2 days', now() - interval '2 days', 4)",
     "INSERT INTO posts (id, user_id, topic_id, post_number, raw, cooked, created_at, updated_at, sort_order, last_version_at) VALUES (9711, 4, 9701, 1, 'A moderator writes', '<p>A moderator writes</p>', now() - interval '2 days', now() - interval '2 days', 1, now() - interval '2 days'), (9712, 4, 42, 9, 'A moderator in a PM', '<p>A moderator in a PM</p>', now() - interval '2 days', now() - interval '2 days', 9, now() - interval '2 days')"
   ],
-  "unordered_responses": [
-    "/responses/1/body/report/data"
-  ],
   "recorded_from": {
-    "case": "7c53e8413fbcf2c9a246c14d4e5096a2427068c832149d6628b647668aff47fa",
+    "case": "f26d28d1d6002e29d721c46d8bd489a477bfe29f1e894986833bb59132ce4d3b",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

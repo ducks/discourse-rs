@@ -30,6 +30,9 @@ pub struct Case {
     /// RFC 6901 JSON pointers to drop before comparing; `*` matches every
     /// array element or object key at that level.
     pub ignore: Vec<String>,
+    /// `unordered=/ptr,/ptr`: arrays Rails builds from a query without
+    /// ORDER BY, compared in a canonical order (`Unordered`).
+    pub unordered: Vec<Unordered>,
     /// `as=username`: log in first (password from PARITY_PASSWORD, default
     /// "password") and send the request with the session cookies.
     pub login: Option<String>,
@@ -71,7 +74,8 @@ impl Case {
     }
 }
 
-/// Parses the cases file: one `METHOD /path [ignore=/ptr,/ptr]` per line,
+/// Parses the cases file: one `METHOD /path [ignore=/ptr,/ptr]
+/// [unordered=/ptr,/ptr] [as=user] [body=form]` per line,
 /// blank lines and `#` comments skipped.
 pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
     let mut cases: Vec<Case> = Vec::new();
@@ -99,6 +103,7 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
         }
 
         let mut ignore = Vec::new();
+        let mut unordered = Vec::new();
         let mut login = None;
         let mut body = None;
         for opt in parts {
@@ -108,6 +113,15 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
             }
             if let Some(form) = opt.strip_prefix("body=") {
                 body = Some(form.to_string());
+                continue;
+            }
+            if let Some(ptrs) = opt.strip_prefix("unordered=") {
+                for ptr in ptrs.split(',') {
+                    unordered.push(
+                        Unordered::parse(&Value::String(ptr.to_string()))
+                            .map_err(|e| format!("line {lineno}: {e}"))?,
+                    );
+                }
                 continue;
             }
             let ptrs = opt
@@ -127,6 +141,7 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
             method,
             path,
             ignore,
+            unordered,
             login,
             body,
         };
@@ -241,8 +256,8 @@ pub fn compare(
 
     let body_diff = if expected_type.as_deref().is_some_and(is_json) {
         match (
-            normalize_json(&expected.body, &case.ignore),
-            normalize_json(&actual.body, &case.ignore),
+            normalize_json(&expected.body, case),
+            normalize_json(&actual.body, case),
         ) {
             (Ok(e), Ok(a)) if e == a => None,
             (Ok(e), Ok(a)) => Some(diff(&pretty(&e), &pretty(&a), names)),
@@ -281,10 +296,13 @@ fn is_json(media: &str) -> bool {
     media == "application/json" || media.ends_with("+json")
 }
 
-fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
+fn normalize_json(body: &str, case: &Case) -> Result<Value, String> {
     let mut value: Value = serde_json::from_str(body).map_err(|e| e.to_string())?;
-    for ptr in ignore {
+    for ptr in &case.ignore {
         ignore_path(&mut value, ptr);
+    }
+    for spec in &case.unordered {
+        spec.apply(&mut value);
     }
     unscript(&mut value);
     unorder(&mut value);
@@ -451,6 +469,220 @@ fn remove_path(value: &mut Value, segments: &[String]) {
     }
 }
 
+/// An array whose order Rails leaves to the database, in part or in whole,
+/// named by a JSON pointer (`*` for any key or index).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Unordered {
+    pub path: String,
+    /// The keys Rails orders the array by (its ORDER BY). Empty: no ORDER
+    /// BY at all, so any order is Rails' order.
+    pub ties: Vec<String>,
+    /// Rails' LIMIT cuts through the last run of ties, so which tied items
+    /// made it is chance too: that run compares by its tie keys only.
+    pub cut: bool,
+}
+
+impl Unordered {
+    /// A case's entry: a pointer (no ORDER BY), or `{"path": pointer,
+    /// "ties": [keys]}` (ordered by those keys, ties in no order), with
+    /// `"cut": true` when a LIMIT cuts through the last run of ties.
+    pub fn parse(entry: &Value) -> Result<Unordered, String> {
+        let (path, ties, cut) = match entry {
+            Value::String(path) => (path.clone(), Vec::new(), false),
+            Value::Object(spec) => {
+                let path = spec
+                    .get("path")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| format!("unordered entry without a path: {entry}"))?;
+                let ties = spec
+                    .get("ties")
+                    .and_then(Value::as_array)
+                    .filter(|keys| !keys.is_empty())
+                    .ok_or_else(|| format!("unordered entry without ties: {entry}"))?
+                    .iter()
+                    .map(|k| {
+                        k.as_str()
+                            .map(str::to_string)
+                            .ok_or_else(|| format!("unordered tie key is not a string: {entry}"))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let cut = match spec.get("cut") {
+                    None => false,
+                    Some(Value::Bool(cut)) => *cut,
+                    Some(_) => return Err(format!("unordered cut is not a boolean: {entry}")),
+                };
+                if let Some(extra) = spec
+                    .keys()
+                    .find(|k| !["path", "ties", "cut"].contains(&k.as_str()))
+                {
+                    return Err(format!("unordered entry has unknown key {extra}: {entry}"));
+                }
+                (path.to_string(), ties, cut)
+            }
+            _ => {
+                return Err(format!(
+                    "unordered entry is not a pointer or object: {entry}"
+                ));
+            }
+        };
+        if !path.starts_with('/') {
+            return Err(format!("unordered path {path} is not a JSON pointer"));
+        }
+        Ok(Unordered { path, ties, cut })
+    }
+
+    /// Puts the arrays it names into the canonical order (`canonical`),
+    /// the last run of ties as its tie keys when `cut`.
+    pub fn apply(&self, doc: &mut Value) {
+        each_at(doc, &self.segments(), &mut |items| {
+            let order = self.canonical(items);
+            let mut taken: Vec<Option<Value>> = items.drain(..).map(Some).collect();
+            items.extend(order.into_iter().filter_map(|i| taken[i].take()));
+            if self.cut
+                && let Some(last) = items.last().map(|item| self.tie(item))
+            {
+                for item in items.iter_mut().rev() {
+                    let key = self.tie(item);
+                    if key != last {
+                        break;
+                    }
+                    *item = Value::Array(key);
+                }
+            }
+        });
+    }
+
+    fn tie(&self, item: &Value) -> Vec<Value> {
+        self.ties.iter().map(|k| item[k].clone()).collect()
+    }
+
+    /// Puts the arrays it names in `ours` into the order of the same arrays
+    /// in `rails`, matching items by their place in the canonical order,
+    /// so a `{{responses.1.body.columns.9.id}}` reference into one names
+    /// the item Rails had there. Arrays of different lengths stay as they
+    /// are (the comparison reports them).
+    pub fn align(&self, ours: &mut Value, rails: &Value) {
+        each_pair(ours, rails, &self.segments(), &mut |ours, rails| {
+            if ours.len() != rails.len() {
+                return;
+            }
+            let (mine, theirs) = (self.canonical(ours), self.canonical(rails));
+            let mut taken: Vec<Option<Value>> = ours.drain(..).map(Some).collect();
+            let mut placed: Vec<(usize, Value)> = theirs
+                .into_iter()
+                .zip(mine)
+                .filter_map(|(at, from)| Some((at, taken[from].take()?)))
+                .collect();
+            placed.sort_by_key(|(at, _)| *at);
+            ours.extend(placed.into_iter().map(|(_, item)| item));
+        });
+    }
+
+    fn segments(&self) -> Vec<String> {
+        self.path
+            .split('/')
+            .skip(1)
+            .map(|s| s.replace("~1", "/").replace("~0", "~"))
+            .collect()
+    }
+
+    /// The canonical order, as the indexes of `items` in that order: the
+    /// whole array sorted without `ties`, else each run of items equal on
+    /// every tie key sorted among itself, so an array not ordered by those
+    /// keys still differs.
+    fn canonical(&self, items: &[Value]) -> Vec<usize> {
+        let mut order: Vec<usize> = (0..items.len()).collect();
+        if self.ties.is_empty() {
+            order.sort_by_cached_key(|&i| item_key(&items[i]));
+            return order;
+        }
+        let mut start = 0;
+        while start < items.len() {
+            let key = self.tie(&items[start]);
+            let end = start
+                + items[start..]
+                    .iter()
+                    .take_while(|item| self.tie(item) == key)
+                    .count();
+            order[start..end].sort_by_cached_key(|&i| item_key(&items[i]));
+            start = end;
+        }
+        order
+    }
+}
+
+/// An item's place in a canonical order: its `id` (or `post_id`), the
+/// whole item breaking ties and ordering items without either.
+fn item_key(item: &Value) -> (Option<i64>, String) {
+    (
+        item["id"].as_i64().or_else(|| item["post_id"].as_i64()),
+        item.to_string(),
+    )
+}
+
+fn each_at(value: &mut Value, segments: &[String], f: &mut impl FnMut(&mut Vec<Value>)) {
+    let Some((head, rest)) = segments.split_first() else {
+        if let Value::Array(items) = value {
+            f(items);
+        }
+        return;
+    };
+    match value {
+        Value::Object(map) if head == "*" => {
+            map.values_mut().for_each(|v| each_at(v, rest, f));
+        }
+        Value::Object(map) => {
+            if let Some(v) = map.get_mut(head) {
+                each_at(v, rest, f);
+            }
+        }
+        Value::Array(items) if head == "*" => {
+            items.iter_mut().for_each(|v| each_at(v, rest, f));
+        }
+        Value::Array(items) => {
+            if let Some(v) = head.parse::<usize>().ok().and_then(|i| items.get_mut(i)) {
+                each_at(v, rest, f);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// `each_at` over two documents at once: the arrays at the same place in
+/// both (`*` pairs keys by name and items by index).
+fn each_pair(
+    ours: &mut Value,
+    rails: &Value,
+    segments: &[String],
+    f: &mut impl FnMut(&mut Vec<Value>, &Vec<Value>),
+) {
+    let Some((head, rest)) = segments.split_first() else {
+        if let (Value::Array(ours), Value::Array(rails)) = (ours, rails) {
+            f(ours, rails);
+        }
+        return;
+    };
+    match (ours, rails) {
+        (Value::Object(ours), Value::Object(rails)) => {
+            for (key, v) in ours.iter_mut() {
+                if (head == "*" || head == key)
+                    && let Some(w) = rails.get(key)
+                {
+                    each_pair(v, w, rest, f);
+                }
+            }
+        }
+        (Value::Array(ours), Value::Array(rails)) => {
+            for (i, (v, w)) in ours.iter_mut().zip(rails).enumerate() {
+                if head == "*" || head.parse::<usize>() == Ok(i) {
+                    each_pair(v, w, rest, f);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
 /// Keys are sorted before printing (serde_json keeps insertion order for the
 /// server's sake) so the diff only shows real differences.
 fn pretty(v: &Value) -> String {
@@ -493,6 +725,7 @@ mod tests {
             method: "GET".into(),
             path: "/x".into(),
             ignore: ignore.iter().map(|s| s.to_string()).collect(),
+            unordered: vec![],
             login: None,
             body: None,
         }
@@ -559,6 +792,7 @@ mod tests {
             method: "GET".into(),
             path: "/srv/status?cluster=a.b".into(),
             ignore: vec![],
+            unordered: vec![],
             login: None,
             body: None,
         };
@@ -704,6 +938,180 @@ mod tests {
                 {"id": 3, "count": 4}, {"id": 4, "count": 3}, {"id": 5, "count": 2}, {"id": 6, "count": 2}]}}"#,
         );
         assert!(compare(&case(&[]), &full([5, 6]), &above_the_cut, NAMES).is_err());
+    }
+
+    fn unordered(entry: Value, mut doc: Value) -> Value {
+        Unordered::parse(&entry).unwrap().apply(&mut doc);
+        doc
+    }
+
+    #[test]
+    fn unordered_arrays_compare_regardless_of_order() {
+        let entry = serde_json::json!("/responses/*/body/items");
+        let rails = serde_json::json!({"responses": [
+            {"body": {"items": [{"id": 3}, {"id": 1}, {"id": 2}]}},
+            {"body": {"items": [{"name": "b"}, {"name": "a"}]}},
+        ]});
+        let ours = serde_json::json!({"responses": [
+            {"body": {"items": [{"id": 2}, {"id": 3}, {"id": 1}]}},
+            {"body": {"items": [{"name": "a"}, {"name": "b"}]}},
+        ]});
+        assert_eq!(unordered(entry.clone(), rails), unordered(entry, ours));
+    }
+
+    #[test]
+    fn unordered_arrays_still_compare_their_items() {
+        let entry = serde_json::json!("/items");
+        let rails = serde_json::json!({"items": [{"id": 1, "v": "a"}, {"id": 2, "v": "b"}]});
+        let ours = serde_json::json!({"items": [{"id": 2, "v": "a"}, {"id": 1, "v": "b"}]});
+        assert_ne!(unordered(entry.clone(), rails), unordered(entry, ours));
+        // The same items twice are not one: a multiset, not a set.
+        let entry = serde_json::json!("/items");
+        let rails = serde_json::json!({"items": [{"v": "a"}, {"v": "a"}, {"v": "b"}]});
+        let ours = serde_json::json!({"items": [{"v": "a"}, {"v": "b"}, {"v": "b"}]});
+        assert_ne!(unordered(entry.clone(), rails), unordered(entry, ours));
+    }
+
+    #[test]
+    fn arrays_not_named_keep_their_order() {
+        let entry = serde_json::json!("/a");
+        let doc = serde_json::json!({"a": [{"id": 2}, {"id": 1}], "b": [{"id": 2}, {"id": 1}]});
+        let done = unordered(entry, doc);
+        assert_eq!(done["a"], serde_json::json!([{"id": 1}, {"id": 2}]));
+        assert_eq!(done["b"], serde_json::json!([{"id": 2}, {"id": 1}]));
+    }
+
+    #[test]
+    fn ties_are_unordered_but_the_order_by_still_counts() {
+        let entry = serde_json::json!({"path": "/cols", "ties": ["position"]});
+        let rails = serde_json::json!({"cols": [
+            {"id": 1, "position": 1}, {"id": 9, "position": 2}, {"id": 2, "position": 2},
+            {"id": 3, "position": 3},
+        ]});
+        let ours = serde_json::json!({"cols": [
+            {"id": 1, "position": 1}, {"id": 2, "position": 2}, {"id": 9, "position": 2},
+            {"id": 3, "position": 3},
+        ]});
+        assert_eq!(
+            unordered(entry.clone(), rails.clone()),
+            unordered(entry.clone(), ours)
+        );
+        // Not ordered by position: the runs differ, and so does the array.
+        let by_id = serde_json::json!({"cols": [
+            {"id": 1, "position": 1}, {"id": 2, "position": 2}, {"id": 3, "position": 3},
+            {"id": 9, "position": 2},
+        ]});
+        assert_ne!(unordered(entry.clone(), rails), unordered(entry, by_id));
+    }
+
+    #[test]
+    fn a_limit_through_ties_compares_the_cut_run_by_its_keys() {
+        let entry = serde_json::json!({"path": "/topics", "ties": ["likes"], "cut": true});
+        // ORDER BY likes DESC LIMIT 3 over likes 5, 1, 1, 1: which two of
+        // the three ones made it is the database's.
+        let rails = serde_json::json!({"topics": [
+            {"id": 9, "likes": 5}, {"id": 35, "likes": 1}, {"id": 41, "likes": 1},
+        ]});
+        let ours = serde_json::json!({"topics": [
+            {"id": 9, "likes": 5}, {"id": 41, "likes": 1}, {"id": 50, "likes": 1},
+        ]});
+        assert_eq!(
+            unordered(entry.clone(), rails.clone()),
+            unordered(entry.clone(), ours)
+        );
+        // The rows above the cut, and the tie keys of the cut run, still count.
+        let other_top = serde_json::json!({"topics": [
+            {"id": 8, "likes": 5}, {"id": 35, "likes": 1}, {"id": 41, "likes": 1},
+        ]});
+        assert_ne!(
+            unordered(entry.clone(), rails.clone()),
+            unordered(entry.clone(), other_top)
+        );
+        let fewer_likes = serde_json::json!({"topics": [
+            {"id": 9, "likes": 5}, {"id": 35, "likes": 1}, {"id": 2, "likes": 0},
+        ]});
+        assert_ne!(
+            unordered(entry.clone(), rails),
+            unordered(entry, fewer_likes)
+        );
+    }
+
+    #[test]
+    fn golden_cases_name_unordered_arrays() {
+        let cases = parse_cases(
+            "GET /session/current.json as=admin unordered=/current_user/sidebar_category_ids,/x\n",
+        )
+        .unwrap();
+        assert_eq!(cases[0].unordered.len(), 2);
+        assert_eq!(
+            cases[0].unordered[0].path,
+            "/current_user/sidebar_category_ids"
+        );
+        assert!(
+            parse_cases("GET /x unordered=x")
+                .unwrap_err()
+                .contains("pointer")
+        );
+        let rails = json(r#"{"current_user": {"sidebar_category_ids": [2, 3, 4], "ids": [1, 2]}}"#);
+        let ours = json(r#"{"current_user": {"sidebar_category_ids": [2, 4, 3], "ids": [1, 2]}}"#);
+        assert!(compare(&cases[0], &rails, &ours, NAMES).is_ok());
+        assert!(compare(&case(&[]), &rails, &ours, NAMES).is_err());
+        let other = json(r#"{"current_user": {"sidebar_category_ids": [2, 4, 3], "ids": [2, 1]}}"#);
+        assert!(compare(&cases[0], &rails, &other, NAMES).is_err());
+    }
+
+    #[test]
+    fn aligned_arrays_take_rails_order() {
+        let entry = Unordered::parse(&serde_json::json!("/r/*/cols")).unwrap();
+        let rails = serde_json::json!({"r": [{"cols": [{"id": 1}, {"id": 36}, {"id": 2}]}]});
+        let mut ours = serde_json::json!({"r": [{"cols": [{"id": 36}, {"id": 2}, {"id": 1}]}]});
+        entry.align(&mut ours, &rails);
+        assert_eq!(ours, rails);
+        // A different count is left for the comparison to report.
+        let mut short = serde_json::json!({"r": [{"cols": [{"id": 36}, {"id": 2}]}]});
+        entry.align(&mut short, &rails);
+        assert_eq!(
+            short["r"][0]["cols"],
+            serde_json::json!([{"id": 36}, {"id": 2}])
+        );
+        // Items Rails does not have still land somewhere, none lost.
+        let mut other = serde_json::json!({"r": [{"cols": [{"id": 7}, {"id": 2}, {"id": 1}]}]});
+        entry.align(&mut other, &rails);
+        let mut ids: Vec<i64> = other["r"][0]["cols"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|c| c["id"].as_i64().unwrap())
+            .collect();
+        ids.sort();
+        assert_eq!(ids, [1, 2, 7]);
+    }
+
+    #[test]
+    fn unordered_entries_are_checked() {
+        assert!(Unordered::parse(&serde_json::json!("items")).is_err());
+        assert!(Unordered::parse(&serde_json::json!(3)).is_err());
+        assert!(Unordered::parse(&serde_json::json!({"path": "/a"})).is_err());
+        assert!(Unordered::parse(&serde_json::json!({"path": "/a", "ties": []})).is_err());
+        assert!(
+            Unordered::parse(&serde_json::json!({"path": "/a", "ties": ["x"], "by": 1})).is_err()
+        );
+        assert_eq!(
+            Unordered::parse(&serde_json::json!({"path": "/a~1b", "ties": ["x"]})).unwrap(),
+            Unordered {
+                path: "/a~1b".into(),
+                ties: vec!["x".into()],
+                cut: false,
+            }
+        );
+        assert!(
+            Unordered::parse(&serde_json::json!({"path": "/a", "ties": ["x"], "cut": 1})).is_err()
+        );
+        let mut doc = serde_json::json!({"a/b": [2, 1]});
+        Unordered::parse(&serde_json::json!("/a~1b"))
+            .unwrap()
+            .apply(&mut doc);
+        assert_eq!(doc["a/b"], serde_json::json!([1, 2]));
     }
 }
 

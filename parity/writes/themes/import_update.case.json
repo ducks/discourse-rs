@@ -11,6 +11,7 @@
   "unordered_responses": [
     "/responses/0/body/theme/theme_fields",
     "/responses/2/body/theme/theme_fields",
-    "/responses/3/body/theme/theme_fields"
+    "/responses/3/body/theme/theme_fields",
+    "/responses/5/body/extras/default_theme/theme_fields"
   ]
 }

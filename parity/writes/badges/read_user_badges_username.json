@@ -202,16 +202,8 @@
     "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
     "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
   ],
-  "unordered_responses": [
-    "/responses/0/body/badges",
-    "/responses/0/body/user_badges",
-    "/responses/0/body/badge_types",
-    "/responses/0/body/badge_groupings",
-    "/responses/0/body/users",
-    "/responses/0/body/topics"
-  ],
   "recorded_from": {
-    "case": "668a9a902ab1a98c70e2b839bb1ba735cf1cb2ef9d9945aff17f729a23b9d839",
+    "case": "72807b56a4230772616629fe73ed5bf6e7c9e5764f8cb0adff19b2bf018767f3",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

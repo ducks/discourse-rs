@@ -1241,12 +1241,8 @@
   "digests": [
     "theme_fields.value_baked"
   ],
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "9a2c0a790f8849317695e4e2deec2f050ba93646109b3643081e40827206c8ab",
+    "case": "4be9fff7f3c0f47417d99778dc12190113532af6c5443f3db09642862f4b5fbc",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

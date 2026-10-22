@@ -145,11 +145,8 @@
     "UPDATE users SET ip_address = '203.0.113.9' WHERE id IN (1, 2, 3, 4, 5, 92100)",
     "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 5"
   ],
-  "unordered_responses": [
-    "/responses/0/body/users"
-  ],
   "recorded_from": {
-    "case": "b72c860755dc5f941ed83f4b9eb9a1a9f0f71bf03be7f0cc672275628e423737",
+    "case": "7bd014e391991c4127283a2731317768ac4f7458e479164ff9befef045becd40",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

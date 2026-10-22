@@ -6,10 +6,11 @@
 # The default profile leaves out the comparisons against recorded Rails
 # output (parity goldens, the write cases, cooking, mail parsing): they
 # take about 40% of the suite's time. `make parity-test` runs them; CI
-# runs everything.
+# runs everything. The writes binary's own checks of its comparison
+# (`harness::`) take no database and run in both.
 [profile.default]
 test-threads = 8
-default-filter = "not (binary(writes) | (kind(test) & test(/(match|matches|like)_rails|^golden_responses_match$/)))"
+default-filter = "not ((binary(writes) & not test(/^harness::/)) | (kind(test) & test(/(match|matches|like)_rails|^golden_responses_match$/)))"
 
 # A write case replays a few requests and maybe its jobs: seconds, more
 # when it makes thumbnails in a debug build.

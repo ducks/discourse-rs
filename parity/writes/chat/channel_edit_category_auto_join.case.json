@@ -13,5 +13,6 @@
         }
       }
     }
-  ]
+  ],
+  "unordered": {"user_chat_channel_memberships": ["id"]}
 }

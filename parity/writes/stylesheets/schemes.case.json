@@ -9,5 +9,6 @@
     {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "dark-scheme"},
     {"method": "PUT", "path": "/admin/themes/-1.json", "params": {"theme": {"color_scheme_id": "17"}}},
     {"method": "GET", "path": "/latest", "headers": {"Accept": "text/html", "X-Requested-With": ""}, "stylesheet": "light-scheme"}
-  ]
+  ],
+  "unordered_responses": ["/responses/*/body/theme/theme_fields"]
 }

@@ -5988,13 +5988,8 @@
     "user_histories": 74,
     "user_uploads": 36
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields",
-    "/responses/3/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "a6f9553a231848cff4e3e69ed62ee3687c410041be6217945e0a51d1c7a2137f",
+    "case": "3d5553b890fabf5be7d06013b0f7922f1a53c1be86effde660b90462d40f9bac",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

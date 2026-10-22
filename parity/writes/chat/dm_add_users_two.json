@@ -369,15 +369,6 @@
     "SELECT setval('chat_channels_id_seq', 3)",
     "SELECT setval('direct_message_channels_id_seq', 1)"
   ],
-  "unordered": {
-    "notifications": [
-      "id"
-    ],
-    "chat_mention_notifications": [
-      "id",
-      "notification_id"
-    ]
-  },
   "jobs_from_jobs": [
     [
       "Jobs::Chat::NotifyMentioned",
@@ -411,7 +402,7 @@
     ]
   ],
   "recorded_from": {
-    "case": "4877341255042e60862b3466a6d20e39fc905a2183eec88f48b5ad195891ca3f",
+    "case": "36a36f6c02a06875ad6ded640a8fe170c5d3a3e585bb759fd3df485f9fb644b1",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }
