@@ -158,8 +158,12 @@ vendor-discourse:
 db-load:
 	scripts/db-load $(if $(FORCE),--force) $(DEV_DB)
 
+# The template keeps its tables as loaded: an autovacuum of the template
+# frees the seed's dead tuples, so the copies' updates land in that space
+# and unordered scans (which Rails' recordings also are) change order.
 db-test:
 	scripts/db-load --force $(TEST_DB)
+	psql -X -q -v ON_ERROR_STOP=1 -d $(TEST_DB) -c "DO \$$\$$ DECLARE r record; BEGIN FOR r IN SELECT schemaname, tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') LOOP EXECUTE format('ALTER TABLE %I.%I SET (autovacuum_enabled = false, toast.autovacuum_enabled = false)', r.schemaname, r.tablename); END LOOP; END \$$\$$"
 	scripts/drop-stale-test-dbs
 
 parity:
