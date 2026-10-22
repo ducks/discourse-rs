@@ -442,6 +442,20 @@ async fn the_badges_pages() {
     assert!(html.contains("title=\"Selected icon: user\""));
     assert!(html.contains("data-name=\"badge_grouping_id\""));
     assert!(!html.contains("badge-form__delete-badge-btn"));
+    // Its type select is disabled, and draws so (discourse.scss:505); the
+    // list takes core's .content-list rows (discourse.scss:743).
+    assert!(html.contains(
+        "<select class=\"d-native-select form-kit__control-select\" disabled=\"\" id=\"control-badge_type_id-input\""
+    ));
+    let (status, css) = admin.page("/assets/discourse.css").await;
+    assert_eq!(status, StatusCode::OK);
+    for rule in [
+        "select[disabled],\nselect[readonly],\ntextarea[disabled],\ntextarea[readonly] {\n  cursor: not-allowed;\n  color: var(--d-input-text-color--disabled);\n  background-color: var(--d-input-bg-color--disabled);",
+        ".content-list ul {\n  list-style: none;\n  margin: 0;\n}",
+        ".content-list ul li a {\n  display: block;\n  padding: 10px;",
+    ] {
+        assert!(css.contains(rule), "{rule}");
+    }
     // A new one: its name to type, the first type and grouping, Delete.
     let (_, html) = admin.page("/admin/badges/new").await;
     assert!(html.contains("<span class=\"badge-display-name\">New Badge</span></h2>"));

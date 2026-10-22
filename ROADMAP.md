@@ -69,9 +69,9 @@ Blockers, a scripted walk-through would hit them:
   (276), in progress.
 - [ ] /new and /unread draw their Dismiss rows empty, no Dismiss New modal
   (270a, 188): fix/list-dismiss, in progress.
-- [ ] /admin/badges: core's `.content-list` rules are missing, so the badge
+- [x] /admin/badges: core's `.content-list` rules are missing, so the badge
   list is unstyled (4% desktop, 8-11% mobile), and a system badge's
-  disabled select draws enabled: fix/content-list-css.
+  disabled select draws enabled: fix/content-list-css (277).
 - [ ] /admin/customize/themes: the seed's Foundation and Horizon screenshot
   uploads 404 on the port (their files exist only on the reference) and
   the design wizard card is unstyled: fix/theme-screenshot-files.
@@ -3787,6 +3787,50 @@ route table has been made, so this list may be short.
     /g/:name/members as a page answers the members JSON route's 404
     where Ember redirects to the group's page, its members
     (routes/mod.rs:2467)
+277. ~~`fix/content-list-css`~~ (done) S: /admin/badges was 3.9-4.4%
+    off on desktop and 8-11% on a phone. Core's `.content-list`
+    (common/base/discourse.scss:743) was in none of the port's
+    stylesheets, so `ul.admin-badge-list` took the browser's 20px
+    padding and its rows were unbordered and 28px tall; it is in
+    menus.css after discourse.scss:735's spinner, its slot in Rails'
+    cascade, so the badge list and the web hook events list (the port's
+    two users; Ember's third, tag-groups.gjs, is not drawn yet) pick it
+    up. A system badge's selects carried `disabled` already but drew as
+    enabled: discourse.scss:505's disabled and read-only controls
+    (`input, select, textarea` with `[disabled]` or `[readonly]`: the
+    muted text, background and border, not-allowed cursor) and its
+    `:focus:required:invalid` rule are in foundation.css. The bulk award
+    form's file input was 2.4px taller than Rails': the port's
+    normalize.css gave `::-webkit-file-upload-button` the upstream
+    `-webkit-appearance: button`, where Discourse's normalize.scss says
+    `appearance: auto`, so the button took the inherited line-height.
+    Compared with playwright against rs-ref-c as admin (the list, its
+    rows, links and active link, the disabled badge type select and its
+    field), desktop and phone: every box and style matches.
+    Screenshots against rs-ref-c (admin-advanced-pages and its mobile
+    list, main's binary then the branch's): /admin/badges 3.92% to 0.03,
+    /admin/badges/1 1.10 to 0.04, /admin/badges/new 1.08 to 0.05,
+    /admin/badges/award/new 3.92 to 0.03, /admin/badges/award/1 4.36 to
+    0.07; mobile 8.60 to 0.11, 9.93 to 0.22, 8.24 to 0.29, 8.12 to 0.12,
+    10.71 to 0.19. admin-pages and admin-pages-mobile held; the rows
+    that improved are in summary-admin.json and summary-admin-mobile.json.
+    The rows that moved the other way move on main's binary too between
+    runs: the admin sidebar's scroll offset (sidebar.js's
+    revealActiveLink lands 4px apart from one load to the next on
+    /admin/config/flags, permalinks, user-fields, rate-limits and
+    screened IPs), the reference still loading /admin/api/keys/new, and
+    the dashboard's dated charts on a phone. Left, split into 277a.
+    277a. `fix/admin-badges-form-rest` S: the badge form on a phone
+    (/admin/badges/new 0.29%, /admin/badges/1 0.22): the `(optional)`
+    label's spacing beside the description titles, the icon picker's
+    caret, and the Group combo-box's width. The rest of the port's
+    normalize.css still differs from Discourse's normalize.scss as Rails
+    compiles it (`text-size-adjust`, `font-family: monospace` without
+    the doubled family, abbr's `underline dotted`, `appearance: auto` on
+    the buttons and `appearance: textfield`/`none` on search inputs);
+    each touches every page, so each wants a full sweep. The sidebar's
+    revealActiveLink offset varies between loads (above), which makes
+    those admin rows flake.
 
 ### Phase 11: the bundled plugins' gaps (210)
 

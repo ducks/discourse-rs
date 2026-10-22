@@ -489,6 +489,28 @@ textarea {
   caret-color: currentcolor;
 }
 
+/* discourse.scss:505: a disabled or read-only control (a system badge's
+   FormKit selects among them) */
+input[disabled],
+input[readonly],
+select[disabled],
+select[readonly],
+textarea[disabled],
+textarea[readonly] {
+  cursor: not-allowed;
+  color: var(--d-input-text-color--disabled);
+  background-color: var(--d-input-bg-color--disabled);
+  border: var(--d-input-border--disabled);
+}
+
+input:focus:required:invalid,
+select:focus:required:invalid,
+textarea:focus:required:invalid {
+  color: var(--danger);
+  border-color: var(--danger);
+  outline: 1px solid var(--danger);
+}
+
 /* discourse.scss:321 */
 label {
   display: flex;
