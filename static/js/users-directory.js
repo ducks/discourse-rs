@@ -439,7 +439,8 @@
     "toggle",
     function (event) {
       var chooser = event.target;
-      if (!chooser.classList || !chooser.matches(".period-chooser, .directory-group-selector")) {
+      // A top list's chooser is top-period.js's.
+      if (!chooser.classList || !chooser.matches(".period-chooser, .directory-group-selector") || chooser.closest(".top-lists")) {
         return;
       }
       var open = chooser.open;

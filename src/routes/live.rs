@@ -827,11 +827,7 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
             // The mobile nav's trigger shows the active item's label, and
             // its sheet opens from the template beside it.
             use crate::topic_list_view::escape;
-            let label = items
-                .iter()
-                .find(|i| i.active)
-                .map(|i| escape(&i.label))
-                .unwrap_or_default();
+            let label = escape(crate::html::selected_nav_label(&items));
             out.push_str(&format!(
                 r#"<span hx-swap-oob="innerHTML:#navigation-bar .list-control-toggle-link__text">{label}</span>"#
             ));

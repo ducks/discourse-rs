@@ -746,6 +746,11 @@ async fn front_page_serves_the_current_homepage() {
         if homepage == "categories" {
             assert!(html.contains("category-list"), "{homepage}");
             assert!(json["category_list"].is_object());
+        } else if homepage == "top" {
+            // Not in the default top menu: no pill (DNavigation).
+            assert_eq!(active_nav(&html), None, "{homepage}");
+            assert!(html.contains(r#"<div class="top-lists">"#));
+            assert!(json["topic_list"].is_object());
         } else {
             assert_eq!(active_nav(&html), Some(homepage), "{homepage}");
             assert!(json["topic_list"].is_object());
@@ -799,7 +804,9 @@ async fn front_page_serves_the_current_homepage() {
         if homepage == "categories" {
             assert!(html.contains("category-list"), "{homepage}");
         } else {
-            assert_eq!(active_nav(&html), Some(homepage), "{homepage}");
+            // top is in the menu here; bookmarks is not, so has no pill.
+            let pill = (homepage == "top").then_some(homepage);
+            assert_eq!(active_nav(&html), pill, "{homepage}");
         }
     }
     // hot is a member's homepage only while it is in the top menu.
@@ -903,4 +910,114 @@ async fn category_list_under_a_hidden_parent() {
 
     let (status, _, _) = get(&db.pool, &deep).await;
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+/// A top list draws DiscoveryTopics' PeriodChooser above its topics: the
+/// list's period (`for_period`) with its dates in the header, and a row
+/// for each period for top-period.js to open. Other lists have none.
+#[tokio::test]
+async fn top_lists_draw_the_period_chooser() {
+    let db = TestDb::new().await;
+    for (path, period, title) in [
+        ("/top", "yearly", "Year"),
+        ("/top?period=weekly", "weekly", "Week"),
+        ("/top?period=all", "all", "All time"),
+        ("/c/general/4/l/top?period=monthly", "monthly", "Month"),
+        ("/c/general/4/none/l/top?period=daily", "daily", "Today"),
+        (
+            "/tag/howto/1/l/top?period=quarterly",
+            "quarterly",
+            "Quarter",
+        ),
+    ] {
+        let (status, _, html) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert!(
+            html.contains(&format!(
+                r#"<div class="top-lists"><details class="select-kit single-select dropdown-select-box period-chooser has-selection"><summary aria-label="Filter by period" name="Filter by: {period}" data-name="{period}" data-value="{period}" tabindex="0" class="select-kit-header single-select-header dropdown-select-box-header period-chooser-header btn-flat btn btn-icon-text"><h2 class="selected-name"><span class="date-section">{title}</span>"#
+            )),
+            "{path}"
+        );
+        assert_eq!(html.matches("period-chooser-row").count(), 6, "{path}");
+        assert!(
+            html.contains(&format!(
+                r#"data-name="{period}" data-value="{period}" tabindex="0" class="select-kit-row dropdown-select-box-row period-chooser-row is-highlighted is-selected">"#
+            )),
+            "{path}"
+        );
+        assert!(html.contains("/top-period.js"), "{path}");
+    }
+    for path in ["/latest", "/hot", "/c/general/4"] {
+        let (_, _, html) = get(&db.pool, path).await;
+        assert!(!html.contains("top-lists"), "{path}");
+        assert!(!html.contains("top-period.js"), "{path}");
+    }
+}
+
+/// A list with no topics draws no topic list (DiscoveryTopics#hasTopics):
+/// a top period nothing scored in is the chooser alone.
+#[tokio::test]
+async fn an_empty_list_draws_no_topic_list() {
+    let db = TestDb::new().await;
+    let (_, _, html) = get(&db.pool, "/top?period=weekly").await;
+    assert!(html.contains(r#"<table class="topic-list">"#));
+    sqlx::query("DELETE FROM top_topics")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _, html) = get(&db.pool, "/top?period=weekly").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#"<div class="top-lists">"#));
+    assert!(!html.contains(r#"<table class="topic-list">"#));
+}
+
+/// The navigation pills are top_menu's alone: DNavigation hands buildList
+/// `filterType`, not the `filterMode` it reads to add the current list, so
+/// a list the menu lacks gets no pill (and the mobile menu's trigger the
+/// first pill's label). A list the menu has is active as before.
+#[tokio::test]
+async fn a_list_missing_from_the_top_menu_gets_no_pill() {
+    let db = TestDb::new().await;
+    common::set_setting(&db.pool, "top_menu", 8, "latest|new|hot|categories").await;
+    let (_, _, html) = get(&db.pool, "/top").await;
+    assert!(!html.contains("nav-item_top"));
+    assert_eq!(active_nav(&html), None);
+    let (_, _, html) = get(&db.pool, "/c/general/4/l/top").await;
+    assert!(!html.contains("nav-item_top"));
+    assert_eq!(active_nav(&html), None);
+    common::set_setting(&db.pool, "top_menu", 8, "latest|top|categories").await;
+    let (_, _, html) = get(&db.pool, "/top?period=weekly").await;
+    assert_eq!(active_nav(&html), Some("top"));
+    let (_, _, html) = get(&db.pool, "/c/general/4/l/top").await;
+    assert_eq!(active_nav(&html), Some("top"));
+}
+
+/// /new's `subset` with unified new (TopicQuery#list_new): topics is
+/// new_results, replies unread_results, anything else both; the next page
+/// keeps it.
+#[tokio::test]
+async fn the_new_list_subset_picks_topics_or_replies() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let ids = |v: &serde_json::Value| -> Vec<i64> {
+        v["topic_list"]["topics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| t["id"].as_i64().unwrap())
+            .collect()
+    };
+    let all = ids(&user1.json("/new.json").await);
+    let topics = ids(&user1.json("/new.json?subset=topics").await);
+    let replies = ids(&user1.json("/new.json?subset=replies").await);
+    assert_eq!(topics, [34]);
+    assert_eq!(replies, [35]);
+    assert_eq!(all, [35, 34]);
+    assert_eq!(ids(&user1.json("/new.json?subset=other").await), all);
+    let page = user1.json("/new.json?subset=topics&per_page=1").await;
+    assert_eq!(
+        page["topic_list"]["more_topics_url"],
+        "/new?page=1&per_page=1&subset=topics"
+    );
 }

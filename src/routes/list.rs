@@ -96,6 +96,9 @@ fn validated_options(params: &ListParams, settings: &SiteSettings) -> Result<Opt
     if let Some(state) = params.rest.get("state").filter(|s| !s.is_empty()) {
         options.state = Some(state.clone());
     }
+    if let Some(subset) = params.rest.get("subset").filter(|s| !s.is_empty()) {
+        options.subset = Some(subset.clone());
+    }
     if let Some(ascending) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
         options.ascending = match ascending {
             "true" => true,
@@ -130,6 +133,9 @@ pub(super) fn next_url(
     pairs.push(("page", (options.page + 1).to_string()));
     if let Some(state) = &options.state {
         pairs.push(("state", state.clone()));
+    }
+    if let Some(subset) = &options.subset {
+        pairs.push(("subset", subset.clone()));
     }
     if let Some(p) = options.per_page.filter(|_| true) {
         pairs.push(("per_page", p.to_string()));
@@ -213,7 +219,19 @@ pub(super) async fn list_document_for(
         let period = match params.period.as_deref().filter(|p| !p.is_empty()) {
             Some(p) => p.to_string(),
             None if tag_request.is_some() => settings.get("top_page_default_timeframe")?.to_s(),
-            None => best_period_for(&mut conn, &settings, category.map(|c| c.id)).await?,
+            None => {
+                let previous_visit_at = guardian
+                    .user()
+                    .and_then(|u| u.previous_visit_at)
+                    .map(|at| at.and_utc());
+                best_period_for(
+                    &mut conn,
+                    &settings,
+                    previous_visit_at,
+                    category.map(|c| c.id),
+                )
+                .await?
+            }
         };
         if !crate::topic_query::PERIODS.contains(&period.as_str()) {
             return Ok(Err(
@@ -591,6 +609,35 @@ mod tests {
             next_url("/forum/latest", &ListParams::default(), &o, false),
             "/forum/latest?no_definitions=true&page=1"
         );
+    }
+
+    #[test]
+    fn best_periods_follow_the_previous_visit() {
+        use chrono::{Duration, TimeZone, Utc};
+        let now = Utc.with_ymd_and_hms(2026, 10, 22, 12, 0, 0).unwrap();
+        assert_eq!(best_periods_for(None, "yearly", now), ["yearly", "all"]);
+        assert_eq!(best_periods_for(None, "all", now), ["all"]);
+        let visit = |days: i64| Some(now - Duration::days(days));
+        assert_eq!(
+            best_periods_for(visit(7), "yearly", now),
+            ["daily", "weekly", "monthly", "quarterly", "yearly", "all"]
+        );
+        // 1.week + 1.day, 1.month + 1.week, 3.months + 3.weeks,
+        // 1.year + 1.month, 3.years.
+        assert_eq!(
+            best_periods_for(visit(9), "all", now),
+            ["weekly", "monthly", "quarterly", "yearly", "all"]
+        );
+        assert_eq!(
+            best_periods_for(visit(40), "all", now),
+            ["monthly", "quarterly", "yearly", "all"]
+        );
+        assert_eq!(
+            best_periods_for(visit(120), "all", now),
+            ["quarterly", "yearly", "all"]
+        );
+        assert_eq!(best_periods_for(visit(400), "all", now), ["yearly", "all"]);
+        assert_eq!(best_periods_for(visit(1100), "all", now), ["all"]);
     }
 }
 
@@ -1171,12 +1218,14 @@ impl ListKind {
     }
 }
 
-/// `ListController.best_period_for(nil, category_id)`: the category's
-/// default_top_period (else top_page_default_timeframe), unless a period
-/// among [default, all] has a full page of scored topics.
+/// `ListController.best_period_for(current_user&.previous_visit_at,
+/// category_id)`: the category's default_top_period (else
+/// top_page_default_timeframe), unless a period of best_periods_for has a
+/// full page of scored topics.
 async fn best_period_for(
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
+    previous_visit_at: Option<chrono::DateTime<chrono::Utc>>,
     category_id: Option<i32>,
 ) -> Result<String, AppError> {
     let site_default = settings.get("top_page_default_timeframe")?.to_s();
@@ -1195,11 +1244,7 @@ async fn best_period_for(
         default = site_default;
     }
     let per_page = settings.get("topics_per_period_in_top_page")?.to_i();
-    let mut candidates = vec![default.clone()];
-    if default != "all" {
-        candidates.push("all".to_string());
-    }
-    for period in candidates {
+    for period in best_periods_for(previous_visit_at, &default, crate::clock::now()) {
         if !crate::topic_query::PERIODS.contains(&period.as_str()) {
             continue;
         }
@@ -1222,6 +1267,42 @@ async fn best_period_for(
         }
     }
     Ok(default)
+}
+
+/// `ListController.best_periods_for(date, default_period)`: without a
+/// previous visit the default then all; with one, each period shorter than
+/// the time since it (with some slack), then all.
+fn best_periods_for(
+    previous_visit_at: Option<chrono::DateTime<chrono::Utc>>,
+    default: &str,
+    now: chrono::DateTime<chrono::Utc>,
+) -> Vec<String> {
+    let Some(date) = previous_visit_at else {
+        let mut periods = vec![default.to_string()];
+        if default != "all" {
+            periods.push("all".to_string());
+        }
+        return periods;
+    };
+    use chrono::{Duration, Months};
+    // ActiveSupport's Duration#ago: calendar months and years, then days.
+    let ago = |months: u32, days: i64| {
+        now.checked_sub_months(Months::new(months)).unwrap_or(now) - Duration::days(days)
+    };
+    let mut periods = Vec::new();
+    for (period, months, days) in [
+        ("daily", 0, 8),
+        ("weekly", 1, 7),
+        ("monthly", 3, 21),
+        ("quarterly", 13, 0),
+        ("yearly", 36, 0),
+    ] {
+        if date > ago(months, days) {
+            periods.push(period.to_string());
+        }
+    }
+    periods.push("all".to_string());
+    periods
 }
 
 /// GET /top(.json) and /hot(.json).
