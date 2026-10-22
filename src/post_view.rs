@@ -2218,31 +2218,88 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             share = escape(&t(l, "footer_nav.share"))
         )
     };
-    // The topic's own bookmark.
-    let topic_bookmark = view["bookmarks"].as_array().and_then(|b| {
-        b.iter()
-            .find(|b| b["bookmarkable_type"] == "Topic")
-            .and_then(|b| b["id"].as_i64())
-    });
+    // TopicBookmarksMenu: every bookmark of the viewer's in the topic (the
+    // topic's own and its posts'). With a post among them it is a DMenu
+    // grouping them (useGroupedDropdown), whose content is not ported:
+    // topic.js refuses its click. Otherwise BookmarkMenu, here a toggle.
+    let all: Vec<&Value> = view["bookmarks"]
+        .as_array()
+        .map(|b| b.iter().collect())
+        .unwrap_or_default();
+    let topic_bookmark = all.iter().find(|b| b["bookmarkable_type"] == "Topic");
+    let grouped = all.iter().any(|b| b["bookmarkable_type"] == "Post");
     let base = l.base_path;
-    let (icon_name, label, title, extra, htmx) = match topic_bookmark {
-        Some(id) => (
-            "bookmark",
-            t_count(l, "bookmarked.edit_bookmark", 1, &[]),
-            t_with(l, "bookmarks.created_generic", &[("name", "")]),
-            " bookmarked",
-            format!(" hx-delete=\"{base}/bookmarks/{id}\""),
+    // buttonTitle: one bookmark's name (created_generic), several counted.
+    let title = match all.as_slice() {
+        [] => t(l, "bookmarks.not_bookmarked"),
+        [one] => t_with(
+            l,
+            "bookmarks.created_generic",
+            &[("name", one["name"].as_str().unwrap_or_default())],
         ),
-        None => (
-            "far-bookmark",
-            t(l, "bookmarked.title"),
-            t(l, "bookmarks.not_bookmarked"),
-            "",
-            format!(
-                " hx-post=\"{base}/bookmarks\" hx-vals='{{\"bookmarkable_id\": {}, \"bookmarkable_type\": \"Topic\"}}'",
-                cx.topic.id
+        _ => t_count(l, "bookmarked.edit_bookmark", all.len() as i64, &[]),
+    };
+    let (icon_name, label, extra, identifier, htmx) = if grouped {
+        let reminder = topic_bookmark.is_some_and(|b| !b["reminder_at"].is_null());
+        let mut extra = String::from(" bookmarked");
+        if all.iter().any(|b| !b["reminder_at"].is_null()) {
+            extra.push_str(" with-reminder");
+        }
+        if topic_bookmark.is_none() {
+            extra.push_str(" --post-bookmarked-only");
+        }
+        (
+            if reminder {
+                "discourse-bookmark-clock"
+            } else {
+                "bookmark"
+            },
+            t_count(l, "bookmarked.edit_bookmark", all.len() as i64, &[]),
+            extra,
+            "topic-bookmarks-menu",
+            String::new(),
+        )
+    } else {
+        match topic_bookmark {
+            Some(b) => (
+                if b["reminder_at"].is_null() {
+                    "bookmark"
+                } else {
+                    "discourse-bookmark-clock"
+                },
+                t_count(l, "bookmarked.edit_bookmark", 1, &[]),
+                if b["reminder_at"].is_null() {
+                    " bookmarked".to_string()
+                } else {
+                    " bookmarked with-reminder".to_string()
+                },
+                "bookmark-menu",
+                format!(
+                    " hx-delete=\"{base}/bookmarks/{}\" hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\"",
+                    b["id"]
+                ),
             ),
-        ),
+            None => (
+                "far-bookmark",
+                t(l, "bookmarked.title"),
+                String::new(),
+                "bookmark-menu",
+                format!(
+                    " hx-post=\"{base}/bookmarks\" hx-vals='{{\"bookmarkable_id\": {}, \"bookmarkable_type\": \"Topic\"}}' hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\"",
+                    cx.topic.id
+                ),
+            ),
+        }
+    };
+    let trigger = if grouped {
+        "topic-bookmarks-menu-trigger"
+    } else {
+        "bookmark-menu-trigger"
+    };
+    let unported = if grouped {
+        " data-unported=\"the topic's bookmarks menu (TopicBookmarksMenu)\""
+    } else {
+        ""
     };
     // showBookmarkLabel: none for a message.
     let (classes, label) = if private_message {
@@ -2259,8 +2316,8 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         "btn-icon-text"
     };
     actions.push_str(&format!(
-        "<button class=\"{classes} fk-d-menu__trigger bookmark-menu-trigger bookmark widget-button bookmark-menu__trigger {label_classes} btn-default topic-footer-button{extra}\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"bookmark-menu\" data-trigger=\"\"{htmx} hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\" type=\"button\">{}{label}</button>",
-        escape(title.trim()),
+        "<button class=\"{classes} fk-d-menu__trigger {trigger} bookmark widget-button bookmark-menu__trigger {label_classes} btn-default topic-footer-button{extra}\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"{identifier}\" data-trigger=\"\"{htmx}{unported} type=\"button\">{}{label}</button>",
+        escape(&title),
         icon(icon_name, None),
     ));
     // Flag and Mark unread: inline on desktop, in the mobile view the

@@ -16,7 +16,7 @@
 {"page": "/u/user1/preferences/profile as=user1", "diff_pct": 5.34, "status": [200, 200], "size": [[390, 1589], [390, 1593]]},
 {"page": "/u/user1/preferences/notifications as=user1", "diff_pct": 0.1, "status": [200, 200], "size": [[390, 1316], [390, 1316]]},
 {"page": "/u/user1/preferences/interface as=user1", "diff_pct": 0.1, "status": [200, 200], "size": [[390, 1336], [390, 1336]]},
-{"page": "/u/user1/preferences/account as=admin", "diff_pct": 1.0, "status": [200, 200], "size": [[390, 1002], [390, 1002]]},
+{"page": "/u/user1/preferences/account as=admin", "diff_pct": 0.11, "status": [200, 200], "size": [[390, 1002], [390, 1002]]},
 {"page": "/u/user1/notifications as=user1", "diff_pct": 0.13, "status": [200, 200], "size": [[390, 1065], [390, 1065]]},
 {"page": "/u/user1/notifications/responses as=user1", "diff_pct": 0.16, "status": [200, 200], "size": [[390, 844], [390, 844]]},
 {"page": "/u/user1/notifications/likes-received as=user1", "diff_pct": 0.26, "status": [200, 200], "size": [[390, 844], [390, 844]]},

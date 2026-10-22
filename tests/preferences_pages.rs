@@ -497,6 +497,26 @@ async fn staff_edit_another_members_preferences() {
     // No email until looked up, and no data export for another member.
     assert!(page.html.contains("check-email"));
     assert!(!page.html.contains("btn-request-archive"));
+    // The desktop view's Admin button; the mobile view's Manage user, last
+    // in the user nav (UserNav's isMobileView and isStaff), which
+    // overflow-controls.js scrolls into view with the active tab.
+    assert!(page.html.contains("class=\"btn btn-default user-admin\""));
+    assert!(!page.html.contains("user-nav__admin"));
+    admin.cookies.push(("mobile_view".into(), "1".into()));
+    let page = admin.page("/u/user1/preferences/account").await;
+    assert!(!page.html.contains("user-admin"));
+    assert!(page.html.contains(
+        "<span>Preferences</span></a></li><li class=\"user-nav__admin\"><a href=\"/admin/users/3/user1\"><svg class=\"fa d-icon d-icon-wrench "
+    ), "{}", page.html);
+    assert!(
+        page.html
+            .contains(" <span>Manage user</span></a></li></ul></div></nav></section>")
+    );
+    // Not for a member.
+    let (_db, mut user1) = client("user1").await;
+    user1.cookies.push(("mobile_view".into(), "1".into()));
+    let page = user1.page("/u/user1/preferences/account").await;
+    assert!(!page.html.contains("user-nav__admin"));
 }
 
 #[tokio::test]

@@ -586,6 +586,22 @@ pub fn render(
             matches!(tab, Tab::Preferences(_)),
         ));
     }
+    // The mobile view's stand-in for the Admin button: Manage user, for
+    // staff (`isMobileView` and `isStaff`).
+    if crate::mobile::mobile_view() && viewer.staff {
+        out.push_str(&format!(
+            "<li class=\"user-nav__admin\"><a href=\"{}/admin/users/{}/{}\">{} <span>{}</span></a></li>",
+            cx.base_path,
+            u["id"],
+            escape(&s(&u["username"]).to_lowercase()),
+            icon("wrench", None),
+            escape(
+                cx.i18n
+                    .t("admin_js.admin.user.manage_user")
+                    .unwrap_or("Manage user")
+            )
+        ));
+    }
     out.push_str("</ul></div></nav></section><div class=\"new-user-content-wrapper\">");
     if hidden {
         // user/profile-hidden.gjs
@@ -1429,7 +1445,9 @@ fn collapsed_info(cx: &ListContext, u: &Value, viewer: &Viewer) -> String {
     ] {
         if let Some(at) = date(&u[key]) {
             out.push_str(&format!(
-                "<div><dt class=\"{class}\">{}</dt><dd class=\"{class}\">{}</dd></div>",
+                // The template's whitespace, collapsed: before each item
+                // (inline flex boxes, so it shows) and around the date.
+                " <div><dt class=\"{class}\">{}</dt><dd class=\"{class}\"> {} </dd></div>",
                 escape(&t(cx, label)),
                 age_medium(cx, at, false)
             ));
@@ -1437,13 +1455,13 @@ fn collapsed_info(cx: &ListContext, u: &Value, viewer: &Viewer) -> String {
     }
     if let Some(views) = u["profile_view_count"].as_i64().filter(|v| *v > 0) {
         out.push_str(&format!(
-            "<div><dt class=\"profile-view-count\">{}</dt><dd class=\"profile-view-count\">{views}</dd></div>",
+            " <div><dt class=\"profile-view-count\">{}</dt><dd class=\"profile-view-count\">{views}</dd></div>",
             escape(&t(cx, "views"))
         ));
     }
     if let Some(by) = u["invited_by"]["username"].as_str() {
         out.push_str(&format!(
-            "<div><dt class=\"invited-by\">{}</dt><dd class=\"invited-by\"><a href=\"{}/u/{}\">{}</a></dd></div>",
+            " <div><dt class=\"invited-by\">{}</dt><dd class=\"invited-by\"><a href=\"{}/u/{}\">{}</a></dd></div>",
             escape(&t(cx, "user.invited_by")),
             cx.base_path,
             escape(&by.to_lowercase()),
@@ -1455,7 +1473,7 @@ fn collapsed_info(cx: &ListContext, u: &Value, viewer: &Viewer) -> String {
         let names = ["newuser", "basic", "member", "regular", "leader"];
         let name = names.get(level as usize).copied().unwrap_or_default();
         out.push_str(&format!(
-            "<div><dt class=\"trust-level\">{}</dt><dd class=\"trust-level\">{}</dd></div>",
+            " <div><dt class=\"trust-level\">{}</dt><dd class=\"trust-level\">{}</dd></div>",
             escape(&t(cx, "user.trust_level")),
             escape(&t(cx, &format!("trust_levels.names.{name}")))
         ));
@@ -1478,11 +1496,12 @@ fn summary_content(
     let n = |key: &str| m[key].as_i64().unwrap_or(0);
     let stat = |value: String, label: String, icon_name: Option<&str>, title: Option<String>| {
         format!(
-            "<div class=\"user-stat\"><span class=\"value\"{}>{value}</span> <span class=\"label\">{}{label}</span></div>",
+            "<div class=\"user-stat\"><span class=\"value\"{}> {value} </span> <span class=\"label\"> {}{label} </span></div>",
             title
                 .map(|t| format!(" title=\"{}\"", escape(&t)))
                 .unwrap_or_default(),
-            // The template's whitespace between the icon and the label.
+            // DUserStat's template whitespace, collapsed: around the value
+            // and the label, and between the icon and the label.
             icon_name
                 .map(|i| format!("{} ", icon(i, None)))
                 .unwrap_or_default()

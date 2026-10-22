@@ -604,9 +604,20 @@
         });
       return;
     }
+    // A footer button whose menu is not ported (the topic's bookmarks
+    // menu, TopicBookmarksMenu's grouped dropdown) says so.
+    var unportedButton = event.target.closest("#topic-footer-buttons [data-unported]");
+    if (unportedButton) {
+      var notice = document.getElementById("page-error");
+      if (notice) {
+        notice.textContent = "Not ported yet: " + unportedButton.dataset.unported + ".";
+        notice.hidden = false;
+      }
+      return;
+    }
     // Mark unread (deferTopic): stop timing the page, unread its last
     // post, then go home (or to the message's inbox).
-    var defer = event.target.closest("[data-defer-url]");
+    var defer =event.target.closest("[data-defer-url]");
     if (defer) {
       document.dispatchEvent(new Event("screen-track:stop"));
       fetch(defer.dataset.deferUrl, {
