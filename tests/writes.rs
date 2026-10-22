@@ -597,7 +597,8 @@ struct Comparison {
     /// `unordered_responses`: arrays Rails builds from a query without
     /// ORDER BY (a pointer: heap or plan order, so neither database's order
     /// can be lined up), or orders only in part (`{"path", "ties"}`: ties
-    /// on its ORDER BY keys in no order). Compared in a canonical order
+    /// on its ORDER BY keys in no order; `"cut": true` when its LIMIT cuts
+    /// through the last run of ties). Compared in a canonical order
     /// (parity::Unordered); every other array keeps its order.
     unordered_responses: Vec<discourse_rs::parity::Unordered>,
     /// `unordered` (`{table: [columns]}`): rows Rails inserts in an order it

@@ -477,14 +477,18 @@ pub struct Unordered {
     /// The keys Rails orders the array by (its ORDER BY). Empty: no ORDER
     /// BY at all, so any order is Rails' order.
     pub ties: Vec<String>,
+    /// Rails' LIMIT cuts through the last run of ties, so which tied items
+    /// made it is chance too: that run compares by its tie keys only.
+    pub cut: bool,
 }
 
 impl Unordered {
     /// A case's entry: a pointer (no ORDER BY), or `{"path": pointer,
-    /// "ties": [keys]}` (ordered by those keys, ties in no order).
+    /// "ties": [keys]}` (ordered by those keys, ties in no order), with
+    /// `"cut": true` when a LIMIT cuts through the last run of ties.
     pub fn parse(entry: &Value) -> Result<Unordered, String> {
-        let (path, ties) = match entry {
-            Value::String(path) => (path.clone(), Vec::new()),
+        let (path, ties, cut) = match entry {
+            Value::String(path) => (path.clone(), Vec::new(), false),
             Value::Object(spec) => {
                 let path = spec
                     .get("path")
@@ -502,10 +506,18 @@ impl Unordered {
                             .ok_or_else(|| format!("unordered tie key is not a string: {entry}"))
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                if let Some(extra) = spec.keys().find(|k| *k != "path" && *k != "ties") {
+                let cut = match spec.get("cut") {
+                    None => false,
+                    Some(Value::Bool(cut)) => *cut,
+                    Some(_) => return Err(format!("unordered cut is not a boolean: {entry}")),
+                };
+                if let Some(extra) = spec
+                    .keys()
+                    .find(|k| !["path", "ties", "cut"].contains(&k.as_str()))
+                {
                     return Err(format!("unordered entry has unknown key {extra}: {entry}"));
                 }
-                (path.to_string(), ties)
+                (path.to_string(), ties, cut)
             }
             _ => {
                 return Err(format!(
@@ -516,16 +528,32 @@ impl Unordered {
         if !path.starts_with('/') {
             return Err(format!("unordered path {path} is not a JSON pointer"));
         }
-        Ok(Unordered { path, ties })
+        Ok(Unordered { path, ties, cut })
     }
 
-    /// Puts the arrays it names into the canonical order (`canonical`).
+    /// Puts the arrays it names into the canonical order (`canonical`),
+    /// the last run of ties as its tie keys when `cut`.
     pub fn apply(&self, doc: &mut Value) {
         each_at(doc, &self.segments(), &mut |items| {
             let order = self.canonical(items);
             let mut taken: Vec<Option<Value>> = items.drain(..).map(Some).collect();
             items.extend(order.into_iter().filter_map(|i| taken[i].take()));
+            if self.cut
+                && let Some(last) = items.last().map(|item| self.tie(item))
+            {
+                for item in items.iter_mut().rev() {
+                    let key = self.tie(item);
+                    if key != last {
+                        break;
+                    }
+                    *item = Value::Array(key);
+                }
+            }
         });
+    }
+
+    fn tie(&self, item: &Value) -> Vec<Value> {
+        self.ties.iter().map(|k| item[k].clone()).collect()
     }
 
     /// Puts the arrays it names in `ours` into the order of the same arrays
@@ -568,15 +596,13 @@ impl Unordered {
             order.sort_by_cached_key(|&i| item_key(&items[i]));
             return order;
         }
-        let tie =
-            |item: &Value| -> Vec<Value> { self.ties.iter().map(|k| item[k].clone()).collect() };
         let mut start = 0;
         while start < items.len() {
-            let key = tie(&items[start]);
+            let key = self.tie(&items[start]);
             let end = start
                 + items[start..]
                     .iter()
-                    .take_while(|item| tie(item) == key)
+                    .take_while(|item| self.tie(item) == key)
                     .count();
             order[start..end].sort_by_cached_key(|&i| item_key(&items[i]));
             start = end;
@@ -979,6 +1005,38 @@ mod tests {
     }
 
     #[test]
+    fn a_limit_through_ties_compares_the_cut_run_by_its_keys() {
+        let entry = serde_json::json!({"path": "/topics", "ties": ["likes"], "cut": true});
+        // ORDER BY likes DESC LIMIT 3 over likes 5, 1, 1, 1: which two of
+        // the three ones made it is the database's.
+        let rails = serde_json::json!({"topics": [
+            {"id": 9, "likes": 5}, {"id": 35, "likes": 1}, {"id": 41, "likes": 1},
+        ]});
+        let ours = serde_json::json!({"topics": [
+            {"id": 9, "likes": 5}, {"id": 41, "likes": 1}, {"id": 50, "likes": 1},
+        ]});
+        assert_eq!(
+            unordered(entry.clone(), rails.clone()),
+            unordered(entry.clone(), ours)
+        );
+        // The rows above the cut, and the tie keys of the cut run, still count.
+        let other_top = serde_json::json!({"topics": [
+            {"id": 8, "likes": 5}, {"id": 35, "likes": 1}, {"id": 41, "likes": 1},
+        ]});
+        assert_ne!(
+            unordered(entry.clone(), rails.clone()),
+            unordered(entry.clone(), other_top)
+        );
+        let fewer_likes = serde_json::json!({"topics": [
+            {"id": 9, "likes": 5}, {"id": 35, "likes": 1}, {"id": 2, "likes": 0},
+        ]});
+        assert_ne!(
+            unordered(entry.clone(), rails),
+            unordered(entry, fewer_likes)
+        );
+    }
+
+    #[test]
     fn golden_cases_name_unordered_arrays() {
         let cases = parse_cases(
             "GET /session/current.json as=admin unordered=/current_user/sidebar_category_ids,/x\n",
@@ -1042,8 +1100,12 @@ mod tests {
             Unordered::parse(&serde_json::json!({"path": "/a~1b", "ties": ["x"]})).unwrap(),
             Unordered {
                 path: "/a~1b".into(),
-                ties: vec!["x".into()]
+                ties: vec!["x".into()],
+                cut: false,
             }
+        );
+        assert!(
+            Unordered::parse(&serde_json::json!({"path": "/a", "ties": ["x"], "cut": 1})).is_err()
         );
         let mut doc = serde_json::json!({"a/b": [2, 1]});
         Unordered::parse(&serde_json::json!("/a~1b"))

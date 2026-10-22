@@ -113,7 +113,9 @@ random suggested topics.
 Order is compared wherever Rails decides it. Where it does not, the case
 says so: `unordered_responses` lists pointers to arrays built by a query
 without ORDER BY (compared sorted by `id`, else the whole item), or
-`{"path", "ties"}` for one ordered by those keys only (ties in any order);
+`{"path", "ties"}` for one ordered by those keys only (ties in any order;
+with `"cut": true` a LIMIT cuts through the last run of ties, which then
+compares by its tie keys only);
 an index into such an array in a later request's `{{...}}` names the item
 Rails had there. `unordered` (`{table: [columns]}`) is for rows Rails
 inserts in an order it leaves to the database: they compare without those
