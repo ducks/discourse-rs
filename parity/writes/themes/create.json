@@ -4445,17 +4445,8 @@
     "themes": 1,
     "user_histories": 74
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/5/body/themes/0/theme_fields",
-    "/responses/5/body/themes/1/theme_fields",
-    "/responses/5/body/themes/2/theme_fields",
-    "/responses/5/body/themes/3/theme_fields",
-    "/responses/5/body/themes/4/theme_fields",
-    "/responses/5/body/themes/5/theme_fields"
-  ],
   "recorded_from": {
-    "case": "93f2a96d21f47be581e8b3168f020a69cbab3e15e3169b280c08353c8b39a913",
+    "case": "3635375d2f57430a413dd1a6090af3eaf3970fe5080cc82b5ed04a82c58b4eb3",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

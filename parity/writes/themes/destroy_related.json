@@ -1793,15 +1793,8 @@
   "next_ids": {
     "user_histories": 74
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields",
-    "/responses/4/body/theme/theme_fields",
-    "/responses/6/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "965e3e910671eedbdd917a7d373c61fba2d622ac7effa214715b994deca4cfe9",
+    "case": "77de01db790d6bbaf5fade1f758a35ffc404873fa9be225d0b8ee0b01c685f4e",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

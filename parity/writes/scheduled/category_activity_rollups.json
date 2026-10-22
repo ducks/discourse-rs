@@ -85,14 +85,9 @@
       {}
     ]
   ],
-  "unordered": {
-    "category_activity_daily_rollups": [
-      "id"
-    ]
-  },
   "jobs_from_jobs": [],
   "recorded_from": {
-    "case": "bea9813b7ad3e1f355bcd2c6e288b6c7c2a80a73e4df5068a445e8eeed3208d6",
+    "case": "1182012fa1682544d2ec4ca28fca222bee46ba530c971b00b6c439c2ce9b4b37",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

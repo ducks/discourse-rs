@@ -183,14 +183,9 @@
       {}
     ]
   ],
-  "unordered": {
-    "category_activity_daily_rollups": [
-      "id"
-    ]
-  },
   "jobs_from_jobs": [],
   "recorded_from": {
-    "case": "d6cadd24dc4153963448d04f464cd675b30773bb84c0d9c1e19c51f7f5de7205",
+    "case": "9834584bdeccd7f232faa361747ad52f38ee18a8ff17469aa79da89d5184eb19",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

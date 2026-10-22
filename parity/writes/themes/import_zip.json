@@ -5654,15 +5654,8 @@
     "user_histories": 74,
     "user_uploads": 36
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/3/body/themes/0/theme_fields",
-    "/responses/3/body/themes/1/theme_fields",
-    "/responses/3/body/themes/2/theme_fields"
-  ],
   "recorded_from": {
-    "case": "9cbd3171fcefc42b1028048fab204ff9d8aec47c8a71e8e46795847afdd6869e",
+    "case": "38bdcb0004d2a80caf27b9b997da4f68a300aa77a77533881009e324a7026b86",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

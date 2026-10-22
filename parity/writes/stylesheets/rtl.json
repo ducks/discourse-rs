@@ -2116,12 +2116,8 @@
   "digests": [
     "theme_fields.value_baked"
   ],
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "605a3ee8ca279951aa8ee148e94e02de7def1fa3d0ed1dcbd06185a11e476188",
+    "case": "d4840e24eefc8ae24b6c8dc0ab29b68b03cd82e2910a81620366ccf1dc77a3b9",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

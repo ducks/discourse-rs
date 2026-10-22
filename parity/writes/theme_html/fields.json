@@ -1610,13 +1610,6 @@
     "user_histories": 74,
     "user_visits": 4
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields",
-    "/responses/3/body/theme/theme_fields",
-    "/responses/4/body/theme/theme_fields"
-  ],
   "extract": [
     "(<meta name=\"th-head\" content=\"p-common\">[\\s\\S]*?<meta name=\"th-head\" content=\"c-common\">)<script src=\"([^\"]*)\"(?: nonce=\"[^\"]*\")?></script>",
     "(<div id=\"th-header-p-common\">[\\s\\S]*?<div id=\"th-header-p-(?:desktop|mobile)\">[^\\n]*)",
@@ -1625,7 +1618,7 @@
     "(<span id=\"th-body-p-common\">[\\s\\S]*?<i id=\"th-body-c-common\"></i>(?:\\n<i id=\"th-body-c-mobile\"></i>)?)"
   ],
   "recorded_from": {
-    "case": "c78631374b9f2fbd980c7c03abdc8b05831bc72fb0fdfbb99c59c7bd1df5a870",
+    "case": "898ed7f4d4bba34c6c6bc4bb1377a49c98f9afb66e1365adf32ac781cf5352c7",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

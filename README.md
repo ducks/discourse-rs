@@ -110,6 +110,19 @@ before the snapshot), as the reply-by-email cases do for their reply key.
 `ignore` lists JSON pointers into the recording (`*` for any key or index)
 left out on both sides, for what Rails leaves to chance, such as a topic's
 random suggested topics.
+Order is compared wherever Rails decides it. Where it does not, the case
+says so: `unordered_responses` lists pointers to arrays built by a query
+without ORDER BY (compared sorted by `id`, else the whole item), or
+`{"path", "ties"}` for one ordered by those keys only (ties in any order);
+an index into such an array in a later request's `{{...}}` names the item
+Rails had there. `unordered` (`{table: [columns]}`) is for rows Rails
+inserts in an order it leaves to the database: they compare without those
+columns, and the values the columns took as a sorted list. The rows of
+`changes` are compared as a multiset (by identity, then whole row) in every
+case: what a write did is in the rows, not in the order a scan reads them
+back. These keys and `ignore` are read from the case file, not the
+recording, so adding one needs no new recording. Each needs the Rails
+source showing the missing ORDER BY.
 A page case can set `cookies` (put in the jar after the login, such as the
 interface color selector's `forced_color_mode`) and compare only what its
 `extract` regexes capture from the HTML, a line a match with the groups
@@ -150,8 +163,11 @@ GET /latest.json ignore=/topic_list/topics/*/bumped_at
 ```
 
 `ignore` takes JSON pointers (`*` matches any element or key) for fields that
-legitimately differ between runs. JSON is compared structurally; status and
-media type must match.
+legitimately differ between runs. `unordered` takes pointers to arrays Rails
+builds from a query without ORDER BY, compared sorted by `id` (else the whole
+item) since their order is the database's heap or plan order, which no
+template state lines up. JSON is compared structurally; status and media type
+must match.
 
 ```bash
 make parity RAILS_URL=http://127.0.0.1:3000   # live: Rails vs discourse-rs

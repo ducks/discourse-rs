@@ -586,28 +586,60 @@ fn unrandom(s: &str) -> String {
     BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()
 }
 
-/// The columns a case names in `approximate` (`table.column`), floats
-/// computed through powers and logs, rounded to seven significant digits on
-/// both sides: their last digits follow rounding in the arithmetic, the
-/// connection's float output (extra_float_digits) and Ruby's sub-microsecond
-/// clock against the stored timestamp.
-/// `unordered_responses`: JSON pointers to arrays in the recording that
-/// Rails returns in heap order (a query without ORDER BY), compared
-/// sorted by `id` (or `post_id`) since neither database's heap order can be
-/// lined up (rows without either, such as a report's, by their whole JSON).
-fn unordered_responses(doc: &mut Value, case: &Value) {
-    for pointer in case["unordered_responses"].as_array().into_iter().flatten() {
-        let Some(pointer) = pointer.as_str() else {
-            continue;
+/// What the comparison leaves to chance, from the case's definition
+/// (`<name>.case.json`), not its recording: scripts/record-writes leaves
+/// these keys out of the case's stamp, so marking what Rails does not
+/// order needs no new recording.
+struct Comparison {
+    /// `ignore`: JSON pointers (`*` for any key or index) left out on both
+    /// sides, such as a topic's random suggested topics.
+    ignore: Vec<String>,
+    /// `unordered_responses`: arrays Rails builds from a query without
+    /// ORDER BY (a pointer: heap or plan order, so neither database's order
+    /// can be lined up), or orders only in part (`{"path", "ties"}`: ties
+    /// on its ORDER BY keys in no order). Compared in a canonical order
+    /// (parity::Unordered); every other array keeps its order.
+    unordered_responses: Vec<discourse_rs::parity::Unordered>,
+    /// `unordered` (`{table: [columns]}`): rows Rails inserts in an order it
+    /// leaves to the database (an INSERT ... SELECT or a loop over an
+    /// unordered lookup), so which row takes which id (the columns named)
+    /// is chance: the rows compare without those columns, and the values
+    /// the columns took compare as a sorted list.
+    unordered: Map<String, Value>,
+}
+
+impl Comparison {
+    fn from_definition(definition: &Value) -> Result<Comparison, String> {
+        let strings = |key: &str| -> Vec<String> {
+            definition[key]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|p| p.as_str().map(str::to_string))
+                .collect()
         };
-        if let Some(Value::Array(items)) = doc.pointer_mut(pointer) {
-            items.sort_by_cached_key(|item| {
-                (
-                    item["id"].as_i64().or(item["post_id"].as_i64()),
-                    item.to_string(),
-                )
-            });
-        }
+        let unordered_responses = definition["unordered_responses"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(discourse_rs::parity::Unordered::parse)
+            .collect::<Result<_, _>>()?;
+        let unordered = match &definition["unordered"] {
+            Value::Null => Map::new(),
+            Value::Object(tables) => tables.clone(),
+            other => return Err(format!("`unordered` is not {{table: [columns]}}: {other}")),
+        };
+        Ok(Comparison {
+            ignore: strings("ignore"),
+            unordered_responses,
+            unordered,
+        })
+    }
+}
+
+fn unordered_responses(doc: &mut Value, comparison: &Comparison) {
+    for spec in &comparison.unordered_responses {
+        spec.apply(doc);
     }
 }
 
@@ -675,6 +707,11 @@ fn digests(doc: &mut Value, case: &Value) {
     }
 }
 
+/// The columns a case names in `approximate` (`table.column`), floats
+/// computed through powers and logs, rounded to seven significant digits on
+/// both sides: their last digits follow rounding in the arithmetic, the
+/// connection's float output (extra_float_digits) and Ruby's sub-microsecond
+/// clock against the stored timestamp.
 fn approximate(doc: &mut Value, case: &Value) {
     let round = |v: &mut Value| {
         if let Some(f) = v.as_f64().filter(|f| *f != 0.0 && f.is_finite()) {
@@ -701,29 +738,29 @@ fn approximate(doc: &mut Value, case: &Value) {
     }
 }
 
-/// The tables a case names in `unordered` (`{table: [columns]}`): rows
-/// Rails inserts in an order it leaves to the database (an unordered
-/// lookup), compared without those columns (the ids that order gives).
-fn unordered(doc: &mut Value, case: &Value) {
-    let Some(tables) = case["unordered"].as_object() else {
-        return;
-    };
-    for (table, columns) in tables {
+/// The tables a case names in `unordered` (Comparison::unordered).
+fn unordered(doc: &mut Value, comparison: &Comparison) {
+    for (table, columns) in &comparison.unordered {
         let columns: Vec<&str> = columns
             .as_array()
             .into_iter()
             .flatten()
             .filter_map(Value::as_str)
             .collect();
-        if let Some(Value::Array(rows)) = doc["changes"][table].get_mut("inserted") {
-            for row in rows.iter_mut() {
-                if let Value::Object(r) = row {
-                    for column in &columns {
-                        r.remove(*column);
-                    }
-                }
-            }
+        let change = &mut doc["changes"][table];
+        let Some(Value::Array(rows)) = change.get_mut("inserted") else {
+            continue;
+        };
+        let mut taken = Map::new();
+        for column in &columns {
+            let mut values: Vec<Value> = rows
+                .iter_mut()
+                .filter_map(|row| row.as_object_mut()?.remove(*column))
+                .collect();
+            values.sort_by_cached_key(Value::to_string);
+            taken.insert(column.to_string(), Value::Array(values));
         }
+        change["inserted_unordered"] = Value::Object(taken);
     }
 }
 
@@ -1159,7 +1196,12 @@ fn changed_columns(mut doc: Value, include: &[String]) -> Value {
             .collect::<Vec<_>>()
     };
     for (table, change) in tables.iter_mut() {
-        // Both sides list rows in their own order; sort by identity.
+        // Each side lists a table's rows in its own scan order (Rails' a
+        // heap scan, ours by primary key), and no write's meaning is in the
+        // order a table's rows are read back: rows compare as a multiset,
+        // sorted by identity and then by their whole JSON. Which row took
+        // which id is measured by the ids themselves (a case's `unordered`
+        // for inserts whose order Rails leaves to the database).
         for kind in ["inserted", "deleted"] {
             if let Some(Value::Array(rows)) = change.get_mut(kind) {
                 if UNORDERED_INSERTS.contains(&table.as_str()) {
@@ -1189,7 +1231,7 @@ fn changed_columns(mut doc: Value, include: &[String]) -> Value {
         let Some(Value::Array(updated)) = change.get_mut("updated") else {
             continue;
         };
-        updated.sort_by_key(|row| identity(&row["before"]));
+        updated.sort_by_key(|row| (identity(&row["before"]), row.to_string()));
         for row in updated.iter_mut() {
             let (Some(Value::Object(before)), Some(Value::Object(after))) =
                 (row.get("before"), row.get("after"))
@@ -1754,7 +1796,8 @@ async fn answer_remote(
     let _ = socket.shutdown().await;
 }
 
-async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<String> {
+async fn replay(case: &Value, run_jobs: &[String], comparison: &Comparison) -> Vec<String> {
+    let ignore = &comparison.ignore;
     let db = TestDb::with_clock().await;
     // The case runs from when Rails ran it, so what counts from now (days
     // ago, new topic windows) answers as it did then.
@@ -1942,7 +1985,13 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         for (_, name, shown) in queued_jobs(&db.pool, 0).await {
             jobs.insert(name, shown[1].clone());
         }
-        let state = serde_json::json!({ "responses": responses, "jobs": jobs });
+        let mut state = serde_json::json!({ "responses": responses, "jobs": jobs });
+        // An index into an array Rails left unordered names the item Rails
+        // had there, not whichever the port's scan put there.
+        let theirs = serde_json::json!({ "responses": case["responses"] });
+        for spec in &comparison.unordered_responses {
+            spec.align(&mut state, &theirs);
+        }
         let params = request.get("params").map(|p| resolve(p, &state));
         let body = params.as_ref().filter(|p| p.is_object());
         let mut path = resolve(&request["path"], &state)
@@ -2347,8 +2396,8 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     ignore_in_payloads(&mut rails, ignore);
                     approximate(&mut rails, case);
                     digests(&mut rails, case);
-                    unordered(&mut rails, case);
-                    unordered_responses(&mut rails, case);
+                    unordered(&mut rails, comparison);
+                    unordered_responses(&mut rails, comparison);
                     random_delays(&mut rails, case);
                     rails
                 },
@@ -2365,8 +2414,8 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     ignore_in_payloads(&mut ours, ignore);
                     approximate(&mut ours, case);
                     digests(&mut ours, case);
-                    unordered(&mut ours, case);
-                    unordered_responses(&mut ours, case);
+                    unordered(&mut ours, comparison);
+                    unordered_responses(&mut ours, comparison);
                     random_delays(&mut ours, case);
                     ours
                 },
@@ -2577,13 +2626,17 @@ fn map_encoded(value: &Value, encoded: &[EncodedUpload], key: Option<&str>) -> V
 struct Case {
     area: String,
     name: String,
-    recorded: Value,
+    /// `<name>.json`, read when the case runs: every case is a process of
+    /// its own under nextest, and the recordings are 100 MB of JSON.
+    recording: std::path::PathBuf,
+    /// It runs on the S3 test server (`s3`).
+    s3: bool,
     run_jobs: Vec<String>,
     /// Why the port does not do it like Rails yet.
     not_yet: Option<String>,
-    /// JSON pointers into the recording left out of the comparison on
-    /// both sides (Rails' random suggested topics).
-    ignore: Vec<String>,
+    /// What the comparison leaves to chance, or why the definition's
+    /// comparison keys do not parse.
+    comparison: Result<Comparison, String>,
 }
 
 /// Every case under parity/writes, by area and name.
@@ -2610,14 +2663,11 @@ fn cases() -> Vec<Case> {
             let definition: Value =
                 serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
             let recording = path.with_file_name(format!("{name}.json"));
-            let recorded: Value = match std::fs::read_to_string(&recording) {
-                Ok(text) => serde_json::from_str(&text).unwrap(),
-                Err(_) => Value::Null,
-            };
             out.push(Case {
                 area: area.file_name().to_string_lossy().to_string(),
                 name,
-                recorded,
+                recording,
+                s3: definition.get("s3").is_some(),
                 run_jobs: definition["run_jobs"]
                     .as_array()
                     .map(|a| {
@@ -2627,18 +2677,189 @@ fn cases() -> Vec<Case> {
                     })
                     .unwrap_or_default(),
                 not_yet: definition["not_yet"].as_str().map(str::to_string),
-                ignore: definition["ignore"]
-                    .as_array()
-                    .map(|a| {
-                        a.iter()
-                            .filter_map(|p| p.as_str().map(str::to_string))
-                            .collect()
-                    })
-                    .unwrap_or_default(),
+                comparison: Comparison::from_definition(&definition),
             });
         }
     }
     out
+}
+
+/// The comparison's own tests (`harness::<name>`), on made-up documents:
+/// what it leaves to chance and what it still catches.
+fn harness_checks() -> Vec<libtest_mimic::Trial> {
+    use serde_json::json;
+    fn compared(doc: Value, comparison: &Comparison) -> Value {
+        let mut doc = doc;
+        unordered(&mut doc, comparison);
+        unordered_responses(&mut doc, comparison);
+        changed_columns(doc, &[])
+    }
+    fn same(rails: Value, ours: Value, definition: Value) -> bool {
+        let comparison = Comparison::from_definition(&definition).unwrap();
+        let mut out = Vec::new();
+        differences(
+            "",
+            &compared(rails, &comparison),
+            &compared(ours, &comparison),
+            &mut out,
+        );
+        out.is_empty()
+    }
+    fn check(ok: bool, what: &str) -> Result<(), libtest_mimic::Failed> {
+        if ok { Ok(()) } else { Err(what.into()) }
+    }
+    let trial = |name: &str, f: fn() -> Result<(), libtest_mimic::Failed>| {
+        libtest_mimic::Trial::test(format!("harness::{name}"), f)
+    };
+    vec![
+        trial("changes_compare_as_multisets", || {
+            let changes = |inserted: Value, updated: Value, deleted: Value| json!({"changes": {"t": {"inserted": inserted, "updated": updated, "deleted": deleted}}});
+            let up = |id: i64, from: &str, to: &str| json!({"before": {"id": id, "v": from}, "after": {"id": id, "v": to}});
+            // Rows read back in another order are the same change.
+            check(
+                same(
+                    changes(
+                        json!([{"id": 1, "v": "a"}, {"id": 2, "v": "b"}]),
+                        json!([up(3, "x", "y"), up(4, "x", "z")]),
+                        json!([{"id": 5}, {"id": 6}]),
+                    ),
+                    changes(
+                        json!([{"id": 2, "v": "b"}, {"id": 1, "v": "a"}]),
+                        json!([up(4, "x", "z"), up(3, "x", "y")]),
+                        json!([{"id": 6}, {"id": 5}]),
+                    ),
+                    json!({}),
+                ),
+                "reordered rows differ",
+            )?;
+            // Rows without an id (post_timings) as well, updated or not.
+            let timing = |post: i64, ms: i64| json!({"user_id": 1, "topic_id": 1, "post_number": post, "msecs": ms});
+            let bump = |post: i64| json!({"before": timing(post, 1), "after": timing(post, 2)});
+            check(
+                same(
+                    changes(
+                        json!([timing(1, 5), timing(2, 6)]),
+                        json!([bump(3), bump(4)]),
+                        json!([]),
+                    ),
+                    changes(
+                        json!([timing(2, 6), timing(1, 5)]),
+                        json!([bump(4), bump(3)]),
+                        json!([]),
+                    ),
+                    json!({}),
+                ),
+                "reordered rows without an id differ",
+            )?;
+            // What a row holds still counts, and so does how many there are.
+            check(
+                !same(
+                    changes(
+                        json!([{"id": 1, "v": "a"}, {"id": 2, "v": "b"}]),
+                        json!([]),
+                        json!([]),
+                    ),
+                    changes(
+                        json!([{"id": 1, "v": "b"}, {"id": 2, "v": "a"}]),
+                        json!([]),
+                        json!([]),
+                    ),
+                    json!({}),
+                ),
+                "rows with swapped contents compare the same",
+            )?;
+            check(
+                !same(
+                    changes(json!([timing(1, 5), timing(1, 5)]), json!([]), json!([])),
+                    changes(json!([timing(1, 5)]), json!([]), json!([])),
+                    json!({}),
+                ),
+                "a row twice compares as once",
+            )
+        }),
+        trial("unordered_inserts_compare_their_ids_as_a_set", || {
+            let inserted = |rows: Value| json!({"changes": {"t": {"inserted": rows, "updated": [], "deleted": []}}});
+            let definition = json!({"unordered": {"t": ["id"]}});
+            check(
+                same(
+                    inserted(json!([{"id": 7, "v": "a"}, {"id": 8, "v": "b"}])),
+                    inserted(json!([{"id": 7, "v": "b"}, {"id": 8, "v": "a"}])),
+                    definition.clone(),
+                ),
+                "ids taken in another order differ",
+            )?;
+            check(
+                !same(
+                    inserted(json!([{"id": 7, "v": "a"}, {"id": 8, "v": "b"}])),
+                    inserted(json!([{"id": 7, "v": "a"}, {"id": 9, "v": "b"}])),
+                    definition.clone(),
+                ),
+                "other ids compare the same",
+            )?;
+            check(
+                !same(
+                    inserted(json!([{"id": 7, "v": "a"}, {"id": 8, "v": "b"}])),
+                    inserted(json!([{"id": 7, "v": "a"}, {"id": 8, "v": "c"}])),
+                    definition.clone(),
+                ),
+                "other contents compare the same",
+            )?;
+            // Without `unordered`, which row took which id counts.
+            check(
+                !same(
+                    inserted(json!([{"id": 7, "v": "a"}, {"id": 8, "v": "b"}])),
+                    inserted(json!([{"id": 7, "v": "b"}, {"id": 8, "v": "a"}])),
+                    json!({}),
+                ),
+                "ids compare as chance without `unordered`",
+            )
+        }),
+        trial("unordered_responses_are_opt_in", || {
+            let body = |items: Value| json!({"responses": [{"body": {"items": items, "other": items}}], "changes": {}});
+            let definition = json!({"unordered_responses": ["/responses/*/body/items"]});
+            check(
+                same(
+                    body(json!([{"id": 1}, {"id": 2}])),
+                    {
+                        let mut d = body(json!([{"id": 2}, {"id": 1}]));
+                        d["responses"][0]["body"]["other"] = json!([{"id": 1}, {"id": 2}]);
+                        d
+                    },
+                    definition.clone(),
+                ),
+                "a named array in another order differs",
+            )?;
+            check(
+                !same(
+                    body(json!([{"id": 1}, {"id": 2}])),
+                    body(json!([{"id": 2}, {"id": 1}])),
+                    definition,
+                ),
+                "an array not named compares regardless of order",
+            )
+        }),
+        trial("comparison_keys_are_checked", || {
+            for bad in [
+                json!({"unordered_responses": ["items"]}),
+                json!({"unordered_responses": [{"path": "/a"}]}),
+                json!({"unordered": ["t"]}),
+            ] {
+                check(
+                    Comparison::from_definition(&bad).is_err(),
+                    &format!("{bad} parses"),
+                )?;
+            }
+            check(
+                Comparison::from_definition(&json!({
+                    "ignore": ["/x"],
+                    "unordered": {"t": ["id"]},
+                    "unordered_responses": ["/a", {"path": "/b", "ties": ["position"]}],
+                }))
+                .is_ok_and(|c| c.ignore == ["/x"] && c.unordered_responses.len() == 2),
+                "a good definition does not parse",
+            )
+        }),
+    ]
 }
 
 /// Each case is a test, `<area>::<name>`, so nextest runs them side by
@@ -2659,11 +2880,11 @@ fn main() {
     }
     // Cases on the S3 test server are skipped, saying why, without MinIO.
     let minio = common::s3::S3Server::available();
-    let trials = cases()
+    let mut trials: Vec<libtest_mimic::Trial> = cases()
         .into_iter()
         .map(|case| {
             let label = format!("{}::{}", case.area, case.name);
-            let needs_s3 = case.recorded.get("s3").is_some();
+            let needs_s3 = case.s3;
             let kind = if needs_s3 && minio.is_err() {
                 "needs MinIO"
             } else if case.not_yet.is_some() {
@@ -2673,18 +2894,24 @@ fn main() {
             };
             let skip = needs_s3 && minio.is_err();
             libtest_mimic::Trial::test(label, move || {
-                if case.recorded.is_null() {
+                let Ok(text) = std::fs::read_to_string(&case.recording) else {
                     return Err(format!(
                         "not recorded: run scripts/record-writes for {}/{}",
                         case.area, case.name
                     )
                     .into());
-                }
+                };
+                let recorded: Value = serde_json::from_str(&text)
+                    .map_err(|e| format!("{}: {e}", case.recording.display()))?;
+                let comparison = case
+                    .comparison
+                    .as_ref()
+                    .map_err(|e| format!("{}/{}.case.json: {e}", case.area, case.name))?;
                 let diff = tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()
                     .unwrap()
-                    .block_on(replay(&case.recorded, &case.run_jobs, &case.ignore));
+                    .block_on(replay(&recorded, &case.run_jobs, comparison));
                 match (&case.not_yet, diff.is_empty()) {
                     (None, true) => Ok(()),
                     (None, false) => Err(diff.join("\n").into()),
@@ -2698,6 +2925,7 @@ fn main() {
             .with_ignored_flag(skip)
         })
         .collect();
+    trials.extend(harness_checks());
     if let Err(why) = &minio {
         eprintln!("the S3 cases are skipped: {why}");
     }

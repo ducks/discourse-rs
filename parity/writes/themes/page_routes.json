@@ -11542,25 +11542,8 @@
   "digests": [
     "theme_fields.value_baked"
   ],
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/2/body/themes/0/theme_fields",
-    "/responses/2/body/themes/1/theme_fields",
-    "/responses/2/body/themes/2/theme_fields",
-    "/responses/2/body/extras/color_schemes",
-    "/responses/3/body/themes/0/theme_fields",
-    "/responses/3/body/themes/1/theme_fields",
-    "/responses/3/body/themes/2/theme_fields",
-    "/responses/3/body/extras/color_schemes",
-    "/responses/4/body/theme/theme_fields",
-    "/responses/5/body/themes/0/theme_fields",
-    "/responses/5/body/themes/1/theme_fields",
-    "/responses/5/body/themes/2/theme_fields",
-    "/responses/5/body/extras/color_schemes"
-  ],
   "recorded_from": {
-    "case": "80938df1ee9f93c804b8f1a1af30b956c1caf7447a86e68024186eeab88a54f7",
+    "case": "e22fe52048fd4587ed1dbfb654f358b199e7ec5b9e5a89621bebbe910d014b24",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }

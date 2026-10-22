@@ -1352,17 +1352,8 @@
     "themes": 1,
     "user_histories": 74
   },
-  "unordered_responses": [
-    "/responses/0/body/theme/theme_fields",
-    "/responses/1/body/theme/theme_fields",
-    "/responses/2/body/theme/theme_fields",
-    "/responses/3/body/theme/theme_fields",
-    "/responses/4/body/theme/theme_fields",
-    "/responses/5/body/theme/theme_fields",
-    "/responses/6/body/theme/theme_fields"
-  ],
   "recorded_from": {
-    "case": "757feab17ff1ae05e13d18ca3acd3befade85a0801c9ccdf8aa269a24aaf05f7",
+    "case": "21aa28fb601a64da97c0e0515436692eda8a86e57fd55fe10210956d6c9f95db",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }
