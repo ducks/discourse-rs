@@ -72,9 +72,10 @@ Blockers, a scripted walk-through would hit them:
 - [ ] /admin/badges: core's `.content-list` rules are missing, so the badge
   list is unstyled (4% desktop, 8-11% mobile), and a system badge's
   disabled select draws enabled: fix/content-list-css.
-- [ ] /admin/customize/themes: the seed's Foundation and Horizon screenshot
+- [x] /admin/customize/themes: the seed's Foundation and Horizon screenshot
   uploads 404 on the port (their files exist only on the reference) and
-  the design wizard card is unstyled: fix/theme-screenshot-files.
+  the design wizard card is unstyled: fix/theme-screenshot-files (278),
+  done: 1.37% to 0.04 desktop, 5.81% to 0.07 mobile.
 - [ ] The topic footer's notifications button sometimes draws as a plain
   "Watching" box without its bell or caret (seen in both sweeps; cause
   unknown): fix/footer-notifications-flake.
@@ -3838,6 +3839,27 @@ route table has been made, so this list may be short.
     sizing (topic-navigation's heightQuery, the scrollarea's height)
     does not read the composer; footer-nav.scss's offset waits for the
     footer nav, which the port does not draw
+278. ~~`fix/theme-screenshot-files`~~ (done) S: /admin/config/customize/themes
+    drew Foundation's and Horizon's cards without their screenshots: the
+    seed's uploads 1 to 4 (original/1X/<sha1>.png) are the files
+    SystemThemesManager.sync! (db/fixtures/600_themes.rb) stores on a
+    fresh install, ThemeScreenshotsHandler passing each screenshot
+    about.json lists through UploadCreator unchanged, and they existed
+    only on the reference's disk. The four themes/*/screenshots files
+    are vendored at the schema's commit (scripts/vendor-discourse; their
+    sha1s are the seed rows'), and a site's boot writes each one whose
+    theme_screenshot_upload_var upload has the vendored file's sha1 and
+    no file in the local store yet (crate::system_themes, next to the
+    site icons' ensure_optimized), so /uploads serves them as Rails'
+    local store does. The design wizard card's rules
+    (design-wizard.scss:878, the .admin-config-area-themes__design-wizard
+    block and its description) are ported after form-kit, where common.css
+    has them; the panel's rules wait for the panel. Compared with
+    playwright against rs-ref-d at 1280 and 390px: the card's and the
+    description's computed styles and boxes and the cards' images (src,
+    natural size) equal. Screenshots against rs-ref-d: desktop 1.37% to
+    0.04, mobile 5.81% to 0.07 (the page's height now equal). Test in
+    tests/theme_screenshots.rs.
 
 ### Phase 11: the bundled plugins' gaps (210)
 

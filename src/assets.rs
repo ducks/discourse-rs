@@ -45,6 +45,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/modal.css"),
     include_str!("../static/css/date-picker.css"),
     include_str!("../static/css/form-kit.css"),
+    include_str!("../static/css/design-wizard.css"),
     include_str!("../static/css/d-multi-select.css"),
     include_str!("../static/css/menus.css"),
     include_str!("../static/css/directory.css"),
