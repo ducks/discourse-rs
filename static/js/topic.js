@@ -20,13 +20,262 @@
     return header ? header.getBoundingClientRect().height : 0;
   }
 
+  // lib/offset-calculator.js headerOffset(): the --header-offset the
+  // layout keeps on <html>.
+  function headerOffset() {
+    return parseInt(document.documentElement.style.getPropertyValue("--header-offset"), 10) || 0;
+  }
+
+  // The topic's URL (Topic#url, the page's canonical /t/:slug/:id) and
+  // the post number the address asks for (the route's nearPost).
+  var TOPIC_PATH = /^(.*\/t\/[^/]+\/\d+)(?:\/(\d+))?\/?$/;
+
+  function topicUrl() {
+    var m = TOPIC_PATH.exec(location.pathname);
+    return m ? m[1] : null;
+  }
+
+  function nearPost() {
+    var m = TOPIC_PATH.exec(location.pathname);
+    return m && m[2] ? parseInt(m[2], 10) : null;
+  }
+
+  // PostStream#closestPostNumberFor: the post on the page nearest the
+  // number, the first of a tie.
+  function closestPostNumber(postNumber) {
+    var closest = null;
+    document.querySelectorAll("#posts > [data-post-number]").forEach(function (el) {
+      var n = parseInt(el.dataset.postNumber, 10);
+      if (closest === null || Math.abs(postNumber - n) < Math.abs(closest - postNumber)) {
+        closest = n;
+      }
+    });
+    return closest;
+  }
+
+  // lib/lock-on.js: keep the element at the top, below the header, for a
+  // second while the page settles (images, fonts, the rest of the page
+  // still coming in), unless the reader scrolls.
+  var LOCK_DURATION_MS = 1000;
+  var LOCK_TIMEOUT_MS = 5000;
+  var SCROLL_EVENTS = ["scroll", "touchmove", "mousedown", "wheel", "keyup"];
+  var SCROLL_TYPES = ["mousedown", "mousewheel", "touchmove", "wheel"];
+  var lock = null;
+
+  function within(threshold, x, y) {
+    return Math.abs(x - y) < threshold;
+  }
+
+  function query(selector) {
+    try {
+      return document.querySelector(selector);
+    } catch (e) {
+      // An anchor that is no selector: Ember's querySelector throws too.
+      console.error(e);
+      return null;
+    }
+  }
+
+  function LockOn(selector) {
+    var self = this;
+    var startedAt;
+    var previousTop;
+    var requestId;
+
+    this.elementTop = function () {
+      var element = query(selector);
+      if (!element) {
+        return;
+      }
+      return element.getBoundingClientRect().top + window.scrollY - headerOffset();
+    };
+
+    function listener(event) {
+      if (event.which > 0 || SCROLL_TYPES.indexOf(event.type) !== -1) {
+        self.clearLock();
+      }
+    }
+
+    function removeListener() {
+      SCROLL_EVENTS.forEach(function (name) {
+        document.body.removeEventListener(name, listener);
+      });
+    }
+
+    this.clearLock = function () {
+      removeListener();
+      window.cancelAnimationFrame(requestId);
+      if (lock === self) {
+        lock = null;
+      }
+    };
+
+    function performLocking() {
+      var elementTop = self.elementTop();
+      if (!previousTop && !elementTop) {
+        if (Date.now() - startedAt > LOCK_TIMEOUT_MS) {
+          self.clearLock();
+          return;
+        }
+        requestId = window.requestAnimationFrame(performLocking);
+        return;
+      }
+      var top = Math.max(0, elementTop);
+      if (isNaN(top)) {
+        self.clearLock();
+        return;
+      }
+      if (!within(4, top, previousTop) || !within(4, window.scrollY, top)) {
+        window.scrollTo(window.pageXOffset, top);
+        previousTop = top;
+      }
+      if (Date.now() - startedAt > LOCK_DURATION_MS) {
+        self.clearLock();
+        return;
+      }
+      requestId = window.requestAnimationFrame(performLocking);
+    }
+
+    this.lock = function () {
+      startedAt = Date.now();
+      previousTop = self.elementTop();
+      if (previousTop) {
+        window.scrollTo(window.pageXOffset, previousTop);
+      }
+      requestId = window.requestAnimationFrame(performLocking);
+      removeListener();
+      SCROLL_EVENTS.forEach(function (name) {
+        document.body.addEventListener(name, listener, { passive: true });
+      });
+    };
+  }
+
+  // DiscourseURL.jumpToPost: the top for the first post (without an
+  // anchor), else the anchor or the post locked on below the header.
+  function jumpToPost(postNumber, anchor) {
+    var holderId = "#post_" + postNumber;
+    if (postNumber === 1 && !anchor) {
+      window.scrollTo(window.pageXOffset, 0);
+      return;
+    }
+    var selector;
+    var holder;
+    if (anchor) {
+      selector = "#main #" + anchor + ", a[name=" + anchor + "]";
+      holder = query(selector);
+      if (!holder) {
+        // Not drawn: LockOn waits for it.
+        var postHolder = document.querySelector(holderId);
+        if (postHolder) {
+          postHolder.scrollIntoView(true);
+        }
+      }
+    }
+    if (!holder && !anchor) {
+      selector = holderId;
+    }
+    if (lock) {
+      lock.clearLock();
+    }
+    lock = new LockOn(selector);
+    lock.lock();
+    if (lock && lock.elementTop() < 1) {
+      lock.clearLock();
+    }
+  }
+
+  // lib/utilities.js highlightPost, which post:highlight runs: a later
+  // post's body takes the focus, for screen readers.
+  function highlightPost(postNumber) {
+    var container = document.querySelector("#post_" + postNumber);
+    var element = container && container.querySelector(".topic-body, .small-action-desc");
+    if (!element) {
+      return;
+    }
+    if (postNumber > 1) {
+      element.setAttribute("tabindex", "0");
+      element.focus();
+    }
+  }
+
+  // DiscourseURL.replaceState: the address, when it changes.
+  function replaceState(path) {
+    if (location.pathname + location.search + location.hash !== path) {
+      history.replaceState(history.state, "", path);
+    }
+  }
+
+  // Whether Ember has the post drawn: its viewport tracker cloaks the
+  // posts more than a window's height outside the window (the cloaking
+  // observer's root margin, SLACK_FACTOR 1), uncloaking one that overlaps
+  // that band by 5px, or by 1px and 5% of its height.
+  function uncloaked(article) {
+    var rect = article.getBoundingClientRect();
+    var margin = Math.ceil(window.innerHeight);
+    var overlap = Math.min(rect.bottom, window.innerHeight + margin) - Math.max(rect.top, -margin);
+    return overlap >= 5 || (overlap >= 1 && overlap / rect.height >= 0.05);
+  }
+
+  // DiscourseURL.routeTo a post of this topic that the page has
+  // (navigatedToPost): the address, then post:highlight and jumpToPost.
+  // post:highlight runs before the jump, so a post Ember has cloaked there
+  // has no body to focus.
+  function goToPost(postNumber) {
+    replaceState(topicUrl() + "/" + postNumber + location.search);
+    if (uncloaked(document.getElementById("post_" + postNumber))) {
+      highlightPost(postNumber);
+    }
+    jumpToPost(postNumber, null);
+  }
+
+  // A layout switch draws the page again where the reader is (page.js
+  // swapIn): not an entry.
+  var redrawing = false;
+  document.addEventListener("discourse:before-redraw", function () {
+    redrawing = true;
+  });
+  document.addEventListener("discourse:redrawn", function () {
+    redrawing = false;
+  });
+
+  // Entering the topic (TopicFromParams#setupController): the post nearest
+  // the one asked for is highlighted and jumped to, or the anchor in the
+  // address is. Only a page load takes the focus there: come from another
+  // page of the app, Ember's focuses nothing (measured against rs-ref-b),
+  // and a link to another post of the same topic is navigatedToPost's
+  // jump, where a cloaked post has no body to focus (goToPost).
+  Discourse.onPage(function () {
+    var url = topicUrl();
+    if (redrawing || !document.getElementById("topic") || !url) {
+      return;
+    }
+    var closest = closestPostNumber(nearPost() || 1);
+    if (closest === null) {
+      return;
+    }
+    var previous = TOPIC_PATH.exec((Discourse.previousUrl || "").split("?")[0]);
+    if (!Discourse.swapped) {
+      highlightPost(closest);
+    } else if (previous && previous[1] === url && uncloaked(document.getElementById("post_" + closest))) {
+      highlightPost(closest);
+    }
+    jumpToPost(closest, location.hash ? location.hash.slice(1) : null);
+    return function () {
+      if (lock) {
+        lock.clearLock();
+      }
+    };
+  });
+
   // The post at the eyeline, which slides from the top of the posts to the
-  // bottom of the window as the reader nears the end of the page: its
-  // index in the stream, and how far through the topic that is
-  // (TopicController#currentPostScrolled's percent). Null between posts.
-  function position(stream) {
-    var total = Math.max(stream.length, 1);
+  // bottom of the window as the reader nears the end of the page
+  // (post-stream-viewport-tracker.js findPostMatchingEyeline): its
+  // article and how far down it the eyeline is. Null between posts.
+  function eyelinePost() {
     var wrapper = document.querySelector(".posts-wrapper");
+    if (!wrapper) {
+      return null;
+    }
     var boundary = document.querySelector(".post-stream__bottom-boundary");
     var top = Math.max(headerHeight(), wrapper.getBoundingClientRect().top) + 1;
     var bottom = boundary
@@ -45,16 +294,85 @@
       // the page.
       var last = i === posts.length - 1;
       if (eyeline >= rect.top && (eyeline < rect.bottom || (last && eyeline <= rect.bottom))) {
-        var index = stream.indexOf(parseInt(posts[i].dataset.postId, 10)) + 1;
-        if (index < 1) {
-          return null;
-        }
-        var within = (eyeline - rect.top) / rect.height;
-        return { index: index, percent: clamp((index + within - 1) / total, 0, 1) };
+        return { article: posts[i], within: (eyeline - rect.top) / rect.height };
       }
     }
     return null;
   }
+
+  // The eyeline's post as an index in the stream, and how far through the
+  // topic that is (TopicController#currentPostScrolled's percent).
+  function position(stream) {
+    var at = eyelinePost();
+    if (!at) {
+      return null;
+    }
+    var index = stream.indexOf(parseInt(at.article.dataset.postId, 10)) + 1;
+    if (index < 1) {
+      return null;
+    }
+    var total = Math.max(stream.length, 1);
+    return { index: index, percent: clamp((index + at.within - 1) / total, 0, 1) };
+  }
+
+  // The address follows the post being read (currentPostChanged and the
+  // topic route's postChangedRoute): when the eyeline's post changes, the
+  // topic's URL with its number (the bare URL for the first post) replaces
+  // the address once the page has stopped scrolling for half a second
+  // (_replaceUnlessScrolling). The eyeline is looked for 10ms after a
+  // scroll (SCROLL_BATCH_INTERVAL_MS).
+  var SCROLL_DELAY = 500;
+  var SCROLL_BATCH_INTERVAL_MS = 10;
+  Discourse.onPage(function () {
+    var url = topicUrl();
+    if (!url || !document.getElementById("topic")) {
+      return;
+    }
+    var current = null;
+    var batch = null;
+    var scheduled = null;
+    var lastScrollPos = 0;
+
+    function replaceUnlessScrolling(path) {
+      var pos = document.scrollingElement.scrollTop;
+      if (pos === lastScrollPos) {
+        replaceState(path + location.hash);
+        return;
+      }
+      lastScrollPos = pos;
+      scheduled = setTimeout(replaceUnlessScrolling, SCROLL_DELAY, path);
+    }
+
+    function check() {
+      batch = null;
+      var at = eyelinePost();
+      if (!at) {
+        return;
+      }
+      var number = parseInt(at.article.parentElement.dataset.postNumber, 10);
+      if (number === current) {
+        return;
+      }
+      current = number;
+      var path = (number > 1 ? url + "/" + number : url) + location.search;
+      clearTimeout(scheduled);
+      lastScrollPos = document.scrollingElement.scrollTop;
+      scheduled = setTimeout(replaceUnlessScrolling, SCROLL_DELAY, path);
+    }
+
+    function onScroll() {
+      clearTimeout(batch);
+      batch = setTimeout(check, SCROLL_BATCH_INTERVAL_MS);
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return function () {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(batch);
+      clearTimeout(scheduled);
+    };
+  });
 
   // The progress bar (TopicProgress): the post's index and the bar's fill.
   Discourse.onPage(function () {
@@ -499,14 +817,13 @@
           '<button class="btn btn-icon-text btn-primary btn-small progress-back" type="button"><svg class="fa d-icon d-icon-arrow-down svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#arrow-down"></use></svg><span class="d-button-label"></span></button>';
         holder.querySelector(".d-button-label").textContent = nav.dataset.backLabel;
         holder.querySelector("button").addEventListener("click", function () {
-          var number = nav.dataset.lastReadNumber;
-          var post = document.querySelector('#posts article[data-post-number="' + number + '"]');
-          if (post) {
-            window.scrollTo({ top: post.getBoundingClientRect().top + window.scrollY - headerHeight() });
+          // jumpToPost(last_read_post_number): this page's post, else the
+          // topic loaded at it.
+          var number = parseInt(nav.dataset.lastReadNumber, 10);
+          if (document.getElementById("post_" + number)) {
+            goToPost(number);
           } else {
-            var timeline = document.querySelector("template.topic-timeline-fullscreen");
-            var url = timeline ? timeline.content.firstElementChild.dataset.topicUrl : location.pathname;
-            location.href = url + "/" + number;
+            location.href = topicUrl() + "/" + number;
           }
         });
         wrapper.insertBefore(holder, nav);
@@ -670,10 +987,9 @@
         var post = document.querySelector(
           '#posts article[data-post-id="' + stream[index - 1] + '"]'
         );
+        // jumpToIndex: the post's URL, highlighted and jumped to.
         if (post) {
-          window.scrollTo({
-            top: post.getBoundingClientRect().top + window.scrollY - headerHeight(),
-          });
+          goToPost(parseInt(post.parentElement.dataset.postNumber, 10));
         } else {
           var page = Math.floor((index - 1) / chunk) + 1;
           location.href =

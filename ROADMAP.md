@@ -3170,12 +3170,40 @@ route table has been made, so this list may be short.
     topic with a featured link refuses at featured_link_root_domain
     (topic_view.rs:556; header_topic_view.rs:107); a live title edit
     redraws #topic-title but not the header's template (routes/live.rs:573).
-    Around it, not the header's: the topic page entered at a post number
-    does not scroll to it (DiscourseURL.jumpToPost), so it starts undocked
-    where Ember's starts docked, nor does the address follow the post
-    being read (TopicController#currentPostChanged), so going back to the
-    top leaves `/1` where Ember's drops it; jumping to a post does not
-    highlight it (post:highlight)
+    Around it, not the header's, done in ~~`fix/topic-post-navigation`~~:
+    the topic page entered at a post number (/t/:slug/:id/:n, and
+    /p/:post_id(/:user_id), posts#short_link, which answered 404 and now
+    redirects there: not found for a missing or trashed post, forbidden for
+    one the viewer may not see, a stored slug or Unsupported) now picks the
+    closest post on the page (closestPostNumberFor), runs post:highlight on
+    it and jumps to it (DiscourseURL.jumpToPost: the top for the first
+    post, else LockOn's second of holding `#post_N`, or the address's
+    anchor, at --header-offset), so it starts docked as Ember's does; the
+    address follows the post at the eyeline (currentPostChanged and
+    postChangedRoute: /t/:slug/:id/:n, the bare topic URL for the first
+    post, the query and hash kept, replaced once the page has stopped
+    scrolling for 500ms); the progress bar's back button and the timeline's
+    scroll area go to a post on the page as routeTo's navigatedToPost does
+    (the address, post:highlight, jumpToPost), where the back button looked
+    for an `article[data-post-number]` neither DOM has. post:highlight in
+    this Discourse is highlightPost: no `.highlighted` class or animation,
+    a later post's `.topic-body` gets tabindex 0 and the focus; a post
+    Ember has cloaked (more than a window's height away) has no body then,
+    so a jump from far keeps the focus where it was, and a topic entered
+    from another page of the app (a boosted link, back and forward) focuses
+    nothing, as the port now does (static/js/topic.js, page.js
+    Discourse.swapped). Not copied: Ember's cloaking itself, so a focused
+    post scrolled far away keeps the focus here where Ember's goes to the
+    body. Measured with playwright against rs-ref-b (topic 35 with 25 more
+    replies, desktop 1280 anonymous and mobile 390 as user1): entering at
+    5, 25 and 99, scrolling to 12, 20, 3, a wheel step, the top and the
+    bottom, the bare topic and its back button, boosted links from /latest
+    and within the topic (near and far), back and forward, the address, the
+    top post's offset (52px, the header), the focused body, the docked
+    header, the timeline and progress counts match at each step (but the
+    bottom, where the port has only the entered chunk of posts drawn and
+    Ember loads more); a layout switch's redraw is not an entry and does
+    not jump
 
 262. ~~`fix/pm-topic-view`~~ (done) M: a message's topic page drew as a
     regular topic. topic.gjs's body classes (AddCategoryTagClasses'
