@@ -336,15 +336,18 @@ pub async fn update(
         i32,
         i32,
         Option<String>,
+        i32,
     );
     let exists: Option<Found> = sqlx::query_as(
-        "SELECT user_id, deleted_at IS NOT NULL, created_at, topic_id, post_number, locale \
+        "SELECT user_id, deleted_at IS NOT NULL, created_at, topic_id, post_number, locale, \
+                post_type \
              FROM posts WHERE id = $1",
     )
     .bind(post_id)
     .fetch_optional(&mut *conn)
     .await?;
-    let Some((author, deleted, created_at, topic_id, post_number, locale)) = exists else {
+    let Some((author, deleted, created_at, topic_id, post_number, locale, post_type)) = exists
+    else {
         return Ok(super::topics::not_found_response(&state));
     };
     if deleted {
@@ -474,6 +477,9 @@ pub async fn update(
         edit_reason: post_params.get("edit_reason").and_then(params::scalar),
         topic,
         bypass_bump,
+        // Staff edits to small action posts aren't validated.
+        skip_validations: post_type == crate::posting::post_types::SMALL_ACTION
+            && guardian.is_staff(),
         ..Default::default()
     };
     match revise::revise(&state.pool, &ctx, &guardian, post_id, changes).await? {

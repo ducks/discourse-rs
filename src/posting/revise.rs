@@ -29,6 +29,9 @@ use crate::{AppError, Unsupported};
 
 use super::revise_topic::{self, Deferred, TopicFields};
 
+/// `Post::MAX_EDIT_REASON_LENGTH`
+const MAX_EDIT_REASON_LENGTH: usize = 1000;
+
 /// What posts#update hands the revisor.
 #[derive(Default)]
 pub struct Changes {
@@ -235,8 +238,10 @@ pub async fn revise(
     if post.hidden {
         return Err(Unsupported("editing hidden posts").into());
     }
-    if post.post_type != super::post_types::REGULAR {
-        return Err(Unsupported("editing posts other than regular ones").into());
+    if post.post_type != super::post_types::REGULAR
+        && post.post_type != super::post_types::SMALL_ACTION
+    {
+        return Err(Unsupported("editing posts other than regular and small action ones").into());
     }
     let category_definition: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
@@ -440,6 +445,16 @@ pub async fn revise(
         .await?
     };
     errors.extend(poll_errors);
+    // validates :edit_reason, length: { maximum: MAX_EDIT_REASON_LENGTH },
+    // after PostValidator; with validations skipped, before_save's
+    // ensure_edit_reason_length aborts the save the same way.
+    if new_edit_reason
+        .as_ref()
+        .is_some_and(|r| r.chars().count() > MAX_EDIT_REASON_LENGTH)
+    {
+        let message = ctx.t_count("errors.messages.too_long", MAX_EDIT_REASON_LENGTH as i64);
+        errors.push(format!("Edit reason {message}"));
+    }
     // The topic's side, read before the transaction as revise_topic does.
     let prepared = if topic_changed {
         Some(
@@ -840,8 +855,9 @@ pub async fn revise(
     .execute(&mut *conn)
     .await?;
     // The post's after_commit search index, when its last save changed the
-    // cooked.
-    if cooked != post.cooked && !revision_dropped {
+    // cooked and it has a raw (`obj.raw.present?`: a staff edit may blank a
+    // small action's).
+    if cooked != post.cooked && !revision_dropped && !new_raw.trim().is_empty() {
         // The topic as the edit left it.
         let (topic_title, category_name, tags): (String, Option<String>, Option<String>) =
             sqlx::query_as(&format!(

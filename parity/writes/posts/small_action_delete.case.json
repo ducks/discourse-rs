@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/44.json",
+      "params": {
+        "context": "/t/parity-fixture-unlisted-topic/39"
+      }
+    }
+  ]
+}

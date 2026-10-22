@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/47.json",
+      "params": {
+        "post": {
+          "raw": "Archived until the next season.",
+          "topic_id": "41",
+          "original_text": ""
+        }
+      }
+    }
+  ]
+}

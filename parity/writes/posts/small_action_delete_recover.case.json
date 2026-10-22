@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/47.json",
+      "params": {
+        "context": "/t/parity-fixture-liked-and-archived/41"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/47/recover.json",
+      "params": {}
+    }
+  ]
+}

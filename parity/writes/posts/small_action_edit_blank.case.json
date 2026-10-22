@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET raw = 'Archived for now.', cooked = '<p>Archived for now.</p>' WHERE id = 47"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/47.json",
+      "params": {
+        "post": {
+          "raw": "",
+          "topic_id": "41",
+          "original_text": "Archived for now."
+        }
+      }
+    }
+  ]
+}
