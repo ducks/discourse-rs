@@ -1463,7 +1463,7 @@ impl Users<'_> {
         if !ids.is_empty() {
             let rows: Vec<TopCategory> = sqlx::query_as(
                 "SELECT id, name, color, text_color, style_type, icon, emoji, slug, read_restricted, \
-                        parent_category_id FROM categories WHERE id = ANY($1) ORDER BY id",
+                        parent_category_id FROM categories WHERE id = ANY($1)",
             )
             .bind(&ids)
             .fetch_all(&mut *self.conn)
@@ -1514,7 +1514,10 @@ impl Users<'_> {
                     )
                 })
                 .collect();
-            // sort_by { -(post_count + topic_count) }; ties keep id order.
+            // sort_by { -(post_count + topic_count) }, stable under glibc's
+            // qsort_r (a merge sort) as Ruby calls it: ties keep the order
+            // the categories came in, which Category.where(id:).pluck leaves
+            // to the plan (no ORDER BY), so the table's physical order.
             entries.sort_by_key(|(total, _)| -total);
             top_categories = entries.into_iter().map(|(_, v)| v).collect();
         }

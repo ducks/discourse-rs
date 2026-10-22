@@ -135,6 +135,35 @@ async fn hidden_profiles_follow_the_anonymous_rules() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+/// UserSummary#top_categories plucks the categories without an ORDER BY
+/// and sorts them by posts and topics with a stable sort, so ties keep the
+/// table's order: the seed stores Sub General (34) before General (4),
+/// where an id order put General first.
+#[tokio::test]
+async fn top_categories_ties_keep_the_tables_order() {
+    let db = TestDb::new().await;
+    let (_, _, body) = get(&db.pool, "/u/user1/summary.json").await;
+    let json: Value = serde_json::from_str(&body).unwrap();
+    let top: Vec<(i64, i64, i64)> = json["user_summary"]["top_categories"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| {
+            (
+                c["id"].as_i64().unwrap(),
+                c["topic_count"].as_i64().unwrap(),
+                c["post_count"].as_i64().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(top, [(34, 1, 0), (4, 0, 1)]);
+    let (_, _, html) = get(&db.pool, "/u/user1/summary").await;
+    let section = &html[html.find("top-categories-section").unwrap()..];
+    let sub = section.find(r#"href="/c/general/sub-general/34""#).unwrap();
+    let general = section.find(r#"href="/c/general/4""#).unwrap();
+    assert!(sub < general);
+}
+
 #[tokio::test]
 async fn hiding_profiles_from_the_public_gives_403() {
     let db = TestDb::new().await;
