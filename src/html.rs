@@ -2181,6 +2181,9 @@ pub struct TopicPage {
     pub archetype: String,
     /// `#topic-title`'s title wrapper (post_view::topic_title).
     pub title_html: String,
+    /// The topic in the composer's reply-where dialog, for a member
+    /// (post_view::reply_where_topic); empty for a visitor.
+    pub reply_where: String,
     /// The docked header's minimized logo and topic info, as a template
     /// static/js/header-topic-info.js docks (header_topic_view).
     pub header_topic_info: String,
@@ -2627,6 +2630,11 @@ pub async fn topic_page(
         voter,
     )
     .await?;
+    let reply_where = if viewer.is_some() {
+        crate::post_view::reply_where_topic(&list, view, staff || view["closed"] != true)
+    } else {
+        String::new()
+    };
     // currentUser.ignored_users
     let ignored_users = match viewer {
         Some(username) => ignored_usernames(conn, username).await?,
@@ -2725,8 +2733,20 @@ pub async fn topic_page(
     if let (Some(first), Some(last)) = (numbers.iter().min(), numbers.iter().max()) {
         site.chrome.live_param("posts", &format!("{first}-{last}"));
     }
+    // PostStream#loadedAllPosts: the stream's last post is drawn, on the
+    // last page or in the window around a post near the end.
+    let last_id = view["post_stream"]["stream"]
+        .as_array()
+        .and_then(|s| s.last())
+        .and_then(Value::as_i64);
+    let loaded_all = page >= last_page
+        || last_id.is_some_and(|id| {
+            view["post_stream"]["posts"]
+                .as_array()
+                .is_some_and(|posts| posts.iter().any(|p| p["id"].as_i64() == Some(id)))
+        });
     // topic.gjs hides the footer until the post stream is loaded to its end.
-    if page < last_page {
+    if !loaded_all {
         site.chrome.show_footer = false;
     }
     // topic.gjs's body classes: AddCategoryTagClasses, AddTopicStatusClasses
@@ -2747,6 +2767,7 @@ pub async fn topic_page(
         title: s(&view["title"]),
         canonical_url: page_url(page),
         archetype,
+        reply_where,
         title_html,
         header_topic_info,
         posts,
@@ -2755,8 +2776,8 @@ pub async fn topic_page(
         footer_buttons,
         more_topics,
         topic_id: id,
-        // New posts land on the last page; earlier pages stay as they are.
-        live: page >= last_page,
+        // New posts land at the end; pages before it stay as they are.
+        live: loaded_all,
         reactions: post_settings.reactions.is_some(),
         solved: post_settings.solved.is_some(),
         ignored_users: ignored_users.join(","),

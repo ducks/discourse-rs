@@ -395,6 +395,47 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str, glyph: &str) -> 
     )
 }
 
+/// The topic as the composer's "which topic do you want to reply to?"
+/// dialog shows it (TopicReplyChoiceDialog's TopicLabelButton: the
+/// statuses, the title, the category's unlinked badge and the tags), in
+/// a template composer.js takes the button's content from. `offer` is
+/// the dialog's condition on the page's topic: open, or a staff viewer.
+pub fn reply_where_topic(list: &ListContext, view: &Value, offer: bool) -> String {
+    let mut statuses = String::new();
+    for (on, class, name) in [
+        (
+            view["archetype"] == "private_message",
+            "--private-message",
+            "envelope",
+        ),
+        (view["bookmarked"] == true, "--bookmarked", "bookmark"),
+        (
+            view["closed"] == true,
+            "--closed",
+            crate::topic_list_view::CLOSED_ICON,
+        ),
+        (view["pinned"] == true, "--pinned", "thumbtack"),
+    ] {
+        if on {
+            statuses.push_str(&format!(
+                "<span class=\"topic-status {class}\">{}</span>",
+                icon(name, None)
+            ));
+        }
+    }
+    let badge = view["category_id"]
+        .as_i64()
+        .and_then(|id| list.categories.get(&id))
+        .map(|c| crate::topic_list_view::category_badge_html(list, c, false, false))
+        .unwrap_or_default();
+    format!(
+        "<template class=\"reply-where-topic\" data-topic-id=\"{}\" data-offer=\"{offer}\"><div class=\"topic-title\"><div class=\"topic-title__top-line\"><span class=\"topic-statuses\">{statuses}</span><span class=\"fancy-title\">{}</span></div><div class=\"topic-title__bottom-line\">{badge}{}</div></div></template>",
+        view["id"],
+        escape(s(&view["title"])),
+        crate::topic_list_view::render_tags(list, view)
+    )
+}
+
 /// The posts of a page in order, with the time gaps between them and the
 /// gaps (`post_stream.gaps`) of the posts the stream leaves out.
 pub fn stream(cx: &PostContext, posts: &[Value], gaps: &Value) -> Vec<String> {

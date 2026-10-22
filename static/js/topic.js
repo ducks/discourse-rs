@@ -26,6 +26,29 @@
     return parseInt(document.documentElement.style.getPropertyValue("--header-offset"), 10) || 0;
   }
 
+  // offsetCalculator(): the header, but on the desktop view at the bottom
+  // of a page whose footer is shorter than the window, the share of the
+  // window the footer's visible part scales up to.
+  function offsetCalculator() {
+    var min = headerOffset();
+    var bottom = document.getElementById("topic-bottom");
+    if (document.documentElement.classList.contains("mobile-view") || !bottom) {
+      return min;
+    }
+    var windowHeight = window.innerHeight;
+    var documentHeight = document.body.clientHeight;
+    var topicBottomOffsetTop = bottom.offsetTop;
+    if (documentHeight - windowHeight > topicBottomOffsetTop) {
+      return min;
+    }
+    var visibleBottomHeight = window.scrollY + windowHeight - topicBottomOffsetTop;
+    if (visibleBottomHeight > 0) {
+      var bottomHeight = documentHeight - topicBottomOffsetTop;
+      return Math.max(min, ((windowHeight - bottomHeight) * visibleBottomHeight) / bottomHeight);
+    }
+    return min;
+  }
+
   // The topic's URL (Topic#url, the page's canonical /t/:slug/:id) and
   // the post number the address asks for (the route's nearPost).
   var TOPIC_PATH = /^(.*\/t\/[^/]+\/\d+)(?:\/(\d+))?\/?$/;
@@ -151,8 +174,9 @@
   }
 
   // DiscourseURL.jumpToPost: the top for the first post (without an
-  // anchor), else the anchor or the post locked on below the header.
-  function jumpToPost(postNumber, anchor) {
+  // anchor), else the anchor or the post locked on below the header;
+  // with skipIfOnScreen, not a post already wholly in the window.
+  function jumpToPost(postNumber, anchor, skipIfOnScreen) {
     var holderId = "#post_" + postNumber;
     if (postNumber === 1 && !anchor) {
       window.scrollTo(window.pageXOffset, 0);
@@ -173,11 +197,21 @@
     }
     if (!holder && !anchor) {
       selector = holderId;
+      holder = document.querySelector(holderId);
     }
     if (lock) {
       lock.clearLock();
     }
     lock = new LockOn(selector);
+    if (holder && skipIfOnScreen) {
+      var elementTop = lock.elementTop();
+      var scrollTop = window.scrollY;
+      var windowHeight = window.innerHeight - offsetCalculator();
+      if (elementTop > scrollTop && elementTop + holder.offsetHeight < scrollTop + windowHeight) {
+        lock = null;
+        return;
+      }
+    }
     lock.lock();
     if (lock && lock.elementTop() < 1) {
       lock.clearLock();
@@ -228,6 +262,157 @@
     jumpToPost(postNumber, null);
   }
 
+  // The page for a path, swapped in as a link's (hx-boost); replace takes
+  // the address's place in the history, as DiscourseURL.replaceState.
+  function visit(path, replace) {
+    if (!window.htmx) {
+      if (replace) {
+        location.replace(path);
+      } else {
+        location.assign(path);
+      }
+      return;
+    }
+    var link = document.createElement("a");
+    link.href = path;
+    link.hidden = true;
+    if (replace) {
+      link.setAttribute("hx-replace-url", "true");
+    }
+    document.getElementById("main-outlet").appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  }
+
+  function topicIdOf(path) {
+    var m = TOPIC_PATH.exec(path);
+    return m ? /(\d+)$/.exec(m[1])[1] : null;
+  }
+
+  // The address of a page of this topic swapped in for routeToPost, whose
+  // jump leaves a post wholly in the window where it is.
+  var pendingRoute = null;
+
+  // DiscourseURL.routeTo(path, { keepFilter: true, skipIfOnScreen: true })
+  // for a post's URL, as the composer's save calls it. Within this topic
+  // it is navigatedToPost: the address replaced, then post:highlight and
+  // jumpToPost, which leaves a post wholly in the window where it is. A
+  // post the page doesn't draw is the stream's refresh around it: the
+  // page for it, taking the address's place. Another topic's post is
+  // that topic's page.
+  //
+  // Ember's post:highlight focuses only a post its stream already drew:
+  // none after a refresh, and a post just created only when the composer
+  // staged it (opts.highlight false otherwise), its body not drawn yet
+  // when it runs (measured against rs-ref-c: an edit saved away from its
+  // post, replies at the bottom and from the middle, staged or not).
+  // opts.arriving: a post the page's live stream is bringing (a reply on
+  // the last page), waited for rather than loaded.
+  function routeToPost(path, opts) {
+    opts = opts || {};
+    var pathname = path.split(/[?#]/)[0];
+    var target = TOPIC_PATH.exec(pathname);
+    if (!target || !document.getElementById("topic") || topicIdOf(location.pathname) !== topicIdOf(pathname)) {
+      visit(path, false);
+      return;
+    }
+    var number = target[2] ? parseInt(target[2], 10) : 1;
+    var go = function () {
+      var holder = document.getElementById("post_" + number);
+      if (!holder) {
+        pendingRoute = pathname;
+        visit(path, true);
+        return;
+      }
+      replaceState(path);
+      if (opts.highlight !== false && uncloaked(holder)) {
+        highlightPost(number);
+      }
+      jumpToPost(number, null, true);
+    };
+    if (opts.arriving && !document.getElementById("post_" + number)) {
+      whenDrawn(number, go);
+    } else {
+      go();
+    }
+  }
+
+  // Runs fn once the post is on the page (a live update bringing it), or
+  // after five seconds without it.
+  var DRAWN_TIMEOUT_MS = 5000;
+  function whenDrawn(number, fn) {
+    var posts = document.getElementById("posts");
+    if (!posts || document.getElementById("post_" + number)) {
+      fn();
+      return;
+    }
+    var done = false;
+    var observer = new MutationObserver(function () {
+      if (document.getElementById("post_" + number)) {
+        finish();
+      }
+    });
+    var timer = setTimeout(finish, DRAWN_TIMEOUT_MS);
+    function finish() {
+      if (done) {
+        return;
+      }
+      done = true;
+      observer.disconnect();
+      clearTimeout(timer);
+      fn();
+    }
+    observer.observe(posts, { childList: true, subtree: true });
+  }
+
+  // Whether new posts land on this page: the last page of the topic,
+  // whose live stream brings them (Ember's loadedAllPosts).
+  function atTopicEnd() {
+    return !!document.querySelector('[sse-connect*="tail=1"]');
+  }
+
+  Discourse.topicRoute = {
+    routeToPost: routeToPost,
+    atTopicEnd: atTopicEnd,
+    topicId: function () {
+      return document.getElementById("topic") ? topicIdOf(location.pathname) : null;
+    },
+  };
+
+  // Ember draws a post's changes in place, so the body post:highlight
+  // focused keeps its tabindex and the focus; a live update here swaps the
+  // post's markup, and the new body takes them over.
+  var redrawnHighlight = null;
+  document.addEventListener("htmx:oobBeforeSwap", function (event) {
+    var target = event.detail && event.detail.target;
+    if (!target || !target.matches || !target.matches("#posts > [data-post-number]")) {
+      return;
+    }
+    var body = target.querySelector('.topic-body[tabindex="0"], .small-action-desc[tabindex="0"]');
+    if (body) {
+      redrawnHighlight = {
+        number: target.dataset.postNumber,
+        focused: document.activeElement === body,
+      };
+    }
+  });
+  document.addEventListener("htmx:oobAfterSwap", function () {
+    var kept = redrawnHighlight;
+    redrawnHighlight = null;
+    if (!kept) {
+      return;
+    }
+    var wrapper = document.querySelector('#posts > [data-post-number="' + kept.number + '"]');
+    var body = wrapper && wrapper.querySelector(".topic-body, .small-action-desc");
+    if (!body) {
+      return;
+    }
+    body.setAttribute("tabindex", "0");
+    if (kept.focused) {
+      body.focus({ preventScroll: true });
+    }
+  });
+
   // A layout switch draws the page again where the reader is (page.js
   // swapIn): not an entry.
   var redrawing = false;
@@ -254,12 +439,20 @@
       return;
     }
     var previous = TOPIC_PATH.exec((Discourse.previousUrl || "").split("?")[0]);
+    // The composer's routeTo of a post the page didn't have.
+    var route = pendingRoute === location.pathname;
+    pendingRoute = null;
     if (!Discourse.swapped) {
       highlightPost(closest);
-    } else if (previous && previous[1] === url && uncloaked(document.getElementById("post_" + closest))) {
+    } else if (
+      previous &&
+      previous[1] === url &&
+      !route &&
+      uncloaked(document.getElementById("post_" + closest))
+    ) {
       highlightPost(closest);
     }
-    jumpToPost(closest, location.hash ? location.hash.slice(1) : null);
+    jumpToPost(closest, location.hash ? location.hash.slice(1) : null, route);
     return function () {
       if (lock) {
         lock.clearLock();
@@ -333,14 +526,17 @@
     var scheduled = null;
     var lastScrollPos = 0;
 
-    function replaceUnlessScrolling(path) {
+    // The topic's URL as the address has it when the time comes: an edit
+    // that retitled the topic has put its new slug there (routeToPost).
+    function replaceUnlessScrolling(number) {
       var pos = document.scrollingElement.scrollTop;
       if (pos === lastScrollPos) {
-        replaceState(path + location.hash);
+        var at = topicUrl() || url;
+        replaceState((number > 1 ? at + "/" + number : at) + location.search + location.hash);
         return;
       }
       lastScrollPos = pos;
-      scheduled = setTimeout(replaceUnlessScrolling, SCROLL_DELAY, path);
+      scheduled = setTimeout(replaceUnlessScrolling, SCROLL_DELAY, number);
     }
 
     function check() {
@@ -354,10 +550,9 @@
         return;
       }
       current = number;
-      var path = (number > 1 ? url + "/" + number : url) + location.search;
       clearTimeout(scheduled);
       lastScrollPos = document.scrollingElement.scrollTop;
-      scheduled = setTimeout(replaceUnlessScrolling, SCROLL_DELAY, path);
+      scheduled = setTimeout(replaceUnlessScrolling, SCROLL_DELAY, number);
     }
 
     function onScroll() {
@@ -366,9 +561,13 @@
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
+    // The viewport tracker sees a post the live stream adds too: a reply
+    // landing under the eyeline at the end of the page.
+    document.addEventListener("htmx:sseMessage", onScroll);
     onScroll();
     return function () {
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("htmx:sseMessage", onScroll);
       clearTimeout(batch);
       clearTimeout(scheduled);
     };
