@@ -171,9 +171,12 @@ async fn a_member_gets_the_homepage_with_the_composer_to_open() {
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     assert_eq!(reply.cache_control.as_deref(), Some("no-cache, no-store"));
     let html = &reply.body;
-    // discovery.latest under it, as /latest draws it.
+    // discovery.latest under it, as /latest draws it. Its `tags=howto,guide`
+    // is one tag name to TopicQuery, which no topic has, so the list is
+    // empty and draws no table, as on Rails.
     assert!(html.contains("<title>Discourse</title>"), "{html}");
-    assert!(html.contains("class=\"topic-list"), "{html}");
+    assert!(html.contains("list-container --topic-list"), "{html}");
+    assert!(!html.contains("<table class=\"topic-list"), "{html}");
     // Only the discovery list's params go along, sorted and encoded as
     // Ember's router writes them; the params go to the composer as given
     // (the last of a repeated one).
