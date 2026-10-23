@@ -83,9 +83,10 @@ Blockers, a scripted walk-through would hit them:
   the newest message is the marker (plugins/chat/page.rs:185):
   fix/chat-dm-thread-pages (280), done.
 - [ ] Chat: the chat drawer (223).
-- [ ] The demo servers on 8080 and 8092 run builds from 2026-10-19 and
-  2026-10-20, before every item from 260 on: rebuild and restart them
-  (the owner's call; agents don't touch them).
+- [x] The demo servers on 8080 and 8092 ran builds from 2026-10-19 and
+  2026-10-20, before every item from 260 on, and were gone after a reboot:
+  restarted on 1007bc82 with the large corpus (8080) and the Meta baseline
+  (8092). docs/demo-servers.md has how to load and run them.
 
 Visible if clicked, avoid them in a scripted demo:
 

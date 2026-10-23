@@ -436,6 +436,9 @@ scripts/vendor-discourse ~/discourse/discourse \
   $(scripts/discourse-commit-for-migration ~/discourse/discourse <version>)
 ```
 
+The local demo servers (a 20,000-post corpus and the Meta baseline) are set
+up as [docs/demo-servers.md](docs/demo-servers.md) describes.
+
 ## Deploying
 
 One host, systemd, Postgres 16 with pgvector, Caddy in front. Every
