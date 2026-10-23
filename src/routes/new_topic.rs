@@ -204,7 +204,7 @@ async fn show(
 /// repeated name winning. An array param (`tags[]=`) is refused:
 /// route-recognizer collects those into arrays, which the composer then
 /// trips over.
-fn query_params(query: Option<&str>) -> Result<Vec<(String, String)>, Unsupported> {
+pub(super) fn query_params(query: Option<&str>) -> Result<Vec<(String, String)>, Unsupported> {
     let mut out: Vec<(String, String)> = Vec::new();
     let Some(query) = query.filter(|q| !q.is_empty()) else {
         return Ok(out);
@@ -268,7 +268,7 @@ fn params_json(params: &[(String, String)]) -> Value {
 /// The query params the homepage's discovery route knows: a topic list's
 /// (with discourse-solved's `solved`, addDiscoveryQueryParam), or only the
 /// discovery route's `filter` for the categories page.
-fn known_query_params(
+pub(super) fn known_query_params(
     homepage: &str,
     settings: &SiteSettings,
 ) -> Result<Vec<&'static str>, AppError> {
@@ -284,7 +284,7 @@ fn known_query_params(
 
 /// The kept params as route-recognizer writes them: sorted by name, each
 /// key and value through encodeURIComponent.
-fn carried_query(params: &[(String, String)], known: &[&str]) -> String {
+pub(super) fn carried_query(params: &[(String, String)], known: &[&str]) -> String {
     let mut kept: Vec<&(String, String)> = params
         .iter()
         .filter(|(k, _)| known.contains(&k.as_str()))

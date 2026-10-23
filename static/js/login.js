@@ -10,6 +10,7 @@
 //   the username and email checks, creating the account, an external
 //   login's new account, the code signup's email step;
 // - the login-required front page and login-preferences: their buttons;
+// - the forgot-password route over the homepage: its URL and the modal;
 // - password reset (PasswordResetController).
 //
 // #login-data names the page and carries its token, settings and strings.
@@ -2534,6 +2535,12 @@
       signupPage();
     } else if (D.page === "password-reset") {
       passwordResetPage();
+    } else if (D.page === "forgot-password") {
+      // The forgot-password route over the homepage: it ends on the URL
+      // it replaced itself with.
+      if (location.pathname + location.search !== D.url) {
+        history.replaceState(history.state, "", D.url);
+      }
     } else {
       staticPages();
     }

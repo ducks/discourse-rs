@@ -1536,9 +1536,17 @@ pub async fn confirm_email_token(
         .into_response())
 }
 
-/// GET /password-reset: the forgot-password route, which opens the
-/// ForgotPassword modal over the login page when login is required and
-/// over the homepage otherwise.
+/// GET /password-reset: static#show with id "password_reset", one of its
+/// MODAL_PAGES, which answers the application layout with an empty body
+/// (keeping `?email=` in the cookie the modal prefills from). The Ember
+/// forgot-password route then replaces itself with the login route when
+/// login is required (`loginRequired`: required and anonymous), else with
+/// `homepageNavigationDestination()`, and opens the ForgotPassword modal
+/// over it.
+///
+/// Here a page load draws that page: the login page, or the homepage with
+/// #login-data telling static/js/login.js the URL the route replaces
+/// /password-reset with and to open the modal.
 pub async fn show_forgot_password(
     State(state): State<AppState>,
     crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
@@ -1549,8 +1557,114 @@ pub async fn show_forgot_password(
         let mut conn = state.pool.acquire().await?;
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?
     };
-    if guardian.is_anonymous() && settings.get("login_required")?.truthy() {
-        return login_page_with(&state, &settings, &headers, &uri, true).await;
+    let mut response = if guardian.is_anonymous() && settings.get("login_required")?.truthy() {
+        login_page_with(&state, &settings, &headers, &uri, true).await?
+    } else {
+        forgot_password_over_homepage(&state, &settings, guardian, headers, &uri).await?
+    };
+    if let Some(cookie) = email_cookie(&uri) {
+        response
+            .headers_mut()
+            .append(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
     }
-    Err(Unsupported("the forgot-password route's modal over the homepage").into())
+    Ok(response)
+}
+
+/// The homepage with the ForgotPassword modal open over it:
+/// `replaceWith(homepageNavigationDestination())`, discovery.<homepage>
+/// keeping the query params the discovery routes know (as new-topic's
+/// replaceWith does), then `modal.show(ForgotPassword)`.
+async fn forgot_password_over_homepage(
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: crate::guardian::Guardian,
+    mut headers: HeaderMap,
+    uri: &Uri,
+) -> Result<Response, AppError> {
+    let xhr = headers
+        .get("x-requested-with")
+        .is_some_and(|v| v == "XMLHttpRequest");
+    if xhr || super::wants_json(uri.query(), &headers) {
+        return Err(Unsupported("/password-reset asked for as JSON").into());
+    }
+    let homepage = {
+        let mut conn = state.pool.acquire().await?;
+        crate::homepage::current(&mut conn, settings, guardian.user_id()).await?
+    };
+    if homepage == "custom" || homepage == "blank" {
+        return Err(Unsupported("/password-reset over a custom or blank homepage").into());
+    }
+    let params = super::new_topic::query_params(uri.query())
+        .map_err(|_| Unsupported("an array query param on /password-reset"))?;
+    let known = super::new_topic::known_query_params(&homepage, settings)?;
+    let query = super::new_topic::carried_query(&params, &known);
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let path = format!("{base_path}/{homepage}");
+    let url = if query.is_empty() {
+        path
+    } else {
+        format!("{path}?{query}")
+    };
+    // The modal posts with the session's token. A session minted here goes
+    // to the homepage's request too, so both use the same one.
+    let (csrf_token, set_cookie) = super::session::anonymous_csrf(state, &headers, settings)?;
+    if let Some(pair) = set_cookie.as_deref().and_then(|c| c.split(';').next()) {
+        let cookies = match headers.get(header::COOKIE).and_then(|v| v.to_str().ok()) {
+            Some(existing) if !existing.is_empty() => format!("{existing}; {pair}"),
+            _ => pair.to_string(),
+        };
+        headers.insert(header::COOKIE, HeaderValue::from_str(&cookies)?);
+    }
+    let page = super::list::front_page(
+        State(state.clone()),
+        crate::session::current::AuthGuardian(guardian),
+        headers,
+        url.parse()
+            .map_err(|_| Unsupported("a homepage URL that is not a URI"))?,
+    )
+    .await?;
+    if page.status() != StatusCode::OK {
+        return Ok(page);
+    }
+    let mut extra = serde_json::Map::new();
+    extra.insert("forgot_password".into(), json!(true));
+    extra.insert("url".into(), json!(url));
+    let data = login_data(state, settings, "forgot-password", &csrf_token, extra)?;
+    let (mut parts, body) = page.into_parts();
+    let bytes = axum::body::to_bytes(body, usize::MAX)
+        .await
+        .map_err(|_| Unsupported("reading the homepage under /password-reset"))?;
+    let html = String::from_utf8(bytes.to_vec())
+        .map_err(|_| Unsupported("a homepage under /password-reset that is not UTF-8"))?;
+    let Some(at) = html.rfind("</body>") else {
+        return Err(Unsupported("a homepage under /password-reset without a body").into());
+    };
+    // login.js with its data, and the dialogs (dialog.js) it opens; the
+    // modal itself is modal.js, which every page loads.
+    let mut scripts =
+        format!("<script type=\"application/json\" id=\"login-data\">{data}</script>");
+    if !html.contains("id=\"dialog-strings\"") {
+        scripts.push_str(&format!(
+            "<script type=\"application/json\" id=\"dialog-strings\">{}</script>",
+            dialog_strings(state)
+        ));
+    }
+    for script in ["dialog.js", "login.js"] {
+        scripts.push_str(&format!(
+            "<script src=\"{}\"></script>",
+            crate::assets::url(&base_path, script)
+        ));
+    }
+    let html = format!("{}{scripts}{}", &html[..at], &html[at..]);
+    parts.headers.remove(header::CONTENT_LENGTH);
+    parts.headers.insert(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store, must-revalidate, private, max-age=0"),
+    );
+    if let Some(cookie) = set_cookie {
+        parts
+            .headers
+            .append(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
+    }
+    Ok(Response::from_parts(parts, Body::from(html)))
 }
