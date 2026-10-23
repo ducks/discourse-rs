@@ -51,6 +51,13 @@ impl Cx<'_> {
     }
 }
 
+/// The wizard stylesheet's fonts (Stylesheet::Importer#wizard_fonts), their
+/// faces under the absolute `/fonts`. wizard.scss's own rules style the
+/// setup wizard, which the port does not draw.
+pub fn wizard_fonts(cx: &Cx) -> Result<String, AppError> {
+    Ok(super::fonts::wizard_css(&cx.absolute("/fonts")?))
+}
+
 /// A theme's columns the stylesheets read.
 #[derive(sqlx::FromRow, Debug, Clone)]
 struct ThemeRow {

@@ -153,7 +153,9 @@ Polish, from the second screenshot sweep:
 - [x] Admin category settings draw `default_composer_category` as a plain
   combo box instead of CategoryChooser (2.41%): fix/category-setting-chooser.
   The header holds the category's badge; 0.02% on rs-ref-b.
-- [ ] Admin font previews all render in Inter: fix/admin-font-previews.
+- [x] Admin font previews all render in Inter: fix/admin-font-previews.
+  Admins get the wizard stylesheet's fonts and /fonts serves the gem's
+  others from DISCOURSE_SRC; 0.04% on rs-ref-b (was 0.53%).
 - [ ] The admin email style Ace editor height and template preview offset:
   fix/admin-email-editors.
 - [ ] scripts/parity-screenshots: guard against a 164598px capture

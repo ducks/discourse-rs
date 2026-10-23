@@ -248,6 +248,49 @@ async fn fonts_allow_any_origin() {
     assert_eq!(response.headers()[header::ACCESS_CONTROL_ALLOW_ORIGIN], "*");
 }
 
+/// The gem's fonts the port doesn't embed (the admin's font previews name
+/// them all) come from DISCOURSE_SRC's discourse-fonts gem; only the gem's
+/// own font files, and nothing without a checkout.
+#[tokio::test]
+async fn the_gems_other_fonts_come_from_the_checkout() {
+    let db = TestDb::new().await;
+    let src = std::env::temp_dir().join(format!("discourse-rs-fonts-{}", std::process::id()));
+    let fonts = src.join(".bundle/ruby/3.4.0/gems/discourse-fonts-0.0.19/vendor/assets/fonts");
+    std::fs::create_dir_all(&fonts).unwrap();
+    std::fs::write(fonts.join("Lato-Bold.woff2"), b"lato").unwrap();
+    std::fs::write(fonts.join("notes.txt"), b"not a font").unwrap();
+    let fetch = |discourse_src: Option<std::path::PathBuf>, path: &'static str| {
+        let pool = db.pool.clone();
+        async move {
+            let mut config = config(RailsEnv::Test, &[]);
+            config.discourse_src = discourse_src;
+            let response = discourse_rs::app(state(pool, config).await)
+                .oneshot(
+                    Request::get(path)
+                        .header(header::HOST, "test.localhost")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let status = response.status();
+            let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+                .await
+                .unwrap();
+            (status, body)
+        }
+    };
+    let (status, body) = fetch(Some(src.clone()), "/fonts/Lato-Bold.woff2?v=0.0.19").await;
+    assert_eq!((status, &body[..]), (StatusCode::OK, &b"lato"[..]));
+    let (status, _) = fetch(Some(src.clone()), "/fonts/notes.txt").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, _) = fetch(Some(src.clone()), "/fonts/Lora-Bold.woff2").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, _) = fetch(None, "/fonts/Lato-Bold.woff2").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    std::fs::remove_dir_all(&src).unwrap();
+}
+
 /// Each bundled asset has its route: a page that links one without it
 /// gets a 404 for the script.
 #[tokio::test]

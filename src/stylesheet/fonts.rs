@@ -372,3 +372,93 @@ pub fn css(base_font: &str, heading_font: &str, fonts_dir: &str) -> String {
     ));
     out
 }
+
+/// The system font's faces in the wizard stylesheet: its preview canvases
+/// need explicit @font-face rules, so `wizard_fonts` gives it local ones.
+const SYSTEM_FACES: [(&str, &str); 2] = [
+    (
+        "local(\".SFNS-Regular\"), local(\".SFNSText-Regular\"), local(\".HelveticaNeueDeskInterface-Regular\"), local(\".LucidaGrandeUI\"), local(\"Segoe UI\"), local(\"Ubuntu\"), local(\"Roboto-Regular\"), local(\"DroidSans\"), local(\"Tahoma\")",
+        "400",
+    ),
+    (
+        "local(\".SFNS-Bold\"), local(\".SFNSText-Bold\"), local(\".HelveticaNeueDeskInterface-Bold\"), local(\".LucidaGrandeUI\"), local(\"Segoe UI Bold\"), local(\"Ubuntu Bold\"), local(\"Roboto-Bold\"), local(\"DroidSans-Bold\"), local(\"Tahoma Bold\")",
+        "700",
+    ),
+];
+
+/// `wizard_fonts`, what Rails appends to the wizard stylesheet (served to
+/// admins on every page): each font's faces, its `.body-font-*` and
+/// `.heading-font-*` classes (the admin's font pickers draw each choice in
+/// its own font) and `render_wizard_font_special_properties`.
+pub fn wizard_css(fonts_dir: &str) -> String {
+    let mut out = String::new();
+    for font in FONTS {
+        if font.key == "system" {
+            for (src, weight) in SYSTEM_FACES {
+                out.push_str(&format!(
+                    "@font-face {{\n  font-family: '{}';\n  src: {src};\n  font-weight: {weight};\n}}\n",
+                    font.name
+                ));
+            }
+        } else {
+            out.push_str(&faces(font, fonts_dir));
+        }
+        let class = font.key.replace('_', "-");
+        out.push_str(&format!(
+            ".body-font-{class} {{\n  font-family: {stack};\n}}\n.heading-font-{class} {{\n  font-family: {stack};\n}}\n",
+            stack = font.stack
+        ));
+        out.push_str(&special_properties(
+            font,
+            &format!(
+                ".wizard-container-heading-font-{key} h1, .wizard-container-heading-font-{key} h2, .wizard-container-heading-font-{key} h3, .wizard-container-heading-font-{key} h4, .wizard-container-heading-font-{key} h5, .wizard-container-heading-font-{key} h6",
+                key = font.key
+            ),
+        ));
+        out.push_str(&special_properties(
+            font,
+            &format!(".wizard-container-body-font-{}", font.key),
+        ));
+    }
+    out
+}
+
+/// Whether `file` is one of the gem's font files (a variant of a font).
+pub fn is_font_file(file: &str) -> bool {
+    FONTS
+        .iter()
+        .any(|font| font.variants.iter().any(|(name, _)| *name == file))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_wizard_fonts_name_each_font_in_its_own_class() {
+        let css = wizard_css("http://h/fonts");
+        assert!(
+            css.contains(".body-font-open-sans {\n  font-family: Open Sans, Arial, sans-serif;\n}")
+        );
+        assert!(css.contains(
+            ".heading-font-roboto-slab {\n  font-family: RobotoSlab, Arial, sans-serif;\n}"
+        ));
+        assert!(css.contains(
+            "@font-face {\n  font-family: 'Oxanium';\n  src: url(\"http://h/fonts/oxanium-regular.woff2?v=0.0.19\") format(\"woff2\");\n  font-weight: 400;\n}"
+        ));
+        assert!(css.contains("font-family: 'System';\n  src: local(\".SFNS-Regular\")"));
+        assert!(css.contains(
+            ".wizard-container-body-font-jet_brains_mono {\n  font-variation-settings: normal;\n  font-feature-settings: normal;\n  font-variant-ligatures: none;\n}"
+        ));
+        // A font without files (Arial) gets its classes and no face.
+        assert!(css.contains(".body-font-arial {"));
+        assert!(!css.contains("font-family: 'Arial'"));
+    }
+
+    #[test]
+    fn only_the_gems_font_files_are_fonts() {
+        assert!(is_font_file("Lato-Bold.woff2"));
+        assert!(!is_font_file("../Lato-Bold.woff2"));
+        assert!(!is_font_file("lato-bold.woff2"));
+    }
+}

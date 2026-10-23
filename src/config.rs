@@ -296,14 +296,27 @@ impl Config {
     /// The discourse-emojis gem's `dist/emoji` inside the checkout's bundle,
     /// where `/images/emoji/<set>/<name>.png` files live.
     pub fn emoji_dir(&self) -> Option<std::path::PathBuf> {
+        self.gem_dir("discourse-emojis-", "dist/emoji")
+    }
+
+    /// The discourse-fonts gem's `vendor/assets/fonts` (the version the
+    /// stylesheets' font URLs name), which Rails serves at /fonts.
+    pub fn fonts_dir(&self) -> Option<std::path::PathBuf> {
+        let gem = format!("discourse-fonts-{}", crate::stylesheet::fonts::VERSION);
+        self.gem_dir(&gem, "vendor/assets/fonts")
+    }
+
+    /// `sub` inside the first gem of the checkout's bundle whose directory
+    /// name starts with `prefix`.
+    fn gem_dir(&self, prefix: &str, sub: &str) -> Option<std::path::PathBuf> {
         let src = self.discourse_src.as_ref()?;
         let rubies = std::fs::read_dir(src.join(".bundle/ruby")).ok()?;
         for ruby in rubies.flatten() {
             let gems = std::fs::read_dir(ruby.path().join("gems")).ok()?;
             for gem in gems.flatten() {
                 let name = gem.file_name();
-                if name.to_string_lossy().starts_with("discourse-emojis-") {
-                    let dir = gem.path().join("dist/emoji");
+                if name.to_string_lossy().starts_with(prefix) {
+                    let dir = gem.path().join(sub);
                     if dir.is_dir() {
                         return Some(dir);
                     }

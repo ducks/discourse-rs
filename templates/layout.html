@@ -144,6 +144,9 @@
     {%- if chrome.admin_stylesheet %}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "admin.css") }}">
     {%- endif %}
+    {%- if chrome.wizard_stylesheet %}
+    <link rel="stylesheet" href="{{ base_path }}/assets/wizard_fonts.css">
+    {%- endif %}
     {%- if chrome.solved_admin_stylesheet %}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse-solved-admin.css") }}">
     {%- endif %}
