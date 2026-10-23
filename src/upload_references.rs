@@ -376,15 +376,27 @@ pub async fn link_post_uploads(
             continue;
         };
         if video_thumbnails {
-            let extension: Option<String> =
-                sqlx::query_scalar("SELECT extension FROM uploads WHERE id = $1")
+            let (extension, sha1): (Option<String>, Option<String>) =
+                sqlx::query_as("SELECT extension, sha1 FROM uploads WHERE id = $1")
                     .bind(id)
                     .fetch_one(&mut *conn)
                     .await?;
             let ext = extension.unwrap_or_default().to_lowercase();
-            // FileHelper.supported_video
-            if ["mov", "mp4", "webm", "ogv", "m4v", "3gp", "avi", "mpeg"].contains(&ext.as_str()) {
-                return Err(Unsupported("video thumbnails of a post's videos").into());
+            // A video's thumbnail is the upload named after the video's
+            // sha1 (the composer uploads it before the post exists).
+            if let Some(sha1) = sha1.filter(|s| !s.is_empty())
+                && crate::file_store::SUPPORTED_VIDEO.contains(&ext.as_str())
+            {
+                let thumbnail: Option<i32> = sqlx::query_scalar(
+                    "SELECT id FROM uploads WHERE original_filename LIKE $1 ORDER BY id DESC LIMIT 1",
+                )
+                .bind(format!("{sha1}.%"))
+                .fetch_optional(&mut *conn)
+                .await?;
+                if let Some(thumbnail) = thumbnail {
+                    upload_ids.push(thumbnail);
+                    handle_video_thumbnail(&mut *conn, settings, store, post_id, thumbnail).await?;
+                }
             }
         }
         upload_ids.push(id);
@@ -403,6 +415,47 @@ pub async fn link_post_uploads(
         .bind(post_id)
         .execute(&mut *conn)
         .await?;
+    }
+    Ok(())
+}
+
+/// `Post#handle_video_thumbnail`: a first post's video thumbnail becomes
+/// its topic's image, with the topic's thumbnails, unless the topic has
+/// one.
+async fn handle_video_thumbnail(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    store: &FileStore,
+    post_id: i32,
+    thumbnail_id: i32,
+) -> Result<(), AppError> {
+    let row: Option<(i32, Option<i32>, Option<i64>)> = sqlx::query_as(
+        "SELECT p.post_number, t.id, t.image_upload_id FROM posts p \
+         LEFT JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((post_number, topic_id, image_upload_id)) = row else {
+        return Ok(());
+    };
+    if post_number != 1 {
+        return Ok(());
+    }
+    // `topic.image_upload_id` on a post whose topic is gone raises.
+    let topic_id = topic_id.ok_or(Unsupported("a video thumbnail on a post without its topic"))?;
+    if image_upload_id.is_some() {
+        return Ok(());
+    }
+    sqlx::query("UPDATE topics SET image_upload_id = $2 WHERE id = $1")
+        .bind(topic_id)
+        .bind(i64::from(thumbnail_id))
+        .execute(&mut *conn)
+        .await?;
+    if let Some(upload) = crate::optimized_images::Upload::find(&mut *conn, thumbnail_id).await? {
+        crate::optimized_images::generate_topic_thumbnails(conn, settings, store, &upload)
+            .await
+            .map_err(crate::optimized_images::app_error)?;
     }
     Ok(())
 }

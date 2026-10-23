@@ -598,9 +598,6 @@ pub async fn create(
         },
         &base_path,
     )?;
-    if analysis.has_upload_media {
-        return Err(Unsupported("posts with uploaded video or audio").into());
-    }
     let mut conn = pool.acquire().await?;
     // has_host_spam?, ahead of PostValidator: refused, and the moderators
     // told (handle_spam) unless the post was approved from the queue.

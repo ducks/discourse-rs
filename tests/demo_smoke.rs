@@ -190,13 +190,24 @@ impl Client {
     /// A multipart form with one file from parity/writes/files, as the
     /// composer's uploader sends it.
     async fn upload(&mut self, path: &str, fields: &[(&str, &str)], file: &str) -> Reply {
-        let boundary = "----demo-smoke-boundary";
         let bytes = std::fs::read(
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("parity/writes/files")
                 .join(file),
         )
         .unwrap();
+        self.upload_bytes(path, fields, file, bytes).await
+    }
+
+    /// A multipart form with `bytes` as the file named `file`.
+    async fn upload_bytes(
+        &mut self,
+        path: &str,
+        fields: &[(&str, &str)],
+        file: &str,
+        bytes: Vec<u8>,
+    ) -> Reply {
+        let boundary = "----demo-smoke-boundary";
         let mut body = Vec::new();
         for (name, value) in fields {
             body.extend_from_slice(
@@ -786,6 +797,166 @@ async fn uploads_an_image_and_posts_it() {
         &page,
         &format!("data-post-id=\"{}\"", post["id"]),
     );
+}
+
+/// A reply with an uploaded video, the thumbnail the composer uploads for
+/// it, and an uploaded audio file: cooked as Ember's markdown draws them,
+/// the uploads linked to the post, and the page carrying the video
+/// placeholder's decorator and strings. A first post's video thumbnail
+/// becomes its topic's image.
+#[tokio::test]
+async fn posts_an_uploaded_video_and_audio() {
+    let (db, state) = app().await;
+    common::set_setting(&state.pool, "authorized_extensions", 8, "png|mp4|mp3").await;
+    let mut user1 = member(&state, "user1").await;
+    let composer = [("upload_type", "composer")];
+    let video = user1
+        .upload_bytes(
+            "/uploads.json",
+            &composer,
+            "clip.mp4",
+            b"a tiny clip".to_vec(),
+        )
+        .await;
+    ok("POST /uploads.json (video)", &video);
+    let audio = user1
+        .upload_bytes(
+            "/uploads.json",
+            &composer,
+            "song.mp3",
+            b"a tiny song".to_vec(),
+        )
+        .await;
+    ok("POST /uploads.json (audio)", &audio);
+    let video_url = video.json()["url"].as_str().unwrap().to_string();
+    let video_sha1 = video_url
+        .rsplit('/')
+        .next()
+        .unwrap()
+        .trim_end_matches(".mp4");
+    let png = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes/files/small.png"),
+    )
+    .unwrap();
+    let thumbnail = user1
+        .upload_bytes(
+            "/uploads.json",
+            &[("upload_type", "thumbnail")],
+            &format!("{video_sha1}.png"),
+            png,
+        )
+        .await;
+    ok("POST /uploads.json (thumbnail)", &thumbnail);
+    let thumbnail_id = thumbnail.json()["id"].as_i64().unwrap();
+
+    let raw = format!(
+        "The demo, recorded.\n\n![clip|video]({})\n\n![song|audio]({})",
+        video.json()["short_url"].as_str().unwrap(),
+        audio.json()["short_url"].as_str().unwrap(),
+    );
+    let post = reply_to(&mut user1, TOPIC as i64, &raw).await;
+    let post_id = post["id"].as_i64().unwrap();
+    let cooked = post["cooked"].as_str().unwrap().to_string();
+    let path_of = |url: &str| url[url.find("/uploads/").unwrap()..].to_string();
+    let audio_url = path_of(audio.json()["url"].as_str().unwrap());
+    let video_path = path_of(&video_url);
+    assert!(
+        cooked.contains(&format!(
+            "<div class=\"video-placeholder-container\" data-video-src=\"{video_path}\""
+        )),
+        "{cooked}"
+    );
+    assert!(cooked.contains("data-thumbnail-src=\""), "{cooked}");
+    assert!(cooked.contains("data-video-base62-sha1=\""), "{cooked}");
+    assert!(
+        cooked.contains(&format!(
+            "<audio preload=\"metadata\" controls=\"\">\n    <source src=\"{audio_url}\""
+        )),
+        "{cooked}"
+    );
+    settle(&db, &state).await;
+
+    let linked: Vec<i64> = sqlx::query_scalar(
+        "SELECT upload_id::bigint FROM upload_references \
+         WHERE target_type = 'Post' AND target_id = $1 ORDER BY upload_id",
+    )
+    .bind(post_id)
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    let mut expected = vec![
+        video.json()["id"].as_i64().unwrap(),
+        audio.json()["id"].as_i64().unwrap(),
+        thumbnail_id,
+    ];
+    expected.sort_unstable();
+    assert_eq!(linked, expected);
+
+    let page = user1.page(TOPIC_PATH).await;
+    drawn(
+        "the topic with a video and audio",
+        &page,
+        &format!("<div class=\"video-placeholder-container\" data-video-src=\"{video_path}\""),
+    );
+    assert!(page.body.contains(&format!("data-post-id=\"{post_id}\"")));
+    assert!(
+        page.body
+            .contains("<audio preload=\"metadata\" controls=\"\">")
+    );
+    assert!(page.body.contains("post-decorations.js"));
+    assert!(
+        page.body
+            .contains("\"invalid_video_url\":\"This video cannot be played")
+    );
+
+    // Edited, the media stay.
+    let edited_raw = format!("{raw}\n\nEdited after the demo.");
+    let edited = user1
+        .put(
+            &format!("/posts/{post_id}"),
+            &[
+                ("post[raw]", &edited_raw),
+                ("post[topic_id]", &TOPIC.to_string()),
+                ("post[original_text]", &raw),
+            ],
+        )
+        .await;
+    ok("PUT /posts/:id (video and audio)", &edited);
+    settle(&db, &state).await;
+    let cooked: String = sqlx::query_scalar("SELECT cooked FROM posts WHERE id = $1")
+        .bind(post_id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert!(cooked.contains("Edited after the demo."), "{cooked}");
+    assert!(
+        cooked.contains("class=\"video-placeholder-container\"") && cooked.contains("<audio"),
+        "{cooked}"
+    );
+
+    // As a topic's first post, the thumbnail is the topic's image (its
+    // page waits on the topic view's thumbnails, 125).
+    let category = CATEGORY.to_string();
+    let started = user1
+        .post(
+            "/posts.json",
+            &[
+                ("title", "The demo night, recorded for everyone"),
+                ("raw", &format!("Everything from the demo night.\n\n{raw}")),
+                ("category", &category),
+            ],
+        )
+        .await;
+    created_post(&started);
+    let topic = started.json()["topic_id"].as_i64().unwrap();
+    settle(&db, &state).await;
+    let image: Option<i64> =
+        sqlx::query_scalar("SELECT image_upload_id::bigint FROM topics WHERE id = $1")
+            .bind(topic)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(image, Some(thumbnail_id));
 }
 
 #[tokio::test]

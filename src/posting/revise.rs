@@ -373,9 +373,6 @@ pub async fn revise(
         },
         &base_path,
     )?;
-    if analysis.has_upload_media {
-        return Err(Unsupported("posts with uploaded video or audio").into());
-    }
     // discourse-poll's validate_polls on a changed raw (none without
     // validations): PollsValidator, PostValidator for the editor, then
     // PollsUpdater's plan, written with the revision.

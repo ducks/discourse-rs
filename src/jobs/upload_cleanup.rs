@@ -7,7 +7,7 @@ use sqlx::PgPool;
 
 use crate::file_store::FileStore;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 /// `Jobs::CleanUpUploads`, hourly.
 pub const CLEAN_UP_UPLOADS: &str = "clean_up_uploads";
@@ -18,79 +18,113 @@ pub const PURGE_DELETED_UPLOADS: &str = "purge_deleted_uploads";
 const LAST_UPLOAD_CLEANUP: &str = "LAST_UPLOAD_CLEANUP";
 
 /// `Upload#destroy`: the file to the tombstone, then in one transaction
-/// its hotlinked media, optimized images (their files too), videos, user
-/// uploads and references gone, badges' and profiles' links to it
-/// cleared, the row deleted, and avatars pointing at it cleared.
+/// its hotlinked media, optimized images (their files too), optimized
+/// videos (`OptimizedVideo#destroy`), user uploads and references gone,
+/// badges' and profiles' links to it cleared, the row deleted, and
+/// avatars pointing at it cleared.
 pub async fn destroy(pool: &PgPool, store: &FileStore, upload_id: i32) -> Result<(), AppError> {
     let mut tx = pool.begin().await?;
-    let url: String = sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
-        .bind(upload_id)
-        .fetch_one(&mut *tx)
-        .await?;
-    // An optimized video made from this upload keeps a foreign key to it
-    // that Rails' destroy does not clear (it raises).
-    let video_source: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM optimized_videos WHERE optimized_upload_id = $1)",
-    )
-    .bind(upload_id)
-    .fetch_one(&mut *tx)
-    .await?;
-    if video_source {
-        return Err(Unsupported("destroying an upload an optimized video was made into").into());
-    }
-    store.remove_file(&url).await?;
-    sqlx::query("DELETE FROM post_hotlinked_media WHERE upload_id = $1")
-        .bind(upload_id)
-        .execute(&mut *tx)
-        .await?;
-    let optimized: Vec<(i32, String)> =
-        sqlx::query_as("SELECT id, url FROM optimized_images WHERE upload_id = $1")
-            .bind(upload_id)
-            .fetch_all(&mut *tx)
-            .await?;
-    for (id, optimized_url) in optimized {
-        store.remove_file(&optimized_url).await?;
-        sqlx::query("DELETE FROM optimized_images WHERE id = $1")
-            .bind(id)
-            .execute(&mut *tx)
-            .await?;
-    }
-    for table in ["optimized_videos", "user_uploads", "upload_references"] {
-        sqlx::query(&format!("DELETE FROM {table} WHERE upload_id = $1"))
-            .bind(upload_id)
-            .execute(&mut *tx)
-            .await?;
-    }
-    for (table, column) in [
-        ("badges", "image_upload_id"),
-        ("user_profiles", "card_background_upload_id"),
-        ("user_profiles", "profile_background_upload_id"),
-    ] {
-        sqlx::query(&format!(
-            "UPDATE {table} SET {column} = NULL WHERE {column} = $1"
-        ))
-        .bind(upload_id)
-        .execute(&mut *tx)
-        .await?;
-    }
-    sqlx::query("DELETE FROM uploads WHERE id = $1")
-        .bind(upload_id)
-        .execute(&mut *tx)
-        .await?;
-    for (table, column) in [
-        ("users", "uploaded_avatar_id"),
-        ("user_avatars", "gravatar_upload_id"),
-        ("user_avatars", "custom_upload_id"),
-    ] {
-        sqlx::query(&format!(
-            "UPDATE {table} SET {column} = NULL WHERE {column} = $1"
-        ))
-        .bind(upload_id)
-        .execute(&mut *tx)
-        .await?;
-    }
+    destroy_in(&mut tx, store, upload_id).await?;
     tx.commit().await?;
     Ok(())
+}
+
+/// `Upload#destroy` inside the caller's transaction. An upload an
+/// optimized video was made into keeps that video's foreign key to it,
+/// which `destroy` does not clear: the delete fails there, as in Rails.
+fn destroy_in<'a>(
+    tx: &'a mut sqlx::PgConnection,
+    store: &'a FileStore,
+    upload_id: i32,
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), AppError>> + Send + 'a>> {
+    Box::pin(async move {
+        let url: String = sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+            .bind(upload_id)
+            .fetch_one(&mut *tx)
+            .await?;
+        store.remove_file(&url).await?;
+        sqlx::query("DELETE FROM post_hotlinked_media WHERE upload_id = $1")
+            .bind(upload_id)
+            .execute(&mut *tx)
+            .await?;
+        let optimized: Vec<(i32, String)> =
+            sqlx::query_as("SELECT id, url FROM optimized_images WHERE upload_id = $1")
+                .bind(upload_id)
+                .fetch_all(&mut *tx)
+                .await?;
+        for (id, optimized_url) in optimized {
+            store.remove_file(&optimized_url).await?;
+            sqlx::query("DELETE FROM optimized_images WHERE id = $1")
+                .bind(id)
+                .execute(&mut *tx)
+                .await?;
+        }
+        // OptimizedVideo#destroy: the optimized upload's file and its
+        // reference from this upload removed, the row deleted, then the
+        // optimized upload destroyed.
+        let videos: Vec<(i64, i32, Option<String>)> = sqlx::query_as(
+            "SELECT v.id, v.optimized_upload_id, u.url FROM optimized_videos v \
+             LEFT JOIN uploads u ON u.id = v.optimized_upload_id WHERE v.upload_id = $1 ORDER BY v.id",
+        )
+        .bind(upload_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        for (id, optimized_upload_id, optimized_url) in videos {
+            if let Some(optimized_url) = &optimized_url {
+                store.remove_file(optimized_url).await?;
+            }
+            sqlx::query(
+                "DELETE FROM upload_references WHERE upload_id = $1 \
+                 AND target_type = 'Upload' AND target_id = $2",
+            )
+            .bind(optimized_upload_id)
+            .bind(i64::from(upload_id))
+            .execute(&mut *tx)
+            .await?;
+            sqlx::query("DELETE FROM optimized_videos WHERE id = $1")
+                .bind(id)
+                .execute(&mut *tx)
+                .await?;
+            if optimized_url.is_some() {
+                destroy_in(&mut *tx, store, optimized_upload_id).await?;
+            }
+        }
+        for table in ["user_uploads", "upload_references"] {
+            sqlx::query(&format!("DELETE FROM {table} WHERE upload_id = $1"))
+                .bind(upload_id)
+                .execute(&mut *tx)
+                .await?;
+        }
+        for (table, column) in [
+            ("badges", "image_upload_id"),
+            ("user_profiles", "card_background_upload_id"),
+            ("user_profiles", "profile_background_upload_id"),
+        ] {
+            sqlx::query(&format!(
+                "UPDATE {table} SET {column} = NULL WHERE {column} = $1"
+            ))
+            .bind(upload_id)
+            .execute(&mut *tx)
+            .await?;
+        }
+        sqlx::query("DELETE FROM uploads WHERE id = $1")
+            .bind(upload_id)
+            .execute(&mut *tx)
+            .await?;
+        for (table, column) in [
+            ("users", "uploaded_avatar_id"),
+            ("user_avatars", "gravatar_upload_id"),
+            ("user_avatars", "custom_upload_id"),
+        ] {
+            sqlx::query(&format!(
+                "UPDATE {table} SET {column} = NULL WHERE {column} = $1"
+            ))
+            .bind(upload_id)
+            .execute(&mut *tx)
+            .await?;
+        }
+        Ok(())
+    })
 }
 
 /// `Jobs::CleanUpUploads`: uploads that never got a url destroyed

@@ -606,6 +606,8 @@ const COOKED_STRINGS: &[&str] = &[
     "generic_error",
     "generic_error_with_reason",
     "multiple_errors",
+    "invalid_video_url",
+    "cannot_render_video",
 ];
 
 /// The cooked decorators' settings and strings, as JSON that is safe
