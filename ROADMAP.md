@@ -4382,7 +4382,8 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     exclusion, debounced batches, conflict retries, optimistic updates)
     and the checklist strings. The list menu item and rich editor stay
     with 196
-243. `feat/footnote-post-process` S: footnote's before_post_process_cooked
+243. ~~`feat/footnote-post-process`~~ (done: in the post processor, recorded as
+    footnote/edit_post_scoped_ids) S: footnote's before_post_process_cooked
     rewrite of `#fn<n>`/`#fnref<n>` to post-scoped ids
     (plugins/footnote/plugin.rb:18-46), absent from the process_post job
     (jobs/handlers.rs:840 runs only local dates'), so two footnoted posts

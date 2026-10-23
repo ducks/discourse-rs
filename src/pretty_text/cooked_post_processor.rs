@@ -891,6 +891,13 @@ pub(crate) async fn post_process(
     let (site_host, allowlist) = rel_settings(settings, config)?;
 
     let dom = parse(html);
+    // footnote's before_post_process_cooked: Rails runs it on the document
+    // before every step, none of which reads the ids it rewrites.
+    if let Some(post_id) = post_id
+        && crate::plugins::footnote::enabled(settings)?
+    {
+        crate::plugins::footnote::before_post_process_cooked(&dom, post_id);
+    }
     apply_image_edits(&dom, image_edits);
     let quotes: Vec<_> = all_elements(&dom)
         .into_iter()

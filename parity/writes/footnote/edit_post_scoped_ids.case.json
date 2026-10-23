@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "First[^1], again[^1] and inline^[an inline note], then[^two].\n\n[^1]: The first note.\n[^two]: The second, *emphasised*."
+        }
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

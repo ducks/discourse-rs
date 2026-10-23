@@ -37,7 +37,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-lazy-videos | started | 5 | no client player, no email links, no crawler JSON-LD | 240-241 | 2 S |
 | checklist | started | 6 | checking a box (PUT /checklist/toggle and the client) | 242 | M |
 | discourse-details | started | 2 | email handler not gated on details_enabled | 244 | S |
-| footnote | started | 2 | per-post footnote ids (two footnoted posts on a page collide) | 243 | S |
+| footnote | started | 1 | the rich editor (196); per-post ids done (243) | 243 | 196 |
 | spoiler-alert | started | 3 | emails show spoilers in the clear | 244 | S |
 | discourse-lti | started | 3 | cannot be enabled through the port (164), CSP nonce | 214 | 164 plus M |
 | discourse-oauth2-basic | started | 13 | cannot be enabled (164), debug logging, timeout and authorize options, redirects, admin tab, signup buttons | 245-247 | 164 plus 3 S |
@@ -748,24 +748,22 @@ New (ROADMAP Phase 11): the email handler's enabled gate in 244 `feat/spoiler-em
 
 ## footnote (`plugins/footnote`)
 
-Verdict: started (2 gaps)
+Verdict: started (1 gap, left to 196)
 
 ### What the port has
 - markdown-it-footnote port: inline `^[...]`, labelled refs, the list, allow list with the `fn`/`fnref` id rule, gated by `enable_markdown_footnotes`: crates/markdown/src/render/footnotes.rs; src/pretty_text/mod.rs:546.
+- `before_post_process_cooked` (243): back references, references and list items renamed to `footnote-ref-<post>-<n>` / `footnote-<post>-<n>` with the plugin's slicing and `to_i`, gated by `enable_markdown_footnotes`, run inside the post processor on its document: src/plugins/footnote.rs; src/pretty_text/cooked_post_processor.rs. Recorded against Rails: parity/writes/footnote/edit_post_scoped_ids.
 - Inline footnotes (DTooltip `inline-footnote`, `.inline-footnotes`), loaded when the plugin and `display_footnotes_inline` are on: static/js/inline-footnotes.js; src/html.rs:743-744.
 - Options menu item (`asterisk`, `footnote.add`, inserts `^[` + `footnote.title` + `]`, unnamed): src/composer_view.rs:257-263,632; static/js/composer.js:1606-1608.
 - Admin plugin entry with `asterisk`: src/admin_view.rs:646-651. Stylesheet: static/css/footnote.css.
 
 ### Gaps
-**plugin.rb**
-- `before_post_process_cooked`: footnote ids made unique per post (`a.footnote-backref` href to `#footnote-ref-<post>-<n>`, `sup.footnote-ref a` href to `#footnote-<post>-<n>` and id to `footnote-ref-<post>-<n>`, `li.footnote-item` id to `footnote-<post>-<n>`). Without it the processed cooked keeps `#fn1`/`fnref1`, so two posts with footnotes on one page collide. Rails: plugins/footnote/plugin.rb:17-46. Port: absent (src/jobs/handlers.rs:840-843 calls only local dates' handler).
-
 **UI**
 - The rich editor extension (footnotes as nodes). Rails: plugins/footnote/assets/javascripts/lib/rich-editor-extension.js; initializers/composer.js:10. Port: absent. [item 196]
 
 ### Items
 
-New (ROADMAP Phase 11): 243 `feat/footnote-post-process` S. Earlier items: 196.
+New (ROADMAP Phase 11): 243 `feat/footnote-post-process` S (done). Earlier items: 196.
 
 ### Couldn't determine
 - The popup option's `group: "insertions"` (initializers/composer.js:16): whether the reference's options menu renders groups differently from the port's flat list was not settled from source.
