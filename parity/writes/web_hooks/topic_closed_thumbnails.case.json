@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 103)",
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, width, height, url, sha1, extension, created_at, updated_at) VALUES (9741, 3, 'pond.png', 120000, 2048, 1536, '/uploads/default/original/1X/0000000000000000000000000000000000009741.png', '0000000000000000000000000000000000009741', 'png', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, version, created_at, updated_at) VALUES (9741, '1111111111111111111111111111111111119741', '.png', 1024, 768, 9741, '/uploads/default/optimized/1X/0000000000000000000000000000000000009741_2_1024x768.png', 4000, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO topic_thumbnails (upload_id, optimized_image_id, max_width, max_height) VALUES (9741, 9741, 1024, 1024)",
+    "UPDATE topics SET image_upload_id = 9741 WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ]
+}

@@ -373,6 +373,16 @@ pub struct TopicView<'a> {
 pub struct Rendered {
     pub json: Value,
     pub slug: String,
+    /// The page's image (`TopicView#image_url` and `#image_upload`), or
+    /// what it would need that is not supported.
+    pub page_image: Result<PageImage, &'static str>,
+}
+
+/// `TopicView#image_url` (cooked, schemaless) and `#image_upload`'s id.
+#[derive(Debug, Default)]
+pub struct PageImage {
+    pub url: Option<String>,
+    pub upload_id: Option<i64>,
 }
 
 impl TopicView<'_> {
@@ -562,10 +572,37 @@ impl TopicView<'_> {
             "pinned_until".into(),
             json!(extra.pinned_until.map(time_json)),
         );
-        out.insert(
-            "image_url".into(),
-            self.list_serializer().image_url(&topic).await?,
-        );
+        // image_url is the topic's (attributes_from_topic). The page's
+        // TopicView#image_url and #image_upload: that image for the first
+        // post, else the desired post's own (without thumbnails).
+        let image_url = self.list_serializer().image_url(&topic).await?;
+        let page_image = if post_number == 1 {
+            let og: Option<i64> =
+                if image_url.is_null() && self.settings.get("generate_topic_og_image")?.truthy() {
+                    sqlx::query_scalar("SELECT og_image_upload_id FROM topics WHERE id = $1")
+                        .bind(topic.id)
+                        .fetch_one(&mut *self.conn)
+                        .await?
+                } else {
+                    None
+                };
+            match og {
+                Some(_) => Err("generate_topic_og_image"),
+                None => Ok(PageImage {
+                    url: image_url.as_str().map(str::to_string),
+                    upload_id: topic.image_upload_id,
+                }),
+            }
+        } else {
+            match posts
+                .iter()
+                .find(|p| i64::from(p.post_number) == post_number)
+            {
+                Some(p) => self.post_image(p.id).await?,
+                None => Ok(PageImage::default()),
+            }
+        };
+        out.insert("image_url".into(), image_url);
         out.insert("slow_mode_seconds".into(), json!(extra.slow_mode_seconds));
         if let Some(external_id) = &extra.external_id {
             out.insert("external_id".into(), json!(external_id));
@@ -706,10 +743,8 @@ impl TopicView<'_> {
             .await?;
             out.insert("requested_group_name".into(), json!(name));
         }
-        if topic.image_upload_id.is_some() {
-            return Err(Unsupported("topic thumbnails").into());
-        }
-        out.insert("thumbnails".into(), Value::Null);
+        let thumbnails = self.thumbnails(&topic, true).await?;
+        out.insert("thumbnails".into(), thumbnails);
         // include_user_last_posted_at?: a topic user, in slow mode.
         if let Some(tu) = viewer
             .topic_user
@@ -785,6 +820,7 @@ impl TopicView<'_> {
         Ok(Rendered {
             json: Value::Object(out),
             slug,
+            page_image,
         })
     }
 
@@ -1038,6 +1074,148 @@ impl TopicView<'_> {
             group_id: None,
             prefetched: Default::default(),
         }
+    }
+
+    /// `Post#image_url` (`UrlHelper.cook_url(image_upload.url, local: true)`)
+    /// with the post's image upload id; what only the page needs is
+    /// refused there.
+    async fn post_image(
+        &mut self,
+        post_id: i32,
+    ) -> Result<Result<PageImage, &'static str>, TopicViewError> {
+        let row: Option<(i64, String, bool)> = sqlx::query_as(
+            "SELECT u.id::bigint, u.url, u.secure FROM posts p JOIN uploads u ON u.id = p.image_upload_id \
+             WHERE p.id = $1",
+        )
+        .bind(post_id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let Some((id, url, secure)) = row else {
+            return Ok(Ok(PageImage::default()));
+        };
+        if secure && self.settings.get("secure_uploads")?.truthy() {
+            return Ok(Err("secure uploads"));
+        }
+        if self.urls.config.globals.cdn_url().is_some() {
+            return Ok(Err("topic images behind a CDN"));
+        }
+        Ok(Ok(PageImage {
+            url: Some(crate::topic_list::cook_topic_image(self.urls, &url)?),
+            upload_id: Some(id),
+        }))
+    }
+
+    /// TopicViewSerializer#thumbnails: `topic.thumbnail_info(enqueue_if_missing:
+    /// true, extra_sizes:)`, the extra sizes being the request theme's
+    /// topic_thumbnail_sizes (the default theme and its components, as
+    /// the pages resolve it), refused when there are any. A web hook's
+    /// serializer has no request, so `request_theme` false: no extra sizes.
+    pub(crate) async fn thumbnails(
+        &mut self,
+        topic: &TopicRow,
+        request_theme: bool,
+    ) -> Result<Value, TopicViewError> {
+        #[derive(sqlx::FromRow)]
+        struct Original {
+            url: String,
+            filesize: i64,
+            width: Option<i32>,
+            height: Option<i32>,
+            secure: bool,
+        }
+        #[derive(sqlx::FromRow)]
+        struct Record {
+            max_width: i32,
+            max_height: i32,
+            width: Option<i32>,
+            height: Option<i32>,
+            url: Option<String>,
+        }
+        let Some(upload_id) = topic.image_upload_id else {
+            return Ok(Value::Null);
+        };
+        let original: Option<Original> = sqlx::query_as(
+            "SELECT url, filesize, width, height, secure FROM uploads WHERE id = $1",
+        )
+        .bind(upload_id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let Some(original) = original else {
+            return Ok(Value::Null);
+        };
+        if original.filesize >= self.settings.get("max_image_size_kb")?.to_i() * 1024 {
+            return Ok(Value::Null);
+        }
+        let (Some(width), Some(height)) = (original.width, original.height) else {
+            return Ok(Value::Null);
+        };
+        if request_theme {
+            let theme_ids = crate::svg_sprite::transform_ids(
+                &mut *self.conn,
+                Some(self.settings.get("default_theme_id")?.to_i()),
+            )
+            .await?;
+            let sized: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM theme_modifier_sets WHERE theme_id = ANY($1) \
+                 AND topic_thumbnail_sizes IS NOT NULL AND topic_thumbnail_sizes <> '{}')",
+            )
+            .bind(&theme_ids)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if sized {
+                return Err(Unsupported("theme topic thumbnail sizes").into());
+            }
+        }
+        if original.secure && self.settings.get("secure_uploads")?.truthy() {
+            return Err(Unsupported("secure uploads in topic thumbnails").into());
+        }
+        let records: Vec<Record> = sqlx::query_as(
+            "SELECT tt.max_width, tt.max_height, oi.width, oi.height, oi.url \
+             FROM topic_thumbnails tt LEFT JOIN optimized_images oi ON oi.id = tt.optimized_image_id \
+             WHERE tt.upload_id = $1 AND tt.max_width = $2 AND tt.max_height = $3 ORDER BY tt.id",
+        )
+        .bind(upload_id)
+        .bind(crate::optimized_images::SHARE_THUMBNAIL_SIZE.0)
+        .bind(crate::optimized_images::SHARE_THUMBNAIL_SIZE.1)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        if self.settings.get("create_thumbnails")?.truthy()
+            && records.is_empty()
+            && crate::owned_schema::set_once(
+                &mut *self.conn,
+                &format!("generate_topic_thumbnail_enqueue_{}_[]", topic.id),
+                60,
+            )
+            .await?
+        {
+            crate::jobs::enqueue(
+                &mut *self.conn,
+                "generate_topic_thumbnails",
+                json!({"topic_id": topic.id, "extra_sizes": []}),
+            )
+            .await?;
+        }
+        // Always the original, then filtered_topic_thumbnails' successful
+        // ones (Topic.thumbnail_sizes: the share size alone).
+        let mut infos = vec![(width, height, original.url, json!(null), json!(null))];
+        for r in records {
+            if let (Some(w), Some(h), Some(url)) = (r.width, r.height, r.url) {
+                infos.push((w, h, url, json!(r.max_width), json!(r.max_height)));
+            }
+        }
+        // `sort_by! { -width * height }`
+        infos.sort_by_key(|(w, h, ..)| -(i64::from(*w) * i64::from(*h)));
+        let mut out = Vec::with_capacity(infos.len());
+        for (width, height, url, max_width, max_height) in infos {
+            out.push(json!({
+                "max_width": max_width,
+                "max_height": max_height,
+                "width": width,
+                "height": height,
+                "url": crate::topic_list::cook_topic_image(self.urls, &url)?,
+            }));
+        }
+        Ok(Value::Array(out))
     }
 
     /// `Topic.with_deleted.find_by(id:)`.

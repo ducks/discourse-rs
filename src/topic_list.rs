@@ -14,6 +14,7 @@ use crate::Unsupported;
 use crate::avatar::{self, AvatarError};
 use crate::guardian::Guardian;
 use crate::i18n::I18n;
+use crate::optimized_images::SHARE_THUMBNAIL_SIZE;
 use crate::site_settings::{SettingError, SiteSettings};
 use crate::tags::visible_tag_ids_subquery;
 use crate::topic_query::{TopicList, TopicRow};
@@ -38,8 +39,20 @@ pub enum Mode {
     Reviewable,
 }
 
-/// `Topic.share_thumbnail_size`
-const SHARE_THUMBNAIL_SIZE: (i32, i32) = (1024, 1024);
+/// `UrlHelper.cook_url(url, local: true)` for a topic image that is not a
+/// secure upload: absolute_without_cdn, then schemaless. A CDN is refused.
+pub(crate) fn cook_topic_image(urls: &Urls<'_>, raw: &str) -> Result<String, TopicListError> {
+    if urls.config.globals.cdn_url().is_some() {
+        return Err(Unsupported("topic images behind a CDN").into());
+    }
+    let absolute = urls.absolute(raw)?;
+    Ok(
+        match absolute.get(..5).map(|s| s.eq_ignore_ascii_case("http:")) {
+            Some(true) => absolute[5..].to_string(),
+            _ => absolute,
+        },
+    )
+}
 
 #[derive(Debug)]
 pub enum TopicListError {
@@ -1034,16 +1047,7 @@ impl TopicListSerializer<'_> {
         let Some(raw) = raw else {
             return Ok(Value::Null);
         };
-        if self.urls.config.globals.cdn_url().is_some() {
-            return Err(Unsupported("topic images behind a CDN").into());
-        }
-        // absolute_without_cdn, then schemaless.
-        let absolute = self.urls.absolute(&raw)?;
-        let schemeless = match absolute.get(..5).map(|s| s.eq_ignore_ascii_case("http:")) {
-            Some(true) => absolute[5..].to_string(),
-            _ => absolute,
-        };
-        Ok(json!(schemeless))
+        Ok(json!(cook_topic_image(self.urls, &raw)?))
     }
 
     /// `topic.visible_tags(guardian)` sorted by public_topic_count desc,

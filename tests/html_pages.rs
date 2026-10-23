@@ -147,6 +147,51 @@ async fn topic_page_renders_posts_and_small_actions() {
     assert!(html.contains(r#"data-user-card="admin" href="/u/admin""#));
 }
 
+/// A topic whose first post's image process_post took (image_upload_id
+/// and the share-size thumbnail): the page draws, its og:image the
+/// thumbnail with the original's size and type (crawlable_meta_data).
+#[tokio::test]
+async fn topic_page_with_a_topic_image() {
+    let db = TestDb::new().await;
+    let sha = "0000000000000000000000000000000000009741";
+    for sql in [
+        format!(
+            "INSERT INTO uploads (id, user_id, original_filename, filesize, width, height, url, sha1, \
+             extension, created_at, updated_at) VALUES (9741, 3, 'pond.png', 120000, 2048, 1536, \
+             '/uploads/default/original/1X/{sha}.png', '{sha}', 'png', now(), now())"
+        ),
+        format!(
+            "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, \
+             filesize, version, created_at, updated_at) VALUES (9741, '{sha}', '.png', 1024, 768, \
+             9741, '/uploads/default/optimized/1X/{sha}_2_1024x768.png', 4000, 2, now(), now())"
+        ),
+        "INSERT INTO topic_thumbnails (upload_id, optimized_image_id, max_width, max_height) \
+         VALUES (9741, 9741, 1024, 1024)"
+            .to_string(),
+        "UPDATE topics SET image_upload_id = 9741 WHERE id = 35".to_string(),
+        "UPDATE posts SET image_upload_id = 9741 WHERE id = 35".to_string(),
+    ] {
+        sqlx::query(&sql).execute(&db.pool).await.unwrap();
+    }
+    let (status, _, html) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    let image = format!("http://test.localhost/uploads/default/optimized/1X/{sha}_2_1024x768.png");
+    for meta in [
+        format!(r#"<meta name="twitter:image" content="{image}">"#),
+        format!(r#"<meta property="og:image" content="{image}">"#),
+        r#"<meta property="og:image:width" content="2048">"#.to_string(),
+        r#"<meta property="og:image:height" content="1536">"#.to_string(),
+        r#"<meta property="og:image:type" content="image/png">"#.to_string(),
+    ] {
+        assert!(html.contains(&meta), "{meta}");
+    }
+    // Another post's page has that post's image, none here: the site's.
+    let (status, _, html) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35/3").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(!html.contains("og:image:width"));
+    assert!(!html.contains(sha));
+}
+
 #[tokio::test]
 async fn topic_page_shows_subcategory_breadcrumbs_and_likes() {
     let db = TestDb::new().await;

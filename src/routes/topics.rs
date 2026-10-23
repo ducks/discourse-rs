@@ -711,6 +711,7 @@ async fn show(
         uri,
         &page.canonical_url,
         &rendered.json,
+        rendered.page_image.map_err(crate::Unsupported)?,
     )
     .await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;
@@ -724,7 +725,7 @@ async fn show(
 
 /// The crawler block of topics/show: canonical_url from the topic view,
 /// the description from the topic's stored excerpt else the first shown
-/// post's summary, the topic image else the site's.
+/// post's summary, TopicView#image_url else the site's image.
 async fn topic_crawler(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
@@ -732,6 +733,7 @@ async fn topic_crawler(
     uri: &axum::http::Uri,
     canonical_path: &str,
     view: &serde_json::Value,
+    page_image: crate::topic_view::PageImage,
 ) -> Result<crate::html::Crawler, AppError> {
     let urls = crate::url::Urls {
         config: &state.config,
@@ -770,8 +772,8 @@ async fn topic_crawler(
         .map(|e| html_escape::decode_html_entities(&strip_tags(&e)).into_owned())
         .filter(|e| !e.is_empty());
     let description = plain.unwrap_or_else(|| summary.clone());
-    let image = match view["image_url"].as_str().filter(|u| !u.is_empty()) {
-        Some(u) => Some(urls.absolute(u)?),
+    let image = match page_image.url.as_deref().filter(|u| !u.is_empty()) {
+        Some(u) => Some(absolute_image_url(&urls, u)?),
         None => crate::html::site_opengraph_image(&mut *conn, &urls).await?,
     };
     let mut crawler = crate::html::Crawler::for_request(&urls, uri, Some(canonical))?.with_meta(
@@ -781,7 +783,41 @@ async fn topic_crawler(
         image,
     );
     crawler.description = description;
+    // image_width, image_height and image_type: TopicView#image_upload's.
+    if let Some(upload_id) = page_image.upload_id {
+        let upload: Option<(Option<i32>, Option<i32>, Option<String>)> =
+            sqlx::query_as("SELECT width, height, extension FROM uploads WHERE id = $1")
+                .bind(upload_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        if let Some((width, height, extension)) = upload {
+            crawler.image_size = width.zip(height);
+            crawler.image_type = extension
+                .filter(|e| !e.is_empty())
+                .and_then(|e| crate::file_store::mime_type(&format!("x.{e}")));
+        }
+    }
     Ok(crawler)
+}
+
+/// `ApplicationHelper#get_absolute_image_url`: a protocol-relative link
+/// takes the base URL's scheme, an upload, image or avatar path the base
+/// URL, a path under the subfolder the base URL without it.
+fn absolute_image_url(urls: &crate::url::Urls<'_>, link: &str) -> Result<String, AppError> {
+    if link.starts_with("//") {
+        return Ok(format!("{}:{link}", urls.scheme()?));
+    }
+    if ["/uploads/", "/images/", "/user_avatar/"]
+        .iter()
+        .any(|p| link.starts_with(p))
+    {
+        return Ok(format!("{}{link}", urls.base_url()?));
+    }
+    let root = urls.config.globals.relative_url_root();
+    if !root.is_empty() && link.starts_with(root) {
+        return Ok(format!("{}{link}", urls.base_url_no_prefix()?));
+    }
+    Ok(link.to_string())
 }
 
 /// `gsub(/<[^>]*>/, "")`

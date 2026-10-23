@@ -43,6 +43,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
+        "generate_topic_thumbnails" => generate_topic_thumbnails(state, &job.args).await,
         super::crawl_topic_link::CRAWL_TOPIC_LINK => {
             super::crawl_topic_link::crawl_topic_link(state, &job.args).await
         }
@@ -958,6 +959,43 @@ async fn remove_full_quote_on_direct_reply(
         crate::posting::revise::Outcome::Revised => Ok(Some(quoteless)),
         _ => Err(Unsupported("a full quote removal the revisor refused").into()),
     }
+}
+
+/// `Jobs::GenerateTopicThumbnails`: `topic.generate_thumbnails!(extra_sizes:)`
+/// for the topic when it exists.
+async fn generate_topic_thumbnails(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(topic_id) = int_arg(args, "topic_id")? else {
+        return Err(Unsupported(
+            "generate_topic_thumbnails without a topic_id (InvalidParameters)",
+        )
+        .into());
+    };
+    // `extra_sizes = [] unless extra_sizes.kind_of?(Array)`
+    let extra = args
+        .get("extra_sizes")
+        .and_then(Value::as_array)
+        .is_some_and(|a| !a.is_empty())
+        .then_some("generate_topic_thumbnails with extra sizes");
+    let mut conn = state.pool.acquire().await?;
+    let image_upload_id: Option<Option<i64>> =
+        sqlx::query_scalar("SELECT image_upload_id FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(Some(upload_id)) = image_upload_id else {
+        return Ok(());
+    };
+    let Ok(upload_id) = i32::try_from(upload_id) else {
+        return Ok(());
+    };
+    let Some(upload) = crate::optimized_images::Upload::find(&mut conn, upload_id).await? else {
+        return Ok(());
+    };
+    let s = settings(state, &mut conn).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &s)?;
+    crate::optimized_images::generate_thumbnails(&mut conn, &s, &store, &upload, extra)
+        .await
+        .map_err(crate::optimized_images::app_error)
 }
 
 /// `Jobs::ProcessPost`: CookedPostProcessor over the post's cooked HTML,

@@ -3349,6 +3349,10 @@ pub struct Crawler {
     pub og_description: String,
     /// og:image, absolute
     pub image: Option<String>,
+    /// og:image:width and og:image:height, given together
+    pub image_size: Option<(i32, i32)>,
+    /// og:image:type
+    pub image_type: Option<&'static str>,
     /// og:url: the request's own URL
     pub url: String,
     /// `add_noindex_header_to_non_canonical`: the canonical differs from

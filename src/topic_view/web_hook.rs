@@ -548,10 +548,8 @@ impl TopicView<'_> {
             .await?;
             out.insert("queued_posts_count".into(), json!(count));
         }
-        if topic.image_upload_id.is_some() {
-            return Err(Unsupported("topic thumbnails").into());
-        }
-        out.insert("thumbnails".into(), Value::Null);
+        let thumbnails = self.thumbnails(&topic, false).await?;
+        out.insert("thumbnails".into(), thumbnails);
         if let Some(tu) = viewer
             .topic_user
             .as_ref()

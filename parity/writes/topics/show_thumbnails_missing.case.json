@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, width, height, url, sha1, extension, created_at, updated_at) VALUES (9741, 3, 'pond.png', 120000, 800, 600, '/uploads/default/original/1X/0000000000000000000000000000000000009741.png', '0000000000000000000000000000000000009741', 'png', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE topics SET image_upload_id = 9741 WHERE id = 35",
+    "UPDATE posts SET image_upload_id = 9741 WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/35.json",
+      "params": {}
+    }
+  ],
+  "run_jobs": [
+    "generate_topic_thumbnails"
+  ]
+}

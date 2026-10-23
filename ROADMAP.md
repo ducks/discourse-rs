@@ -1576,12 +1576,18 @@ have handlers now.
     (:2020), custom post notices (:2168), limit_suggested_to_category
     (:2800), suggested topics from other lists and for anonymous
     readers (topic_query.rs:839,887)
-125. `feat/topic-thumbnails` M: topic thumbnails in the topic view and
-    web hook payloads (topic_view.rs:708; topic_view/web_hook.rs:552; a
-    topic whose first post has an image or a video thumbnail),
-    theme thumbnail sizes (optimized_images.rs:131 and
-    jobs/consistency.rs's preflight), topic images in digests
-    (email/digest.rs:657)
+125. `feat/topic-thumbnails` M (the topic view's and web hook payloads'
+    thumbnails done on feat/topic-view-thumbnails: Topic#thumbnail_info
+    with the original and each optimized size, generate_topic_thumbnails
+    enqueued once a minute when sizes are missing and the job ported;
+    TopicView#image_url and #image_upload for a post number past the
+    first, the page's og:image as get_absolute_image_url makes it with
+    og:image:width, :height and :type; left:) theme thumbnail sizes
+    (optimized_images.rs:115,146; topic_view.rs:1166 for the request
+    theme; jobs/handlers.rs:978 for the job's extra_sizes; and
+    jobs/consistency.rs's preflight), secure uploads in topic thumbnails
+    (topic_view.rs:1170), topic images behind a CDN (topic_list.rs:46),
+    topic images in digests (email/digest.rs:657)
 126. `feat/featured-links` S: featured_link_root_domain
     (topic_view.rs:558; topic_list.rs:650,758;
     topic_view/web_hook.rs:436; email/digest.rs:660)
