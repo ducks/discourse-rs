@@ -76,6 +76,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-details.css"),
     include_str!("../static/css/discourse-local-dates.css"),
     include_str!("../static/css/footnote.css"),
+    include_str!("../static/css/poll.css"),
     include_str!("../static/css/spoiler-alert.css"),
     include_str!("../static/css/invites.css"),
     // The mobile view's rules, last as each follows its base rule.
