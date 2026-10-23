@@ -1548,7 +1548,7 @@ async fn a_poll_vote_draws_the_widget_again() {
         "{html}"
     );
 
-    // A single choice voted: its results show, which 228b draws; Hide
+    // A single choice voted: its results show, with the voter; Hide
     // results goes back to the options with the vote and Remove vote.
     let single = user1.page(&live("single", "{}")).await;
     let digests = poll_digests(&single);
@@ -1566,9 +1566,21 @@ async fn a_poll_vote_draws_the_widget_again() {
     let html = user1
         .page(&live("single", "{\"results\":true,\"toggle\":true}"))
         .await;
-    assert!(html.contains(
-        "<div class=\"discourse-poll-regular-results\"> <div class=\"poll-unsupported\" role=\"note\">Not ported yet: the poll"
-    ), "{html}");
+    assert!(
+        html.contains(
+            "<div class=\"discourse-poll-regular-results\"> <div class=\"tab-container\">"
+        ),
+        "{html}"
+    );
+    assert!(
+        html.contains("<li class=\"chosen\"> <div class=\"option\"> <p> <span class=\"percentage\">100%</span> <span class=\"option-text\">Yes</span>"),
+        "{html}"
+    );
+    assert!(
+        html.contains("<a data-user-card=\"user1\" title=\"user1\">"),
+        "{html}"
+    );
+    assert!(!html.contains("Not ported"), "{html}");
     assert!(
         html.contains(
             "<span class=\"info-number\">1</span> <span class=\"info-label\">voter</span>"
@@ -1651,6 +1663,213 @@ async fn a_poll_vote_draws_the_widget_again() {
 
     // Not a poll the post has, or not a post the viewer sees: not found.
     assert!(user1.page(&live("nope", "{}")).await.is_empty());
+}
+
+/// The `data-poll-state` a widget was drawn in.
+fn poll_state(widget: &str) -> serde_json::Value {
+    let raw = widget
+        .split("data-poll-state=\"")
+        .nth(1)
+        .and_then(|s| s.split('"').next())
+        .unwrap_or_else(|| panic!("no state: {widget}"));
+    serde_json::from_str(&raw.replace("&quot;", "\"").replace("&amp;", "&")).unwrap()
+}
+
+#[tokio::test]
+async fn poll_results_draw_as_ember_draws_them() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let raw = "Results:\n\n\
+        [poll name=reg public=true]\n* Alpha\n* Beta\n[/poll]\n\n\
+        [poll name=num type=number min=1 max=5 step=1]\n[/poll]\n\n\
+        [poll name=pie chartType=pie]\n* Cats\n* Dogs\n[/poll]\n\n\
+        [poll name=rc type=ranked_choice public=true]\n* Xeno\n* Yarn\n[/poll]";
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let created = user0
+        .send(
+            Method::POST,
+            "/posts",
+            &format!(
+                "title={}&raw={}&category=4",
+                urlencode("Poll results to draw"),
+                urlencode(raw)
+            ),
+        )
+        .await;
+    let created: serde_json::Value = serde_json::from_str(&created).expect(&created);
+    let post_id = created["id"].as_i64().unwrap();
+    // 27 more members, voters of Alpha, the first 25 preloaded; three of
+    // them rate the number poll 1, 4 and 4, two of them pick Cats.
+    let mut conn = db.pool.acquire().await.unwrap();
+    for sql in [
+        "CREATE TEMP TABLE tu AS SELECT * FROM users WHERE id = 5",
+        "INSERT INTO users SELECT (jsonb_populate_record(tu, jsonb_build_object('id', g, 'username', 'voter' || g, 'username_lower', 'voter' || g, 'name', 'Voter ' || g))).* FROM tu, generate_series(100, 126) g",
+        "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, created_at, updated_at, rank) \
+         SELECT p.id, po.id, g, timestamp '2026-10-20 10:00' + g * interval '1 minute', now(), 0 \
+         FROM polls p JOIN poll_options po ON po.poll_id = p.id, generate_series(100, 126) g \
+         WHERE p.name = 'reg' AND po.html = 'Alpha'",
+        "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, created_at, updated_at, rank) \
+         SELECT p.id, po.id, v.u, now(), now(), 0 FROM polls p JOIN poll_options po ON po.poll_id = p.id \
+         JOIN (VALUES (100, '1'), (101, '4'), (102, '4')) v(u, h) ON po.html = v.h WHERE p.name = 'num'",
+        "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, created_at, updated_at, rank) \
+         SELECT p.id, po.id, g, now(), now(), 0 FROM polls p JOIN poll_options po ON po.poll_id = p.id, \
+         generate_series(100, 101) g WHERE p.name = 'pie' AND po.html = 'Cats'",
+    ] {
+        // One connection: the temporary table lives on it.
+        sqlx::query(sql)
+            .execute(&mut *conn)
+            .await
+            .unwrap_or_else(|e| panic!("{sql}: {e}"));
+    }
+    drop(conn);
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let live =
+        |name: &str, state: &str| format!("/live/poll/{post_id}/{name}?state={}", urlencode(state));
+    let shown = "{\"results\":true}";
+
+    // Standard results: even-round percentages, the bars, the preloaded
+    // voters and a load more for the rest.
+    let html = user1.page(&live("reg", shown)).await;
+    assert!(
+        html.contains("<span class=\"percentage\">100%</span> <span class=\"option-text\">Alpha</span> </p> <div class=\"bar-back\"> <div class=\"bar\" style=\"width:100%\"></div> </div>"),
+        "{html}"
+    );
+    assert!(
+        html.contains(
+            "<span class=\"percentage\">0%</span> <span class=\"option-text\">Beta</span>"
+        ),
+        "{html}"
+    );
+    assert_eq!(html.matches("data-user-card=\"voter").count(), 25, "{html}");
+    assert!(html.contains("<button class=\"poll-voters-toggle-expand btn no-text btn-icon\" type=\"button\" data-poll-voters=\""), "{html}");
+    let state = poll_state(&html);
+    assert_eq!(state["expanded"], false);
+    let alpha = state["voters"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .find(|(_, v)| v.as_array().unwrap().len() == 25)
+        .map(|(k, _)| k.clone())
+        .unwrap();
+    // The gear's one action is the tally: drawn as counts.
+    assert!(
+        html.contains("data-poll-action=\"toggleDisplayMode\""),
+        "{html}"
+    );
+    let html = user1
+        .page(&live("reg", "{\"results\":true,\"tally\":true}"))
+        .await;
+    assert!(
+        html.contains("<span class=\"absolute\">27 votes</span>"),
+        "{html}"
+    );
+    assert!(
+        html.contains("<span class=\"absolute\">0 votes</span>"),
+        "{html}"
+    );
+    assert!(html.contains("btn-default show-percentage"), "{html}");
+
+    // Load more: voters.json's next page, kept in the state and drawn.
+    let page = user1
+        .send(
+            Method::GET,
+            &format!("/polls/voters.json?post_id={post_id}&poll_name=reg&option_id={alpha}&page=2&limit=25"),
+            "",
+        )
+        .await;
+    let page: serde_json::Value = serde_json::from_str(&page).expect(&page);
+    let more = page["voters"][&alpha].as_array().unwrap();
+    assert_eq!(more.len(), 2, "{page}");
+    let mut kept = state["voters"][&alpha].as_array().unwrap().clone();
+    for v in more {
+        kept.push(serde_json::json!([v["username"], v["avatar_template"]]));
+    }
+    let expanded = serde_json::json!({"results": true, "voters": {alpha.clone(): kept}});
+    let html = user1.page(&live("reg", &expanded.to_string())).await;
+    assert_eq!(html.matches("data-user-card=\"voter").count(), 27, "{html}");
+    assert_eq!(poll_state(&html)["expanded"], true);
+    // All 27 drawn: no load more for Alpha; Beta has no votes to load.
+    assert!(!html.contains("poll-voters-toggle-expand"), "{html}");
+
+    // The number poll's average, to two decimals.
+    let html = user1.page(&live("num", shown)).await;
+    assert!(
+        html.contains("<div class=\"discourse-poll-number-results\"> <span>Average rating: <strong>3</strong>.</span> </div>"),
+        "{html}"
+    );
+
+    // The pie's canvas and legend, filled by poll.js from the state.
+    let html = user1.page(&live("pie", shown)).await;
+    assert!(
+        html.contains(&format!("<canvas class=\"poll-results-canvas\" id=\"poll-results-chart-pie-{post_id}\"></canvas>")),
+        "{html}"
+    );
+    assert_eq!(poll_state(&html)["pie"]["data"], serde_json::json!([2, 0]));
+
+    // Ranked choice: the options with their rank dropdowns, the vote in
+    // progress, cast, then the outcome.
+    let html = user1.page(&live("rc", "{}")).await;
+    assert!(
+        html.contains("<ul class=\"ranked-choice-poll-options options\">"),
+        "{html}"
+    );
+    let digests: Vec<String> = poll_state(&html)["options"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d.as_str().unwrap().to_string())
+        .collect();
+    let vote = serde_json::json!({"vote": [{"digest": digests[0], "rank": 2}, {"digest": digests[1], "rank": 1}]});
+    let html = user1.page(&live("rc", &vote.to_string())).await;
+    assert!(
+        html.contains("<span class=\"d-button-label\"> 2 </span>"),
+        "{html}"
+    );
+    assert!(
+        html.contains("<button class=\"btn cast-votes btn-primary\""),
+        "{html}"
+    );
+    let voted = user1
+        .send(
+            Method::PUT,
+            "/polls/vote",
+            &format!(
+                "post_id={post_id}&poll_name=rc&options%5B0%5D%5Bdigest%5D={}&options%5B0%5D%5Brank%5D=2&options%5B1%5D%5Bdigest%5D={}&options%5B1%5D%5Brank%5D=1",
+                digests[0], digests[1]
+            ),
+        )
+        .await;
+    assert!(voted.contains("\"voters\":1"), "{voted}");
+    let html = user1.page(&live("rc", shown)).await;
+    assert!(html.contains("<li class=\"tab nav-item active\"> <button class=\"nav-btn btn no-text\" type=\"button\" data-poll-tab=\"outcome\"> Outcome </button>"), "{html}");
+    assert!(
+        html.contains("<span class=\"poll-results-ranked-choice-info\">Winner was Yarn after one round.</span>"),
+        "{html}"
+    );
+    let html = user1
+        .page(&live("rc", "{\"results\":true,\"tab\":\"votes\"}"))
+        .await;
+    assert!(html.contains("<span class=\"rank\">1</span>"), "{html}");
+    assert!(html.contains("<span class=\"rank\">2</span>"), "{html}");
+
+    // Anonymous readers are asked to log in instead of ranking.
+    let mut anon = Client {
+        state: st.clone(),
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    let html = anon.page(&live("rc", "{}")).await;
+    assert!(
+        html.contains("<span class=\"d-button-label\">Login to vote!</span>"),
+        "{html}"
+    );
+
+    // The topic page hands poll.js where Chart.js is.
+    let topic_id = created["topic_id"].as_i64().unwrap();
+    let page = user1
+        .page(&format!("/t/poll-results-to-draw/{topic_id}"))
+        .await;
+    assert!(page.contains("data-chart-js=\""), "{page}");
 }
 
 /// The `data-checklist-post` of the post with that id's `div.cooked`, as

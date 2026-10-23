@@ -4397,12 +4397,56 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     open, the breakdown, 228c; export, 202). An anonymous click goes to
     /login (poll.js:321) where Ember defers the vote with
     deferAnonymousAction (211).
-    228b. `feat/poll-ui-results` M: standard results with even-round
-    percentages and the tally toggle, the pie chart, the number poll's
-    average rating, ranked choice's options with their rank dropdowns
-    and Abstain and its outcome and rounds tabs, the voters lists with
-    load more over /polls/voters.json; replaces view.rs's results and
-    ranked choice refusals and poll.js's toggleDisplayMode.
+    228b. ~~`feat/poll-ui-results`~~ (done) M: the results body is drawn
+    where 228a refused it (plugins/poll/view.rs): PollResultsTabs (Votes
+    unless ranked choice is private, Outcome for ranked choice, a public
+    ranked choice starting on Outcome, the tab kept while the results
+    show), PollResultsStandard (the options by votes then by their HTML
+    as JavaScript compares strings, even-round percentages from
+    lib/even-round.js and floored ones for a multiple choice, the bars,
+    the chosen class from the vote, the tally as `poll.votes` once
+    toggleDisplayMode switched it, no figures or bars for ranked choice),
+    PollVoters and PollVotersRankedChoice (the public voters at
+    getRawAvatarSize(24), the placeholder without a template, ranked
+    choice's groups in Object.keys order with Abstain's ban icon, the load
+    more while an option has more votes than voters drawn, its spinner
+    while loading), PollResultsRankedChoice (the rounds table, the winner
+    or the tie with its candidates), the number poll's averageRating
+    (round(x, -2) as decimal-adjust shifts it through the string), and
+    PollResultsPie's canvas and legend, filled by static/js/poll.js with
+    Chart.js loaded on the first pie as loadChartJS does (lib/chart-colors'
+    getColors with the --poll-pie-color-N fallbacks to the cool gradient,
+    the HTML legend plugin with buildLegendIcon swatches and the click
+    that hides a slice, the legend decorated). Ranked choice's options are
+    drawn too (PollOptionRankedChoice: the rank DMenu with Abstain and
+    each rank, the highest and lowest priority named, every option given
+    a rank as _toggleOption does, the login button for anonymous readers).
+    poll.js keeps the component's state across redraws (showTally, the
+    active tab, preloadedVoters once a load more expanded them, as
+    voterListExpanded), fetches /polls/voters.json a page at a time
+    (FETCH_VOTERS_COUNT, deduplicated by username, a regular poll's voter
+    dropped from the other options, popupAjaxError or
+    poll.error_while_fetching_voters), and leaves the gear menu open
+    across the tally toggle as Ember does, its content the other mode's.
+    Measured with playwright against rs-ref-d on a topic with a public
+    regular poll (30 voters, 27 on one option), a public multiple choice,
+    a number poll, a pie, a public and a private ranked choice, as user1,
+    user2, admin and anonymous: the normalized widget DOM equal at every
+    step (results shown, the tally both ways from the button and the gear
+    menu, load more on a regular, multiple and ranked choice option, the
+    tabs both ways, results hidden and shown again, ranks picked in the
+    dropdowns, a ranked vote cast and removed, single and multiple votes
+    cast with their chosen rows and removed), the rank dropdown's and gear
+    menu's items equal, and the widgets' screenshots pixel-equal at 1280
+    and 390 (the pie's chart included) but single anti-aliased pixels at
+    letter avatar edges in two of them. Left: the float menu's own
+    wrapper differs as 228a's gear menu does (static/js/float.js gives it
+    data-identifier and no `-content` class or aria-labelledby), and
+    option HTML drawn again by a redraw is not run through the cooked
+    decorators (decoratePollOption's applyHtmlDecorators; 228a's options
+    the same). Tests in tests/plugin_pages.rs and plugins::poll::view.
+    Refused still, said in place: the dropdown's close and open, the
+    breakdown (228c) and export (202).
     228c. `feat/poll-ui-breakdown` S: the actions dropdown's close and
     open with their confirm (toggleStatus, with the on_close refresh)
     and the breakdown modal over /polls/grouped_poll_results with
