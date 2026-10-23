@@ -140,8 +140,10 @@ Polish, from the second screenshot sweep:
 - [ ] Admin category settings draw `default_composer_category` as a plain
   combo box instead of CategoryChooser (2.41%): fix/category-setting-chooser.
 - [ ] Admin font previews all render in Inter: fix/admin-font-previews.
-- [ ] The admin email style Ace editor height and template preview offset:
-  fix/admin-email-editors.
+- [x] The admin email style Ace editor height and template preview offset:
+  fix/admin-email-editors. ace-editor.scss's wrapper border and the cooked
+  rules' .d-editor-preview selectors; email style 0.05% (was 2.61%), the
+  signup template 0.03% (was 1.63%) on rs-ref-b.
 - [ ] scripts/parity-screenshots: guard against a 164598px capture
   (PIL's DecompressionBombError) and let scripts/ui-compare log in:
   chore/screens-tool-guards.

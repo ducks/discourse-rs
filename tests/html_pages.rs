@@ -222,6 +222,10 @@ async fn stylesheet_is_served() {
     assert_eq!(status, StatusCode::OK);
     assert!(content_type.starts_with("text/css"));
     assert!(css.contains(".topic-list .posters"));
+    // The Ace editors' wrapper (components/ace-editor.scss) and the cooked
+    // rules' editor preview selectors, which the admin's email editors use.
+    assert!(css.contains(".ace-wrapper {\n  border: 1px solid var(--primary-400);"));
+    assert!(css.contains(".cooked>*:first-child,\n.d-editor-preview>*:first-child {"));
 }
 
 /// The stylesheets' @font-face URLs are absolute (Discourse.base_url, or
