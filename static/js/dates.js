@@ -340,12 +340,14 @@
 
   // relativeAgeTiny; `timeline` is the timeline's options: addAgo, and
   // timelineDate as the defaultFormat.
-  function relativeAgeTiny(ms, zone, timeline) {
+  // timeline: the timeline's options (addAgo, timelineDate past the
+  // relative ages); addAgo alone: relativeAge(date, { addAgo: true }).
+  function relativeAgeTiny(ms, zone, timeline, addAgo) {
     var distance = Math.round(Math.abs(Date.now() - ms) / 1000);
     var minutes = Math.max(1, Math.round(distance / 60.0));
     var t = function (key, count) {
       var result = i18n("dates.tiny." + key, { count: count });
-      return timeline ? i18n("dates.wrap_ago", { date: result }) : result;
+      return timeline || addAgo ? i18n("dates.wrap_ago", { date: result }) : result;
     };
     if (minutes <= 44) {
       return t("x_minutes", minutes);
@@ -366,6 +368,74 @@
       return t("x_days", Math.round(minutes / 1440.0));
     }
     return timeline ? timelineDate(ms, zone) : smartShortDate(ms, zone);
+  }
+
+  // moment().to(ms, true) in English: moment's relativeTime of the time
+  // between now and the date, without a suffix ("7 months", "a day"), on
+  // the browser's calendar as moment counts the months.
+  function humanize(ms) {
+    var now = Date.now();
+    var from = Math.min(now, ms);
+    var to = Math.max(now, ms);
+    function addMonths(t, n) {
+      var d = new Date(t);
+      var day = d.getDate();
+      d.setDate(1);
+      d.setMonth(d.getMonth() + n);
+      var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      d.setDate(Math.min(day, last));
+      return d.getTime();
+    }
+    var a = new Date(from);
+    var b = new Date(to);
+    var months = b.getMonth() - a.getMonth() + (b.getFullYear() - a.getFullYear()) * 12;
+    if (addMonths(from, months) > to) {
+      months--;
+    }
+    var rest = to - addMonths(from, months);
+    var daysOfMonths = Math.round((months * 146097) / 4800);
+    var asSeconds = daysOfMonths * 86400 + rest / 1000;
+    var asMonths = months + ((rest / 864e5) * 4800) / 146097;
+    var seconds = Math.round(asSeconds);
+    var minutes = Math.round(asSeconds / 60);
+    var hours = Math.round(asSeconds / 3600);
+    var days = Math.round(daysOfMonths + rest / 864e5);
+    var m = Math.round(asMonths);
+    var years = Math.round(asMonths / 12);
+    if (seconds <= 44) {
+      return "a few seconds";
+    }
+    if (seconds < 45) {
+      return seconds + " seconds";
+    }
+    if (minutes <= 1) {
+      return "a minute";
+    }
+    if (minutes < 45) {
+      return minutes + " minutes";
+    }
+    if (hours <= 1) {
+      return "an hour";
+    }
+    if (hours < 22) {
+      return hours + " hours";
+    }
+    if (days <= 1) {
+      return "a day";
+    }
+    if (days < 26) {
+      return days + " days";
+    }
+    if (m <= 1) {
+      return "a month";
+    }
+    if (m < 11) {
+      return m + " months";
+    }
+    if (years <= 1) {
+      return "a year";
+    }
+    return years + " years";
   }
 
   function relativeAgeMediumSpan(distance, leaveAgo) {
@@ -453,6 +523,8 @@
   //   reminder           Bookmark#formattedReminder
   //   timeline-days-ago  the number is days: timelineDate of today less
   //                      them, as the timeline's scroller counts them
+  //   tiny-ago           relativeAge with addAgo (poll-info's closed age)
+  //   humanize           moment().to(date, true) (poll-info's time left)
   //   year:A|B           format A in the current year, else B
   function named(ms, name, zone) {
     if (name.indexOf("year:") === 0) {
@@ -464,6 +536,10 @@
         return timelineDate(ms, zone);
       case "timeline-ago":
         return relativeAgeTiny(ms, zone, true);
+      case "tiny-ago":
+        return relativeAgeTiny(ms, zone, false, true);
+      case "humanize":
+        return humanize(ms);
       case "reminder":
         return formattedReminder(ms, zone);
       case "medium-span-ago":

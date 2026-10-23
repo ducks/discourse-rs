@@ -264,6 +264,8 @@ pub(crate) fn tiny_span<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>) -> S
 ///   medium-span-ago    relativeAgeMediumSpan with ago (no dates)
 ///   reminder           Bookmark#formattedReminder (fill_in's zone)
 ///   timeline-days-ago  the number is days: timelineDate of today less them
+///   tiny-ago           relativeAge with addAgo (poll-info's closed age)
+///   humanize           moment().to(date, true) (poll-info's time left)
 ///   year:A|B           format A in the current year, else B
 fn named_format<C: DateContext + ?Sized>(
     cx: &C,
@@ -283,7 +285,9 @@ fn named_format<C: DateContext + ?Sized>(
     match named {
         "timeline" => timeline_date(cx, at),
         "timeline-days-ago" => timeline_date(cx, cx.now() - chrono::Duration::days(ms)),
-        "timeline-ago" => tiny(cx, at, true),
+        "timeline-ago" => tiny(cx, at, Tiny::Timeline),
+        "tiny-ago" => tiny(cx, at, Tiny::Ago),
+        "humanize" => humanize(cx.now(), at),
         "medium-span-ago" => {
             let distance = (cx.now() - at).num_milliseconds() as f64 / 1000.0;
             medium_span(cx, distance, true)
@@ -318,12 +322,73 @@ pub(crate) fn relative_age<C: DateContext + ?Sized>(
 
 /// `relativeAgeTiny`
 pub(crate) fn relative_age_tiny<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>) -> String {
-    tiny(cx, at, false)
+    tiny(cx, at, Tiny::Plain)
 }
 
-/// relativeAgeTiny; `timeline` is the timeline's options: addAgo, and
-/// timelineDate as the defaultFormat.
-fn tiny<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>, timeline: bool) -> String {
+/// relativeAgeTiny's options.
+#[derive(Clone, Copy, PartialEq)]
+enum Tiny {
+    Plain,
+    /// `addAgo` (relativeAge(date, { addAgo: true })).
+    Ago,
+    /// The timeline's: addAgo, and timelineDate as the defaultFormat.
+    Timeline,
+}
+
+/// `moment().to(at, true)` in English: moment's relativeTime of the time
+/// between now and `at`, without a suffix ("7 months", "a day").
+pub(crate) fn humanize(now: DateTime<Utc>, at: DateTime<Utc>) -> String {
+    let (from, to) = if at < now { (at, now) } else { (now, at) };
+    // positiveMomentsDifference: whole calendar months, then the rest.
+    let add_months = |d: DateTime<Utc>, months: i32| -> DateTime<Utc> {
+        let total = d.year() * 12 + d.month0() as i32 + months;
+        let (year, month0) = (total.div_euclid(12), total.rem_euclid(12) as u32);
+        let last_day = (28..=31)
+            .rev()
+            .find(|day| chrono::NaiveDate::from_ymd_opt(year, month0 + 1, *day).is_some())
+            .unwrap_or(28);
+        let day = d.day().min(last_day);
+        chrono::NaiveDate::from_ymd_opt(year, month0 + 1, day)
+            .map(|date| date.and_time(d.time()).and_utc())
+            .unwrap_or(d)
+    };
+    let mut months = (to.month0() as i32 - from.month0() as i32) + (to.year() - from.year()) * 12;
+    if add_months(from, months) > to {
+        months -= 1;
+    }
+    let ms = (to - add_months(from, months)).num_milliseconds() as f64;
+    // Duration#as: months to days and back as moment converts them.
+    let days_of_months = (f64::from(months) * 146_097.0 / 4800.0).round();
+    let as_seconds = days_of_months * 86_400.0 + ms / 1000.0;
+    let as_days = days_of_months + ms / 864e5;
+    let as_months = f64::from(months) + (ms / 864e5) * 4800.0 / 146_097.0;
+    let round = |x: f64| (x + 0.5).floor() as i64;
+    let seconds = round(as_seconds);
+    let minutes = round(as_seconds / 60.0);
+    let hours = round(as_seconds / 3600.0);
+    let days = round(as_days);
+    let months = round(as_months);
+    let years = round(as_months / 12.0);
+    match () {
+        _ if seconds <= 44 => "a few seconds".to_string(),
+        _ if seconds < 45 => format!("{seconds} seconds"),
+        _ if minutes <= 1 => "a minute".to_string(),
+        _ if minutes < 45 => format!("{minutes} minutes"),
+        _ if hours <= 1 => "an hour".to_string(),
+        _ if hours < 22 => format!("{hours} hours"),
+        _ if days <= 1 => "a day".to_string(),
+        _ if days < 26 => format!("{days} days"),
+        _ if months <= 1 => "a month".to_string(),
+        _ if months < 11 => format!("{months} months"),
+        _ if years <= 1 => "a year".to_string(),
+        _ => format!("{years} years"),
+    }
+}
+
+/// relativeAgeTiny with its options.
+fn tiny<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>, options: Tiny) -> String {
+    let timeline = options == Tiny::Timeline;
+    let add_ago = options != Tiny::Plain;
     let now = cx.now();
     let distance = ((now - at).num_milliseconds() as f64 / 1000.0)
         .round()
@@ -333,7 +398,7 @@ fn tiny<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>, timeline: bool) -> S
     let date = |key: &str| format_utc(at, &t(cx, key)).unwrap_or_default();
     let age = |key: &str, count: i64| {
         let text = t_count(cx, &format!("dates.tiny.{key}"), count);
-        if timeline {
+        if add_ago {
             cx.i18n()
                 .t_with("js.dates.wrap_ago", &[("date", &text)])
                 .unwrap_or(text)
@@ -529,5 +594,32 @@ mod tests {
             "on Oct 3, 2025"
         );
         assert_eq!(relative_age(&cx, last_year, "tiny"), "Oct 2025");
+    }
+
+    #[test]
+    fn humanize_as_moment_to_without_suffix() {
+        let now: DateTime<Utc> = "2026-10-18T12:00:00Z".parse().unwrap();
+        let at = |s: &str| s.parse::<DateTime<Utc>>().unwrap();
+        assert_eq!(humanize(now, at("2027-06-01T12:00:00Z")), "7 months");
+        assert_eq!(humanize(now, at("2026-10-18T12:00:30Z")), "a few seconds");
+        assert_eq!(humanize(now, at("2026-10-18T12:01:00Z")), "a minute");
+        assert_eq!(humanize(now, at("2026-10-18T14:00:00Z")), "2 hours");
+        assert_eq!(humanize(now, at("2026-10-19T12:00:00Z")), "a day");
+        assert_eq!(humanize(now, at("2026-10-28T12:00:00Z")), "10 days");
+        assert_eq!(humanize(now, at("2026-11-18T12:00:00Z")), "a month");
+        assert_eq!(humanize(now, at("2027-10-18T12:00:00Z")), "a year");
+        assert_eq!(humanize(now, at("2029-10-18T12:00:00Z")), "3 years");
+        // Past dates read the same.
+        assert_eq!(humanize(now, at("2026-10-16T12:00:00Z")), "2 days");
+    }
+
+    #[test]
+    fn tiny_with_ago() {
+        let i18n = I18n::vendored().unwrap();
+        let cx = cx(&i18n);
+        let hours_ago: DateTime<Utc> = "2026-10-17T09:00:00Z".parse().unwrap();
+        assert_eq!(fill_utc(&cx, &marker(hours_ago, "@tiny-ago")), "3h ago");
+        let last_year: DateTime<Utc> = "2025-10-03T23:30:00Z".parse().unwrap();
+        assert_eq!(fill_utc(&cx, &marker(last_year, "@tiny-ago")), "Oct 2025");
     }
 }

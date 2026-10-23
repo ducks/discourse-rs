@@ -76,6 +76,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-details.css"),
     include_str!("../static/css/discourse-local-dates.css"),
     include_str!("../static/css/footnote.css"),
+    include_str!("../static/css/poll.css"),
     include_str!("../static/css/spoiler-alert.css"),
     include_str!("../static/css/invites.css"),
     // The mobile view's rules, last as each follows its base rule.
@@ -453,6 +454,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/discourse-solved.js"),
     ),
+    ("poll.js", JS, include_str!("../static/js/poll.js")),
     ("chat.js", JS, include_str!("../static/js/chat.js")),
     (
         "chat-drawer.js",

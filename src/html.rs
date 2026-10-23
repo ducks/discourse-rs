@@ -2331,8 +2331,11 @@ pub struct TopicPage {
     /// quote-button.js's config (`quote_button_config`).
     pub quote_config: String,
     /// dialog.js's strings, for a message whose participants the viewer
-    /// may remove (removing oneself asks first); empty otherwise.
+    /// may remove (removing oneself asks first) and for a member's polls
+    /// (their errors); empty otherwise.
     pub dialog_strings: String,
+    /// discourse-poll is on: its widget's script and strings.
+    pub poll_scripts: String,
 }
 
 /// `categories` rows the pages link to.
@@ -2778,6 +2781,21 @@ pub async fn topic_page(
     topic.pm_path = pm_path(conn, view, &base, viewer).await?;
     // Mark unread's destination: the message's inbox, else home.
     topic.defer_to = topic.pm_path.clone().unwrap_or_else(|| format!("{base}/"));
+    if post_settings.poll.is_some()
+        && let Some(username) = viewer
+    {
+        let user_id: Option<i32> =
+            sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")
+                .bind(username.to_lowercase())
+                .fetch_optional(&mut *conn)
+                .await?;
+        let posts = view["post_stream"]["posts"]
+            .as_array()
+            .map(Vec::as_slice)
+            .unwrap_or_default();
+        topic.poll_viewer =
+            crate::plugins::poll::view::PollViewer::for_posts(conn, user_id, posts).await?;
+    }
     // The first post's topic map, rendered before the posts that carry it.
     if crate::post_view::shows_op_map(view, &post_settings) {
         let cx = crate::post_view::PostContext {
@@ -2832,7 +2850,11 @@ pub async fn topic_page(
     });
     let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref(), pm_counts)?;
     let quote_config = quote_button_config(conn, i18n, settings, view, viewer).await?;
-    let dialog_strings = if view["archetype"] == "private_message" && viewer.is_some() {
+    // A message's participant removal asks first; a poll reports its
+    // errors in a dialog.
+    let dialog_strings = if viewer.is_some()
+        && (view["archetype"] == "private_message" || post_settings.poll.is_some())
+    {
         dialog_strings(i18n)
     } else {
         String::new()
@@ -2917,6 +2939,11 @@ pub async fn topic_page(
         ignored_users: ignored_users.join(","),
         quote_config,
         dialog_strings,
+        poll_scripts: if post_settings.poll.is_some() {
+            crate::plugins::poll::view::page_scripts(i18n, &base)
+        } else {
+            String::new()
+        },
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })

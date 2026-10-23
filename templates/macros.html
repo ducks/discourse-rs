@@ -2,9 +2,11 @@
     extension. Every event is out-of-band swaps, so the sink stays empty.
     `topic_id` above 0 follows a topic (`tail` on its last page, where new
     posts are appended), `filter` a list; `params` (Chrome::live_params)
-    names the nav pill and sidebar to keep counted. -#}
+    names the nav pill and sidebar to keep counted. A `poll` event (a
+    topic's polls changed) is static/js/poll.js's, which draws them again
+    and swaps nothing here. -#}
 {% macro live_sink(base_path, bus_position, topic_id, tail, filter, since, params) %}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}{{ params }}" sse-swap="post,list,header,chat"></div>
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}{{ params }}" sse-swap="post,list,header,chat,poll"></div>
 {% endmacro %}
 
 {#- The stream every page has for a member: their notifications and

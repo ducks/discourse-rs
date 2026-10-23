@@ -3,6 +3,8 @@
 //! to draw the picker and the users menu, and the activity Reactions tab.
 //! discourse-solved: the solved status, the accepted answers under the
 //! first post, the Solved button, "Me too" and the activity Solved tab.
+//! discourse-poll: each cooked poll drawn as its widget, and drawn again
+//! for poll.js in the state a click brings it to.
 
 mod common;
 
@@ -1353,4 +1355,287 @@ async fn the_chat_drawer_refuses_what_it_doesnt_draw_yet() {
         csrf: None,
     };
     assert_eq!(anon.drawer("url=/chat").await.0, 404);
+}
+
+/// user0's topic with three polls: a public single choice, a multiple
+/// choice whose results wait for a vote and which closes in 2099, and one
+/// whose results wait for its close. Its first post's id.
+async fn poll_topic(st: &AppState) -> i64 {
+    let raw = "Which ones?\n\n\
+        [poll name=single public=true]\n* Yes\n* No\n[/poll]\n\n\
+        [poll name=multi type=multiple min=1 max=2 results=on_vote close=2099-01-01T00:00:00.000Z]\n# Pick some\n* Red\n* Green\n* Blue\n[/poll]\n\n\
+        [poll name=later results=on_close]\n* Now\n* Never\n[/poll]";
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let body = format!(
+        "title={}&raw={}&category=4",
+        urlencode("Three polls to vote in"),
+        urlencode(raw)
+    );
+    let created = user0.send(Method::POST, "/posts", &body).await;
+    let created: serde_json::Value = serde_json::from_str(&created).expect(&created);
+    created["id"]
+        .as_i64()
+        .unwrap_or_else(|| panic!("{created}"))
+}
+
+fn urlencode(s: &str) -> String {
+    s.bytes()
+        .map(|b| match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (b as char).to_string()
+            }
+            _ => format!("%{b:02X}"),
+        })
+        .collect()
+}
+
+/// The poll widget of that name in the page, `div.poll-outer` on.
+fn poll_widget<'a>(html: &'a str, name: &str) -> &'a str {
+    let start = html
+        .find(&format!("<div data-poll-name=\"{name}\""))
+        .unwrap_or_else(|| panic!("the {name} widget: {html}"));
+    let rest = &html[start..];
+    // Up to the next widget or the end of the cooked content.
+    let end = rest[1..]
+        .find("<div data-poll-name=")
+        .map(|i| i + 1)
+        .or_else(|| rest.find("<div class=\"cooked-selection-barrier\""))
+        .unwrap_or(rest.len());
+    &rest[..end]
+}
+
+/// The option digests a widget offers, in order.
+fn poll_digests(widget: &str) -> Vec<String> {
+    widget
+        .split("<li data-poll-option-id=\"")
+        .skip(1)
+        .map(|s| s.split('"').next().unwrap().to_string())
+        .collect()
+}
+
+#[tokio::test]
+async fn polls_are_drawn_as_their_widgets() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let post_id = poll_topic(&st).await;
+    let topic_id: i32 = sqlx::query_scalar("SELECT topic_id FROM posts WHERE id = $1")
+        .bind(post_id as i32)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let path = format!("/t/three-polls-to-vote-in/{topic_id}");
+    let mut anonymous = Client {
+        state: st.clone(),
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    let html = anonymous.page(&path).await;
+    // Each cooked poll is replaced; none is left to draw a "0 voters" stub.
+    assert_eq!(html.matches("class=\"poll-outer\"").count(), 3, "{html}");
+    assert!(!html.contains("<div class=\"poll\" data-poll"), "{html}");
+    assert!(html.contains("/assets/poll.js"));
+
+    let single = poll_widget(&html, "single");
+    assert!(single.starts_with(
+        "<div data-poll-name=\"single\" data-poll-type=\"regular\" class=\"poll-outer\" data-poll-state=\""
+    ), "{single}");
+    assert_eq!(poll_digests(single).len(), 2);
+    assert!(
+        single.contains("<button> <svg class=\"fa d-icon d-icon-far-circle svg-icon"),
+        "{single}"
+    );
+    assert!(single.contains("<span class=\"option-text\">Yes</span>"));
+    assert!(single.contains(
+        "<div class=\"poll-info_counts-count\"> <span class=\"info-number\">0</span> <span class=\"info-label\">voters</span> </div>"
+    ), "{single}");
+    assert!(single.contains("<li class=\"is-public\">"));
+    // A single choice is cast by its click: no Cast Votes, and nothing to
+    // remove or show yet.
+    assert!(!single.contains("cast-votes"));
+    assert!(!single.contains("remove-vote"));
+    assert!(!single.contains("toggle-results"));
+    assert!(
+        single.contains(
+            "<div class=\"poll-buttons\"> <div class=\"poll-buttons-dropdown\">  </div> </div> </div></div>"
+        ),
+        "{single}"
+    );
+
+    let multi = poll_widget(&html, "multi");
+    assert!(multi.contains("data-poll-type=\"multiple\""));
+    assert!(
+        multi.contains("<div class=\"poll-title\">Pick some</div>"),
+        "{multi}"
+    );
+    assert!(multi.contains("d-icon-far-square svg-icon"));
+    assert!(
+        multi.contains("<li class=\"multiple-help-text\"> <svg class=\"fa d-icon d-icon-list-ul"),
+        "{multi}"
+    );
+    assert!(
+        multi.contains("Choose up to <strong>2 options</strong>."),
+        "{multi}"
+    );
+    // Closing in 2099: the countdown, kept current by dates.js.
+    assert!(multi.contains("d-icon-far-clock"), "{multi}");
+    assert!(multi.contains("Closes in"), "{multi}");
+    assert!(multi.contains("<li class=\"results-on-vote\">"));
+    assert!(
+        multi.contains(
+            "<button class=\"btn cast-votes btn-default\" disabled=\"\" title=\"Cast your votes\">"
+        ),
+        "{multi}"
+    );
+
+    let later = poll_widget(&html, "later");
+    assert!(later.contains("<li class=\"results-on-close\">"), "{later}");
+
+    // The poll's author may close it: the dropdown's one action, drawn as
+    // a button (its action is not ported).
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let html = user0.page(&path).await;
+    let single = poll_widget(&html, "single");
+    assert!(single.contains(
+        "<button class=\"btn btn-icon-text widget-button btn-default toggle-status\" type=\"button\" data-poll-action=\"toggleStatus\">"
+    ), "{single}");
+}
+
+#[tokio::test]
+async fn a_poll_vote_draws_the_widget_again() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let post_id = poll_topic(&st).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let live =
+        |name: &str, state: &str| format!("/live/poll/{post_id}/{name}?state={}", urlencode(state));
+
+    // Picking options in a multiple choice: the vote in progress, which
+    // Cast Votes sends once it is enough.
+    let html = user1.page(&live("multi", "{}")).await;
+    let digests = poll_digests(&html);
+    assert_eq!(digests.len(), 3, "{html}");
+    let html = user1
+        .page(&live(
+            "multi",
+            &format!("{{\"vote\":[\"{}\"]}}", digests[0]),
+        ))
+        .await;
+    assert!(html.contains("d-icon-far-square-check svg-icon"), "{html}");
+    assert!(
+        html.contains("<button class=\"btn cast-votes btn-primary\" title=\"Cast your votes\">"),
+        "{html}"
+    );
+    let three = format!(
+        "{{\"vote\":[\"{}\",\"{}\",\"{}\"]}}",
+        digests[0], digests[1], digests[2]
+    );
+    let html = user1.page(&live("multi", &three)).await;
+    assert!(
+        html.contains("<button class=\"btn cast-votes btn-default\" disabled=\"\""),
+        "{html}"
+    );
+
+    // A single choice voted: its results show, which 228b draws; Hide
+    // results goes back to the options with the vote and Remove vote.
+    let single = user1.page(&live("single", "{}")).await;
+    let digests = poll_digests(&single);
+    let voted = user1
+        .send(
+            Method::PUT,
+            "/polls/vote",
+            &format!(
+                "post_id={post_id}&poll_name=single&options%5B%5D={}",
+                digests[0]
+            ),
+        )
+        .await;
+    assert!(voted.contains("\"voters\":1"), "{voted}");
+    let html = user1
+        .page(&live("single", "{\"results\":true,\"toggle\":true}"))
+        .await;
+    assert!(html.contains(
+        "<div class=\"discourse-poll-regular-results\"> <div class=\"poll-unsupported\" role=\"note\">Not ported yet: the poll"
+    ), "{html}");
+    assert!(
+        html.contains(
+            "<span class=\"info-number\">1</span> <span class=\"info-label\">voter</span>"
+        ),
+        "{html}"
+    );
+    assert!(
+        html.contains("btn btn-default toggle-results\" title=\"Back to your votes\""),
+        "{html}"
+    );
+    let html = user1
+        .page(&live("single", "{\"results\":false,\"toggle\":false}"))
+        .await;
+    assert!(html.contains("d-icon-circle svg-icon"), "{html}");
+    assert!(
+        html.contains("btn btn-default remove-vote\" title=\"Remove your vote\""),
+        "{html}"
+    );
+    assert!(
+        html.contains("btn btn-default toggle-results\" title=\"Display the poll results\""),
+        "{html}"
+    );
+
+    // The page draws it as Ember starts it: a saved vote shows the results.
+    let topic_id: i32 = sqlx::query_scalar("SELECT topic_id FROM posts WHERE id = $1")
+        .bind(post_id as i32)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let page = user1
+        .page(&format!("/t/three-polls-to-vote-in/{topic_id}"))
+        .await;
+    assert!(poll_widget(&page, "single").contains("discourse-poll-regular-results"));
+
+    // Results that wait for the close: the vote is recorded, to amend.
+    let later = user1.page(&live("later", "{}")).await;
+    let digests = poll_digests(&later);
+    user1
+        .send(
+            Method::PUT,
+            "/polls/vote",
+            &format!(
+                "post_id={post_id}&poll_name=later&options%5B%5D={}",
+                digests[1]
+            ),
+        )
+        .await;
+    let html = user1.page(&live("later", "{}")).await;
+    assert!(
+        html.contains("<div class=\"poll-voted-choices\">"),
+        "{html}"
+    );
+    assert!(html.contains("<li class=\"vote-recorded\">"), "{html}");
+    assert!(
+        html.contains("<span class=\"option-text\">Never</span>"),
+        "{html}"
+    );
+    assert!(
+        html.contains("btn btn-default amend-vote\" title=\"Change your vote\""),
+        "{html}"
+    );
+    let html = user1.page(&live("later", "{\"amending\":true}")).await;
+    assert!(html.contains("btn btn-default keep-vote\""), "{html}");
+    assert_eq!(poll_digests(&html).len(), 2, "{html}");
+
+    // Removed, the options are back as they were.
+    user1
+        .send(
+            Method::DELETE,
+            "/polls/vote",
+            &format!("post_id={post_id}&poll_name=single"),
+        )
+        .await;
+    let html = user1.page(&live("single", "{}")).await;
+    assert!(!html.contains("d-icon-circle svg-icon"), "{html}");
+    assert!(
+        html.contains("<span class=\"info-number\">0</span>"),
+        "{html}"
+    );
+
+    // Not a poll the post has, or not a post the viewer sees: not found.
+    assert!(user1.page(&live("nope", "{}")).await.is_empty());
 }
