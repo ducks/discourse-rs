@@ -156,8 +156,10 @@ Polish, from the second screenshot sweep:
 - [x] Admin font previews all render in Inter: fix/admin-font-previews.
   Admins get the wizard stylesheet's fonts and /fonts serves the gem's
   others from DISCOURSE_SRC; 0.04% on rs-ref-b (was 0.53%).
-- [ ] The admin email style Ace editor height and template preview offset:
-  fix/admin-email-editors.
+- [x] The admin email style Ace editor height and template preview offset:
+  fix/admin-email-editors. ace-editor.scss's wrapper border and the cooked
+  rules' .d-editor-preview selectors; email style 0.05% (was 2.61%), the
+  signup template 0.03% (was 1.63%) on rs-ref-b.
 - [ ] scripts/parity-screenshots: guard against a 164598px capture
   (PIL's DecompressionBombError) and let scripts/ui-compare log in:
   chore/screens-tool-guards.

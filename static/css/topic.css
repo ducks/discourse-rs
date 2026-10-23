@@ -5,7 +5,9 @@
  * upcoming change), in their import order. Each rule is the compiled rule
  * of the source line it names. Left out until their pieces are ported:
  * title editing, the timeline and topic navigation, post selection, the
- * composer preview, pending posts, topic timers.
+ * composer preview, pending posts, topic timers. The cooked content's rules
+ * keep their .d-editor-preview selectors, which style every editor's preview
+ * (the composer's, the email templates', the site texts') as the post.
  */
 /* common/base/bbcode.scss */
 
@@ -473,32 +475,38 @@ a[data-clicks]::after {
   color: var(--primary-medium);
 }
 /* topic-post.scss:111 */
-.cooked {
+.cooked,
+.d-editor-preview {
   overflow-wrap: break-word;
   line-height: var(--cooked-line-height);
 }
 /* topic-post.scss:116 */
-.cooked video {
+.cooked video,
+.d-editor-preview video {
   max-width: 100%;
 }
 /* topic-post.scss:116 */
 @media(width >= 40rem) {
-  .cooked video {
+  .cooked video,
+  .d-editor-preview video {
     max-height: 500px;
   }
 }
 /* topic-post.scss:124 */
-.cooked img:not(.thumbnail,.ytp-thumbnail-image,.emoji) {
+.cooked img:not(.thumbnail,.ytp-thumbnail-image,.emoji),
+.d-editor-preview img:not(.thumbnail,.ytp-thumbnail-image,.emoji) {
   max-width: 100%;
   height: auto;
   display: inline-block;
 }
 /* topic-post.scss:130 */
-.cooked svg {
+.cooked svg,
+.d-editor-preview svg {
   max-height: 2000px;
 }
 /* topic-post.scss:134 */
-.cooked>*:first-child {
+.cooked>*:first-child,
+.d-editor-preview>*:first-child {
   margin-top: 0;
 }
 /* topic-post.scss:138 */
@@ -507,78 +515,103 @@ a[data-clicks]::after {
 .cooked h3,
 .cooked h4,
 .cooked h5,
-.cooked h6 {
+.cooked h6,
+.d-editor-preview h1,
+.d-editor-preview h2,
+.d-editor-preview h3,
+.d-editor-preview h4,
+.d-editor-preview h5,
+.d-editor-preview h6 {
   margin: 2rem 0 .67rem;
   line-height: var(--line-height-medium);
 }
 /* topic-post.scss:150 */
-.cooked h1 {
+.cooked h1,
+.d-editor-preview h1 {
   font-size: var(--font-up-3-rem);
 }
 /* topic-post.scss:154 */
-.cooked h2 {
+.cooked h2,
+.d-editor-preview h2 {
   font-size: var(--font-up-2-rem);
 }
 /* topic-post.scss:158 */
-.cooked h3 {
+.cooked h3,
+.d-editor-preview h3 {
   font-size: var(--font-up-1-rem);
 }
 /* topic-post.scss:162 */
-.cooked h4 {
+.cooked h4,
+.d-editor-preview h4 {
   font-size: var(--font-0-rem);
 }
 /* topic-post.scss:166 */
-.cooked h5 {
+.cooked h5,
+.d-editor-preview h5 {
   font-size: var(--font-down-1-rem);
 }
 /* topic-post.scss:170 */
-.cooked h6 {
+.cooked h6,
+.d-editor-preview h6 {
   font-size: var(--font-down-2-rem);
 }
 /* topic-post.scss:174 */
-.cooked a {
+.cooked a,
+.d-editor-preview a {
   overflow-wrap: break-word;
 }
 /* topic-post.scss:178 */
-.cooked mark {
+.cooked mark,
+.d-editor-preview mark {
   text-decoration: none;
   background-color: var(--highlight);
 }
 /* topic-post.scss:183 */
-.cooked ins {
+.cooked ins,
+.d-editor-preview ins {
   background-color: var(--success-low);
   text-decoration: underline;
 }
 /* topic-post.scss:188 */
-.cooked del {
+.cooked del,
+.d-editor-preview del {
   background-color: var(--danger-low);
   text-decoration: line-through;
 }
 /* topic-post.scss:194 */
-.cooked big {
+.cooked big,
+.d-editor-preview big {
   font-size: 1.5rem;
 }
 /* topic-post.scss:198 */
-.cooked small {
+.cooked small,
+.d-editor-preview small {
   font-size: .75rem;
 }
 /* topic-post.scss:202 */
-.cooked small small {
+.cooked small small,
+.d-editor-preview small small {
   font-size: .75em;
 }
 /* topic-post.scss:206 */
-.cooked big big {
+.cooked big big,
+.d-editor-preview big big {
   font-size: 1em;
 }
 /* topic-post.scss:210 */
 .cooked sup sup,
 .cooked sub sup,
 .cooked sup sub,
-.cooked sub sub {
+.cooked sub sub,
+.d-editor-preview sup sup,
+.d-editor-preview sub sup,
+.d-editor-preview sup sub,
+.d-editor-preview sub sub {
   top: 0;
 }
 /* topic-post.scss:217 */
-.cooked sub sub sub {
+.cooked sub sub sub,
+.d-editor-preview sub sub sub {
   bottom: 0;
 }
 /* topic-post.scss:222 */
@@ -1613,14 +1646,16 @@ blockquote .post__contents-cooked-quote table {
   display: inline-block;
 }
 /* topic-post.scss:1397 */
-.cooked table thead th {
+.cooked table thead th,
+.d-editor-preview table thead th {
   text-align: left;
   padding-bottom: 2px;
   font-weight: bold;
   color: var(--primary);
 }
 /* topic-post.scss:1405 */
-.cooked table td {
+.cooked table td,
+.d-editor-preview table td {
   padding: 3px 3px 3px .5em;
 }
 /* topic-post.scss:1410 */

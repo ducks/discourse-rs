@@ -1,0 +1,20 @@
+/*
+ * The Ace editor's wrapper, ported from common/components/ace-editor.scss
+ * as Rails compiles it into common.css, first of the components. Each rule
+ * is the compiled rule of the source line it names.
+ */
+/* ace-editor.scss:1 */
+.ace-wrapper .grippie {
+  background: var(--primary-low);
+  border-top: 1px solid var(--primary-400);
+}
+/* ace-editor.scss:5 */
+.ace-wrapper .grippie::before {
+  border-top: 3px double var(--primary-medium);
+}
+/* ace-editor.scss:10 */
+.ace-wrapper {
+  border: 1px solid var(--primary-400);
+  border-radius: var(--d-input-border-radius);
+  overflow: hidden;
+}
