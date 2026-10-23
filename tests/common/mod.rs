@@ -345,10 +345,12 @@ pub async fn bus_messages(
     };
     let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
     while st.bus.backlog(from, &marker, 1).await.unwrap().is_empty() {
-        assert!(
-            tokio::time::Instant::now() < deadline,
-            "the marker never arrived"
-        );
+        if tokio::time::Instant::now() >= deadline {
+            // Name the open transactions holding the horizon: on another
+            // test's database as often as on this one.
+            let health = st.bus.health().await.unwrap();
+            panic!("the marker never arrived: {health:#?}");
+        }
         tokio::time::sleep(std::time::Duration::from_millis(20)).await;
     }
     let users: Vec<i32> = sqlx::query_scalar("SELECT id FROM users")
