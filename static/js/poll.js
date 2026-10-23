@@ -15,9 +15,12 @@
 // post's polls change on /polls/<topic_id>; each of the post's widgets is
 // drawn again for the viewer. Polls in an expanded quote are drawn for the
 // quoted post. Anonymous readers are sent to log in (deferAnonymousAction's
-// vote_poll is not ported). Not ported yet, and refused when clicked: the
-// actions behind PollButtonsDropdown (the tally toggle, the breakdown,
-// export, close and open).
+// vote_poll is not ported). The results' tally toggle, tabs and voters'
+// load more (over /polls/voters.json, merged as Ember merges them) are the
+// component's own state, drawn by the server; the pie chart is drawn here
+// with Chart.js. Not ported yet, and refused when clicked: the other
+// actions behind PollButtonsDropdown (the breakdown, export, close and
+// open).
 (function () {
   "use strict";
 
@@ -168,6 +171,15 @@
     if (state.quoted) {
       ui.quoted = true;
     }
+    if (state.tally) {
+      ui.tally = true;
+    }
+    if (state.tab) {
+      ui.tab = state.tab;
+    }
+    if (state.expanded) {
+      ui.voters = state.voters;
+    }
     Object.keys(changes || {}).forEach(function (name) {
       if (changes[name] === undefined) {
         delete ui[name];
@@ -257,6 +269,7 @@
       }
       var top = options.keepPosition ? buttonsTop(outer) : null;
       outer.replaceWith(widget);
+      drawPie(widget);
       if (top !== null) {
         var shift = buttonsTop(widget) - top;
         if (shift) {
@@ -333,7 +346,7 @@
       castVotes(outer, [digest]);
       return;
     }
-    // Multiple choice; ranked choice's options are not drawn.
+    // Multiple choice; ranked choice ranks through its dropdowns (chooseRank).
     var index = vote.indexOf(digest);
     if (index === -1) {
       vote.push(digest);
@@ -448,22 +461,346 @@
     redraw(outer, uiState(state, { results: results, toggle: results }), { keepPosition: true });
   }
 
-  // PollButtonsDropdown's actions are not ported: each says so.
+  // toggleDisplayMode: the tally or the percentages. Clicked in the gear
+  // menu, the menu stays open as Ember leaves it, its content the other
+  // mode's: opened again on the new widget's trigger.
+  function toggleDisplayMode(outer, menu) {
+    var state = stateOf(outer);
+    redraw(outer, uiState(state, { tally: state.tally ? undefined : true })).then(function (widget) {
+      if (!menu) {
+        return;
+      }
+      // The old trigger is gone: the menu goes at once, its listeners
+      // with it, as the instance's destroy would after its animation.
+      (menu.listeners || []).forEach(function (fn) {
+        fn();
+      });
+      menu.listeners = [];
+      menu.expanded = false;
+      if (menu.teardown) {
+        menu.teardown();
+      }
+      var trigger = widget && widget.querySelector(".poll-buttons-dropdown .widget-dropdown-header");
+      if (trigger) {
+        openMenu(trigger, gearClick);
+      }
+    });
+  }
+
+  // PollResultsTabs' selectTab
+  function selectTab(outer, tab) {
+    redraw(outer, uiState(stateOf(outer), { tab: tab }));
+  }
+
+  // The ranked choice options' rank, chosen in its dropdown: toggleOption
+  // and _toggleOption, every option given a rank in the vote.
+  function chooseRank(outer, digest, rank) {
+    var state = stateOf(outer);
+    if (state.closed || !state.member || !state.in_group) {
+      return;
+    }
+    var vote = (state.current_vote || []).map(function (v) {
+      return { digest: v.digest, rank: v.rank };
+    });
+    (state.options || []).forEach(function (candidate) {
+      var chosen = null;
+      vote.forEach(function (v) {
+        if (!chosen && v.digest === candidate) {
+          chosen = v;
+        }
+      });
+      if (!chosen) {
+        vote.push({ digest: candidate, rank: candidate === digest ? rank : 0 });
+      } else if (candidate === digest) {
+        chosen.rank = rank;
+      }
+    });
+    keptFor(keyOf(state.post_id, state.name)).vote = vote;
+    redraw(outer, uiState(state, { vote: vote }));
+  }
+
+  var FETCH_VOTERS_COUNT = 25;
+
+  // A voter as the widget's state keeps it.
+  function compactVoter(voter, ranked) {
+    return ranked
+      ? [voter.user.username, voter.user.avatar_template, voter.rank]
+      : [voter.username, voter.avatar_template];
+  }
+
+  // fetchVoters: the option's next page of voters, merged into the lists
+  // as Ember merges them (a regular poll's voters dropped from the other
+  // options), the spinner in place of the button meanwhile.
+  function fetchVoters(outer, button, optionId) {
+    var state = stateOf(outer);
+    var ranked = state.type === "ranked_choice";
+    var all = JSON.parse(JSON.stringify(state.voters || {}));
+    var voters = (all[optionId] = all[optionId] || []);
+    var expanded = !!state.expanded;
+    var container = button.closest(".loading-container");
+    if (container) {
+      container.classList.add("visible");
+      container.setAttribute("data-loading", "");
+      container.innerHTML = '<div class="spinner "></div>';
+    }
+    ajax("GET", "/polls/voters.json", {
+      post_id: state.post_id,
+      poll_name: state.name,
+      option_id: optionId,
+      page: Math.floor(voters.length / FETCH_VOTERS_COUNT) + 1,
+      limit: FETCH_VOTERS_COUNT,
+    })
+      .then(function (result) {
+        expanded = true;
+        var newVoters = result.voters[optionId];
+        var seen = {};
+        voters.forEach(function (voter) {
+          seen[voter[0]] = true;
+        });
+        newVoters.forEach(function (voter) {
+          var compact = compactVoter(voter, ranked);
+          if (!seen[compact[0]]) {
+            seen[compact[0]] = true;
+            voters.push(compact);
+          }
+        });
+        // remove users who changed their vote
+        if (state.type === "regular") {
+          Object.keys(all).forEach(function (otherOptionId) {
+            if (otherOptionId !== optionId) {
+              all[otherOptionId] = all[otherOptionId].filter(function (voter) {
+                return !seen[voter[0]];
+              });
+            }
+          });
+        }
+      })
+      .catch(function (error) {
+        popupAjaxError(error, "poll.error_while_fetching_voters");
+      })
+      .then(function () {
+        var widget = findWidget(state) || outer;
+        redraw(widget, uiState(stateOf(widget), { voters: expanded ? all : undefined }));
+      });
+  }
+
+  // loadChartJS: Chart.js, loaded once on the first pie.
+  var chartJs = null;
+  function loadChartJS() {
+    if (window.Chart) {
+      return Promise.resolve(window.Chart);
+    }
+    if (!chartJs) {
+      chartJs = new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = chartSrc;
+        script.onload = function () {
+          resolve(window.Chart);
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    return chartJs;
+  }
+  var chartSrc = document.currentScript ? document.currentScript.dataset.chartJs : null;
+
+  // lib/chart-colors.js
+  function cssColor(name) {
+    var value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || null;
+  }
+
+  function gradientColors(count) {
+    var gradient = {
+      0: [255, 255, 255],
+      25: [220, 237, 200],
+      50: [66, 179, 213],
+      75: [26, 39, 62],
+      100: [0, 0, 0],
+    };
+    var keys = Object.keys(gradient);
+    var colors = [];
+    var previous;
+    for (var colorIndex = 0; colorIndex < count; colorIndex++) {
+      var current = (colorIndex + 1) * (100 / (count + 1));
+      previous = previous || 0;
+      var base;
+      for (var y = previous; y < keys.length; y++) {
+        if (!keys[y + 1]) {
+          base = y - 1;
+          break;
+        } else if (current >= keys[y] && current < keys[y + 1]) {
+          base = y;
+          break;
+        }
+      }
+      var multiplier = (current - keys[base]) / (keys[base + 1] - keys[base]);
+      var color = [];
+      for (var k = 0; k < 3; k++) {
+        color.push(
+          Math.round(
+            gradient[keys[base]][k] -
+              (gradient[keys[base]][k] - gradient[keys[base + 1]][k]) * multiplier
+          )
+        );
+      }
+      colors.push("rgb(" + color.toString() + ")");
+      previous = base;
+    }
+    return colors;
+  }
+
+  function getColors(count) {
+    var colors = [];
+    for (var i = 1; i <= count; i++) {
+      var color = cssColor("--poll-pie-color-" + i);
+      if (color) {
+        colors.push(color);
+      }
+    }
+    if (colors.length >= count) {
+      return colors.slice(0, count);
+    }
+    return colors.concat(gradientColors(count - colors.length));
+  }
+
+  // chart-legend-icon's buildLegendIcon
+  function buildLegendIcon(color, isVisible) {
+    var size = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    var canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext("2d");
+    ctx.globalAlpha = isVisible ? 1 : 0.6;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(1, 1, size - 2, size - 2, 4);
+    ctx.stroke();
+    if (isVisible) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(4, 4, size - 8, size - 8, 2);
+      ctx.fill();
+    }
+    return canvas;
+  }
+
+  function stripHtml(html) {
+    var doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent || "";
+  }
+
+  var htmlLegendPlugin = {
+    id: "htmlLegend",
+    afterUpdate: function (chart, args, options) {
+      var ul = document.getElementById(options.containerID);
+      if (!ul) {
+        return;
+      }
+      ul.innerHTML = "";
+      var items = chart.options.plugins.legend.labels.generateLabels(chart);
+      items.forEach(function (item) {
+        var isVisible = chart.getDataVisibility(item.index);
+        var li = document.createElement("li");
+        li.classList.add("legend");
+        li.style.opacity = isVisible ? 1.0 : 0.4;
+        li.onclick = function () {
+          chart.toggleDataVisibility(item.index);
+          chart.update();
+        };
+        var icon = buildLegendIcon(item.fillStyle, isVisible);
+        icon.classList.add("swatch");
+        var text = document.createElement("span");
+        text.style.color = item.fontColor;
+        text.innerHTML = item.text;
+        li.appendChild(icon);
+        li.appendChild(text);
+        ul.appendChild(li);
+      });
+    },
+  };
+
+  // PollResultsPie's drawPie, for a widget showing its pie.
+  function drawPie(outer) {
+    var pie = stateOf(outer).pie;
+    var canvas = outer.querySelector(".poll-results-canvas");
+    var legend = outer.querySelector(".pie-chart-legends");
+    if (!pie || !canvas || !legend) {
+      return;
+    }
+    loadChartJS().then(function (Chart) {
+      if (!canvas.isConnected) {
+        return;
+      }
+      var data = pie.data;
+      var labels = pie.labels;
+      new Chart(canvas.getContext("2d"), {
+        type: "pie",
+        data: {
+          datasets: [{ data: data, backgroundColor: getColors(data.length) }],
+          labels: labels.map(stripHtml),
+        },
+        plugins: [htmlLegendPlugin],
+        options: {
+          responsive: true,
+          aspectRatio: 2.2,
+          animation: { duration: 0 },
+          plugins: {
+            legend: {
+              labels: {
+                generateLabels: function () {
+                  return labels.map(function (text, index) {
+                    return { fillStyle: getColors(data.length)[index], text: text, index: index };
+                  });
+                },
+              },
+              display: false,
+            },
+            htmlLegend: { containerID: legend.id },
+          },
+        },
+      });
+      if (Discourse.decorateCooked && Discourse.decorateCooked.apply) {
+        Discourse.decorateCooked.apply(legend);
+      }
+    });
+  }
+
+  // PollButtonsDropdown's other actions are not ported: each says so.
   var unported = {
-    toggleDisplayMode: "the poll's tally toggle",
     showBreakdown: "the poll's breakdown",
     exportResults: "the poll's export",
     toggleStatus: "closing and opening a poll",
   };
 
-  function refuse(action) {
+  // PollButtonsDropdown's dropDownClick, from the gear menu or its one
+  // button.
+  function dropDownClick(outer, action, menu) {
+    if (action === "toggleDisplayMode") {
+      toggleDisplayMode(outer, menu);
+      return;
+    }
     var what = unported[action] || action;
     if (Discourse.dialog) {
       Discourse.dialog.alert("Not ported yet: " + what + ".");
     }
   }
 
-  // A DMenu by its trigger: the content the server put on it.
+  // The gear menu's items. The tally toggle leaves the menu open.
+  function gearClick(item, menu) {
+    var outer = menu && menu.trigger && menu.trigger.closest(".poll-outer[data-poll-state]");
+    if (outer) {
+      dropDownClick(outer, item.dataset.pollAction, menu);
+    }
+  }
+  gearClick.keepOpen = function (item) {
+    return item.dataset.pollAction === "toggleDisplayMode";
+  };
+
+  // A DMenu by its trigger: the content the server put on it. A click in
+  // it closes it, unless onClick.keepOpen(button) says to keep it open.
   function openMenu(trigger, onClick) {
     if (!Discourse.float) {
       return;
@@ -495,12 +832,16 @@
       if (!button) {
         return;
       }
+      if (onClick.keepOpen && onClick.keepOpen(button)) {
+        onClick(button, menu);
+        return;
+      }
       if (menu && menu.close) {
         menu.close();
       } else {
         Discourse.float.close(id);
       }
-      onClick(button);
+      onClick(button, menu);
     });
   }
 
@@ -531,11 +872,21 @@
     } else if (target.closest(".poll-buttons .toggle-results")) {
       toggleResults(outer);
     } else if ((button = target.closest(".poll-buttons-dropdown .widget-dropdown-header"))) {
-      openMenu(button, function (item) {
-        refuse(item.dataset.pollAction);
-      });
+      openMenu(button, gearClick);
     } else if ((button = target.closest(".poll-buttons-dropdown [data-poll-action]"))) {
-      refuse(button.dataset.pollAction);
+      dropDownClick(outer, button.dataset.pollAction);
+    } else if ((button = target.closest(".tab-container [data-poll-tab]"))) {
+      selectTab(outer, button.dataset.pollTab);
+    } else if ((button = target.closest(".poll-voters-toggle-expand[data-poll-voters]"))) {
+      fetchVoters(outer, button, button.dataset.pollVoters);
+    } else if ((button = target.closest(".ranked-choice-poll-option [data-poll-menu]"))) {
+      var digest = button.closest("[data-poll-option-id]").dataset.pollOptionId;
+      openMenu(button, function (item) {
+        var rank = parseInt(item.dataset.pollRank, 10);
+        chooseRank(findWidget(stateOf(outer)) || outer, digest, rank);
+      });
+    } else if (target.closest(".ranked-choice-poll-option [data-poll-login]")) {
+      showLogin();
     }
   });
 
@@ -548,6 +899,8 @@
       var ui = initialState(keyOf(state.post_id, state.name));
       if (ui) {
         redraw(outer, ui);
+      } else {
+        drawPie(outer);
       }
     });
     var quote = el.closest(".expanded-quote[data-post-id]");
@@ -567,6 +920,7 @@
           var widget = parseWidget(html);
           if (widget && node.isConnected) {
             node.replaceWith(widget);
+            drawPie(widget);
           }
         })
         .catch(function () {
