@@ -300,7 +300,7 @@ pub fn render(p: &Page) -> String {
         for r in &reviewables {
             out.push_str(&item(p, &store, r));
             if let Some(id) = id_key(&r["id"]) {
-                data.insert(id, script_data(&store, r));
+                data.insert(id, script_data(p, &store, r));
             }
         }
         out.push_str(
@@ -627,7 +627,7 @@ fn expanded_filters_template(p: &Page) -> String {
 /// What review.js needs of a reviewable: its version and topic, the
 /// actions (by id) as performing them reads them, and the watched words
 /// its scores highlight.
-fn script_data(store: &Store, r: &Value) -> Value {
+fn script_data(p: &Page, store: &Store, r: &Value) -> Value {
     let mut actions = Map::new();
     for bundle in bundles(store, r) {
         for a in bundle.actions {
@@ -646,10 +646,25 @@ fn script_data(store: &Store, r: &Value) -> Value {
                 .unwrap_or_default()
         })
         .collect();
+    // The notes whose delete buttons the timeline draws, in their order.
+    let deletable_notes: Vec<Value> = store
+        .many("reviewable_notes", &r["reviewable_note_ids"])
+        .into_iter()
+        .filter(|n| {
+            n["user"].is_object() && (p.admin || n["user"]["id"].as_i64() == Some(p.viewer_id))
+        })
+        .map(|n| n["id"].clone())
+        .collect();
+    let claimed_by = store
+        .get("claimed_bies", &r["claimed_by_id"])
+        .map(|c| json!({ "user_id": c["user_id"], "automatic": c["automatic"] }))
+        .unwrap_or(Value::Null);
     json!({
         "version": r["version"],
         "type": r["type"],
         "topic_id": r["topic_id"],
+        "claimed_by": claimed_by,
+        "deletable_notes": deletable_notes,
         "actions": actions,
         "watched_words": words,
     })
@@ -1223,6 +1238,8 @@ struct Event<'a> {
     user: Option<&'a Value>,
     flag_reason: Option<&'a str>,
     description: Option<String>,
+    /// A note the viewer may delete (its author or an admin).
+    note_id: Option<i64>,
 }
 
 /// reviewable/timeline.gjs, then the note form.
@@ -1243,6 +1260,7 @@ fn timeline(
             user: author,
             flag_reason: None,
             description: None,
+            note_id: None,
         });
     }
     if let Some(at) = time(&r["target_deleted_at"]) {
@@ -1253,6 +1271,7 @@ fn timeline(
             user: store.user(&r["target_deleted_by_id"]),
             flag_reason: None,
             description: None,
+            note_id: None,
         });
     }
     let mut reviewed: Vec<String> = Vec::new();
@@ -1272,6 +1291,7 @@ fn timeline(
                 user: sc.user,
                 flag_reason: Some(sc.title),
                 description: (!description.is_empty()).then_some(description),
+                note_id: None,
             });
         }
         if let (Some(by), Some(at)) = (sc.reviewed_by, time(&sc.row["reviewed_at"])) {
@@ -1292,9 +1312,29 @@ fn timeline(
                     user: Some(by),
                     flag_reason: None,
                     description: None,
+                    note_id: None,
                 });
             }
         }
+    }
+    // The notes, each deletable by its author or an admin.
+    for note in store.many("reviewable_notes", &r["reviewable_note_ids"]) {
+        let Some(at) = time(&note["created_at"]) else {
+            continue;
+        };
+        let user = Some(&note["user"]).filter(|u| u.is_object());
+        let can_delete = user.is_some_and(|u| u["id"].as_i64() == Some(p.viewer_id)) || p.admin;
+        events.push(Event {
+            at,
+            icon: "far-pen-to-square",
+            key: "review.timeline.note_added_by",
+            user,
+            flag_reason: None,
+            description: Some(format!("<p>{}</p>", escape(s(&note["content"])))),
+            note_id: (can_delete && user.is_some())
+                .then(|| note["id"].as_i64())
+                .flatten(),
+        });
     }
     for history in store.many("reviewable_histories", &r["reviewable_history_ids"]) {
         let (icon_name, key) = match history["reviewable_history_type"].as_i64() {
@@ -1310,6 +1350,7 @@ fn timeline(
                 user: store.user(&history["created_by_id"]),
                 flag_reason: None,
                 description: None,
+                note_id: None,
             });
         }
     }
@@ -1335,7 +1376,15 @@ fn timeline(
                     "<div class=\"timeline-event__description\">{description}</div>"
                 ));
             }
-            out.push_str("</div></div></div></div>");
+            out.push_str("</div>");
+            if e.note_id.is_some() {
+                out.push_str(&format!(
+                    "<div class=\"timeline-event__actions\"><button class=\"btn no-text btn-icon btn-transparent --danger timeline-event__delete-note btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></div>",
+                    escape(&t(cx, "review.notes.delete_note")),
+                    icon("trash-can", None)
+                ));
+            }
+            out.push_str("</div></div></div>");
         }
         out.push_str("</div>");
     }

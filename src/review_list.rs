@@ -7,8 +7,7 @@
 //! Refused: viewers other than admins (moderators and category group
 //! moderators go through the post visibility scopes), reviewable types
 //! other than flagged posts on a page, the `ids`, date and additional
-//! filters, claimed topics, notes, score reasons other than watched words
-//! and conversations,
+//! filters, score reasons other than watched words and conversations,
 //! authors under a penalty, posts the user deleted, potential spam and
 //! illegal content (the delete user actions), bot users, and content
 //! localization.
@@ -405,9 +404,9 @@ pub async fn index(
         if bundled {
             doc.insert("actions".into(), Value::Array(out.actions));
         }
-        doc.insert("reviewable_notes".into(), json!([]));
+        doc.insert("reviewable_notes".into(), Value::Array(out.notes));
         doc.insert("reviewable_histories".into(), Value::Array(out.histories));
-        doc.insert("claimed_bies".into(), json!([]));
+        doc.insert("claimed_bies".into(), Value::Array(out.claims));
     }
     doc.insert("__rest_serializer".into(), json!("1"));
     Ok(Listed::Page(Value::Object(doc)))
@@ -485,7 +484,9 @@ struct Out {
     score_types: Vec<Value>,
     bundles: Vec<Value>,
     actions: Vec<Value>,
+    notes: Vec<Value>,
     histories: Vec<Value>,
+    claims: Vec<Value>,
 }
 
 /// One reviewable's side-loads: each user and topic once (AMS's
@@ -571,22 +572,6 @@ async fn serialize(
     }
     if r.potential_spam || r.potentially_illegal == Some(true) {
         return Err(Unsupported("potential spam and illegal content in the queue").into());
-    }
-    let claimed: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM reviewable_claimed_topics WHERE topic_id = $1)",
-    )
-    .bind(r.topic_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    let notes: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM reviewable_notes WHERE reviewable_id = $1)",
-    )
-    .bind(r.id)
-    .fetch_one(&mut *conn)
-    .await?;
-    // A web hook's payload shows a claimed topic and notes by their ids.
-    if (claimed || notes) && !web_hook {
-        return Err(Unsupported("claimed topics and notes in the queue").into());
     }
     let post: Option<Post> = match (r.target_type.as_deref(), r.target_id) {
         (Some("Post"), Some(target)) => {
@@ -804,14 +789,29 @@ async fn serialize(
         _ => Vec::new(),
     };
     d.insert("bundled_action_ids".into(), json!(bundle_ids));
-    let note_ids: Vec<i64> = if web_hook {
-        sqlx::query_scalar("SELECT id FROM reviewable_notes WHERE reviewable_id = $1 ORDER BY ctid")
-            .bind(r.id)
-            .fetch_all(&mut *conn)
-            .await?
-    } else {
-        Vec::new()
-    };
+    // has_many :reviewable_notes, oldest first (ReviewableNoteSerializer,
+    // its author embedded).
+    let notes: Vec<(i64, String, NaiveDateTime, NaiveDateTime, i32)> = sqlx::query_as(
+        "SELECT id, content, created_at, updated_at, user_id::integer FROM reviewable_notes \
+         WHERE reviewable_id = $1 ORDER BY created_at, id",
+    )
+    .bind(r.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut note_ids = Vec::new();
+    for (nid, content, created_at, updated_at, user_id) in notes {
+        if !web_hook {
+            let u = load_user(&mut *conn, ctx, user_id).await?;
+            out.notes.push(json!({
+                "id": nid,
+                "content": content,
+                "created_at": time_json(created_at),
+                "updated_at": time_json(updated_at),
+                "user": basic_user(ctx, &urls, &u)?,
+            }));
+        }
+        note_ids.push(nid);
+    }
     d.insert("reviewable_note_ids".into(), json!(note_ids));
 
     // has_many :reviewable_histories
@@ -839,7 +839,38 @@ async fn serialize(
     }
     d.insert("reviewable_history_ids".into(), json!(history_ids));
     d.insert("author_penalties".into(), json!([]));
-    d.insert("claimed_by_id".into(), Value::Null);
+    // has_one :claimed_by: ReviewableClaimedTopic.claimed_hash, automatic
+    // claims alone while claiming is off (ReviewableClaimedTopicSerializer,
+    // its user side-loaded with custom fields).
+    let claim: Option<(i64, bool, i32)> = match r.topic_id {
+        Some(topic_id) => {
+            sqlx::query_as(
+                "SELECT id, automatic, user_id FROM reviewable_claimed_topics \
+                 WHERE topic_id = $1 AND (automatic OR $2) ORDER BY id LIMIT 1",
+            )
+            .bind(topic_id)
+            .bind(s.get("reviewable_claiming")?.to_s() != "disabled")
+            .fetch_optional(&mut *conn)
+            .await?
+        }
+        None => None,
+    };
+    match claim {
+        Some((cid, automatic, user_id)) if !web_hook => {
+            d.insert("claimed_by_id".into(), json!(cid));
+            out.claims
+                .push(json!({ "id": cid, "automatic": automatic, "user_id": user_id }));
+            if seen.user(user_id) {
+                let u = load_user(&mut *conn, ctx, user_id).await?;
+                let mut v = basic_user(ctx, &urls, &u)?;
+                v["custom_fields"] = custom_fields(&mut *conn, ctx, guardian, u.id).await?;
+                out.users.push(v);
+            }
+        }
+        _ => {
+            d.insert("claimed_by_id".into(), Value::Null);
+        }
+    }
     Ok(Value::Object(d))
 }
 

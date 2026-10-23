@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 194b-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -100,10 +100,13 @@ Visible if clicked, avoid them in a scripted demo:
 - [ ] A post with an uploaded video or audio file is refused
   (posting/create.rs:591, 138, with 141).
 - [ ] Checklists can't be checked (242); user status can't be set (130).
-- [ ] The review queue's claims, notes and client actions are refused
-  (194b, 194e), and the topic admin wrench isn't drawn (194, 262a):
-  the wrench and the post admin menu are drawn, feat/topic-admin-menus
-  (194a), done; their unported actions are refused (194c, 194d).
+- [x] The review queue's claims and notes are refused (194), and the topic
+  admin wrench isn't drawn (194, 262a): the wrench and the post admin
+  menu, feat/topic-admin-menus (194a), and claims and notes,
+  feat/review-claims-notes (194b), done; the menus' unported actions are
+  refused (194c, 194d).
+- [ ] The review queue's client actions (edit, suspend, silence) and its
+  reject reason and revise modals are refused (194e).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
@@ -2879,12 +2882,27 @@ route table has been made, so this list may be short.
     content classed `<identifier>-content` and labelled by the trigger's
     id, the trigger marked expanded, the grip only on its bottom sheet).
     What the menus open that is not ported is refused, named: 194c, 194d
-    194b. `feat/review-claims-notes` M: claiming a reviewable
-    (reviewable_claimed_topics, with the confirmation, modal or client
-    action a claim takes first) and its notes (ReviewableNotesController)
+    194b. ~~`feat/review-claims-notes`~~ (done) M: claiming
+    (ReviewableClaimedTopicsController: POST and DELETE
+    /reviewable_claimed_topics, reviewable_claims.rs with the claimed and
+    unclaimed histories, /reviewable_claimed and the counts' job; the
+    perform's claim_error, and the topic's manual claim released when a
+    pending reviewable transitions, now in every transition the queue
+    ports) and notes (ReviewableNotesController: POST and DELETE
+    /review/:id/notes). /review.json serializes the notes and the claim
+    (claimed_bies, the claimer side-loaded); the page draws the timeline's
+    notes with their delete and the claim's buttons, and review.js claims,
+    unclaims, adds and deletes notes, and claims automatically before a
+    confirmation (releasing it after, or on cancel), the reviewable drawn
+    again from the server. Recorded on rs-ref-c (parity/writes/review:
+    claim_*, notes_*, perform_*claim*, review_list_notes and
+    review_list_claimed*). The modals and client actions a claim also
+    precedes are 194e
     194c. `feat/topic-admin-actions` M: what the topic admin menu refuses:
     the FeatureTopic modal (pinning with its date, globally, banners:
-    /topics/feature_stats, make-banner, remove-banner), recovering a topic
+    /topics/feature_stats, make-banner, remove-banner; its pin form
+    requires a future date and topic_status.rs refuses pinning until a
+    time, the unpin job, so pinning needs that first), recovering a topic
     (PUT /t/:id/recover; post_destroyer refuses recovering topics),
     selecting posts (multi-select), the ConvertToPublicTopic modal, the
     EditTopicTimer and EditSlowMode modals (their endpoints are ported),

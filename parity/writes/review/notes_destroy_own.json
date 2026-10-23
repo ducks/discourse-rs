@@ -1,0 +1,92 @@
+{
+  "name": "notes_destroy_own",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/review/9301/notes/9301"
+    }
+  ],
+  "started_at": "2026-10-23T17:50:07.768395",
+  "transaction_started_at": "2026-10-23T17:50:06.592415",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "reviewable_notes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9301,
+          "content": "Mine.",
+          "user_id": 1,
+          "created_at": "2026-10-02T11:00:00",
+          "updated_at": "2026-10-02T11:00:00",
+          "reviewable_id": 9301
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 568,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2MN0ZgVHjg2pgStCj1l8D0lE5xw=",
+            "created_at": "2026-10-23T17:50:06.966877",
+            "rotated_at": "2026-10-23T17:50:06.965236",
+            "updated_at": "2026-10-23T17:50:06.966877",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2MN0ZgVHjg2pgStCj1l8D0lE5xw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 568,
+            "seen_at": "2026-10-23T17:50:07.775236",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2MN0ZgVHjg2pgStCj1l8D0lE5xw=",
+            "created_at": "2026-10-23T17:50:06.966877",
+            "rotated_at": "2026-10-23T17:50:06.965236",
+            "updated_at": "2026-10-23T17:50:06.966877",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2MN0ZgVHjg2pgStCj1l8D0lE5xw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
+    "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "UPDATE topics SET reviewable_score = 3 WHERE id = 35",
+    "INSERT INTO reviewable_notes (id, reviewable_id, user_id, content, created_at, updated_at) VALUES (9301, 9301, 1, 'Mine.', '2026-10-02 11:00:00', '2026-10-02 11:00:00')"
+  ],
+  "recorded_from": {
+    "case": "e2fc73473340a74a913de6789a8feeed92fa74fb7d60077271888f578f8e3c78",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

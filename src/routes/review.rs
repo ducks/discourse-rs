@@ -115,6 +115,7 @@ pub async fn perform(
         Outcome::NotFound => super::topics::not_found_response(&state),
         Outcome::Forbidden => super::search::invalid_access(&state),
         Outcome::Conflict => json_error(&state, StatusCode::CONFLICT, "reviewables.conflict"),
+        Outcome::ClaimError(key) => json_error(&state, StatusCode::UNPROCESSABLE_ENTITY, key),
         Outcome::NotFoundMessage(key) => {
             let text = state.i18n.t(key).unwrap_or(key);
             (

@@ -322,3 +322,73 @@ async fn the_user_menus_review_queue() {
         .await;
     assert_eq!(status, StatusCode::FORBIDDEN);
 }
+
+// A reviewable's notes and claim: a note added through POST
+// /review/:id/notes lands in the timeline (Moderator note by, its content
+// escaped, the author's delete), and with claiming on, claiming the
+// topic draws who holds it and the unclaim button, logged as claimed.
+#[tokio::test]
+async fn notes_and_claims_draw_in_the_queue() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    flag(&st).await;
+    let id: i64 = sqlx::query_scalar("SELECT id FROM reviewables ORDER BY id DESC LIMIT 1")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let topic_id: i32 = sqlx::query_scalar("SELECT topic_id FROM reviewables WHERE id = $1")
+        .bind(id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, body) = admin
+        .send(
+            Method::POST,
+            &format!("/review/{id}/notes"),
+            "reviewable_note%5Bcontent%5D=Looks+%3Cfine%3E+to+me",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let note: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(note["content"], "Looks <fine> to me");
+    assert_eq!(note["user"]["username"], "admin");
+    let (_, html) = admin.page("/review").await;
+    assert!(html.contains("Moderator note by <span>"), "{html}");
+    assert!(html.contains(
+        "<div class=\"timeline-event__description\"><p>Looks &lt;fine&gt; to me</p></div></div><div class=\"timeline-event__actions\"><button class=\"btn no-text btn-icon btn-transparent --danger timeline-event__delete-note btn-transparent\" title=\"Delete this note\" type=\"button\">"
+    ));
+    assert!(html.contains(&format!("\"deletable_notes\":[{}]", note["id"])));
+    // Claiming is off: no claim button, and a manual claim is refused.
+    assert!(!html.contains("reviewable-claimed-topic"));
+    let (status, _) = admin
+        .send(
+            Method::POST,
+            "/reviewable_claimed_topics",
+            &format!("reviewable_claimed_topic%5Btopic_id%5D={topic_id}"),
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+
+    common::set_setting(&db.pool, "reviewable_claiming", 7, "optional").await;
+    let (_, html) = admin.page("/review").await;
+    assert!(html.contains("<button class=\"btn btn-icon-text btn-default claim\""));
+    let (status, body) = admin
+        .send(
+            Method::POST,
+            "/reviewable_claimed_topics",
+            &format!("reviewable_claimed_topic%5Btopic_id%5D={topic_id}"),
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let (_, html) = admin.page("/review").await;
+    assert!(html.contains("<div class=\"review-item__assigned\">"));
+    assert!(
+        html.contains("<button class=\"btn btn-icon-text btn-default unclaim\" type=\"button\">")
+    );
+    assert!(html.contains("Claimed by <span>"));
+    assert!(html.contains("\"claimed_by\":{\"user_id\":1,\"automatic\":false}"));
+}
