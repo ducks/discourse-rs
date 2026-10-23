@@ -382,7 +382,7 @@ pub async fn users_settings(
     .ok_or_else(|| std::io::Error::other("the users settings' filters"))?;
     let (site_settings, default_theme) =
         super::admin_site_settings::document(&mut conn, &state, &shell.settings, &area).await?;
-    let (groups, site_categories) = site_lists(&mut conn).await?;
+    let (groups, site_categories) = site_lists(&mut conn, &state, &shell).await?;
     let cx = shell.cx(&state);
     let header_viewer = crate::admin_users_view::HeaderViewer {
         admin: shell.admin.admin,
@@ -495,7 +495,7 @@ pub async fn site_settings_category(
         ))
         .into_response());
     }
-    let (groups, site_categories) = site_lists(&mut conn).await?;
+    let (groups, site_categories) = site_lists(&mut conn, &state, &shell).await?;
     let cx = shell.cx(&state);
     let page = crate::admin_site_settings_view::Page {
         settings: &site_settings,
@@ -533,24 +533,54 @@ pub(super) fn settings_filters(uri: &Uri) -> crate::admin_site_settings_view::Fi
     filters
 }
 
-/// Site#groups and Site#categories (id, name) for the group and category
-/// settings' choosers.
+/// Site#groups (id, name) and Site#categories (id, name, badge) for the
+/// group and category settings' choosers.
 pub(super) async fn site_lists(
     conn: &mut sqlx::PgConnection,
-) -> Result<(Vec<(i64, String)>, Vec<(i64, String)>), AppError> {
-    let list = |rows: Vec<(i32, String)>| -> Vec<(i64, String)> {
-        rows.into_iter()
-            .map(|(id, name)| (i64::from(id), name))
-            .collect()
-    };
+    state: &AppState,
+    shell: &Shell,
+) -> Result<
+    (
+        Vec<(i64, String)>,
+        Vec<crate::admin_site_settings_view::SettingCategory>,
+    ),
+    AppError,
+> {
     let groups = sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM groups ORDER BY name")
         .fetch_all(&mut *conn)
-        .await?;
-    let categories =
-        sqlx::query_as::<_, (i32, String)>("SELECT id, name FROM categories ORDER BY id")
-            .fetch_all(&mut *conn)
-            .await?;
-    Ok((list(groups), list(categories)))
+        .await?
+        .into_iter()
+        .map(|(id, name)| (i64::from(id), name))
+        .collect();
+    let categories = crate::topic_list_view::categories(&mut *conn).await?;
+    // CategoryChooser's allowUncategorized: Uncategorized keeps its badge.
+    let mut settings = crate::topic_list_view::ListSettings::load(&shell.settings)?;
+    settings.suppress_uncategorized_badge = false;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: None,
+        settings,
+    };
+    let mut site_categories: Vec<_> = categories
+        .values()
+        .map(|c| crate::admin_site_settings_view::SettingCategory {
+            id: c.id,
+            name: c.name.clone(),
+            badge: crate::topic_list_view::category_badge_html(
+                &list,
+                c,
+                false,
+                c.parent_id.is_some(),
+            ),
+        })
+        .collect();
+    site_categories.sort_by_key(|c| c.id);
+    Ok((groups, site_categories))
 }
 
 /// GET /admin/groups: the groups list under the admin groups header, as
@@ -648,7 +678,7 @@ pub async fn groups_settings(
     .ok_or_else(|| std::io::Error::other("the groups settings' filters"))?;
     let (site_settings, default_theme) =
         super::admin_site_settings::document(&mut conn, &state, &shell.settings, &area).await?;
-    let (groups, site_categories) = site_lists(&mut conn).await?;
+    let (groups, site_categories) = site_lists(&mut conn, &state, &shell).await?;
     let cx = shell.cx(&state);
     let page = crate::admin_site_settings_view::Page {
         settings: &site_settings,

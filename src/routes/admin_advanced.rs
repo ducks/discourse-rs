@@ -24,7 +24,8 @@ pub(super) async fn area_settings(
         .ok_or_else(|| std::io::Error::other("the area settings' filters"))?;
     let (site_settings, default_theme) =
         super::admin_site_settings::document(&mut *conn, state, &shell.settings, &area).await?;
-    let (groups, site_categories) = super::admin_pages::site_lists(&mut *conn).await?;
+    let (groups, site_categories) =
+        super::admin_pages::site_lists(&mut *conn, state, shell).await?;
     let cx = shell.cx(state);
     let page = crate::admin_site_settings_view::Page {
         settings: &site_settings,

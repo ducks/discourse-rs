@@ -137,8 +137,9 @@ Polish, from the second screenshot sweep:
   Not a demo blocker: real use and 98 normal loads (cold, warm, boosted,
   desktop and mobile, anon, member, admin) never show it. The reference's
   stylesheets make it go away, so spike/core-css-compile may remove it.
-- [ ] Admin category settings draw `default_composer_category` as a plain
+- [x] Admin category settings draw `default_composer_category` as a plain
   combo box instead of CategoryChooser (2.41%): fix/category-setting-chooser.
+  The header holds the category's badge; 0.02% on rs-ref-b.
 - [ ] Admin font previews all render in Inter: fix/admin-font-previews.
 - [ ] The admin email style Ace editor height and template preview offset:
   fix/admin-email-editors.
