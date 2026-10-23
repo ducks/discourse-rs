@@ -4105,6 +4105,17 @@ route table has been made, so this list may be short.
     Discourse's pages (not on about:blank or the port's), so the
     reference shows the leave button without a hover; the CSS is the
     same and the port shows it on hover, as on a desktop with a mouse.
+281. ~~`fix/topic-post-number-route`~~ (done) S: /t/35/3 answered as
+    topic 3 (a 301 to its canonical URL) and /t/35/last and
+    /t/:slug/:id/last were refused: the router had no
+    `t/:topic_id/:post_number` route, so two numbers matched
+    `t/:slug/:topic_id`. Rails declares `t/:topic_id/:post_number` and
+    `t/:topic_id/last` (post_number 99_999_999) first, so show_with_slug
+    now reads two numbers, or a number and `last`, as a topic and a post
+    number, with params[:topic_id] passed to show explicitly; show_post
+    maps `last` too. The page without a slug redirects to the canonical
+    URL with the post kept, JSON answers 200. Recorded as
+    topics/show_topic_and_post_number (rs-ref-b); tests/topic_json.rs.
 
 ### Phase 11: the bundled plugins' gaps (210)
 

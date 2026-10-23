@@ -34,6 +34,43 @@ async fn get(pool: &PgPool, path: &str) -> (StatusCode, Option<String>, Value) {
     (status, location, json)
 }
 
+/// Rails routes `t/:topic_id/:post_number` and `t/:topic_id/last` before
+/// `t/:slug/:topic_id`: two numbers are a topic and a post, not a slug and
+/// a topic.
+#[tokio::test]
+async fn a_topic_and_post_number_without_a_slug() {
+    let db = TestDb::new().await;
+    let (status, _, json) = get(&db.pool, "/t/35/3.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(json["id"], 35);
+    assert_eq!(json["current_post_number"], 3);
+
+    let (status, _, json) = get(&db.pool, "/t/35/last.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(json["id"], 35);
+    assert_eq!(json["current_post_number"], 5);
+
+    // A page without its slug redirects to the canonical URL, post kept.
+    let (status, location, _) = get(&db.pool, "/t/35/3").await;
+    assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    assert_eq!(
+        location.as_deref(),
+        Some("http://test.localhost/t/parity-fixture-replies-and-posters/35/3")
+    );
+
+    // A slug and a topic id still read as before.
+    let (status, _, json) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(json["id"], 35);
+    let (status, _, json) = get(
+        &db.pool,
+        "/t/parity-fixture-replies-and-posters/35/last.json",
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(json["current_post_number"], 5);
+}
+
 #[tokio::test]
 async fn renders_the_post_stream_in_order() {
     let db = TestDb::new().await;

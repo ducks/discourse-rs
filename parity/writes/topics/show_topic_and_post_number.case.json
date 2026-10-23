@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/35/3.json",
+      "params": {}
+    },
+    {
+      "method": "GET",
+      "path": "/t/35/last.json",
+      "params": {}
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35/last.json",
+      "params": {}
+    }
+  ]
+}
