@@ -21,11 +21,16 @@ abort "usage: record_writes.rb <cases json array> <dir> [files-dir]" if cases_fi
 FileUtils.mkdir_p(out)
 
 ENQUEUED = []
+# What Sidekiq's client_push returns (DB.after_commit runs it at once
+# outside a transaction): a job id, never nil. PostRevisor#revise! ends
+# with Jobs.enqueue, and callers such as the checklist's toggle take a
+# nil there for a failed revision.
+FAKE_JID = "0" * 24
 module Jobs
-  def self.enqueue(name, args = {}) = (ENQUEUED << [name.to_s, args.except(:current_site_id)]) && nil
+  def self.enqueue(name, args = {}) = (ENQUEUED << [name.to_s, args.except(:current_site_id)]) && FAKE_JID
   def self.enqueue_in(delay, name, args = {}) =
-    (ENQUEUED << ["#{name} in #{delay.to_i}s", args.except(:current_site_id)]) && nil
-  def self.enqueue_at(at, name, args = {}) = (ENQUEUED << ["#{name} at", args.except(:current_site_id)]) && nil
+    (ENQUEUED << ["#{name} in #{delay.to_i}s", args.except(:current_site_id)]) && FAKE_JID
+  def self.enqueue_at(at, name, args = {}) = (ENQUEUED << ["#{name} at", args.except(:current_site_id)]) && FAKE_JID
   def self.cancel_scheduled_job(name, args = {})
     ENQUEUED.reject! { |n, a| n.split(" ").first == name.to_s && a.to_h.stringify_keys.slice(*args.keys.map(&:to_s)) == args.stringify_keys }
     nil

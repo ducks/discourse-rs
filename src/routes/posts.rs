@@ -487,6 +487,10 @@ pub async fn update(
             Ok(json_error(StatusCode::UNPROCESSABLE_ENTITY, errors))
         }
         revise::Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),
+        // posts#update checks raw_old itself and passes no expected_raw.
+        revise::Outcome::EditConflict => {
+            Err(Unsupported("an expected_raw conflict on posts#update").into())
+        }
         revise::Outcome::Revised => {
             let post = serialize_post(&state, &settings, &guardian, post_id, true, true).await?;
             Ok((StatusCode::OK, Json(json!({"post": post}))).into_response())

@@ -101,7 +101,9 @@ Visible if clicked, avoid them in a scripted demo:
   feat/post-video-audio, done: such posts are created and edited, the
   video drawn as its placeholder with the play button and the audio as
   its player; the composer doesn't make a video's thumbnail yet (139).
-- [ ] Checklists can't be checked (242); user status can't be set (130).
+- [ ] ~~Checklists can't be checked (242)~~ (done: feat/checklist-toggle,
+  boxes toggle with their batching, retries and optimistic drawing); user
+  status can't be set (130).
 - [ ] The review queue's claims, notes and client actions are refused
   (194), and the topic admin wrench isn't drawn (194, 262a).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
@@ -4439,7 +4441,29 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     markup, it needs the crawler view's per-post markup
     (topics/show.html.erb), which the port's crawler topic page
     (routes/topics.rs:705) doesn't draw
-242. `feat/checklist-toggle` M: checking a box: PUT /checklist/toggle
+242. ~~`feat/checklist-toggle`~~ (done: PUT /checklist/toggle(.json) in
+    routes/checklist.rs and plugins/checklist.rs, recorded as 20
+    checklist/ cases: the 200s with and without a revision, by source and
+    by index, a batch, a staff edit of another's post with its revision and
+    staff log; the 400 contract messages Rails casts and orders, nils
+    dropped as deep_munge does; 403, 404 for missing, deleted and disabled;
+    the 409s with `retryable` for stale states, text and time, a changed
+    count and a missing box; the 422 for an `[X]`. CheckboxLocator,
+    SourceMap and Checkbox ported with their specs as unit tests, the
+    fallback cook as Post#cook. PostRevisor takes `expected_raw` (checked
+    before validating and again under FOR UPDATE, `Outcome::EditConflict`)
+    and `preserve_cooked_token` (on the revised message); the live
+    stream's post event carries the token and static/js/checklist.js drops
+    the swap it made, as consumeOptimisticPostUpdate does. The decorator
+    reads the post model from `data-checklist-post` on the post's
+    div.cooked and fetches the raw from posts#by_number while posts#show
+    is not routed (198); without Ember's cooked on the model, a post
+    changed since drawing is refreshed rather than compared by its cooked
+    boxes. The revise's system user answer (nil, so 422 although saved)
+    is kept; the recorder's Jobs.enqueue now returns a job id, as
+    Sidekiq's does, instead of nil. Refused: toggle shapes Rails 500s on
+    (non-pair arrays), float or structured string params, emailed posts'
+    fallback cook) M: checking a box: PUT /checklist/toggle
     (ToggleCheckbox's contract, policies, rate limit, its
     200/400/403/404/409/422 answers), CheckboxLocator and SourceMap
     resolving `data-chk-src` and index targets in the raw,

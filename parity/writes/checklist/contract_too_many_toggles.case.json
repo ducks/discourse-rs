@@ -1,0 +1,272 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": 36,
+        "expected_raw": "x",
+        "expected_updated_at": "x",
+        "mutation_id": "x",
+        "toggles": [
+          {
+            "checkbox_index": 0,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 1,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 2,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 3,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 4,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 5,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 6,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 7,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 8,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 9,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 10,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 11,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 12,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 13,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 14,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 15,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 16,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 17,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 18,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 19,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 20,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 21,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 22,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 23,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 24,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 25,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 26,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 27,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 28,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 29,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 30,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 31,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 32,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 33,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 34,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 35,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 36,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 37,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 38,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 39,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 40,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 41,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 42,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 43,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 44,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 45,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 46,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 47,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 48,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 49,
+            "checkbox_count": 60,
+            "checked": true
+          },
+          {
+            "checkbox_index": 50,
+            "checkbox_count": 60,
+            "checked": true
+          }
+        ]
+      }
+    }
+  ]
+}

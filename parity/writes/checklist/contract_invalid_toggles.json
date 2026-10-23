@@ -1,0 +1,112 @@
+{
+  "name": "contract_invalid_toggles",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": "abc",
+        "expected_raw": " ",
+        "expected_updated_at": "x",
+        "mutation_id": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+        "toggles": [
+          {
+            "checkbox_index": -1,
+            "checked": "x"
+          },
+          {
+            "checkbox_index": "a",
+            "checkbox_count": 0,
+            "checked": true
+          },
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "1:2",
+            "checked": true
+          },
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "1:2",
+            "checked": "f"
+          },
+          5,
+          null,
+          {
+            "checkbox_index": 1,
+            "checkbox_source": " 1:2",
+            "checked": true
+          }
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-23T17:00:19.529091",
+  "transaction_started_at": "2026-10-23T17:00:18.497617",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Expected raw can't be blank",
+          "Mutation is too long (maximum is 100 characters)",
+          "Toggles is invalid",
+          "Toggles is invalid",
+          "Toggles is invalid",
+          "Toggles is invalid",
+          "Toggles has already been taken"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 366,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MFiSl4zc0kgDlZ8vwus0ylyUBWs=",
+            "created_at": "2026-10-23T17:00:18.957787",
+            "rotated_at": "2026-10-23T17:00:18.957011",
+            "updated_at": "2026-10-23T17:00:18.957787",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "MFiSl4zc0kgDlZ8vwus0ylyUBWs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 366,
+            "seen_at": "2026-10-23T17:00:19.535059",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MFiSl4zc0kgDlZ8vwus0ylyUBWs=",
+            "created_at": "2026-10-23T17:00:18.957787",
+            "rotated_at": "2026-10-23T17:00:18.957011",
+            "updated_at": "2026-10-23T17:00:18.957787",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "MFiSl4zc0kgDlZ8vwus0ylyUBWs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "127a8c76b8d87da48f291e815a0d7095919b4df7c93965b89bf557136eb36789",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

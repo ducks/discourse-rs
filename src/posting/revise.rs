@@ -48,6 +48,12 @@ pub struct Changes {
     pub topic: TopicFields,
     /// `bypass_bump:` no wiki bump.
     pub bypass_bump: bool,
+    /// `expected_raw:` the revision is refused (`EditConflict`) when the
+    /// post's raw, locked in the revision's transaction, is no longer it.
+    pub expected_raw: Option<String>,
+    /// `preserve_cooked_token:` sent with the revised message, so the
+    /// client that already drew the change keeps its drawing.
+    pub preserve_cooked_token: Option<String>,
 }
 
 #[derive(Debug)]
@@ -58,6 +64,9 @@ pub enum Outcome {
     RateLimited(crate::rate_limiter::LimitExceeded),
     /// The post's validation errors: a 422 `render_json_error(post)`.
     Invalid(Vec<String>),
+    /// `expected_raw` is no longer the post's raw: the `:edit_conflict`
+    /// error, nothing saved.
+    EditConflict,
 }
 
 #[derive(sqlx::FromRow)]
@@ -267,6 +276,16 @@ pub async fn revise(
     if slow_mode_seconds > 0 && !editor.is_staff() {
         return Err(Unsupported("editing in slow mode").into());
     }
+    // expected_raw is checked first in Rails' transaction, before
+    // revise_post validates: here before the validations too, and again
+    // under the row lock below.
+    if changes
+        .expected_raw
+        .as_ref()
+        .is_some_and(|e| *e != post.raw)
+    {
+        return Ok(Outcome::EditConflict);
+    }
     // The original raw and cooked kept for the grace period, keyed by the
     // version's time (original_raw_key, original_cooked_key).
     let version_ms = last_version_at
@@ -475,6 +494,16 @@ pub async fn revise(
     drop(conn);
 
     let mut tx = pool.begin().await?;
+    if let Some(expected) = &changes.expected_raw {
+        let locked: String = sqlx::query_scalar("SELECT raw FROM posts WHERE id = $1 FOR UPDATE")
+            .bind(post.id)
+            .fetch_one(&mut *tx)
+            .await?;
+        if locked != *expected {
+            tx.rollback().await?;
+            return Ok(Outcome::EditConflict);
+        }
+    }
     // revise_post without a new version: the original kept for the grace
     // period, unless it already is.
     if !new_version && cached_raw.is_none() {
@@ -740,6 +769,9 @@ pub async fn revise(
     let mut publish = serde_json::Map::new();
     if !topic_diff.is_empty() {
         publish.insert("reload_topic".into(), json!(true));
+    }
+    if let Some(token) = &changes.preserve_cooked_token {
+        publish.insert("preserve_cooked_token".into(), json!(token));
     }
     crate::bus::publish_post_change(ctx, &mut tx, post.id, "revised", publish, false).await?;
     // grant_badge

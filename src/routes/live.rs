@@ -503,6 +503,18 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
     if kind == "revised" && data["reload_topic"] == Value::Bool(true) {
         html.push_str(&render_title(live).await?);
     }
+    // preserve_cooked_token: the client whose change this is keeps the
+    // post as it drew it (consumeOptimisticPostUpdate); static/js/
+    // checklist.js reads the token and drops the swap.
+    if let Some(token) = data["preserve_cooked_token"].as_str() {
+        html.insert_str(
+            0,
+            &format!(
+                "<template data-preserve-cooked-token=\"{}\"></template>",
+                crate::topic_list_view::escape(token)
+            ),
+        );
+    }
     Ok(Some(html))
 }
 

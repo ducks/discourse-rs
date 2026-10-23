@@ -1,0 +1,88 @@
+{
+  "name": "cannot_edit",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": 36,
+        "expected_raw": "Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy",
+        "expected_updated_at": "2026-10-05T10:00:00.123Z",
+        "mutation_id": "mutation-1",
+        "toggles": [
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "2:0",
+            "checked": true
+          }
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-23T17:00:15.667748",
+  "transaction_started_at": "2026-10-23T17:00:14.770663",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 366,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ro/c93lwMIoQXv3E+GRvZHjzDW8=",
+            "created_at": "2026-10-23T17:00:15.124146",
+            "rotated_at": "2026-10-23T17:00:15.12325",
+            "updated_at": "2026-10-23T17:00:15.124146",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ro/c93lwMIoQXv3E+GRvZHjzDW8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 366,
+            "seen_at": "2026-10-23T17:00:15.673757",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ro/c93lwMIoQXv3E+GRvZHjzDW8=",
+            "created_at": "2026-10-23T17:00:15.124146",
+            "rotated_at": "2026-10-23T17:00:15.12325",
+            "updated_at": "2026-10-23T17:00:15.124146",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ro/c93lwMIoQXv3E+GRvZHjzDW8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE posts SET raw = $raw$Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy$raw$, cooked = $cooked$<p>Checklist to toggle:</p>\n<ul>\n<li><span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"2:0\"></span> first</li>\n<li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"3:0\"></span> second</li>\n</ul>\n<p><span class=\"chcklst-box checked permanent fa fa-square-check\"></span> fixed and <span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"5:1\"></span> legacy</p>$cooked$, updated_at = '2026-10-05 10:00:00.123456' WHERE id = 36"
+  ],
+  "recorded_from": {
+    "case": "65b6fc17df167384776b6dee0949c4f6cc3ee9c84296a37c13ce2eb8f4ac4a48",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

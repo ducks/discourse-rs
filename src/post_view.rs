@@ -674,9 +674,10 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         "post__regular regular post__contents contents post__contents--avoid-tab avoid-tab"
     };
     format!(
-        "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div>{}<section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
+        "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\"{}>{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div>{}<section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
         avatar(cx, p),
         meta_data(cx, p, &reply_tab),
+        crate::plugins::checklist::post_model_attr(p),
         // post/cooked-html#isIgnored: a first post by someone the viewer
         // ignores shows only that.
         if p["post_number"] == 1 && cx.ignored_users.iter().any(|u| u == s(&p["username"])) {
