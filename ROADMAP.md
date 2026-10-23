@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 194b-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -101,7 +101,9 @@ Visible if clicked, avoid them in a scripted demo:
   (posting/create.rs:591, 138, with 141).
 - [ ] Checklists can't be checked (242); user status can't be set (130).
 - [ ] The review queue's claims, notes and client actions are refused
-  (194), and the topic admin wrench isn't drawn (194, 262a).
+  (194b, 194e), and the topic admin wrench isn't drawn (194, 262a):
+  the wrench and the post admin menu are drawn, feat/topic-admin-menus
+  (194a), done; their unported actions are refused (194c, 194d).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
 - [ ] The add participant modal on a message (262a); the grouped bookmarks
@@ -2858,20 +2860,52 @@ route table has been made, so this list may be short.
     items: the invites pages (192), view_user_route profile-hidden
 194. `feat/review-pages` M: the review queue's page done (review_view.rs,
     static/js/review.js: the queue and its filters, the bundled actions
-    performed and the reviewable redrawn). Left: what the page refuses in
-    review.js, its parts leaning on what isn't ported: claiming
-    (reviewable_claimed_topics, and the claim a confirmation, a modal or a
-    client action takes first), notes (ReviewableNotesController), the
-    insights tab (IpLookup), the client actions (the composer's edit,
-    suspend, silence), the reject reason and revise modals, editing a
-    reviewable, the pin toggle and loading past the first ten; the
-    /review/topics, /review/settings and /review/:id pages (the user
-    menu's review items link to the last); the header avatar's
-    new-reviewables and new-pms badges; the staff topic and post admin
-    menus; show_user_menu_avatars (routes/user_menu.rs:51). The user
-    menu's review tab and the pending reviewables of the recent
-    notifications are done (reviewables.rs user_menu_list, with
-    bump_last_seen_reviewable)
+    performed and the reviewable redrawn). The user menu's review tab and
+    the pending reviewables of the recent notifications are done
+    (reviewables.rs user_menu_list, with bump_last_seen_reviewable). Left,
+    split by what a demo clicks first:
+    194a. ~~`feat/topic-admin-menus`~~ (done) M: the staff topic admin menu
+    (TopicAdminMenu, the wrench in the footer, the timeline's controls and
+    the progress bar) and the post admin menu (AdminPostMenu, a post's
+    wrench), drawn as Ember draws them for each role, in float-kit menus
+    (bottom sheets in the mobile view; static/js/topic-admin-menu.js).
+    Closing and opening, archiving, listing and unlisting (PUT
+    /t/:id/status), deleting (DELETE /t/:id, with DeleteTopicConfirm past
+    min_topic_views_for_delete_confirm), Make Personal Message (PUT
+    convert-topic/private) and both menus' Moderation History links work;
+    the page is drawn again after an action, where Ember re-renders in
+    place. float.js now draws a DMenu's own trigger as DMenu does (its
+    content classed `<identifier>-content` and labelled by the trigger's
+    id, the trigger marked expanded, the grip only on its bottom sheet).
+    What the menus open that is not ported is refused, named: 194c, 194d
+    194b. `feat/review-claims-notes` M: claiming a reviewable
+    (reviewable_claimed_topics, with the confirmation, modal or client
+    action a claim takes first) and its notes (ReviewableNotesController)
+    194c. `feat/topic-admin-actions` M: what the topic admin menu refuses:
+    the FeatureTopic modal (pinning with its date, globally, banners:
+    /topics/feature_stats, make-banner, remove-banner), recovering a topic
+    (PUT /t/:id/recover; post_destroyer refuses recovering topics),
+    selecting posts (multi-select), the ConvertToPublicTopic modal, the
+    EditTopicTimer and EditSlowMode modals (their endpoints are ported),
+    ChangeTimestamp (PUT /t/:id/change-timestamp), reset bump date (PUT
+    /t/:id/reset-bump-date) and the nested replies toggle
+    194d. `feat/post-admin-actions` M: what the post admin menu refuses:
+    the staff color (PUT /posts/:id/post_type), the post notice modal
+    (PUT /posts/:id/notice), unhiding (PUT /posts/:id/unhide), the
+    ChangePostOwner modal (POST /t/:id/change-owner is ported), the
+    GrantBadgeModal, locking (PUT /posts/:id/locked), permanent deletion
+    (force_destroy), wiki (PUT /posts/:id/wiki), PublishPageModal and
+    rebaking (PUT /posts/:id/rebake)
+    194e. `feat/review-client-actions` M: the review queue's client
+    actions (the composer's edit, suspend, silence), the reject reason
+    and revise modals and editing a reviewable
+    194f. `feat/review-pages-rest` M: the /review/topics, /review/settings
+    and /review/:id pages (the user menu's review items link to the
+    last), the insights tab (IpLookup), the pin toggle and loading past
+    the first ten
+    194g. `feat/header-avatar-badges` S: the header avatar's
+    new-reviewables and new-pms badges and show_user_menu_avatars
+    (routes/user_menu.rs:51)
 195. `feat/rss` M: the .rss feeds of the lists, categories, tags, topics,
     a user's posts and activity, topic voting's votes feed, and the
     bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the
@@ -3326,8 +3360,8 @@ route table has been made, so this list may be short.
     (post_view.rs:1820); the browse more line is drawn once with the
     page's own message read through the posts shown, not kept live from
     the pmTopicTrackingState bus messages; the title's edit pencil and
-    title editing (TopicTitleEditor, the edit-title glyph's styles) and
-    the admin menu's wrench (194) are not drawn for any topic; the
+    title editing (TopicTitleEditor, the edit-title glyph's styles) are
+    not drawn for any topic (the admin menu's wrench is 194a); the
     header's topic title once scrolled past, with its glyph, is 266's
 264. ~~`fix/categories-tracking`~~ (done) S: the categories page ignored a
     member's read state, found by a screenshot run (/categories as anon,

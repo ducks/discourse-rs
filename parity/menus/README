@@ -1,0 +1,8 @@
+The staff menus' content as Ember draws it on the reference (a dv agent at
+the vendored commit on seed/fresh_install.sql), logged in as admin: the
+open menu's ul.dropdown-menu, its comments, whitespace between tags and
+Ember's ids dropped. tests/html_pages.rs compares the port's templates
+with them.
+
+  topic-admin-menu-t35-admin.html   /t/35's TopicAdminMenu (the wrench)
+  admin-post-menu-post36-admin.html /t/35's post 2 (id 36) AdminPostMenu

@@ -4,11 +4,10 @@
 //! post menu and the actions summary; small actions and time gaps between
 //! posts. Dates are shown in UTC, as the topic list's are.
 //!
-//! The post menu shows the buttons whose actions are ported: like (with
-//! its count), copy link, bookmark and reply. Flag, edit, delete, admin,
-//! read and replies open modals, the composer or lists that are not, so
-//! they are left out; with them gone at most one button could collapse,
-//! so the menu is never collapsed behind show more.
+//! The post menu draws its configured buttons, collapsed behind show more
+//! as Ember collapses them; the admin button's menu (AdminPostMenu) and
+//! the topic admin menu (TopicAdminMenu) are drawn into templates that
+//! static/js/topic-admin-menu.js opens.
 
 use chrono::{DateTime, Utc};
 use serde_json::Value;
@@ -162,6 +161,81 @@ pub struct TopicInfo {
     /// What the poll widget reads of the viewer, for a member on a page
     /// with polls.
     pub poll_viewer: Option<crate::plugins::poll::view::PollViewer>,
+    /// What the staff menus read beyond `PostContext::staff`.
+    pub menus: StaffMenus,
+}
+
+/// What the topic admin menu (TopicAdminMenu) and the post admin menu
+/// (AdminPostMenu) read of the viewer and of the topic's details.
+#[derive(Clone, Default)]
+pub struct StaffMenus {
+    /// `currentUser.canManageTopic`: staff or a leader (trust level 4).
+    pub can_manage_topic: bool,
+    /// `currentUser.canSetTopicTimer`: `can_set_topic_timer`, else
+    /// canManageTopic.
+    pub can_set_topic_timer: bool,
+    /// `currentUser.canChangePostOwner`
+    pub can_change_post_owner: bool,
+    /// `details.can_edit_staff_notes` (Post#canEditStaffNotes)
+    pub can_edit_staff_notes: bool,
+    /// `details.can_permanently_delete`, for a deleted first post.
+    pub can_permanently_delete: bool,
+    /// `details.can_publish_page`, for the first post.
+    pub can_publish_page: bool,
+    /// `min_topic_views_for_delete_confirm`, when the topic has more views:
+    /// deleting it asks first (DeleteTopicConfirm).
+    pub delete_confirm_views: Option<i64>,
+    /// The viewer stays on a topic they delete (Topic#destroy): staff, a
+    /// moderator of its category or who may delete every post and topic.
+    pub stay_after_delete: bool,
+    /// The topic admin menu's nested replies toggle, for staff while
+    /// `nested_replies_enabled` is on without `nested_replies_default`:
+    /// whether the topic is in its nested view.
+    pub nested_replies_toggle: Option<bool>,
+}
+
+impl StaffMenus {
+    /// The viewer's part from their guardian (CurrentUserSerializer's
+    /// can_set_topic_timer and can_change_post_owner, User#canManageTopic),
+    /// the topic's from its view JSON (`views` and `details`).
+    pub fn load(
+        guardian: &crate::guardian::Guardian,
+        settings: &SiteSettings,
+        view: &Value,
+    ) -> Result<StaffMenus, crate::guardian::GuardianError> {
+        let d = &view["details"];
+        let Some(user) = guardian.user() else {
+            return Ok(StaffMenus::default());
+        };
+        let staff = guardian.is_staff();
+        let can_manage_topic = staff || user.trust_level == 4;
+        let can_set_topic_timer = !guardian.is_silenced()
+            && (user.id == -1
+                || staff
+                || guardian.in_setting_groups(settings, "topic_timers_allowed_groups")?);
+        let can_change_post_owner = guardian.is_admin()
+            || (settings.get("moderators_change_post_ownership")?.truthy()
+                && guardian.is_moderator())
+            || guardian.in_setting_groups(settings, "change_post_ownership_allowed_groups")?;
+        let min_views = settings.get("min_topic_views_for_delete_confirm")?.to_i();
+        Ok(StaffMenus {
+            can_manage_topic,
+            can_set_topic_timer,
+            can_change_post_owner,
+            can_edit_staff_notes: d["can_edit_staff_notes"] == true,
+            can_permanently_delete: d["can_permanently_delete"] == true,
+            can_publish_page: d["can_publish_page"] == true,
+            delete_confirm_views: (view["views"].as_i64().unwrap_or(0) > min_views)
+                .then_some(min_views),
+            stay_after_delete: staff
+                || d["can_moderate_category"] == true
+                || guardian.can_delete_all_posts_and_topics(settings)?,
+            nested_replies_toggle: (staff
+                && settings.get("nested_replies_enabled")?.truthy()
+                && !settings.get("nested_replies_default")?.truthy())
+            .then(|| view["is_nested_view"] == true),
+        })
+    }
 }
 
 impl TopicInfo {
@@ -193,6 +267,12 @@ impl TopicInfo {
             last_read_post_number: view["last_read_post_number"].as_i64(),
             highest_post_number: view["highest_post_number"].as_i64(),
             poll_viewer: None,
+            menus: StaffMenus {
+                can_edit_staff_notes: view["details"]["can_edit_staff_notes"] == true,
+                can_permanently_delete: view["details"]["can_permanently_delete"] == true,
+                can_publish_page: view["details"]["can_publish_page"] == true,
+                ..StaffMenus::default()
+            },
         }
     }
 }
@@ -1158,8 +1238,7 @@ fn menu(cx: &PostContext, p: &Value) -> String {
             }),
             "bookmark" => member.then(|| bookmark_button(cx, p)),
             "delete" => delete_button(cx, p),
-            // Drawn only as a count toward collapsing (not ported).
-            "admin" => (member && (cx.staff || p["can_wiki"] == true)).then(String::new),
+            "admin" => admin_button(cx, p),
             "reply" => (cx.topic.can_create_post && member).then(|| reply_button(cx, p)),
             "solved" => solved.as_ref().map(|b| b.html.clone()),
             _ => None,
@@ -1200,8 +1279,18 @@ fn menu(cx: &PostContext, p: &Value) -> String {
     }
     // discourse-reactions' summary: extra controls, before the buttons.
     let extra = reactions.as_ref().map(|r| r.summary()).unwrap_or_default();
+    // The post admin menu's content, which static/js/topic-admin-menu.js
+    // opens from the wrench (AdminPostMenu).
+    let admin_menu = if buttons
+        .iter()
+        .any(|(key, _, html)| *key == "admin" && html.is_some())
+    {
+        admin_post_menu(cx, p)
+    } else {
+        String::new()
+    };
     format!(
-        "<nav class=\"post-controls {}\" role=\"none\">{extra}<div class=\"actions\">{actions}</div></nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
+        "<nav class=\"post-controls {}\" role=\"none\">{extra}<div class=\"actions\">{actions}</div>{admin_menu}</nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
         if collapsed { "collapsed" } else { "expanded" }
     )
 }
@@ -1224,6 +1313,524 @@ fn flag_button(cx: &PostContext) -> String {
         &t(cx.list, "post.controls.flag"),
         "flag",
         "",
+    )
+}
+
+/// post/menu/buttons/admin: the wrench, for who can manage topics, wiki
+/// the post, edit staff notes or change post owners.
+fn admin_button(cx: &PostContext, p: &Value) -> Option<String> {
+    cx.viewer?;
+    let m = &cx.topic.menus;
+    (m.can_manage_topic
+        || p["can_wiki"] == true
+        || m.can_edit_staff_notes
+        || m.can_change_post_owner)
+        .then(|| {
+            let title = t(cx.list, "post.controls.admin");
+            button(
+                "btn no-text btn-icon post-action-menu__admin show-post-admin-menu btn-flat",
+                &title,
+                &title,
+                "wrench",
+                "",
+            )
+        })
+}
+
+/// A DDropdownMenu item holding a DButton: `li_class` on the item,
+/// `class` after DButton's own, a link when `href` is given.
+fn dropdown_item(
+    li_class: &str,
+    class: &str,
+    icon_name: &str,
+    label: &str,
+    title: Option<&str>,
+    href: Option<&str>,
+) -> String {
+    let li = if li_class.is_empty() {
+        "dropdown-menu__item".to_string()
+    } else {
+        format!("dropdown-menu__item {li_class}")
+    };
+    let class = if class.is_empty() {
+        "btn btn-icon-text".to_string()
+    } else {
+        format!("btn btn-icon-text {class}")
+    };
+    let title = title
+        .filter(|t| !t.is_empty())
+        .map(|t| format!(" title=\"{}\"", escape(t)))
+        .unwrap_or_default();
+    let inner = format!(
+        "{}<span class=\"d-button-label\">{}</span>",
+        d_icon(icon_name, None),
+        escape(label)
+    );
+    match href {
+        Some(href) => format!(
+            "<li class=\"{li}\"><a class=\"{class}\"{title} href=\"{}\">{inner}</a></li>",
+            // As the DOM serializes an href: its ampersands only.
+            href.replace('&', "&amp;").replace('"', "&quot;")
+        ),
+        None => {
+            format!(
+                "<li class=\"{li}\"><button class=\"{class}\"{title} type=\"button\">{inner}</button></li>"
+            )
+        }
+    }
+}
+
+const DROPDOWN_DIVIDER: &str = "<li><hr class=\"dropdown-menu__divider\"></li>";
+
+/// AdminPostMenu's DDropdownMenu, in a template static/js/topic-admin-menu.js
+/// opens (the menu service's show, modalForMobile). Its links work; the
+/// actions behind its buttons are refused there, named, until ported.
+fn admin_post_menu(cx: &PostContext, p: &Value) -> String {
+    let l = cx.list;
+    let m = &cx.topic.menus;
+    let tr = |key: &str| t(l, key);
+    let staff = cx.staff;
+    let post_type = p["post_type"].as_i64();
+    let mut items = String::new();
+    if staff {
+        // reviewUrl: the post's id as the topic, as Ember builds it.
+        items.push_str(&dropdown_item(
+            "",
+            "btn btn-transparent moderation-history",
+            "list",
+            &tr("review.moderation_history"),
+            None,
+            Some(&format!(
+                "{}/review?topic_id={}&status=all",
+                l.base_path, p["id"]
+            )),
+        ));
+    }
+    if staff && post_type != Some(WHISPER) {
+        let moderator_action = post_type == Some(MODERATOR_ACTION);
+        items.push_str(&dropdown_item(
+            "",
+            if moderator_action {
+                "btn btn-transparent toggle-post-type btn-success"
+            } else {
+                "btn btn-transparent toggle-post-type"
+            },
+            "shield-halved",
+            &tr(if moderator_action {
+                "post.controls.revert_to_regular"
+            } else {
+                "post.controls.convert_to_moderator"
+            }),
+            (!moderator_action)
+                .then(|| tr("post.controls.convert_to_moderator_description"))
+                .as_deref(),
+            None,
+        ));
+    }
+    if m.can_edit_staff_notes {
+        let notice = !p["notice"].is_null();
+        items.push_str(&dropdown_item(
+            "",
+            if notice {
+                "btn btn-transparent change-notice btn-success"
+            } else {
+                "btn btn-transparent add-notice"
+            },
+            "user-shield",
+            &tr(if notice {
+                "post.controls.change_post_notice"
+            } else {
+                "post.controls.add_post_notice"
+            }),
+            Some(&tr("post.controls.add_post_notice_description")),
+            None,
+        ));
+    }
+    if staff && p["hidden"] == true {
+        items.push_str(&dropdown_item(
+            "",
+            "btn btn-transparent unhide-post",
+            "far-eye",
+            &tr("post.controls.unhide"),
+            None,
+            None,
+        ));
+    }
+    if m.can_change_post_owner {
+        items.push_str(&dropdown_item(
+            "",
+            "btn btn-transparent change-owner",
+            "user",
+            &tr("post.controls.change_owner"),
+            None,
+            None,
+        ));
+    }
+    if !p["user_id"].is_null() && staff {
+        if cx.settings.enable_badges {
+            items.push_str(&dropdown_item(
+                "",
+                "btn btn-transparent grant-badge",
+                "certificate",
+                &tr("post.controls.grant_badge"),
+                None,
+                None,
+            ));
+        }
+        if p["locked"] == true {
+            items.push_str(&dropdown_item(
+                "",
+                "btn btn-transparent unlock-post btn-success",
+                "unlock",
+                &tr("post.controls.unlock_post"),
+                Some(&tr("post.controls.unlock_post_description")),
+                None,
+            ));
+        } else {
+            items.push_str(&dropdown_item(
+                "",
+                "btn btn-transparent lock-post",
+                "lock",
+                &tr("post.controls.lock_post"),
+                Some(&tr("post.controls.lock_post_description")),
+                None,
+            ));
+        }
+    }
+    // Post#canPermanentlyDelete
+    let first = number(p) == 1;
+    let deleted = !p["deleted_at"].is_null() || (first && cx.topic.deleted);
+    let can_permanently_delete = deleted
+        && if first {
+            m.can_permanently_delete
+        } else {
+            p["can_permanently_delete"] == true
+        };
+    if can_permanently_delete {
+        items.push_str(&dropdown_item(
+            "",
+            "btn btn-transparent permanently-delete",
+            "trash-can",
+            &tr("post.controls.permanently_delete"),
+            None,
+            None,
+        ));
+    }
+    if m.can_manage_topic || p["can_wiki"] == true {
+        if p["wiki"] == true {
+            items.push_str(&dropdown_item(
+                "",
+                "btn btn-transparent wiki wikied btn-success",
+                "far-pen-to-square",
+                &tr("post.controls.unwiki"),
+                None,
+                None,
+            ));
+        } else {
+            items.push_str(&dropdown_item(
+                "",
+                "btn btn-transparent wiki",
+                "far-pen-to-square",
+                &tr("post.controls.wiki"),
+                Some(&tr("post.controls.wiki_description")),
+                None,
+            ));
+        }
+    }
+    if first && m.can_publish_page {
+        items.push_str(&dropdown_item(
+            "",
+            "btn btn-transparent publish-page",
+            "file",
+            &tr("post.controls.publish_page"),
+            Some(&tr("post.controls.publish_page_description")),
+            None,
+        ));
+    }
+    if m.can_manage_topic {
+        items.push_str(&dropdown_item(
+            "",
+            "btn btn-transparent rebuild-html",
+            "rotate",
+            &tr("post.controls.rebake"),
+            Some(&tr("post.controls.rebake_description")),
+            None,
+        ));
+    }
+    format!(
+        "<template class=\"admin-post-menu-content\"><ul class=\"dropdown-menu\">{items}</ul></template>"
+    )
+}
+
+/// TopicAdminMenu#showAdminButton
+fn shows_topic_admin_menu(cx: &PostContext, view: &Value) -> bool {
+    let d = &view["details"];
+    cx.viewer.is_some()
+        && (cx.topic.menus.can_manage_topic
+            || cx.topic.menus.can_set_topic_timer
+            || d["can_archive_topic"] == true
+            || d["can_close_topic"] == true
+            || d["can_split_merge_topic"] == true)
+}
+
+/// TopicAdminMenu's trigger, the wrench, with `classes` (its
+/// @buttonClasses) after DMenu's own; empty when the viewer has no menu.
+/// static/js/topic-admin-menu.js opens the page's menu from it.
+fn topic_admin_trigger(cx: &PostContext, view: &Value, classes: &str) -> String {
+    if !shows_topic_admin_menu(cx, view) {
+        return String::new();
+    }
+    format!(
+        "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger topic-admin-menu-trigger btn-default btn-icon toggle-admin-menu {classes}\" data-identifier=\"topic-admin-menu\" data-trigger=\"\" type=\"button\">{}</button>",
+        icon("wrench", None)
+    )
+}
+
+/// TopicAdminMenu's content (DDropdownMenu), once per page in a template
+/// whose data static/js/topic-admin-menu.js reads: closing, archiving,
+/// listing, deleting and converting to a message work; the rest is
+/// refused there, named, until ported. Empty when the viewer has no menu.
+pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
+    if !shows_topic_admin_menu(cx, view) {
+        return String::new();
+    }
+    let l = cx.list;
+    let m = &cx.topic.menus;
+    let d = &view["details"];
+    let tr = |key: &str| t(l, key);
+    let private_message = view["archetype"] == "private_message";
+    let closed = view["closed"] == true;
+    let archived = view["archived"] == true;
+    let visible = view["visible"] != false;
+    let featured = !view["pinned_at"].is_null() || view["archetype"] == "banner";
+    let can_delete = d["can_delete"] == true;
+    let can_recover = d["can_recover"] == true;
+    let mut items = String::new();
+    if m.can_manage_topic || d["can_split_merge_topic"] == true {
+        items.push_str(&dropdown_item(
+            "topic-admin-multi-select",
+            "",
+            "list-check",
+            &tr("topic.actions.multi_select"),
+            None,
+            None,
+        ));
+    }
+    let shows_delete_or_recover =
+        (m.can_manage_topic || d["can_moderate_category"] == true) && (can_delete || can_recover);
+    if shows_delete_or_recover {
+        if can_delete {
+            items.push_str(&dropdown_item(
+                "topic-admin-delete",
+                "popup-menu-btn-danger --danger",
+                "trash-can",
+                &tr("topic.actions.delete"),
+                None,
+                None,
+            ));
+        } else {
+            items.push_str(&dropdown_item(
+                "topic-admin-recover",
+                "",
+                "arrow-rotate-left",
+                &tr("topic.actions.recover"),
+                None,
+                None,
+            ));
+        }
+    }
+    if d["can_close_topic"] == true {
+        items.push_str(&dropdown_item(
+            if closed {
+                "topic-admin-open"
+            } else {
+                "topic-admin-close"
+            },
+            "",
+            if closed {
+                "topic.opened"
+            } else {
+                "topic.closed"
+            },
+            &tr(if closed {
+                "topic.actions.open"
+            } else {
+                "topic.actions.close"
+            }),
+            None,
+            None,
+        ));
+    }
+    let shows_pin = d["can_pin_unpin_topic"] == true
+        && !private_message
+        && (visible || featured || d["can_banner_topic"] == true);
+    if shows_pin {
+        items.push_str(&dropdown_item(
+            "topic-admin-pin",
+            "",
+            "thumbtack",
+            &tr(if featured {
+                "topic.actions.unpin"
+            } else {
+                "topic.actions.pin"
+            }),
+            None,
+            None,
+        ));
+    }
+    let shows_archive = d["can_archive_topic"] == true && !private_message;
+    if shows_archive {
+        items.push_str(&dropdown_item(
+            "topic-admin-archive",
+            "",
+            "folder",
+            &tr(if archived {
+                "topic.actions.unarchive"
+            } else {
+                "topic.actions.archive"
+            }),
+            None,
+            None,
+        ));
+    }
+    if d["can_toggle_topic_visibility"] == true {
+        items.push_str(&dropdown_item(
+            "topic-admin-visible",
+            "",
+            if visible { "far-eye-slash" } else { "far-eye" },
+            &tr(if visible {
+                "topic.actions.invisible"
+            } else {
+                "topic.actions.visible"
+            }),
+            None,
+            None,
+        ));
+    }
+    if d["can_convert_topic"] == true {
+        items.push_str(&dropdown_item(
+            "topic-admin-convert",
+            "",
+            if private_message {
+                "comment"
+            } else {
+                "envelope"
+            },
+            &tr(if private_message {
+                "topic.actions.make_public"
+            } else {
+                "topic.actions.make_private"
+            }),
+            None,
+            None,
+        ));
+    }
+    // showTopicManagementSection and its divider.
+    let shows_timer = m.can_set_topic_timer;
+    if m.can_manage_topic || shows_timer {
+        let shows_multi_select = m.can_manage_topic || d["can_split_merge_topic"] == true;
+        if shows_multi_select
+            || shows_delete_or_recover
+            || d["can_close_topic"] == true
+            || shows_pin
+            || shows_archive
+            || d["can_toggle_topic_visibility"] == true
+            || d["can_convert_topic"] == true
+        {
+            items.push_str(DROPDOWN_DIVIDER);
+        }
+        if shows_timer {
+            items.push_str(&dropdown_item(
+                "admin-topic-timer-update",
+                "",
+                "far-clock",
+                &tr("topic.actions.timed_update"),
+                None,
+                None,
+            ));
+        }
+        if m.can_manage_topic {
+            if cx.staff {
+                items.push_str(&dropdown_item(
+                    "topic-admin-change-timestamp",
+                    "",
+                    "calendar-days",
+                    &tr("topic.change_timestamp.title"),
+                    None,
+                    None,
+                ));
+            }
+            items.push_str(&dropdown_item(
+                "topic-admin-reset-bump-date",
+                "",
+                "anchor",
+                &tr("topic.actions.reset_bump_date"),
+                None,
+                None,
+            ));
+            items.push_str(&dropdown_item(
+                "topic-admin-slow-mode",
+                "",
+                "hourglass-start",
+                &tr("topic.actions.slow_mode"),
+                None,
+                None,
+            ));
+        }
+    }
+    // No bundled plugin adds buttons of its own (adminTopicMenuButtons).
+    if cx.staff || m.nested_replies_toggle.is_some() {
+        items.push_str(DROPDOWN_DIVIDER);
+        if cx.staff {
+            items.push_str(&dropdown_item(
+                "topic-admin-moderation-history",
+                "",
+                "list",
+                &tr("review.moderation_history"),
+                None,
+                Some(&format!(
+                    "{}/review?topic_id={}&status=all",
+                    l.base_path, cx.topic.id
+                )),
+            ));
+        }
+        if let Some(nested) = m.nested_replies_toggle {
+            items.push_str(&dropdown_item(
+                "topic-admin-nested-replies",
+                "",
+                "nested-thread",
+                &tr(if nested {
+                    "nested_replies.topic_admin_menu.disable_nested_replies"
+                } else {
+                    "nested_replies.topic_admin_menu.enable_nested_replies"
+                }),
+                None,
+                None,
+            ));
+        }
+    }
+    // What the script needs: the topic's state and DeleteTopicConfirm's
+    // strings, when deleting asks first.
+    let mut data = serde_json::json!({
+        "id": cx.topic.id,
+        "closed": closed,
+        "archived": archived,
+        "visible": visible,
+        "stayAfterDelete": m.stay_after_delete,
+    });
+    if let Some(views) = m.delete_confirm_views {
+        data["deleteConfirm"] = serde_json::json!({
+            "title": tr("topic.actions.delete"),
+            "body": t_count(l, "post.controls.delete_topic_confirm_modal", views, &[]),
+            "yes": tr("post.controls.delete_topic_confirm_modal_yes"),
+            "no": tr("post.controls.delete_topic_confirm_modal_no"),
+            "deleting": tr("deleting"),
+            "error": tr("post.controls.delete_topic_error"),
+        });
+    }
+    format!(
+        "<template class=\"topic-admin-menu-template\" data-topic=\"{}\"><ul class=\"dropdown-menu\">{items}</ul></template>",
+        escape(&data.to_string())
     )
 }
 
@@ -2121,7 +2728,10 @@ fn timeline_container(
         }
     }
     let controls = if cx.viewer.is_some() && !fullscreen {
-        "<div class=\"timeline-controls\"></div>".to_string()
+        format!(
+            "<div class=\"timeline-controls\">{}</div>",
+            topic_admin_trigger(cx, view, "")
+        )
     } else if fullscreen {
         fullscreen_title(cx, view, &url)
     } else {
@@ -2234,8 +2844,10 @@ fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> 
         ),
         _ => String::new(),
     };
+    // TopicProgress yields the admin menu before its bar.
+    let admin = topic_admin_trigger(cx, view, "");
     format!(
-        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\"><nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"{back}><div class=\"nums\"><span>1</span><span{hidden}>/</span><span{hidden}>{}</span></div><div class=\"bg\"></div></nav></div><template class=\"topic-timeline-fullscreen\">{}</template></div>",
+        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\">{admin}<nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"{back}><div class=\"nums\"><span>1</span><span{hidden}>/</span><span{hidden}>{}</span></div><div class=\"bg\"></div></nav></div><template class=\"topic-timeline-fullscreen\">{}</template></div>",
         no_answer(cx, view),
         escape(&serde_json::to_string(stream).unwrap_or_default()),
         stream.len(),
@@ -2247,7 +2859,7 @@ fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> 
 /// a member's share, bookmark, a message's Archive (or Move to Inbox),
 /// Flag, Mark unread, Reply and the notifications button; a message draws
 /// share and bookmark without labels on desktop (TopicFooterButtons). The
-/// pinned button and the admin menu are not ported yet.
+/// admin menu's wrench comes first; the pinned button is not ported yet.
 pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     let l = cx.list;
     let reply_label = escape(&t(l, "topic.reply.title"));
@@ -2261,8 +2873,10 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     let url = format!("{}/t/{}/{}", l.base_path, cx.topic.slug, cx.topic.id);
     let private_message = view["archetype"] == "private_message";
     let mobile = crate::mobile::mobile_view();
+    // TopicAdminMenu first.
+    let mut actions = topic_admin_trigger(cx, view, "topic-footer-button");
     // Share's label: none for a message on desktop, the icon alone.
-    let mut actions = if private_message && !mobile {
+    actions += &if private_message && !mobile {
         format!(
             "<button class=\"btn no-text btn-icon btn-default topic-footer-button share-and-invite\" data-share-url=\"{}\" id=\"topic-footer-button-share-and-invite\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
             escape(&url),
@@ -3112,6 +3726,7 @@ mod tests {
             last_read_post_number: None,
             highest_post_number: None,
             poll_viewer: None,
+            menus: StaffMenus::default(),
         };
         let cx = PostContext {
             list: &list,
@@ -3387,6 +4002,7 @@ mod tests {
             last_read_post_number: None,
             highest_post_number: None,
             poll_viewer: None,
+            menus: StaffMenus::default(),
         };
         let cx = PostContext {
             list: &list,
