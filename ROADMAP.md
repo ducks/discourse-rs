@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -31,7 +31,7 @@ that own them:
   translations: 634 (719): 187
 - Moderation (flags, review, deletion, penalties): 101 (106): 147-152, 194
 - Accounts, signup, login and invites: 92 (104): 153, 154, 250, 251,
-  253, 255, 261a
+  253, 255, 261b
 - Posting, editing and topic edits: 90 (95): 132, 134-138, 188
 - Topic view and lists: 82 (86): 120, 124-129, 158, 159, 195, 197
 - Ruby engines (regexps, URLs, charsets, YAML, sanitizers, email CSS):
@@ -76,8 +76,8 @@ Blockers, a scripted walk-through would hit them:
   uploads 404 on the port (their files exist only on the reference) and
   the design wizard card is unstyled: fix/theme-screenshot-files (278),
   done: 1.37% to 0.04 desktop, 5.81% to 0.07 mobile.
-- [ ] /password-reset over the homepage when login isn't required answers
-  500 (261a, routes/login_required.rs:1554).
+- [x] /password-reset over the homepage when login isn't required answers
+  500: fix/password-reset-homepage (261a), done.
 - [ ] Chat: /chat/direct-messages and /chat/threads answer 405 with a blank
   page (99's leftovers), and a DM channel drops its "last visit" line when
   the newest message is the marker (plugins/chat/page.rs:185):
@@ -3138,16 +3138,27 @@ route table has been made, so this list may be short.
     layout matches in both views. The login and signup rules
     login-signup-page.scss compiles after its mobile ones moved from
     mobile.css into invites.css's order, and `.btn-large` is ported. Left,
-    split into 261a.
-    261a. `feat/login-pages-rest` S: the login code steps after the email
-    step (static/js/login.js:1253) wait on 250's /session/login-code;
+    split into 261a and 261b.
+    261a. ~~`fix/password-reset-homepage`~~ (done) S: /password-reset
+    answered 500 unless login was required. It is static#show's
+    password_reset modal page, whose Ember route replaces itself with
+    `homepageNavigationDestination()` and opens ForgotPassword over it.
+    Now a page load draws the homepage (discovery.<homepage> with the
+    discovery params it knows, as new-topic's replaceWith carries them)
+    with #login-data telling login.js the URL to put in the address bar
+    and to open the modal, the anonymous session's token shared with the
+    list's request so one `_forum_session` goes out. `?email=` sets the
+    cookie the modal prefills from on both branches (the login-required
+    one dropped it). Refused: over XHR or JSON, a custom or blank
+    homepage, an array query param.
+    261b. `feat/login-pages-rest` S: the login code steps after the email
+    step (static/js/login.js:1254) wait on 250's /session/login-code;
     resending and changing the activation email (users#send_activation_email,
-    users#update_activation_email, ActivationEdit; login.js:1053,1059,
-    2489,2495); a password reset code's second factor step (:1321); the
+    users#update_activation_email, ActivationEdit; login.js:1054,1060,
+    2490,2496); a password reset code's second factor step (:1322); the
     login and signup routes in read-only mode, whose alert shows on the
-    homepage (routes/login_required.rs:627,864); the forgot-password
-    route over the homepage (:1554); the signup page's user fields
-    (UserField, :885); the static login page's dark logo
+    homepage (routes/login_required.rs:627,864); the signup page's user
+    fields (UserField, :885); the static login page's dark logo
     (application_logo_dark_url, :774, with 258a); account_created's
     DiscourseConnect provider payload (:1177). A reset with a password
     the server refuses (the same as the current one, a common one) is

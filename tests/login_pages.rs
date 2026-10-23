@@ -643,10 +643,71 @@ async fn forgot_password_opens_over_the_login_page_when_login_is_required() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     set_setting(&db.pool, "login_required", BOOL, "t").await;
-    let reply = page(&st, "/password-reset", &[]).await;
+    let reply = page(&st, "/password-reset?email=a%40b.com", &[]).await;
     assert_eq!(reply.status, StatusCode::OK);
     assert!(reply.body.contains("id=\"login-form\""));
     assert_eq!(reply.data()["forgot_password"], true);
+    assert!(
+        reply
+            .cookies()
+            .iter()
+            .any(|c| c.starts_with("email=a%40b.com;")),
+        "{:?}",
+        reply.cookies()
+    );
+}
+
+#[tokio::test]
+async fn forgot_password_opens_over_the_homepage() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let reply = page(
+        &st,
+        "/password-reset?email=a%40b.com&order=views&page=2",
+        &[],
+    )
+    .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let html = &reply.body;
+    // discovery.latest under the modal, as /latest draws it.
+    assert!(html.contains("list-container --topic-list"), "{html}");
+    assert!(!html.contains("id=\"login-form\""), "{html}");
+    let data = reply.data();
+    assert_eq!(data["page"], "forgot-password");
+    assert_eq!(data["forgot_password"], true);
+    // Only the discovery route's params go along to the URL.
+    assert_eq!(data["url"], "/latest?order=views");
+    assert!(!data["csrf"].as_str().unwrap_or("").is_empty(), "{data}");
+    let cookies = reply.cookies();
+    assert!(
+        cookies.iter().any(|c| c.starts_with("email=a%40b.com;")),
+        "{cookies:?}"
+    );
+    assert_eq!(
+        cookies
+            .iter()
+            .filter(|c| c.starts_with("_forum_session="))
+            .count(),
+        1,
+        "{cookies:?}"
+    );
+    assert_eq!(
+        reply.header("cache-control"),
+        Some("no-store, must-revalidate, private, max-age=0")
+    );
+
+    // A member gets it over their homepage even with login required.
+    set_setting(&db.pool, "login_required", BOOL, "t").await;
+    set_setting(&db.pool, "top_menu", 8, "categories|latest|new|top").await;
+    let t = logged_in(&st).await;
+    let member = page(&st, "/password-reset", &[&t]).await;
+    assert_eq!(member.status, StatusCode::OK, "{}", member.body);
+    assert!(!member.body.contains("id=\"login-form\""));
+    assert_eq!(member.data()["url"], "/categories");
+
+    // The route is a page; asked for over XHR it is not drawn here.
+    let xhr = request(&st, Method::GET, "/password-reset", &[&t], "").await;
+    assert_eq!(xhr.status, StatusCode::INTERNAL_SERVER_ERROR);
 }
 
 #[tokio::test]
