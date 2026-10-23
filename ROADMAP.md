@@ -106,8 +106,9 @@ Visible if clicked, avoid them in a scripted demo:
   (194a), done; their unported actions are refused (194c, 194d).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
-- [ ] The add participant modal on a message (262a); the grouped bookmarks
-  menu (274a).
+- [x] The add participant modal on a message (262a): feat/add-pm-participants
+  (262b), done.
+- [ ] The grouped bookmarks menu (274a).
 
 Polish, from the second screenshot sweep:
 
@@ -3354,15 +3355,25 @@ route table has been made, so this list may be short.
     (calculatePosition), so a short one-post message keeps its scroll
     area as Ember's does. Found by the screenshot run (/t/90 as admin and
     as user1, parity/screens/pages). Left, split into 262a.
-    262a. `feat/pm-topic-view-rest` S: the add participant button draws
-    but its AddPmParticipants modal (InvitePanel with the email, group
-    and user chooser, POST /t/:id/invite) is not ported
-    (post_view.rs:1820); the browse more line is drawn once with the
+    262a. `feat/pm-topic-view-rest` S: the browse more line is drawn once with the
     page's own message read through the posts shown, not kept live from
     the pmTopicTrackingState bus messages; the title's edit pencil and
     title editing (TopicTitleEditor, the edit-title glyph's styles) are
     not drawn for any topic (the admin menu's wrench is 194a); the
     header's topic title once scrolled past, with its glyph, is 266's
+    262b. ~~`feat/add-pm-participants`~~ (done) S: the add participant
+    button's AddPmParticipants modal (InvitePanel,
+    static/js/add-pm-participants.js): its EmailGroupUserChooser over
+    /u/search/users (emails when the viewer may invite by email, the
+    messageable groups, ranked as organizeResults ranks them), Send
+    Invite (POST /t/:id/invite with an email's custom message, or
+    /t/:id/invite-group), the server's error in the panel, and on success
+    the toast and the topic map's participants drawn again from the
+    server (Ember adds the user to its list). Compared on rs-ref-c (admin
+    on /t/43: the modal, user, email and group rows, the selection, the
+    custom message and an existing participant's error); its
+    email-group-user-chooser.scss and add-pm-participants.scss rules are
+    in personal-message.css
 264. ~~`fix/categories-tracking`~~ (done) S: the categories page ignored a
     member's read state, found by a screenshot run (/categories as anon,
     admin, user1 and mobile). `.category__badges` was always empty; now

@@ -2325,8 +2325,9 @@ pub struct TopicPage {
     pub timeline: String,
     pub footer_buttons: String,
     pub more_topics: String,
-    /// The topic admin menu's content for its triggers (empty without one).
-    pub topic_admin_menu: String,
+    /// The topic admin menu's content for its triggers and the add
+    /// participant modal's config (each empty without one).
+    pub topic_menus: String,
     pub prev_url: Option<String>,
     pub next_url: Option<String>,
     pub topic_id: i64,
@@ -2857,6 +2858,10 @@ pub async fn topic_page(
     let timeline = crate::post_view::timeline(&cx, view);
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
+    let topic_menus = format!(
+        "{topic_admin_menu}{}",
+        crate::post_view::add_pm_participants_config(&cx, view)
+    );
     let header_topic_info = crate::header_topic_view::template(
         &cx,
         view,
@@ -2961,7 +2966,7 @@ pub async fn topic_page(
         timeline,
         footer_buttons,
         more_topics,
-        topic_admin_menu,
+        topic_menus,
         topic_id: id,
         // New posts land at the end; pages before it stay as they are.
         live: loaded_all,

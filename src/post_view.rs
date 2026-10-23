@@ -192,6 +192,8 @@ pub struct StaffMenus {
     /// `nested_replies_enabled` is on without `nested_replies_default`:
     /// whether the topic is in its nested view.
     pub nested_replies_toggle: Option<bool>,
+    /// InvitePanel's showApprovalMessage: staff, with `must_approve_users`.
+    pub invite_approval_notice: bool,
 }
 
 impl StaffMenus {
@@ -234,6 +236,7 @@ impl StaffMenus {
                 && settings.get("nested_replies_enabled")?.truthy()
                 && !settings.get("nested_replies_default")?.truthy())
             .then(|| view["is_nested_view"] == true),
+            invite_approval_notice: staff && settings.get("must_approve_users")?.truthy(),
         })
     }
 }
@@ -1562,6 +1565,59 @@ fn admin_post_menu(cx: &PostContext, p: &Value) -> String {
     )
 }
 
+/// What static/js/add-pm-participants.js needs for the message's
+/// AddPmParticipants modal (InvitePanel), which the topic map's add
+/// participant button opens: empty unless the viewer may invite to the
+/// message (details.can_invite_to).
+pub fn add_pm_participants_config(cx: &PostContext, view: &Value) -> String {
+    let Some(username) = cx.viewer else {
+        return String::new();
+    };
+    if view["archetype"] != "private_message" || view["details"]["can_invite_to"] != true {
+        return String::new();
+    }
+    let l = cx.list;
+    let tr = |key: &str| t(l, key);
+    let can_invite_via_email = view["details"]["can_invite_via_email"] == true;
+    let config = serde_json::json!({
+        "topicId": cx.topic.id,
+        "currentUsername": username,
+        "canInviteViaEmail": can_invite_via_email,
+        "approvalNotice": cx.topic.menus.invite_approval_notice,
+        "strings": {
+            // routes/topic.js#showInvite: the route has no isPM, so the
+            // forum invite's title.
+            "title": tr("user.invited.create"),
+            "instructions": tr(if can_invite_via_email {
+                "topic.invite_private.email_or_username"
+            } else {
+                "topic.invite_reply.discourse_connect_enabled"
+            }),
+            "placeholder": tr(if can_invite_via_email {
+                "topic.invite_private.email_or_username_placeholder"
+            } else {
+                "topic.invite_reply.username_placeholder"
+            }),
+            "defaultHeader": tr("select_kit.default_header_text"),
+            "resultsOne": tr("select_kit.results_count.one"),
+            "resultsOther": tr("select_kit.results_count.other"),
+            "send": tr("topic.invite_reply.action"),
+            "inviting": tr("topic.inviting"),
+            "error": tr("topic.invite_private.error"),
+            "success": tr("topic.invite_private.success"),
+            "successGroup": tr("topic.invite_private.success_group"),
+            "customMessage": tr("invite.custom_message"),
+            "customMessagePlaceholder": tr("invite.custom_message_placeholder"),
+            "customMessageTemplate": tr("invite.custom_message_template_topic"),
+            "approval": tr("invite.approval_not_required"),
+        },
+    });
+    format!(
+        "<script type=\"application/json\" id=\"add-pm-participants-config\">{}</script>",
+        config.to_string().replace('<', "\\u003c")
+    )
+}
+
 /// TopicAdminMenu#showAdminButton
 fn shows_topic_admin_menu(cx: &PostContext, view: &Value) -> bool {
     let d = &view["details"];
@@ -2538,7 +2594,7 @@ fn private_message_map(cx: &PostContext, view: &Value) -> String {
         ));
     }
     if details["can_invite_to"] == true {
-        // The invite modal it opens (AddPmParticipants) is not ported.
+        // It opens AddPmParticipants (static/js/add-pm-participants.js).
         out.push_str(&format!(
             "<button class=\"btn no-text btn-icon btn-default btn-small add-participant-btn\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
             icon("plus", None)

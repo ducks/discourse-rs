@@ -390,3 +390,48 @@ async fn a_messages_docked_header_shows_its_envelope_and_participants() {
         user("admin", "/letter_avatar_proxy/v4/letter/a/3ec8ea/24.png"),
     )), "{template}");
 }
+
+/// The page's #add-pm-participants-config, parsed.
+fn invite_config(html: &str) -> Option<serde_json::Value> {
+    let open = "<script type=\"application/json\" id=\"add-pm-participants-config\">";
+    let start = html.find(open)? + open.len();
+    let json = &html[start..start + html[start..].find("</script>")?];
+    Some(serde_json::from_str(json).unwrap())
+}
+
+// The add participant button's AddPmParticipants modal: a member who may
+// invite to the message gets its config and script (the instructions for
+// an email or a username, InvitePanel's strings); a regular topic and a
+// visitor get neither.
+#[tokio::test]
+async fn a_message_carries_its_add_participants_modal() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let html = user1.page("/t/parity-fixture-pm-user1-to-user0/42").await;
+    assert!(html.contains("add-participant-btn"));
+    let config = invite_config(&html).expect("the modal's config");
+    assert_eq!(config["topicId"], 42);
+    assert_eq!(config["currentUsername"], "user1");
+    assert_eq!(config["canInviteViaEmail"], true);
+    assert_eq!(config["approvalNotice"], false);
+    assert_eq!(config["strings"]["title"], "Invite");
+    assert_eq!(
+        config["strings"]["instructions"],
+        "Invitee's Email or Username"
+    );
+    assert_eq!(
+        config["strings"]["placeholder"],
+        "email address or username"
+    );
+    assert_eq!(config["strings"]["send"], "Send Invite");
+    assert_eq!(
+        config["strings"]["customMessage"],
+        "Make your invite a little bit more personal by writing a <a href>custom message</a>."
+    );
+    assert!(html.contains("/assets/add-pm-participants.js?v="));
+
+    let html = user1.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(invite_config(&html).is_none());
+    assert!(!html.contains("add-pm-participants.js"));
+}
