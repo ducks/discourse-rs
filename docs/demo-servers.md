@@ -69,9 +69,10 @@ reboot.
 
 ## The cluster's settings
 
-The dev cluster's `ALTER SYSTEM` settings are not in `nix/postgres.nix`.
-The full test suite needs more connections than the default 100, so a
-re-created cluster needs these again:
+The full test suite needs more connections than the default 100, and runs
+faster without durability. `nix/postgres.nix` writes these settings into
+`postgresql.conf` when it creates the cluster. A cluster created before
+that needs them set by hand:
 
 ```bash
 nix-shell --run "
