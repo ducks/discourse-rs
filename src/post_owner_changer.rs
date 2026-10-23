@@ -752,6 +752,7 @@ async fn revise_owner(
                 image_mode: crate::excerpt::ImageMode::Strip,
                 ..Default::default()
             },
+            crate::excerpt::Plugins::from_settings(s)?,
         );
         sqlx::query("UPDATE topics SET excerpt = $2 WHERE id = $1")
             .bind(topic.id)

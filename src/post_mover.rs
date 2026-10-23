@@ -272,6 +272,7 @@ impl Mover<'_, '_> {
         .bind(topic_id)
         .fetch_optional(&mut *tx)
         .await?;
+        let plugins = crate::excerpt::Plugins::from_settings(self.ctx.settings)?;
         let excerpt = cooked.map(|c| {
             crate::excerpt::excerpt(
                 &c,
@@ -285,6 +286,7 @@ impl Mover<'_, '_> {
                     image_mode: crate::excerpt::ImageMode::Strip,
                     ..Default::default()
                 },
+                plugins,
             )
         });
         sqlx::query("UPDATE topics SET excerpt = $2 WHERE id = $1")
@@ -1210,6 +1212,7 @@ impl Mover<'_, '_> {
             .await?;
         }
         // update_topic_stats, without a bump.
+        let plugins = crate::excerpt::Plugins::from_settings(s)?;
         let excerpt = (post_number == 1).then(|| {
             crate::excerpt::excerpt(
                 &cooked,
@@ -1221,6 +1224,7 @@ impl Mover<'_, '_> {
                     image_mode: crate::excerpt::ImageMode::Strip,
                     ..Default::default()
                 },
+                plugins,
             )
         });
         sqlx::query(

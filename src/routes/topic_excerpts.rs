@@ -92,6 +92,7 @@ pub async fn excerpts(
     .bind(whisperer)
     .fetch_all(&mut *conn)
     .await?;
+    let plugins = crate::excerpt::Plugins::from_settings(&settings)?;
     let options = crate::excerpt::Options {
         keep_emoji_images: true,
         ..Default::default()
@@ -104,7 +105,7 @@ pub async fn excerpts(
             attrs.insert("username".into(), json!(username));
             attrs.insert(
                 "excerpt".into(),
-                json!(crate::excerpt::excerpt(&cooked, 800, &options)),
+                json!(crate::excerpt::excerpt(&cooked, 800, &options, plugins)),
             );
             if let Some(code) = action_code {
                 attrs.insert("action_code".into(), json!(code));

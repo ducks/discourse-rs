@@ -702,7 +702,12 @@ impl Users<'_> {
                 keep_emoji_images: true,
                 ..Default::default()
             };
-            let excerpt = crate::excerpt::excerpt(cooked, 350, &opts);
+            let excerpt = crate::excerpt::excerpt(
+                cooked,
+                350,
+                &opts,
+                crate::excerpt::Plugins::from_settings(self.settings)?,
+            );
             let excerpt = excerpt.strip_suffix("<br>").unwrap_or(&excerpt).to_string();
             if !user.has_trust_level(1) && cooked.contains("<a") {
                 return Err(Unsupported("bio links of TL0 users (PrettyText.strip_links)").into());
@@ -1830,6 +1835,7 @@ impl Users<'_> {
             .await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
         let mut out = Vec::new();
+        let plugins = crate::excerpt::Plugins::from_settings(self.settings)?;
         for r in &rows {
             let mut j = Map::new();
             let cooked = r.cooked.as_deref().unwrap_or("");
@@ -1840,6 +1846,7 @@ impl Users<'_> {
                     keep_emoji_images: true,
                     ..Default::default()
                 },
+                plugins,
             );
             j.insert("excerpt".into(), json!(excerpt));
             if cooked.chars().count() > 300 {

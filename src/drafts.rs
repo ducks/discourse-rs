@@ -437,6 +437,7 @@ pub async fn stream(
     };
 
     let mut out = Vec::with_capacity(drafts.len());
+    let plugins = crate::excerpt::Plugins::from_settings(settings)?;
     for (i, (key, sequence, data, created_at)) in drafts.iter().enumerate() {
         let topic = topic_ids[i].and_then(|id| topics.get(&id));
         let display = users.get(&display_ids[i]);
@@ -445,7 +446,12 @@ pub async fn stream(
         let mut d = Map::new();
         d.insert(
             "excerpt".into(),
-            json!(crate::excerpt::excerpt(cooked, 300, &excerpt_options)),
+            json!(crate::excerpt::excerpt(
+                cooked,
+                300,
+                &excerpt_options,
+                plugins
+            )),
         );
         if cooked.chars().count() > 300 {
             d.insert("truncated".into(), json!(true));

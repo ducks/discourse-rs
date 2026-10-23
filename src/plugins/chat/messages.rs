@@ -162,7 +162,7 @@ fn strip_schemes(s: &str) -> String {
 }
 
 /// `Chat::Message#build_excerpt`
-fn build_excerpt(m: &MessageRow) -> Result<String, AppError> {
+fn build_excerpt(m: &MessageRow, plugins: crate::excerpt::Plugins) -> Result<String, AppError> {
     let cooked = m.cooked.as_deref().unwrap_or_default();
     // Just the URL if the whole message is URLs: oneboxes don't excerpt.
     let urls = crate::posting::links::extract_with_quotes(cooked)?;
@@ -177,6 +177,7 @@ fn build_excerpt(m: &MessageRow) -> Result<String, AppError> {
                 &urls.join(" "),
                 EXCERPT_LENGTH,
                 &crate::excerpt::Options::default(),
+                plugins,
             ));
         }
     }
@@ -187,34 +188,45 @@ fn build_excerpt(m: &MessageRow) -> Result<String, AppError> {
             strip_links: true,
             ..Default::default()
         },
+        plugins,
     ))
 }
 
 /// `Chat::Message#build_excerpt` for a message not yet saved.
-pub(crate) fn build_excerpt_for(message: &str, cooked: &str) -> Result<String, AppError> {
-    build_excerpt(&MessageRow {
-        id: 0,
-        user_id: None,
-        created_at: NaiveDateTime::default(),
-        deleted_at: None,
-        deleted_by_id: None,
-        in_reply_to_id: None,
-        message: Some(message.to_string()),
-        cooked: Some(cooked.to_string()),
-        thread_id: None,
-        streaming: false,
-        excerpt: None,
-        blocks: None,
-        chat_channel_id: 0,
-    })
+pub(crate) fn build_excerpt_for(
+    message: &str,
+    cooked: &str,
+    plugins: crate::excerpt::Plugins,
+) -> Result<String, AppError> {
+    build_excerpt(
+        &MessageRow {
+            id: 0,
+            user_id: None,
+            created_at: NaiveDateTime::default(),
+            deleted_at: None,
+            deleted_by_id: None,
+            in_reply_to_id: None,
+            message: Some(message.to_string()),
+            cooked: Some(cooked.to_string()),
+            thread_id: None,
+            streaming: false,
+            excerpt: None,
+            blocks: None,
+            chat_channel_id: 0,
+        },
+        plugins,
+    )
 }
 
 /// `Chat::Message#excerpt_for_display`: the stored excerpt, else one
 /// built from the cooked message.
-fn excerpt_for_display(m: &MessageRow) -> Result<String, AppError> {
+fn excerpt_for_display(
+    m: &MessageRow,
+    plugins: crate::excerpt::Plugins,
+) -> Result<String, AppError> {
     match &m.excerpt {
         Some(e) => Ok(e.clone()),
-        None => build_excerpt(m),
+        None => build_excerpt(m, plugins),
     }
 }
 
@@ -280,7 +292,7 @@ impl Context<'_> {
             "message": m.message,
             "cooked": m.cooked,
             "created_at": iso8601(m.created_at),
-            "excerpt": excerpt_for_display(&m)?,
+            "excerpt": excerpt_for_display(&m, crate::excerpt::Plugins::from_settings(self.settings)?)?,
             "deleted_at": null,
             "deleted_by_id": m.deleted_by_id,
             "thread_id": m.thread_id,
@@ -819,7 +831,13 @@ impl Context<'_> {
         out.insert("message".into(), json!(m.message));
         out.insert("cooked".into(), json!(m.cooked));
         out.insert("created_at".into(), json!(iso8601(m.created_at)));
-        out.insert("excerpt".into(), json!(excerpt_for_display(m)?));
+        out.insert(
+            "excerpt".into(),
+            json!(excerpt_for_display(
+                m,
+                crate::excerpt::Plugins::from_settings(self.settings)?
+            )?),
+        );
         // A deleted author's message reads as deleted by the system, now.
         if author.is_none() {
             out.insert(
@@ -974,7 +992,7 @@ impl Context<'_> {
         Ok(json!({
             "id": parent.id,
             "cooked": parent.cooked,
-            "excerpt": excerpt_for_display(&parent)?,
+            "excerpt": excerpt_for_display(&parent, crate::excerpt::Plugins::from_settings(self.settings)?)?,
             "user": user,
             "chat_webhook_event": null,
         }))

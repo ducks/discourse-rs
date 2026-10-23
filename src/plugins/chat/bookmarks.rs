@@ -209,6 +209,7 @@ impl Context<'_> {
             return Err(Unsupported("bookmarks of chat messages in deleted channels").into());
         };
         let title = self.channel_title(channel).await?;
+        let plugins = crate::excerpt::Plugins::from_settings(self.settings)?;
         let excerpt = m.row.cooked.as_deref().map(|cooked| {
             crate::excerpt::excerpt(
                 cooked,
@@ -217,6 +218,7 @@ impl Context<'_> {
                     keep_emoji_images: true,
                     ..Default::default()
                 },
+                plugins,
             )
         });
         let user = match (m.row.user_id, m.row.username.clone()) {

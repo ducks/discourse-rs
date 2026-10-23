@@ -4390,12 +4390,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     static/js/inline-footnotes.js finding the new ids
 244. `feat/spoiler-email` S: spoiler-alert's reduce_cooked in emails
     (each spoiler a link to the post with excerpt_spoiler;
-    email/notification.rs:913-945 sends spoilers in the clear), and the
-    enabled-setting gate Plugin#on puts on every handler
-    (lib/plugin/instance.rb:692): the excerpt's spoiler removal
-    (excerpt.rs:196), discourse-details' email reduce_cooked
-    (email/notification.rs:913), local dates' excerpt " (UTC)"
-    (excerpt.rs:210)
+    email/notification.rs:913-945 sends spoilers in the clear), and
+    discourse-details' email reduce_cooked (email/notification.rs:913)
+    gated on its enabled setting as Plugin#on gates every handler
+    (lib/plugin/instance.rb:692). The excerpt's gates (spoiler removal,
+    poll, local dates' " (UTC)") are done: `fix/excerpt-plugins-enabled`
 245. `feat/oauth2-basic-rest` S: oauth2_debug_auth (an OAuth2LogRedactor
     and every `log` call) and the always-on token and user_json failure
     warnings (plugins/oauth2_basic.rs:349-355; routes/omniauth.rs:1118),

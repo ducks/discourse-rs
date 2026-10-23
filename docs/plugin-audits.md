@@ -33,12 +33,12 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-solved | started | 30 | unaccepting on post deletion, revisions and moves, auto bump, category custom fields on site and categories JSON, composer education message | 233-235, 213, 212 | 2 M, 2 S plus 163 |
 | discourse-topic-voting | started | 16 | voting after login, the docked header vote box, Most Votes search order | 236-237, 235, 211, 212 | M plus S, with 197 and 195 |
 | discourse-presence | started | 3 | the translate composer state, whisper state | 238 | S |
-| discourse-local-dates | started | 6 | refused date forms Rails cooks, the excerpt gate | 239, 244 | S |
+| discourse-local-dates | started | 5 | refused date forms Rails cooks | 239, 244 | S |
 | discourse-lazy-videos | started | 5 | no client player, no email links, no crawler JSON-LD | 240-241 | 2 S |
 | checklist | started | 6 | checking a box (PUT /checklist/toggle and the client) | 242 | M |
 | discourse-details | started | 2 | email handler not gated on details_enabled | 244 | S |
 | footnote | started | 2 | per-post footnote ids (two footnoted posts on a page collide) | 243 | S |
-| spoiler-alert | started | 3 | emails show spoilers in the clear | 244 | S |
+| spoiler-alert | started | 2 | emails show spoilers in the clear | 244 | S |
 | discourse-lti | started | 3 | cannot be enabled through the port (164), CSP nonce | 214 | 164 plus M |
 | discourse-oauth2-basic | started | 13 | cannot be enabled (164), debug logging, timeout and authorize options, redirects, admin tab, signup buttons | 245-247 | 164 plus 3 S |
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
@@ -319,7 +319,7 @@ Verdict: started (27 gaps)
 - PollSerializer and PollOptionSerializer keys incl. `preloaded_voters`, `ranked_choice_outcome` (RankedChoice ported with tests), `closed_by` skipping the system user; post `polls` and `polls_votes` in the topic view and single-post serializers (src/plugins/poll/serializer.rs:206-310,453-570; src/topic_view.rs:1577,1968).
 - `can_create_poll` on the current user (src/current_user.rs:889-891; src/plugins/poll/mod.rs:622).
 - Jobs: ClosePoll as the system user, quiet refusals (src/jobs/handlers.rs:63,1209).
-- Events: `merging_users` (src/user_merger.rs:700-709), User `has_many :poll_votes, dependent: :delete_all` (src/plugins/mod.rs:239), `reduce_excerpt` (src/excerpt.rs:201-206), `in:polls` advanced filter and its search-menu suggestion (src/search/advanced.rs:185; src/search_menu_view.rs:1067).
+- Events: `merging_users` (src/user_merger.rs:700-709), User `has_many :poll_votes, dependent: :delete_all` (src/plugins/mod.rs:239), `reduce_excerpt`, gated by `poll_enabled` (src/excerpt.rs:238-246), `in:polls` advanced filter and its search-menu suggestion (src/search/advanced.rs:185; src/search_menu_view.rs:1067).
 - Settings: all nine from plugin_settings.yml; none has a change handler in Rails. Admin plugin icon `chart-bar` (src/admin_view.rs:175). English server and client locales loaded (src/i18n.rs:25-27,75-76).
 - Composer options menu lists "Build Poll" for staff or poll_create_allowed_groups (src/composer_view.rs:280-285; src/html.rs:1118), but as unported (see UI).
 
@@ -331,7 +331,7 @@ Verdict: started (27 gaps)
 - `NewPostManager.add_handler(1)` / `allow_new_queued_post_payload_attribute("is_poll")`: a post that would be queued is poll-validated first and queued with `is_poll`; the port refuses enqueueing any post with polls. Rails: plugins/poll/plugin.rb:42,75-88. Port: src/posting/enqueue.rs:96-97 (refusal "enqueueing a post with polls"). [item 138]
 - `on(:approved_post)`: approving a queued `is_poll` post creates its polls. Rails: plugins/poll/plugin.rb:90-92. Port: src/review_posts.rs:623-624 (refusal "approving a queued post with polls"). [item 148]
 - `on(:post_moved)` for a copied post: delete the copy's auto-created empty polls, move the originals (with votes), fix both posts' has_polls. Rails: plugins/poll/plugin.rb:145-163. Port: src/post_mover.rs:811-817 (refusal "moving a copied post's polls"). [item 188i4]
-- `reduce_excerpt` replacement text is hard-coded "poll" instead of `I18n.t("poll.poll")` (so site text overrides and other locales are ignored) and the URL is HTML-escaped rather than `UrlHelper.normalized_encode`d. Rails: plugins/poll/plugin.rb:116-126. Port: src/excerpt.rs:203-206.
+- `reduce_excerpt` replacement text is hard-coded "poll" instead of `I18n.t("poll.poll")` (so site text overrides and other locales are ignored) and the URL is HTML-escaped rather than `UrlHelper.normalized_encode`d. Rails: plugins/poll/plugin.rb:116-126. Port: src/excerpt.rs:240-245.
 - `Poll.extract` cooks with the post's `topic_id` and `user_id`; the port's create path cooks with default MarkdownOptions, so stored option HTML can differ where cooking depends on them. Rails: plugins/poll/lib/poll.rb:455. Port: src/plugins/poll/mod.rs:143-147.
 
 **Routes and controllers**
@@ -629,13 +629,13 @@ New (ROADMAP Phase 11): 238 `feat/presence-translate` S, after 168. The whisper 
 
 ## discourse-local-dates (`plugins/discourse-local-dates`)
 
-Verdict: started (6 gaps)
+Verdict: started (5 gaps)
 
 ### What the port has
 - Markdown `[date]`, `[date-range]` with timezone filtering, IST/KST/JST links, `data-email-preview` from `discourse_local_dates_email_format` and `_email_timezone`: crates/markdown/src/render/local_dates.rs.
 - `before_post_process_cooked`: the `local_dates` post custom field (dates outside asides, escaped, "undefined" dropped, save_custom_fields semantics), gated by the enabled setting: src/plugins/local_dates.rs:84-150, called from src/jobs/handlers.rs:840-843.
 - `reduce_cooked` for emails (text becomes data-email-preview), gated: src/plugins/local_dates.rs:158-216, src/email/notification.rs:852-856.
-- `reduce_excerpt` " (UTC)": src/excerpt.rs:210-215.
+- `reduce_excerpt` " (UTC)", gated: src/excerpt.rs:247-254.
 - Client: applyLocalDates in posts, composer preview and chat, ranges and same-day, tooltip previews, Add to calendar with ics and the download-calendar modal, data-title default: static/js/local-dates.js.
 - Insert date modal (from/to, Pikaday, timezone combo, advanced mode with recurrence, timezones, format list from `discourse_local_dates_default_formats`, preview) and Ctrl/Cmd+Shift+. current-date shortcut: static/js/local-dates-create.js; options menu item with `far-clock` and always-visible shortcut: src/composer_view.rs:264-271; static/js/composer.js:1612-1628.
 - Admin plugin entry with `far-clock`: src/admin_view.rs:674-679.
@@ -644,9 +644,6 @@ Verdict: started (6 gaps)
 **Markdown**
 - Dates the port refuses to cook that Rails cooks: times that are not `HH:mm[:ss]` (e.g. `9:00`, read by moment through Date) (crates/markdown/src/render/local_dates.rs:134,141), offsets moment would not read (:164), a year past 9999 (:67), a `[date]` with no date at all (:585), era tokens (`N`, `y`) in a format (:528). Rails: plugins/discourse-local-dates/assets/javascripts/lib/discourse-markdown/discourse-local-dates.js:4-60. Port: refusals as cited | absent.
 - Email preview refusals: a `discourse_local_dates_email_timezone` that chrono-tz does not know (:590) and a zone without an abbreviation (:601). Rails: plugins/discourse-local-dates/assets/javascripts/lib/discourse-markdown/discourse-local-dates.js:43-48. Port: crates/markdown/src/render/local_dates.rs:590,601 (refusals).
-
-**plugin.rb**
-- `reduce_excerpt` " (UTC)" runs even while `discourse_local_dates_enabled` is off; Rails' `on` skips it when the plugin is disabled. Rails: plugins/discourse-local-dates/plugin.rb:54-58. Port: src/excerpt.rs:210-215 (ungated).
 
 **UI**
 - The rich editor extension and LocalDateNodeView (dates as nodes in ProseMirror, editing a date from the rich editor). Rails: plugins/discourse-local-dates/assets/javascripts/lib/rich-editor-extension.js, lib/local-date-node-view.js. Port: absent. [item 196]
@@ -772,20 +769,17 @@ New (ROADMAP Phase 11): 243 `feat/footnote-post-process` S. Earlier items: 196.
 
 ## spoiler-alert (`plugins/spoiler-alert`)
 
-Verdict: started (3 gaps)
+Verdict: started (2 gaps)
 
 ### What the port has
 - Markdown `[spoiler]` inline and block, gated by `spoiler_enabled`: crates/markdown/src/render/bbcode.rs:262,548,849.
 - The decorator (`.spoiler` to `.spoiled`, blurred state, aria attributes, `spoiler.label.show`, click and Enter toggling, interactive-element and selection checks): static/js/spoiler-alert.js.
 - Options menu item (`wand-magic`, `spoiler.title`, show-active icon, applySurround in block mode with `composer.spoiler_text`): src/composer_view.rs:272-279; static/js/composer.js:1609-1611.
-- `reduce_excerpt` removes `.spoiler`: src/excerpt.rs:196-200. Stylesheet: static/css/spoiler-alert.css.
+- `reduce_excerpt` removes `.spoiler`, gated by `spoiler_enabled`: src/excerpt.rs:233-237. Stylesheet: static/css/spoiler-alert.css.
 
 ### Gaps
 **Emails and notifications**
 - `reduce_cooked`: each `.spoiler`'s content replaced by a link to the post reading "spoiler" (`spoiler_alert.excerpt_spoiler`). The port's emails carry the spoiler's text in the clear. Rails: plugins/spoiler-alert/plugin.rb:13-22. Port: src/email/notification.rs:820-856 | absent.
-
-**plugin.rb**
-- `reduce_excerpt` runs whether or not `spoiler_enabled` is on. Rails: plugins/spoiler-alert/plugin.rb:25; lib/plugin/instance.rb:692-693. Port: src/excerpt.rs:196-200 (ungated).
 
 **UI**
 - The rich editor extension, `toggleSpoiler` command and the menu item's active state (`state.inSpoiler`). Rails: plugins/spoiler-alert/assets/javascripts/initializers/spoiler-alert.js:16-33; lib/rich-editor-extension.js. Port: absent. [item 196]

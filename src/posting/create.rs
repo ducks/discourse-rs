@@ -1161,6 +1161,7 @@ pub async fn create(
                 image_mode: crate::excerpt::ImageMode::Strip,
                 ..Default::default()
             },
+            crate::excerpt::Plugins::from_settings(s)?,
         ))
     } else {
         None
