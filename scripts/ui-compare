@@ -4,27 +4,46 @@
 # computed styles, printed where they differ. The reference's development
 # extras (profiler, dev toolbar) are hidden first.
 #
-# Usage: scripts/ui-compare <reference-url> <our-url> <out-dir> [selector...]
+# --as USER logs in as USER (password "password", the seed's) on both
+# sides first, through /session/csrf and POST /session as
+# scripts/parity-screenshots does, for the pages only members or staff
+# see. Logging in on the reference saves drafts and timings, so
+# `make reset-reference` before the next recording.
+#
+# Usage: scripts/ui-compare [--as USER] <reference-url> <our-url> <out-dir>
+#          [selector...]
 #   e.g. scripts/ui-compare http://127.0.0.1:3042/latest \
 #          http://127.0.0.1:8100/latest /tmp/ui '.d-header' '.topic-list'
+#        scripts/ui-compare --as admin http://127.0.0.1:3042/admin \
+#          http://127.0.0.1:8100/admin /tmp/ui '.admin-main-nav'
 set -euo pipefail
 
+user=""
+if [ "${1:-}" = "--as" ]; then
+  if [ $# -lt 2 ]; then
+    echo "--as needs a username" >&2
+    exit 64
+  fi
+  user="$2"
+  shift 2
+fi
 if [ $# -lt 3 ]; then
-  echo "usage: $0 <reference-url> <our-url> <out-dir> [selector...]" >&2
+  echo "usage: $0 [--as USER] <reference-url> <our-url> <out-dir> [selector...]" >&2
   exit 64
 fi
 mkdir -p "$3"
 
 exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ])" playwright-driver.browsers --run "
   export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
-  python3 - $(printf '%q ' "$@")
+  python3 - $(printf '%q ' "$user" "$@")
 " <<'PYTHON'
 import json
 import sys
+import urllib.parse
 
 from playwright.sync_api import sync_playwright
 
-reference, ours, out, *selectors = sys.argv[1:]
+user, reference, ours, out, *selectors = sys.argv[1:]
 PROPERTIES = [
     "display", "position", "box-sizing", "font-family", "font-size",
     "font-weight", "line-height", "color", "background-color",
@@ -53,15 +72,34 @@ MEASURE = """(args) => {
 }"""
 
 
+def log_in(context, url, username):
+    """CSRF from /session/csrf, then POST /session, on the context's cookies."""
+    parts = urllib.parse.urlsplit(url)
+    base = f"{parts.scheme}://{parts.netloc}"
+    headers = {"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"}
+    csrf = context.request.get(f"{base}/session/csrf.json", headers=headers).json()["csrf"]
+    response = context.request.post(
+        f"{base}/session.json",
+        form={"login": username, "password": "password"},
+        headers={**headers, "X-CSRF-Token": csrf},
+    )
+    body = response.json() if response.ok else {}
+    if not response.ok or "error" in body:
+        sys.exit(f"login as {username} on {base}: {response.status} {body}")
+
+
 def measure(browser, url, name):
-    page = browser.new_page(viewport={"width": 1280, "height": 900})
+    context = browser.new_context(viewport={"width": 1280, "height": 900})
+    if user:
+        log_in(context, url, user)
+    page = context.new_page()
     page.goto(url, wait_until="load")
     page.wait_for_selector("body", state="attached")
     page.wait_for_timeout(1500)
     page.add_style_tag(content=HIDE)
     page.screenshot(path=f"{out}/{name}.png")
     found = page.evaluate(MEASURE, [selectors, PROPERTIES])
-    page.close()
+    context.close()
     return found
 
 

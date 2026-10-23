@@ -155,9 +155,11 @@ Polish, from the second screenshot sweep:
 - [ ] Admin font previews all render in Inter: fix/admin-font-previews.
 - [ ] The admin email style Ace editor height and template preview offset:
   fix/admin-email-editors.
-- [ ] scripts/parity-screenshots: guard against a 164598px capture
+- [x] scripts/parity-screenshots: guard against a 164598px capture
   (PIL's DecompressionBombError) and let scripts/ui-compare log in:
-  chore/screens-tool-guards.
+  chore/screens-tool-guards. `--max-height` (30000px) clips the capture and
+  a failed diff is the page's error; `ui-compare --as USER`. The 164598px
+  page is the reference's development routing error page.
 
 Done:
 

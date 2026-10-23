@@ -209,6 +209,11 @@ bundled plugins Discourse enables by default whose UI isn't ported yet (chat,
 reactions, solved, presence, templates), so the scores measure what is; and
 runs `parity/screens/setup.sql` on both databases (`--setup`) for fixture rows
 the seed lacks, such as a voting category.
+A page taller than `--max-height` (30000px) is captured to that height and
+noted on its row, as a whole capture can pass PIL's decompression bomb limit.
+`scripts/ui-compare [--as USER] <reference-url> <our-url> <out-dir> [selector...]`
+screenshots one page on each side and prints the selectors' boxes and computed
+styles where they differ; `--as` logs in on both sides first.
 
 ## Bench
 

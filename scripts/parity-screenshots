@@ -50,6 +50,12 @@
 # parity/screens/setup.sql, is used when it exists. Reset both afterwards
 # (make reset-reference, scripts/db-load --force).
 #
+# --max-height PX: the tallest capture kept (default 30000). A page taller
+# than that is captured to that height and noted on its row: a whole
+# capture can pass PIL's decompression bomb limit and stop the run, as the
+# reference's development routing error page (every route listed, 164598px
+# at 1280 wide) did for a path it has no route for.
+#
 # --mobile: a phone instead of a desktop browser: a 390x844 viewport, an
 # Android Chrome user agent, touch and the mobile meta viewport. Discourse
 # switches to its mobile layout below 40rem (Site#mobileView reads the
@@ -58,7 +64,8 @@
 #
 # Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
 #          [--settings FILE] [--setup FILE] [--agent NAME] [--db NAME]
-#          [--width PX] [--mobile] [--fail-above PCT] [--summary FILE]
+#          [--width PX] [--max-height PX] [--mobile] [--fail-above PCT]
+#          [--summary FILE]
 #          <our-url> [<out-dir>]
 # Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
 # --settings parity/screens/settings, --width 1280. The page list format is
@@ -73,6 +80,7 @@ setup="$root/parity/screens/setup.sql"
 agent="rs-parity"
 db="discourse_rs_screens"
 width=1280
+max_height=30000
 mobile=""
 fail_above=""
 summary=""
@@ -85,6 +93,7 @@ while [ $# -gt 0 ]; do
     --agent) agent="$2"; shift 2 ;;
     --db) db="$2"; shift 2 ;;
     --width) width="$2"; shift 2 ;;
+    --max-height) max_height="$2"; shift 2 ;;
     --mobile)
       mobile=1
       width=390
@@ -99,7 +108,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--mobile] [--fail-above PCT] [--summary FILE] <our-url> [<out-dir>]" >&2
+  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--max-height PX] [--mobile] [--fail-above PCT] [--summary FILE] <our-url> [<out-dir>]" >&2
   exit 64
 fi
 ours="$1"
@@ -130,7 +139,7 @@ fi
 
 exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ps.pillow ps.numpy ])" playwright-driver.browsers --run "
   export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
-  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary" "$settings" "$mobile")
+  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary" "$settings" "$mobile" "$max_height")
 " <<'PYTHON'
 import html
 import json
@@ -145,7 +154,10 @@ import numpy as np
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-reference, ours, pages_file, out, width, fail_above, summary, settings_file, mobile = sys.argv[1:]
+reference, ours, pages_file, out, width, fail_above, summary, settings_file, mobile, max_height = (
+    sys.argv[1:]
+)
+max_height = int(max_height)
 out = Path(out)
 width = int(width)
 fail_above = float(fail_above) if fail_above else None
@@ -253,8 +265,21 @@ def capture(browser, base, page, path):
         )
         tab.add_style_tag(content=css)
         tab.wait_for_timeout(100)
-        tab.screenshot(path=str(path), full_page=not page["click"], animations="disabled")
-        return {"status": response.status if response else None, "error": None}
+        full_page = not page["click"]
+        height = tab.evaluate(
+            "Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0)"
+        )
+        # A page past --max-height is kept to its top: the whole of it can
+        # pass PIL's decompression bomb limit in compare.
+        clip = None
+        if full_page and height > max_height:
+            clip = {"x": 0, "y": 0, "width": width, "height": max_height}
+        tab.screenshot(path=str(path), full_page=full_page, clip=clip, animations="disabled")
+        return {
+            "status": response.status if response else None,
+            "error": None,
+            "truncated": height if clip else None,
+        }
     except Exception as e:  # reported on the page's row
         return {"status": None, "error": f"{type(e).__name__}: {e}".splitlines()[0]}
     finally:
@@ -301,6 +326,10 @@ def report(results):
                 notes.append(f"{side}: {r[side]['error']}")
             elif r[side]["status"] and r[side]["status"] >= 400:
                 notes.append(f"{side}: HTTP {r[side]['status']}")
+            if r[side].get("truncated"):
+                notes.append(f"{side}: the top {max_height} of {r[side]['truncated']}px")
+        if r.get("compare_error"):
+            notes.append(f"compare: {r['compare_error']}")
         score = "error" if r["diff_pct"] is None else f"{r['diff_pct']:.2f}%"
         cells = "".join(
             f'<td><a href="{name}/{img}.png"><img src="{name}/{img}.png" loading="lazy"></a></td>'
@@ -398,9 +427,14 @@ with sync_playwright() as p:
             "diff_pct": None,
         }
         if not result["reference"]["error"] and not result["ours"]["error"]:
-            result.update(
-                compare(directory / "reference.png", directory / "ours.png", directory / "diff.png")
-            )
+            # A capture PIL refuses (or any other failure to diff) is the
+            # page's error, not the run's.
+            try:
+                result.update(
+                    compare(directory / "reference.png", directory / "ours.png", directory / "diff.png")
+                )
+            except Exception as e:
+                result["compare_error"] = f"{type(e).__name__}: {e}".splitlines()[0]
         results.append(result)
     browser.close()
 
