@@ -4326,7 +4326,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     posts dropped; email/notification.rs:901-945 passes the raw widget
     markup), the clean_up_inactive_users modifier sparing poll voters
     (jobs/user_cleanup.rs:106-119 would delete them), reduce_excerpt
-    through `I18n.t("poll.poll")` (excerpt.rs:203-206 hardcodes English),
+    through `I18n.t("poll.poll")` (excerpt.rs:240-243 hardcodes English),
     extraction cooking with the post's topic and user ids
     (plugins/poll/mod.rs:143-147), non-integer ranked choice ranks cast as
     Rails casts them (plugins/poll/vote.rs:243), a poll whose content is
