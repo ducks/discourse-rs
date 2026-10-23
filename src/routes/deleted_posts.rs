@@ -85,6 +85,7 @@ pub async fn posts(
     let author_avatar = crate::avatar::avatar_template(urls, user_id, &author.0, author.2, None)
         .map_err(crate::users::UsersError::from)?;
     let mut out = Vec::with_capacity(rows.len());
+    let plugins = crate::excerpt::Plugins::from_settings(settings)?;
     for r in rows {
         let mut p = Map::new();
         // PostItemExcerpt
@@ -97,6 +98,7 @@ pub async fn posts(
                     keep_emoji_images: true,
                     ..Default::default()
                 },
+                plugins,
             )),
         );
         if r.cooked.chars().count() > 300 {

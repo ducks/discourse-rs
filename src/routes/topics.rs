@@ -753,6 +753,7 @@ async fn topic_crawler(
             image_mode: crate::excerpt::ImageMode::Strip,
             ..Default::default()
         },
+        crate::excerpt::Plugins::from_settings(settings)?,
     )
     .replace('\n', " ")
     .trim()

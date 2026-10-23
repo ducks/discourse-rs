@@ -569,6 +569,7 @@ impl Bookmarks<'_> {
                         keep_emoji_images: true,
                         ..Default::default()
                     },
+                    crate::excerpt::Plugins::from_settings(settings)?,
                 )),
             );
         }

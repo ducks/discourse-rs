@@ -1396,6 +1396,7 @@ impl Alerter<'_> {
                     plain_hashtags: true,
                     ..Default::default()
                 },
+                crate::excerpt::Plugins::from_settings(ctx.settings)?,
             );
             let mut payload = json!({
                 "notification_type": notification_type,

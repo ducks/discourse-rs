@@ -421,7 +421,10 @@ impl Categories<'_> {
             (text.clone(), text.clone(), text)
         } else {
             let text = description_plain_text(c.description.as_deref())?;
-            let excerpt = description_excerpt(c.description.as_deref())?;
+            let excerpt = description_excerpt(
+                c.description.as_deref(),
+                crate::excerpt::Plugins::from_settings(self.settings)?,
+            )?;
             (c.description.clone(), text, excerpt)
         };
         let name = if uncategorized {
@@ -564,9 +567,11 @@ pub fn description_plain_text(description: Option<&str>) -> Result<Option<String
 /// `PrettyText.excerpt(description, 300)`
 pub(crate) fn description_excerpt(
     description: Option<&str>,
+    plugins: crate::excerpt::Plugins,
 ) -> Result<Option<String>, Unsupported> {
-    Ok(description
-        .map(|html| crate::excerpt::excerpt(html, 300, &crate::excerpt::Options::default())))
+    Ok(description.map(|html| {
+        crate::excerpt::excerpt(html, 300, &crate::excerpt::Options::default(), plugins)
+    }))
 }
 
 pub(crate) const CATEGORY_SQL: &str = "SELECT categories.id, categories.name, categories.color, categories.text_color, \
@@ -609,17 +614,26 @@ mod tests {
             Some("Discussion about this site, &amp; how we can improve it.")
         );
         assert_eq!(
-            description_excerpt(html).unwrap().as_deref(),
+            description_excerpt(html, crate::excerpt::Plugins::ALL)
+                .unwrap()
+                .as_deref(),
             Some("Discussion about this site, &amp; how we can improve it.")
         );
         assert_eq!(description_plain_text(None).unwrap(), None);
-        assert_eq!(description_excerpt(Some("")).unwrap().as_deref(), Some(""));
+        assert_eq!(
+            description_excerpt(Some(""), crate::excerpt::Plugins::ALL)
+                .unwrap()
+                .as_deref(),
+            Some("")
+        );
     }
 
     #[test]
     fn long_descriptions_get_an_ellipsis() {
         let long = format!("<p>{}</p>", "x".repeat(301));
-        let excerpt = description_excerpt(Some(&long)).unwrap().unwrap();
+        let excerpt = description_excerpt(Some(&long), crate::excerpt::Plugins::ALL)
+            .unwrap()
+            .unwrap();
         assert!(excerpt.ends_with("&hellip;"));
         assert_eq!(excerpt.chars().count(), 300 + "&hellip;".len());
     }
@@ -631,7 +645,11 @@ mod tests {
             Some("Hi there &amp; you".into())
         );
         assert_eq!(
-            description_excerpt(Some("<p><a href=\"x\">y</a> <b>z</b></p>")).unwrap(),
+            description_excerpt(
+                Some("<p><a href=\"x\">y</a> <b>z</b></p>"),
+                crate::excerpt::Plugins::ALL
+            )
+            .unwrap(),
             Some("<a href=\"x\">y</a> z".into())
         );
     }

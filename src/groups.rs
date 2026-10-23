@@ -209,6 +209,7 @@ impl BasicGroup {
             self.bio_cooked.clone()
         };
         out.insert("bio_cooked".into(), json!(bio_cooked));
+        let plugins = crate::excerpt::Plugins::from_settings(settings)?;
         let bio_excerpt = bio_cooked.as_deref().filter(|b| !b.is_empty()).map(|b| {
             crate::excerpt::excerpt(
                 b,
@@ -217,6 +218,7 @@ impl BasicGroup {
                     keep_emoji_images: true,
                     ..Default::default()
                 },
+                plugins,
             )
         });
         out.insert("bio_excerpt".into(), json!(bio_excerpt));

@@ -1631,6 +1631,7 @@ async fn posts_feed(
     };
     let max_length = settings.get("post_excerpt_maxlength")?.to_i().max(0) as usize;
     let mut posts = Vec::with_capacity(ids.len());
+    let plugins = crate::excerpt::Plugins::from_settings(&settings)?;
     for id in ids {
         // posts.reject { !guardian.can_see?(post) }
         let visible = crate::posting::revisions::find_post(&mut conn, &ctx, guardian, id)
@@ -1672,7 +1673,8 @@ async fn posts_feed(
                         .and_then(Value::as_str)
                         .map(str::to_string),
                     ..Default::default()
-                }
+                },
+                plugins,
             )),
         );
         post.insert("truncated".into(), json!(true));

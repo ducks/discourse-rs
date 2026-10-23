@@ -286,7 +286,11 @@ impl Context<'_> {
         }
 
         // The transaction.
-        let excerpt = super::messages::build_excerpt_for(&message, &cooked)?;
+        let excerpt = super::messages::build_excerpt_for(
+            &message,
+            &cooked,
+            crate::excerpt::Plugins::from_settings(settings)?,
+        )?;
         let new_thread = match (reply, existing_thread) {
             (Some(r), None) => {
                 let original_user =

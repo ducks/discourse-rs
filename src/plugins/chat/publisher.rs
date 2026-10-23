@@ -378,6 +378,7 @@ pub async fn publish_thread_metadata(
         None => super::messages::build_excerpt_for(
             last.message.as_deref().unwrap_or_default(),
             last.cooked.as_deref().unwrap_or_default(),
+            crate::excerpt::Plugins::from_settings(cx.settings)?,
         )?,
     };
     let last_user = match last.user_id {

@@ -429,6 +429,7 @@ pub async fn build(
                 &post.cooked,
                 s.get("post_excerpt_maxlength")?.to_i().max(0) as usize,
                 &crate::excerpt::Options::default(),
+                crate::excerpt::Plugins::from_settings(s)?,
             )
             .replace('\n', " ")
         } else {
@@ -1057,6 +1058,7 @@ async fn post_partial(
                 post_url: Some(post_url.clone()),
                 ..Default::default()
             },
+            crate::excerpt::Plugins::from_settings(ctx.settings)?,
         )
     } else {
         p.cooked

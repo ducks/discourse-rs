@@ -42,8 +42,43 @@ pub enum ImageMode {
     Keep,
 }
 
-/// `PrettyText.excerpt(html, max_length, options)`
-pub fn excerpt(html: &str, max_length: usize, options: &Options) -> String {
+/// The bundled plugins' `reduce_excerpt` handlers that run: Plugin#on runs
+/// a handler only while its plugin's enabled setting is on
+/// (lib/plugin/instance.rb:692).
+#[derive(Debug, Clone, Copy)]
+pub struct Plugins {
+    /// spoiler-alert (`spoiler_enabled`): `.spoiler` removed.
+    pub spoiler: bool,
+    /// poll (`poll_enabled`): `div.poll` replaced by a link to the post.
+    pub poll: bool,
+    /// discourse-local-dates (`discourse_local_dates_enabled`): " (UTC)"
+    /// after each date.
+    pub local_dates: bool,
+}
+
+impl Plugins {
+    /// Every handler on, as with each plugin's enabled setting at its
+    /// default.
+    pub const ALL: Plugins = Plugins {
+        spoiler: true,
+        poll: true,
+        local_dates: true,
+    };
+
+    pub fn from_settings(
+        settings: &crate::site_settings::SiteSettings,
+    ) -> Result<Self, crate::site_settings::SettingError> {
+        Ok(Plugins {
+            spoiler: settings.get("spoiler_enabled")?.truthy(),
+            poll: crate::plugins::poll::enabled(settings)?,
+            local_dates: crate::plugins::local_dates::enabled(settings)?,
+        })
+    }
+}
+
+/// `PrettyText.excerpt(html, max_length, options)`, with the plugins whose
+/// handlers run.
+pub fn excerpt(html: &str, max_length: usize, options: &Options, plugins: Plugins) -> String {
     if html.trim().is_empty() {
         return String::new();
     }
@@ -59,6 +94,7 @@ pub fn excerpt(html: &str, max_length: usize, options: &Options) -> String {
         excerpt: String::new(),
         current_length: 0,
         options: options.clone(),
+        plugins,
         in_a: false,
         in_quote: false,
         in_details_depth: 0,
@@ -126,6 +162,7 @@ struct Parser {
     excerpt: String,
     current_length: usize,
     options: Options,
+    plugins: Plugins,
     in_a: bool,
     in_quote: bool,
     in_details_depth: usize,
@@ -195,12 +232,12 @@ impl Parser {
                 }
                 // The bundled plugins' reduce_excerpt handlers. spoiler-alert:
                 // `.spoiler` removed.
-                if has_class(&attrs, "spoiler") {
+                if self.plugins.spoiler && has_class(&attrs, "spoiler") {
                     return Ok(());
                 }
                 // poll: `div.poll` replaced by a link to the post, or by the
                 // word alone without one (poll.poll in server.en.yml).
-                if tag == "div" && has_class(&attrs, "poll") {
+                if self.plugins.poll && tag == "div" && has_class(&attrs, "poll") {
                     let replacement = match &self.options.post_url {
                         Some(url) => format!("<a href='{}'>poll</a>", html_escape(url)),
                         None => "poll".to_string(),
@@ -208,7 +245,7 @@ impl Parser {
                     return self.walk_children(&parse(&replacement).document);
                 }
                 // discourse-local-dates: the date's text with " (UTC)" after.
-                if has_class(&attrs, "discourse-local-date") {
+                if self.plugins.local_dates && has_class(&attrs, "discourse-local-date") {
                     if self.start_element(&tag, &attrs)? {
                         let text = format!("{} (UTC)", text_content(node));
                         self.characters(&text, true, true, true)?;
@@ -544,7 +581,7 @@ mod tests {
     use super::*;
 
     fn plain(html: &str, len: usize) -> String {
-        excerpt(html, len, &Options::default())
+        excerpt(html, len, &Options::default(), Plugins::ALL)
     }
 
     #[test]
@@ -570,7 +607,12 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            excerpt(&format!("<p>wink {emoji} &nbsp;</p>"), 300, &options),
+            excerpt(
+                &format!("<p>wink {emoji} &nbsp;</p>"),
+                300,
+                &options,
+                Plugins::ALL
+            ),
             format!("wink {emoji} \u{a0}")
         );
     }
@@ -596,7 +638,7 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            excerpt(poll, 300, &with_post),
+            excerpt(poll, 300, &with_post, Plugins::ALL),
             "before \n<a href=\"/t/a-poll-topic/12/3\">poll</a>\nafter"
         );
         assert_eq!(
@@ -606,6 +648,63 @@ mod tests {
             ),
             "at 2026-10-07T10:00:00Z (UTC) ok"
         );
+    }
+
+    #[test]
+    fn a_disabled_plugins_markup_is_left_as_it_is() {
+        // Plugin#on skips the handler, so the excerpt parser meets the
+        // markup as it would any other: the spoiler's text, the poll's
+        // options and the date without " (UTC)" stay.
+        let off = |plugins: Plugins, html: &str| excerpt(html, 300, &Options::default(), plugins);
+        let spoiler = "<p>before</p>\n<div class=\"spoiler\">\n<p>hidden <a href=\"https://example.com\">link</a></p>\n</div>\n<p>after</p>";
+        let no_spoiler = Plugins {
+            spoiler: false,
+            ..Plugins::ALL
+        };
+        assert_eq!(
+            off(no_spoiler, spoiler),
+            "before \n\nhidden <a href=\"https://example.com\">link</a> \n\nafter"
+        );
+        assert_eq!(
+            off(
+                no_spoiler,
+                "<p>a <span class=\"spoiler\">secret</span> b</p>"
+            ),
+            "a secret b"
+        );
+        let poll = "<p>before</p>\n<div class=\"poll\" data-poll-status=\"open\" data-poll-name=\"poll\">\n<div class=\"poll-container\">\n<ul>\n<li data-poll-option-id=\"a\">Yes</li>\n</ul>\n</div>\n</div>\n<p>after</p>";
+        let no_poll = Plugins {
+            poll: false,
+            ..Plugins::ALL
+        };
+        assert_eq!(off(no_poll, poll), "before \n\n\n\nYes\n\n\n\nafter");
+        let date = "<p>at <span data-date=\"2026-10-07\" data-time=\"10:00:00\" class=\"discourse-local-date\" data-timezone=\"UTC\" data-email-preview=\"2026-10-07T10:00:00Z UTC\">2026-10-07T10:00:00Z</span> ok</p>";
+        let no_dates = Plugins {
+            local_dates: false,
+            ..Plugins::ALL
+        };
+        assert_eq!(off(no_dates, date), "at 2026-10-07T10:00:00Z ok");
+        // Each switch reaches only its own plugin's markup.
+        assert_eq!(off(no_spoiler, poll), off(Plugins::ALL, poll));
+        assert_eq!(off(no_poll, date), off(Plugins::ALL, date));
+        assert_eq!(off(no_dates, spoiler), off(Plugins::ALL, spoiler));
+    }
+
+    #[test]
+    fn plugins_follow_their_enabled_settings() {
+        use crate::config::GlobalSettings;
+        use crate::site_settings::{Definitions, SiteSettings, Value};
+        let defs = Definitions::vendored().unwrap();
+        let s = SiteSettings::resolve(&defs, vec![], &GlobalSettings::default()).unwrap();
+        let on = Plugins::from_settings(&s).unwrap();
+        assert!(on.spoiler && on.poll && on.local_dates);
+        let off = |name: &str| Plugins::from_settings(&s.with(name, Value::Bool(false))).unwrap();
+        let p = off("spoiler_enabled");
+        assert!(!p.spoiler && p.poll && p.local_dates);
+        let p = off("poll_enabled");
+        assert!(p.spoiler && !p.poll && p.local_dates);
+        let p = off("discourse_local_dates_enabled");
+        assert!(p.spoiler && p.poll && !p.local_dates);
     }
 
     #[test]
@@ -644,7 +743,10 @@ mod tests {
             strip_links: true,
             ..Options::default()
         };
-        assert_eq!(excerpt("<p><a href=\"/x\">x</a> y</p>", 300, &opts), "x y");
+        assert_eq!(
+            excerpt("<p><a href=\"/x\">x</a> y</p>", 300, &opts, Plugins::ALL),
+            "x y"
+        );
         assert_eq!(
             plain("<p><img src=\"/i.png\" alt=\"pic\"></p>", 300),
             "[pic]"
@@ -658,7 +760,8 @@ mod tests {
             excerpt(
                 "<p>hi <img src=\"/e.png\" title=\":wave:\" class=\"emoji\" alt=\":wave:\"></p>",
                 300,
-                &opts
+                &opts,
+                Plugins::ALL
             ),
             "hi <img src=\"/e.png\" title=\":wave:\" class=\"emoji\" alt=\":wave:\">"
         );
@@ -688,7 +791,8 @@ mod tests {
             excerpt(
                 "<aside class=\"quote\"><blockquote><p>quoted</p></blockquote></aside><p>mine</p>",
                 300,
-                &opts
+                &opts,
+                Plugins::ALL
             ),
             "quoted mine"
         );
@@ -710,6 +814,9 @@ mod tests {
             keep_newlines: true,
             ..Options::default()
         };
-        assert_eq!(excerpt("<p>a</p><p>b</p>", 300, &opts), "a<br>b<br>");
+        assert_eq!(
+            excerpt("<p>a</p><p>b</p>", 300, &opts, Plugins::ALL),
+            "a<br>b<br>"
+        );
     }
 }

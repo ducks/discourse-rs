@@ -597,6 +597,7 @@ async fn local_topic_html(
             keep_svg: true,
             ..Default::default()
         },
+        crate::excerpt::Plugins::from_settings(s)?,
     );
     // post.user.avatar_template_url: absolute, without the scheme.
     let user: Option<(i32, String, Option<i32>)> =
@@ -689,7 +690,12 @@ async fn local_user_html(
     // UserProfile#bio_excerpt(230)
     let bio = match user.bio_cooked.as_deref().filter(|b| !b.trim().is_empty()) {
         Some(cooked) => {
-            let excerpt = crate::excerpt::excerpt(cooked, 230, &Default::default());
+            let excerpt = crate::excerpt::excerpt(
+                cooked,
+                230,
+                &Default::default(),
+                crate::excerpt::Plugins::from_settings(s)?,
+            );
             excerpt.strip_suffix("<br>").unwrap_or(&excerpt).to_string()
         }
         None => String::new(),

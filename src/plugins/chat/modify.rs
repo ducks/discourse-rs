@@ -342,7 +342,11 @@ impl Context<'_> {
             .ok_or(Unsupported("chat messages of deleted users"))?;
         let cooked = super::cook::cook(host, &new_message, user.id, &author).await?;
         // update_excerpt
-        let excerpt = super::messages::build_excerpt_for(&new_message, &cooked)?;
+        let excerpt = super::messages::build_excerpt_for(
+            &new_message,
+            &cooked,
+            crate::excerpt::Plugins::from_settings(settings)?,
+        )?;
         // save_message: the model's validations.
         let now = crate::clock::now_naive();
         let mut model_errors = Vec::new();

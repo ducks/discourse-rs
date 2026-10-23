@@ -1196,7 +1196,14 @@ pub async fn build(
         .await?;
         if let Some((post_number, cooked)) = best {
             let post_url = format!("/t/{}/{}/{post_number}", topic.slug()?, topic.id);
-            text.push_str(&format!("      {}\n", text_excerpt(&cooked, &post_url)));
+            text.push_str(&format!(
+                "      {}\n",
+                text_excerpt(
+                    &cooked,
+                    &post_url,
+                    crate::excerpt::Plugins::from_settings(ctx.settings)?
+                )
+            ));
         }
         text.push_str("\n    \n");
     }
@@ -1218,7 +1225,14 @@ pub async fn build(
             let link = linker.create(&title, &format!("{base_url}/t/{slug}/{}", post.topic_id));
             text.push_str(&format!("    {} - {link}\n\n", poster.username));
             let post_url = format!("/t/{slug}/{}/{}", post.topic_id, post.post_number);
-            text.push_str(&format!("    {}\n", text_excerpt(&post.cooked, &post_url)));
+            text.push_str(&format!(
+                "    {}\n",
+                text_excerpt(
+                    &post.cooked,
+                    &post_url,
+                    crate::excerpt::Plugins::from_settings(ctx.settings)?
+                )
+            ));
         }
     }
     text.push_str("\n\n");
@@ -1332,7 +1346,7 @@ pub async fn build(
 
 /// `post.excerpt(1000, strip_links: true, text_entities: true,
 /// markdown_images: true)`
-fn text_excerpt(cooked: &str, post_url: &str) -> String {
+fn text_excerpt(cooked: &str, post_url: &str, plugins: crate::excerpt::Plugins) -> String {
     crate::excerpt::excerpt(
         cooked,
         1000,
@@ -1343,6 +1357,7 @@ fn text_excerpt(cooked: &str, post_url: &str) -> String {
             post_url: Some(post_url.to_string()),
             ..Default::default()
         },
+        plugins,
     )
 }
 

@@ -95,6 +95,7 @@ pub async fn by_user(
     let enable_names = settings.get("enable_names")?.truthy();
     let base_url = urls.base_url()?;
     let mut out = Vec::new();
+    let plugins = crate::excerpt::Plugins::from_settings(settings)?;
     for r in rows {
         // posts.select { guardian.can_see_post?(post) }
         if crate::posting::revisions::find_post(&mut *conn, ctx, guardian, r.id)
@@ -124,6 +125,7 @@ pub async fn by_user(
                     keep_emoji_images: true,
                     ..Default::default()
                 },
+                plugins,
             )),
         );
         if r.cooked.chars().count() > 300 {

@@ -695,6 +695,7 @@ impl Reader<'_> {
         let enable_names = self.enable_names()?;
 
         let mut out = Vec::new();
+        let plugins = crate::excerpt::Plugins::from_settings(self.settings)?;
         for r in rows {
             let Some(post) = posts.get(&r.post_id) else {
                 return Err(Unsupported("reactions on posts gone from under them").into());
@@ -723,6 +724,7 @@ impl Reader<'_> {
                         keep_emoji_images: true,
                         ..Default::default()
                     },
+                    plugins,
                 )),
             );
             if post.cooked.chars().count() > 300 {
