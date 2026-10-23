@@ -89,15 +89,19 @@ Blockers, a scripted walk-through would hit them:
   2026-10-20, before every item from 260 on, and were gone after a reboot:
   restarted on 1007bc82 with the large corpus (8080) and the Meta baseline
   (8092). docs/demo-servers.md has how to load and run them.
-- [ ] The demo servers ran with DISCOURSE_RS_JOBS=off, so a post was never
+- [x] The demo servers ran with DISCOURSE_RS_JOBS=off, so a post was never
   processed (no lightbox, optimized images or video thumbnail) and replies
   and mentions notified nobody: the worker is on since 2026-10-23
   (fix/demo-jobs-on). With it on, a new topic whose first post has an
-  image answers 500 once process_post sets its image_upload_id
-  (topic_view.rs:710, "topic thumbnails", 125):
-  feat/topic-view-thumbnails, in progress. Found posting a photo, a video
-  and an audio file on both servers; the uploads, the post, the lightbox
-  and the stored cooked were right.
+  image answered 500 once process_post set its image_upload_id (125):
+  feat/topic-view-thumbnails, done. The demo units also lacked
+  DISCOURSE_SRC (a broken logo, category icons and emoji) and a stable
+  DISCOURSE_SECRET_KEY_BASE (a restart logged everyone out):
+  fix/demo-discourse-src, done. Checked on both servers at e8d68487 by
+  posting a photo, an MP4, a WebM and an MP3 in a new topic: the topic
+  page draws, the lightbox opens, the video placeholder plays (the WebM
+  in Playwright's Chromium, which has no H.264), the audio loads, the
+  optimized images and og:image are there, and a mention notifies.
 - [ ] The admin's site settings answer 500 saving a list setting such as
   authorized_extensions (164), so an admin can't allow video or audio
   uploads; the demo sites have them set in the database
