@@ -77,10 +77,21 @@ mkdir -p $D ~/.config/systemd/user
 cp target/release/discourse-rs $D/discourse-rs-$(git rev-parse --short HEAD)
 ln -sfn discourse-rs-$(git rev-parse --short HEAD) $D/discourse-rs
 cp deploy/demo/8080.env deploy/demo/8092.env $D/
+# A secret of their own, so logins survive a restart (without one each
+# process makes up a random secret). Kept out of the repo.
+for p in 8080 8092; do
+  echo "DISCOURSE_SECRET_KEY_BASE=$(openssl rand -hex 64)" >> $D/$p.env
+  chmod 600 $D/$p.env
+done
 cp deploy/demo/drs-demo@.service ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now drs-demo@8080 drs-demo@8092
 ```
+
+The unit sets `DISCOURSE_SRC=~/discourse/discourse`: a Discourse checkout
+with its bundle installed supplies the stock images (the logo, category and
+avatar fallbacks), the emoji set and the fonts. Without it those answer 404
+and the header shows a broken logo.
 
 Showing a newer build: copy it next to the old one, point the symlink at
 it and `systemctl --user restart drs-demo@8080 drs-demo@8092`.
