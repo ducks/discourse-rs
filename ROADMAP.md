@@ -160,9 +160,11 @@ Polish, from the second screenshot sweep:
   fix/admin-email-editors. ace-editor.scss's wrapper border and the cooked
   rules' .d-editor-preview selectors; email style 0.05% (was 2.61%), the
   signup template 0.03% (was 1.63%) on rs-ref-b.
-- [ ] scripts/parity-screenshots: guard against a 164598px capture
+- [x] scripts/parity-screenshots: guard against a 164598px capture
   (PIL's DecompressionBombError) and let scripts/ui-compare log in:
-  chore/screens-tool-guards.
+  chore/screens-tool-guards. `--max-height` (30000px) clips the capture and
+  a failed diff is the page's error; `ui-compare --as USER`. The 164598px
+  page is the reference's development routing error page.
 
 Done:
 
