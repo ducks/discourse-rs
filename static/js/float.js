@@ -491,7 +491,7 @@
       classes.push("-animated");
     }
     classes.push("-expanded");
-    content.className = classes.join(" ");
+    // The label first, the order DFloatBody's attributes come in.
     var role = menu ? o.contentRole : "tooltip";
     var presentational = role === "none" || role === "presentation";
     if (!presentational && o.ariaLabel) {
@@ -499,6 +499,7 @@
     } else if (!presentational && document.getElementById(this.id)) {
       content.setAttribute("aria-labelledby", this.id);
     }
+    content.className = classes.join(" ");
     content.dataset.content = "";
     if (o.identifier) {
       content.dataset.identifier = o.identifier;
@@ -539,7 +540,11 @@
     this.expanded = true;
     var o = this.options;
     var el = this.trigger instanceof HTMLElement ? this.trigger : null;
-    if (el && this.kind === "tooltip" && el.classList.contains("fk-d-tooltip__trigger")) {
+    if (
+      el &&
+      ((this.kind === "tooltip" && el.classList.contains("fk-d-tooltip__trigger")) ||
+        (this.kind === "menu" && ownedTrigger(el)))
+    ) {
       el.setAttribute("aria-expanded", "true");
       el.classList.add("-expanded");
     }
@@ -644,7 +649,7 @@
     var content = this.content;
     var el = this.trigger instanceof HTMLElement ? this.trigger : null;
     this.expanded = false;
-    if (el && el.classList.contains("fk-d-tooltip__trigger")) {
+    if (el && (el.classList.contains("fk-d-tooltip__trigger") || ownedTrigger(el))) {
       el.setAttribute("aria-expanded", "false");
       el.classList.remove("-expanded");
     }
@@ -680,10 +685,27 @@
     return closing;
   };
 
+  // A DMenu's own trigger (fk-d-menu__trigger), as opposed to any element
+  // the menu service shows a menu by (DHeadlessMenu): DMenu classes its
+  // content <identifier>-content, labels it by the trigger's id, marks the
+  // trigger expanded while open and draws a grip atop its bottom sheet.
+  function ownedTrigger(trigger) {
+    return trigger instanceof HTMLElement && trigger.classList.contains("fk-d-menu__trigger");
+  }
+
   // The menu service's show(trigger, options) for a trigger it does not
   // know yet: a new instance, opened now.
   function menu(trigger, options) {
     var o = merge(MENU, options);
+    if (ownedTrigger(trigger) && o.identifier) {
+      var contentClass = o.identifier + "-content";
+      if ((" " + (o.mainClass || "") + " ").indexOf(" " + contentClass + " ") === -1) {
+        o.mainClass = o.mainClass ? contentClass + " " + o.mainClass : contentClass;
+      }
+      if (!trigger.id) {
+        trigger.id = "ember-float-" + ++guid;
+      }
+    }
     if (o.modalForMobile && mobileView() && Discourse.modal) {
       return modalMenu(trigger, o);
     }
@@ -693,7 +715,8 @@
   }
 
   // DMenu's renderInModal: the content in a DModal without its header,
-  // classed fk-d-menu-modal and <identifier>-content, after a grip.
+  // classed fk-d-menu-modal and <identifier>-content, after a grip for a
+  // DMenu's own trigger.
   function modalMenu(trigger, o) {
     var el = trigger instanceof HTMLElement ? trigger : null;
     var instance = { expanded: true, options: o, content: null };
@@ -706,8 +729,13 @@
       classes.push(o.identifier + "-content");
     }
     if (o.mainClass) {
-      classes.push(o.mainClass);
+      o.mainClass.split(" ").forEach(function (name) {
+        if (name && classes.indexOf(name) === -1) {
+          classes.push(name);
+        }
+      });
     }
+    var grip = ownedTrigger(trigger);
     var attributes = { "data-content": "" };
     if (o.identifier) {
       attributes["data-identifier"] = o.identifier;
@@ -718,10 +746,13 @@
       ariaLabel: o.ariaLabel,
       attributes: attributes,
       body: function (body) {
-        var grip = document.createElement("div");
-        grip.setAttribute("aria-hidden", "true");
-        grip.className = "fk-d-menu-modal__grip";
-        body.appendChild(grip);
+        // DInlineFloat's sheet, for a menu shown by any element, has none.
+        if (grip) {
+          var gripEl = document.createElement("div");
+          gripEl.setAttribute("aria-hidden", "true");
+          gripEl.className = "fk-d-menu-modal__grip";
+          body.appendChild(gripEl);
+        }
         if (o.content instanceof Node) {
           body.appendChild(o.content);
         } else if (o.content != null) {

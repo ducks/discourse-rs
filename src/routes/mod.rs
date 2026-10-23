@@ -73,6 +73,7 @@ mod presence;
 mod read_tracking;
 mod recent_searches;
 mod review;
+mod review_claims;
 mod robots;
 mod search;
 mod search_menu;
@@ -2133,6 +2134,26 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/review/{reviewable_id}/perform/{action_id}",
             put(review::perform),
         )
+        .route(
+            "/review/{reviewable_id}/notes",
+            post(review_claims::create_note),
+        )
+        .route(
+            "/review/{reviewable_id}/notes/{note_id}",
+            delete(review_claims::destroy_note),
+        )
+        .route(
+            "/reviewable_claimed_topics",
+            post(review_claims::create_claim),
+        )
+        .route(
+            "/reviewable_claimed_topics.json",
+            post(review_claims::create_claim),
+        )
+        .route(
+            "/reviewable_claimed_topics/{id}",
+            delete(review_claims::destroy_claim),
+        )
         .route("/post_actions", post(post_actions::create))
         .route("/post_actions.json", post(post_actions::create))
         .route("/post_actions/{id}", delete(post_actions::destroy))
@@ -2655,6 +2676,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chartjs-adapter-moment.min.js", get(asset))
         .route("/assets/navigation-bar.js", get(asset))
         .route("/assets/topic.js", get(asset))
+        .route("/assets/topic-admin-menu.js", get(asset))
+        .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))

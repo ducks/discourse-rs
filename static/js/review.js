@@ -7,10 +7,14 @@
 // note form's counter, and the watched words its scores name
 // highlighted in the post and title (highlightHTML).
 //
-// What leans on parts not ported says so instead: claiming (which a
-// confirmation or a client action claims through first), the client
-// actions (edit, suspend, silence), the reject reason and revise modals,
-// notes, the insights tab, editing and the pin toggle.
+// Claiming (ReviewableClaimedTopic's buttons, and the automatic claim a
+// confirmation takes first and releases after: #claimReviewable,
+// #unclaimAutomaticReviewable) and the notes (ReviewableNoteForm, the
+// timeline's delete) go to the server, the reviewable drawn again after.
+//
+// What leans on parts not ported says so instead: the client actions
+// (edit, suspend, silence), the reject reason and revise modals, the
+// insights tab, editing and the pin toggle.
 (function () {
   "use strict";
 
@@ -347,10 +351,88 @@
             ids.push(String(other));
           }
         });
-        return redraw(item, ids);
+        // Then #unclaimAutomaticReviewable, before the redraw.
+        return unclaimAutomatic(item).then(function () {
+          return redraw(item, ids);
+        });
       })
       .catch(function (error) {
         setDisabled(item, false);
+        ui().failed(error);
+        unclaimAutomatic(item);
+      });
+  }
+
+  // #claimReviewable: a reviewable without a topic counts as claimed; an
+  // unclaimed one is claimed automatically. True when the viewer holds it.
+  function claimReviewable(item) {
+    var data = reviewableData(item);
+    if (!data.topic_id) {
+      return Promise.resolve(true);
+    }
+    var claim = data.claimed_by
+      ? Promise.resolve()
+      : ui()
+          .ajax("POST", "/reviewable_claimed_topics", {
+            reviewable_claimed_topic: { topic_id: data.topic_id, automatic: true },
+          })
+          .then(function () {
+            data.claimed_by = { user_id: pageData().viewer_id, automatic: true };
+            storeData(item, data);
+          });
+    return claim.then(
+      function () {
+        return !!data.claimed_by && data.claimed_by.user_id === pageData().viewer_id;
+      },
+      function (error) {
+        ui().failed(error);
+        return false;
+      }
+    );
+  }
+
+  // #unclaimAutomaticReviewable
+  function unclaimAutomatic(item) {
+    var data = reviewableData(item);
+    if (!data.topic_id || !data.claimed_by || !data.claimed_by.automatic) {
+      return Promise.resolve();
+    }
+    return ui()
+      .ajax("DELETE", "/reviewable_claimed_topics/" + data.topic_id, { automatic: true })
+      .then(function () {
+        data.claimed_by = null;
+        storeData(item, data);
+      })
+      .catch(function (error) {
+        ui().failed(error);
+      });
+  }
+
+  function storeData(item, data) {
+    var page = pageData();
+    page.reviewables[item.dataset.reviewableId] = data;
+    document.getElementById("review-page-data").textContent = JSON.stringify(page);
+  }
+
+  // ReviewableClaimedTopic#claim and #unclaim, then every reviewable of the
+  // topic on the page drawn again (the /reviewable_claimed message's work
+  // in Ember).
+  function toggleClaim(item, button) {
+    var topicId = reviewableData(item).topic_id;
+    var request = button.classList.contains("unclaim")
+      ? ui().ajax("DELETE", "/reviewable_claimed_topics/" + topicId)
+      : ui().ajax("POST", "/reviewable_claimed_topics", { reviewable_claimed_topic: { topic_id: topicId } });
+    button.disabled = true;
+    request
+      .then(function () {
+        var reviewables = pageData().reviewables || {};
+        var ids = Object.keys(reviewables).filter(function (id) {
+          return reviewables[id].topic_id === topicId;
+        });
+        return redraw(item, ids);
+      })
+      .catch(function (error) {
+        button.disabled = false;
         ui().failed(error);
       });
   }
@@ -360,10 +442,28 @@
     if (!action) {
       return;
     }
-    // A confirmation, a modal or a client action claims the reviewable's
-    // topic first (#claimReviewable).
+    // A confirmation claims the reviewable's topic first, and releases an
+    // automatic claim when cancelled.
     if (action.confirm_message) {
-      notPorted("claiming a reviewable before its confirmation");
+      claimReviewable(item).then(function (claimed) {
+        if (!claimed) {
+          return;
+        }
+        var options = {
+          message: action.confirm_message,
+          didConfirm: function () {
+            performConfirmed(item, action);
+          },
+          didCancel: function () {
+            unclaimAutomatic(item);
+          },
+        };
+        if (action.confirm_destructive) {
+          Discourse.dialog.deleteConfirm(options);
+        } else {
+          Discourse.dialog.confirm(options);
+        }
+      });
       return;
     }
     if (action.require_reject_reason) {
@@ -466,8 +566,31 @@
       return;
     }
 
-    if (target.closest(".reviewable-claimed-topic button")) {
-      notPorted("claiming a topic in the review queue");
+    var claimButton = target.closest(".reviewable-claimed-topic button");
+    if (claimButton) {
+      if (!claimButton.disabled) {
+        toggleClaim(item, claimButton);
+      }
+      return;
+    }
+
+    // The timeline's delete: the viewer's own note, or any for an admin.
+    var deleteNote = target.closest(".timeline-event__delete-note");
+    if (deleteNote) {
+      var index = Array.prototype.indexOf.call(item.querySelectorAll(".timeline-event__delete-note"), deleteNote);
+      var noteId = (reviewableData(item).deletable_notes || [])[index];
+      if (noteId !== undefined && !deleteNote.disabled) {
+        deleteNote.disabled = true;
+        ui()
+          .ajax("DELETE", "/review/" + item.dataset.reviewableId + "/notes/" + noteId)
+          .then(function () {
+            return redraw(item, [item.dataset.reviewableId]);
+          })
+          .catch(function (error) {
+            deleteNote.disabled = false;
+            ui().failed(error);
+          });
+      }
       return;
     }
 
@@ -515,8 +638,8 @@
     });
   }
 
-  // The note form: FormKit's counter as it is typed; adding a note goes
-  // to ReviewableNotesController, which isn't ported.
+  // The note form: FormKit's counter as it is typed; a note (trimmed, not
+  // blank) POSTed, then the reviewable drawn again with it.
   document.addEventListener("input", function (event) {
     var textarea = event.target.closest && event.target.closest(".reviewable-note-form__textarea");
     if (!textarea) {
@@ -534,7 +657,24 @@
       return;
     }
     event.preventDefault();
-    notPorted("review queue notes");
+    var form = event.target.closest(".reviewable-note-form__form");
+    var item = itemOf(form);
+    var textarea = form.querySelector(".reviewable-note-form__textarea");
+    var content = textarea.value.trim();
+    if (!item || !content) {
+      return;
+    }
+    var submit = form.querySelector("button[type=submit]");
+    submit.disabled = true;
+    ui()
+      .ajax("POST", "/review/" + item.dataset.reviewableId + "/notes", { reviewable_note: { content: content } })
+      .then(function () {
+        return redraw(item, [item.dataset.reviewableId]);
+      })
+      .catch(function (error) {
+        submit.disabled = false;
+        ui().failed(error);
+      });
   });
 
   // ---- Watched words ----------------------------------------------------

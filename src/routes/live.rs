@@ -737,6 +737,24 @@ async fn render_post(
             std::slice::from_ref(&post),
         )
         .await?,
+        // What the post admin menu reads, as the topic view's details
+        // have it.
+        menus: {
+            let can_see = access.as_ref().is_some_and(|a| a.can_see_topic);
+            let details = serde_json::json!({
+                "can_edit_staff_notes": guardian
+                    .can_perform_action_available_to_group_moderators(settings, can_see)?,
+                "can_permanently_delete": settings.get("can_permanently_delete")?.truthy()
+                    && guardian.is_admin()
+                    && topic_ctx.trashed(),
+                "can_publish_page": guardian.can_publish_page(settings, &topic_ctx, can_see)?,
+            });
+            crate::post_view::StaffMenus::load(
+                guardian,
+                settings,
+                &serde_json::json!({ "details": details }),
+            )?
+        },
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;
@@ -1047,6 +1065,7 @@ pub async fn gap(
     };
     let post_settings = crate::post_view::PostSettings::load(&settings)?;
     let mut topic = crate::post_view::TopicInfo::from_view(json);
+    topic.menus = crate::post_view::StaffMenus::load(&guardian, &settings, json)?;
     if post_settings.poll.is_some() {
         let posts = json["post_stream"]["posts"]
             .as_array()

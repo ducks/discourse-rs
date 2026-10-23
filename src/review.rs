@@ -8,7 +8,9 @@
 //! Refused for flagged posts: posts that are deleted or hidden (restoring
 //! and unhiding), deleting posts, silencing or suspending from the queue,
 //! editing, deleting users, flags with a message (their moderator
-//! replies); for every type, claiming and category group moderation.
+//! replies); for every type, category group moderation. The claim check
+//! (claim_error?) and the manual claim released at the transition are
+//! reviewable_claims.rs's.
 
 use serde_json::{Value, json};
 use sqlx::PgConnection;
@@ -61,6 +63,8 @@ pub enum Outcome {
     /// `Discourse::NotFound` with a message: a handled account review
     /// whose user is gone.
     NotFoundMessage(&'static str),
+    /// `claim_error?`: render_json_error with the message's key (422).
+    ClaimError(&'static str),
 }
 
 /// The type's `additional_args` from the request (ReviewableUser's and
@@ -186,8 +190,25 @@ pub async fn perform(
         return Err(Unsupported("reviewables for groups").into());
     }
     // claim_error?
-    if s.get("reviewable_claiming")?.to_s() != "disabled" && reviewable.topic_id.is_some() {
-        return Err(Unsupported("reviewable claiming").into());
+    let claiming = s.get("reviewable_claiming")?.to_s().to_string();
+    if claiming != "disabled"
+        && let Some(topic_id) = reviewable.topic_id
+    {
+        let claimed_by: Option<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM reviewable_claimed_topics WHERE topic_id = $1 ORDER BY id LIMIT 1",
+        )
+        .bind(topic_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        match claimed_by {
+            None if claiming == "required" => {
+                return Ok(Outcome::ClaimError("reviewables.must_claim"));
+            }
+            Some(id) if id != user.id => {
+                return Ok(Outcome::ClaimError("reviewables.user_claimed"));
+            }
+            _ => {}
+        }
     }
     if reviewable.kind == "ReviewableUser" {
         return perform_user(conn, ctx, guardian, &reviewable, action_id, version, extra).await;
@@ -475,6 +496,17 @@ async fn run(
         FlagAction::AgreeAndKeep | FlagAction::Ignore => {}
     }
 
+    // transition_to: the pending reviewable's topic released from its
+    // manual claim first.
+    if let Some(topic_id) = reviewable.topic_id
+        && reviewable.status == PENDING
+    {
+        let performer = crate::session::current::SessionUser::load(&mut *conn, performer_id)
+            .await?
+            .ok_or(Unsupported("a performer who is gone"))?;
+        crate::reviewable_claims::release_manual_claim(&mut *conn, ctx, topic_id, &performer)
+            .await?;
+    }
     // transition_to: the status saved, its history, the scores settled.
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable.id)

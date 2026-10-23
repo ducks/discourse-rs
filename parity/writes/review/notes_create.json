@@ -1,0 +1,107 @@
+{
+  "name": "notes_create",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/review/9301/notes",
+      "params": {
+        "reviewable_note": {
+          "content": "Checked the thread; leaving it up."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-23T17:49:56.274208",
+  "transaction_started_at": "2026-10-23T17:49:55.288149",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "content": "Checked the thread; leaving it up.",
+        "created_at": "2026-10-23T17:49:56.290Z",
+        "updated_at": "2026-10-23T17:49:56.290Z",
+        "user": {
+          "id": 1,
+          "username": "admin",
+          "name": "Admin",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+        }
+      }
+    }
+  ],
+  "changes": {
+    "reviewable_notes": {
+      "inserted": [
+        {
+          "id": 1,
+          "content": "Checked the thread; leaving it up.",
+          "user_id": 1,
+          "created_at": "2026-10-23T17:49:56.290122",
+          "updated_at": "2026-10-23T17:49:56.290122",
+          "reviewable_id": 9301
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 568,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "erkZC8tU/8rFXMAyfS6rdo/BL3Y=",
+            "created_at": "2026-10-23T17:49:55.662272",
+            "rotated_at": "2026-10-23T17:49:55.661029",
+            "updated_at": "2026-10-23T17:49:55.662272",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "erkZC8tU/8rFXMAyfS6rdo/BL3Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 568,
+            "seen_at": "2026-10-23T17:49:56.280748",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "erkZC8tU/8rFXMAyfS6rdo/BL3Y=",
+            "created_at": "2026-10-23T17:49:55.662272",
+            "rotated_at": "2026-10-23T17:49:55.661029",
+            "updated_at": "2026-10-23T17:49:55.662272",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "erkZC8tU/8rFXMAyfS6rdo/BL3Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "reviewable_notes": 1
+  },
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
+    "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "UPDATE topics SET reviewable_score = 3 WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "0847000046a011eaccc9eaaf9983047ba57554f33fc333e412d715c09e31cf7f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

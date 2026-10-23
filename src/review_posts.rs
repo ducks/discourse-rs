@@ -247,15 +247,11 @@ async fn transition_to(
     if let Some(topic_id) = row.topic_id
         && row.status == PENDING
     {
-        let claimed: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM reviewable_claimed_topics WHERE topic_id = $1 AND NOT automatic)",
-        )
-        .bind(topic_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if claimed {
-            return Err(Unsupported("releasing a topic's claim from the review queue").into());
-        }
+        let performer = crate::session::current::SessionUser::load(&mut *conn, performer_id)
+            .await?
+            .ok_or(Unsupported("a performer who is gone"))?;
+        crate::reviewable_claims::release_manual_claim(&mut *conn, ctx, topic_id, &performer)
+            .await?;
     }
     crate::web_hooks::refuse(
         &mut *conn,

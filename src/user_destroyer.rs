@@ -34,13 +34,10 @@ const PENDING: i32 = 0;
 const IGNORED: i32 = 3;
 /// `ReviewableHistory.types`
 const HISTORY_TRANSITIONED: i32 = 1;
-const HISTORY_UNCLAIMED: i32 = 4;
 /// `ReviewableScore.statuses`
 const SCORE_PENDING: i32 = 0;
 const SCORE_DISAGREED: i32 = 2;
 const SCORE_IGNORED: i32 = 3;
-/// `Group::AUTO_GROUPS[:staff]`
-const STAFF_GROUP: i64 = 3;
 /// `PostActionType.types[:like]`
 const LIKE: i32 = 2;
 /// `Post.types[:whisper]`
@@ -579,85 +576,16 @@ async fn log_history(
     Ok(())
 }
 
-/// `ReviewableClaimedTopic.release_manual_claim(topic_id, system)`: the
-/// topic's manual claim deleted, logged as unclaimed on its pending
-/// reviewables when claiming is on, and the staff's counts refreshed.
+/// `ReviewableClaimedTopic.release_manual_claim(topic_id, system)`.
 async fn release_manual_claim(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     topic_id: i32,
 ) -> Result<(), AppError> {
-    let claim: Option<i64> = sqlx::query_scalar(
-        "DELETE FROM reviewable_claimed_topics WHERE id = \
-           (SELECT id FROM reviewable_claimed_topics WHERE topic_id = $1 AND NOT automatic LIMIT 1) \
-         RETURNING id",
-    )
-    .bind(topic_id)
-    .fetch_optional(&mut *conn)
-    .await?;
-    if claim.is_none() {
-        return Ok(());
-    }
-    if ctx.settings.get("reviewable_claiming")?.to_s() != "disabled" {
-        let pending: Vec<(i64, i32)> = sqlx::query_as(
-            "SELECT id, status FROM reviewables WHERE status = $1 AND topic_id = $2 ORDER BY id",
-        )
-        .bind(PENDING)
-        .bind(topic_id)
-        .fetch_all(&mut *conn)
-        .await?;
-        for (id, status) in pending {
-            log_history(conn, id, HISTORY_UNCLAIMED, status, SYSTEM_USER_ID).await?;
-        }
-    }
-    if ctx
-        .settings
-        .get("enable_category_group_moderation")?
-        .truthy()
-    {
-        return Err(Unsupported("releasing claims with category group moderation").into());
-    }
-    let group_ids = [STAFF_GROUP];
     let system = crate::session::current::SessionUser::load(&mut *conn, SYSTEM_USER_ID)
         .await?
         .ok_or(Unsupported("a site without its system user"))?;
-    // BasicUserSerializer of the performer.
-    let urls = crate::url::Urls {
-        config: ctx.config,
-        settings: ctx.settings,
-    };
-    let avatar_template = crate::avatar::avatar_template(
-        &urls,
-        system.id,
-        &system.username,
-        system.uploaded_avatar_id,
-        None,
-    )?;
-    ctx.bus
-        .publish(
-            &mut *conn,
-            "/reviewable_claimed",
-            &json!({
-                "topic_id": topic_id,
-                "user": {
-                    "id": system.id,
-                    "username": system.username,
-                    "name": system.name,
-                    "avatar_template": avatar_template,
-                },
-                "automatic": false,
-                "claimed": false,
-            }),
-            Some(&[crate::bus::group_tag(STAFF_GROUP as i32)]),
-        )
-        .await?;
-    crate::jobs::enqueue(
-        &mut *conn,
-        "refresh_users_reviewable_counts",
-        json!({ "group_ids": group_ids }),
-    )
-    .await?;
-    Ok(())
+    crate::reviewable_claims::release_manual_claim(conn, ctx, topic_id, &system).await
 }
 
 /// Each of the user's live post actions `remove_act!`ed by system:

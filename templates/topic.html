@@ -30,9 +30,14 @@
 {% if live %}{{ footer_buttons|safe }}{% endif %}
 {% if live %}<br>{{ more_topics|safe }}{% endif %}
 </div>
+{{ topic_menus|safe }}
 <script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>
 {% if !dialog_strings.is_empty() %}<script type="application/json" id="dialog-strings">{{ dialog_strings|safe }}</script><script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "topic.js") }}"></script>
+{#- The topic admin menu and the posts' admin menus. -#}
+{% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
+{#- A message's add participant modal (AddPmParticipants). -#}
+{% if topic_menus.contains("add-pm-participants-config") %}<script src="{{ crate::assets::url(base_path, "add-pm-participants.js") }}"></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "header-topic-info.js") }}"></script>
 <script type="application/json" id="quote-button-config">{{ quote_config|safe }}</script>
 <script src="{{ crate::assets::url(base_path, "quote-button.js") }}"></script>

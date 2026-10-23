@@ -226,3 +226,104 @@
     padding-left: var(--space-6);
   }
 }
+
+/*
+ * A message's AddPmParticipants modal (static/js/add-pm-participants.js):
+ * its EmailGroupUserChooser (common/select-kit/email-group-user-chooser.scss,
+ * the rules its rows and header draw) and the modal's
+ * (common/components/add-pm-participants.scss, its invite panel).
+ */
+/* common/select-kit/email-group-user-chooser.scss */
+
+/* email-group-user-chooser.scss:2 */
+.select-kit.email-group-user-chooser.full-width-wrap {
+  width: unset;
+}
+/* email-group-user-chooser.scss:6 */
+.select-kit.email-group-user-chooser.is-expanded .select-kit-body {
+  width: 300px;
+}
+/* email-group-user-chooser.scss:11 */
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .identifier {
+  color: var(--primary);
+  white-space: nowrap;
+  line-height: var(--line-height-medium);
+  margin-right: 0.5em;
+}
+/* email-group-user-chooser.scss:18 */
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .name {
+  color: var(--primary-high);
+  font-size: var(--font-down-1);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* email-group-user-chooser.scss:41 */
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__user.--username-first .identifier,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__user.--group-name-first .identifier,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__group.--username-first .identifier,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__group.--group-name-first .identifier {
+  color: var(--primary);
+  white-space: nowrap;
+  line-height: var(--line-height-medium);
+  margin-right: 0.5em;
+}
+/* email-group-user-chooser.scss:48 */
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__user.--username-first .name,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__user.--group-name-first .name,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__group.--username-first .name,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .email-group-user-chooser__group.--group-name-first .name {
+  color: var(--primary-high);
+  font-size: var(--font-down-1);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* email-group-user-chooser.scss:76 */
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .avatar,
+.select-kit.email-group-user-chooser .select-kit-row.email-group-user-chooser-row .d-icon {
+  margin-left: 0;
+  margin-right: 0.5em;
+}
+
+/* common/components/add-pm-participants.scss */
+
+/* add-pm-participants.scss:2 */
+.d-modal.add-pm-participants .d-modal__body {
+  overflow-y: visible;
+}
+/* add-pm-participants.scss:60 */
+.add-pm-participants.d-modal .invite.modal-panel .body .invite-user-control,
+.add-pm-participants.d-modal .invite.modal-panel .body .group-access-control,
+.add-pm-participants.d-modal .invite.modal-panel .body .show-custom-message-control {
+  margin-bottom: 8px;
+}
+/* add-pm-participants.scss:74 */
+.add-pm-participants.d-modal .invite.modal-panel .body .instructions {
+  margin-bottom: 8px;
+}
+/* add-pm-participants.scss:78 */
+.add-pm-participants.d-modal .invite.modal-panel .body .instructions.approval-notice {
+  color: var(--secondary-medium);
+}
+/* add-pm-participants.scss:82 */
+.add-pm-participants.d-modal .invite.modal-panel .body .invite-user-input {
+  width: 100%;
+}
+/* add-pm-participants.scss:94 */
+.add-pm-participants.d-modal .invite.modal-panel .body .invite-user-input-wrapper {
+  display: flex;
+}
+/* add-pm-participants.scss:103 */
+.add-pm-participants.d-modal .invite.modal-panel .footer {
+  display: flex;
+  align-items: center;
+}
+/* add-pm-participants.scss:107 */
+.add-pm-participants.d-modal .invite.modal-panel .footer .btn-primary {
+  margin-right: 8px;
+}
+/* add-pm-participants.scss:110 */
+.add-pm-participants.d-modal .invite.modal-panel .footer .btn-primary:last-child {
+  margin-right: 0;
+}

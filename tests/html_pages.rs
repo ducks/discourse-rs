@@ -1562,3 +1562,65 @@ async fn the_breadcrumb_drops_are_styled() {
         assert!(css.contains(rule), "{rule}");
     }
 }
+
+/// The template's content, `<template class="{class}"...>` to its end.
+fn template<'a>(html: &'a str, class: &str) -> &'a str {
+    let open = format!("<template class=\"{class}\"");
+    let start = html
+        .find(&open)
+        .unwrap_or_else(|| panic!("no {class} template"));
+    let rest = &html[start..];
+    let inner = &rest[rest.find('>').unwrap() + 1..];
+    &inner[..inner.find("</template>").unwrap()]
+}
+
+// The staff menus as Ember draws them for an admin (parity/menus, from
+// the reference): TopicAdminMenu's wrench in the footer and the
+// timeline's controls with the page's menu, and a post's wrench with its
+// AdminPostMenu. A member who manages nothing gets neither.
+#[tokio::test]
+async fn staff_get_the_topic_and_post_admin_menus() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(st.clone(), "admin").await;
+    let html = admin.page("/t/parity-fixture-replies-and-posters/35").await;
+    let wrench = r##"<svg class="fa d-icon d-icon-wrench svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#wrench"></use></svg>"##;
+    assert!(html.contains(&format!(
+        r#"<div class="topic-footer-main-buttons__actions"><button aria-expanded="false" class="btn no-text fk-d-menu__trigger topic-admin-menu-trigger btn-default btn-icon toggle-admin-menu topic-footer-button" data-identifier="topic-admin-menu" data-trigger="" type="button">{wrench}</button><button class="btn btn-icon-text btn-default topic-footer-button share-and-invite""#
+    )));
+    // The timeline's: @buttonClasses unset leaves Ember's trailing space.
+    assert!(html.contains(&format!(
+        r#"<div class="timeline-controls"><button aria-expanded="false" class="btn no-text fk-d-menu__trigger topic-admin-menu-trigger btn-default btn-icon toggle-admin-menu " data-identifier="topic-admin-menu" data-trigger="" type="button">{wrench}</button></div>"#
+    )));
+    assert_eq!(
+        template(&html, "topic-admin-menu-template"),
+        include_str!("../parity/menus/topic-admin-menu-t35-admin.html").trim_end()
+    );
+    assert!(html.contains("/assets/topic-admin-menu.js?v="));
+    // Post 2: the wrench among the collapsed buttons, before show more
+    // (Ember draws them once it is pressed), its menu after the buttons.
+    let post = &html[html.find("id=\"post_2\"").unwrap()..];
+    let post = &post[..post.find("</article>").unwrap()];
+    assert!(post.contains(&format!(
+        r#"<button hidden aria-label="post admin actions" class="btn no-text btn-icon post-action-menu__admin show-post-admin-menu btn-flat" title="post admin actions" type="button">{wrench}<span aria-hidden="true">&#8203;</span></button><button aria-label="show more""#
+    )));
+    assert_eq!(
+        template(post, "admin-post-menu-content"),
+        include_str!("../parity/menus/admin-post-menu-post36-admin.html").trim_end()
+    );
+
+    // The mobile view: the wrench before the progress bar too.
+    admin.cookies.push("mobile_view=1".to_string());
+    let html = admin.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(html.contains(&format!(
+        r#"<div id="topic-progress-wrapper"><button aria-expanded="false" class="btn no-text fk-d-menu__trigger topic-admin-menu-trigger btn-default btn-icon toggle-admin-menu " data-identifier="topic-admin-menu" data-trigger="" type="button">{wrench}</button><nav "#
+    )));
+    assert!(html.contains("toggle-admin-menu topic-footer-button\""));
+
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let html = user1.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(!html.contains("topic-admin-menu-trigger"));
+    assert!(!html.contains("topic-admin-menu-template"));
+    assert!(!html.contains("show-post-admin-menu"));
+    assert!(!html.contains("admin-post-menu-content"));
+}
