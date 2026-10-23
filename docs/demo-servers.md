@@ -1,7 +1,29 @@
 # Demo servers
 
 Two local servers for showing the port, both on the dev cluster
-(`.nix-postgres`, port 5442) with background jobs off:
+(`.nix-postgres`, port 5442), each with its job worker running. Without
+it a post is never processed (no lightbox or optimized images, no video
+thumbnail) and nobody is notified of a reply or mention. No SMTP is
+configured, so email jobs fail with the reason, and a job kind that isn't
+ported fails at once and logs why. The scheduled check_new_features
+fetches development's `http://localhost:3000/new-features.json`, which
+the SSRF guard refuses.
+
+Both sites allow video and audio uploads: `authorized_extensions` adds
+`mp4|mov|webm|mp3|m4a|ogg` to the defaults (a stock Discourse refuses
+them). The admin's site settings can't save a list setting yet (164), so
+it was written to `site_settings` directly, typed as Rails stores a list
+(data_type 8):
+
+```bash
+nix-shell --run "psql -d discourse_rs_demo -c \"INSERT INTO site_settings
+  (name, data_type, value, created_at, updated_at) VALUES
+  ('authorized_extensions', 8,
+   'jpg|jpeg|png|gif|heic|heif|webp|avif|svg|jxl|mp4|mov|webm|mp3|m4a|ogg',
+   now(), now()) ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value\""
+```
+
+(and the same for `discourse_rs_meta_public`), then restart the units.
 
 | Port | Database | Data |
 |---|---|---|
