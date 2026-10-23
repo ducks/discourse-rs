@@ -194,6 +194,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/live/post/{id}", get(live::post))
         .route("/live/gap/{topic_id}", get(live::gap))
         .route("/live/chat/drawer", get(chat_pages::drawer))
+        .route("/live/poll/{post_id}/{poll_name}", get(live::poll))
         .route(
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
@@ -2654,6 +2655,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/topic-voting.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))
         .route("/assets/discourse-solved.js", get(asset))
+        .route("/assets/poll.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))

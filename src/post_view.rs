@@ -55,6 +55,8 @@ pub struct PostSettings {
     pub solved: Option<crate::plugins::solved::view::SolvedUi>,
     /// discourse-presence is on: the footer shows who is replying.
     pub presence: bool,
+    /// discourse-poll's settings, when it is on.
+    pub poll: Option<crate::plugins::poll::view::PollUi>,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -112,6 +114,7 @@ impl PostSettings {
             reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
+            poll: crate::plugins::poll::view::PollUi::load(settings)?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -156,6 +159,9 @@ pub struct TopicInfo {
     /// came in, for the visited line.
     pub last_read_post_number: Option<i64>,
     pub highest_post_number: Option<i64>,
+    /// What the poll widget reads of the viewer, for a member on a page
+    /// with polls.
+    pub poll_viewer: Option<crate::plugins::poll::view::PollViewer>,
 }
 
 impl TopicInfo {
@@ -186,6 +192,7 @@ impl TopicInfo {
             op_map: String::new(),
             last_read_post_number: view["last_read_post_number"].as_i64(),
             highest_post_number: view["highest_post_number"].as_i64(),
+            poll_viewer: None,
         }
     }
 }
@@ -633,11 +640,23 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     )
 }
 
-/// The cooked content as Ember's post decorations leave it: hashtags'
-/// icons.
-fn decorated_cooked(cx: &PostContext, cooked: &str) -> String {
+/// The cooked content as Ember's post decorations leave it: the polls
+/// drawn (attachPolls), hashtags' icons.
+fn decorated_cooked(cx: &PostContext, p: &Value) -> String {
+    let cooked = s(&p["cooked"]);
+    let with_polls = match cx.settings.poll.as_ref() {
+        Some(ui) => crate::plugins::poll::view::decorate(
+            cx.list,
+            ui,
+            cx.topic.poll_viewer.as_ref(),
+            cx.topic.archived,
+            p,
+            cooked,
+        ),
+        None => cooked.to_string(),
+    };
     crate::hashtag_decorator::decorate(
-        cooked,
+        &with_polls,
         &crate::hashtag_decorator::Icons {
             tag: cx.settings.hashtag_tag_icon.clone(),
             emojis: cx.list.settings.emojis.clone(),
@@ -663,7 +682,7 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         if p["post_number"] == 1 && cx.ignored_users.iter().any(|u| u == s(&p["username"])) {
             escape(&t(cx.list, "post.ignored"))
         } else {
-            decorated_cooked(cx, s(&p["cooked"]))
+            decorated_cooked(cx, p)
         },
         // The post-content-cooked-html outlet: discourse-solved's accepted
         // answers under the first post.
@@ -3069,6 +3088,7 @@ mod tests {
             reactions: None,
             solved: None,
             presence: false,
+            poll: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -3091,6 +3111,7 @@ mod tests {
             op_map: String::new(),
             last_read_post_number: None,
             highest_post_number: None,
+            poll_viewer: None,
         };
         let cx = PostContext {
             list: &list,
@@ -3342,6 +3363,7 @@ mod tests {
             reactions: None,
             solved: None,
             presence: false,
+            poll: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -3364,6 +3386,7 @@ mod tests {
             op_map: String::new(),
             last_read_post_number: None,
             highest_post_number: None,
+            poll_viewer: None,
         };
         let cx = PostContext {
             list: &list,

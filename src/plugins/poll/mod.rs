@@ -22,6 +22,7 @@ use crate::{AppError, Unsupported};
 
 pub mod serializer;
 pub mod updater;
+pub mod view;
 pub mod vote;
 
 pub use serializer::PostsData;

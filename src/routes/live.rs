@@ -134,6 +134,8 @@ pub async fn page(
     let mut channels = Vec::new();
     if let Some(id) = topic_id {
         channels.push(crate::bus::topic_channel(id));
+        // discourse-poll's changes to the topic's polls.
+        channels.push(format!("/polls/{id}"));
     }
     if lists {
         channels.extend(TRACKING_CHANNELS.iter().map(|c| c.to_string()));
@@ -172,6 +174,7 @@ pub async fn page(
         settings,
         subscription,
         topic_channel: topic_id.map(crate::bus::topic_channel),
+        polls_channel: topic_id.map(|id| format!("/polls/{id}")),
         tail: params.tail.as_deref() == Some("1"),
         posts: params.posts.as_deref().and_then(|r| {
             let (first, last) = r.split_once('-')?;
@@ -230,6 +233,9 @@ struct Live {
     settings: SiteSettings,
     subscription: Subscription,
     topic_channel: Option<String>,
+    /// `/polls/<topic_id>`: a post's polls changed (PollsUpdater, votes,
+    /// toggle_status), for static/js/poll.js to draw them again.
+    polls_channel: Option<String>,
     /// New posts are appended (the topic's last page).
     tail: bool,
     /// The page's posts, by post number.
@@ -311,6 +317,10 @@ async fn handle_batch(
                 live.pending
                     .push_back(Event::default().event("post").id(id).data(html));
             }
+        } else if live.polls_channel.as_ref() == Some(&message.channel) {
+            let data = serde_json::json!({ "post_id": message.data["post_id"] });
+            live.pending
+                .push_back(Event::default().event("poll").id(id).data(data.to_string()));
         } else if notification.as_ref() == Some(&message.channel) {
             let count = message.data["all_unread_notifications_count"]
                 .as_i64()
@@ -709,6 +719,12 @@ async fn render_post(
         op_map: String::new(),
         last_read_post_number: None,
         highest_post_number: None,
+        poll_viewer: crate::plugins::poll::view::PollViewer::for_posts(
+            &mut conn,
+            guardian.user_id(),
+            std::slice::from_ref(&post),
+        )
+        .await?,
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;
@@ -1018,7 +1034,16 @@ pub async fn gap(
         None => Vec::new(),
     };
     let post_settings = crate::post_view::PostSettings::load(&settings)?;
-    let topic = crate::post_view::TopicInfo::from_view(json);
+    let mut topic = crate::post_view::TopicInfo::from_view(json);
+    if post_settings.poll.is_some() {
+        let posts = json["post_stream"]["posts"]
+            .as_array()
+            .map(Vec::as_slice)
+            .unwrap_or_default();
+        topic.poll_viewer =
+            crate::plugins::poll::view::PollViewer::for_posts(&mut conn, guardian.user_id(), posts)
+                .await?;
+    }
     let cx = crate::post_view::PostContext {
         list: &list,
         settings: &post_settings,
@@ -1038,6 +1063,134 @@ pub async fn gap(
         let rest: Vec<Value> = tail.iter().map(|id| Value::from(*id)).collect();
         html.push_str(&crate::post_view::gap(&cx, &rest));
     }
+    Ok((
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        html,
+    )
+        .into_response())
+}
+
+#[derive(Deserialize, Default)]
+pub struct PollParams {
+    /// The widget's state as static/js/poll.js keeps it (UiState as JSON).
+    state: Option<String>,
+}
+
+/// GET /live/poll/:post_id/:poll_name: a post's poll widget drawn again
+/// for the viewer in the state poll.js brought it to (Ember redraws the
+/// component in the browser; here the server does).
+pub async fn poll(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path((post_id, poll_name)): axum::extract::Path<(String, String)>,
+    Query(params): Query<PollParams>,
+) -> Result<Response, AppError> {
+    let Ok(post_id) = post_id.parse::<i32>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let ui_state: crate::plugins::poll::view::UiState =
+        match params.state.as_deref().filter(|s| !s.is_empty()) {
+            Some(raw) => match serde_json::from_str(raw) {
+                Ok(s) => s,
+                Err(_) => return Ok((StatusCode::BAD_REQUEST, "invalid state").into_response()),
+            },
+            None => Default::default(),
+        };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some(ui) = crate::plugins::poll::view::PollUi::load(&settings)? else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let host = crate::pretty_text::Host::from_state(&state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let access = find_post_with_deleted(&mut conn, &ctx, &guardian, post_id).await?;
+    let visible = access.as_ref().is_some_and(|a| {
+        !a.post.trashed()
+            && guardian
+                .can_see_post(&settings, &a.post, a.can_see_topic)
+                .unwrap_or(false)
+    });
+    if !visible {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let post = {
+        let mut view = crate::topic_view::TopicView {
+            conn: &mut conn,
+            settings: &settings,
+            i18n: &state.i18n,
+            guardian: &guardian,
+            urls: &urls,
+            options: Default::default(),
+            post_types: Vec::new(),
+            logo_small_url: None,
+        };
+        view.serialize_single_post(post_id, false, false, true)
+            .await?
+    };
+    let Some(poll) = post["polls"]
+        .as_array()
+        .and_then(|polls| polls.iter().find(|p| p["name"] == poll_name.as_str()))
+        .cloned()
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let cooked = post["cooked"].as_str().unwrap_or("");
+    let Some(cooked_poll) = crate::plugins::poll::view::cooked_poll(cooked, &poll_name) else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let topic_id = post["topic_id"].as_i64().unwrap_or(0) as i32;
+    // A quoted post's poll has no topic to be archived.
+    let archived = !ui_state.quoted
+        && crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, topic_id)
+            .await?
+            .is_some_and(|t| t.archived);
+    let viewer = match guardian.user_id() {
+        Some(id) => crate::plugins::poll::view::PollViewer::load(&mut conn, id).await?,
+        None => None,
+    };
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    drop(conn);
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: state.config.globals.relative_url_root(),
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let html = crate::plugins::poll::view::Widget {
+        cx: &list,
+        ui: &ui,
+        viewer: viewer.as_ref(),
+        post_id: i64::from(post_id),
+        post_user_id: post["user_id"].as_i64(),
+        topic_archived: archived,
+        poll: &poll,
+        saved: post["polls_votes"][poll_name.as_str()]
+            .as_array()
+            .cloned()
+            .unwrap_or_default(),
+        title_html: cooked_poll.title_html,
+        dynamic_attr: cooked_poll.dynamic,
+        state: &ui_state,
+    }
+    .render();
     Ok((
         [
             (header::CONTENT_TYPE, "text/html; charset=utf-8"),

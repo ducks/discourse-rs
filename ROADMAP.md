@@ -92,8 +92,11 @@ Blockers, a scripted walk-through would hit them:
 
 Visible if clicked, avoid them in a scripted demo:
 
-- [ ] Polls draw a "0 voters" stub and can't be voted on (228); no Build
-  Poll (229).
+- [x] Polls draw a "0 voters" stub and can't be voted on (228):
+  feat/poll-ui-vote (228a), done: the widget votes, changes and removes
+  votes; its results say they are not ported yet (228b), as do ranked
+  choice polls and the actions menu (228b, 228c).
+- [ ] No Build Poll (229).
 - [ ] A post with an uploaded video or audio file is refused
   (posting/create.rs:591, 138, with 141).
 - [ ] Checklists can't be checked (242); user status can't be set (130).
@@ -4249,19 +4252,67 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     (plugins/chat/dm_groups.rs:323)
 228. `feat/poll-ui` L: poll has no client: nothing in static/js or the
     templates draws a poll, so a post shows its cooked list with a "0
-    voters" stub. Split into 228a. `feat/poll-ui-vote` M (each cooked
-    `div.poll`, quoted ones too, replaced by the widget from the post's
-    polls and polls_votes: voting, Cast Votes, changing and removing a
-    vote, poll-info's counts, hints, close countdown and closed by, the
-    `/polls/<topic_id>` subscription, poll.scss; static/css/cooked.css:109
-    has only the emoji rule), 228b. `feat/poll-ui-results` M (standard
-    results with even-round percentages and the tally toggle, the pie
-    chart, ranked choice's rank dropdowns with Abstain and its outcome
-    and rounds tabs, the voters lists with load more over
-    /polls/voters.json), 228c. `feat/poll-ui-breakdown` S (the actions
-    dropdown's close and open with their confirm and the breakdown modal
-    over /polls/grouped_poll_results with per-group pies,
-    poll-breakdown.scss). Export results waits for data explorer (202)
+    voters" stub. Split into the slices below. Export results waits for
+    data explorer (202).
+    228a. ~~`feat/poll-ui-vote`~~ (done) M: each cooked `div.poll` of a
+    post in the topic's stream is replaced by Ember's widget
+    (attachPolls: not one whose parent is a blockquote, a name the post
+    has; its `.poll-title` and data-poll-dynamic carried over), drawn by
+    the server from the post's polls and polls_votes
+    (plugins/poll/view.rs) in the state the component starts in
+    (initialShowResults, the saved vote), and again by GET
+    /live/poll/:post_id/:poll_name in the state static/js/poll.js
+    brought it to (the vote in progress, the results toggle, amending,
+    kept per post and poll as Ember keeps them on the poll object across
+    redraws). Polls in an expanded quote are drawn for the quoted post,
+    whose topic is never archived as `post.quoted` has no topic. Ported:
+    PollOptions for single, multiple and number polls (the radio and
+    checkbox icons, a click on a local date left to its popup),
+    toggleOption (a single choice cast on its click, its icon at once,
+    clicked again to remove or keep the vote; a multiple choice's picks
+    kept until Cast Votes), castVotes and its error (the pick kept,
+    popupAjaxError in dialog.js), removeVote, amendVote and keepVote,
+    the results toggle, PollVotedChoices for results that wait for the
+    close or staff, the voting groups alert, PollInfo (the voters and
+    total votes counts, the dynamic, vote recorded, multiple help,
+    automatic close, closed by, results on vote, on close, staff only and
+    public hints; the countdown as moment().to(close, true) and the
+    closed age as relativeAge with addAgo, kept current by dates.js; the
+    title in UTC as `moment.utc(...).format("LLL")` draws it), the
+    buttons (keep vote, Cast Votes with its update label, remove vote,
+    amend, hide and show results with their conditions),
+    PollButtonsDropdown's buttons (one as a button, more behind the gear
+    in a float-kit menu), the `/polls/<topic_id>` subscription (each of
+    the post's widgets drawn again, after a redraw on its way when there
+    is one), and poll.scss (static/css/poll.css, Rails' compiled poll and
+    poll_desktop CSS, equal but for whitespace with the desktop rules
+    under `(width >= 40rem)` as Rails links them). Measured with playwright
+    against rs-ref-d on a topic with a public single choice, a multiple
+    choice closing in 2099 and an on_close poll, as user1, the author,
+    admin and anonymous: the normalized widget DOM equal at every step
+    (vote, hide results, remove, picks, Cast Votes, amend, keep, both
+    polls closed by the author, a vote by another member arriving live,
+    the polls of an expanded quote, the gear menu's content) but the
+    results body, and the widgets' screenshots pixel-equal at 1280 and
+    390. Tests in tests/plugin_pages.rs. Refused, said in place ("Not
+    ported yet: ..."): the results body wherever the widget shows the
+    results (plugins/poll/view.rs:566: PollResultsTabs, PollResultsPie
+    and the number poll's average, 228b), ranked choice's options
+    (view.rs:628, 228b), and the dropdown's actions, which alert when
+    clicked (static/js/poll.js:452: the tally toggle, 228b; close and
+    open, the breakdown, 228c; export, 202). An anonymous click goes to
+    /login (poll.js:321) where Ember defers the vote with
+    deferAnonymousAction (211).
+    228b. `feat/poll-ui-results` M: standard results with even-round
+    percentages and the tally toggle, the pie chart, the number poll's
+    average rating, ranked choice's options with their rank dropdowns
+    and Abstain and its outcome and rounds tabs, the voters lists with
+    load more over /polls/voters.json; replaces view.rs's results and
+    ranked choice refusals and poll.js's toggleDisplayMode.
+    228c. `feat/poll-ui-breakdown` S: the actions dropdown's close and
+    open with their confirm (toggleStatus, with the on_close refresh)
+    and the breakdown modal over /polls/grouped_poll_results with
+    per-group pies, poll-breakdown.scss (already in poll.css).
 229. `feat/poll-builder` M: the Build Poll modal from the composer's
     options menu (composer_view.rs:280-285 marks it not ported): the type
     tabs, title, options editor with its count help, min, max and step
