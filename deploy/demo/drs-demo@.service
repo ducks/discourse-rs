@@ -1,0 +1,18 @@
+# A local demo server, one instance per port: drs-demo@8080, drs-demo@8092.
+# A user unit (docs/demo-servers.md). tmp/demo holds what it runs: the
+# binary, a symlink to the build being shown, and %i.env with the database.
+[Unit]
+Description=discourse-rs demo server on port %i
+
+[Service]
+WorkingDirectory=%h/dev/discourse-rs/tmp/demo
+EnvironmentFile=%h/dev/discourse-rs/tmp/demo/%i.env
+Environment=BIND_ADDR=127.0.0.1:%i UNICORN_PORT=%i DISCOURSE_HOSTNAME=127.0.0.1
+Environment=RAILS_ENV=development DISCOURSE_RS_JOBS=off RUST_LOG=info
+StateDirectory=drs-demo/%i/tmp drs-demo/%i/public
+Environment=TMP_DIR=%S/drs-demo/%i/tmp PUBLIC_DIR=%S/drs-demo/%i/public
+ExecStart=%h/dev/discourse-rs/tmp/demo/discourse-rs
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

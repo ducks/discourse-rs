@@ -12,8 +12,8 @@ Log in as `admin` / `password` on either. Both datasets are described in
 [synthetic-forum.md](synthetic-forum.md) and
 [bench-public-meta-20261019.md](bench-public-meta-20261019.md).
 
-Nothing about them lives in the repo's code or in a unit file, so a reboot
-or a re-created cluster loses them. This page is how to bring them back.
+Their databases live only in the cluster, so a re-created cluster loses
+them. This page is how to bring them back.
 
 ## Loading the databases
 
@@ -39,33 +39,34 @@ SHA-256. Loading takes under a minute.
 
 ## Running them
 
-Copy a release build to a path of its own, so the next `cargo build`
-doesn't replace the binary under a running server, and start each as a
-user unit:
+Each is an instance of the user unit `deploy/demo/drs-demo@.service`,
+named by its port. The unit runs what is in `~/dev/discourse-rs/tmp/demo`
+(ignored), not the checkout: `discourse-rs`, a symlink to a copied release
+build, so the next `cargo build` doesn't replace the binary under a
+running server, and `<port>.env` with the database (copied from
+`deploy/demo/`). Its tmp and public directories are
+`~/.local/state/drs-demo/<port>/`.
+
+Installing, from a checkout with a release build:
 
 ```bash
 D=~/dev/discourse-rs/tmp/demo
-SHA=$(git rev-parse --short HEAD)
-mkdir -p $D && cp target/release/discourse-rs $D/discourse-rs-$SHA
-for spec in "8080 discourse_rs_demo" "8092 discourse_rs_meta_public"; do
-  set -- $spec
-  mkdir -p $D/$1/tmp $D/$1/public
-  systemd-run --user --unit=drs-demo-$1 \
-    --working-directory=/home/ducks/dev/discourse-rs \
-    -E DATABASE_URL="postgresql://localhost:5442/$2?host=/home/ducks/dev/discourse-rs/.nix-postgres" \
-    -E BIND_ADDR=127.0.0.1:$1 -E DISCOURSE_HOSTNAME=127.0.0.1 -E UNICORN_PORT=$1 \
-    -E RAILS_ENV=development -E DISCOURSE_RS_JOBS=off -E RUST_LOG=info \
-    -E TMP_DIR=$D/$1/tmp -E PUBLIC_DIR=$D/$1/public \
-    $D/discourse-rs-$SHA
-done
+mkdir -p $D ~/.config/systemd/user
+cp target/release/discourse-rs $D/discourse-rs-$(git rev-parse --short HEAD)
+ln -sfn discourse-rs-$(git rev-parse --short HEAD) $D/discourse-rs
+cp deploy/demo/8080.env deploy/demo/8092.env $D/
+cp deploy/demo/drs-demo@.service ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now drs-demo@8080 drs-demo@8092
 ```
 
-`journalctl --user -u drs-demo-8080` has the logs;
-`systemctl --user stop drs-demo-8080` stops one. To update them, stop
-both, copy the new build and start them again.
+Showing a newer build: copy it next to the old one, point the symlink at
+it and `systemctl --user restart drs-demo@8080 drs-demo@8092`.
+`journalctl --user -u drs-demo@8080` has the logs.
 
-The units are transient: they survive the shell that started them, not a
-reboot.
+Enabled user units start with the user's session. Without lingering
+(`loginctl show-user $USER -p Linger`; on NixOS
+`users.users.<name>.linger = true`) that means at login, not at boot.
 
 ## The cluster's settings
 
