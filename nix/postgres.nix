@@ -26,6 +26,13 @@ in
     if [ ! -d "$PGDATA" ]; then
       echo "Initializing PostgreSQL data dir..."
       initdb --locale=C.UTF-8 --encoding=UTF8 -U postgres
+      # The full test suite opens more connections than the default 100.
+      # Durability is traded for speed: an unclean stop (a full disk, a
+      # crash) can corrupt the cluster, and recreating it is
+      # docs/demo-servers.md's last section.
+      printf '%s\n' "max_connections = 300" "fsync = off" \
+        "synchronous_commit = off" "full_page_writes = off" \
+        >> "$PGDATA/postgresql.conf"
     fi
 
     db_start() {
