@@ -1,0 +1,25 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET raw = $raw$Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy$raw$, cooked = $cooked$<p>Checklist to toggle:</p>\n<ul>\n<li><span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"2:0\"></span> first</li>\n<li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"3:0\"></span> second</li>\n</ul>\n<p><span class=\"chcklst-box checked permanent fa fa-square-check\"></span> fixed and <span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"5:1\"></span> legacy</p>$cooked$, updated_at = '2026-10-05 10:00:00.123456' WHERE id = 36"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": 36,
+        "expected_raw": "Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy",
+        "expected_updated_at": "2026-10-05T10:00:00.123Z",
+        "mutation_id": "mutation-1",
+        "toggles": [
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "2:0",
+            "checked": true
+          }
+        ]
+      }
+    }
+  ]
+}

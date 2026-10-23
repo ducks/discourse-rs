@@ -1,0 +1,30 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": "{{responses.0.body.id}}",
+        "expected_raw": "Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy",
+        "expected_updated_at": "{{responses.0.body.updated_at}}",
+        "mutation_id": "mutation-1",
+        "toggles": [
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "2:0",
+            "checked": true
+          }
+        ]
+      }
+    }
+  ]
+}

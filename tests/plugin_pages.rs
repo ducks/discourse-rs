@@ -4,7 +4,9 @@
 //! discourse-solved: the solved status, the accepted answers under the
 //! first post, the Solved button, "Me too" and the activity Solved tab.
 //! discourse-poll: each cooked poll drawn as its widget, and drawn again
-//! for poll.js in the state a click brings it to.
+//! for poll.js in the state a click brings it to. checklist: what
+//! static/js/checklist.js reads of a post with boxes, and a toggle's token
+//! on its revised message.
 
 mod common;
 
@@ -24,6 +26,17 @@ struct Client {
 
 impl Client {
     async fn send(&mut self, method: Method, path: &str, body: &str) -> String {
+        self.send_as(method, path, body, "application/x-www-form-urlencoded")
+            .await
+    }
+
+    async fn send_as(
+        &mut self,
+        method: Method,
+        path: &str,
+        body: &str,
+        content_type: &str,
+    ) -> String {
         let mut request = Request::builder()
             .method(method)
             .uri(path)
@@ -41,7 +54,7 @@ impl Client {
             request = request.header("x-csrf-token", token.as_str());
         }
         if !body.is_empty() {
-            request = request.header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+            request = request.header(header::CONTENT_TYPE, content_type);
         }
         let response = discourse_rs::app(self.state.clone())
             .oneshot(request.body(Body::from(body.to_string())).unwrap())
@@ -1638,4 +1651,118 @@ async fn a_poll_vote_draws_the_widget_again() {
 
     // Not a poll the post has, or not a post the viewer sees: not found.
     assert!(user1.page(&live("nope", "{}")).await.is_empty());
+}
+
+/// The `data-checklist-post` of the post with that id's `div.cooked`, as
+/// JSON; None when it has none.
+fn checklist_model(html: &str, post_id: i64) -> Option<serde_json::Value> {
+    let article = html.find(&format!("data-post-id=\"{post_id}\""))?;
+    let rest = &html[article..];
+    let rest = &rest[..rest.find("</article>").unwrap_or(rest.len())];
+    let start = rest.find("<div class=\"cooked\"")?;
+    let tag = &rest[start..start + rest[start..].find('>')?];
+    let value = tag
+        .split("data-checklist-post=\"")
+        .nth(1)?
+        .split('"')
+        .next()?;
+    serde_json::from_str(&value.replace("&quot;", "\"")).ok()
+}
+
+#[tokio::test]
+async fn checklist_posts_carry_what_the_decorator_reads() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let raw = "Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy";
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let created = user1
+        .send(
+            Method::POST,
+            "/posts",
+            &format!("topic_id=35&raw={}", urlencode(raw)),
+        )
+        .await;
+    let created: serde_json::Value = serde_json::from_str(&created).expect(&created);
+    let post_id = created["id"].as_i64().unwrap();
+    let slug: String = sqlx::query_scalar("SELECT slug FROM topics WHERE id = 35")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let path = format!("/t/{slug}/35");
+
+    let html = user1.page(&path).await;
+    // The decorator's script, its setting and its label.
+    assert!(html.contains("/assets/checklist.js"), "{html}");
+    assert!(html.contains("\"checklist_enabled\":true"), "{html}");
+    assert!(
+        html.contains("\"checklist.item\":\"Checklist item\""),
+        "{html}"
+    );
+    // The model it reads, on the post with boxes only.
+    let model = checklist_model(&html, post_id).unwrap_or_else(|| panic!("{html}"));
+    assert_eq!(
+        model,
+        serde_json::json!({
+            "topic_id": 35,
+            "post_number": created["post_number"],
+            "can_edit": true,
+            "updated_at": created["updated_at"],
+            "version": 1,
+        })
+    );
+    assert_eq!(html.matches("data-checklist-post=").count(), 1, "{html}");
+    // The boxes as cooked, the permanent one without a source.
+    assert!(html.contains(
+        "<li><span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"2:0\"></span> first</li>"
+    ));
+    assert!(html.contains(
+        "<span class=\"chcklst-box checked permanent fa fa-square-check\"></span> fixed"
+    ));
+
+    // Read only for those who may not edit it.
+    let mut anonymous = Client {
+        state: st.clone(),
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    let html = anonymous.page(&path).await;
+    assert_eq!(checklist_model(&html, post_id).unwrap()["can_edit"], false);
+
+    // A toggle's revised message carries its token, for the page that
+    // made it to keep its drawing.
+    let from = st.bus.now().await.unwrap();
+    let body = serde_json::json!({
+        "post_id": post_id,
+        "expected_raw": raw,
+        "expected_updated_at": created["updated_at"],
+        "mutation_id": "mutation-1",
+        "toggles": [{"checkbox_index": 0, "checkbox_source": "2:0", "checked": true}],
+    });
+    let toggled = user1
+        .send_as(
+            Method::PUT,
+            "/checklist/toggle",
+            &body.to_string(),
+            "application/json",
+        )
+        .await;
+    let toggled: serde_json::Value = serde_json::from_str(&toggled).expect(&toggled);
+    assert_eq!(toggled["revised"], true, "{toggled}");
+    assert!(toggled["raw"].as_str().unwrap().contains("- [x] first"));
+    let messages = common::bus_messages(&st, from, &["/topic/35"]).await;
+    let revised: Vec<&serde_json::Value> = messages
+        .iter()
+        .map(|m| &m.data)
+        .filter(|d| d["type"] == "revised")
+        .collect();
+    assert_eq!(revised.len(), 1, "{messages:?}");
+    assert_eq!(revised[0]["preserve_cooked_token"], "mutation-1");
+
+    // The page drawn again has the new state and update time.
+    let html = user1.page(&path).await;
+    let model = checklist_model(&html, post_id).unwrap();
+    assert_eq!(model["updated_at"], toggled["updated_at"]);
+    assert!(html.contains(
+        "<li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"2:0\"></span> first</li>"
+    ));
 }

@@ -1,0 +1,77 @@
+{
+  "name": "contract_blank",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-23T17:00:18.256456",
+  "transaction_started_at": "2026-10-23T17:00:17.376969",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Post can't be blank",
+          "Toggles can't be blank",
+          "Expected raw can't be blank",
+          "Expected updated at can't be blank",
+          "Mutation can't be blank"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 366,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SjK4ddFiaw1CJUojFfL0MG8eDkI=",
+            "created_at": "2026-10-23T17:00:17.708746",
+            "rotated_at": "2026-10-23T17:00:17.707839",
+            "updated_at": "2026-10-23T17:00:17.708746",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SjK4ddFiaw1CJUojFfL0MG8eDkI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 366,
+            "seen_at": "2026-10-23T17:00:18.263097",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SjK4ddFiaw1CJUojFfL0MG8eDkI=",
+            "created_at": "2026-10-23T17:00:17.708746",
+            "rotated_at": "2026-10-23T17:00:17.707839",
+            "updated_at": "2026-10-23T17:00:17.708746",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SjK4ddFiaw1CJUojFfL0MG8eDkI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "7bd28ee8a3b43fe08b58a5919f7d1f46fa77b83c40afaec8da94c84ba6fff41c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

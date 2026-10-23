@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": 999999,
+        "expected_raw": "Checklist to toggle:\n\n- [ ] first\n- [x] second\n\n[X] fixed and [] legacy",
+        "expected_updated_at": "2026-10-05T10:00:00.123Z",
+        "mutation_id": "mutation-1",
+        "toggles": [
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "2:0",
+            "checked": true
+          }
+        ]
+      }
+    }
+  ]
+}

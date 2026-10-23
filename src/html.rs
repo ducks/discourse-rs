@@ -588,11 +588,13 @@ const COOKED_SETTINGS: &[&str] = &[
     "spoiler_enabled",
     "show_copy_button_on_codeblocks",
     "display_footnotes_inline",
+    "checklist_enabled",
 ];
 
 /// The client strings the cooked decorators show, by their js.* key.
 const COOKED_STRINGS: &[&str] = &[
     "spoiler.label.show",
+    "checklist.item",
     "copy_codeblock.copied",
     "copy_codeblock.copy",
     "copy_codeblock.fullscreen",

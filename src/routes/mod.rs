@@ -85,6 +85,7 @@ mod categories;
 mod category_notifications;
 mod chat;
 mod chat_pages;
+mod checklist;
 mod color_schemes;
 mod impersonate;
 mod invite_redeem;
@@ -470,6 +471,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/discourse-reactions/posts/{id}/reactions-users-list.json",
             get(reactions::reactions_users_list),
         )
+        // checklist's CheckboxesController.
+        .route("/checklist/toggle", put(checklist::toggle))
+        .route("/checklist/toggle.json", put(checklist::toggle))
         // discourse-topic-voting's VotesController.
         .route("/polls/vote", put(polls::vote).delete(polls::remove_vote))
         .route(
@@ -2656,6 +2660,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/discourse-reactions.js", get(asset))
         .route("/assets/discourse-solved.js", get(asset))
         .route("/assets/poll.js", get(asset))
+        .route("/assets/checklist.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))
