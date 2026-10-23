@@ -286,6 +286,14 @@ pub fn filter(settings: &[Value], f: &Filters) -> Vec<Category> {
     out
 }
 
+/// A category of Site#categories: its id, name and the badge
+/// (categoryBadgeHTML, unlinked) CategoryChooser draws for it.
+pub struct SettingCategory {
+    pub id: i64,
+    pub name: String,
+    pub badge: String,
+}
+
 /// What the page needs besides the settings.
 pub struct Page<'a> {
     pub settings: &'a [Value],
@@ -293,8 +301,9 @@ pub struct Page<'a> {
     pub default_theme: &'a Value,
     /// The site's groups (id, name) for the group setting's ComboBox.
     pub groups: &'a [(i64, String)],
-    /// The site's categories (id, name) for the category setting's chooser.
-    pub categories: &'a [(i64, String)],
+    /// The site's categories for the category setting's chooser and the
+    /// category list's selector.
+    pub categories: &'a [SettingCategory],
     pub filters: &'a Filters,
     pub category: &'a str,
 }
@@ -1036,19 +1045,27 @@ fn group_combo(cx: &AdminCx, page: &Page, setting: &Value, value: &str, disabled
     )
 }
 
-/// The category setting's CategoryChooser, closed: its header names the
-/// category, or "(no category)" (none, or Uncategorized allowed).
+/// The category setting's CategoryChooser, closed: its header holds the
+/// category's badge (modifySelection's categoryBadgeHTML), or "(no category)"
+/// (none, or Uncategorized allowed).
 fn category_combo(cx: &AdminCx, page: &Page, value: &str, disabled: bool) -> String {
     let i18n = cx.i18n;
-    let selected = page
-        .categories
-        .iter()
-        .find(|(id, _)| id.to_string() == value)
-        .map(|(_, name)| name.clone());
-    let label = selected.clone().unwrap_or_else(|| t(i18n, "category.none"));
+    let selected = page.categories.iter().find(|c| c.id.to_string() == value);
+    let label = selected
+        .map(|c| c.name.clone())
+        .unwrap_or_else(|| t(i18n, "category.none"));
     let aria = t_with(i18n, "select_kit.filter_by", &[("name", &label)]);
+    let name = match selected {
+        Some(c) => c.badge.clone(),
+        None => escape(&label),
+    };
+    let value_attr = if selected.is_some() {
+        format!(" data-value=\"{}\"", escape(value))
+    } else {
+        String::new()
+    };
     format!(
-        "<details class=\"select-kit single-select combobox combo-box category-chooser{}{}\" data-value=\"{}\"><summary aria-label=\"{a}\" name=\"{a}\" data-name=\"{n}\"{} tabindex=\"0\" class=\"select-kit-header single-select-header combo-box-header\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\" title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details>",
+        "<details class=\"select-kit single-select combobox combo-box category-chooser{}{}\" data-value=\"{}\"><summary aria-label=\"{a}\" name=\"{a}\" data-name=\"{n}\"{value_attr} tabindex=\"0\" class=\"select-kit-header single-select-header combo-box-header\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\"{value_attr} title=\"{n}\"><span class=\"name\">{name}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details>",
         if selected.is_some() {
             " has-selection"
         } else {
@@ -1056,11 +1073,6 @@ fn category_combo(cx: &AdminCx, page: &Page, value: &str, disabled: bool) -> Str
         },
         if disabled { " is-disabled" } else { "" },
         escape(value),
-        if selected.is_some() {
-            format!(" data-value=\"{}\"", escape(value))
-        } else {
-            String::new()
-        },
         icon("angle-down", Some("angle-icon")),
         a = escape(&aria),
         n = escape(&label),
@@ -1344,8 +1356,8 @@ fn legacy(cx: &AdminCx, page: &Page, setting: &Value, kind: &str, disabled: bool
                 .map(|v| {
                     page.categories
                         .iter()
-                        .find(|(id, _)| id.to_string() == *v)
-                        .map(|(_, n)| n.clone())
+                        .find(|c| c.id.to_string() == *v)
+                        .map(|c| c.name.clone())
                         .unwrap_or_else(|| v.to_string())
                 })
                 .collect();

@@ -561,6 +561,24 @@ async fn the_category_management_pages() {
         .await;
     assert!(html.contains("<title>Settings - Category management - Admin - "));
     assert!(html.contains("data-setting=\"desktop_category_page_style\""));
+    // default_composer_category's CategoryChooser heads with the chosen
+    // category's badge, as modifySelection draws it, not its bare name.
+    let control = html
+        .split("id=\"control-default_composer_category\"")
+        .nth(1)
+        .and_then(|rest| rest.split("</details>").next())
+        .expect("the default composer category's control");
+    assert!(
+        control.contains("category-chooser has-selection"),
+        "{control}"
+    );
+    assert!(
+        control.contains(
+            "data-value=\"4\" title=\"General\"><span class=\"name\"><span class=\"badge-category__wrapper\""
+        ),
+        "{control}"
+    );
+    assert!(control.contains("<span class=\"badge-category__name\">General</span>"));
 }
 
 #[tokio::test]
