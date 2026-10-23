@@ -4459,9 +4459,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     div.cooked and fetches the raw from posts#by_number while posts#show
     is not routed (198); without Ember's cooked on the model, a post
     changed since drawing is refreshed rather than compared by its cooked
-    boxes. The revise's system user answer (nil, so 422 although saved)
-    is kept; the recorder's Jobs.enqueue now returns a job id, as
-    Sidekiq's does, instead of nil. Refused: toggle shapes Rails 500s on
+    boxes. The system user's toggle saves and answers 200, as Rails'
+    does (revise! returns successfully_saved_post_and_topic; its
+    SYSTEM_USER_ID return is inside alert_users; checked at bf55a44 with
+    a spec in a dv container); the recorder's Jobs.enqueue now returns a
+    job id, as Sidekiq's does, instead of nil. Refused: toggle shapes Rails 500s on
     (non-pair arrays), float or structured string params, emailed posts'
     fallback cook) M: checking a box: PUT /checklist/toggle
     (ToggleCheckbox's contract, policies, rate limit, its

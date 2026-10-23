@@ -1766,3 +1766,66 @@ async fn checklist_posts_carry_what_the_decorator_reads() {
         "<li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"2:0\"></span> first</li>"
     ));
 }
+
+/// The system user's toggle is saved and answered as anyone's: revise!
+/// returns successfully_saved_post_and_topic for it too (its
+/// SYSTEM_USER_ID return is inside alert_users, not revise!'s result).
+#[tokio::test]
+async fn the_system_user_toggles_a_box() {
+    use sha2::{Digest, Sha256};
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let raw = "- [ ] first\n- [x] second";
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let created = user1
+        .send(
+            Method::POST,
+            "/posts",
+            &format!("topic_id=35&raw={}", urlencode(raw)),
+        )
+        .await;
+    let created: serde_json::Value = serde_json::from_str(&created).expect(&created);
+    // A global key (no user), acting as the system user.
+    sqlx::query(
+        "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, key_hash, truncated_key, scope_mode) \
+         VALUES (9701, NULL, 1, now(), now(), $1, 'sysk', 0)",
+    )
+    .bind(format!("{:x}", Sha256::digest(b"system-toggle-key")))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let body = serde_json::json!({
+        "post_id": created["id"],
+        "expected_raw": raw,
+        "expected_updated_at": created["updated_at"],
+        "mutation_id": "mutation-system",
+        "toggles": [{"checkbox_index": 0, "checkbox_source": "0:0", "checked": true}],
+    });
+    let request = Request::builder()
+        .method(Method::PUT)
+        .uri("/checklist/toggle")
+        .header(header::HOST, "test.localhost")
+        .header(header::CONTENT_TYPE, "application/json")
+        .header("api-key", "system-toggle-key")
+        .header("api-username", "system")
+        .body(Body::from(body.to_string()))
+        .unwrap();
+    let response = discourse_rs::app(st.clone())
+        .oneshot(request)
+        .await
+        .unwrap();
+    let status = response.status();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let answer = String::from_utf8_lossy(&bytes);
+    assert_eq!(status, axum::http::StatusCode::OK, "{answer}");
+    let answer: serde_json::Value = serde_json::from_str(&answer).unwrap();
+    assert_eq!(answer["revised"], true, "{answer}");
+    let (saved, editor): (String, Option<i32>) =
+        sqlx::query_as("SELECT raw, last_editor_id FROM posts WHERE id = $1")
+            .bind(created["id"].as_i64().unwrap() as i32)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(saved, "- [x] first\n- [x] second");
+    assert_eq!(editor, Some(-1));
+}
