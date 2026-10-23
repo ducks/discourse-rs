@@ -179,14 +179,24 @@ impl Context<'_> {
         if messages.is_empty() {
             out.push_str(&self.empty_state(channel, &channel_json, following).await?);
         } else {
-            // processMessages: the first message past the last read one is
-            // the newest (the "last visit" line), unless it is the
-            // channel's last message.
-            let newest = messages
-                .iter()
-                .find(|m| m["id"].as_i64().unwrap_or(0) > last_read.unwrap_or(0))
-                .and_then(|m| m["id"].as_i64())
-                .filter(|id| Some(*id) != channel_json["last_message"]["id"].as_i64());
+            // processMessages: the first message past the membership's last
+            // read one is the newest (the "last visit" line). Ember skips it
+            // when that message `!==` the channel's lastMessage, but the
+            // message it just created is never that object, so the last
+            // message gets the line too. Without a membership the last read
+            // id is undefined and no message is past it; a null one is.
+            let membership_json = &channel_json["current_user_membership"];
+            let newest = if membership_json.is_object() {
+                let read = membership_json["last_read_message_id"]
+                    .as_i64()
+                    .unwrap_or(0);
+                messages
+                    .iter()
+                    .find(|m| m["id"].as_i64().unwrap_or(0) > read)
+                    .and_then(|m| m["id"].as_i64())
+            } else {
+                None
+            };
             for index in 0..messages.len() {
                 // shouldRender: of a run of deleted messages only the last
                 // is drawn, collapsed; expanding it (chat.js) draws the run
@@ -1803,7 +1813,7 @@ fn channel_card(
 }
 
 /// ChatZero, the empty chat illustration.
-const CHAT_ZERO: &str = include_str!("../../../static/svg/chat-zero.svg");
+pub(crate) const CHAT_ZERO: &str = include_str!("../../../static/svg/chat-zero.svg");
 
 /// The chat.disabled route (ChatDisabled): chat turned off in the
 /// member's preferences, with the way back on.

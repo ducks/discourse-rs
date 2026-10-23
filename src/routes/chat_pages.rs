@@ -178,10 +178,11 @@ fn chat_title(state: &AppState) -> String {
         .to_string()
 }
 
-/// GET /chat and /chat/channels: ChatIndexRoute#redirect with the
-/// default preferred index (channels), then ChatChannelsRoute: in the
-/// mobile view the channels list, on desktop the member's last channel,
-/// else the browser's open tab.
+/// GET /chat and /chat/channels: ChatIndexRoute#redirect by
+/// chat_preferred_index (the DMs page, or the browser when channels aren't
+/// the index), then ChatChannelsRoute: in the mobile view the channels
+/// list, on desktop the member's last channel, else the browser's open
+/// tab.
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -196,8 +197,29 @@ pub async fn index(
     let base_path = state.config.globals.relative_url_root();
     let preferred = settings.get("chat_preferred_index")?.to_s().to_string();
     let public = settings.get("enable_public_channels")?.truthy();
-    if preferred != "channels" || !public {
-        return Err(crate::Unsupported("chat's direct messages and threads indexes").into());
+    if !uri.path().ends_with("/chat/channels") {
+        let mut cx = context(&state, &mut conn, &settings, &guardian);
+        // hasThreads: the member has threads, which aren't ported.
+        if preferred == "my_threads"
+            && settings.get("chat_threads_enabled")?.truthy()
+            && cx.has_viewable_threads().await?
+        {
+            return Err(crate::Unsupported("chat threads (the threads index)").into());
+        }
+        // chat.userCanAccessDirectMessages
+        let dms =
+            crate::plugins::chat::user_can_direct_message(&mut *cx.conn, &settings, &guardian)
+                .await?
+                || !cx.followed_dm_channels(false).await?.is_empty();
+        let channels = preferred == "channels" && public;
+        if dms && (preferred == "direct_messages" || !public) {
+            return Ok(redirect(format!("{base_path}/chat/direct-messages")));
+        }
+        if !channels {
+            return Ok(redirect(format!("{base_path}/chat/browse/open")));
+        }
+    } else if !public {
+        return Err(crate::Unsupported("chat's channels list without public channels").into());
     }
     if crate::mobile::mobile_view() {
         // ChatIndexRoute replaces /chat with chat.channels.
@@ -237,14 +259,20 @@ pub async fn index(
         // chatChannelsManager.find: a channel the member can't open
         // leaves them on /chat in Rails (the request fails); here, on the
         // browser.
-        if let Found::Channel(channel) = cx.find_joinable(&id.to_string()).await?
-            && channel.chatable_type == "Category"
-            && let Some(slug) = channel.slug.as_deref().filter(|s| !s.is_empty())
-        {
-            return Ok(redirect(format!(
-                "{base_path}/chat/c/{slug}/{}",
-                channel.id
-            )));
+        if let Found::Channel(channel) = cx.find_joinable(&id.to_string()).await? {
+            if channel.chatable_type == "Category"
+                && let Some(slug) = channel.slug.as_deref().filter(|s| !s.is_empty())
+            {
+                return Ok(redirect(format!(
+                    "{base_path}/chat/c/{slug}/{}",
+                    channel.id
+                )));
+            }
+            // A DM's slug is its title for the viewer, which the channel
+            // route redirects to.
+            if channel.chatable_type == "DirectMessage" {
+                return Ok(redirect(format!("{base_path}/chat/c/-/{}", channel.id)));
+            }
         }
     }
     Ok(redirect(format!("{base_path}/chat/browse/open")))
@@ -437,6 +465,69 @@ pub async fn channel(
         &settings,
         &guardian,
         Active::ChatChannel(channel.id),
+        title,
+        &content,
+        true,
+    )
+    .await
+}
+
+/// GET /chat/direct-messages: ChatDirectMessagesRoute. Its beforeModel
+/// sends a desktop member with DMs on to their last channel, but on a page
+/// load the reference stays on the list: directMessageChannels is still
+/// empty when it runs.
+pub async fn direct_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let content = context(&state, &mut conn, &settings, &guardian)
+        .direct_messages_route()
+        .await?;
+    // The route adds no title token of its own.
+    let title = format!("{} - ", chat_title(&state));
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::Chat,
+        title,
+        &content,
+        true,
+    )
+    .await
+}
+
+/// GET /chat/threads: the member's threads (ChatChannelThreads route,
+/// UserThreads).
+pub async fn threads(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let content = context(&state, &mut conn, &settings, &guardian)
+        .threads_route()
+        .await?;
+    let title = format!("{} - ", chat_title(&state));
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::Chat,
         title,
         &content,
         true,

@@ -1,0 +1,32 @@
+{
+  "name": "me_threads_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/me/threads.json"
+    }
+  ],
+  "started_at": "2026-10-22T20:16:25.913275",
+  "transaction_started_at": "2026-10-22T20:16:21.797579",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "recorded_from": {
+    "case": "228618f774e582fb39dabe67de48591d0c16007d410a3c7c4cccbbba137c2e05",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

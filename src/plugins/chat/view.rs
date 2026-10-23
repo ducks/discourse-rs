@@ -40,6 +40,14 @@ struct DmLink {
     unicode_title: Option<String>,
 }
 
+/// The preloaded channels: public ones and DMs as the lists read them,
+/// and the DMs' JSON.
+struct Preloaded {
+    channels: Vec<SidebarChannel>,
+    dms: Vec<SidebarChannel>,
+    dm_json: Vec<Value>,
+}
+
 /// A followed channel as the sidebar reads it.
 struct SidebarChannel {
     id: i64,
@@ -361,12 +369,29 @@ impl Context<'_> {
         }
         out.push_str("</div></div>");
 
-        // ChatFooter: shown with more than one of starred, threads (refused
-        // upstream while unported), DMs and public channels.
+        out.push_str(&self.footer("channels", &channels, &dms).await?);
+        Ok(out)
+    }
+
+    /// ChatFooter in the mobile view, `route` the active item's id: shown
+    /// with more than one of starred, threads (refused upstream while
+    /// unported), DMs and public channels.
+    async fn footer(
+        &mut self,
+        route: &str,
+        channels: &[SidebarChannel],
+        dms: &[SidebarChannel],
+    ) -> Result<String, AppError> {
+        let settings = self.settings;
+        let mut out = String::new();
         let dms_enabled = !dms.is_empty()
             || super::user_can_direct_message(&mut *self.conn, settings, self.guardian).await?;
-        let starred = channels.iter().chain(&dms).any(|c| c.starred);
-        let routes = [starred, dms_enabled, true].iter().filter(|x| **x).count();
+        let starred = channels.iter().chain(dms).any(|c| c.starred);
+        let public = settings.get("enable_public_channels")?.truthy();
+        let routes = [starred, dms_enabled, public]
+            .iter()
+            .filter(|x| **x)
+            .count();
         if routes > 1 {
             out.push_str("<nav class=\"c-footer\">");
             let item = |id: &str,
@@ -399,7 +424,7 @@ impl Context<'_> {
                     .sum();
                 out.push_str(&item(
                     "starred",
-                    false,
+                    route == "starred",
                     "chat.starred",
                     "star",
                     "chat.starred",
@@ -410,7 +435,7 @@ impl Context<'_> {
             let unstarred = channels.iter().filter(|c| !c.starred);
             out.push_str(&item(
                 "channels",
-                true,
+                route == "channels",
                 "chat.channel_list.aria_label",
                 "comments",
                 "chat.channel_list.title",
@@ -423,7 +448,7 @@ impl Context<'_> {
             if dms_enabled {
                 out.push_str(&item(
                     "direct-messages",
-                    false,
+                    route == "direct-messages",
                     "chat.direct_messages.aria_label",
                     "users",
                     "chat.direct_messages.title",
@@ -440,7 +465,7 @@ impl Context<'_> {
             if settings.get("chat_search_enabled")?.truthy() {
                 out.push_str(&item(
                     "search",
-                    false,
+                    route == "search",
                     "chat.search.aria_label",
                     "magnifying-glass",
                     "chat.search.short_title",
@@ -451,6 +476,286 @@ impl Context<'_> {
             out.push_str("</nav>");
         }
         Ok(out)
+    }
+
+    /// The preloaded channels (GET /chat/api/me/channels) as the lists
+    /// read them: the public ones and the DMs, each with its JSON.
+    async fn preloaded(&mut self) -> Result<Preloaded, AppError> {
+        let me = self.me_channels().await?;
+        let tracking = &me["tracking"]["channel_tracking"];
+        let json = |key: &str| me[key].as_array().cloned().unwrap_or_default();
+        let public_json = json("public_channels");
+        let dm_json = json("direct_message_channels");
+        let read = |list: &[Value]| -> Result<Vec<SidebarChannel>, AppError> {
+            list.iter()
+                .map(|c| SidebarChannel::from_json(c, tracking))
+                .collect()
+        };
+        Ok(Preloaded {
+            channels: read(&public_json)?,
+            dms: read(&dm_json)?,
+            dm_json,
+        })
+    }
+
+    /// A route's navbar: its title and actions.
+    fn route_navbar(&self, title: &str, actions: &str) -> String {
+        let title = escape(title);
+        format!(
+            "<div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{title}</span></div><nav class=\"c-navbar__actions\">{actions}</nav></nav></div>"
+        )
+    }
+
+    /// The navbar's OpenDrawerButton, desktop only.
+    fn open_drawer_button(&self) -> String {
+        if crate::mobile::mobile_view() {
+            return String::new();
+        }
+        format!(
+            "<button class=\"btn no-text btn-icon c-navbar__open-drawer-button btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            escape(&self.t("chat.close_full_page")),
+            d_icon("discourse-compress", None)
+        )
+    }
+
+    /// ChatChannelListFilterToggle (shown while the section's filter isn't
+    /// all) and ChatChannelListOptionsButton.
+    fn list_option_buttons(&self, p: ListPrefs) -> String {
+        let mut out = String::new();
+        if p.filter != "all" {
+            out.push_str(&format!(
+                "<button class=\"btn no-text btn-icon btn-transparent chat-channel-list-filter-toggle title-action\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+                escape(&self.t("chat.channel_list.empty.show_all")),
+                d_icon("filter-circle-xmark", None)
+            ));
+        }
+        out.push_str(&format!(
+            "<button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            escape(&self.t("chat.channel_list.options.title")),
+            d_icon("ellipsis-vertical", None)
+        ));
+        out
+    }
+
+    /// The direct messages route (ChatDirectMessagesRoute, drawing
+    /// ChannelsListDirect): the navbar, the section's divider (on desktop,
+    /// or in the mobile view without public channels), the member's DMs by
+    /// their DM list preferences, and in the mobile view the chat footer.
+    pub async fn direct_messages_route(&mut self) -> Result<String, AppError> {
+        let settings = self.settings;
+        let Some(user_id) = self.guardian.user_id() else {
+            return Err(Unsupported("chat's direct messages list without a member").into());
+        };
+        let Some(options) = super::options(&mut *self.conn, user_id).await? else {
+            return Err(Unsupported("chat's direct messages list without chat options").into());
+        };
+        let Preloaded {
+            channels,
+            dms,
+            dm_json,
+        } = self.preloaded().await?;
+        let mobile = crate::mobile::mobile_view();
+        let can_create =
+            super::user_can_direct_message(&mut *self.conn, settings, self.guardian).await?;
+        // chatChannelsManager.displayPublicChannels
+        let display_public = settings.get("enable_public_channels")?.truthy()
+            && (!channels.is_empty()
+                || self.guardian.is_staff()
+                || super::has_joinable_public_channels(&mut *self.conn, settings, self.guardian)
+                    .await?);
+        let dm_prefs = prefs(
+            options.chat_channel_list_filter_dms,
+            options.chat_channel_list_sort_dms,
+        );
+        let title = self.t("chat.direct_messages.title");
+        // ChatNavbarChannelListOptionsButton: the section's buttons go in
+        // the navbar in the mobile view.
+        let actions = if mobile {
+            self.list_option_buttons(dm_prefs)
+        } else {
+            self.open_drawer_button()
+        };
+        let mut out = format!(
+            "<div class=\"c-routes --direct-messages\">{}",
+            self.route_navbar(&title, &actions)
+        );
+        if (can_create || !dms.is_empty()) && (!mobile || !display_public) {
+            out.push_str(&format!(
+                "<div class=\"chat-channel-divider direct-message-channels-section\"><span class=\"channel-title\">{}</span>",
+                escape(&title)
+            ));
+            if !mobile {
+                out.push_str(&format!(
+                    "<div class=\"chat-channel-divider__actions\">{}</div>",
+                    self.list_option_buttons(dm_prefs)
+                ));
+            }
+            out.push_str("</div>");
+        }
+        out.push_str(&format!(
+            "<div class=\"channels-list-container direct-message-channels{}\" id=\"direct-message-channels\">",
+            if dms.is_empty() {
+                " center-empty-channels-list"
+            } else {
+                ""
+            }
+        ));
+        if dms.is_empty() {
+            // The CTA opens the new message modal (222).
+            let cta = if can_create {
+                format!(
+                    "<div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div>",
+                    escape(&self.t("chat.no_direct_message_channels_cta"))
+                )
+            } else {
+                String::new()
+            };
+            out.push_str(&format!(
+                "<div class=\"empty-state__container --empty-channels-list --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div>{cta}</div></div>",
+                super::page::CHAT_ZERO,
+                escape(&self.t("chat.no_direct_message_channels"))
+            ));
+        } else {
+            // truncatedDirectMessageChannelsByPreference
+            let mut list = filter_and_sort(dms.iter().collect(), dm_prefs, None);
+            list.truncate(DIRECT_MESSAGE_CHANNELS_LIMIT);
+            if list.is_empty() {
+                return Err(Unsupported("chat's filtered direct messages empty state").into());
+            }
+            let online = self.online_ids().await?;
+            let emojis = settings.emojis().clone();
+            let now = crate::clock::now();
+            for channel in list {
+                let Some(c) = dm_json
+                    .iter()
+                    .find(|c| c["id"].as_i64() == Some(channel.id))
+                else {
+                    continue;
+                };
+                out.push_str(&self.dm_row(c, channel, &emojis, &online, now));
+            }
+        }
+        out.push_str("</div></div>");
+        if mobile {
+            out.push_str(&self.footer("direct-messages", &channels, &dms).await?);
+        }
+        Ok(out)
+    }
+
+    /// The threads route (ChatRoutesThreads, drawing UserThreads): the
+    /// navbar and the member's threads once GET /chat/api/me/threads
+    /// answers, with none the list's empty state; in the mobile view the
+    /// chat footer. Threads are refused until their slice (160).
+    pub async fn threads_route(&mut self) -> Result<String, AppError> {
+        if self.has_viewable_threads().await? {
+            return Err(Unsupported("chat threads (the threads list)").into());
+        }
+        let Preloaded { channels, dms, .. } = self.preloaded().await?;
+        let mut out = format!(
+            "<div class=\"c-routes --threads\">{}",
+            self.route_navbar(&self.t("chat.my_threads.title"), &self.open_drawer_button())
+        );
+        // List with its collection loaded and empty: the empty state, the
+        // load more sentinel and the idle loading container.
+        out.push_str(&format!(
+            "<div class=\"c-list\"><div class=\"--loaded c-user-threads\"><div class=\"c-list-empty-state\"><div class=\"empty-state-threads\">{}</div></div></div><div><br></div><div class=\"loading-container\"></div></div></div>",
+            escape(&self.t("chat.empty_state.my_threads"))
+        ));
+        if crate::mobile::mobile_view() {
+            out.push_str(&self.footer("threads", &channels, &dms).await?);
+        }
+        Ok(out)
+    }
+
+    /// ChatChannelRow for a DM in the direct messages list: its icon, name
+    /// with the unread indicator, the last message's date, and the leave
+    /// button on desktop or the last message's excerpt in the mobile view.
+    fn dm_row(
+        &self,
+        c: &Value,
+        channel: &SidebarChannel,
+        emojis: &crate::emojis::Emojis,
+        online: &[i64],
+        now: chrono::DateTime<chrono::Utc>,
+    ) -> String {
+        // ChatChannelUnreadIndicator: a DM's unread messages are urgent.
+        let urgent = channel.unread + channel.mentions + channel.watched_threads;
+        let indicator = if channel.unread + channel.mentions > 0 {
+            format!(
+                "<div class=\"chat-channel-unread-indicator -urgent\"><div class=\"chat-channel-unread-indicator__number\">{}</div></div>",
+                if urgent > 99 {
+                    "99+".to_string()
+                } else {
+                    urgent.to_string()
+                }
+            )
+        } else {
+            String::new()
+        };
+        let title = c["unicode_title"]
+            .as_str()
+            .or(c["title"].as_str())
+            .unwrap_or(&channel.title);
+        let mobile = crate::mobile::mobile_view();
+        let tail = if mobile {
+            if c["last_message"].is_object() {
+                format!(
+                    "<div class=\"chat-channel__last-message\">{}</div>",
+                    crate::topic_list_view::emoji_unescape(
+                        c["last_message"]["excerpt"].as_str().unwrap_or_default(),
+                        emojis,
+                        self.base_path
+                    )
+                )
+            } else {
+                String::new()
+            }
+        } else {
+            String::new()
+        };
+        let leave = if mobile {
+            String::new()
+        } else {
+            format!(
+                "<button class=\"btn no-text btn-icon toggle-channel-membership-button -leave btn-flat chat-channel-leave-btn\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+                escape(&self.t("chat.direct_messages.close")),
+                d_icon("xmark", None)
+            )
+        };
+        format!(
+            "<a class=\"chat-channel-row{} can-leave{}\" tabindex=\"0\" data-chat-channel-id=\"{id}\" href=\"{}/chat/c/{}/{id}\"><div class=\"chat-channel-row__content is-dm\">{}<div class=\"chat-channel-row__info\"><div class=\"chat-channel-row__name-container\"><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div>{indicator}</div></div><div class=\"chat-channel__metadata\">{}</div>{tail}</div>{leave}</div></a>",
+            if channel.muted { " muted" } else { "" },
+            if channel.unread > 0 {
+                " has-unread"
+            } else {
+                ""
+            },
+            self.base_path,
+            escape(&channel.slug),
+            super::page::channel_icon(c, emojis, self.base_path, online),
+            crate::topic_list_view::emoji_unescape(&escape(title), emojis, self.base_path),
+            self.metadata_date(c, now),
+            id = channel.id,
+        )
+    }
+
+    /// ChatChannelMetadata's date: the last message's, drawn in UTC here
+    /// and in the member's zone by chat.js; a dash without one.
+    fn metadata_date(&self, c: &Value, now: chrono::DateTime<chrono::Utc>) -> String {
+        if c["last_message"]["id"].as_i64().is_none() {
+            return "<div class=\"chat-channel__metadata-date\">&ndash;</div>".to_string();
+        }
+        let at = c["last_message"]["created_at"].as_str().unwrap_or_default();
+        let yesterday = self.t("chat.dates.yesterday");
+        let text = chrono::DateTime::parse_from_rfc3339(at)
+            .map(|at| channel_calendar(at.with_timezone(&chrono::Utc), now, &yesterday))
+            .unwrap_or_default();
+        format!(
+            "<div class=\"chat-channel__metadata-date\" data-at=\"{}\" data-label-yesterday=\"{}\">{}</div>",
+            escape(at),
+            escape(&yesterday),
+            escape(&text)
+        )
     }
 
     /// ChatChannelRow for a public channel in the mobile list: its icon,
@@ -479,27 +784,7 @@ impl Context<'_> {
         } else {
             String::new()
         };
-        let date = match c["last_message"]["id"].as_i64() {
-            Some(_) => {
-                let at = c["last_message"]["created_at"].as_str().unwrap_or_default();
-                let text = chrono::DateTime::parse_from_rfc3339(at)
-                    .map(|at| {
-                        channel_calendar(
-                            at.with_timezone(&chrono::Utc),
-                            now,
-                            &self.t("chat.dates.yesterday"),
-                        )
-                    })
-                    .unwrap_or_default();
-                format!(
-                    "<div class=\"chat-channel__metadata-date\" data-at=\"{}\" data-label-yesterday=\"{}\">{}</div>",
-                    escape(at),
-                    escape(&self.t("chat.dates.yesterday")),
-                    escape(&text)
-                )
-            }
-            None => "<div class=\"chat-channel__metadata-date\">&ndash;</div>".to_string(),
-        };
+        let date = self.metadata_date(c, now);
         format!(
             "<a class=\"chat-channel-row{}{}\" tabindex=\"0\" data-chat-channel-id=\"{id}\" href=\"{}/chat/c/{}/{id}\"><div class=\"chat-channel-row__content is-category\">{}<div class=\"chat-channel-row__info\"><div class=\"chat-channel-row__name-container\"><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div>{indicator}</div></div><div class=\"chat-channel__metadata\">{date}</div></div></div></a>",
             if channel.muted { " muted" } else { "" },

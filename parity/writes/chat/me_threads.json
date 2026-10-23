@@ -1,0 +1,71 @@
+{
+  "name": "me_threads",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/me/threads.json"
+    }
+  ],
+  "started_at": "2026-10-22T20:16:33.692849",
+  "transaction_started_at": "2026-10-22T20:16:27.769946",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "threads": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 630,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "svhDGfUMCUP7XmI0CRIpwUAfruM=",
+            "created_at": "2026-10-22T20:16:29.564558",
+            "rotated_at": "2026-10-22T20:16:29.537909",
+            "updated_at": "2026-10-22T20:16:29.564558",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "svhDGfUMCUP7XmI0CRIpwUAfruM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 630,
+            "seen_at": "2026-10-22T20:16:33.720146",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "svhDGfUMCUP7XmI0CRIpwUAfruM=",
+            "created_at": "2026-10-22T20:16:29.564558",
+            "rotated_at": "2026-10-22T20:16:29.537909",
+            "updated_at": "2026-10-22T20:16:29.564558",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "svhDGfUMCUP7XmI0CRIpwUAfruM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "recorded_from": {
+    "case": "1eb749e546eac431ae17c23efe6c73e2d684f865c2c48b2c5bf913800e7df805",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

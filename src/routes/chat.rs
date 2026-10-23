@@ -93,6 +93,27 @@ pub async fn me_channels(
     Ok(Json(out).into_response())
 }
 
+/// GET /chat/api/me/threads: Chat::Api::CurrentUserThreadsController#index
+/// (Chat::LookupUserThreads). Its contract casts limit and offset and
+/// never fails; no thread to list answers as the controller's
+/// on_model_not_found does. Listing threads is refused until they are
+/// ported (160).
+pub async fn me_threads(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    if cx.has_viewable_threads().await? {
+        return Err(crate::Unsupported("chat threads (the member's threads list)").into());
+    }
+    Ok(Json(json!({"success": "OK", "threads": []})).into_response())
+}
+
 /// GET /chat/api/channels: Chat::Api::ChannelsController#index.
 pub async fn index(
     State(state): State<AppState>,
