@@ -851,12 +851,6 @@ pub async fn toggle(
             }
             revise::Outcome::RateLimited(refused) => return Ok(Answer::RateLimited(refused)),
         }
-        // revise! ends `return if @editor.id == Discourse::SYSTEM_USER_ID`
-        // before enqueueing post_alert: nil for the system user, which the
-        // step takes for a failed revision although the edit is saved.
-        if guardian.user_id() == Some(-1) {
-            return Ok(Answer::Unprocessable(ctx.t("checklist.revision_failed")));
-        }
     }
     // on_success: the post as revised (or as loaded).
     let (cooked, last_editor_id, raw, updated_at, version): (
