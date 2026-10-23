@@ -115,8 +115,9 @@ async fn render(
         .push_str(" has-chat has-full-page-chat");
     // The chat routes leave out the application footer.
     site.chrome.show_footer = false;
-    // ChatHeader in the mobile view: back to the forum and the Chat
-    // heading in the logo's place.
+    // ChatHeader in the mobile view: back to the forum (the last forum
+    // page in the app, previousURL, which chat-drawer.js puts in) and the
+    // Chat heading in the logo's place.
     if crate::mobile::mobile_view() {
         let t = |key: &str| {
             crate::topic_list_view::escape(state.i18n.t(&format!("js.{key}")).unwrap_or_default())
@@ -329,7 +330,7 @@ pub async fn browse(
     };
     let filter = filter_param(&uri);
     let content = context(&state, &mut conn, &settings, &guardian)
-        .browse_page(tab, &filter)
+        .browse_page(tab, &filter, None)
         .await?;
     let title = format!("{} - ", chat_title(&state));
     render(
@@ -447,7 +448,7 @@ pub async fn channel(
             channel.id
         )));
     }
-    let content = cx.channel_page(&channel, target).await?;
+    let content = cx.channel_page(&channel, target, None).await?;
     let channel_title = channel.name.clone().filter(|n| !n.is_empty());
     let title = match (dm_title, channel_title) {
         (Some(dm), _) => format!(
@@ -487,7 +488,7 @@ pub async fn direct_messages(
         Err(response) => return Ok(response),
     };
     let content = context(&state, &mut conn, &settings, &guardian)
-        .direct_messages_route()
+        .direct_messages_route(None)
         .await?;
     // The route adds no title token of its own.
     let title = format!("{} - ", chat_title(&state));
@@ -560,6 +561,66 @@ pub async fn disabled(
         true,
     )
     .await
+}
+
+#[derive(serde::Deserialize, Default)]
+pub struct DrawerParams {
+    /// The chat URL the drawer opens, without the base path.
+    url: Option<String>,
+    /// "false" while the drawer is collapsed.
+    expanded: Option<String>,
+    /// ChatHistory's previous route name.
+    previous: Option<String>,
+}
+
+/// GET /live/chat/drawer: the drawer's route for a chat URL, as
+/// static/js/chat-drawer.js shows it (crate::plugins::chat::drawer): its
+/// markup, with the routes it visited (x-chat-drawer-routes) and the
+/// channel it shows (x-chat-drawer-channel). Not found where the drawer
+/// doesn't handle the URL, for a viewer who can't chat, and in the mobile
+/// view, which has no drawer.
+pub async fn drawer(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Query(params): axum::extract::Query<DrawerParams>,
+) -> Result<Response, AppError> {
+    if crate::mobile::mobile_view() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let url = params.url.unwrap_or_default();
+    let path = url.split(['?', '#']).next().unwrap_or_default();
+    let expanded = params.expanded.as_deref() != Some("false");
+    let drawn = crate::plugins::chat::drawer::draw(
+        &mut context(&state, &mut conn, &settings, &guardian),
+        path,
+        expanded,
+        params.previous.as_deref(),
+    )
+    .await?;
+    let Some(drawn) = drawn else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut response = (
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        drawn.html,
+    )
+        .into_response();
+    let headers = response.headers_mut();
+    if let Ok(v) = drawn.routes.join(" ").parse() {
+        headers.insert("x-chat-drawer-routes", v);
+    }
+    if let Some(id) = drawn.channel_id {
+        headers.insert("x-chat-drawer-channel", id.into());
+    }
+    Ok(response)
 }
 
 #[derive(serde::Deserialize, Default)]

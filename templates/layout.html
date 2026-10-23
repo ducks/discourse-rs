@@ -308,6 +308,15 @@
         {%- if chrome.show_footer %}
         <div class="custom-footer-content">{{ chrome.theme_html.footer|safe }}</div>
         {%- endif %}
+        {#- The below-footer outlet's ChatDrawerOutlet, kept across pages
+            (hx-preserve) as Ember keeps the drawer across routes;
+            chat-drawer.js draws the drawer in it. -#}
+        {%- if chrome.chat_drawer_outlet %}
+        <div class="below-footer-outlet chat-drawer-outlet" id="chat-drawer-outlet" hx-preserve><div class="chat-drawer-outlet-container"></div></div>
+        {%- if !chrome.chat_drawer.is_empty() %}
+        <script src="{{ crate::assets::url(base_path, "chat-drawer.js") }}"{{ chrome.chat_drawer|safe }} defer></script>
+        {%- endif %}
+        {%- endif %}
       </div>
       {#- The search menu (search-menu.js), after the page it watches (the
           welcome banner's field). -#}

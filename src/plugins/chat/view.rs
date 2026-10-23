@@ -29,6 +29,9 @@ pub struct ChatChrome {
     /// ChatHeaderIconUnreadIndicator for the channel route's back button
     /// in the mobile view, counting the channels but the open one.
     pub back_indicator: String,
+    /// chatChannelsManager.hasStarredChannels, for the drawer's
+    /// lastKnownChatURL.
+    pub starred: bool,
 }
 
 /// A direct message channel's part of its sidebar link.
@@ -315,6 +318,7 @@ impl Context<'_> {
             header_icon,
             sidebar_sections,
             back_indicator,
+            starred: channels.iter().chain(&dms).any(|c| c.starred),
         }))
     }
 
@@ -541,7 +545,12 @@ impl Context<'_> {
     /// ChannelsListDirect): the navbar, the section's divider (on desktop,
     /// or in the mobile view without public channels), the member's DMs by
     /// their DM list preferences, and in the mobile view the chat footer.
-    pub async fn direct_messages_route(&mut self) -> Result<String, AppError> {
+    /// In the drawer (ChatDrawerRoutesDirectMessages): the drawer's navbar
+    /// titled Chat, then while expanded the list and the footer.
+    pub async fn direct_messages_route(
+        &mut self,
+        drawer: Option<&super::drawer::Nav<'_>>,
+    ) -> Result<String, AppError> {
         let settings = self.settings;
         let Some(user_id) = self.guardian.user_id() else {
             return Err(Unsupported("chat's direct messages list without a member").into());
@@ -575,10 +584,23 @@ impl Context<'_> {
         } else {
             self.open_drawer_button()
         };
-        let mut out = format!(
-            "<div class=\"c-routes --direct-messages\">{}",
-            self.route_navbar(&title, &actions)
-        );
+        let mut out = match drawer {
+            Some(nav) => {
+                let navbar = nav.navbar(&self.t("chat.heading"));
+                if !nav.expanded {
+                    return Ok(format!(
+                        "<div class=\"c-drawer-routes --direct-messages\">{navbar}</div>"
+                    ));
+                }
+                format!(
+                    "<div class=\"c-drawer-routes --direct-messages\">{navbar}<div class=\"chat-drawer-content\">"
+                )
+            }
+            None => format!(
+                "<div class=\"c-routes --direct-messages\">{}",
+                self.route_navbar(&title, &actions)
+            ),
+        };
         if (can_create || !dms.is_empty()) && (!mobile || !display_public) {
             out.push_str(&format!(
                 "<div class=\"chat-channel-divider direct-message-channels-section\"><span class=\"channel-title\">{}</span>",
@@ -636,9 +658,192 @@ impl Context<'_> {
             }
         }
         out.push_str("</div></div>");
-        if mobile {
+        if drawer.is_some() {
+            out.push_str(&self.footer("direct-messages", &channels, &dms).await?);
+            out.push_str("</div>");
+        } else if mobile {
             out.push_str(&self.footer("direct-messages", &channels, &dms).await?);
         }
+        Ok(out)
+    }
+
+    /// The drawer's channels route (ChatDrawerRoutesChannels): its navbar
+    /// titled Chat, then while expanded ChannelsListPublic on desktop (the
+    /// section's divider while public channels show, every followed public
+    /// channel by the member's list preferences, or the empty state
+    /// offering the browser) and the footer.
+    pub async fn drawer_channels_route(
+        &mut self,
+        nav: &super::drawer::Nav<'_>,
+    ) -> Result<String, AppError> {
+        let settings = self.settings;
+        let navbar = nav.navbar(&self.t("chat.heading"));
+        if !nav.expanded {
+            return Ok(format!(
+                "<div class=\"c-drawer-routes --channels\">{navbar}</div>"
+            ));
+        }
+        let Some(user_id) = self.guardian.user_id() else {
+            return Err(Unsupported("chat's channels list without a member").into());
+        };
+        let Some(options) = super::options(&mut *self.conn, user_id).await? else {
+            return Err(Unsupported("chat's channels list without chat options").into());
+        };
+        let me = self.me_channels().await?;
+        let tracking = &me["tracking"]["channel_tracking"];
+        let json = |key: &str| me[key].as_array().cloned().unwrap_or_default();
+        let public = json("public_channels");
+        let channels = public
+            .iter()
+            .map(|c| SidebarChannel::from_json(c, tracking))
+            .collect::<Result<Vec<_>, _>>()?;
+        let dms = json("direct_message_channels")
+            .iter()
+            .map(|c| SidebarChannel::from_json(c, tracking))
+            .collect::<Result<Vec<_>, _>>()?;
+        let channel_prefs = prefs(
+            options.chat_channel_list_filter,
+            options.chat_channel_list_sort,
+        );
+        // chatChannelsManager.displayPublicChannels
+        let display_public = settings.get("enable_public_channels")?.truthy()
+            && (!channels.is_empty()
+                || self.guardian.is_staff()
+                || super::has_joinable_public_channels(&mut *self.conn, settings, self.guardian)
+                    .await?);
+        let mut out = format!(
+            "<div class=\"c-drawer-routes --channels\">{navbar}<div class=\"chat-drawer-content\">"
+        );
+        if display_public {
+            out.push_str(&format!(
+                "<div class=\"chat-channel-divider public-channels-section\"><span class=\"channel-title\">{}</span><div class=\"chat-channel-divider__actions\">{}</div></div>",
+                escape(&self.t("chat.chat_channels")),
+                self.list_option_buttons(channel_prefs)
+            ));
+        }
+        out.push_str(
+            "<div class=\"channels-list-container public-channels\" id=\"public-channels\">",
+        );
+        if channels.is_empty() {
+            // DEmptyState, its button to the browser (openBrowseChannels).
+            let cta = if display_public {
+                format!(
+                    "<div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\" data-href=\"{}/chat/browse\"><span class=\"d-button-label\">{}</span></button></div>",
+                    self.base_path,
+                    escape(&self.t("chat.no_public_channels_cta"))
+                )
+            } else {
+                String::new()
+            };
+            out.push_str(&format!(
+                "<div class=\"empty-state__container --empty-channels-list --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div>{cta}</div></div>",
+                super::page::CHAT_ZERO,
+                escape(&self.t("chat.no_public_channels"))
+            ));
+        } else {
+            let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
+            if list.is_empty() {
+                return Err(Unsupported("chat's filtered channels list empty state").into());
+            }
+            let emojis = settings.emojis().clone();
+            let now = crate::clock::now();
+            for channel in list {
+                let Some(c) = public.iter().find(|c| c["id"].as_i64() == Some(channel.id)) else {
+                    continue;
+                };
+                out.push_str(&self.channel_row(c, channel, &emojis, now));
+            }
+        }
+        out.push_str("</div></div>");
+        out.push_str(&self.footer("channels", &channels, &dms).await?);
+        out.push_str("</div>");
+        Ok(out)
+    }
+
+    /// Whether the member has a starred channel they follow
+    /// (chatChannelsManager.hasStarredChannels).
+    pub async fn has_starred_channels(&mut self) -> Result<bool, AppError> {
+        let Preloaded { channels, dms, .. } = self.preloaded().await?;
+        Ok(channels.iter().chain(&dms).any(|c| c.starred))
+    }
+
+    /// The drawer's starred channels route
+    /// (ChatDrawerRoutesStarredChannels): its navbar, then while expanded
+    /// ChannelsListStarred on desktop (the section's divider, the starred
+    /// public channels by slug then DMs by title, by the member's starred
+    /// list preferences, a DM with its leave button) and the footer.
+    pub async fn drawer_starred_route(
+        &mut self,
+        nav: &super::drawer::Nav<'_>,
+    ) -> Result<String, AppError> {
+        let navbar = nav.navbar(&self.t("chat.starred"));
+        if !nav.expanded {
+            return Ok(format!(
+                "<div class=\"c-drawer-routes --starred-channels\">{navbar}</div>"
+            ));
+        }
+        let Some(user_id) = self.guardian.user_id() else {
+            return Err(Unsupported("chat's starred channels without a member").into());
+        };
+        let Some(options) = super::options(&mut *self.conn, user_id).await? else {
+            return Err(Unsupported("chat's starred channels without chat options").into());
+        };
+        let me = self.me_channels().await?;
+        let tracking = &me["tracking"]["channel_tracking"];
+        let json = |key: &str| me[key].as_array().cloned().unwrap_or_default();
+        let public = json("public_channels");
+        let dm_json = json("direct_message_channels");
+        let channels = public
+            .iter()
+            .map(|c| SidebarChannel::from_json(c, tracking))
+            .collect::<Result<Vec<_>, _>>()?;
+        let dms = dm_json
+            .iter()
+            .map(|c| SidebarChannel::from_json(c, tracking))
+            .collect::<Result<Vec<_>, _>>()?;
+        let starred_prefs = prefs(
+            options.chat_channel_list_filter_starred,
+            options.chat_channel_list_sort_starred,
+        );
+        let mut starred: Vec<&SidebarChannel> = channels.iter().filter(|c| c.starred).collect();
+        starred.sort_by(|a, b| a.slug.cmp(&b.slug));
+        let mut starred_dms: Vec<&SidebarChannel> = dms.iter().filter(|c| c.starred).collect();
+        starred_dms.sort_by(|a, b| a.title.cmp(&b.title));
+        starred.extend(starred_dms);
+        let mut list = filter(starred.clone(), starred_prefs, None);
+        if starred_prefs.sort != "alphabetical" {
+            sort(&mut list, starred_prefs);
+        }
+        if list.is_empty() {
+            return Err(Unsupported("chat's filtered starred channels empty state").into());
+        }
+        let mut out = format!(
+            "<div class=\"c-drawer-routes --starred-channels\">{navbar}<div class=\"chat-drawer-content\"><div class=\"chat-channel-divider starred-channels-section\"><span class=\"channel-title\">{}</span><div class=\"chat-channel-divider__actions\">{}</div></div><div class=\"channels-list-container starred-channels\">",
+            escape(&self.t("chat.starred_channels")),
+            self.list_option_buttons(starred_prefs)
+        );
+        let emojis = self.settings.emojis().clone();
+        let now = crate::clock::now();
+        let online = if list.iter().any(|c| c.dm.is_some()) {
+            self.online_ids().await?
+        } else {
+            Vec::new()
+        };
+        for channel in list {
+            if channel.dm.is_some() {
+                if let Some(c) = dm_json
+                    .iter()
+                    .find(|c| c["id"].as_i64() == Some(channel.id))
+                {
+                    out.push_str(&self.dm_row(c, channel, &emojis, &online, now));
+                }
+            } else if let Some(c) = public.iter().find(|c| c["id"].as_i64() == Some(channel.id)) {
+                out.push_str(&self.channel_row(c, channel, &emojis, now));
+            }
+        }
+        out.push_str("</div></div>");
+        out.push_str(&self.footer("starred", &channels, &dms).await?);
+        out.push_str("</div>");
         Ok(out)
     }
 
