@@ -1,4 +1,6 @@
-// Two of Ember's post decorators (instance-initializers/post-decorations.js):
+// Ember's post decorators for image grids and tables
+// (instance-initializers/post-decorations.js) and uploaded videos
+// (instance-initializers/video-placeholder.js):
 //
 //   image grid: each div.d-image-grid not in carousel mode is laid out in
 //       columns by lib/columns.js. The carousel (lib/image-grid-carousel.js)
@@ -7,6 +9,10 @@
 //       row, and when it overflows, the button that shows the table in a
 //       FullscreenTableModal. The pencil that opens the spreadsheet editor
 //       (`--editable`, for a post the viewer can edit) isn't ported.
+//   video-placeholder (onlyStream): below.
+//
+// Its audio decorator only keeps a playing post from being cloaked
+// (api.preventCloak); the pages do not cloak posts, so it has nothing to do.
 //
 // The pages are the desktop view (site.mobileView false).
 (function () {
@@ -220,5 +226,137 @@
       return;
     }
     generatePopups(el.querySelectorAll(".md-table table"), article.dataset.postId);
+  });
+
+  // instance-initializers/video-placeholder.js (onlyStream): each
+  // .video-placeholder-container cooking left gets its thumbnail as the
+  // background and a play button; a click swaps in the <video>, shown
+  // once it can play.
+  var ua = navigator.userAgent;
+  var isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+  var isIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+
+  // sanitizeUrl: an http(s) or root-relative url that sanitizing leaves
+  // as it is, else null.
+  function sanitizeUrl(url) {
+    try {
+      var parsed = new URL(url, window.location.origin);
+      if (
+        ["http:", "https:"].indexOf(parsed.protocol) !== -1 ||
+        url.startsWith("/")
+      ) {
+        if (
+          url &&
+          url.trim() !== "" &&
+          url.indexOf("<") === -1 &&
+          url.indexOf(">") === -1 &&
+          url.indexOf('"') === -1
+        ) {
+          return url;
+        }
+      }
+    } catch (e) {
+      window.console && console.warn("Invalid URL encountered:", url, e.message);
+    }
+    return null;
+  }
+
+  function handleVideoPlaceholderClick(event) {
+    var parentDiv = event.target.closest(".video-placeholder-container");
+    var wrapper = parentDiv.querySelector(".video-placeholder-wrapper");
+    var overlay = wrapper.querySelector(".video-placeholder-overlay");
+
+    parentDiv.style.cursor = "";
+    overlay.innerHTML = "<div class='spinner'></div>";
+
+    var videoSrc = sanitizeUrl(parentDiv.dataset.videoSrc);
+    var origSrc = sanitizeUrl(parentDiv.dataset.origSrc);
+    var dataOrigSrcAttr = origSrc !== null ? 'data-orig-src="' + origSrc + '"' : "";
+
+    if (videoSrc === null) {
+      var existingNotice = wrapper.querySelector(".notice.error");
+      if (existingNotice) {
+        existingNotice.remove();
+      }
+      var notice = document.createElement("div");
+      notice.className = "notice error";
+      notice.innerHTML =
+        Discourse.cooked.icon("triangle-exclamation") +
+        " " +
+        Discourse.cooked.t("invalid_video_url");
+      wrapper.appendChild(notice);
+      overlay.innerHTML = Discourse.cooked.icon("play");
+      parentDiv.style.cursor = "pointer";
+      parentDiv.addEventListener("click", handleVideoPlaceholderClick, { once: true });
+      return;
+    }
+
+    parentDiv.insertAdjacentHTML(
+      "beforeend",
+      '\n        <video width="100%" height="100%" preload="metadata" controls style="display:none">\n' +
+        '          <source src="' + videoSrc + '" ' + dataOrigSrcAttr + ">\n" +
+        '          <a href="' + videoSrc + '">' + videoSrc + "</a>\n" +
+        "        </video>"
+    );
+    parentDiv.classList.add("video-container");
+
+    var video = parentDiv.querySelector("video");
+    if ((isSafari || isIOS) && video.querySelector("source")) {
+      video.load();
+    }
+
+    video.addEventListener("loadeddata", function () {
+      setTimeout(function () {
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          var codecNotice = document.createElement("div");
+          codecNotice.className = "notice";
+          codecNotice.innerHTML =
+            Discourse.cooked.icon("triangle-exclamation") +
+            " " +
+            Discourse.cooked.t("cannot_render_video");
+          parentDiv.appendChild(codecNotice);
+        }
+      }, 500);
+    });
+
+    video.addEventListener("canplay", function () {
+      if (isIOS) {
+        setTimeout(function () {
+          video.play();
+        }, 100);
+      } else {
+        video.play();
+      }
+      wrapper.remove();
+      video.style.display = "";
+      parentDiv.classList.remove("video-placeholder-container");
+      parentDiv.style.backgroundImage = "none";
+    });
+  }
+
+  Discourse.decorateCooked("video-placeholder", function (el) {
+    if (!el.closest("article[data-post-id]")) {
+      return;
+    }
+    el.querySelectorAll(".video-placeholder-container").forEach(function (container) {
+      if (container.dataset.thumbnailSrc) {
+        var thumbnail = new Image();
+        thumbnail.onload = function () {
+          container.style.backgroundImage = "url('" + thumbnail.src + "')";
+        };
+        thumbnail.src = container.dataset.thumbnailSrc;
+      }
+      var wrapper = document.createElement("div");
+      var overlay = document.createElement("div");
+      wrapper.classList.add("video-placeholder-wrapper");
+      container.appendChild(wrapper);
+      overlay.classList.add("video-placeholder-overlay");
+      container.style.cursor = "pointer";
+      container.addEventListener("click", handleVideoPlaceholderClick, { once: true });
+      overlay.innerHTML = Discourse.cooked.icon("play");
+      wrapper.appendChild(overlay);
+    });
   });
 })();

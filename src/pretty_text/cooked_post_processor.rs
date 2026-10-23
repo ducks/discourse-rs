@@ -787,6 +787,108 @@ fn apply_image_edits(dom: &RcDom, edits: Vec<Vec<Edit>>) {
     }
 }
 
+/// The document's `.video-placeholder-container`s, in order.
+fn video_containers(dom: &RcDom) -> Vec<Handle> {
+    all_elements(dom)
+        .into_iter()
+        .filter(|e| has_class(e, "video-placeholder-container"))
+        .collect()
+}
+
+/// `post_process_videos`' lookups: for each video container (by its
+/// place among them) whose upload has an optimized video, that video's
+/// url (`Discourse.store.cdn_url`, the url itself without a CDN).
+async fn post_process_videos(
+    conn: &mut PgConnection,
+    html: &str,
+) -> Result<Vec<(usize, String)>, CookError> {
+    let sources: Vec<(usize, String)> = {
+        let dom = parse(html);
+        video_containers(&dom)
+            .iter()
+            .enumerate()
+            .filter_map(|(i, e)| {
+                let src = attr(e, "data-video-src")?;
+                (!crate::ruby::is_blank(&src)).then_some((i, src))
+            })
+            .collect()
+    };
+    let mut edits = Vec::new();
+    for (index, src) in sources {
+        let Some((upload_id, _)) = crate::upload_references::get_from_url(&mut *conn, &src).await?
+        else {
+            continue;
+        };
+        let optimized: Option<String> = sqlx::query_scalar(
+            "SELECT u.url FROM optimized_videos v JOIN uploads u ON u.id = v.optimized_upload_id \
+             WHERE v.upload_id = $1 LIMIT 1",
+        )
+        .bind(upload_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        if let Some(url) = optimized {
+            edits.push((index, url));
+        }
+    }
+    Ok(edits)
+}
+
+/// The optimized videos' urls set on their containers, the original kept
+/// in `data-original-video-src`; whether any container changed.
+fn apply_video_edits(dom: &RcDom, edits: &[(usize, String)]) -> bool {
+    if edits.is_empty() {
+        return false;
+    }
+    let containers = video_containers(dom);
+    let mut changed = false;
+    for (index, optimized) in edits {
+        let Some(container) = containers.get(*index) else {
+            continue;
+        };
+        let src = attr(container, "data-video-src").unwrap_or_default();
+        if &src == optimized {
+            continue;
+        }
+        if attr(container, "data-original-video-src").is_none() {
+            set_attr(container, "data-original-video-src", &src);
+        }
+        set_attr(container, "data-video-src", optimized);
+        changed = true;
+    }
+    changed
+}
+
+/// post_process_videos' `@post.save` of the processed cooked: the
+/// before_save defaults, updated_at, and the search index's after_commit
+/// (the cooked changed). PostValidator, which the save runs, is not.
+async fn save_cooked(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    config: &Config,
+    post_id: i32,
+    cooked: &str,
+) -> Result<(), CookError> {
+    sqlx::query(
+        "UPDATE posts SET cooked = $2, last_editor_id = COALESCE(last_editor_id, user_id), \
+                locale = NULLIF(locale, ''), updated_at = clock_timestamp() WHERE id = $1",
+    )
+    .bind(post_id)
+    .bind(cooked)
+    .execute(&mut *conn)
+    .await?;
+    let urls = Urls { config, settings };
+    let base_path = config.globals.relative_url_root().to_string();
+    let base = crate::posting::search_index::BaseUrls {
+        base_path: &base_path,
+        base_url_no_prefix: urls.base_url_no_prefix()?,
+        store: crate::file_store::FileStore::for_site(config, settings)?,
+    };
+    crate::posting::search_index::reindex_post(conn, settings, &base, post_id)
+        .await
+        .map_err(CookError::App)?;
+    Ok(())
+}
+
 /// `post_process` on `Post#cook`'s html: what the job writes.
 pub(crate) async fn post_process(
     conn: &mut PgConnection,
@@ -845,16 +947,7 @@ pub(crate) async fn post_process(
     } else {
         html
     };
-    {
-        let dom = parse(html);
-        for e in all_elements(&dom) {
-            if has_class(&e, "video-placeholder-container")
-                && attr(&e, "data-video-src").is_some_and(|s| s != "/404")
-            {
-                return Err(Unsupported("videos in the post processor (optimized videos)").into());
-            }
-        }
-    }
+    let video_edits = post_process_videos(conn, html).await?;
     let base_path = config.globals.relative_url_root();
     let steps = ImageSteps {
         settings,
@@ -890,54 +983,70 @@ pub(crate) async fn post_process(
     let add_nofollow = !omit_nofollow && settings.get("add_rel_nofollow_to_user_content")?.truthy();
     let (site_host, allowlist) = rel_settings(settings, config)?;
 
-    let dom = parse(html);
-    // footnote's before_post_process_cooked: Rails runs it on the document
-    // before every step, none of which reads the ids it rewrites.
-    if let Some(post_id) = post_id
-        && crate::plugins::footnote::enabled(settings)?
-    {
-        crate::plugins::footnote::before_post_process_cooked(&dom, post_id);
-    }
-    apply_image_edits(&dom, image_edits);
-    let quotes: Vec<_> = all_elements(&dom)
-        .into_iter()
-        .filter(|e| element_name(e) == Some("aside") && has_class(e, "quote"))
-        .collect();
-    for (index, mark) in marks {
-        if let Some(q) = quotes.get(index) {
-            let class = format!("{} {mark}", attr(q, "class").unwrap_or_default());
-            set_attr(q, "class", class.trim());
+    // The steps after post_process_videos, on the document.
+    let finish = |dom: &RcDom| -> Result<String, CookError> {
+        let quotes: Vec<_> = all_elements(dom)
+            .into_iter()
+            .filter(|e| element_name(e) == Some("aside") && has_class(e, "quote"))
+            .collect();
+        for (index, mark) in &marks {
+            if let Some(q) = quotes.get(*index) {
+                let class = format!("{} {mark}", attr(q, "class").unwrap_or_default());
+                set_attr(q, "class", class.trim());
+            }
         }
-    }
-    for e in all_elements(&dom) {
-        match element_name(&e) {
-            Some("a") => {
-                for name in ["href", "data-download-href"] {
-                    if let Some(value) = attr(&e, name) {
-                        set_attr(&e, name, &cook_url(&value, &urls, base_path, &store)?);
+        for e in all_elements(dom) {
+            match element_name(&e) {
+                Some("a") => {
+                    for name in ["href", "data-download-href"] {
+                        if let Some(value) = attr(&e, name) {
+                            set_attr(&e, name, &cook_url(&value, &urls, base_path, &store)?);
+                        }
                     }
                 }
-            }
-            Some("img") | Some("video") => {
-                if let Some(src) = attr(&e, "src") {
-                    set_attr(&e, "src", &cook_url(&src, &urls, base_path, &store)?);
+                Some("img") | Some("video") => {
+                    if let Some(src) = attr(&e, "src") {
+                        set_attr(&e, "src", &cook_url(&src, &urls, base_path, &store)?);
+                    }
                 }
+                _ => {}
             }
-            _ => {}
         }
-    }
-    for a in all_elements(&dom) {
-        if element_name(&a) != Some("a") {
-            continue;
+        for a in all_elements(dom) {
+            if element_name(&a) != Some("a") {
+                continue;
+            }
+            if let Some(href) = attr(&a, "href")
+                && let Some(cleaned) = without_user_id(&href, &hostname)?
+            {
+                set_attr(&a, "href", &cleaned);
+            }
         }
-        if let Some(href) = attr(&a, "href")
-            && let Some(cleaned) = without_user_id(&href, &hostname)?
+        add_rel_attributes(dom, add_nofollow, &site_host, &allowlist);
+        Ok(to_html(dom))
+    };
+
+    let (post_id, saved) = {
+        let dom = parse(html);
+        // footnote's before_post_process_cooked: Rails runs it on the
+        // document before every step, none of which reads the ids it
+        // rewrites.
+        if let Some(post_id) = post_id
+            && crate::plugins::footnote::enabled(settings)?
         {
-            set_attr(&a, "href", &cleaned);
+            crate::plugins::footnote::before_post_process_cooked(&dom, post_id);
         }
-    }
-    add_rel_attributes(&dom, add_nofollow, &site_host, &allowlist);
-    Ok(to_html(&dom))
+        apply_image_edits(&dom, image_edits);
+        match (apply_video_edits(&dom, &video_edits), post_id) {
+            (true, Some(post_id)) => (post_id, to_html(&dom)),
+            _ => return finish(&dom),
+        }
+    };
+    // post_process_videos saves the post as the document stands when one
+    // of its videos changed; the document can't be held across the save,
+    // so the steps go on from what was saved.
+    save_cooked(conn, settings, config, post_id, &saved).await?;
+    finish(&parse(&saved))
 }
 
 /// The post as cooking reads it.
@@ -1029,5 +1138,34 @@ mod tests {
         );
         assert_eq!(strip("https://example.com/?u=bob"), None);
         assert_eq!(strip("/t/x/1?u=bob"), None);
+    }
+
+    #[test]
+    fn optimized_videos_replace_their_containers_sources() {
+        let html = "<div class=\"video-placeholder-container\" data-video-src=\"/uploads/default/original/1X/a.mov\"></div>\n\
+                    <div class=\"video-placeholder-container\" data-video-src=\"/uploads/default/original/1X/b.mp4\" data-original-video-src=\"/first.mov\"></div>\n\
+                    <div class=\"video-placeholder-container\" data-video-src=\"/same.mp4\"></div>";
+        let dom = parse(html);
+        let edits = vec![
+            (0, "/uploads/default/original/1X/c.mp4".to_string()),
+            (1, "/uploads/default/original/1X/d.mp4".to_string()),
+            (2, "/same.mp4".to_string()),
+            (7, "/missing.mp4".to_string()),
+        ];
+        assert!(apply_video_edits(&dom, &edits));
+        assert_eq!(
+            to_html(&dom),
+            "<div class=\"video-placeholder-container\" data-video-src=\"/uploads/default/original/1X/c.mp4\" data-original-video-src=\"/uploads/default/original/1X/a.mov\"></div>\n\
+             <div class=\"video-placeholder-container\" data-video-src=\"/uploads/default/original/1X/d.mp4\" data-original-video-src=\"/first.mov\"></div>\n\
+             <div class=\"video-placeholder-container\" data-video-src=\"/same.mp4\"></div>"
+        );
+    }
+
+    #[test]
+    fn a_video_already_optimized_is_no_change() {
+        let dom =
+            parse("<div class=\"video-placeholder-container\" data-video-src=\"/o.mp4\"></div>");
+        assert!(!apply_video_edits(&dom, &[]));
+        assert!(!apply_video_edits(&dom, &[(0, "/o.mp4".to_string())]));
     }
 }

@@ -97,8 +97,10 @@ Visible if clicked, avoid them in a scripted demo:
   votes; its results say they are not ported yet (228b), as do ranked
   choice polls and the actions menu (228b, 228c).
 - [ ] No Build Poll (229).
-- [ ] A post with an uploaded video or audio file is refused
-  (posting/create.rs:591, 138, with 141).
+- [x] A post with an uploaded video or audio file is refused (138, 141):
+  feat/post-video-audio, done: such posts are created and edited, the
+  video drawn as its placeholder with the play button and the audio as
+  its player; the composer doesn't make a video's thumbnail yet (139).
 - [ ] Checklists can't be checked (242); user status can't be set (130).
 - [ ] The review queue's claims, notes and client actions are refused
   (194), and the topic admin wrench isn't drawn (194, 262a).
@@ -1523,7 +1525,7 @@ have handlers now.
 121. `feat/cdn` M: URLs behind a CDN (avatar.rs:66, the system
     avatar; pretty_text/helpers.rs:345;
     pretty_text/mod.rs:496; pretty_text/cleanup.rs:607;
-    pretty_text/cooked_post_processor.rs:808; topic_list.rs:1038;
+    pretty_text/cooked_post_processor.rs:909; topic_list.rs:1038;
     users.rs:1074; badges_view.rs:114; reports/tables.rs:564)
 122. ~~`feat/s3-store`~~ (done: feat/s3-store-interface, feat/s3-store-uploads,
     feat/s3-backups, feat/s3-direct-uploads) L: the S3 store for uploads
@@ -1546,7 +1548,7 @@ have handlers now.
     external store's redirect, the local store's send_file) is not routed
 123. `feat/secure-uploads` M, after 122: secure uploads and media
     (uploads.rs:388; posting/rebake.rs:49; pretty_text/helpers.rs:339;
-    pretty_text/cooked_post_processor.rs:801; upload_references.rs:370;
+    pretty_text/cooked_post_processor.rs:902; upload_references.rs:370;
     topic_list.rs:1026; email/styles.rs:243)
 124. `feat/topic-view-staff` M (rewritten 2026-10-20: deleted topics and
     replies for staff with `post_stream.gaps`, `has_deleted`,
@@ -1567,7 +1569,8 @@ have handlers now.
     (:2800), suggested topics from other lists and for anonymous
     readers (topic_query.rs:839,887)
 125. `feat/topic-thumbnails` M: topic thumbnails in the topic view and
-    web hook payloads (topic_view.rs:708; topic_view/web_hook.rs:552),
+    web hook payloads (topic_view.rs:708; topic_view/web_hook.rs:552; a
+    topic whose first post has an image or a video thumbnail),
     theme thumbnail sizes (optimized_images.rs:131 and
     jobs/consistency.rs's preflight), topic images in digests
     (email/digest.rs:657)
@@ -1728,17 +1731,16 @@ have handlers now.
     version's post and raw (routes/posts.rs:548,603), an owner change's
     review_every_post and a hidden post's new owner unhiding it
     (post_owner_changer.rs:856,464)
-138. `feat/posting-rest` M: replies to whispers (posting/create.rs:943),
-    staff replying to closed topics (:562), uploaded video or audio
-    (:602; posting/revise.rs:372), duplicate titles and titles the
+138. `feat/posting-rest` M: replies to whispers (posting/create.rs:940),
+    staff replying to closed topics (:562), duplicate titles and titles the
     cleaner changes (posting/validate.rs:1131; posting/topic_save.rs:30;
     post_owner_changer.rs:446), auto_close_topics_post_count
-    (posting/create.rs:1398), returning-user post notices (:1623),
-    featured topics with a category sort order (:2015),
-    suppress_secured_categories_from_admin (:2018;
+    (posting/create.rs:1396), returning-user post notices (:1621),
+    featured topics with a category sort order (:2013),
+    suppress_secured_categories_from_admin (:2016;
     jobs/post_alert.rs:1042), site_archived (posting/create.rs:242;
     routes/invite_redeem.rs:547), generate_topic_og_image and its
-    regeneration (posting/create.rs:969; jobs/handlers.rs:1108;
+    regeneration (posting/create.rs:966; jobs/handlers.rs:1108;
     post_owner_changer.rs:372; post_mover.rs:901;
     posting/revise_topic.rs:1187; the admin's preview,
     routes/admin_config_branding.rs:173), posts#create's other params
@@ -1746,7 +1748,8 @@ have handlers now.
     and image sizes
     (jobs/handlers.rs:964,967), enqueueing a suspended user's post
     or one with polls (posting/enqueue.rs:94,97; approving one,
-    review_posts.rs:624)
+    review_posts.rs:624). Uploaded video and audio are done
+    (feat/post-video-audio, with 141)
 139. `feat/uploads-rest` M: image types Rails optimizes, cropping
     profile and card backgrounds (uploads.rs:399,409), keeping metadata
     (:412), replacing a failed upload (:488), missing extensions,
@@ -1759,7 +1762,11 @@ have handlers now.
     with uploads (drafts.rs:51), uploads in user and group bios and
     profile backgrounds (promotion.rs:325,361; user_updater.rs:1712;
     discourse_connect.rs:898; jobs/periodical.rs:129;
-    group_writes.rs:420), uploaded video or audio in posts with 138
+    group_writes.rs:420), the composer's video thumbnail
+    (composer-video-thumbnail-uppy.js: a frame of the uploaded video
+    sent as a `thumbnail` upload named after its sha1, which
+    UploadCreator stores without looking for the same sha1; the posts
+    side, linking it and drawing it, is done in feat/post-video-audio)
 140. `feat/hotlinked-media` M: SVG, HEIC, AVIF and JPEG XL images from
     other sites, and the broken headers FastImage raises on
     (fast_image.rs:246-247,360,424,452,478; the other images are sized
@@ -1772,11 +1779,20 @@ have handlers now.
     for a post with hotlinked media records, the
     pull_user_profile_hotlinked_images job. Needs: network fetches,
     through 52's FinalDestination
-141. `feat/optimized-videos` S: videos in the post processor
-    (pretty_text/cooked_post_processor.rs:854), video thumbnails
-    (upload_references.rs:387; pretty_text/cleanup.rs:610), destroying an
-    upload an optimized video was made into (jobs/upload_cleanup.rs:39),
-    oneboxes outside a post (pretty_text/cooked_post_processor.rs:814)
+141. ~~`feat/optimized-videos`~~ (done in feat/post-video-audio) S:
+    post_process_videos (an optimized video's url on its placeholder,
+    the original in data-original-video-src, the post saved and
+    reindexed; PostValidator, which that save runs, is not), a video's
+    thumbnail linked to its post and made a first post's topic image
+    with its thumbnails (link_post_uploads, handle_video_thumbnail),
+    OptimizedVideo#destroy when its upload is destroyed, and destroying
+    the optimized upload itself failing on the video's foreign key as
+    Rails does. Left: oneboxes outside a post
+    (pretty_text/cooked_post_processor.rs:915), a thumbnail for a video
+    whose name is not a sha1 (pretty_text/cleanup.rs:610, Ruby's
+    String#hex), a video thumbnail on a post whose topic is gone
+    (upload_references.rs:446, a NoMethodError upstream); behind a CDN
+    with 121
 142. `feat/onebox-rest` M: X posts through the Twitter API
     (onebox/api_engines.rs:806), inline pull requests with
     discourse-github's status (onebox/github.rs:1143), the engines not

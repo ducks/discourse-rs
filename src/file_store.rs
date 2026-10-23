@@ -1224,7 +1224,7 @@ fn url_path(url: &str) -> Option<String> {
 }
 
 /// `FileHelper.supported_video`
-const SUPPORTED_VIDEO: [&str; 8] = ["mov", "mp4", "webm", "ogv", "m4v", "3gp", "avi", "mpeg"];
+pub const SUPPORTED_VIDEO: [&str; 8] = ["mov", "mp4", "webm", "ogv", "m4v", "3gp", "avi", "mpeg"];
 /// `FileHelper.supported_audio`
 const SUPPORTED_AUDIO: [&str; 11] = [
     "mp3", "ogg", "oga", "opus", "wav", "m4a", "m4b", "m4p", "m4r", "aac", "flac",
