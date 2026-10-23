@@ -326,7 +326,9 @@ async fn a_regular_topic_keeps_its_chrome() {
     assert!(html.contains("<h1 data-topic-id=\"41\"><span class=\"topic-statuses\">"));
     assert!(!html.contains("topic-map__private-message-map"));
     assert!(!html.contains("id=\"topic-footer-button-archive\""));
-    assert!(!html.contains("id=\"dialog-strings\""));
+    // dialog.js comes with every topic page while polls are on (a vote's
+    // errors open its dialog), not only a message's.
+    assert!(html.contains("id=\"dialog-strings\""));
     assert!(html.contains(
         "<button class=\"btn btn-icon-text btn-default topic-footer-button share-and-invite\" aria-label=\"Share\""
     ));
