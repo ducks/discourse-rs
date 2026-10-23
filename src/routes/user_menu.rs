@@ -88,14 +88,8 @@ pub async fn show(
         "profile" => user_menu_view::profile_tab(&cx),
         "review-queue" => {
             // UserMenuReviewablesList#fetchItems: /review/user-menu-list.
-            let reviewables = crate::reviewables::user_menu_list(
-                &mut conn,
-                &settings,
-                user.id,
-                user.admin,
-                user.moderator,
-            )
-            .await?;
+            let reviewables =
+                crate::reviewables::user_menu_list(&mut conn, &settings, &guardian).await?;
             let items: Vec<String> = reviewables
                 .iter()
                 .map(|r| user_menu_view::reviewable_item(&cx, r))
@@ -180,15 +174,8 @@ pub async fn show(
                 && guardian.is_staff()
                 && !crate::readonly::mode(&mut conn).await?.readonly
             {
-                crate::reviewables::bump_last_seen(
-                    &mut conn,
-                    &state.bus,
-                    &settings,
-                    user.id,
-                    user.admin,
-                    user.moderator,
-                )
-                .await?;
+                crate::reviewables::bump_last_seen(&mut conn, &state.bus, &settings, &guardian)
+                    .await?;
             }
             let notifications: Vec<Value> =
                 doc["notifications"].as_array().cloned().unwrap_or_default();

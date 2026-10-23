@@ -258,11 +258,7 @@ impl Guardian {
             if self.is_anonymous() {
                 return Ok(false);
             }
-            if topic.pm_member {
-                return Ok(true);
-            }
-            return Ok(self.is_moderator()
-                && (topic.pm_flagged || topic.subtype.as_deref() == Some("moderator_warning")));
+            return Ok(self.pm_allowed(topic));
         }
         if topic.shared_draft && !self.can_see_shared_draft(settings)? {
             return Ok(false);
@@ -277,6 +273,15 @@ impl Guardian {
         Ok(topic
             .category_id
             .is_some_and(|id| secure_category_ids.contains(&id)))
+    }
+
+    /// `topic.all_allowed_users` holds the user: direct and group members,
+    /// and moderators on a PM with a pending flag (`has_flags?`) or an
+    /// official warning.
+    fn pm_allowed(&self, topic: &TopicCtx) -> bool {
+        topic.pm_member
+            || (self.is_moderator()
+                && (topic.pm_flagged || topic.subtype.as_deref() == Some("moderator_warning")))
     }
 
     /// `trusted_with_post_edits?`
@@ -323,8 +328,8 @@ impl Guardian {
         // (no category to check); the spam rule only guards regular topics.
         if topic.private_message() {
             if topic.subtype.as_deref() != Some("system_message")
-                && !topic.pm_member
                 && !self.is_admin()
+                && !self.pm_allowed(topic)
             {
                 return Ok(false);
             }

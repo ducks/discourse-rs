@@ -217,17 +217,11 @@ async fn find_reviewable(
         }
         return Ok(Err(super::search::invalid_access(state)));
     }
-    let row: Option<(i64, bool)> =
-        sqlx::query_as("SELECT id, reviewable_by_moderator FROM reviewables WHERE id = $1")
-            .bind(id_of(raw_id))
-            .fetch_optional(&mut *conn)
-            .await?;
-    match row {
-        None => Ok(Err(super::topics::not_found_response(state))),
-        Some((_, by_moderator)) if !guardian.is_admin() && !by_moderator => {
-            Err(Unsupported("reviewables for groups").into())
-        }
-        Some((id, _)) => Ok(Ok(id)),
+    let id = id_of(raw_id);
+    if crate::reviewables::is_viewable(&mut *conn, settings, guardian, id).await? {
+        Ok(Ok(id))
+    } else {
+        Ok(Err(super::topics::not_found_response(state)))
     }
 }
 

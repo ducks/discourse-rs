@@ -1530,16 +1530,25 @@ async fn delete_inaccessible_notifications(state: &AppState, args: &Value) -> Re
         .bind(&user_ids)
         .fetch_all(&mut *tx)
         .await?;
+        // all_allowed_users: moderators too on a PM that has_flags?
+        // (pending_and_default_visible) or is an official warning.
+        let min_score = crate::reviewables::min_score_for_priority(&mut tx, &s).await?;
         let flagged_or_warning: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
              OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
-                        AND type = 'ReviewableFlaggedPost' AND status = 0)",
+                        AND type = 'ReviewableFlaggedPost' AND status = 0 AND score >= $2)",
         )
         .bind(topic_id)
+        .bind(min_score)
         .fetch_one(&mut *tx)
         .await?;
         if flagged_or_warning {
-            return Err(Unsupported("moderators' access to flagged messages and warnings").into());
+            let moderators: Vec<i32> =
+                sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) AND moderator")
+                    .bind(&user_ids)
+                    .fetch_all(&mut *tx)
+                    .await?;
+            accessible.extend(moderators);
         }
         if !s.get("suppress_secured_categories_from_admin")?.truthy() {
             let admins: Vec<i32> =

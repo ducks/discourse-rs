@@ -125,7 +125,6 @@ struct Reviewable {
     status: i32,
     target_id: Option<i32>,
     topic_id: Option<i32>,
-    reviewable_by_moderator: bool,
 }
 
 /// The flagged post as the actions read it.
@@ -177,18 +176,15 @@ pub async fn perform(
         return Ok(Outcome::Forbidden);
     }
     // find_reviewable: Reviewable.viewable_by(current_user)
-    let reviewable: Option<Reviewable> = sqlx::query_as(
-        "SELECT id, type, status, target_id, topic_id, reviewable_by_moderator FROM reviewables WHERE id = $1",
+    if !reviewables::is_viewable(&mut *conn, s, guardian, reviewable_id).await? {
+        return Ok(Outcome::NotFound);
+    }
+    let reviewable: Reviewable = sqlx::query_as(
+        "SELECT id, type, status, target_id, topic_id FROM reviewables WHERE id = $1",
     )
     .bind(reviewable_id)
-    .fetch_optional(&mut *conn)
+    .fetch_one(&mut *conn)
     .await?;
-    let Some(reviewable) = reviewable else {
-        return Ok(Outcome::NotFound);
-    };
-    if !guardian.is_admin() && !reviewable.reviewable_by_moderator {
-        return Err(Unsupported("reviewables for groups").into());
-    }
     // claim_error?
     let claiming = s.get("reviewable_claiming")?.to_s().to_string();
     if claiming != "disabled"
@@ -241,8 +237,7 @@ pub async fn perform(
                 _ => Outcome::Forbidden,
             });
         };
-        let (count, unseen) =
-            reviewables::staff_counts(&mut *conn, s, user.id, user.admin, user.moderator).await?;
+        let (count, unseen) = reviewables::staff_counts(&mut *conn, s, guardian).await?;
         let mut result = serde_json::Map::new();
         result.insert("success".into(), json!(true));
         if let Some((post_id, topic_id)) = created {
@@ -296,8 +291,7 @@ pub async fn perform(
     else {
         return Ok(Outcome::Conflict);
     };
-    let (count, unseen) =
-        reviewables::staff_counts(&mut *conn, s, user.id, user.admin, user.moderator).await?;
+    let (count, unseen) = reviewables::staff_counts(&mut *conn, s, guardian).await?;
     Ok(Outcome::Done(json!({
         "reviewable_perform_result": {
             "success": true,
@@ -372,17 +366,7 @@ async fn perform_user(
         }
         DeleteOutcome::Conflict => return Ok(Outcome::Conflict),
     };
-    let user = guardian
-        .user()
-        .ok_or(Unsupported("reviewing anonymously"))?;
-    let (count, unseen) = reviewables::staff_counts(
-        &mut *conn,
-        ctx.settings,
-        user.id,
-        user.admin,
-        user.moderator,
-    )
-    .await?;
+    let (count, unseen) = reviewables::staff_counts(&mut *conn, ctx.settings, guardian).await?;
     let mut result = serde_json::Map::new();
     result.insert("success".into(), json!(true));
     result.insert("remove_reviewable_ids".into(), json!([reviewable.id]));
@@ -590,7 +574,7 @@ pub async fn agree_with_flags(
     post_id: i32,
 ) -> Result<(), AppError> {
     let reviewable: Option<Reviewable> = sqlx::query_as(
-        "SELECT id, type, status, target_id, topic_id, reviewable_by_moderator FROM reviewables \
+        "SELECT id, type, status, target_id, topic_id FROM reviewables \
          WHERE type = 'ReviewableFlaggedPost' AND status = $2 AND target_type = 'Post' AND target_id = $1",
     )
     .bind(post_id)
@@ -630,7 +614,7 @@ pub async fn expire_flags(
     reviewable_id: i64,
 ) -> Result<(), AppError> {
     let reviewable: Option<Reviewable> = sqlx::query_as(
-        "SELECT id, type, status, target_id, topic_id, reviewable_by_moderator FROM reviewables WHERE id = $1",
+        "SELECT id, type, status, target_id, topic_id FROM reviewables WHERE id = $1",
     )
     .bind(reviewable_id)
     .fetch_optional(&mut *conn)

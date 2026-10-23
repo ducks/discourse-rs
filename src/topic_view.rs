@@ -710,12 +710,21 @@ impl TopicView<'_> {
             );
         }
         if self.guardian.is_staff() && viewer.queue_enabled {
-            if !self.guardian.is_admin() {
-                return Err(Unsupported("queued_posts_count for moderators").into());
-            }
-            let count: i64 = sqlx::query_scalar(
-                "SELECT COUNT(*) FROM reviewables WHERE type = 'ReviewableQueuedPost' AND topic_id = $1 AND status = 0",
+            // ReviewableQueuedPost.viewable_by(user).where(topic_id:).pending
+            let (joins, clause) = match crate::reviewables::viewable_by(
+                &mut *self.conn,
+                self.settings,
+                self.guardian,
             )
+            .await?
+            {
+                Some(v) => (v.joins, v.clause),
+                None => ("", "TRUE".to_string()),
+            };
+            let count: i64 = sqlx::query_scalar(&format!(
+                "SELECT COUNT(*) FROM reviewables{joins} WHERE reviewables.type = 'ReviewableQueuedPost' \
+                 AND reviewables.topic_id = $1 AND reviewables.status = 0 AND {clause}"
+            ))
             .bind(topic.id)
             .fetch_one(&mut *self.conn)
             .await?;

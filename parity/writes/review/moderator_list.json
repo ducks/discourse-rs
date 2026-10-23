@@ -1,0 +1,1167 @@
+{
+  "name": "moderator_list",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableFlaggedPost"
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableFlaggedPost&status=all"
+    }
+  ],
+  "started_at": "2026-10-23T21:51:25.825495",
+  "transaction_started_at": "2026-10-23T21:51:24.712585",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "reviewables": [
+          {
+            "id": 9406,
+            "type": "ReviewableFlaggedPost",
+            "type_source": "core",
+            "topic_id": 43,
+            "topic_url": "http://localhost:3049/t/parity-fixture-pm-admin-to-user1-and-user2/43",
+            "target_type": "Post",
+            "target_id": 50,
+            "target_url": "http://localhost:3049/t/parity-fixture-pm-admin-to-user1-and-user2/43/1",
+            "target_created_at": "2026-10-01T15:39:51.514Z",
+            "topic_tags": [],
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "can_edit": false,
+            "score": 5.0,
+            "version": 0,
+            "target_created_by_trust_level": 4,
+            "created_from_flag": true,
+            "status": 0,
+            "cooked": "<p>A private message from admin to two users, so the list shows three participants.</p>",
+            "raw": "A private message from admin to two users, so the list shows three participants.",
+            "reply_count": 0,
+            "post_updated_at": "2026-10-01T15:39:51.514Z",
+            "post_version": 1,
+            "post_id": 50,
+            "target_created_by_id": 1,
+            "created_by_id": 4,
+            "editable_fields": [],
+            "reviewable_score_ids": [
+              9406
+            ],
+            "bundled_action_ids": [
+              "9406-agree",
+              "9406-disagree"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9406
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9401,
+            "type": "ReviewableFlaggedPost",
+            "type_source": "core",
+            "topic_id": 35,
+            "topic_url": "http://localhost:3049/t/parity-fixture-replies-and-posters/35",
+            "target_type": "Post",
+            "target_id": 52,
+            "target_url": "http://localhost:3049/t/parity-fixture-replies-and-posters/35/5",
+            "target_created_at": "2026-10-01T15:39:51.834Z",
+            "topic_tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "category_id": 4,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "can_edit": false,
+            "score": 5.0,
+            "version": 0,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": true,
+            "status": 0,
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+            "raw": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "reply_count": 0,
+            "post_updated_at": "2026-10-01T15:39:51.834Z",
+            "post_version": 1,
+            "post_id": 52,
+            "target_created_by_id": 2,
+            "created_by_id": 3,
+            "editable_fields": [],
+            "reviewable_score_ids": [
+              9401
+            ],
+            "bundled_action_ids": [
+              "9401-agree",
+              "9401-disagree"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9401
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          }
+        ],
+        "meta": {
+          "ids": null,
+          "status": "pending",
+          "category_id": null,
+          "topic_id": null,
+          "additional_filters": {},
+          "priority": null,
+          "username": null,
+          "reviewed_by": null,
+          "claimed_by": null,
+          "from_date": null,
+          "to_date": null,
+          "type": "ReviewableFlaggedPost",
+          "sort_order": null,
+          "flagged_by": null,
+          "score_type": null,
+          "total_rows_reviewables": 2,
+          "types": {
+            "created_by": "user",
+            "target_created_by": "user",
+            "target_deleted_by": "user",
+            "reviewed_by": "user",
+            "claimed_by": "claimed_by"
+          },
+          "reviewable_types": [
+            "ReviewableFlaggedPost",
+            "ReviewableQueuedPost",
+            "ReviewableUser",
+            "ReviewablePost",
+            "Chat::ReviewableMessage"
+          ],
+          "unknown_reviewable_types_and_sources": [],
+          "score_types": [
+            {
+              "id": 3,
+              "name": "Off-Topic"
+            },
+            {
+              "id": 4,
+              "name": "Inappropriate"
+            },
+            {
+              "id": 8,
+              "name": "Spam"
+            },
+            {
+              "id": 10,
+              "name": "Illegal"
+            },
+            {
+              "id": 7,
+              "name": "Something Else"
+            },
+            {
+              "id": 9,
+              "name": "Needs Approval"
+            }
+          ],
+          "reviewable_count": 3,
+          "unseen_reviewable_count": 3
+        },
+        "users": [
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "can_delete_all_posts": false,
+            "can_be_deleted": false,
+            "post_count": 1,
+            "topic_count": 1,
+            "ip_address": "127.0.0.1",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:14.988Z",
+            "trust_level": 4,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "custom_fields": {}
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": false,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": false,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "reviewable_scores": [
+          {
+            "id": 9406,
+            "score": 5.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason_type": null,
+            "reason_data": null,
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": 4,
+            "score_type_id": 4,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9401,
+            "score": 5.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason_type": null,
+            "reason_data": null,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": 3,
+            "score_type_id": 4,
+            "reviewed_by_id": null
+          }
+        ],
+        "score_types": [
+          {
+            "id": 4,
+            "title": "Inappropriate",
+            "icon": "flag",
+            "type": "inappropriate"
+          },
+          {
+            "id": 4,
+            "title": "Inappropriate",
+            "icon": "flag",
+            "type": "inappropriate"
+          }
+        ],
+        "bundled_actions": [
+          {
+            "id": "9406-agree",
+            "icon": "thumbs-up",
+            "label": "Yes",
+            "action_ids": [
+              "9406-post-agree_and_hide",
+              "9406-post-agree_and_keep",
+              "9406-post-agree_and_edit",
+              "9406-post-delete_and_agree"
+            ]
+          },
+          {
+            "id": "9406-disagree",
+            "icon": "far-eye",
+            "label": "No",
+            "action_ids": [
+              "9406-post-disagree",
+              "9406-post-ignore_and_do_nothing",
+              "9406-post-delete_and_ignore"
+            ]
+          },
+          {
+            "id": "9401-agree",
+            "icon": "thumbs-up",
+            "label": "Yes",
+            "action_ids": [
+              "9401-post-agree_and_hide",
+              "9401-post-agree_and_keep",
+              "9401-post-agree_and_edit",
+              "9401-post-delete_and_agree",
+              "9401-post-agree_and_silence",
+              "9401-post-agree_and_suspend"
+            ]
+          },
+          {
+            "id": "9401-disagree",
+            "icon": "far-eye",
+            "label": "No",
+            "action_ids": [
+              "9401-post-disagree",
+              "9401-post-ignore_and_do_nothing",
+              "9401-post-delete_and_ignore"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "id": "9406-post-agree_and_hide",
+            "action_name": "post-agree_and_hide",
+            "icon": "far-eye-slash",
+            "button_class": null,
+            "label": "Hide post",
+            "description": "Agree with flag and hide this post + automatically send the user a message urging them to edit it.",
+            "server_action": "agree_and_hide",
+            "completed_message": "Post hidden, user has been notified."
+          },
+          {
+            "id": "9406-post-agree_and_keep",
+            "action_name": "post-agree_and_keep",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Agree with flag but keep this post unchanged.",
+            "server_action": "agree_and_keep",
+            "completed_message": "Post kept unchanged."
+          },
+          {
+            "id": "9406-post-agree_and_edit",
+            "action_name": "post-agree_and_edit",
+            "icon": "pencil",
+            "button_class": null,
+            "label": "Edit post",
+            "description": "Agree with flag once you save the edit.",
+            "server_action": "agree_and_edit",
+            "client_action": "edit",
+            "completed_message": "Post edited and flag acknowledged."
+          },
+          {
+            "id": "9406-post-delete_and_agree",
+            "action_name": "post-delete_and_agree",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post",
+            "description": "Agree with flag and delete this post; if the first post, delete the topic as well.",
+            "server_action": "delete_and_agree",
+            "completed_message": "Post deleted."
+          },
+          {
+            "id": "9406-post-disagree",
+            "action_name": "post-disagree",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Disagree with flag",
+            "server_action": "disagree",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9406-post-ignore_and_do_nothing",
+            "action_name": "post-ignore_and_do_nothing",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Do nothing",
+            "description": "Ignore the flag by removing it from the queue without taking any action. Hidden posts will stay hidden and be handled by the auto-tools.",
+            "server_action": "ignore_and_do_nothing",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9406-post-delete_and_ignore",
+            "action_name": "post-delete_and_ignore",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post and ignore flag",
+            "description": "Delete the post and ignore the flag by removing it from the queue; if the first post, delete the topic as well. ",
+            "server_action": "delete_and_ignore",
+            "completed_message": "Post deleted."
+          },
+          {
+            "id": "9401-post-agree_and_hide",
+            "action_name": "post-agree_and_hide",
+            "icon": "far-eye-slash",
+            "button_class": null,
+            "label": "Hide post",
+            "description": "Agree with flag and hide this post + automatically send the user a message urging them to edit it.",
+            "server_action": "agree_and_hide",
+            "completed_message": "Post hidden, user has been notified."
+          },
+          {
+            "id": "9401-post-agree_and_keep",
+            "action_name": "post-agree_and_keep",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Agree with flag but keep this post unchanged.",
+            "server_action": "agree_and_keep",
+            "completed_message": "Post kept unchanged."
+          },
+          {
+            "id": "9401-post-agree_and_edit",
+            "action_name": "post-agree_and_edit",
+            "icon": "pencil",
+            "button_class": null,
+            "label": "Edit post",
+            "description": "Agree with flag once you save the edit.",
+            "server_action": "agree_and_edit",
+            "client_action": "edit",
+            "completed_message": "Post edited and flag acknowledged."
+          },
+          {
+            "id": "9401-post-delete_and_agree",
+            "action_name": "post-delete_and_agree",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post",
+            "description": "Agree with flag and delete this post; if the first post, delete the topic as well.",
+            "server_action": "delete_and_agree",
+            "completed_message": "Post deleted."
+          },
+          {
+            "id": "9401-post-agree_and_silence",
+            "action_name": "post-agree_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Silence user",
+            "description": "Agree with flag and silence the user.",
+            "server_action": "agree_and_silence",
+            "client_action": "silence",
+            "completed_message": "User silenced."
+          },
+          {
+            "id": "9401-post-agree_and_suspend",
+            "action_name": "post-agree_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Suspend user",
+            "description": "Agree with flag and suspend the user.",
+            "server_action": "agree_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "User suspended."
+          },
+          {
+            "id": "9401-post-disagree",
+            "action_name": "post-disagree",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Disagree with flag",
+            "server_action": "disagree",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9401-post-ignore_and_do_nothing",
+            "action_name": "post-ignore_and_do_nothing",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Do nothing",
+            "description": "Ignore the flag by removing it from the queue without taking any action. Hidden posts will stay hidden and be handled by the auto-tools.",
+            "server_action": "ignore_and_do_nothing",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9401-post-delete_and_ignore",
+            "action_name": "post-delete_and_ignore",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post and ignore flag",
+            "description": "Delete the post and ignore the flag by removing it from the queue; if the first post, delete the topic as well. ",
+            "server_action": "delete_and_ignore",
+            "completed_message": "Post deleted."
+          }
+        ],
+        "reviewable_notes": [],
+        "reviewable_histories": [
+          {
+            "id": 9406,
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": 4
+          },
+          {
+            "id": 9401,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": 3
+          }
+        ],
+        "claimed_bies": [],
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "reviewables": [
+          {
+            "id": 9406,
+            "type": "ReviewableFlaggedPost",
+            "type_source": "core",
+            "topic_id": 43,
+            "topic_url": "http://localhost:3049/t/parity-fixture-pm-admin-to-user1-and-user2/43",
+            "target_type": "Post",
+            "target_id": 50,
+            "target_url": "http://localhost:3049/t/parity-fixture-pm-admin-to-user1-and-user2/43/1",
+            "target_created_at": "2026-10-01T15:39:51.514Z",
+            "topic_tags": [],
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "can_edit": false,
+            "score": 5.0,
+            "version": 0,
+            "target_created_by_trust_level": 4,
+            "created_from_flag": true,
+            "status": 0,
+            "cooked": "<p>A private message from admin to two users, so the list shows three participants.</p>",
+            "raw": "A private message from admin to two users, so the list shows three participants.",
+            "reply_count": 0,
+            "post_updated_at": "2026-10-01T15:39:51.514Z",
+            "post_version": 1,
+            "post_id": 50,
+            "target_created_by_id": 1,
+            "created_by_id": 4,
+            "editable_fields": [],
+            "reviewable_score_ids": [
+              9406
+            ],
+            "bundled_action_ids": [
+              "9406-agree",
+              "9406-disagree"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9406
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9401,
+            "type": "ReviewableFlaggedPost",
+            "type_source": "core",
+            "topic_id": 35,
+            "topic_url": "http://localhost:3049/t/parity-fixture-replies-and-posters/35",
+            "target_type": "Post",
+            "target_id": 52,
+            "target_url": "http://localhost:3049/t/parity-fixture-replies-and-posters/35/5",
+            "target_created_at": "2026-10-01T15:39:51.834Z",
+            "topic_tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "category_id": 4,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "can_edit": false,
+            "score": 5.0,
+            "version": 0,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": true,
+            "status": 0,
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+            "raw": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "reply_count": 0,
+            "post_updated_at": "2026-10-01T15:39:51.834Z",
+            "post_version": 1,
+            "post_id": 52,
+            "target_created_by_id": 2,
+            "created_by_id": 3,
+            "editable_fields": [],
+            "reviewable_score_ids": [
+              9401
+            ],
+            "bundled_action_ids": [
+              "9401-agree",
+              "9401-disagree"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9401
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          }
+        ],
+        "meta": {
+          "ids": null,
+          "status": "all",
+          "category_id": null,
+          "topic_id": null,
+          "additional_filters": {},
+          "priority": null,
+          "username": null,
+          "reviewed_by": null,
+          "claimed_by": null,
+          "from_date": null,
+          "to_date": null,
+          "type": "ReviewableFlaggedPost",
+          "sort_order": null,
+          "flagged_by": null,
+          "score_type": null,
+          "total_rows_reviewables": 2,
+          "types": {
+            "created_by": "user",
+            "target_created_by": "user",
+            "target_deleted_by": "user",
+            "reviewed_by": "user",
+            "claimed_by": "claimed_by"
+          },
+          "reviewable_types": [
+            "ReviewableFlaggedPost",
+            "ReviewableQueuedPost",
+            "ReviewableUser",
+            "ReviewablePost",
+            "Chat::ReviewableMessage"
+          ],
+          "unknown_reviewable_types_and_sources": [],
+          "score_types": [
+            {
+              "id": 3,
+              "name": "Off-Topic"
+            },
+            {
+              "id": 4,
+              "name": "Inappropriate"
+            },
+            {
+              "id": 8,
+              "name": "Spam"
+            },
+            {
+              "id": 10,
+              "name": "Illegal"
+            },
+            {
+              "id": 7,
+              "name": "Something Else"
+            },
+            {
+              "id": 9,
+              "name": "Needs Approval"
+            }
+          ],
+          "reviewable_count": 3,
+          "unseen_reviewable_count": 3
+        },
+        "users": [
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "can_delete_all_posts": false,
+            "can_be_deleted": false,
+            "post_count": 1,
+            "topic_count": 1,
+            "ip_address": "127.0.0.1",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:14.988Z",
+            "trust_level": 4,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "custom_fields": {}
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 43,
+            "title": "Parity fixture: PM admin to user1 and user2",
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-10-01T15:39:51.429Z",
+            "last_posted_at": "2026-10-01T15:39:51.514Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.514Z",
+            "archetype": "private_message",
+            "unseen": false,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": false,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "reviewable_scores": [
+          {
+            "id": 9406,
+            "score": 5.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason_type": null,
+            "reason_data": null,
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": 4,
+            "score_type_id": 4,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9401,
+            "score": 5.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason_type": null,
+            "reason_data": null,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": 3,
+            "score_type_id": 4,
+            "reviewed_by_id": null
+          }
+        ],
+        "score_types": [
+          {
+            "id": 4,
+            "title": "Inappropriate",
+            "icon": "flag",
+            "type": "inappropriate"
+          },
+          {
+            "id": 4,
+            "title": "Inappropriate",
+            "icon": "flag",
+            "type": "inappropriate"
+          }
+        ],
+        "bundled_actions": [
+          {
+            "id": "9406-agree",
+            "icon": "thumbs-up",
+            "label": "Yes",
+            "action_ids": [
+              "9406-post-agree_and_hide",
+              "9406-post-agree_and_keep",
+              "9406-post-agree_and_edit",
+              "9406-post-delete_and_agree"
+            ]
+          },
+          {
+            "id": "9406-disagree",
+            "icon": "far-eye",
+            "label": "No",
+            "action_ids": [
+              "9406-post-disagree",
+              "9406-post-ignore_and_do_nothing",
+              "9406-post-delete_and_ignore"
+            ]
+          },
+          {
+            "id": "9401-agree",
+            "icon": "thumbs-up",
+            "label": "Yes",
+            "action_ids": [
+              "9401-post-agree_and_hide",
+              "9401-post-agree_and_keep",
+              "9401-post-agree_and_edit",
+              "9401-post-delete_and_agree",
+              "9401-post-agree_and_silence",
+              "9401-post-agree_and_suspend"
+            ]
+          },
+          {
+            "id": "9401-disagree",
+            "icon": "far-eye",
+            "label": "No",
+            "action_ids": [
+              "9401-post-disagree",
+              "9401-post-ignore_and_do_nothing",
+              "9401-post-delete_and_ignore"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "id": "9406-post-agree_and_hide",
+            "action_name": "post-agree_and_hide",
+            "icon": "far-eye-slash",
+            "button_class": null,
+            "label": "Hide post",
+            "description": "Agree with flag and hide this post + automatically send the user a message urging them to edit it.",
+            "server_action": "agree_and_hide",
+            "completed_message": "Post hidden, user has been notified."
+          },
+          {
+            "id": "9406-post-agree_and_keep",
+            "action_name": "post-agree_and_keep",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Agree with flag but keep this post unchanged.",
+            "server_action": "agree_and_keep",
+            "completed_message": "Post kept unchanged."
+          },
+          {
+            "id": "9406-post-agree_and_edit",
+            "action_name": "post-agree_and_edit",
+            "icon": "pencil",
+            "button_class": null,
+            "label": "Edit post",
+            "description": "Agree with flag once you save the edit.",
+            "server_action": "agree_and_edit",
+            "client_action": "edit",
+            "completed_message": "Post edited and flag acknowledged."
+          },
+          {
+            "id": "9406-post-delete_and_agree",
+            "action_name": "post-delete_and_agree",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post",
+            "description": "Agree with flag and delete this post; if the first post, delete the topic as well.",
+            "server_action": "delete_and_agree",
+            "completed_message": "Post deleted."
+          },
+          {
+            "id": "9406-post-disagree",
+            "action_name": "post-disagree",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Disagree with flag",
+            "server_action": "disagree",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9406-post-ignore_and_do_nothing",
+            "action_name": "post-ignore_and_do_nothing",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Do nothing",
+            "description": "Ignore the flag by removing it from the queue without taking any action. Hidden posts will stay hidden and be handled by the auto-tools.",
+            "server_action": "ignore_and_do_nothing",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9406-post-delete_and_ignore",
+            "action_name": "post-delete_and_ignore",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post and ignore flag",
+            "description": "Delete the post and ignore the flag by removing it from the queue; if the first post, delete the topic as well. ",
+            "server_action": "delete_and_ignore",
+            "completed_message": "Post deleted."
+          },
+          {
+            "id": "9401-post-agree_and_hide",
+            "action_name": "post-agree_and_hide",
+            "icon": "far-eye-slash",
+            "button_class": null,
+            "label": "Hide post",
+            "description": "Agree with flag and hide this post + automatically send the user a message urging them to edit it.",
+            "server_action": "agree_and_hide",
+            "completed_message": "Post hidden, user has been notified."
+          },
+          {
+            "id": "9401-post-agree_and_keep",
+            "action_name": "post-agree_and_keep",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Agree with flag but keep this post unchanged.",
+            "server_action": "agree_and_keep",
+            "completed_message": "Post kept unchanged."
+          },
+          {
+            "id": "9401-post-agree_and_edit",
+            "action_name": "post-agree_and_edit",
+            "icon": "pencil",
+            "button_class": null,
+            "label": "Edit post",
+            "description": "Agree with flag once you save the edit.",
+            "server_action": "agree_and_edit",
+            "client_action": "edit",
+            "completed_message": "Post edited and flag acknowledged."
+          },
+          {
+            "id": "9401-post-delete_and_agree",
+            "action_name": "post-delete_and_agree",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post",
+            "description": "Agree with flag and delete this post; if the first post, delete the topic as well.",
+            "server_action": "delete_and_agree",
+            "completed_message": "Post deleted."
+          },
+          {
+            "id": "9401-post-agree_and_silence",
+            "action_name": "post-agree_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Silence user",
+            "description": "Agree with flag and silence the user.",
+            "server_action": "agree_and_silence",
+            "client_action": "silence",
+            "completed_message": "User silenced."
+          },
+          {
+            "id": "9401-post-agree_and_suspend",
+            "action_name": "post-agree_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Suspend user",
+            "description": "Agree with flag and suspend the user.",
+            "server_action": "agree_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "User suspended."
+          },
+          {
+            "id": "9401-post-disagree",
+            "action_name": "post-disagree",
+            "icon": "far-eye",
+            "button_class": null,
+            "label": "Keep post",
+            "description": "Disagree with flag",
+            "server_action": "disagree",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9401-post-ignore_and_do_nothing",
+            "action_name": "post-ignore_and_do_nothing",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Do nothing",
+            "description": "Ignore the flag by removing it from the queue without taking any action. Hidden posts will stay hidden and be handled by the auto-tools.",
+            "server_action": "ignore_and_do_nothing",
+            "completed_message": "Flag ignored."
+          },
+          {
+            "id": "9401-post-delete_and_ignore",
+            "action_name": "post-delete_and_ignore",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Delete post and ignore flag",
+            "description": "Delete the post and ignore the flag by removing it from the queue; if the first post, delete the topic as well. ",
+            "server_action": "delete_and_ignore",
+            "completed_message": "Post deleted."
+          }
+        ],
+        "reviewable_notes": [],
+        "reviewable_histories": [
+          {
+            "id": 9406,
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": 4
+          },
+          {
+            "id": 9401,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": 3
+          }
+        ],
+        "claimed_bies": [],
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CCs2lAbBlnjIuCRhIDbtpeTZGSQ=",
+            "created_at": "2026-10-23T21:51:25.068496",
+            "rotated_at": "2026-10-23T21:51:25.06772",
+            "updated_at": "2026-10-23T21:51:25.068496",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CCs2lAbBlnjIuCRhIDbtpeTZGSQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-23T21:51:25.836291",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CCs2lAbBlnjIuCRhIDbtpeTZGSQ=",
+            "created_at": "2026-10-23T21:51:25.068496",
+            "rotated_at": "2026-10-23T21:51:25.06772",
+            "updated_at": "2026-10-23T21:51:25.068496",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CCs2lAbBlnjIuCRhIDbtpeTZGSQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)",
+    "INSERT INTO categories (id, name, name_lower, slug, color, text_color, user_id, read_restricted, position, created_at, updated_at) VALUES (9401, 'Admins Only', 'admins only', 'admins-only', '0088CC', 'FFFFFF', 1, true, 99, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (9401, 1, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9401, 52, 3, 4, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE), (9402, 37, 3, 4, '2026-10-02 10:01:00', '2026-10-02 10:01:00', FALSE, FALSE), (9406, 50, 4, 4, '2026-10-02 10:06:00', '2026-10-02 10:06:00', FALSE, FALSE)",
+    "UPDATE posts SET inappropriate_count = 1 WHERE id IN (52, 37, 50)",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9401, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 5, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 'ReviewableFlaggedPost', 'core', 0, 3, FALSE, 4, 35, 5, FALSE, 37, 'Post', 4, '{\"targets_topic\":false}', 0, '2026-10-02 10:01:00', FALSE, FALSE, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9403, 'ReviewableQueuedPost', 'core', 0, 3, TRUE, 9401, NULL, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A new topic for the admins waiting for approval.\", \"title\": \"A queued topic for admins\"}', 0, '2026-10-02 10:02:00', TRUE, FALSE, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9404, 'ReviewableQueuedPost', 'core', 0, 4, TRUE, NULL, 44, 6, FALSE, NULL, NULL, 4, '{\"raw\": \"A queued reply in a message.\"}', 0, '2026-10-02 10:03:00', TRUE, FALSE, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9405, 'ReviewableQueuedPost', 'core', 0, 2, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A queued reply moderators review.\"}', 0, '2026-10-02 10:04:00', TRUE, FALSE, '2026-10-02 10:04:00', '2026-10-02 10:04:00'), (9406, 'ReviewableFlaggedPost', 'core', 0, 4, TRUE, NULL, 43, 5, FALSE, 50, 'Post', 1, '{\"targets_topic\":false}', 0, '2026-10-02 10:06:00', FALSE, FALSE, '2026-10-02 10:06:00', '2026-10-02 10:06:00'), (9407, 'ReviewableQueuedPost', 'core', 0, 2, FALSE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A queued reply only admins review.\"}', 0, '2026-10-02 10:07:00', TRUE, FALSE, '2026-10-02 10:07:00', '2026-10-02 10:07:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9401, 9401, 3, 4, 0, 5, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 9402, 3, 4, 0, 5, 0, 0, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9406, 9406, 4, 4, 0, 5, 0, 0, '2026-10-02 10:06:00', '2026-10-02 10:06:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9401, 9401, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 9402, 0, 0, 3, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9403, 9403, 0, 0, 3, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9404, 9404, 0, 0, 4, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9405, 9405, 0, 0, 2, '2026-10-02 10:04:00', '2026-10-02 10:04:00'), (9406, 9406, 0, 0, 4, '2026-10-02 10:06:00', '2026-10-02 10:06:00'), (9407, 9407, 0, 0, 2, '2026-10-02 10:07:00', '2026-10-02 10:07:00')",
+    "UPDATE topics SET reviewable_score = 5 WHERE id IN (35, 43)"
+  ],
+  "recorded_from": {
+    "case": "5d47e157caaaabc26a1e65b2089164e5482b196a1143865f8bd08ca9f40dbcba",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

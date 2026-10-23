@@ -115,15 +115,7 @@ pub async fn index(
         && guardian.is_staff()
         && !crate::readonly::mode(&mut conn).await?.readonly
     {
-        crate::reviewables::bump_last_seen(
-            &mut conn,
-            &state.bus,
-            &settings,
-            viewer.id,
-            viewer.admin,
-            viewer.moderator,
-        )
-        .await?;
+        crate::reviewables::bump_last_seen(&mut conn, &state.bus, &settings, &guardian).await?;
     }
     Ok((
         StatusCode::OK,

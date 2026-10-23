@@ -402,9 +402,9 @@ pub async fn user_menu_list(
     AuthGuardian(guardian): AuthGuardian,
 ) -> Result<Response, AppError> {
     // requires_login
-    let Some(user) = guardian.user().cloned() else {
+    if guardian.is_anonymous() {
         return Ok(super::login_required::not_logged_in(&state));
-    };
+    }
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -415,17 +415,8 @@ pub async fn user_menu_list(
         }
         return Ok(super::search::invalid_access(&state));
     }
-    let reviewables = crate::reviewables::user_menu_list(
-        &mut conn,
-        &settings,
-        user.id,
-        user.admin,
-        user.moderator,
-    )
-    .await?;
-    let (count, _) =
-        crate::reviewables::staff_counts(&mut conn, &settings, user.id, user.admin, user.moderator)
-            .await?;
+    let reviewables = crate::reviewables::user_menu_list(&mut conn, &settings, &guardian).await?;
+    let (count, _) = crate::reviewables::staff_counts(&mut conn, &settings, &guardian).await?;
     // render_json_dump with rest_serializer: true
     Ok(Json(json!({
         "reviewables": reviewables,

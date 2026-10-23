@@ -1,0 +1,25 @@
+{
+  "user": "user3",
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)",
+    "INSERT INTO categories (id, name, name_lower, slug, color, text_color, user_id, read_restricted, position, created_at, updated_at) VALUES (9401, 'Admins Only', 'admins only', 'admins-only', '0088CC', 'FFFFFF', 1, true, 99, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (9401, 1, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9401, 52, 3, 4, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE), (9402, 37, 3, 4, '2026-10-02 10:01:00', '2026-10-02 10:01:00', FALSE, FALSE), (9406, 50, 4, 4, '2026-10-02 10:06:00', '2026-10-02 10:06:00', FALSE, FALSE)",
+    "UPDATE posts SET inappropriate_count = 1 WHERE id IN (52, 37, 50)",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9401, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 5, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 'ReviewableFlaggedPost', 'core', 0, 3, FALSE, 4, 35, 5, FALSE, 37, 'Post', 4, '{\"targets_topic\":false}', 0, '2026-10-02 10:01:00', FALSE, FALSE, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9403, 'ReviewableQueuedPost', 'core', 0, 3, TRUE, 9401, NULL, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A new topic for the admins waiting for approval.\", \"title\": \"A queued topic for admins\"}', 0, '2026-10-02 10:02:00', TRUE, FALSE, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9404, 'ReviewableQueuedPost', 'core', 0, 4, TRUE, NULL, 44, 6, FALSE, NULL, NULL, 4, '{\"raw\": \"A queued reply in a message.\"}', 0, '2026-10-02 10:03:00', TRUE, FALSE, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9405, 'ReviewableQueuedPost', 'core', 0, 2, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A queued reply moderators review.\"}', 0, '2026-10-02 10:04:00', TRUE, FALSE, '2026-10-02 10:04:00', '2026-10-02 10:04:00'), (9406, 'ReviewableFlaggedPost', 'core', 0, 4, TRUE, NULL, 43, 5, FALSE, 50, 'Post', 1, '{\"targets_topic\":false}', 0, '2026-10-02 10:06:00', FALSE, FALSE, '2026-10-02 10:06:00', '2026-10-02 10:06:00'), (9407, 'ReviewableQueuedPost', 'core', 0, 2, FALSE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A queued reply only admins review.\"}', 0, '2026-10-02 10:07:00', TRUE, FALSE, '2026-10-02 10:07:00', '2026-10-02 10:07:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9401, 9401, 3, 4, 0, 5, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 9402, 3, 4, 0, 5, 0, 0, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9406, 9406, 4, 4, 0, 5, 0, 0, '2026-10-02 10:06:00', '2026-10-02 10:06:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9401, 9401, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 9402, 0, 0, 3, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9403, 9403, 0, 0, 3, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9404, 9404, 0, 0, 4, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9405, 9405, 0, 0, 2, '2026-10-02 10:04:00', '2026-10-02 10:04:00'), (9406, 9406, 0, 0, 4, '2026-10-02 10:06:00', '2026-10-02 10:06:00'), (9407, 9407, 0, 0, 2, '2026-10-02 10:07:00', '2026-10-02 10:07:00')",
+    "UPDATE topics SET reviewable_score = 5 WHERE id IN (35, 43)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableFlaggedPost"
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableFlaggedPost&status=all"
+    }
+  ]
+}

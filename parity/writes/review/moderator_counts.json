@@ -1,0 +1,620 @@
+{
+  "name": "moderator_counts",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    },
+    {
+      "method": "GET",
+      "path": "/review/user-menu-list.json"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications.json?recent=true&limit=30"
+    }
+  ],
+  "started_at": "2026-10-23T21:51:24.134859",
+  "transaction_started_at": "2026-10-23T21:51:21.371187",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "current_user": {
+          "id": 5,
+          "username": "user3",
+          "name": "User3",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+          "unread_notifications": 4,
+          "unread_high_priority_notifications": 0,
+          "all_unread_notifications_count": 4,
+          "read_first_notification": false,
+          "admin": false,
+          "notification_channel_position": null,
+          "do_not_disturb_channel_position": 0,
+          "moderator": true,
+          "staff": true,
+          "whisperer": false,
+          "title": null,
+          "any_posts": false,
+          "trust_level": 4,
+          "can_send_private_email_messages": true,
+          "can_send_private_messages": true,
+          "can_upload_avatar": true,
+          "can_edit": true,
+          "can_invite_to_forum": true,
+          "can_delete_account": true,
+          "can_post_anonymously": false,
+          "can_ignore_users": true,
+          "can_edit_tags": true,
+          "can_delete_all_posts_and_topics": true,
+          "custom_fields": {},
+          "muted_category_ids": [],
+          "indirectly_muted_category_ids": [],
+          "regular_category_ids": [],
+          "tracked_category_ids": [],
+          "watched_first_post_category_ids": [],
+          "watched_category_ids": [],
+          "watched_tags": [],
+          "watching_first_post_tags": [],
+          "tracked_tags": [],
+          "muted_tags": [],
+          "regular_tags": [],
+          "dismissed_banner_key": null,
+          "is_anonymous": false,
+          "reviewable_count": 3,
+          "unseen_reviewable_count": 3,
+          "new_personal_messages_notifications_count": 0,
+          "read_faq": false,
+          "previous_visit_at": null,
+          "seen_notification_id": 0,
+          "flair_group_id": null,
+          "can_create_topic": true,
+          "can_set_topic_timer": true,
+          "link_posting_access": "full",
+          "top_category_ids": [],
+          "groups": [
+            {
+              "id": 2,
+              "name": "moderators",
+              "has_messages": false
+            },
+            {
+              "id": 3,
+              "name": "staff",
+              "has_messages": false
+            },
+            {
+              "id": 10,
+              "name": "trust_level_0",
+              "has_messages": false
+            },
+            {
+              "id": 11,
+              "name": "trust_level_1",
+              "has_messages": false
+            },
+            {
+              "id": 12,
+              "name": "trust_level_2",
+              "has_messages": false
+            },
+            {
+              "id": 13,
+              "name": "trust_level_3",
+              "has_messages": false
+            },
+            {
+              "id": 14,
+              "name": "trust_level_4",
+              "has_messages": false
+            }
+          ],
+          "needs_required_fields_check": false,
+          "second_factor_enabled": false,
+          "ignored_users": [],
+          "do_not_disturb_until": null,
+          "can_review": true,
+          "draft_count": 0,
+          "pending_posts_count": 0,
+          "grouped_unread_notifications": {
+            "12": 4
+          },
+          "display_sidebar_tags": true,
+          "sidebar_tags": [],
+          "sidebar_category_ids": [
+            2,
+            4,
+            3
+          ],
+          "sidebar_sections": [
+            {
+              "id": 1,
+              "title": "Community",
+              "links": [
+                {
+                  "id": 1,
+                  "name": "Topics",
+                  "value": "/latest",
+                  "icon": "layer-group",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 2,
+                  "name": "My posts",
+                  "value": "/my/activity",
+                  "icon": "user",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 3,
+                  "name": "My messages",
+                  "value": "/my/messages",
+                  "icon": "inbox",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 4,
+                  "name": "Review",
+                  "value": "/review",
+                  "icon": "flag",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 5,
+                  "name": "Admin",
+                  "value": "/admin",
+                  "icon": "wrench",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 6,
+                  "name": "Invite",
+                  "value": "/new-invite",
+                  "icon": "paper-plane",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 7,
+                  "name": "Users",
+                  "value": "/u",
+                  "icon": "users",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 8,
+                  "name": "About",
+                  "value": "/about",
+                  "icon": "circle-info",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 9,
+                  "name": "FAQ",
+                  "value": "/faq",
+                  "icon": "circle-question",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 10,
+                  "name": "Groups",
+                  "value": "/g",
+                  "icon": "user-group",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 11,
+                  "name": "Badges",
+                  "value": "/badges",
+                  "icon": "certificate",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 12,
+                  "name": "Filter",
+                  "value": "/filter",
+                  "icon": "filter",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                }
+              ],
+              "slug": "community",
+              "public": true,
+              "section_type": "community",
+              "locale": null
+            }
+          ],
+          "unified_new_enabled": true,
+          "can_view_raw_email": true,
+          "login_method": "local",
+          "has_unseen_features": false,
+          "has_new_upcoming_changes": false,
+          "can_see_emails": false,
+          "can_localize_content": false,
+          "can_see_ip": true,
+          "is_impersonating": false,
+          "impersonation_expires_at": null,
+          "can_chat": true,
+          "can_direct_message": true,
+          "has_chat_enabled": true,
+          "needs_channel_retention_reminder": true,
+          "has_joinable_public_channels": true,
+          "chat_drafts": [],
+          "can_use_templates": false,
+          "votes_exceeded": false,
+          "votes_count": 0,
+          "votes_left": 10,
+          "vote_limit": 10,
+          "can_create_poll": true,
+          "user_option": {
+            "mailing_list_mode": false,
+            "external_links_in_new_tab": false,
+            "enable_quoting": true,
+            "enable_smart_lists": true,
+            "enable_markdown_monospace_font": true,
+            "dynamic_favicon": false,
+            "automatically_unpin_topics": true,
+            "likes_notifications_disabled": false,
+            "hide_profile_and_presence": false,
+            "hide_profile": false,
+            "hide_presence": false,
+            "title_count_mode": "notifications",
+            "timezone": null,
+            "skip_new_user_tips": false,
+            "default_calendar": "none_selected",
+            "bookmark_auto_delete_preference": 3,
+            "notify_on_linked_posts": true,
+            "should_be_redirected_to_top": false,
+            "treat_as_new_topic_start_date": "2026-10-21T21:51:24.247Z",
+            "sidebar_link_to_filtered_list": false,
+            "sidebar_show_count_of_new_items": false,
+            "composition_mode": 1,
+            "interface_color_mode": 1,
+            "show_original_content": false,
+            "send_shortcut": "enter",
+            "automatically_translate": true,
+            "understood_languages": [],
+            "hidden_composer_toolbar_buttons": [],
+            "show_thread_title_prompts": true,
+            "chat_channel_list_filter": "all",
+            "chat_channel_list_sort": "alphabetical",
+            "chat_channel_list_sort_starred": "alphabetical",
+            "chat_channel_list_sort_dms": "priority",
+            "chat_channel_list_filter_starred": "all",
+            "chat_channel_list_filter_dms": "all",
+            "chat_announce_new_messages": true,
+            "chat_new_message_sound": false,
+            "chat_header_indicator_preference": "all_new",
+            "chat_separate_sidebar_mode": "default",
+            "chat_send_shortcut": "enter",
+            "chat_quick_reaction_type": "frequent",
+            "chat_quick_reactions_custom": null
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "reviewables": [
+          {
+            "flagger_username": "user0",
+            "id": 9405,
+            "type": "ReviewableQueuedPost",
+            "pending": true,
+            "created_at": "2026-10-02T10:04:00.000Z",
+            "topic_fancy_title": "Parity fixture: replies and posters",
+            "is_new_topic": false
+          },
+          {
+            "flagger_username": "user2",
+            "id": 9406,
+            "type": "ReviewableFlaggedPost",
+            "pending": true,
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "post_number": 1,
+            "topic_fancy_title": "Parity fixture: PM admin to user1 and user2"
+          },
+          {
+            "flagger_username": "user1",
+            "id": 9401,
+            "type": "ReviewableFlaggedPost",
+            "pending": true,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "post_number": 5,
+            "topic_fancy_title": "Parity fixture: replies and posters"
+          }
+        ],
+        "reviewable_count": 3,
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "notifications": [
+          {
+            "id": 36,
+            "user_id": 5,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-09-30T06:20:53.744Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 4,
+              "badge_name": "Leader",
+              "badge_slug": "leader",
+              "badge_title": true,
+              "username": "user3"
+            }
+          },
+          {
+            "id": 9,
+            "user_id": 5,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-09-30T06:20:37.132Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 2,
+              "badge_name": "Member",
+              "badge_slug": "member",
+              "badge_title": false,
+              "username": "user3"
+            }
+          },
+          {
+            "id": 6,
+            "user_id": 5,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-09-30T06:20:14.861Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 3,
+              "badge_name": "Regular",
+              "badge_slug": "regular",
+              "badge_title": true,
+              "username": "user3"
+            }
+          },
+          {
+            "id": 4,
+            "user_id": 5,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-09-30T06:20:02.626Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 1,
+              "badge_name": "Basic",
+              "badge_slug": "basic",
+              "badge_title": false,
+              "username": "user3"
+            }
+          }
+        ],
+        "seen_notification_id": 36,
+        "pending_reviewables": [
+          {
+            "flagger_username": "user0",
+            "id": 9405,
+            "type": "ReviewableQueuedPost",
+            "pending": true,
+            "created_at": "2026-10-02T10:04:00.000Z",
+            "topic_fancy_title": "Parity fixture: replies and posters",
+            "is_new_topic": false
+          },
+          {
+            "flagger_username": "user2",
+            "id": 9406,
+            "type": "ReviewableFlaggedPost",
+            "pending": true,
+            "created_at": "2026-10-02T10:06:00.000Z",
+            "post_number": 1,
+            "topic_fancy_title": "Parity fixture: PM admin to user1 and user2"
+          },
+          {
+            "flagger_username": "user1",
+            "id": 9401,
+            "type": "ReviewableFlaggedPost",
+            "pending": true,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "post_number": 5,
+            "topic_fancy_title": "Parity fixture: replies and posters"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SvWXq0PziRR9wmZ8kAHCkpIdK0Q=",
+            "created_at": "2026-10-23T21:51:22.546155",
+            "rotated_at": "2026-10-23T21:51:22.541599",
+            "updated_at": "2026-10-23T21:51:22.546155",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SvWXq0PziRR9wmZ8kAHCkpIdK0Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-23T21:51:24.143777",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SvWXq0PziRR9wmZ8kAHCkpIdK0Q=",
+            "created_at": "2026-10-23T21:51:22.546155",
+            "rotated_at": "2026-10-23T21:51:22.541599",
+            "updated_at": "2026-10-23T21:51:22.546155",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SvWXq0PziRR9wmZ8kAHCkpIdK0Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-07-25T05:59:17.511834",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-23T21:51:24.431744",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 36,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "refresh_latest_new_feature",
+      {}
+    ]
+  ],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)",
+    "INSERT INTO categories (id, name, name_lower, slug, color, text_color, user_id, read_restricted, position, created_at, updated_at) VALUES (9401, 'Admins Only', 'admins only', 'admins-only', '0088CC', 'FFFFFF', 1, true, 99, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) VALUES (9401, 1, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9401, 52, 3, 4, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE), (9402, 37, 3, 4, '2026-10-02 10:01:00', '2026-10-02 10:01:00', FALSE, FALSE), (9406, 50, 4, 4, '2026-10-02 10:06:00', '2026-10-02 10:06:00', FALSE, FALSE)",
+    "UPDATE posts SET inappropriate_count = 1 WHERE id IN (52, 37, 50)",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9401, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 5, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 'ReviewableFlaggedPost', 'core', 0, 3, FALSE, 4, 35, 5, FALSE, 37, 'Post', 4, '{\"targets_topic\":false}', 0, '2026-10-02 10:01:00', FALSE, FALSE, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9403, 'ReviewableQueuedPost', 'core', 0, 3, TRUE, 9401, NULL, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A new topic for the admins waiting for approval.\", \"title\": \"A queued topic for admins\"}', 0, '2026-10-02 10:02:00', TRUE, FALSE, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9404, 'ReviewableQueuedPost', 'core', 0, 4, TRUE, NULL, 44, 6, FALSE, NULL, NULL, 4, '{\"raw\": \"A queued reply in a message.\"}', 0, '2026-10-02 10:03:00', TRUE, FALSE, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9405, 'ReviewableQueuedPost', 'core', 0, 2, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A queued reply moderators review.\"}', 0, '2026-10-02 10:04:00', TRUE, FALSE, '2026-10-02 10:04:00', '2026-10-02 10:04:00'), (9406, 'ReviewableFlaggedPost', 'core', 0, 4, TRUE, NULL, 43, 5, FALSE, 50, 'Post', 1, '{\"targets_topic\":false}', 0, '2026-10-02 10:06:00', FALSE, FALSE, '2026-10-02 10:06:00', '2026-10-02 10:06:00'), (9407, 'ReviewableQueuedPost', 'core', 0, 2, FALSE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A queued reply only admins review.\"}', 0, '2026-10-02 10:07:00', TRUE, FALSE, '2026-10-02 10:07:00', '2026-10-02 10:07:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9401, 9401, 3, 4, 0, 5, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 9402, 3, 4, 0, 5, 0, 0, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9406, 9406, 4, 4, 0, 5, 0, 0, '2026-10-02 10:06:00', '2026-10-02 10:06:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9401, 9401, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9402, 9402, 0, 0, 3, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9403, 9403, 0, 0, 3, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9404, 9404, 0, 0, 4, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9405, 9405, 0, 0, 2, '2026-10-02 10:04:00', '2026-10-02 10:04:00'), (9406, 9406, 0, 0, 4, '2026-10-02 10:06:00', '2026-10-02 10:06:00'), (9407, 9407, 0, 0, 2, '2026-10-02 10:07:00', '2026-10-02 10:07:00')",
+    "UPDATE topics SET reviewable_score = 5 WHERE id IN (35, 43)"
+  ],
+  "recorded_from": {
+    "case": "49f29f83bb17bd81e86d360d2ed2438ad82764e5c6cd4689367adb67306518f0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

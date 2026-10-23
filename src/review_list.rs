@@ -4,13 +4,12 @@
 //! bundled actions and their actions, notes, histories, claims), and the
 //! meta the controller adds.
 //!
-//! Refused: viewers other than admins (moderators and category group
-//! moderators go through the post visibility scopes), reviewable types
-//! other than flagged posts on a page, the `ids`, date and additional
-//! filters, score reasons other than watched words and conversations,
-//! authors under a penalty, posts the user deleted, potential spam and
-//! illegal content (the delete user actions), bot users, and content
-//! localization.
+//! Viewers see `Reviewable.viewable_by` (reviewables.rs). Refused: category
+//! group moderators (before the list), reviewable types other than
+//! flagged posts on a page, the `ids`, date and additional filters, score
+//! reasons other than watched words and conversations, authors under a
+//! penalty, posts the user deleted, potential spam and illegal content
+//! (the delete user actions), bot users, and content localization.
 
 use std::collections::HashSet;
 
@@ -162,7 +161,7 @@ async fn min_score(
         .unwrap_or(0.0))
 }
 
-/// ReviewablesController#index for an admin.
+/// ReviewablesController#index.
 pub async fn index(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -170,11 +169,8 @@ pub async fn index(
     p: &Map<String, Value>,
 ) -> Result<Listed, AppError> {
     let s = ctx.settings;
-    let Some(user) = guardian.user() else {
+    if guardian.is_anonymous() {
         return Err(Unsupported("the review queue for anonymous users").into());
-    };
-    if !user.admin {
-        return Err(Unsupported("the review queue for moderators").into());
     }
     if s.get("content_localization_enabled")?.truthy() {
         return Err(Unsupported("content localization in the review queue").into());
@@ -223,6 +219,11 @@ pub async fn index(
         .map(|v| crate::ruby::to_i(&v));
 
     let mut q = Query::default();
+    // Reviewable.viewable_by(user)
+    if let Some(v) = crate::reviewables::viewable_by(&mut *conn, s, guardian).await? {
+        q.joins.push_str(v.joins);
+        q.wheres.push(v.clause);
+    }
     let order = match text("sort_order").as_deref() {
         Some("score_asc") => "reviewables.score ASC, reviewables.created_at DESC",
         Some("created_at") => "reviewables.created_at DESC, reviewables.score DESC",
@@ -373,9 +374,7 @@ pub async fn index(
         "score_types".into(),
         meta_score_types(&mut *conn, ctx).await?,
     );
-    let (count, unseen) =
-        crate::reviewables::staff_counts(&mut *conn, s, user.id, user.admin, user.moderator)
-            .await?;
+    let (count, unseen) = crate::reviewables::staff_counts(&mut *conn, s, guardian).await?;
     meta.insert("reviewable_count".into(), json!(count));
     meta.insert("unseen_reviewable_count".into(), json!(unseen));
     if offset + PER_PAGE < total {
@@ -1448,7 +1447,7 @@ async fn custom_fields(
     Ok(Value::Object(out))
 }
 
-/// `FlaggedUserSerializer` for an admin.
+/// `FlaggedUserSerializer`
 async fn flagged_user(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -1464,20 +1463,32 @@ async fn flagged_user(
     .bind(u.id)
     .fetch_one(&mut *conn)
     .await?;
-    let (post_count, topic_count, agreed, disagreed, ignored, _) = stats;
-    // can_delete_all_posts? for an admin: anyone but admins.
-    v["can_delete_all_posts"] = json!(!u.admin);
+    let (post_count, topic_count, agreed, disagreed, ignored, first_post) = stats;
+    let s = ctx.settings;
+    // can_delete_all_posts?
+    let max_age = chrono::Duration::days(s.get("delete_user_max_post_age")?.to_i());
+    let can_delete_all = guardian.is_staff()
+        && !u.admin
+        && (!u.moderator || guardian.is_admin())
+        && (guardian.is_admin()
+            || (first_post.is_none_or(|t| t >= crate::clock::now_naive() - max_age)
+                && i64::from(post_count) <= s.get("delete_all_posts_max")?.to_i()));
+    v["can_delete_all_posts"] = json!(can_delete_all);
     v["can_be_deleted"] = json!(can_delete_user(&mut *conn, ctx, guardian, u, &stats).await?);
     v["post_count"] = json!(post_count);
     v["topic_count"] = json!(topic_count);
-    // can_see_ip? and can_check_emails?: admins.
-    v["ip_address"] = json!(u.ip_address);
-    let email: Option<String> =
-        sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"")
-            .bind(u.id)
-            .fetch_optional(&mut *conn)
-            .await?;
-    v["email"] = json!(email);
+    if crate::admin_users::can_see_ip(s, guardian)? {
+        v["ip_address"] = json!(u.ip_address);
+    }
+    // can_check_emails?(scope.user)
+    if guardian.is_admin() || (guardian.is_staff() && s.get("moderators_view_emails")?.truthy()) {
+        let email: Option<String> =
+            sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"")
+                .bind(u.id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        v["email"] = json!(email);
+    }
     v["custom_fields"] = custom_fields(&mut *conn, ctx, guardian, u.id).await?;
     v["flags_agreed"] = json!(agreed);
     v["flags_disagreed"] = json!(disagreed);
@@ -1505,7 +1516,7 @@ async fn flagged_user(
     Ok(v)
 }
 
-/// `can_delete_user?(user)` for an admin.
+/// `can_delete_user?(user)`
 async fn can_delete_user(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
