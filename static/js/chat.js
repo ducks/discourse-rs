@@ -1,5 +1,6 @@
-// Full-page chat in the browser: what Ember's chat components compute
-// from the browser's clock and zone, drawn over the server's markup.
+// Full-page chat and a channel in the drawer (chat-drawer.js) in the
+// browser: what Ember's chat components compute from the browser's clock
+// and zone, drawn over the server's markup.
 //
 //   - each message's time (formatChatDate: moment in the local zone), and
 //     its full date as the title
@@ -215,7 +216,11 @@
 
   function basePath() {
     var page = document.querySelector(".full-page-chat[data-base-path]");
-    return page ? page.dataset.basePath : "";
+    if (page) {
+      return page.dataset.basePath;
+    }
+    var meta = document.querySelector("meta[name='discourse-base-uri']");
+    return meta ? meta.content : "";
   }
 
   function csrfHeaders() {
@@ -257,7 +262,31 @@
   // sections), from the page as the server now draws it: what Ember's
   // tracked state redraws in place. The composer stays as it is: its
   // text, reply and edit live in the browser, as Ember's draft does.
-  function refresh() {
+  // The chat page (or the drawer's route) swapped for its new drawing,
+  // the composer kept.
+  function swapPage(page, nextPage) {
+    var composer = page.querySelector(".chat-composer__wrapper");
+    var nextComposer = nextPage.querySelector(".chat-composer__wrapper");
+    var focused = composer && composer.contains(document.activeElement);
+    teardown();
+    if (composer && nextComposer) {
+      nextComposer.replaceWith(composer);
+    }
+    page.replaceWith(nextPage);
+    if (window.htmx && nextPage.closest(".chat-drawer")) {
+      window.htmx.process(nextPage);
+    }
+    drawChannelDates();
+    setup(true);
+    if (focused) {
+      var input = document.getElementById("channel-composer");
+      if (input) {
+        input.focus({ preventScroll: true });
+      }
+    }
+  }
+
+  function refreshPage() {
     return fetch(location.href, { credentials: "same-origin" })
       .then(function (r) {
         return r.text();
@@ -267,24 +296,37 @@
         var page = document.querySelector(".full-page-chat");
         var nextPage = next.querySelector(".full-page-chat");
         if (page && nextPage) {
-          var composer = page.querySelector(".chat-composer__wrapper");
-          var nextComposer = nextPage.querySelector(".chat-composer__wrapper");
-          var focused = composer && composer.contains(document.activeElement);
-          teardown();
-          if (composer && nextComposer) {
-            nextComposer.replaceWith(composer);
-          }
-          page.replaceWith(nextPage);
-          setup();
-          if (focused) {
-            var input = document.getElementById("channel-composer");
-            if (input) {
-              input.focus({ preventScroll: true });
-            }
-          }
+          swapPage(page, nextPage);
         }
         refreshSidebar(next);
       });
+  }
+
+  // In the drawer (chat-drawer.js): its route drawn again, then the
+  // page's sidebar.
+  function refresh() {
+    var route = document.querySelector(".chat-drawer .c-drawer-routes");
+    if (document.querySelector(".full-page-chat") || !route || !Discourse.chatDrawer) {
+      return refreshPage();
+    }
+    return Discourse.chatDrawer.fetchRoute().then(function (html) {
+      var current = document.querySelector(".chat-drawer .c-drawer-routes");
+      if (html && current) {
+        var template = document.createElement("template");
+        template.innerHTML = html;
+        var next = template.content.querySelector(".c-drawer-routes");
+        if (next) {
+          swapPage(current, next);
+        }
+      }
+      return fetch(location.href, { credentials: "same-origin" })
+        .then(function (r) {
+          return r.text();
+        })
+        .then(function (page) {
+          refreshSidebar(new DOMParser().parseFromString(page, "text/html"));
+        });
+    });
   }
 
   function refreshSidebar(next) {
@@ -312,6 +354,9 @@
         Discourse.setSidebarSectionExpanded(section, false);
       }
     });
+    if (Discourse.chatDrawer) {
+      Discourse.chatDrawer.markSidebar();
+    }
   }
 
   function cardChannelId(button) {
@@ -1923,12 +1968,16 @@
 
   function hidePresence() {
     var page = document.querySelector(".full-page-chat");
-    return !!page && page.dataset.hidePresence === "true";
+    if (page) {
+      return page.dataset.hidePresence === "true";
+    }
+    return !!Discourse.chatDrawer && Discourse.chatDrawer.hidePresence();
   }
 
-  // ChatService#updatePresence
+  // ChatService#updatePresence: while chat is active, full page or in
+  // the drawer.
   function startPresence() {
-    if (!window.Discourse || !Discourse.presence || !document.querySelector(".full-page-chat")) {
+    if (!window.Discourse || !Discourse.presence || !document.querySelector(".full-page-chat, .chat-drawer")) {
       return;
     }
     if (!onlineChannel) {
@@ -2600,7 +2649,9 @@
     });
   }
 
-  function setup() {
+  // `focus`: the composer takes the focus, as ChatComposer does when the
+  // channel is drawn (not when a page swaps in beside the drawer's).
+  function setup(focus) {
     var channel = document.querySelector(".chat-channel[data-id]");
     if (!channel) {
       return;
@@ -2643,7 +2694,7 @@
       if (!parts.input.disabled) {
         // ChatComposer autofocuses on desktop only: on a phone it would
         // open the keyboard.
-        if (!document.documentElement.classList.contains("mobile-view")) {
+        if (focus && !document.documentElement.classList.contains("mobile-view")) {
           parts.input.focus({ preventScroll: true });
         }
         refreshHeight(parts.input);
@@ -2699,15 +2750,32 @@
     }
   });
 
-  Discourse.onPage(function () {
+  function mount(focus) {
     drawChannelDates();
-    setup();
+    setup(focus);
     startLive();
     startPresence();
-    return function () {
-      teardown();
-      stopLive();
-      stopPresence();
-    };
+  }
+
+  function unmount() {
+    teardown();
+    stopLive();
+    stopPresence();
+  }
+
+  // For chat-drawer.js: the drawer's route drawn, or gone.
+  Discourse.chat = {
+    mount: function () {
+      unmount();
+      mount(true);
+    },
+    unmount: unmount,
+  };
+
+  Discourse.onPage(function () {
+    // A channel in the drawer, kept across pages, keeps its state but
+    // doesn't take the focus.
+    mount(!!document.querySelector(".full-page-chat"));
+    return unmount;
   });
 })();

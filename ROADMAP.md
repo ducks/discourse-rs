@@ -82,7 +82,9 @@ Blockers, a scripted walk-through would hit them:
   page (99's leftovers), and a DM channel drops its "last visit" line when
   the newest message is the marker (plugins/chat/page.rs:185):
   fix/chat-dm-thread-pages (280), done.
-- [ ] Chat: the chat drawer (223).
+- [x] Chat: the chat drawer (223): feat/chat-drawer (223a), done: the
+  header icon, sidebar links, lists, browse and a channel in the drawer,
+  kept across pages; resizing and the drawer's other routes are 223b-d.
 - [x] The demo servers on 8080 and 8092 ran builds from 2026-10-19 and
   2026-10-20, before every item from 260 on, and were gone after a reboot:
   restarted on 1007bc82 with the large corpus (8080) and the Meta baseline
@@ -4117,7 +4119,94 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     buttons (plugins/chat/page.rs:572,1630), the "-" and Esc shortcuts,
     kept across page loads (milestone 4.5's "the chat drawer next"),
     ChatHistory's back-to-forum URL (routes/chat_pages.rs:118). Split
-    when started
+    into the slices below, in the order a demo needs them.
+    223a. ~~`feat/chat-drawer`~~ (done) M: the drawer a demo walks
+    through. Every page draws chat's below-footer outlet
+    (ChatDrawerOutlet: `.below-footer-outlet.chat-drawer-outlet` and its
+    container after the theme's footer, for visitors too while the
+    plugin is on), kept across page swaps with hx-preserve as Ember keeps
+    the drawer across routes, and lost on a reload as Ember's state is.
+    static/js/chat-drawer.js keeps ChatStateManager's state (open,
+    expanded, the preferred mode in localStorage
+    discourse_chat_preferred_mode, the last chat and forum URLs,
+    lastKnownChatURL's starred default), ChatHistory (the routes visited,
+    which the channel's back button follows) and the chat route's
+    beforeModel: a navigation to a chat URL the drawer handles, from a
+    page that isn't full-page chat, opens it in the drawer while the
+    drawer is preferred (desktop without FULL_PAGE_CHAT): the header icon
+    (ChatHeaderIcon#openChat: its target URL and href, active while the
+    drawer is open), the sidebar's channel links, the drawer's own links,
+    footer and empty state button, any boosted link; otherwise the page
+    goes to full-page chat and the drawer closes, and full-page chat's
+    activate and deactivate keep the forum and chat URLs. The navbar
+    toggles on a click (Navbar @onClick), and its toggle (collapse and
+    expand), full page and close buttons act as ChatDrawer's; full-page
+    chat's open drawer button goes back to the last forum page and opens
+    the drawer at the last chat URL. "-" toggles the drawer outside
+    inputs and Esc closes it, after the composer, menus and the emoji
+    picker take theirs. The drawer's size comes from
+    discourse_chat_drawer_size_* (400 by 530), and it sits beside or
+    above an open composer (_checkSize's --composer-right and
+    above-composer, following the composer's class and size). The
+    expanded drawer's channel is the sidebar's active link
+    (chat-sidebar.js classNames), and the mobile chat header's back to
+    the forum link is ChatHeader's previousURL (the last forum page after
+    the first; it was ChatHeader, not ChatHistory). The routes,
+    server-rendered by GET /live/chat/drawer (plugins/chat/drawer.rs, the
+    routes visited and the channel in response headers), expanded or
+    collapsed: chat (ROUTES.chat's redirect to the DMs for
+    direct_messages or without public channels), channels
+    (ChannelsListPublic on desktop with its divider, or its empty state
+    offering the browser), direct messages (titled Chat), starred
+    channels (the starred section by its list preferences, a DM with its
+    leave button; to the channels without any), browse and its tabs, a
+    channel and a message in it (ChatChannel as full-page chat draws it,
+    the slug unchecked as chatChannelsManager.find ignores it), each with
+    the drawer's navbar (the back button and full page button while
+    expanded; collapsed, a channel's title unlinked and none of its
+    buttons) and the footer on the lists. chat.js runs a channel in the
+    drawer (loaded with its scripts when the drawer first opens): its
+    refresh draws the drawer's route again, presence is entered while
+    the drawer is open, and the composer takes the focus when the
+    channel is drawn, not when a page swaps in beside it. Compared with
+    playwright against rs-ref-a (user1, desktop and a phone, a visitor):
+    the outlet and drawer markup equal at every step after normalizing
+    whitespace and the port's hooks (the outlet's id and hx-preserve,
+    data-href on the footer and the empty state button, the channel's
+    data attributes and templates), as do the html and body classes,
+    the drawer's box, the URL, the preferred mode and the sidebar link,
+    through opening from the header icon and the sidebar, a channel,
+    collapse and expand by button and by the navbar, a forum page swap,
+    the back button, a link to the browser, Esc, "-", the full page and
+    open drawer buttons, the full page preference's icon and sidebar
+    links, a reload, the composer opened beside it, and messages sent
+    from the drawer and arriving live across a page swap. Tests in
+    tests/plugin_pages.rs. Refused (Unsupported, by drawer.rs's route
+    table): the threads, search, channel threads, thread, message in a
+    thread, pins, channel settings and members routes (223c), a channel
+    the member can't open (Ember pops the request's error over an empty
+    route), the threads index ROUTES.chat redirects to for my_threads,
+    and the lists' filtered empty states and the threads list button as
+    full-page chat refuses them. Left, split into 223b-d.
+    223b. `feat/chat-drawer-resize` S: the resizer (chatResizableNode on
+    `.chat-drawer-resizer`: dragging the drawer's top left corner,
+    ChatDrawerSize's 250 by 300 minimums written to
+    discourse_chat_drawer_size_*), and the composer's live resize
+    (composer:div-resizing, resize-started and resize-ended with
+    clear-transitions); chat-drawer.js reads the stored size and follows
+    the composer's open and closed states already.
+    223c. `feat/chat-drawer-routes` M: the drawer's other routes, each
+    with its full-page counterpart: a channel's settings and members
+    (channel info, with the channel title's and the browse cards' member
+    links), pinned messages, a channel's threads and a thread (with 160's
+    threads), my threads (ChatDrawerRoutesThreads), search (with chat
+    search); refused at plugins/chat/drawer.rs recognize.
+    223d. `fix/chat-drawer-history` S: the browser's back and forward to
+    a chat URL while the drawer is preferred (Ember aborts the transition
+    and opens the drawer; the port's history restore loads full-page
+    chat, htmx skipping htmx:beforeRequest), and the focus a forum
+    navigation takes from the drawer's composer on the reference (the
+    port's stays in it).
 224. `feat/chat-pane` M: the channel pane's paging and jumps: older and
     newer messages on scroll, jumping to and highlighting a target
     message, the scroll-to-bottom arrow (plugins/chat/page.rs:256),
@@ -4771,7 +4860,7 @@ Discourse's own clients keep working.
       swaps (listeners once, per-page setup and teardown), brings over
       the body's attributes, swaps error pages in and leaves non-pages to
       the browser. What stays across pages is hx-preserve: the composer
-      now, the chat drawer next
+      and the chat drawer (223a)
 - [x] First slice, the topic page: new, edited, liked, deleted and
       recovered posts arrive live (GET /t/:id/live, on the last page),
       and members reply from a form on the page, the reply coming back

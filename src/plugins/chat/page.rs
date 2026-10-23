@@ -94,11 +94,14 @@ impl Context<'_> {
     }
 
     /// The channel route: the navbar and the channel, `target` the message
-    /// a near-message url names.
+    /// a near-message url names. In the drawer (`drawer`), its channel
+    /// route (ChatDrawerRoutesChannel): the drawer's navbar, and the
+    /// channel only while the drawer is expanded.
     pub async fn channel_page(
         &mut self,
         channel: &ChannelRow,
         target: Option<i64>,
+        drawer: Option<&super::drawer::Nav<'_>>,
     ) -> Result<String, AppError> {
         let membership = self
             .memberships()
@@ -110,6 +113,13 @@ impl Context<'_> {
             .await?;
         let following = membership.as_ref().is_some_and(|m| m.following);
         let last_read = membership.as_ref().and_then(|m| m.last_read_message_id);
+        if let Some(nav) = drawer.filter(|nav| !nav.expanded) {
+            let online = self.online_ids().await?;
+            return Ok(format!(
+                "<div class=\"c-drawer-routes --channel\">{}</div>",
+                self.navbar(&channel_json, following, &online, Some(nav))?
+            ));
+        }
 
         // ChatChannel#loadMessages: around the target, else from the last
         // read message.
@@ -141,8 +151,15 @@ impl Context<'_> {
             t: &t,
         };
 
-        let mut out = String::from("<div class=\"c-routes --channel\">");
-        out.push_str(&self.navbar(&channel_json, following, &view.online)?);
+        let mut out = String::from(if drawer.is_some() {
+            "<div class=\"c-drawer-routes --channel\">"
+        } else {
+            "<div class=\"c-routes --channel\">"
+        });
+        out.push_str(&self.navbar(&channel_json, following, &view.online, drawer)?);
+        if drawer.is_some() {
+            out.push_str("<div class=\"chat-drawer-content\">");
+        }
 
         let mut classes = String::from("chat-channel --loaded");
         if messages.is_empty() {
@@ -274,6 +291,9 @@ impl Context<'_> {
             out.push_str(&self.composer(channel, &channel_json).await?);
         }
         out.push_str("</div></div>");
+        if drawer.is_some() {
+            out.push_str("</div>");
+        }
         Ok(out)
     }
 
@@ -526,15 +546,28 @@ impl Context<'_> {
     }
 
     /// ChatNavbar on the channel route: the title (linking to the
-    /// channel's settings), the star, and the actions.
-    fn navbar(&self, c: &Value, following: bool, online: &[i64]) -> Result<String, AppError> {
+    /// channel's settings), the star, and the actions. In the drawer, its
+    /// navbar: clickable (toggling the drawer), the back button while
+    /// expanded, and the drawer's buttons in place of OpenDrawerButton.
+    fn navbar(
+        &self,
+        c: &Value,
+        following: bool,
+        online: &[i64],
+        drawer: Option<&super::drawer::Nav<'_>>,
+    ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
         let slug = &slugified_title(c);
         let id = c["id"].as_i64().unwrap_or(0);
-        let mut out = String::from("<div class=\"c-navbar-container\"><nav class=\"c-navbar\">");
+        let mut out = format!(
+            "<div class=\"c-navbar-container{}\"><nav class=\"c-navbar\">",
+            if drawer.is_some() { " -clickable" } else { "" }
+        );
         let mobile = crate::mobile::mobile_view();
-        if mobile {
+        if let Some(nav) = drawer {
+            out.push_str(&nav.back_button(nav.back));
+        } else if mobile {
             // ChatNavbarBackButton to the channels (or a DM's list), with
             // the other channels' unread indicator, which the page's
             // chrome puts in place of BACK_INDICATOR.
@@ -550,13 +583,22 @@ impl Context<'_> {
                 d_icon("chevron-left", None)
             ));
         }
-        out.push_str(&format!(
-            "<a class=\"c-navbar__channel-title\" href=\"{}/chat/c/{}/{id}/info/settings\">{}</a>",
-            self.base_path,
-            escape(slug),
-            channel_title(c, self.settings.emojis(), self.base_path, online)
-        ));
-        if following {
+        // The collapsed drawer's navbar: the title without its link, and
+        // none of the channel's buttons (isDrawerCollapsed).
+        let collapsed = drawer.is_some_and(|nav| !nav.expanded);
+        let title = channel_title(c, self.settings.emojis(), self.base_path, online);
+        if collapsed {
+            out.push_str(&format!(
+                "<div class=\"c-navbar__channel-title\">{title}</div>"
+            ));
+        } else {
+            out.push_str(&format!(
+                "<a class=\"c-navbar__channel-title\" href=\"{}/chat/c/{}/{id}/info/settings\">{title}</a>",
+                self.base_path,
+                escape(slug),
+            ));
+        }
+        if following && !collapsed {
             let starred = c["current_user_membership"]["starred"] == true;
             out.push_str(&format!(
                 "<span aria-expanded=\"false\" class=\"fk-d-tooltip__trigger\" data-identifier=\"star-channel\" data-trigger=\"\" role=\"button\" data-tooltip=\"{}\"><span class=\"fk-d-tooltip__trigger-container\"><button class=\"btn no-text btn-icon btn-transparent c-navbar__star-channel-button{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></span></span>",
@@ -570,14 +612,14 @@ impl Context<'_> {
             ));
         }
         out.push_str("<nav class=\"c-navbar__actions\">");
-        if self.settings.get("chat_search_enabled")?.truthy() {
+        if self.settings.get("chat_search_enabled")?.truthy() && !collapsed {
             out.push_str(&format!(
                 "<button class=\"btn no-text btn-icon btn-transparent c-navbar__filter\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
                 d_icon("discourse-chat-search", None)
             ));
         }
-        // OpenDrawerButton: desktop only.
-        if !mobile {
+        // OpenDrawerButton: desktop only, and not in the drawer.
+        if !mobile && drawer.is_none() {
             out.push_str(&format!(
                 "<button class=\"btn no-text btn-icon c-navbar__open-drawer-button btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
                 escape(&t("chat.close_full_page")),
@@ -585,6 +627,7 @@ impl Context<'_> {
             ));
         }
         if self.settings.get("chat_pinned_messages")?.truthy()
+            && !collapsed
             && c["pinned_messages_count"].as_i64().unwrap_or(0) > 0
         {
             out.push_str(&format!(
@@ -595,8 +638,11 @@ impl Context<'_> {
                 d_icon("thumbtack", None)
             ));
         }
-        if c["threading_enabled"] == true {
+        if c["threading_enabled"] == true && !collapsed {
             return Err(Unsupported("chat threads (the threads list button)").into());
+        }
+        if let Some(nav) = drawer {
+            out.push_str(&nav.buttons());
         }
         out.push_str("</nav></nav></div>");
         Ok(out)
@@ -1611,19 +1657,30 @@ impl Context<'_> {
     /// The browse route (BrowseChannels): the tabs, the filter controls
     /// and the channel cards, ten at a time (the next ten load when the
     /// loading container shows). `filter` narrows by name; the joined
-    /// dropdown filters the loaded cards in the browser.
-    pub async fn browse_page(&mut self, tab: &str, filter: &str) -> Result<String, AppError> {
+    /// dropdown filters the loaded cards in the browser. In the drawer
+    /// (ChatDrawerRoutesBrowse): the drawer's navbar, back to the channels,
+    /// and the view only while expanded.
+    pub async fn browse_page(
+        &mut self,
+        tab: &str,
+        filter: &str,
+        drawer: Option<&super::drawer::Nav<'_>>,
+    ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
-        let mut out = String::from(
-            "<div class=\"c-routes --browse\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\">",
-        );
-        out.push_str(&format!(
-            "<a class=\"active c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{}/chat\">{}</a>",
-            escape(&t("chat.browse.back")),
-            self.base_path,
-            d_icon("chevron-left", None)
-        ));
+        let mut out = String::new();
+        if let Some(nav) = drawer {
+            out.push_str("<div class=\"c-drawer-routes --browse\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\">");
+            out.push_str(&nav.back_button("/chat/channels"));
+        } else {
+            out.push_str("<div class=\"c-routes --browse\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\">");
+            out.push_str(&format!(
+                "<a class=\"active c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{}/chat\">{}</a>",
+                escape(&t("chat.browse.back")),
+                self.base_path,
+                d_icon("chevron-left", None)
+            ));
+        }
         let title = t("chat.browse.title");
         out.push_str(&format!(
             "<div class=\"c-navbar__title\" title=\"{t}\"><span class=\"c-navbar__title-text\">{t}</span></div><nav class=\"c-navbar__actions\">",
@@ -1636,11 +1693,22 @@ impl Context<'_> {
                 escape(&t("chat.create_channel.title"))
             ));
         }
-        out.push_str(&format!(
-            "<button class=\"btn no-text btn-icon c-navbar__open-drawer-button btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></nav></nav></div>",
-            escape(&t("chat.close_full_page")),
-            d_icon("discourse-compress", None)
-        ));
+        match drawer {
+            Some(nav) => {
+                out.push_str(&nav.buttons());
+                out.push_str("</nav></nav></div>");
+                if !nav.expanded {
+                    out.push_str("</div>");
+                    return Ok(out);
+                }
+                out.push_str("<div class=\"chat-drawer-content\">");
+            }
+            None => out.push_str(&format!(
+                "<button class=\"btn no-text btn-icon c-navbar__open-drawer-button btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></nav></nav></div>",
+                escape(&t("chat.close_full_page")),
+                d_icon("discourse-compress", None)
+            )),
+        }
 
         let archiving = self.settings.get("chat_allow_archiving_channels")?.truthy();
         out.push_str("<div class=\"chat-browse-view\"><div class=\"chat-browse-view__actions\"><nav><ul class=\"nav-pills chat-browse-view__filters\">");
@@ -1682,6 +1750,9 @@ impl Context<'_> {
         out.push_str("<div class=\"chat-browse-view__content_wrapper\"><div class=\"chat-browse-view__content\"><div class=\"c-list\">");
         out.push_str(&self.browse_cards(tab, filter, 0).await?);
         out.push_str("</div></div></div></div></div>");
+        if drawer.is_some() {
+            out.push_str("</div>");
+        }
         Ok(out)
     }
 

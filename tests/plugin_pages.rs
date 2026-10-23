@@ -1078,3 +1078,279 @@ async fn the_threads_page_has_none_to_list() {
     let mut desktop = Client::logged_in(st, "user1").await;
     assert_eq!(desktop.head("/chat/threads").await.0, 500);
 }
+
+impl Client {
+    /// GET /live/chat/drawer for a URL: the status, the routes visited,
+    /// the channel shown and the markup.
+    async fn drawer(&mut self, query: &str) -> (u16, String, Option<String>, String) {
+        let cookie: Vec<String> = self
+            .cookies
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect();
+        let request = Request::get(format!("/live/chat/drawer?{query}"))
+            .header(header::HOST, "test.localhost")
+            .header(header::COOKIE, cookie.join("; "));
+        let response = discourse_rs::app(self.state.clone())
+            .oneshot(request.body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let header = |name: &str| {
+            response
+                .headers()
+                .get(name)
+                .map(|v| v.to_str().unwrap().to_string())
+        };
+        let routes = header("x-chat-drawer-routes").unwrap_or_default();
+        let channel = header("x-chat-drawer-channel");
+        let status = response.status().as_u16();
+        let bytes = response.into_body().collect().await.unwrap().to_bytes();
+        (
+            status,
+            routes,
+            channel,
+            String::from_utf8_lossy(&bytes).into_owned(),
+        )
+    }
+}
+
+/// The drawer's buttons, expanded.
+const DRAWER_BUTTONS: &str = "<button class=\"btn no-text btn-icon btn-transparent no-text c-navbar__toggle-drawer-button\" title=\"Collapse Chat Drawer\" type=\"button\"><svg class=\"fa d-icon d-icon-minus svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#minus\"></use></svg><span aria-hidden=\"true\">&#8203;</span></button><button class=\"btn no-text btn-icon btn-transparent no-text c-navbar__full-page-button\" title=\"Open full-screen chat\" type=\"button\"><svg class=\"fa d-icon d-icon-discourse-expand svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#discourse-expand\"></use></svg><span aria-hidden=\"true\">&#8203;</span></button><button class=\"btn no-text btn-icon btn-transparent no-text c-navbar__close-drawer-button\" title=\"Close\" type=\"button\"><svg class=\"fa d-icon d-icon-xmark svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#xmark\"></use></svg><span aria-hidden=\"true\">&#8203;</span></button>";
+
+#[tokio::test]
+async fn every_page_has_the_chat_drawer_outlet() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let outlet = "<div class=\"below-footer-outlet chat-drawer-outlet\" id=\"chat-drawer-outlet\" hx-preserve><div class=\"chat-drawer-outlet-container\"></div></div>";
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    for path in ["/latest", "/categories", "/chat/browse/open"] {
+        let html = user1.page(path).await;
+        assert!(html.contains(outlet), "{path}: {html}");
+        // After the theme's footer, before the composer.
+        assert!(
+            html.find(outlet) < html.find("id=\"reply-control\""),
+            "{path}"
+        );
+        assert!(
+            html.contains("/chat-drawer.js?v=") && html.contains(" data-homepage=\"/latest\" data-hide-presence=\"false\" data-starred=\"false\" data-scripts=\"/assets/emoji-picker.js?v&#x3D;"),
+            "{path}: {html}"
+        );
+    }
+    assert!(
+        user1
+            .page("/assets/chat-drawer.js")
+            .await
+            .contains("ChatStateManager")
+    );
+    // A visitor gets the outlet, which stays empty: no drawer opens.
+    let html = Client {
+        state: st.clone(),
+        cookies: Vec::new(),
+        csrf: None,
+    }
+    .page("/latest")
+    .await;
+    assert!(html.contains(outlet), "{html}");
+    assert!(!html.contains("chat-drawer.js"));
+    // With the plugin off, no outlet.
+    common::set_setting(&db.pool, "chat_enabled", 5, "f").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/latest").await;
+    assert!(!html.contains("chat-drawer-outlet"), "{html}");
+}
+
+#[tokio::test]
+async fn the_chat_drawer_lists_the_channels() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (status, routes, channel, html) = user1.drawer("url=/chat&expanded=true").await;
+    assert_eq!((status, routes.as_str(), channel), (200, "chat", None));
+    assert!(
+        html.starts_with(&format!("<div class=\"c-drawer-routes --channels\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"Chat\"><span class=\"c-navbar__title-text\">Chat</span></div><nav class=\"c-navbar__actions\">{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"chat-channel-divider public-channels-section\"><span class=\"channel-title\">Channels</span><div class=\"chat-channel-divider__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\"")),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"channels-list-container public-channels\" id=\"public-channels\"><a class=\"chat-channel-row has-unread\" tabindex=\"0\" data-chat-channel-id=\"2\" href=\"/chat/c/general/2\">"), "{html}");
+    // The footer while expanded: channels and search (no DMs for user1
+    // without the setting's groups), so more than one route.
+    assert!(html.ends_with("</nav></div>"), "{html}");
+    assert!(html.contains("<nav class=\"c-footer\">"), "{html}");
+
+    // Collapsed: the navbar alone, its toggle expanding.
+    let (_, _, _, html) = user1.drawer("url=/chat/channels&expanded=false").await;
+    assert_eq!(
+        html,
+        "<div class=\"c-drawer-routes --channels\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"Chat\"><span class=\"c-navbar__title-text\">Chat</span></div><nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent no-text c-navbar__toggle-drawer-button\" title=\"Expand Chat Drawer\" type=\"button\"><svg class=\"fa d-icon d-icon-angles-up svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#angles-up\"></use></svg><span aria-hidden=\"true\">&#8203;</span></button><button class=\"btn no-text btn-icon btn-transparent no-text c-navbar__close-drawer-button\" title=\"Close\" type=\"button\"><svg class=\"fa d-icon d-icon-xmark svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#xmark\"></use></svg><span aria-hidden=\"true\">&#8203;</span></button></nav></nav></div></div>"
+    );
+
+    // No starred channels: the starred route goes on to the channels.
+    let (_, routes, _, html) = user1.drawer("url=/chat/starred-channels").await;
+    assert_eq!(routes, "chat.starred-channels chat.channels");
+    assert!(html.starts_with("<div class=\"c-drawer-routes --channels\">"));
+    // A starred one: listed under its divider, the footer's starred item.
+    sqlx::query("UPDATE user_chat_channel_memberships SET starred = true WHERE chat_channel_id = 2 AND user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, routes, _, html) = user1.drawer("url=/chat/starred-channels").await;
+    assert_eq!(routes, "chat.starred-channels");
+    assert!(
+        html.contains("<div class=\"c-navbar__title\" title=\"Starred\">")
+            && html.contains("<div class=\"chat-drawer-content\"><div class=\"chat-channel-divider starred-channels-section\"><span class=\"channel-title\">Starred channels</span>")
+            && html.contains("<div class=\"channels-list-container starred-channels\"><a class=\"chat-channel-row has-unread\" tabindex=\"0\" data-chat-channel-id=\"2\" href=\"/chat/c/general/2\">"),
+        "{html}"
+    );
+    assert!(
+        html.contains("c-footer__item --active\" id=\"c-footer-starred\""),
+        "{html}"
+    );
+    // Pages say so, for the drawer's default URL.
+    assert!(
+        user1
+            .page("/latest")
+            .await
+            .contains("data-starred=\"true\"")
+    );
+}
+
+#[tokio::test]
+async fn the_chat_drawer_shows_a_channel() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (status, routes, channel, html) = user1.drawer("url=/chat/c/general/2").await;
+    assert_eq!(
+        (status, routes.as_str(), channel.as_deref()),
+        (200, "chat.channel", Some("2"))
+    );
+    assert!(
+        html.starts_with("<div class=\"c-drawer-routes --channel\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"Back\" href=\"/chat/channels\"><svg class=\"fa d-icon d-icon-chevron-left svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#chevron-left\"></use></svg></a><a class=\"c-navbar__channel-title\" href=\"/chat/c/general/2/info/settings\">"),
+        "{html}"
+    );
+    assert!(html.contains("c-navbar__star-channel-button"));
+    assert!(html.contains(&format!("{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"chat-channel --loaded\" data-id=\"2\"")), "{html}");
+    assert!(!html.contains("c-navbar__open-drawer-button"));
+    // The messages and the composer, as full-page chat draws them.
+    assert!(html.contains("<p>Hello <strong>world</strong></p>"));
+    assert!(html.contains("id=\"channel-composer\""));
+    assert!(html.ends_with("</div></div></div>"));
+    // The slug isn't checked; a near message is the channel around it.
+    let (_, routes, channel, html) = user1.drawer("url=/chat/c/-/2/3").await;
+    assert_eq!(
+        (routes.as_str(), channel.as_deref()),
+        ("chat.channel.near-message", Some("2"))
+    );
+    assert!(html.contains("data-id=\"3\""));
+    // From the browser, back goes there.
+    let (_, _, _, html) = user1
+        .drawer("url=/chat/c/general/2&previous=chat.browse")
+        .await;
+    assert!(
+        html.contains("title=\"Back\" href=\"/chat/browse\">"),
+        "{html}"
+    );
+    // Collapsed: the navbar without the back button, the title unlinked,
+    // none of the channel's buttons, no full page button.
+    let (_, _, _, html) = user1.drawer("url=/chat/c/general/2&expanded=false").await;
+    assert!(html.starts_with("<div class=\"c-drawer-routes --channel\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><div class=\"c-navbar__channel-title\"><div class=\"chat-channel-title is-category\">"), "{html}");
+    for absent in [
+        "chat-drawer-content",
+        "c-navbar__full-page-button",
+        "c-navbar__star-channel-button",
+        "c-navbar__filter",
+        "/info/settings",
+    ] {
+        assert!(!html.contains(absent), "{absent}: {html}");
+    }
+    assert!(html.contains("title=\"Expand Chat Drawer\""));
+    // A channel the member can't open is refused, as is the mobile view.
+    assert_eq!(user1.drawer("url=/chat/c/staff/1").await.0, 500);
+    user1.cookies.push(("mobile_view".into(), "1".into()));
+    assert_eq!(user1.drawer("url=/chat/c/general/2").await.0, 404);
+}
+
+#[tokio::test]
+async fn the_chat_drawer_browses_and_lists_dms() {
+    let db = TestDb::new().await;
+    chat_dm(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (_, routes, _, html) = user1.drawer("url=/chat/browse").await;
+    assert_eq!(routes, "chat.browse");
+    assert!(
+        html.starts_with("<div class=\"c-drawer-routes --browse\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"Back\" href=\"/chat/channels\">"),
+        "{html}"
+    );
+    assert!(html.contains(&format!("<div class=\"c-navbar__title\" title=\"Channels\"><span class=\"c-navbar__title-text\">Channels</span></div><nav class=\"c-navbar__actions\">{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"chat-browse-view\">")), "{html}");
+    assert!(html.contains(
+        "<a class=\"active chat-browse-view__filter-link -open\" href=\"/chat/browse/open\">"
+    ));
+    let (_, routes, _, html) = user1.drawer("url=/chat/browse/all").await;
+    assert_eq!(routes, "chat.browse.all");
+    assert!(html.contains("<a class=\"active chat-browse-view__filter-link -all\""));
+
+    // The DMs, titled Chat, with their footer.
+    let (_, routes, _, html) = user1.drawer("url=/chat/direct-messages").await;
+    assert_eq!(routes, "chat.direct-messages");
+    assert!(
+        html.starts_with("<div class=\"c-drawer-routes --direct-messages\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"Chat\">"),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"chat-drawer-content\"><div class=\"chat-channel-divider direct-message-channels-section\"><span class=\"channel-title\">DMs</span>"));
+    assert!(html.contains("data-chat-channel-id=\"3\" href=\"/chat/c/user2/3\""));
+    assert!(
+        html.contains("c-footer__item --active\" id=\"c-footer-direct-messages\""),
+        "{html}"
+    );
+    // A DM's back button goes to the DMs.
+    let (_, _, channel, html) = user1.drawer("url=/chat/c/user2/3").await;
+    assert_eq!(channel.as_deref(), Some("3"));
+    assert!(
+        html.contains("title=\"Back\" href=\"/chat/direct-messages\">"),
+        "{html}"
+    );
+    // The DMs index: /chat redirects there.
+    common::set_setting(&db.pool, "chat_preferred_index", 7, "direct_messages").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let (_, routes, _, html) = user1.drawer("url=/chat").await;
+    assert_eq!(routes, "chat chat.direct-messages");
+    assert!(html.starts_with("<div class=\"c-drawer-routes --direct-messages\">"));
+}
+
+#[tokio::test]
+async fn the_chat_drawer_refuses_what_it_doesnt_draw_yet() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    for url in [
+        "/chat/threads",
+        "/chat/search",
+        "/chat/c/general/2/pins",
+        "/chat/c/general/2/t",
+        "/chat/c/general/2/t/1",
+        "/chat/c/general/2/info/settings",
+        "/chat/c/general/2/info/members",
+    ] {
+        assert_eq!(user1.drawer(&format!("url={url}")).await.0, 500, "{url}");
+    }
+    // What the drawer doesn't handle goes to full-page chat: not found here.
+    for url in [
+        "/chat/new-message",
+        "/chat/disabled",
+        "/chat/message/1",
+        "/latest",
+    ] {
+        assert_eq!(user1.drawer(&format!("url={url}")).await.0, 404, "{url}");
+    }
+    // Nor for a visitor.
+    let mut anon = Client {
+        state: st,
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    assert_eq!(anon.drawer("url=/chat").await.0, 404);
+}

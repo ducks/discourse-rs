@@ -322,6 +322,12 @@ pub struct Chrome {
     /// The chat channel route's back button indicator in the mobile view
     /// (plugins::chat::view).
     pub chat_back_indicator: String,
+    /// The chat plugin is on: its below-footer connector (ChatDrawerOutlet)
+    /// draws the drawer's outlet on every page.
+    pub chat_drawer_outlet: bool,
+    /// chat-drawer.js's attributes, empty when the viewer can't chat (no
+    /// drawer opens).
+    pub chat_drawer: String,
     /// The translations the templates' client strings come from (site
     /// texts included); the vendored files when the page loaded no chrome.
     pub i18n: Option<std::sync::Arc<I18n>>,
@@ -1101,7 +1107,16 @@ impl Site {
             self.chrome.live_param("chat", &active.key());
             self.chrome.chat_header_icon = chat.header_icon;
             self.chrome.chat_back_indicator = chat.back_indicator;
+            self.chrome.chat_drawer = crate::plugins::chat::drawer::script_attrs(
+                &mut *conn,
+                settings,
+                guardian,
+                &self.base_path,
+                chat.starred,
+            )
+            .await?;
         }
+        self.chrome.chat_drawer_outlet = crate::plugins::chat::enabled(settings)?;
         if let Some(user_id) = guardian.user_id() {
             self.chrome.can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;
             let draft_count: Option<i32> =
