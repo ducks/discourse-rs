@@ -50,12 +50,27 @@ pub async fn show_by_id(
         },
         &state,
         None,
+        None,
         &id,
         None,
         &params,
         json,
     )
     .await
+}
+
+/// The post number Rails' `t/.../last` routes pass (`post_number:
+/// 99_999_999`), else the segment as given.
+fn route_post_number(segment: &str) -> &str {
+    if segment == "last" {
+        "99999999"
+    } else {
+        segment
+    }
+}
+
+fn all_digits(segment: &str) -> bool {
+    !segment.is_empty() && segment.bytes().all(|b| b.is_ascii_digit())
 }
 
 /// `/t/:slug/:topic_id`
@@ -71,16 +86,34 @@ pub async fn show_with_slug(
     super::search::Peer(peer): super::search::Peer,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
+    let incoming = Incoming {
+        headers: &headers,
+        uri: &uri,
+        requested: requested.as_ref().map(|r| &r.0),
+        guardian: &guardian,
+        peer,
+    };
+    // Rails declares `t/:topic_id/:post_number` and `t/:topic_id/last`
+    // before `t/:slug/:topic_id`, so two numbers (or a number and `last`)
+    // are a topic and a post number, not a slug and a topic.
+    if all_digits(&slug) && (all_digits(&id) || id == "last") {
+        return show(
+            incoming,
+            &state,
+            None,
+            Some(&slug),
+            &slug,
+            Some(route_post_number(&id)),
+            &params,
+            json,
+        )
+        .await;
+    }
     show(
-        Incoming {
-            headers: &headers,
-            uri: &uri,
-            requested: requested.as_ref().map(|r| &r.0),
-            guardian: &guardian,
-            peer,
-        },
+        incoming,
         &state,
         Some(&slug),
+        Some(&id),
         &id,
         None,
         &params,
@@ -112,8 +145,9 @@ pub async fn show_post(
         },
         &state,
         Some(&slug),
+        Some(&id),
         &id,
-        Some(&post_number),
+        Some(route_post_number(&post_number)),
         &params,
         json,
     )
@@ -457,10 +491,13 @@ struct Incoming<'a> {
     peer: Option<std::net::SocketAddr>,
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn show(
     incoming: Incoming<'_>,
     state: &AppState,
     slug: Option<&str>,
+    // params[:topic_id]: every route but `/t/:id` has one.
+    topic_id_param: Option<&str>,
     id: &str,
     post_number: Option<&str>,
     params: &ShowParams,
@@ -473,8 +510,6 @@ async fn show(
         crate::bus::page_position(&state.bus).await?
     };
     let (headers, uri, guardian) = (incoming.headers, incoming.uri, incoming.guardian);
-    // params[:topic_id]: every route but `/t/:id` has one.
-    let topic_id_param = slug.is_some().then_some(id);
     let slug = slug.or(params.slug.as_deref());
     // build_not_found_page searches for params[:slug] || params[:id].
     let page_slug = slug.filter(|s| !s.is_empty()).unwrap_or(id).to_string();
