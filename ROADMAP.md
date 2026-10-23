@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 228a-228c, 258a, 260a, 261a, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -81,10 +81,11 @@ Blockers, a scripted walk-through would hit them:
   unknown): fix/footer-notifications-flake.
 - [ ] /password-reset over the homepage when login isn't required answers
   500 (261a, routes/login_required.rs:1554).
-- [ ] Chat: /chat/direct-messages and /chat/threads answer 405 with a blank
+- [x] Chat: /chat/direct-messages and /chat/threads answer 405 with a blank
   page (99's leftovers), and a DM channel drops its "last visit" line when
   the newest message is the marker (plugins/chat/page.rs:185):
-  fix/chat-last-visit-line; the chat drawer is 223.
+  fix/chat-dm-thread-pages (280), done.
+- [ ] Chat: the chat drawer (223).
 - [ ] The demo servers on 8080 and 8092 run builds from 2026-10-19 and
   2026-10-20, before every item from 260 on: rebuild and restart them
   (the owner's call; agents don't touch them).
@@ -1383,7 +1384,8 @@ with the viewport, guessing from the user agent without it
     `chat_mobile` bundle: the chat header (back to the forum), the
     channel navbar's back button with the other channels' unread count,
     the mobile composer's layout, /chat as the channels list with the
-    chat footer. Left: the footer's DMs, search, starred and threads
+    chat footer. Left: the footer's ~~DMs~~ (done, 280), search,
+    starred and ~~threads~~ (done, 280; its threads refused with 160)
     routes, the channel list options menu (desktop's too), swipe and long
     press on a row, the list's empty states (refused)
 101. ~~`feat/header-search-menu`~~ (done) M: the desktop header's search
@@ -2050,7 +2052,7 @@ have handlers now.
     plugins/chat/channels.rs:348; plugins/chat/page.rs:589;
     plugins/chat/summary_email.rs:223; plugins/chat/publisher.rs:367;
     plugins/chat/dm_groups.rs:540; plugins/chat/membership.rs:542), the
-    threads and DMs indexes (routes/chat_pages.rs:200)
+    threads list (280a)
 161. `feat/chat-uploads` M: chat message uploads
     (plugins/chat/messages.rs:276,588; plugins/chat/create.rs:99;
     plugins/chat/modify.rs:301; plugins/chat/page.rs:880,1315),
@@ -3904,6 +3906,60 @@ route table has been made, so this list may be short.
     each touches every page, so each wants a full sweep. The sidebar's
     revealActiveLink offset varies between loads (above), which makes
     those admin rows flake.
+280. ~~`fix/chat-dm-thread-pages`~~ (done) S: GET /chat/direct-messages
+    and /chat/threads answered 405 with a blank page: POST /chat/:id
+    (Chat::Api::ChannelMessagesController#create) matched both paths, and
+    neither page was routed. Both are full-page chat now, as Ember draws
+    them. The DMs page (ChatDirectMessagesRoute, ChannelsListDirect; its
+    beforeModel's desktop redirect to the last channel finds no DMs yet
+    on a page load, so the reference stays on the list): the navbar with
+    its open drawer button, the section's
+    divider with the filter toggle and list options, and each DM's row
+    (ChatChannelRow: the first user's avatar or the member count, the
+    title, the unread indicator, urgent for a DM, the last message's
+    date, the leave button, which chat.js sends to
+    DELETE .../memberships/me/follows); in the mobile view the section's
+    buttons in the navbar, the divider only without public channels,
+    each row's last message excerpt (dReplaceEmoji) and the chat footer
+    with DMs active. Rows follow the member's DM list filter and sort,
+    fifty at most; without DMs the empty state with its Start a
+    conversation button. The threads page (ChatRoutesThreads,
+    UserThreads): the navbar and, as GET /chat/api/me/threads answers
+    when the member has no thread to list, the list's empty state, and
+    the footer on a phone. GET /chat/api/me/threads
+    (CurrentUserThreadsController, Chat::LookupUserThreads) answers
+    on_model_not_found's `{success, threads: []}` without a viewable
+    thread (Chat::Thread.viewable_by_user) and is refused with one. /chat
+    follows chat_preferred_index (ChatIndexRoute#redirect): the DMs page
+    for direct_messages, or without public channels, the browser
+    otherwise, refusing my_threads for a member with threads; on desktop
+    it goes on to a last channel that is a DM too (it went to the
+    browser). A DM (any
+    channel) now draws the last visit line on its last message too:
+    processMessages skips it only when the message `===` the channel's
+    lastMessage, and the message it just created never is, so the line
+    goes on the first message past the membership's last read one (none
+    without a membership); verified on rs-ref-a with a fresh DM whose
+    unread message is its last. chat.js moves `-last-read` to the message
+    it marks read, as the membership's lastReadMessageId moves in Ember.
+    Compared with playwright against rs-ref-a on its database with a 1:1
+    DM (one unread message), a group DM and an empty DM (user1) and a
+    member without DMs (user0), desktop and mobile: the pages' main
+    outlets equal after normalizing but for the port's data-at and
+    data-href hooks, the channel page's messages too (the line on the
+    last message on both). Write cases parity/writes/chat/me_threads*;
+    tests in tests/plugin_pages.rs. Left, split into 280a.
+    280a. `fix/chat-dm-thread-pages-rest` S: the threads list with
+    threads (UserThreads' rows, ThreadPreview, the load more; refused at
+    plugins/chat/view.rs threads_route and routes/chat.rs me_threads,
+    with 160's threads), the Start a conversation button's new message
+    modal (222), the DM list's filtered empty state
+    (ChatSidebarChannelListFilterEmptyState, refused), long press and
+    swipe on a row (99), the filter toggle's and list options' menus
+    (99). On rs-ref-a's headless Chromium `(hover: none)` matches on
+    Discourse's pages (not on about:blank or the port's), so the
+    reference shows the leave button without a hover; the CSS is the
+    same and the port shows it on hover, as on a desktop with a mouse.
 
 ### Phase 11: the bundled plugins' gaps (210)
 

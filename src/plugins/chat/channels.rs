@@ -338,6 +338,36 @@ impl Context<'_> {
         Ok(())
     }
 
+    /// `Chat::Thread.viewable_by_user(user).exists?`: a thread the member
+    /// follows unmuted, with replies, in an open channel with threading
+    /// they follow, its original and last messages there and not deleted.
+    /// What lists the member's threads (Chat::LookupUserThreads) answers
+    /// empty without one and is refused with one until threads are ported.
+    pub(crate) async fn has_viewable_threads(&mut self) -> Result<bool, AppError> {
+        let Some(user_id) = self.guardian.user_id() else {
+            return Ok(false);
+        };
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM chat_threads \
+               INNER JOIN user_chat_thread_memberships ON user_chat_thread_memberships.thread_id = chat_threads.id \
+               INNER JOIN chat_channels ON chat_channels.id = chat_threads.channel_id \
+               INNER JOIN chat_messages viewable_om ON viewable_om.id = chat_threads.original_message_id \
+                 AND viewable_om.chat_channel_id = chat_threads.channel_id AND viewable_om.deleted_at IS NULL \
+               INNER JOIN chat_messages viewable_lm ON viewable_lm.id = chat_threads.last_message_id \
+                 AND viewable_lm.chat_channel_id = chat_threads.channel_id AND viewable_lm.deleted_at IS NULL \
+               INNER JOIN user_chat_channel_memberships ON user_chat_channel_memberships.chat_channel_id = chat_channels.id \
+                 AND user_chat_channel_memberships.user_id = $1 AND user_chat_channel_memberships.following \
+               WHERE user_chat_thread_memberships.user_id = $1 \
+                 AND user_chat_thread_memberships.notification_level <> 0 \
+                 AND chat_channels.threading_enabled AND chat_channels.status = $2 \
+                 AND chat_threads.replies_count > 0)",
+        )
+        .bind(user_id)
+        .bind(OPEN)
+        .fetch_one(&mut *self.conn)
+        .await?)
+    }
+
     /// `Chat::ThreadUnreadsQuery` (include_read), as TrackingStateReportQuery
     /// reports it: each of the member's threads (the query filters by
     /// membership only), up to 500 by last message.

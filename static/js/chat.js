@@ -323,6 +323,8 @@
     return channel ? channel.dataset.id : null;
   }
 
+  // In the capture phase, so the link around a DM list row's leave button
+  // (and htmx's boost on it) never sees its click.
   document.addEventListener("click", function (event) {
     var button = event.target.closest(
       ".toggle-channel-membership-button, .c-navbar__star-channel-button"
@@ -330,7 +332,13 @@
     if (!button || button.disabled) {
       return;
     }
-    var id = cardChannelId(button);
+    // A DM list row's leave button: the row is the link around it.
+    var row = button.closest(".chat-channel-row[data-chat-channel-id]");
+    if (row) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    var id = row ? row.dataset.chatChannelId : cardChannelId(button);
     if (!id) {
       return;
     }
@@ -348,10 +356,17 @@
       request = api("DELETE", "/channels/" + id + "/memberships/me/follows");
     }
     button.disabled = true;
-    request.then(refresh).catch(function () {
-      button.disabled = false;
-    });
-  });
+    request
+      .then(function () {
+        if (row) {
+          row.remove();
+        }
+        return refresh();
+      })
+      .catch(function () {
+        button.disabled = false;
+      });
+  }, true);
 
   // updateLastReadMessage: the last message whose bottom shows, once the
   // pane has settled, marks the channel read up to it.
@@ -384,6 +399,11 @@
       return;
     }
     channel.dataset.lastRead = String(id);
+    // The membership's lastReadMessageId moves, and its -last-read class.
+    channel.querySelectorAll(".chat-message-container.-last-read").forEach(function (other) {
+      other.classList.remove("-last-read");
+    });
+    message.classList.add("-last-read");
     api("PUT", "/channels/" + channel.dataset.id + "/read?message_id=" + id).then(function () {
       // The sidebar's unread dot goes once the last message is read.
       return fetch(location.href, { credentials: "same-origin" })

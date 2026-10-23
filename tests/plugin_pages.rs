@@ -925,3 +925,156 @@ async fn the_mobile_view_lists_chat_channels() {
         "{channel}"
     );
 }
+
+/// user1's DM with user2: user2's greeting, user1's answer and user2's
+/// question, which user1 hasn't read.
+async fn chat_dm(db: &TestDb) {
+    let day = "now() - interval '1 day'";
+    let m = |id: i32, user: i32, mins: i32, text: &str| {
+        format!(
+            "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) \
+             VALUES ({id}, 3, {user}, now() - interval '{mins} minutes', now() - interval '{mins} minutes', '{text}', '<p>{text}</p>', 1, {user}, '{text}')"
+        )
+    };
+    for sql in [
+        format!(
+            "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, {day}, {day}), (1, 4, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 3, {day}, {day})"
+        ),
+        m(1, 4, 30, "hello there"),
+        m(2, 3, 20, "hi"),
+        m(3, 4, 10, "are you around later today?"),
+        "UPDATE chat_channels SET last_message_id = 3 WHERE id = 3".into(),
+        format!(
+            "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, last_read_message_id, created_at, updated_at) VALUES (3, 3, true, false, 2, 2, {day}, {day}), (4, 3, true, false, 2, 3, {day}, {day})"
+        ),
+        "SELECT setval('chat_messages_id_seq', 3)".into(),
+        "SELECT setval('chat_channels_id_seq', 3)".into(),
+        "SELECT setval('direct_message_channels_id_seq', 1)".into(),
+    ] {
+        sqlx::query(&sql).execute(&db.pool).await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn the_direct_messages_page_lists_a_members_dms() {
+    let db = TestDb::new().await;
+    chat_dm(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    // Desktop stays on the list on a page load, a last channel or not.
+    user1.page("/chat/c/user2/3").await;
+    let html = user1.page("/chat/direct-messages").await;
+    assert!(
+        html.contains("<div class=\"c-routes --direct-messages\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"DMs\">"),
+        "{html}"
+    );
+    assert!(html.contains("<title>Chat - "));
+    assert!(html.contains("<div class=\"chat-channel-divider direct-message-channels-section\"><span class=\"channel-title\">DMs</span><div class=\"chat-channel-divider__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\""));
+    assert!(html.contains("<a class=\"chat-channel-row can-leave has-unread\" tabindex=\"0\" data-chat-channel-id=\"3\" href=\"/chat/c/user2/3\"><div class=\"chat-channel-row__content is-dm\"><div class=\"chat-channel-icon --avatar\"><div class=\"chat-user-avatar\" data-username=\"user2\">"));
+    // A DM's unread message is urgent.
+    assert!(html.contains("<div class=\"chat-channel-name__label\">user2</div><div class=\"chat-channel-unread-indicator -urgent\"><div class=\"chat-channel-unread-indicator__number\">1</div></div>"));
+    assert!(html.contains("<button class=\"btn no-text btn-icon toggle-channel-membership-button -leave btn-flat chat-channel-leave-btn\" title=\"Close channel\" type=\"button\">"));
+    assert!(!html.contains("chat-channel__last-message"));
+    assert!(!html.contains("c-footer"));
+    // /chat goes on to the last channel, a DM too.
+    assert_eq!(user1.head("/chat").await, (302, Some("/chat/c/-/3".into())));
+
+    // Without DMs: the empty state offering one.
+    let mut user0 = Client::logged_in(st, "user0").await;
+    let html = user0.page("/chat/direct-messages").await;
+    assert!(
+        html.contains("<div class=\"channels-list-container direct-message-channels center-empty-channels-list\" id=\"direct-message-channels\"><div class=\"empty-state__container --empty-channels-list --with-image\">"),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"empty-state__title\" data-test-title=\"\">You have not joined any direct messages yet!</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"><span class=\"d-button-label\">Start a conversation</span></button></div>"));
+}
+
+#[tokio::test]
+async fn the_mobile_direct_messages_list_shows_last_messages() {
+    let db = TestDb::new().await;
+    chat_dm(&db).await;
+    common::set_setting(&db.pool, "chat_preferred_index", 7, "direct_messages").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    user1.cookies.push(("mobile_view".into(), "1".into()));
+    // The preferred index.
+    assert_eq!(
+        user1.head("/chat").await,
+        (302, Some("/chat/direct-messages".into()))
+    );
+    let html = user1.page("/chat/direct-messages").await;
+    // The section's buttons in the navbar, no divider, no leave button.
+    assert!(
+        html.contains("<nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\""),
+        "{html}"
+    );
+    assert!(!html.contains("direct-message-channels-section"));
+    assert!(!html.contains("chat-channel-leave-btn"));
+    assert!(
+        html.contains(
+            "<div class=\"chat-channel__last-message\">are you around later today?</div>"
+        )
+    );
+    assert!(html.contains(
+        "class=\"btn btn-icon-text btn-transparent c-footer__item --active\" id=\"c-footer-direct-messages\""
+    ));
+    // A DM's navbar goes back to the list.
+    let channel = user1.page("/chat/c/user2/3").await;
+    assert!(
+        channel.contains("href=\"/chat/direct-messages\">"),
+        "{channel}"
+    );
+}
+
+#[tokio::test]
+async fn a_dm_draws_the_last_visit_line_on_its_last_message() {
+    let db = TestDb::new().await;
+    chat_dm(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/chat/c/user2/3").await;
+    // The unread message is the channel's last: Ember draws the line.
+    assert!(
+        html.contains("data-id=\"3\" data-created-at=") && html.contains("data-newest=\"\""),
+        "{html}"
+    );
+    assert_eq!(html.matches("data-newest=\"\"").count(), 1);
+}
+
+#[tokio::test]
+async fn the_threads_page_has_none_to_list() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let html = user1.page("/chat/threads").await;
+    assert!(
+        html.contains("<div class=\"c-routes --threads\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"My Threads\">"),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"c-list\"><div class=\"--loaded c-user-threads\"><div class=\"c-list-empty-state\"><div class=\"empty-state-threads\">You don"));
+    assert!(html.contains("c-navbar__open-drawer-button"));
+    user1.cookies.push(("mobile_view".into(), "1".into()));
+    let html = user1.page("/chat/threads").await;
+    assert!(!html.contains("c-navbar__open-drawer-button"), "{html}");
+    assert!(html.contains("<nav class=\"c-footer\">"));
+    assert!(!html.contains("c-footer__item --active"));
+
+    // A thread the member follows in a channel with threading: refused.
+    chat_messages(&db).await;
+    for sql in [
+        "UPDATE chat_channels SET threading_enabled = true WHERE id = 2",
+        "INSERT INTO chat_threads (id, channel_id, original_message_id, original_message_user_id, last_message_id, replies_count, created_at, updated_at) VALUES (1, 2, 1, 2, 2, 1, now(), now())",
+        "UPDATE chat_messages SET thread_id = 1 WHERE id IN (1, 2)",
+        "INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, created_at, updated_at) VALUES (3, 1, 2, now(), now())",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    let mut desktop = Client::logged_in(st, "user1").await;
+    assert_eq!(desktop.head("/chat/threads").await.0, 500);
+}
