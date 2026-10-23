@@ -7,5 +7,7 @@ the default base, heading and monospace fonts use:
   (https://github.com/JetBrains/JetBrainsMono), SIL Open Font License 1.1,
   JetBrainsMono-LICENSE.txt
 
-Served at /fonts/ as Rails serves them. A site set to another of the gem's
-fonts gets its @font-face rules, whose files are not here yet.
+Served at /fonts/ as Rails serves them. The gem's other fonts (a site set to
+one of them, the admin's font previews, which name them all) are served from
+the discourse-fonts-0.0.19 gem in DISCOURSE_SRC's bundle when it is set, and
+are missing otherwise.

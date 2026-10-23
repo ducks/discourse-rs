@@ -139,7 +139,9 @@ Polish, from the second screenshot sweep:
   stylesheets make it go away, so spike/core-css-compile may remove it.
 - [ ] Admin category settings draw `default_composer_category` as a plain
   combo box instead of CategoryChooser (2.41%): fix/category-setting-chooser.
-- [ ] Admin font previews all render in Inter: fix/admin-font-previews.
+- [x] Admin font previews all render in Inter: fix/admin-font-previews.
+  Admins get the wizard stylesheet's fonts and /fonts serves the gem's
+  others from DISCOURSE_SRC; 0.04% on rs-ref-b (was 0.53%).
 - [ ] The admin email style Ace editor height and template preview offset:
   fix/admin-email-editors.
 - [ ] scripts/parity-screenshots: guard against a 164598px capture

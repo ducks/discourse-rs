@@ -2546,6 +2546,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(stylesheets::light),
         )
         .route("/assets/color_definitions_dark.css", get(stylesheets::dark))
+        .route("/assets/wizard_fonts.css", get(stylesheets::wizard_fonts))
         .route(
             "/assets/color_definitions_scheme/{file}",
             get(stylesheets::scheme),

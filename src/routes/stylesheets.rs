@@ -155,6 +155,22 @@ pub async fn theme(
     Ok(stylesheet(&headers, css.map(|css| css + "\n")))
 }
 
+/// `/assets/wizard_fonts.css`: the wizard stylesheet's fonts
+/// (manager::wizard_fonts), which Rails serves admins on every page.
+pub async fn wizard_fonts(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cx = manager::Cx {
+        config: &state.config,
+        settings: &settings,
+    };
+    Ok(stylesheet(&headers, Some(manager::wizard_fonts(&cx)?)))
+}
+
 /// The discourse-fonts files this port has (static/fonts/README).
 const FONT_FILES: &[(&str, &[u8])] = &[
     (
@@ -175,19 +191,40 @@ const FONT_FILES: &[(&str, &[u8])] = &[
 /// URL or the CDN), and a browser loads a font from another origin only
 /// with CORS: nginx.sample.conf's font location (and development.rb's
 /// public_file_server headers) send `Access-Control-Allow-Origin: *`.
-pub async fn font(Path(file): Path<String>) -> Response {
-    match FONT_FILES.iter().find(|(name, _)| *name == file) {
-        Some((_, bytes)) => (
-            [
-                (header::CONTENT_TYPE, "font/woff2"),
-                (header::CACHE_CONTROL, "max-age=31556952, public, immutable"),
-                (header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"),
-            ],
-            *bytes,
-        )
-            .into_response(),
-        None => StatusCode::NOT_FOUND.into_response(),
-    }
+/// The files this port embeds, else the gem's other fonts (the admin's
+/// font previews name them all) from a Discourse checkout's bundle.
+pub async fn font(State(state): State<AppState>, Path(file): Path<String>) -> Response {
+    let bytes: std::borrow::Cow<'static, [u8]> =
+        match FONT_FILES.iter().find(|(name, _)| *name == file) {
+            Some((_, bytes)) => (*bytes).into(),
+            None => {
+                let Some(dir) = crate::stylesheet::fonts::is_font_file(&file)
+                    .then(|| state.config.fonts_dir())
+                    .flatten()
+                else {
+                    return StatusCode::NOT_FOUND.into_response();
+                };
+                match tokio::fs::read(dir.join(&file)).await {
+                    Ok(bytes) => bytes.into(),
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                        return StatusCode::NOT_FOUND.into_response();
+                    }
+                    Err(e) => {
+                        tracing::error!("reading the font {file}: {e}");
+                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                    }
+                }
+            }
+        };
+    (
+        [
+            (header::CONTENT_TYPE, "font/woff2"),
+            (header::CACHE_CONTROL, "max-age=31556952, public, immutable"),
+            (header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"),
+        ],
+        bytes,
+    )
+        .into_response()
 }
 
 /// `/color-scheme-stylesheet/:id(/:theme_id)` (StylesheetsController#

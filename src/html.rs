@@ -343,6 +343,9 @@ pub struct Chrome {
     pub i18n: Option<std::sync::Arc<I18n>>,
     /// Rails' admin stylesheet, which staff are served on every page.
     pub admin_stylesheet: bool,
+    /// The wizard stylesheet's fonts (/assets/wizard_fonts.css), which
+    /// admins are served on every page.
+    pub wizard_stylesheet: bool,
     /// discourse-solved's admin stylesheet (its `:admin` assets), which
     /// staff are served while the plugin is enabled.
     pub solved_admin_stylesheet: bool,
@@ -844,6 +847,7 @@ impl Site {
         )
         .await?;
         self.chrome.admin_stylesheet = guardian.is_staff();
+        self.chrome.wizard_stylesheet = guardian.is_admin();
         self.chrome.solved_admin_stylesheet =
             guardian.is_staff() && crate::plugins::solved::enabled(settings)?;
         self.chrome.user_cards =

@@ -435,6 +435,26 @@ async fn the_logo_and_fonts_pages() {
     assert!(html.contains("<title>Fonts - Admin - "), "{html}");
     assert!(html.contains("admin-fonts-form__button-option font btn-flat body-font-inter active\" type=\"button\" data-value=\"inter\">Inter</button>"), "{html}");
     assert!(html.contains("text-size btn-flat normal active"));
+    // Each choice draws in its own font: the wizard stylesheet's fonts,
+    // which admins are served on every page, give the classes and faces.
+    assert!(html.contains("<link rel=\"stylesheet\" href=\"/assets/wizard_fonts.css\">"));
+    assert!(html.contains("body-font-open-sans\" type=\"button\" data-value=\"open_sans\">"));
+    let (status, css) = admin
+        .send(Method::GET, "/assets/wizard_fonts.css", "", false)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        css.contains(".body-font-open-sans {\n  font-family: Open Sans, Arial, sans-serif;\n}")
+    );
+    assert!(css.contains("/fonts/OpenSans-Regular.woff2?v=0.0.19\") format(\"woff2\");"));
+    let (_, html) = admin.page("/latest").await;
+    assert!(html.contains("<link rel=\"stylesheet\" href=\"/assets/wizard_fonts.css\">"));
+    let (status, html) = Client::logged_in(st.clone(), "user1")
+        .await
+        .page("/latest")
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(!html.contains("wizard_fonts.css"));
     // The controllers' index answers JSON with no content.
     let (status, body) = admin
         .send(Method::GET, "/admin/config/fonts.json", "", true)
