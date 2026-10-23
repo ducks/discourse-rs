@@ -98,17 +98,40 @@ pub async fn create_thumbnail(
 
 /// `Topic.share_thumbnail_size`, the one `Topic.thumbnail_sizes` has
 /// without plugins.
-const SHARE_THUMBNAIL_SIZE: (i32, i32) = (1024, 1024);
+pub const SHARE_THUMBNAIL_SIZE: (i32, i32) = (1024, 1024);
 
-/// `Topic#generate_thumbnails!` for the topic's image upload: a
-/// TopicThumbnail per size (`TopicThumbnail.find_or_create_for!`), with an
-/// optimized image when the original is larger. Themes' extra thumbnail
-/// sizes are not supported.
+/// CookedPostProcessor's `topic.generate_thumbnails!(extra_sizes:)`, the
+/// extra sizes being the user-selectable themes' topic_thumbnail_sizes
+/// (not supported).
 pub async fn generate_topic_thumbnails(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     store: &FileStore,
     upload: &Upload,
+) -> Result<(), CookError> {
+    // ThemeModifierHelper#topic_thumbnail_sizes over user-selectable themes.
+    let theme_sizes: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM theme_modifier_sets m JOIN themes t ON t.id = m.theme_id \
+         WHERE t.user_selectable AND m.topic_thumbnail_sizes IS NOT NULL \
+         AND m.topic_thumbnail_sizes <> '{}')",
+    )
+    .fetch_one(&mut *conn)
+    .await?;
+    let extra = theme_sizes.then_some("theme topic thumbnail sizes");
+    generate_thumbnails(conn, settings, store, upload, extra).await
+}
+
+/// `Topic#generate_thumbnails!(extra_sizes:)` for the topic's image upload:
+/// a TopicThumbnail per size (`TopicThumbnail.find_or_create_for!`), with
+/// an optimized image when the original is larger. Extra sizes are not
+/// supported: `extra_sizes` names them for the refusal once they would be
+/// made.
+pub async fn generate_thumbnails(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    store: &FileStore,
+    upload: &Upload,
+    extra_sizes: Option<&'static str>,
 ) -> Result<(), CookError> {
     if !settings.get("create_thumbnails")?.truthy() {
         return Ok(());
@@ -119,16 +142,8 @@ pub async fn generate_topic_thumbnails(
     let (Some(width), Some(height)) = (upload.width, upload.height) else {
         return Ok(());
     };
-    // ThemeModifierHelper#topic_thumbnail_sizes over user-selectable themes.
-    let theme_sizes: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM theme_modifier_sets m JOIN themes t ON t.id = m.theme_id \
-         WHERE t.user_selectable AND m.topic_thumbnail_sizes IS NOT NULL \
-         AND m.topic_thumbnail_sizes <> '{}'",
-    )
-    .fetch_one(&mut *conn)
-    .await?;
-    if theme_sizes > 0 {
-        return Err(Unsupported("theme topic thumbnail sizes").into());
+    if let Some(what) = extra_sizes {
+        return Err(Unsupported(what).into());
     }
     let (max_width, max_height) = SHARE_THUMBNAIL_SIZE;
     let existing: Option<i64> = sqlx::query_scalar(
