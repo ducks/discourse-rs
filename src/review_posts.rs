@@ -405,8 +405,17 @@ async fn queued(
     };
     // `topic`: the association's default scope leaves a deleted one out.
     let live_topic = topic.as_ref().filter(|t| t.deleted_at.is_none());
-    if row.target_type.as_deref() == Some("Post") && !guardian.is_admin() {
-        return Err(Unsupported("moderators reviewing approved queued posts").into());
+    // actions_for: none without can_review_target?.
+    if !crate::reviewables::can_review_target(
+        &mut *conn,
+        s,
+        guardian,
+        row.target_type.as_deref(),
+        row.target_id,
+    )
+    .await?
+    {
+        return Ok(Performed::InvalidAction);
     }
 
     // build_combined_actions
@@ -1140,8 +1149,17 @@ async fn reviewed(
         None => None,
     };
     let post = post.ok_or(Unsupported("a post review without its post"))?;
-    if !guardian.is_admin() {
-        return Err(Unsupported("moderators reviewing posts (reviewable_post_scope)").into());
+    // actions_for: none without can_review_target?.
+    if !crate::reviewables::can_review_target(
+        &mut *conn,
+        s,
+        guardian,
+        row.target_type.as_deref(),
+        row.target_id,
+    )
+    .await?
+    {
+        return Ok(Performed::InvalidAction);
     }
     let author = load_author(&mut *conn, row.target_created_by_id).await?;
     let trashed = post.deleted_at.is_some();

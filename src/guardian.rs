@@ -97,6 +97,11 @@ impl Guardian {
         })
     }
 
+    /// The guardian of a logged-in half already loaded.
+    pub fn from_logged_in(user: GuardianUser) -> Self {
+        Guardian { user: Some(user) }
+    }
+
     /// The logged-in half, with what was loaded for it.
     pub fn logged_in(&self) -> Option<&GuardianUser> {
         self.user.as_ref()
@@ -272,9 +277,8 @@ impl Guardian {
         }
     }
 
-    /// `private_message_topic_scope`'s clause: PMs the user is allowed
-    /// into directly or through a group. Moderators also see warnings and
-    /// flagged PMs, which this slice refuses when any pending flag exists.
+    /// `private_message_topic_scope`'s clause for the PMs the user is in,
+    /// directly or through a group.
     pub fn private_message_clause(&self) -> Option<String> {
         let uid = self.user_id()?;
         Some(format!(
@@ -282,6 +286,100 @@ impl Guardian {
              OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
                 JOIN group_users gu ON gu.user_id = {uid} AND gu.group_id = tg.group_id))"
         ))
+    }
+
+    /// `private_message_topic_scope(scope)`'s condition on `topics`, past
+    /// the scope's own: the PMs the user is in, and for moderators also
+    /// official warnings and the topics with a pending flag
+    /// (`Topic.has_flag_scope`: ReviewableFlaggedPost
+    /// `pending_and_default_visible`, scored at least `min_score`).
+    pub fn private_message_topic_clause(&self, min_score: f64) -> Option<String> {
+        let pm = self.private_message_clause()?;
+        if !self.is_moderator() {
+            return Some(pm);
+        }
+        Some(format!(
+            "({pm} OR topics.subtype = 'moderator_warning' \
+              OR topics.id IN (SELECT reviewables.topic_id FROM reviewables \
+                WHERE reviewables.type IN ('ReviewableFlaggedPost') AND reviewables.status = 0 \
+                  AND (score >= {min_score:?})))"
+        ))
+    }
+
+    /// `category_group_moderation_allowed?`
+    pub fn category_group_moderation_allowed(
+        &self,
+        settings: &SiteSettings,
+    ) -> Result<bool, SettingError> {
+        Ok(self.is_authenticated() && settings.get("enable_category_group_moderation")?.truthy())
+    }
+
+    /// `category_group_moderator_scope` as a category id subquery.
+    pub fn category_group_moderator_sql(&self) -> Option<String> {
+        let uid = self.user_id()?;
+        Some(format!(
+            "SELECT categories.id FROM categories \
+             INNER JOIN category_moderation_groups ON category_moderation_groups.category_id = categories.id \
+             INNER JOIN groups ON groups.id = category_moderation_groups.group_id \
+             INNER JOIN group_users ON group_users.group_id = groups.id \
+             WHERE group_users.user_id = {uid}"
+        ))
+    }
+
+    /// `visible_topic_scope(scope, deleted:)`'s condition on `topics`, with
+    /// `shared_drafts` LEFT OUTER JOINed on the topic; None when the scope
+    /// is left as it is (admins). `include_deleted` is `deleted: :include`.
+    pub async fn visible_topic_clause(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        include_deleted: bool,
+    ) -> Result<Option<String>, GuardianError> {
+        let suppress = settings
+            .get("suppress_secured_categories_from_admin")?
+            .truthy();
+        if self.is_admin() && !suppress {
+            return Ok(None);
+        }
+        let mut clauses = Vec::new();
+        if !include_deleted && !self.is_staff() {
+            let mut visible = "topics.deleted_at IS NULL".to_string();
+            if self.category_group_moderation_allowed(settings)?
+                && let Some(moderated) = self.category_group_moderator_sql()
+            {
+                visible = format!("({visible} OR topics.category_id IN ({moderated}))");
+            }
+            clauses.push(visible);
+        }
+        if !self.can_see_shared_draft(settings)? {
+            clauses.push("shared_drafts.id IS NULL".to_string());
+        }
+        // secured_regular_topic_scope: Topic.secured, or for a staged user
+        // their own topics in categories that take email from strangers.
+        let mut secured = format!(
+            "(topics.category_id IS NULL OR topics.category_id IN ({}))",
+            self.allowed_category_ids_sql(settings)?
+        );
+        if let Some(u) = self.user().filter(|u| u.staged) {
+            secured = format!(
+                "({secured} OR topics.id IN (SELECT topics.id FROM topics \
+                   INNER JOIN categories ON categories.id = topics.category_id \
+                   WHERE categories.read_restricted AND categories.email_in IS NOT NULL \
+                     AND categories.email_in_allow_strangers AND topics.user_id = {}))",
+                u.id
+            );
+        }
+        let regular = format!("(topics.archetype <> 'private_message' AND {secured})");
+        let min_score = if self.is_moderator() {
+            crate::reviewables::min_score(&mut *conn, settings).await?
+        } else {
+            0.0
+        };
+        clauses.push(match self.private_message_topic_clause(min_score) {
+            Some(pm) => format!("({regular} OR (topics.archetype = 'private_message' AND {pm}))"),
+            None => regular,
+        });
+        Ok(Some(clauses.join(" AND ")))
     }
 
     /// `can_see_topic_ids(topic_ids:)`: the given ids the guardian may
@@ -295,54 +393,15 @@ impl Guardian {
         if topic_ids.is_empty() {
             return Ok(Vec::new());
         }
-        let suppress = settings
-            .get("suppress_secured_categories_from_admin")?
-            .truthy();
-        if self.is_admin() && !suppress {
+        let Some(visible) = self
+            .visible_topic_clause(&mut *conn, settings, false)
+            .await?
+        else {
             return Ok(topic_ids.to_vec());
-        }
-        if self.is_moderator() {
-            let pending: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM reviewables WHERE type = 'ReviewableFlaggedPost' AND status = 0)",
-            )
-            .fetch_one(&mut *conn)
-            .await?;
-            if pending {
-                return Err(Unsupported("moderators' view of flagged private messages").into());
-            }
-        }
-        let mut clauses = vec![
-            "topics.id = ANY($1)".to_string(),
-            "topics.deleted_at IS NULL".to_string(),
-        ];
-        if self.is_staff() {
-            // Staff keep deleted topics in the scope; the serializers
-            // that follow refuse them anyway.
-            clauses.pop();
-        }
-        if !self.can_see_shared_draft(settings)? {
-            clauses.push("shared_drafts.id IS NULL".to_string());
-        }
-        let regular = format!(
-            "(topics.archetype <> 'private_message' AND (topics.category_id IS NULL OR topics.category_id IN ({})))",
-            self.allowed_category_ids_sql(settings)?
-        );
-        let visible = match self.private_message_clause() {
-            Some(pm) => {
-                let warning = if self.is_moderator() {
-                    " OR topics.subtype = 'moderator_warning'"
-                } else {
-                    ""
-                };
-                format!("({regular} OR (topics.archetype = 'private_message' AND {pm}){warning})")
-            }
-            None => regular,
         };
-        clauses.push(visible);
         let ids: Vec<i32> = sqlx::query_scalar(&format!(
             "SELECT topics.id FROM topics LEFT OUTER JOIN shared_drafts ON shared_drafts.topic_id = topics.id \
-             WHERE {}",
-            clauses.join(" AND ")
+             WHERE topics.id = ANY($1) AND {visible}"
         ))
         .bind(topic_ids)
         .fetch_all(conn)

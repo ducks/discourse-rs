@@ -550,8 +550,8 @@ pub async fn serialize(
         return Err(Unsupported("enable_category_group_moderation").into());
     }
     let (reviewable_count, unseen_reviewable_count) = if g.is_staff() {
-        crate::reviewables::staff_counts(&mut *conn, settings, user.id, user.admin, user.moderator)
-            .await?
+        let full = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        crate::reviewables::staff_counts(&mut *conn, settings, &full).await?
     } else {
         (0, 0)
     };
@@ -982,7 +982,8 @@ pub async fn sidebar_member(
         if settings.get("enable_category_group_moderation")?.truthy() {
             return Err(Unsupported("enable_category_group_moderation").into());
         }
-        crate::reviewables::staff_counts(&mut *conn, settings, user.id, user.admin, user.moderator)
+        let full = crate::guardian::Guardian::from_logged_in(guardian.clone());
+        crate::reviewables::staff_counts(&mut *conn, settings, &full)
             .await?
             .0
     } else {

@@ -246,18 +246,19 @@ async fn the_range_comes_from_the_query() {
 }
 
 #[tokio::test]
-async fn moderators_are_refused_with_their_current_user() {
+async fn moderators_get_the_dashboard_under_a_403() {
     let db = TestDb::new().await;
     sqlx::query("UPDATE users SET moderator = true WHERE username = 'user1'")
         .execute(&db.pool)
         .await
         .unwrap();
     let st = admin_state(&db).await;
-    // The page is refused before it is drawn: a moderator's current user
-    // (its reviewable counts) is not ported. The panel's moderator links
-    // and filter are covered by admin_view's unit tests.
-    let (status, _) = Client::logged_in(st, "user1").await.page("/admin").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    // AdminController is admin only: the request is rescued as
+    // InvalidAccess, the dashboard drawn under it. The panel's moderator
+    // links and filter are covered by admin_view's unit tests.
+    let (status, html) = Client::logged_in(st, "user1").await.page("/admin").await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert!(html.contains("dashboard general dashboard-next"));
 }
 
 #[tokio::test]

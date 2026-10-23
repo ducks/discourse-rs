@@ -7,6 +7,7 @@
 use serde_json::json;
 use sqlx::PgConnection;
 
+use crate::guardian::{Guardian, GuardianError};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
@@ -82,37 +83,187 @@ pub async fn sensitivity_score(
     Ok(value.max(min_score_for_priority(conn, s).await?))
 }
 
+/// `Reviewable.viewable_by(user)` past its order and preloads: the joins
+/// and the condition it adds for a user who isn't an admin.
+pub struct Viewable {
+    /// `left_joins(category: :category_moderation_groups)`
+    pub joins: &'static str,
+    pub clause: String,
+}
+
+const VIEWABLE_JOINS: &str = " LEFT OUTER JOIN categories ON categories.id = reviewables.category_id \
+     LEFT OUTER JOIN category_moderation_groups ON category_moderation_groups.category_id = categories.id";
+
+/// `Reviewable.viewable_by(user)`: None for admins, who see every
+/// reviewable. Anyone else sees those moderators may review (when a
+/// moderator) or that their groups moderate the category of (with
+/// enable_category_group_moderation), outside categories they can't see,
+/// private messages they can't see and posts they can't review
+/// (`reviewable_post_scope`).
+pub async fn viewable_by(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<Option<Viewable>, GuardianError> {
+    if guardian.is_admin() {
+        return Ok(None);
+    }
+    // `return none if user.blank?`
+    if guardian.is_anonymous() {
+        return Ok(Some(Viewable {
+            joins: VIEWABLE_JOINS,
+            clause: "FALSE".into(),
+        }));
+    }
+    let group_ids = if s.get("enable_category_group_moderation")?.truthy() {
+        guardian.group_ids().to_vec()
+    } else {
+        Vec::new()
+    };
+    let group_ids = if group_ids.is_empty() {
+        "NULL".to_string()
+    } else {
+        group_ids
+            .iter()
+            .map(i64::to_string)
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let mut clauses = vec![
+        format!(
+            "((reviewables.reviewable_by_moderator AND {}) OR (category_moderation_groups.group_id IN ({group_ids})))",
+            guardian.is_moderator()
+        ),
+        format!(
+            "(reviewables.category_id IS NULL OR reviewables.category_id IN ({}))",
+            guardian.allowed_category_ids_sql(s)?
+        ),
+    ];
+    // exclude_private_messages_hidden_from: private_message_topic_scope
+    // over every topic, read for the private messages alone.
+    let min = min_score(&mut *conn, s).await?;
+    if let Some(pm) = guardian.private_message_topic_clause(min) {
+        clauses.push(format!(
+            "NOT EXISTS (SELECT 1 FROM topics private_message \
+               WHERE private_message.id = reviewables.topic_id \
+                 AND private_message.archetype = 'private_message' \
+                 AND private_message.id NOT IN \
+                   (SELECT topics.id FROM topics WHERE topics.archetype = 'private_message' AND {pm}))"
+        ));
+    }
+    let posts = reviewable_post_clause(&mut *conn, s, guardian).await?;
+    clauses.push(format!(
+        "NOT EXISTS (SELECT 1 FROM posts reviewable_target \
+           WHERE reviewables.target_type = 'Post' AND reviewable_target.id = reviewables.target_id \
+             AND NOT EXISTS (SELECT posts.id FROM posts WHERE {posts} AND posts.id = reviewable_target.id))"
+    ));
+    Ok(Some(Viewable {
+        joins: VIEWABLE_JOINS,
+        clause: clauses.join(" AND "),
+    }))
+}
+
+/// `guardian.reviewable_post_scope` as a condition on `posts` (deleted
+/// posts in, as `Post.with_deleted`): every post for admins; for staff
+/// the posts of a type they see in topics they see, deleted ones too; for
+/// category group moderators only in the categories they moderate.
+pub async fn reviewable_post_clause(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<String, GuardianError> {
+    if guardian.is_admin() {
+        return Ok("TRUE".into());
+    }
+    let group_moderator = guardian.category_group_moderation_allowed(s)?;
+    if !guardian.is_staff() && !group_moderator {
+        return Ok("FALSE".into());
+    }
+    let mut topics = guardian
+        .visible_topic_clause(&mut *conn, s, false)
+        .await?
+        .unwrap_or_else(|| "TRUE".into());
+    if !guardian.is_staff()
+        && let Some(moderated) = guardian.category_group_moderator_sql()
+    {
+        topics = format!("{topics} AND topics.category_id IN ({moderated})");
+    }
+    let types = guardian
+        .visible_post_types(s)?
+        .iter()
+        .map(i32::to_string)
+        .collect::<Vec<_>>()
+        .join(",");
+    Ok(format!(
+        "(posts.post_type IN ({types}) AND posts.topic_id IN \
+           (SELECT topics.id FROM topics LEFT OUTER JOIN shared_drafts ON shared_drafts.topic_id = topics.id \
+            WHERE {topics}))"
+    ))
+}
+
+/// `Reviewable#can_review_target?(guardian)`: a reviewable whose target is
+/// a post (deleted ones too) needs `can_review_post?`; any other, or one
+/// whose post is gone, is reviewable.
+pub async fn can_review_target(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    guardian: &Guardian,
+    target_type: Option<&str>,
+    target_id: Option<i32>,
+) -> Result<bool, AppError> {
+    let (Some("Post"), Some(post_id)) = (target_type, target_id) else {
+        return Ok(true);
+    };
+    if guardian.is_admin() {
+        return Ok(true);
+    }
+    let posts = reviewable_post_clause(&mut *conn, s, guardian).await?;
+    Ok(sqlx::query_scalar(&format!(
+        "SELECT NOT EXISTS (SELECT 1 FROM posts reviewable_target WHERE reviewable_target.id = $1) \
+             OR EXISTS (SELECT 1 FROM posts WHERE {posts} AND posts.id = $1)"
+    ))
+    .bind(post_id)
+    .fetch_one(&mut *conn)
+    .await?)
+}
+
+/// ReviewablesController#find_reviewable's lookup:
+/// `Reviewable.viewable_by(current_user).where(id:).first` exists.
+pub async fn is_viewable(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    guardian: &Guardian,
+    id: i64,
+) -> Result<bool, AppError> {
+    let (joins, clause) = match viewable_by(&mut *conn, s, guardian).await? {
+        Some(v) => (v.joins, v.clause),
+        None => ("", "TRUE".to_string()),
+    };
+    Ok(sqlx::query_scalar(&format!(
+        "SELECT EXISTS (SELECT 1 FROM reviewables{joins} WHERE reviewables.id = $1 AND {clause})"
+    ))
+    .bind(id)
+    .fetch_one(&mut *conn)
+    .await?)
+}
+
 /// `User#reviewable_count` and `Reviewable.unseen_reviewable_count(user)`
-/// for staff: the pending reviewables of the known types, less those on
-/// topics claimed by someone else.
+/// for staff: the user's pending list, and the part of it past the
+/// reviewable they saw last.
 pub async fn staff_counts(
     conn: &mut PgConnection,
     s: &SiteSettings,
-    user_id: i32,
-    admin: bool,
-    moderator: bool,
+    guardian: &Guardian,
 ) -> Result<(i64, i64), AppError> {
-    if min_score_for_priority(&mut *conn, s).await? > 0.0 {
-        return Err(Unsupported("reviewable minimum score for priority").into());
-    }
-    if moderator && !admin {
-        return Err(Unsupported("moderator reviewable counts").into());
-    }
+    let user_id = guardian
+        .user_id()
+        .ok_or(Unsupported("reviewable counts for anonymous users"))?;
+    let base = pending_list_for(&mut *conn, s, guardian).await?;
     let last_seen: Option<i32> =
         sqlx::query_scalar("SELECT last_seen_reviewable_id FROM users WHERE id = $1")
             .bind(user_id)
             .fetch_one(&mut *conn)
             .await?;
-    let types = STI_NAMES
-        .iter()
-        .map(|t| format!("'{t}'"))
-        .collect::<Vec<_>>()
-        .join(",");
-    let base = format!(
-        "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
-         WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
-         AND reviewables.type IN ({types})"
-    );
     let count: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) {base}"))
         .bind(user_id)
         .fetch_one(&mut *conn)
@@ -130,28 +281,27 @@ pub async fn staff_counts(
     Ok((count, unseen))
 }
 
-/// The pending reviewables a staff member's own lists read
-/// (`Reviewable.list_for` with the pending status, the default priority
-/// and `include_claimed_by_others: false`): the FROM and WHERE, `$1` the
-/// user. Moderators see through the category and group scopes, which
-/// aren't ported.
-async fn pending_for_staff(
+/// The pending reviewables a user's own lists read (`Reviewable.list_for`
+/// with the pending status, the default priority and
+/// `include_claimed_by_others: false`): the FROM and WHERE, `$1` the user.
+async fn pending_list_for(
     conn: &mut PgConnection,
     s: &SiteSettings,
-    admin: bool,
-    moderator: bool,
+    guardian: &Guardian,
 ) -> Result<String, AppError> {
-    if moderator && !admin {
-        return Err(Unsupported("the review queue for moderators").into());
-    }
+    let viewable = viewable_by(&mut *conn, s, guardian).await?;
     let types = STI_NAMES
         .iter()
         .map(|t| format!("'{t}'"))
         .collect::<Vec<_>>()
         .join(",");
+    let (joins, clause) = match &viewable {
+        Some(v) => (v.joins, format!(" AND {}", v.clause)),
+        None => ("", String::new()),
+    };
     let mut base = format!(
-        "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
-         WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
+        "FROM reviewables{joins} LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
+         WHERE reviewables.status = 0{clause} AND (rct.user_id IS NULL OR rct.user_id = $1) \
          AND reviewables.type IN ({types})"
     );
     let min = min_score_for_priority(&mut *conn, s).await?;
@@ -171,10 +321,11 @@ async fn pending_for_staff(
 pub async fn user_menu_list(
     conn: &mut PgConnection,
     s: &SiteSettings,
-    user_id: i32,
-    admin: bool,
-    moderator: bool,
+    guardian: &Guardian,
 ) -> Result<Vec<serde_json::Value>, AppError> {
+    let user_id = guardian
+        .user_id()
+        .ok_or(Unsupported("the review queue for anonymous users"))?;
     type Row = (
         i64,
         String,
@@ -186,7 +337,7 @@ pub async fn user_menu_list(
         Option<i32>,
         Option<serde_json::Value>,
     );
-    let base = pending_for_staff(&mut *conn, s, admin, moderator).await?;
+    let base = pending_list_for(&mut *conn, s, guardian).await?;
     let rows: Vec<Row> = sqlx::query_as(&format!(
         "SELECT reviewables.id, reviewables.type, reviewables.status, reviewables.created_at, \
                 (SELECT username FROM users WHERE users.id = reviewables.created_by_id), \
@@ -276,11 +427,12 @@ pub async fn bump_last_seen(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
     s: &SiteSettings,
-    user_id: i32,
-    admin: bool,
-    moderator: bool,
+    guardian: &Guardian,
 ) -> Result<(), AppError> {
-    let base = pending_for_staff(&mut *conn, s, admin, moderator).await?;
+    let user_id = guardian
+        .user_id()
+        .ok_or(Unsupported("the review queue for anonymous users"))?;
+    let base = pending_list_for(&mut *conn, s, guardian).await?;
     let max: Option<i64> = sqlx::query_scalar(&format!(
         "SELECT MAX(reviewables.id) {base} AND reviewables.id > \
          COALESCE((SELECT last_seen_reviewable_id FROM users WHERE id = $1), 0)"
@@ -296,7 +448,7 @@ pub async fn bump_last_seen(
         .bind(i32::try_from(max).unwrap_or(i32::MAX))
         .execute(&mut *conn)
         .await?;
-    let (count, unseen) = staff_counts(&mut *conn, s, user_id, admin, moderator).await?;
+    let (count, unseen) = staff_counts(&mut *conn, s, guardian).await?;
     bus.publish(
         &mut *conn,
         &format!("/reviewable_counts/{user_id}"),

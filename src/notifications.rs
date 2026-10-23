@@ -298,19 +298,11 @@ impl Notifications<'_> {
         out.insert("seen_notification_id".into(), json!(seen));
         // pending_reviewables for the all notifications tab, when the user
         // can see the review queue.
-        if q.types.is_empty()
-            && self.guardian.is_staff()
-            && let Some(user) = self.guardian.user()
-        {
-            let pending = crate::reviewables::user_menu_list(
-                &mut *self.conn,
-                self.settings,
-                user.id,
-                user.admin,
-                user.moderator,
-            )
-            .await
-            .map_err(NotificationsError::Review)?;
+        if q.types.is_empty() && self.guardian.is_staff() {
+            let pending =
+                crate::reviewables::user_menu_list(&mut *self.conn, self.settings, self.guardian)
+                    .await
+                    .map_err(NotificationsError::Review)?;
             out.insert("pending_reviewables".into(), Value::Array(pending));
         }
         Ok((Value::Object(out), bumped))

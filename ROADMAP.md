@@ -423,8 +423,7 @@ Bugs or silent gaps in what is merged, small and independent.
     restore, unhide, reject, keep deleted, delete; AutoQueueHandler's
     rejections. Left: approving into a closed topic or with tags, an
     email or plugin fields, unsilencing the author, unhiding a first post,
-    moderators on post reviews; the review list still shows flagged posts
-    only),
+    the review list still shows flagged posts only),
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
     with queued and reviewed posts landed with 75; block_urls on onebox
     engines)
@@ -847,9 +846,10 @@ then by what running a forum needs (milestone 6). Briefs:
     picker with its presets and calendar and the configure menu, which
     reload the page for the new range or layout. Refused: the legacy
     dashboard (dashboard_improvements off), plugin dashboard sections,
-    country names in the top countries (Intl.DisplayNames), and every
-    admin page for moderators, whose current user's reviewable counts
-    are refused already. Left, saying so when used: the manage reports,
+    country names in the top countries (Intl.DisplayNames). Moderators
+    get the dashboard under admin#index's 403 and the staff pages, the
+    admins' ones not found (tests/moderator_pages.rs). Left, saying so
+    when used: the manage reports,
     compare groups and category pickers, dragging a card's corner, the
     report modes other than the charts in a card and the design wizard
     (90f; the admin search done in 90g9); not drawn: the sidebar footer's
@@ -1595,8 +1595,7 @@ have handlers now.
     or category a group grants access to (not_in_group with the
     serialized group: routes/topics.rs:322; routes/categories.rs:139),
     deleted posts for staff outside the topic view
-    (posting/revisions.rs:100), queued_posts_count for moderators
-    (topic_view.rs:675, Reviewable.viewable_by), title_is_group
+    (posting/revisions.rs:100), title_is_group
     (:2020), custom post notices (:2168), limit_suggested_to_category
     (:2800), suggested topics from other lists and for anonymous
     readers (topic_query.rs:839,887)
@@ -1607,10 +1606,10 @@ have handlers now.
     TopicView#image_url and #image_upload for a post number past the
     first, the page's og:image as get_absolute_image_url makes it with
     og:image:width, :height and :type; left:) theme thumbnail sizes
-    (optimized_images.rs:115,146; topic_view.rs:1166 for the request
+    (optimized_images.rs:115,146; topic_view.rs:1175 for the request
     theme; jobs/handlers.rs:978 for the job's extra_sizes; and
     jobs/consistency.rs's preflight), secure uploads in topic thumbnails
-    (topic_view.rs:1170), topic images behind a CDN (topic_list.rs:46),
+    (topic_view.rs:1179), topic images behind a CDN (topic_list.rs:46),
     topic images in digests (email/digest.rs:657)
 126. `feat/featured-links` S: featured_link_root_domain
     (topic_view.rs:558; topic_list.rs:650,758;
@@ -1695,7 +1694,7 @@ have handlers now.
     posting/revise.rs:180; posting/revise_topic.rs:413;
     posting/enqueue.rs:88), likes, flags and bookmarks
     (post_actions.rs:235; likes.rs:187,519; flags.rs:107;
-    bookmark_manager.rs:137), topic_guardian.rs:961, current_user.rs:307,
+    bookmark_manager.rs:137), topic_guardian.rs:966, current_user.rs:307,
     read_tracking.rs:134, post_destroyer.rs:328,389,1255,
     pm_invite.rs:69,242, routes/pm_invite.rs:204, routes/invites.rs:193,
     topic_status.rs:137, post_owner_changer.rs:438, post_mover.rs:139,
@@ -1721,7 +1720,7 @@ have handlers now.
     allowed_link_domains, has_host_spam? and its spam_post_blocked
     message, and silenced as fast typers (keep_posts); left:) posting
     as a staged user (posting/validate.rs:157), staged users on
-    restricted categories (topic_guardian.rs:274), approving a staged
+    restricted categories (topic_guardian.rs:270), approving a staged
     user's queued post (posting/create.rs:331), max_consecutive_replies
     (posting/validate.rs:961), flagging a new user's linked posts as
     spam once has_host_spam? refuses a post (flag_linked_posts_as_spam,
@@ -1988,14 +1987,13 @@ have handlers now.
 148. `feat/review-actions-rest` L: review actions that delete, edit,
     restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
-    first or last post (:698), claims and notes (review.rs:190;
-    review_posts.rs:257; reviewable_user.rs:195,272,446;
-    review_list.rs:589), reviewables for groups (review.rs:186), the
-    other reviewable types (review.rs:247; review_posts.rs:211;
+    first or last post (:698), claims and notes (review_posts.rs:257;
+    reviewable_user.rs:195,272,446; review_list.rs:589), the other
+    reviewable types (review.rs:247; review_posts.rs:211;
     review_list.rs:570,573), queued posts approved into closed or
     deleted topics, with tags, an email, plugin fields or polls,
     unsilencing their author, unhiding a first post
-    (review_posts.rs:464,476,610,624,627,1262), user reviewables on
+    (review_posts.rs:464,476,610,624,636,1262), user reviewables on
     invite-only sites or with an uploaded avatar and their rejection
     email (reviewable_user.rs:52,82,316), score conversations, reasons
     and types, the ids, date and additional filters
@@ -2004,15 +2002,19 @@ have handlers now.
     the reviewable events), truncate_user_flag_stats (review.rs:534;
     review_posts.rs:1236)
 149. `feat/category-group-moderation` M: enable_category_group_moderation
-    and moderators in the review queue (topic_guardian.rs:214;
-    posting/validate.rs:449; review.rs:170; review_posts.rs:413,1138;
-    review_list.rs:178; routes/review.rs:147,285,412; user_destroyer.rs:620;
-    current_user.rs:552,972; reviewables.rs:91,137), moderators' view of
-    flagged messages and warnings in topic lists and jobs
-    (guardian.rs:311; jobs/handlers.rs:1493; seeing one such message
-    was ported in 145), moderators and owner-only groups on the admin
-    view of a user (routes/admin_users.rs:1536), category moderators on
-    the about page (about.rs:309)
+    (topic_guardian.rs:214; posting/validate.rs:449; review.rs:172;
+    routes/review.rs:147,285,413; routes/review_claims.rs:215;
+    reviewable_claims.rs:145; category_writes.rs:267;
+    current_user.rs:548,982): its review queue for group members is
+    refused before the list, though `Reviewable.viewable_by`'s group
+    branch and `reviewable_post_scope`'s moderated categories are ported
+    with the moderators' scope (reviewables.rs); moderators and
+    owner-only groups on the admin view of a user
+    (routes/admin_users.rs:1536), category moderators on the about page
+    (about.rs:309). Moderators in the review queue, the user menu, a
+    topic's queued_posts_count and flagged messages and warnings
+    (`viewable_by`, `reviewable_post_scope`, `private_message_topic_scope`,
+    DeleteInaccessibleNotifications) landed in `fix/moderator-reviewables`
 150. `feat/deletion-rest` M: permanent deletion
     (routes/post_destroy.rs:80, force_destroy), recovering topics and likes
     (post_destroyer.rs:1281,1298), authors
@@ -2096,7 +2098,7 @@ have handlers now.
     (current_user.rs:467; routes/groups.rs:1122; review_list.rs:1411),
     clearing the login hint (user_updater.rs:911), the profile page's
     public user fields (87b), user tips and redirected_to_top
-    (current_user.rs:1202,1225), view_user_route profile-hidden
+    (current_user.rs:1203,1226), view_user_route profile-hidden
     (routes/users.rs:673), setting another user's topic notification
     level (routes/topic_notifications.rs:56)
 157. `feat/groups-rest` M: group flair uploads (site.rs:746; groups.rs:32;
@@ -2114,7 +2116,7 @@ have handlers now.
     (notification_create.rs:281; topic_view/web_hook.rs:531); group
     permissions with categories are done (190a)
 158. `feat/shared-drafts` M: shared_drafts_category (topic_query.rs:371;
-    topic_guardian.rs:394,818) and publishing them
+    topic_guardian.rs:399,823) and publishing them
     (jobs/topic_timers.rs:132, TopicPublisher)
 159. `feat/tags-reads-rest` S: tags_listed_by_group
     (routes/tags.rs:661), tag list filters other than latest, top, hot
@@ -2217,7 +2219,7 @@ have handlers now.
     other locale trees recorded (scripts/record-i18n-tree) and the
     client's
 168. `feat/content-localization` M: content_localization_enabled
-    (search/mod.rs:710; current_user.rs:1089;
+    (search/mod.rs:710; current_user.rs:1090;
     routes/sidebar_sections.rs:319; bookmarks.rs:414; review_list.rs:181;
     routes/drafts.rs:330; plugins/reactions/users.rs:665;
     plugins/solved/by_user.rs:47; about.rs:299; posting/rebake.rs:52;
@@ -4957,9 +4959,12 @@ Logged-in readers, no writes yet.
       `list_for`'s status, type, topic, category, user, priority and sort
       filters, paging, the side-loaded users, topics, scores, score types,
       bundled actions and histories, and the meta. Measured against Rails.
-      Refused: moderators and category group moderators, other reviewable
-      types, notes, claims, score reasons, penalized authors, the date and
-      additional filters
+      Refused: category group moderators (149), other reviewable types, score
+      reasons, penalized authors, the date and additional filters.
+      Moderators see `Reviewable.viewable_by`: what moderators may review
+      outside categories and messages they can't see and posts they can't
+      review, in the list, the counts, the user menu and the actions
+      (write cases review/moderator_*)
 - [x] Topic status (PUT /t/:id/status): close, open, archive, unarchive,
       unlist, relist, pin, unpin, pin globally, with the small action post
       (PostCreator's small action path), featured topics, the category's
