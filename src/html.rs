@@ -845,9 +845,12 @@ impl Site {
         }
         self.chrome.show_footer = true;
         self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
+        // The theme tables' state: the html fields, sprite, palettes and
+        // theme stylesheets below are kept until it changes.
+        let theme_state = crate::theme_cache::read(&mut *conn).await?;
         // theme_lookup and customHTML: the default theme's html fields for
         // the user agent's device.
-        self.chrome.theme_html = crate::theme_html::lookup(
+        self.chrome.theme_html = crate::theme_html::lookup_at(
             &mut *conn,
             &crate::themes::Ctx {
                 settings,
@@ -857,6 +860,7 @@ impl Site {
             },
             Some(settings.get("default_theme_id")?.to_i()),
             crate::mobile::on_mobile_device(),
+            &theme_state,
         )
         .await?;
         self.chrome.admin_stylesheet = guardian.is_staff();
@@ -961,7 +965,9 @@ impl Site {
         );
         self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
         let theme_id = Some(settings.get("default_theme_id")?.to_i());
-        let sprite = crate::svg_sprite::for_site(&mut *conn, state, settings, theme_id).await?;
+        let sprite =
+            crate::svg_sprite::for_site_at(&mut *conn, state, settings, theme_id, &theme_state)
+                .await?;
         self.chrome.svg_sprite_path = format!(
             "{}{}",
             self.base_path,
@@ -992,13 +998,14 @@ impl Site {
             dark_scheme_id: o.dark_scheme_id,
             interface_color_mode: o.interface_color_mode,
         });
-        self.chrome.color_head = crate::color_mode::head(
+        self.chrome.color_head = crate::color_mode::head_at(
             &mut *conn,
             settings,
             &state.i18n,
             &self.base_path,
             &crate::color_mode::cookies(),
             color_options.as_ref(),
+            &theme_state,
         )
         .await?;
         // The theme targets' stylesheets of the default theme and its
@@ -1021,7 +1028,7 @@ impl Site {
                 }
             }
             let rtl = matches!(locale.as_str(), "ar" | "fa_IR" | "he" | "ug" | "ur");
-            self.chrome.theme_stylesheets = crate::stylesheet::manager::link_tags(
+            self.chrome.theme_stylesheets = crate::stylesheet::manager::link_tags_at(
                 &mut *conn,
                 &crate::stylesheet::manager::Cx {
                     config: &state.config,
@@ -1029,6 +1036,7 @@ impl Site {
                 },
                 theme_id,
                 rtl,
+                &theme_state,
             )
             .await?;
         }

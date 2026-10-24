@@ -25,7 +25,7 @@ pub const LIGHT_MODE: i32 = 2;
 pub const DARK_MODE: i32 = 3;
 
 /// The request's cookies the helpers read, as Rack decodes them.
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Hash)]
 pub struct Cookies {
     pub forced_color_mode: Option<String>,
     pub color_scheme_id: Option<String>,
@@ -65,7 +65,7 @@ pub async fn layer(request: Request, next: Next) -> Response {
 }
 
 /// The member's user_options columns the helpers read.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Options {
     pub color_scheme_id: Option<i32>,
     pub dark_scheme_id: Option<i32>,
@@ -241,6 +241,29 @@ fn link_tag(href: &str, media: &str, class: &str, scheme_id: Option<i32>) -> Str
         "<link href=\"{}\" media=\"{media}\" rel=\"stylesheet\" class=\"{class}\"{id}/>",
         escape(href)
     )
+}
+
+/// [`head`] kept per site, cookies and options until the theme tables, the
+/// palettes or the site settings change (crate::theme_cache), as
+/// Stylesheet::Manager keeps the color scheme stylesheets' details.
+pub async fn head_at(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    i18n: &I18n,
+    base_path: &str,
+    cookies: &Cookies,
+    options: Option<&Options>,
+    at: &crate::theme_cache::Fingerprint,
+) -> Result<Head, crate::AppError> {
+    type Key = (String, Cookies, Option<Options>);
+    static KEPT: crate::theme_cache::Kept<Key, Head> = crate::theme_cache::Kept::new();
+    let key = (base_path.to_string(), cookies.clone(), options.copied());
+    if let Some(head) = KEPT.get(at, key.clone()) {
+        return Ok(head);
+    }
+    let head = head(conn, settings, i18n, base_path, cookies, options).await?;
+    KEPT.put(at, key, head.clone());
+    Ok(head)
 }
 
 /// The helpers' answers for the request: the member's options (None for a

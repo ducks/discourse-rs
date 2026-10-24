@@ -215,61 +215,40 @@ async fn theme_icons(
 
 /// The site's sprite for a theme (`theme_id` None for none), kept per
 /// site and theme as SvgSprite keeps it in its DistributedCache, and
-/// built again only when what it is built from has changed.
-///
-/// Rails expires that cache (SvgSprite.expire_cache) when a badge, group,
-/// theme, theme field, theme modifier set, theme sprite or Boards column
-/// is saved, and when an icon setting changes. Here those tables, with
-/// the site settings and the child and remote themes transform_ids reads,
-/// give one fingerprint, read in a single query a page. A write from any
-/// path and in any process is seen by the next request, as the site
-/// settings' own cache sees its table change (SiteSettings::load). The
-/// cache is keyed by the database, so each site of a multisite process
-/// keeps its own.
+/// built again only when what it is built from has changed
+/// (crate::theme_cache). Rails expires that cache
+/// (SvgSprite.expire_cache) when a badge, group, theme, theme field,
+/// theme modifier set, theme sprite or Boards column is saved, and when an
+/// icon setting changes.
 pub async fn for_site(
     conn: &mut PgConnection,
     state: &crate::AppState,
     settings: &SiteSettings,
     theme_id: Option<i64>,
 ) -> Result<Arc<Built>, AppError> {
-    type Kept = HashMap<(String, Option<i64>), (String, Arc<Built>)>;
-    static KEPT: OnceLock<Mutex<Kept>> = OnceLock::new();
-    let (database, fingerprint): (String, String) =
-        sqlx::query_as(FINGERPRINT).fetch_one(&mut *conn).await?;
-    let key = (database, theme_id);
-    let kept = KEPT.get_or_init(Default::default);
-    if let Some((cached, built)) = kept.lock().expect("sprite cache").get(&key)
-        && *cached == fingerprint
-    {
-        return Ok(built.clone());
+    let at = crate::theme_cache::read(&mut *conn).await?;
+    for_site_at(conn, state, settings, theme_id, &at).await
+}
+
+/// [`for_site`] at the fingerprint the request already read.
+pub async fn for_site_at(
+    conn: &mut PgConnection,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    theme_id: Option<i64>,
+    at: &crate::theme_cache::Fingerprint,
+) -> Result<Arc<Built>, AppError> {
+    static KEPT: crate::theme_cache::Kept<Option<i64>, Arc<Built>> =
+        crate::theme_cache::Kept::new();
+    if let Some(built) = KEPT.get(at, theme_id) {
+        return Ok(built);
     }
     let store = crate::file_store::FileStore::for_site(&state.config, settings)?;
     let inputs = inputs(conn, &state.site_setting_defs, settings, &store, theme_id).await?;
     let built = build(&inputs);
-    let mut guard = kept.lock().expect("sprite cache");
-    if guard.len() >= 256 {
-        guard.clear();
-    }
-    guard.insert(key, (fingerprint, built.clone()));
+    KEPT.put(at, theme_id, built.clone());
     Ok(built)
 }
-
-/// The database, and what a site's sprite is built from as one string:
-/// each table's latest update and row count (theme_modifier_sets, which
-/// has no timestamps, by its svg_icons).
-const FINGERPRINT: &str = "SELECT current_database()::text, concat_ws('/', \
-     (SELECT max(updated_at)::text || count(*) FROM site_settings), \
-     (SELECT max(updated_at)::text || count(*) FROM badges), \
-     (SELECT max(updated_at)::text || count(*) FROM groups), \
-     (SELECT max(updated_at)::text || count(*) FROM themes), \
-     (SELECT max(updated_at)::text || count(*) FROM child_themes), \
-     (SELECT max(updated_at)::text || count(*) FROM remote_themes), \
-     (SELECT max(updated_at)::text || count(*) FROM theme_fields), \
-     (SELECT max(updated_at)::text || count(*) FROM theme_settings), \
-     (SELECT max(updated_at)::text || count(*) FROM theme_svg_sprites), \
-     (SELECT md5(string_agg(theme_id || ':' || coalesce(svg_icons::text, ''), ',' \
-        ORDER BY theme_id)) FROM theme_modifier_sets), \
-     (SELECT max(updated_at)::text || count(*) FROM discourse_kanban_columns))";
 
 /// What a site's sprite is built from for a theme.
 pub struct Inputs {
