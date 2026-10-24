@@ -2,9 +2,10 @@
  * The review queue's page (/review), ported from common/base/review.scss
  * (the item, its header, meta, post, timeline, note form, aside and
  * filters) and common/base/reviewables.scss (the page, its container and
- * filters), as the reference compiles them. The modals' rules
- * (revise-and-reject, explain), the legacy .reviewable-item and score
- * tables, the topics and settings pages are left out with what draws them.
+ * filters), as the reference compiles them, and the revise modal's
+ * (revise-and-reject-post-reviewable.scss). The explain modal, the legacy
+ * .reviewable-item and score tables, the topics and settings pages are left
+ * out with what draws them.
  */
 
 .review-item {
@@ -947,4 +948,87 @@
 .editable-fields .editable-field .reviewable-input-textarea {
   width: 100%;
   height: 10em;
+}
+
+/*
+ * ReviseAndRejectPostReviewable (common/base/revise-and-reject-post-reviewable.scss):
+ * the queued post as the legacy .reviewable-item it extends, then the
+ * modal's own rules.
+ */
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post {
+  background: var(--primary-very-low);
+  padding: 1.5rem;
+  margin-block: 3rem;
+  padding-bottom: 1em;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post:first-of-type {
+  margin-top: var(--space-4);
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .show-raw-email {
+  color: var(--primary-medium);
+  font-size: var(--font-down-2);
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .created-by {
+  margin-right: 1em;
+  padding-top: .35em;
+}
+
+@media (width < 40rem) {
+  .d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .created-by {
+    float: left;
+    margin-bottom: 1em;
+  }
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body {
+  position: relative;
+  margin-top: .5em;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body p {
+  margin-bottom: 0;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body aside {
+  margin: 0 0 1em 0;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body pre,
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body code {
+  word-break: break-all;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .topic-statuses {
+  font-size: var(--font-up-2);
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__optional {
+  margin-left: .5em;
+  color: var(--primary-low-mid);
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__custom-reason {
+  width: 100%;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post {
+  padding: 1em;
+  margin: 0 0 1em 0;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body {
+  margin: 0;
+}
+
+.d-modal.revise-and-reject-reviewable .revise-and-reject-reviewable__queued-post .post-body p {
+  margin: 0;
 }

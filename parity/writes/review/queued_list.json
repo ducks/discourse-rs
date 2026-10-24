@@ -1,0 +1,2194 @@
+{
+  "name": "queued_list",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/review.json"
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost&sort_order=created_at"
+    }
+  ],
+  "started_at": "2026-10-24T00:31:54.273586",
+  "transaction_started_at": "2026-10-24T00:31:52.149515",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "reviewables": [
+          {
+            "id": 9505,
+            "type": "ReviewablePost",
+            "type_source": "core",
+            "topic_id": 35,
+            "topic_url": "http://localhost:3051/t/parity-fixture-replies-and-posters/35",
+            "target_type": "Post",
+            "target_id": 36,
+            "target_url": "http://localhost:3051/t/parity-fixture-replies-and-posters/35/2",
+            "target_created_at": "2026-09-30T07:28:29.079Z",
+            "topic_tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "category_id": 4,
+            "created_at": "2026-10-02T10:04:00.000Z",
+            "can_edit": false,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 2,
+            "created_from_flag": false,
+            "status": 0,
+            "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
+            "raw": "Reply one from user1, also long enough to pass the minimum length check.",
+            "reply_count": 0,
+            "post_updated_at": "2026-09-30T07:28:29.079Z",
+            "post_version": 1,
+            "post_id": 36,
+            "target_created_by_id": 3,
+            "created_by_id": -1,
+            "editable_fields": [],
+            "reviewable_score_ids": [
+              9505
+            ],
+            "bundled_action_ids": [
+              "9505-post-approve",
+              "9505-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9505
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9504,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "topic_id": 38,
+            "topic_url": "http://localhost:3051/t/parity-fixture-tagged-in-a-subcategory/38",
+            "target_type": null,
+            "target_id": null,
+            "target_url": "http://localhost:3051/t/parity-fixture-tagged-in-a-subcategory/38",
+            "topic_tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "category_id": 34,
+            "created_at": "2026-10-02T10:03:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": null,
+            "cooked": "<p>This reply says badword and waits.</p>",
+            "payload": {
+              "raw": "This reply says badword and waits.",
+              "is_poll": true,
+              "tags": null
+            },
+            "target_created_by_id": 2,
+            "created_by_id": -1,
+            "editable_fields": [
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9504
+            ],
+            "bundled_action_ids": [
+              "9504-approve_post",
+              "9504-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9504
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9503,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "target_type": null,
+            "target_id": null,
+            "category_id": 34,
+            "created_at": "2026-10-02T10:02:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 2,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": "A tagged topic waiting in the queue",
+            "cooked": "<p>A tagged topic in a category that needs approval.</p>",
+            "removed_topic_id": null,
+            "payload": {
+              "raw": "A tagged topic in a category that needs approval.",
+              "title": "A tagged topic waiting in the queue",
+              "is_poll": true,
+              "typing_duration_msecs": 5000,
+              "composer_open_duration_msecs": 20000,
+              "tags": [
+                "howto",
+                "guide"
+              ]
+            },
+            "target_created_by_id": 4,
+            "created_by_id": -1,
+            "topic_id": null,
+            "editable_fields": [
+              {
+                "id": "payload.title",
+                "type": "text"
+              },
+              {
+                "id": "category_id",
+                "type": "category"
+              },
+              {
+                "id": "payload.tags",
+                "type": "tags"
+              },
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9503
+            ],
+            "bundled_action_ids": [
+              "9503-approve_post",
+              "9503-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9503
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9502,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "topic_id": 35,
+            "topic_url": "http://localhost:3051/t/parity-fixture-replies-and-posters/35",
+            "target_type": null,
+            "target_id": null,
+            "target_url": "http://localhost:3051/t/parity-fixture-replies-and-posters/35",
+            "topic_tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "category_id": 4,
+            "created_at": "2026-10-02T10:01:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 2,
+            "created_from_flag": false,
+            "status": 0,
+            "reply_to_post_number": 2,
+            "fancy_title": null,
+            "cooked": "<p>A queued reply with a <a href=\"https://example.com\" rel=\"noopener nofollow ugc\">link</a> in it.</p>",
+            "payload": {
+              "raw": "A queued reply with a [link](https://example.com) in it.",
+              "is_poll": true,
+              "typing_duration_msecs": 1500,
+              "composer_open_duration_msecs": 9000,
+              "tags": null
+            },
+            "target_created_by_id": 3,
+            "created_by_id": -1,
+            "editable_fields": [
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9502
+            ],
+            "bundled_action_ids": [
+              "9502-approve_post",
+              "9502-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9502
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9501,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "target_type": null,
+            "target_id": null,
+            "category_id": 4,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": "A queued topic &amp; &lt;b&gt;its&lt;/b&gt; title",
+            "cooked": "<p>The first post of a <strong>new topic</strong> that waits for approval <img src=\"/images/emoji/twitter/wave.png?v=15\" title=\":wave:\" class=\"emoji\" alt=\":wave:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>",
+            "removed_topic_id": null,
+            "payload": {
+              "raw": "The first post of a **new topic** that waits for approval :wave:",
+              "title": "A queued topic & <b>its</b> title",
+              "is_poll": true,
+              "typing_duration_msecs": 4000,
+              "composer_open_duration_msecs": 12000,
+              "tags": null
+            },
+            "target_created_by_id": 2,
+            "created_by_id": -1,
+            "topic_id": null,
+            "editable_fields": [
+              {
+                "id": "payload.title",
+                "type": "text"
+              },
+              {
+                "id": "category_id",
+                "type": "category"
+              },
+              {
+                "id": "payload.tags",
+                "type": "tags"
+              },
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9501
+            ],
+            "bundled_action_ids": [
+              "9501-approve_post",
+              "9501-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9501
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          }
+        ],
+        "meta": {
+          "ids": null,
+          "status": "pending",
+          "category_id": null,
+          "topic_id": null,
+          "additional_filters": {},
+          "priority": null,
+          "username": null,
+          "reviewed_by": null,
+          "claimed_by": null,
+          "from_date": null,
+          "to_date": null,
+          "type": null,
+          "sort_order": null,
+          "flagged_by": null,
+          "score_type": null,
+          "total_rows_reviewables": 5,
+          "types": {
+            "created_by": "user",
+            "target_created_by": "user",
+            "target_deleted_by": "user",
+            "reviewed_by": "user",
+            "claimed_by": "claimed_by"
+          },
+          "reviewable_types": [
+            "ReviewableFlaggedPost",
+            "ReviewableQueuedPost",
+            "ReviewableUser",
+            "ReviewablePost",
+            "Chat::ReviewableMessage"
+          ],
+          "unknown_reviewable_types_and_sources": [],
+          "score_types": [
+            {
+              "id": 3,
+              "name": "Off-Topic"
+            },
+            {
+              "id": 4,
+              "name": "Inappropriate"
+            },
+            {
+              "id": 8,
+              "name": "Spam"
+            },
+            {
+              "id": 10,
+              "name": "Illegal"
+            },
+            {
+              "id": 7,
+              "name": "Something Else"
+            },
+            {
+              "id": 9,
+              "name": "Needs Approval"
+            }
+          ],
+          "reviewable_count": 5,
+          "unseen_reviewable_count": 5
+        },
+        "users": [
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 1,
+            "ip_address": "172.17.0.1",
+            "email": "user1@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:16.250Z",
+            "trust_level": 2,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "email": "user0@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 0,
+            "ip_address": null,
+            "email": "user2@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:16.733Z",
+            "trust_level": 2,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 1,
+            "ip_address": "172.17.0.1",
+            "email": "user1@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:16.250Z",
+            "trust_level": 2,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "email": "user0@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "reviewable_scores": [
+          {
+            "id": 9505,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason_type": null,
+            "reason_data": null,
+            "created_at": "2026-10-02T10:04:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9504,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>This post included a Watched Word, the flagged word is: badword. Check the <a href=\"http://localhost:3051/admin/customize/watched_words\">watched word settings</a> for more.</p>",
+            "reason_type": "watched_word",
+            "reason_data": [
+              "badword"
+            ],
+            "created_at": "2026-10-02T10:03:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9503,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>Posts in this category require manual approval by staff. See the <a href=\"http://localhost:3051/c/sub-general/edit/settings\">category settings</a>.</p>",
+            "reason_type": "category",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:02:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9502,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>New user typed their first post suspiciously fast (1.5 seconds), suspected bot or spammer behavior. See <a href=\"http://localhost:3051/admin/site_settings/category/all_results?filter=first_post_typing_time\">first post typing time</a>.</p>",
+            "reason_type": "fast_typer",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:01:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9501,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>The first few posts from every user must be approved by staff. See <a href=\"http://localhost:3051/admin/site_settings/category/all_results?filter=approve_post_count\">approve post count</a>.</p>",
+            "reason_type": "post_count",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          }
+        ],
+        "score_types": [
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          }
+        ],
+        "bundled_actions": [
+          {
+            "id": "9505-post-approve",
+            "action_ids": [
+              "9505-post-approve"
+            ]
+          },
+          {
+            "id": "9505-reject-post",
+            "icon": "xmark",
+            "label": "No",
+            "action_ids": [
+              "9505-post-reject_and_delete",
+              "9505-post-reject_and_silence",
+              "9505-post-reject_and_suspend"
+            ]
+          },
+          {
+            "id": "9504-approve_post",
+            "action_ids": [
+              "9504-approve_post"
+            ]
+          },
+          {
+            "id": "9504-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9504-reject_post",
+              "9504-revise_and_reject_post",
+              "9504-reject_and_silence",
+              "9504-reject_and_suspend",
+              "9504-delete_user",
+              "9504-delete_user_block"
+            ]
+          },
+          {
+            "id": "9503-approve_post",
+            "action_ids": [
+              "9503-approve_post"
+            ]
+          },
+          {
+            "id": "9503-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9503-reject_post",
+              "9503-revise_and_reject_post",
+              "9503-reject_and_silence",
+              "9503-reject_and_suspend",
+              "9503-delete_user",
+              "9503-delete_user_block"
+            ]
+          },
+          {
+            "id": "9502-approve_post",
+            "action_ids": [
+              "9502-approve_post"
+            ]
+          },
+          {
+            "id": "9502-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9502-reject_post",
+              "9502-revise_and_reject_post",
+              "9502-reject_and_silence",
+              "9502-reject_and_suspend",
+              "9502-delete_user",
+              "9502-delete_user_block"
+            ]
+          },
+          {
+            "id": "9501-approve_post",
+            "action_ids": [
+              "9501-approve_post"
+            ]
+          },
+          {
+            "id": "9501-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9501-reject_post",
+              "9501-revise_and_reject_post",
+              "9501-reject_and_silence",
+              "9501-reject_and_suspend",
+              "9501-delete_user",
+              "9501-delete_user_block"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "id": "9505-post-approve",
+            "action_name": "post-approve",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9505-post-reject_and_delete",
+            "action_name": "post-reject_and_delete",
+            "icon": "trash-can",
+            "button_class": null,
+            "label": "Reject and Delete the post",
+            "server_action": "reject_and_delete",
+            "completed_message": "Post rejected and deleted."
+          },
+          {
+            "id": "9505-post-reject_and_silence",
+            "action_name": "post-reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9505-post-reject_and_suspend",
+            "action_name": "post-reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9504-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9504-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9504-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9504-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9504-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9504-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9504-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          },
+          {
+            "id": "9503-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9503-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9503-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9503-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9503-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9503-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user2?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9503-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user2?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          },
+          {
+            "id": "9502-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9502-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9502-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9502-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9502-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9502-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user1?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9502-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user1?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          },
+          {
+            "id": "9501-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9501-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9501-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9501-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9501-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9501-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9501-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          }
+        ],
+        "reviewable_notes": [],
+        "reviewable_histories": [
+          {
+            "id": 9505,
+            "created_at": "2026-10-02T10:04:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9504,
+            "created_at": "2026-10-02T10:03:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9503,
+            "created_at": "2026-10-02T10:02:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9502,
+            "created_at": "2026-10-02T10:01:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9501,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          }
+        ],
+        "claimed_bies": [],
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "reviewables": [
+          {
+            "id": 9504,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "topic_id": 38,
+            "topic_url": "http://localhost:3051/t/parity-fixture-tagged-in-a-subcategory/38",
+            "target_type": null,
+            "target_id": null,
+            "target_url": "http://localhost:3051/t/parity-fixture-tagged-in-a-subcategory/38",
+            "topic_tags": [
+              {
+                "id": 1,
+                "name": "howto",
+                "slug": "howto"
+              }
+            ],
+            "category_id": 34,
+            "created_at": "2026-10-02T10:03:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": null,
+            "cooked": "<p>This reply says badword and waits.</p>",
+            "payload": {
+              "raw": "This reply says badword and waits.",
+              "is_poll": true,
+              "tags": null
+            },
+            "target_created_by_id": 2,
+            "created_by_id": -1,
+            "editable_fields": [
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9504
+            ],
+            "bundled_action_ids": [
+              "9504-approve_post",
+              "9504-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9504
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9503,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "target_type": null,
+            "target_id": null,
+            "category_id": 34,
+            "created_at": "2026-10-02T10:02:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 2,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": "A tagged topic waiting in the queue",
+            "cooked": "<p>A tagged topic in a category that needs approval.</p>",
+            "removed_topic_id": null,
+            "payload": {
+              "raw": "A tagged topic in a category that needs approval.",
+              "title": "A tagged topic waiting in the queue",
+              "is_poll": true,
+              "typing_duration_msecs": 5000,
+              "composer_open_duration_msecs": 20000,
+              "tags": [
+                "howto",
+                "guide"
+              ]
+            },
+            "target_created_by_id": 4,
+            "created_by_id": -1,
+            "topic_id": null,
+            "editable_fields": [
+              {
+                "id": "payload.title",
+                "type": "text"
+              },
+              {
+                "id": "category_id",
+                "type": "category"
+              },
+              {
+                "id": "payload.tags",
+                "type": "tags"
+              },
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9503
+            ],
+            "bundled_action_ids": [
+              "9503-approve_post",
+              "9503-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9503
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9502,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "topic_id": 35,
+            "topic_url": "http://localhost:3051/t/parity-fixture-replies-and-posters/35",
+            "target_type": null,
+            "target_id": null,
+            "target_url": "http://localhost:3051/t/parity-fixture-replies-and-posters/35",
+            "topic_tags": [
+              {
+                "id": 2,
+                "name": "guide",
+                "slug": "guide"
+              }
+            ],
+            "category_id": 4,
+            "created_at": "2026-10-02T10:01:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 2,
+            "created_from_flag": false,
+            "status": 0,
+            "reply_to_post_number": 2,
+            "fancy_title": null,
+            "cooked": "<p>A queued reply with a <a href=\"https://example.com\" rel=\"noopener nofollow ugc\">link</a> in it.</p>",
+            "payload": {
+              "raw": "A queued reply with a [link](https://example.com) in it.",
+              "is_poll": true,
+              "typing_duration_msecs": 1500,
+              "composer_open_duration_msecs": 9000,
+              "tags": null
+            },
+            "target_created_by_id": 3,
+            "created_by_id": -1,
+            "editable_fields": [
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9502
+            ],
+            "bundled_action_ids": [
+              "9502-approve_post",
+              "9502-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9502
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          },
+          {
+            "id": 9501,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "target_type": null,
+            "target_id": null,
+            "category_id": 4,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 0,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": "A queued topic &amp; &lt;b&gt;its&lt;/b&gt; title",
+            "cooked": "<p>The first post of a <strong>new topic</strong> that waits for approval <img src=\"/images/emoji/twitter/wave.png?v=15\" title=\":wave:\" class=\"emoji\" alt=\":wave:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>",
+            "removed_topic_id": null,
+            "payload": {
+              "raw": "The first post of a **new topic** that waits for approval :wave:",
+              "title": "A queued topic & <b>its</b> title",
+              "is_poll": true,
+              "typing_duration_msecs": 4000,
+              "composer_open_duration_msecs": 12000,
+              "tags": null
+            },
+            "target_created_by_id": 2,
+            "created_by_id": -1,
+            "topic_id": null,
+            "editable_fields": [
+              {
+                "id": "payload.title",
+                "type": "text"
+              },
+              {
+                "id": "category_id",
+                "type": "category"
+              },
+              {
+                "id": "payload.tags",
+                "type": "tags"
+              },
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9501
+            ],
+            "bundled_action_ids": [
+              "9501-approve_post",
+              "9501-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9501
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          }
+        ],
+        "meta": {
+          "ids": null,
+          "status": "pending",
+          "category_id": null,
+          "topic_id": null,
+          "additional_filters": {},
+          "priority": null,
+          "username": null,
+          "reviewed_by": null,
+          "claimed_by": null,
+          "from_date": null,
+          "to_date": null,
+          "type": "ReviewableQueuedPost",
+          "sort_order": "created_at",
+          "flagged_by": null,
+          "score_type": null,
+          "total_rows_reviewables": 4,
+          "types": {
+            "created_by": "user",
+            "target_created_by": "user",
+            "target_deleted_by": "user",
+            "reviewed_by": "user",
+            "claimed_by": "claimed_by"
+          },
+          "reviewable_types": [
+            "ReviewableFlaggedPost",
+            "ReviewableQueuedPost",
+            "ReviewableUser",
+            "ReviewablePost",
+            "Chat::ReviewableMessage"
+          ],
+          "unknown_reviewable_types_and_sources": [],
+          "score_types": [
+            {
+              "id": 3,
+              "name": "Off-Topic"
+            },
+            {
+              "id": 4,
+              "name": "Inappropriate"
+            },
+            {
+              "id": 8,
+              "name": "Spam"
+            },
+            {
+              "id": 10,
+              "name": "Illegal"
+            },
+            {
+              "id": 7,
+              "name": "Something Else"
+            },
+            {
+              "id": 9,
+              "name": "Needs Approval"
+            }
+          ],
+          "reviewable_count": 5,
+          "unseen_reviewable_count": 5
+        },
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "email": "user0@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 0,
+            "ip_address": null,
+            "email": "user2@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:16.733Z",
+            "trust_level": 2,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 1,
+            "ip_address": "172.17.0.1",
+            "email": "user1@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:16.250Z",
+            "trust_level": 2,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "email": "user0@example.com",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          }
+        ],
+        "topics": [
+          {
+            "fancy_title": "Parity fixture: tagged in a subcategory",
+            "id": 38,
+            "title": "Parity fixture: tagged in a subcategory",
+            "slug": "parity-fixture-tagged-in-a-subcategory",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:29.543Z",
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "bumped": true,
+            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          },
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 35,
+            "title": "Parity fixture: replies and posters",
+            "slug": "parity-fixture-replies-and-posters",
+            "posts_count": 5,
+            "reply_count": 0,
+            "highest_post_number": 5,
+            "image_url": null,
+            "created_at": "2026-09-30T07:28:28.864Z",
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "bumped": true,
+            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "archetype": "regular",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "has_accepted_answer": false
+          }
+        ],
+        "reviewable_scores": [
+          {
+            "id": 9504,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>This post included a Watched Word, the flagged word is: badword. Check the <a href=\"http://localhost:3051/admin/customize/watched_words\">watched word settings</a> for more.</p>",
+            "reason_type": "watched_word",
+            "reason_data": [
+              "badword"
+            ],
+            "created_at": "2026-10-02T10:03:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9503,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>Posts in this category require manual approval by staff. See the <a href=\"http://localhost:3051/c/sub-general/edit/settings\">category settings</a>.</p>",
+            "reason_type": "category",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:02:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9502,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>New user typed their first post suspiciously fast (1.5 seconds), suspected bot or spammer behavior. See <a href=\"http://localhost:3051/admin/site_settings/category/all_results?filter=first_post_typing_time\">first post typing time</a>.</p>",
+            "reason_type": "fast_typer",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:01:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          },
+          {
+            "id": 9501,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>The first few posts from every user must be approved by staff. See <a href=\"http://localhost:3051/admin/site_settings/category/all_results?filter=approve_post_count\">approve post count</a>.</p>",
+            "reason_type": "post_count",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          }
+        ],
+        "score_types": [
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          },
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          }
+        ],
+        "bundled_actions": [
+          {
+            "id": "9504-approve_post",
+            "action_ids": [
+              "9504-approve_post"
+            ]
+          },
+          {
+            "id": "9504-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9504-reject_post",
+              "9504-revise_and_reject_post",
+              "9504-reject_and_silence",
+              "9504-reject_and_suspend",
+              "9504-delete_user",
+              "9504-delete_user_block"
+            ]
+          },
+          {
+            "id": "9503-approve_post",
+            "action_ids": [
+              "9503-approve_post"
+            ]
+          },
+          {
+            "id": "9503-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9503-reject_post",
+              "9503-revise_and_reject_post",
+              "9503-reject_and_silence",
+              "9503-reject_and_suspend",
+              "9503-delete_user",
+              "9503-delete_user_block"
+            ]
+          },
+          {
+            "id": "9502-approve_post",
+            "action_ids": [
+              "9502-approve_post"
+            ]
+          },
+          {
+            "id": "9502-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9502-reject_post",
+              "9502-revise_and_reject_post",
+              "9502-reject_and_silence",
+              "9502-reject_and_suspend",
+              "9502-delete_user",
+              "9502-delete_user_block"
+            ]
+          },
+          {
+            "id": "9501-approve_post",
+            "action_ids": [
+              "9501-approve_post"
+            ]
+          },
+          {
+            "id": "9501-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9501-reject_post",
+              "9501-revise_and_reject_post",
+              "9501-reject_and_silence",
+              "9501-reject_and_suspend",
+              "9501-delete_user",
+              "9501-delete_user_block"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "id": "9504-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9504-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9504-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9504-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9504-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9504-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9504-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          },
+          {
+            "id": "9503-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9503-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9503-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9503-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9503-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9503-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user2?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9503-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user2?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          },
+          {
+            "id": "9502-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9502-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9502-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9502-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9502-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9502-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user1?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9502-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user1?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          },
+          {
+            "id": "9501-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9501-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9501-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9501-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9501-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9501-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9501-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          }
+        ],
+        "reviewable_notes": [],
+        "reviewable_histories": [
+          {
+            "id": 9504,
+            "created_at": "2026-10-02T10:03:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9503,
+            "created_at": "2026-10-02T10:02:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9502,
+            "created_at": "2026-10-02T10:01:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 9501,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          }
+        ],
+        "claimed_bies": [],
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 208,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EMXvO4UIzyxDxXEwqfR82tdC5og=",
+            "created_at": "2026-10-24T00:31:53.13971",
+            "rotated_at": "2026-10-24T00:31:53.131153",
+            "updated_at": "2026-10-24T00:31:53.13971",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "EMXvO4UIzyxDxXEwqfR82tdC5og=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 208,
+            "seen_at": "2026-10-24T00:31:54.287854",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EMXvO4UIzyxDxXEwqfR82tdC5og=",
+            "created_at": "2026-10-24T00:31:53.13971",
+            "rotated_at": "2026-10-24T00:31:53.131153",
+            "updated_at": "2026-10-24T00:31:53.13971",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "EMXvO4UIzyxDxXEwqfR82tdC5og=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9501, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, NULL, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"The first post of a **new topic** that waits for approval :wave:\", \"tags\": null, \"title\": \"A queued topic & <b>its</b> title\", \"is_poll\": true, \"typing_duration_msecs\": 4000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9502, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A queued reply with a [link](https://example.com) in it.\", \"tags\": null, \"reply_to_post_number\": 2, \"is_poll\": true, \"typing_duration_msecs\": 1500, \"composer_open_duration_msecs\": 9000}', 0, '2026-10-02 10:01:00', TRUE, FALSE, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9503, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 34, NULL, 6, FALSE, NULL, NULL, 4, '{\"raw\": \"A tagged topic in a category that needs approval.\", \"tags\": [\"howto\", \"guide\"], \"title\": \"A tagged topic waiting in the queue\", \"is_poll\": true, \"typing_duration_msecs\": 5000, \"composer_open_duration_msecs\": 20000}', 0, '2026-10-02 10:02:00', TRUE, FALSE, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9504, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 34, 38, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"This reply says badword and waits.\", \"tags\": null, \"is_poll\": true}', 0, '2026-10-02 10:03:00', TRUE, FALSE, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9505, 'ReviewablePost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, 36, 'Post', 3, '{}', 0, '2026-10-02 10:04:00', TRUE, FALSE, '2026-10-02 10:04:00', '2026-10-02 10:04:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, context, created_at, updated_at) VALUES (9501, 9501, -1, 9, 0, 6, 0, 0, 'post_count', NULL, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9502, 9502, -1, 9, 0, 6, 0, 0, 'fast_typer', NULL, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9503, 9503, -1, 9, 0, 6, 0, 0, 'category', NULL, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9504, 9504, -1, 9, 0, 6, 0, 0, 'watched_word', 'badword', '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9505, 9505, -1, 9, 0, 6, 0, 0, NULL, NULL, '2026-10-02 10:04:00', '2026-10-02 10:04:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9501, 9501, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9502, 9502, 0, 0, -1, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9503, 9503, 0, 0, -1, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9504, 9504, 0, 0, -1, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9505, 9505, 0, 0, -1, '2026-10-02 10:04:00', '2026-10-02 10:04:00')",
+    "UPDATE user_stats SET pending_posts_count = 2 WHERE user_id = 2",
+    "UPDATE user_stats SET pending_posts_count = 1 WHERE user_id IN (3, 4)"
+  ],
+  "recorded_from": {
+    "case": "8038c0939b9d9d1ffb003a1d95f36e58d1c5c5883ef4945dee151439e358e757",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,15 +1,19 @@
 //! The review queue: ReviewablesController#index as `Reviewable.list_for`
-//! pages it, ReviewableFlaggedPostSerializer (with ReviewableSerializer)
-//! and the records it side-loads (users, topics, scores, score types,
-//! bundled actions and their actions, notes, histories, claims), and the
-//! meta the controller adds.
+//! pages it, each reviewable through its serializer (with
+//! ReviewableSerializer): ReviewableFlaggedPostSerializer,
+//! ReviewableQueuedPostSerializer (a post held for approval: its payload,
+//! the raw cooked, the editable fields) and ReviewablePostSerializer
+//! (review_every_post), with the records they side-load (users, topics,
+//! scores, score types, bundled actions and their actions, notes,
+//! histories, claims), and the meta the controller adds.
 //!
 //! Viewers see `Reviewable.viewable_by` (reviewables.rs). Refused: category
-//! group moderators (before the list), reviewable types other than
-//! flagged posts on a page, the `ids`, date and additional filters, score
-//! reasons other than watched words and conversations, authors under a
-//! penalty, posts the user deleted, potential spam and illegal content
-//! (the delete user actions), bot users, and content localization.
+//! group moderators (before the list), user reviewables (must_approve_users)
+//! and plugin ones on a page, the `ids`, date and additional filters, score
+//! conversations, watched word scores without their words, reasons whose
+//! text the restricted cook would change, authors under a penalty, posts
+//! the user deleted, potential spam and illegal content (the delete user
+//! actions), bot users, and content localization.
 
 use std::collections::HashSet;
 
@@ -19,6 +23,7 @@ use sqlx::PgConnection;
 
 use crate::guardian::Guardian;
 use crate::params;
+use crate::pretty_text::Host;
 use crate::topic_list::{Mode, TopicListSerializer, time_json};
 use crate::topic_query::{TOPIC_COLUMNS, TopicRow};
 use crate::url::Urls;
@@ -165,6 +170,7 @@ async fn min_score(
 pub async fn index(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
+    host: &Host,
     guardian: &Guardian,
     p: &Map<String, Value>,
 ) -> Result<Listed, AppError> {
@@ -341,7 +347,8 @@ pub async fn index(
     let mut out = Out::default();
     let mut reviewables = Vec::new();
     for id in ids {
-        reviewables.push(serialize(&mut *conn, ctx, guardian, id, &mut out, false).await?);
+        reviewables
+            .push(serialize(&mut *conn, ctx, guardian, id, &mut out, false, Some(host)).await?);
     }
 
     // meta: the filters as the controller holds them, then the rest.
@@ -474,6 +481,15 @@ fn type_title(ctx: &Ctx<'_>, t: &ScoreType) -> String {
         .unwrap_or_else(|| t.name.clone())
 }
 
+/// The reviewable types the queue serializes: ReviewableFlaggedPost,
+/// ReviewableQueuedPost and ReviewablePost (review_every_post).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Kind {
+    Flagged,
+    Queued,
+    Post,
+}
+
 /// What a page side-loads, in the order the serializers add it.
 #[derive(Default)]
 struct Out {
@@ -523,6 +539,7 @@ struct Reviewable {
     target_created_by_id: Option<i32>,
     version: i32,
     created_at: NaiveDateTime,
+    payload: Option<Value>,
 }
 
 #[derive(sqlx::FromRow)]
@@ -543,8 +560,9 @@ struct Post {
     version: i32,
 }
 
-/// ReviewableFlaggedPostSerializer for one reviewable, its side-loads
-/// added to `out`.
+/// `reviewable.serializer` for one reviewable (ReviewableFlaggedPostSerializer,
+/// ReviewableQueuedPostSerializer or ReviewablePostSerializer), its
+/// side-loads added to `out`. `host` cooks a queued post's raw.
 async fn serialize(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -552,6 +570,7 @@ async fn serialize(
     id: i64,
     out: &mut Out,
     web_hook: bool,
+    host: Option<&Host>,
 ) -> Result<Value, AppError> {
     let s = ctx.settings;
     let urls = Urls {
@@ -560,16 +579,30 @@ async fn serialize(
     };
     let r: Reviewable = sqlx::query_as(
         "SELECT id, type, type_source, status, created_by_id, category_id, topic_id, score, potential_spam, \
-                potentially_illegal, target_id, target_type, target_created_by_id, version, created_at \
+                potentially_illegal, target_id, target_type, target_created_by_id, version, created_at, \
+                payload::json AS payload \
          FROM reviewables WHERE id = $1",
     )
     .bind(id)
     .fetch_one(&mut *conn)
     .await?;
-    if r.kind != "ReviewableFlaggedPost" {
-        return Err(Unsupported("reviewables other than flagged posts in the queue").into());
+    let kind = match r.kind.as_str() {
+        "ReviewableFlaggedPost" => Kind::Flagged,
+        "ReviewableQueuedPost" => Kind::Queued,
+        "ReviewablePost" => Kind::Post,
+        "ReviewableUser" => {
+            return Err(Unsupported(
+                "user reviewables (must_approve_users, suspect users) in the queue",
+            )
+            .into());
+        }
+        _ => return Err(Unsupported("plugin reviewables in the queue").into()),
+    };
+    if web_hook && kind != Kind::Flagged {
+        return Err(Unsupported("web hook payloads of queued and reviewed posts").into());
     }
-    if r.potential_spam || r.potentially_illegal == Some(true) {
+    // A flagged post's delete user actions (only it reads the flags).
+    if kind == Kind::Flagged && (r.potential_spam || r.potentially_illegal == Some(true)) {
         return Err(Unsupported("potential spam and illegal content in the queue").into());
     }
     let post: Option<Post> = match (r.target_type.as_deref(), r.target_id) {
@@ -691,45 +724,123 @@ async fn serialize(
         d.insert("category_id".into(), json!(cid));
     }
     d.insert("created_at".into(), json!(time_json(r.created_at)));
-    // editable_fields: a flagged post has none.
-    d.insert("can_edit".into(), json!(false));
+    // editable_fields (ReviewableQueuedPost#build_editable_fields; the
+    // others have none), and can_edit from them.
+    let editable = match kind {
+        Kind::Queued if r.status == crate::reviewables::PENDING => {
+            let mut fields = Vec::new();
+            if r.topic_id.is_none() {
+                fields.push(json!({ "id": "payload.title", "type": "text" }));
+                if guardian.is_staff() {
+                    fields.push(json!({ "id": "category_id", "type": "category" }));
+                }
+                fields.push(json!({ "id": "payload.tags", "type": "tags" }));
+            }
+            fields.push(json!({ "id": "payload.raw", "type": "editor" }));
+            fields
+        }
+        _ => Vec::new(),
+    };
+    d.insert("can_edit".into(), json!(!editable.is_empty()));
     d.insert("score".into(), json!(r.score));
     d.insert("version".into(), json!(r.version));
     d.insert(
         "target_created_by_trust_level".into(),
         json!(author.as_ref().map(|a| a.trust_level)),
     );
-    d.insert("created_from_flag".into(), json!(true));
+    d.insert("created_from_flag".into(), json!(kind == Kind::Flagged));
     d.insert("status".into(), json!(r.status));
-    match &post {
-        Some(p) => {
-            for (key, value) in [
-                ("cooked", json!(p.cooked)),
-                ("raw", json!(p.raw)),
-                ("reply_count", json!(p.reply_count)),
-            ] {
-                if !value.as_str().is_some_and(|v| v.trim().is_empty()) {
-                    d.insert(key.into(), value);
+    match kind {
+        Kind::Flagged | Kind::Post => match &post {
+            // target_attributes: each when present.
+            Some(p) => {
+                for (key, value) in [
+                    ("cooked", json!(p.cooked)),
+                    ("raw", json!(p.raw)),
+                    ("reply_count", json!(p.reply_count)),
+                ] {
+                    if !value.as_str().is_some_and(|v| v.trim().is_empty()) {
+                        d.insert(key.into(), value);
+                    }
                 }
+                if let Some(n) = p.reply_to_post_number {
+                    d.insert("reply_to_post_number".into(), json!(n));
+                }
+                if kind == Kind::Flagged
+                    && let Some(at) = p.deleted_at
+                {
+                    d.insert("deleted_at".into(), json!(time_json(at)));
+                }
+                d.insert("post_updated_at".into(), json!(time_json(p.updated_at)));
+                d.insert("post_version".into(), json!(p.version));
             }
-            if let Some(n) = p.reply_to_post_number {
+            None => {
+                d.insert("blank_post".into(), json!(true));
+                d.insert("post_updated_at".into(), Value::Null);
+                d.insert("post_version".into(), Value::Null);
+            }
+        },
+        Kind::Queued => {
+            let payload = r.payload.as_ref();
+            let field = |k: &str| payload.and_then(|p| p.get(k)).filter(|v| !v.is_null());
+            // reply_to_post_number: the payload's, to_i, when present.
+            if let Some(n) = field("reply_to_post_number").filter(|v| present(v)) {
+                let n = match n {
+                    Value::Number(n) => n.as_i64().unwrap_or_default(),
+                    Value::String(s) => crate::ruby::to_i(s),
+                    _ => return Err(Unsupported("a queued post's reply_to_post_number").into()),
+                };
                 d.insert("reply_to_post_number".into(), json!(n));
             }
-            if let Some(at) = p.deleted_at {
-                d.insert("deleted_at".into(), json!(time_json(at)));
-            }
-            d.insert("post_updated_at".into(), json!(time_json(p.updated_at)));
-            d.insert("post_version".into(), json!(p.version));
-            d.insert("post_id".into(), json!(p.id));
-        }
-        None => {
-            d.insert("post_updated_at".into(), Value::Null);
-            d.insert("post_version".into(), Value::Null);
-            d.insert("blank_post".into(), json!(true));
+            // fancy_title: the payload's title, escaped.
+            let title = match field("title") {
+                Some(Value::String(t)) => Some(crate::category_badge::html_escape(t)),
+                Some(_) => return Err(Unsupported("a queued post's title that isn't text").into()),
+                None => None,
+            };
+            d.insert("fancy_title".into(), json!(title));
+            // cooked: PrettyText.cook(payload["raw"]).
+            let cooked = match field("raw") {
+                Some(Value::String(raw)) => {
+                    let host =
+                        host.ok_or(Unsupported("cooking a queued post outside the queue"))?;
+                    Some(
+                        crate::pretty_text::cook(
+                            host,
+                            raw,
+                            &crate::pretty_text::MarkdownOptions::default(),
+                        )
+                        .await?,
+                    )
+                }
+                Some(_) => return Err(Unsupported("a queued post's raw that isn't text").into()),
+                None => None,
+            };
+            d.insert("cooked".into(), json!(cooked));
         }
     }
     if topic.is_none() {
         d.insert("removed_topic_id".into(), json!(r.topic_id));
+    }
+    // The target's id under a good name (`post_id`).
+    if let Some(p) = &post {
+        d.insert("post_id".into(), json!(p.id));
+    }
+    // payload_attributes, sliced in their order; raw_email for those who
+    // may see raw emails.
+    if kind == Kind::Queued {
+        let mut payload = Map::new();
+        let stored = r.payload.as_ref().and_then(Value::as_object);
+        let raw_emails = guardian.in_setting_groups(s, "view_raw_email_allowed_groups")?;
+        for key in QUEUED_PAYLOAD {
+            if key == "raw_email" && !raw_emails {
+                continue;
+            }
+            if let Some(v) = stored.and_then(|p| p.get(key)) {
+                payload.insert(key.into(), v.clone());
+            }
+        }
+        d.insert("payload".into(), Value::Object(payload));
     }
 
     // has_one :target_created_by (FlaggedUserSerializer)
@@ -756,7 +867,11 @@ async fn serialize(
             out.users.push(basic_user(ctx, &urls, &u)?);
         }
     }
-    // has_one :topic (ListableTopicSerializer)
+    // has_one :topic (ListableTopicSerializer); a reviewable without a
+    // topic (a queued topic) gets its null id here.
+    if r.topic_id.is_none() {
+        d.insert("topic_id".into(), Value::Null);
+    }
     if let Some(t) = &topic
         && seen.topics.insert(t.id)
     {
@@ -774,18 +889,39 @@ async fn serialize(
         out.topics
             .push(ser.serialize_topic(t, &[], false, Mode::Reviewable).await?);
     }
-    d.insert("editable_fields".into(), json!([]));
+    d.insert("editable_fields".into(), Value::Array(editable));
 
     // has_many :reviewable_scores, newest first
     let score_ids = scores(&mut *conn, ctx, &urls, &r, &mut seen, out).await?;
     d.insert("reviewable_score_ids".into(), json!(score_ids));
 
     // has_many :bundled_actions
-    let bundle_ids = match &post {
-        Some(p) if r.status == crate::reviewables::PENDING => {
-            actions(&mut *conn, ctx, guardian, &r, p, author.as_ref(), out).await?
+    let bundle_ids = match kind {
+        Kind::Flagged => match &post {
+            Some(p) if r.status == crate::reviewables::PENDING => {
+                actions(&mut *conn, ctx, guardian, &r, p, author.as_ref(), out).await?
+            }
+            _ => Vec::new(),
+        },
+        Kind::Queued => {
+            queued_actions(
+                &mut *conn,
+                ctx,
+                guardian,
+                &r,
+                topic.as_ref(),
+                author.as_ref(),
+                out,
+            )
+            .await?
         }
-        _ => Vec::new(),
+        Kind::Post => match &post {
+            Some(p) if r.status == crate::reviewables::PENDING => {
+                post_actions(&mut *conn, ctx, guardian, &r, p, author.as_ref(), out).await?
+            }
+            Some(_) => Vec::new(),
+            None => return Err(Unsupported("a post review without its post").into()),
+        },
     };
     d.insert("bundled_action_ids".into(), json!(bundle_ids));
     // has_many :reviewable_notes, oldest first (ReviewableNoteSerializer,
@@ -921,7 +1057,11 @@ async fn scores(
                     json!(words),
                 )
             }
-            Some(_) => return Err(Unsupported("score reasons other than watched words").into()),
+            Some(other) => (
+                Some(score_reason(&mut *conn, ctx, urls, r, other).await?),
+                json!(other),
+                Value::Null,
+            ),
         };
         let stats: (i32, i32, i32) = sqlx::query_as(
             "SELECT flags_agreed, flags_disagreed, flags_ignored FROM user_stats WHERE user_id = $1",
@@ -975,6 +1115,149 @@ async fn scores(
         ids.push(sc.id);
     }
     Ok(ids)
+}
+
+/// `ReviewableScoreSerializer::REASONS_AND_SETTINGS`: the site setting a
+/// reason links to.
+const REASONS_AND_SETTINGS: [(&str, &str); 13] = [
+    ("post_count", "approve_post_count"),
+    ("trust_level", "approve_unless_trust_level"),
+    ("group", "approve_unless_allowed_groups"),
+    (
+        "new_topics_unless_trust_level",
+        "approve_new_topics_unless_trust_level",
+    ),
+    (
+        "new_topics_unless_allowed_groups",
+        "approve_new_topics_unless_allowed_groups",
+    ),
+    ("fast_typer", "first_post_typing_time"),
+    ("auto_silence_regex", "auto_silence_first_post_regex"),
+    ("staged", "approve_unless_staged"),
+    ("must_approve_users", "must_approve_users"),
+    ("invite_only", "invite_only"),
+    ("email_spam", "email_in_spam_header"),
+    ("suspect_user", "approve_suspect_users"),
+    ("contains_media", "skip_review_media_groups"),
+];
+
+/// ReviewableScoreSerializer#reason for a reason other than a watched
+/// word, as staff see it: the reason's text with a link to its setting
+/// (or the category's settings), cooked with REASON_COOK_OPTIONS.
+async fn score_reason(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    urls: &Urls<'_>,
+    r: &Reviewable,
+    reason: &str,
+) -> Result<String, AppError> {
+    let i18n = ctx.i18n;
+    let setting = REASONS_AND_SETTINGS
+        .iter()
+        .find(|(k, _)| *k == reason)
+        .map(|(_, v)| v.to_string());
+    let link_text = setting.or_else(|| {
+        i18n.t(&format!("reviewables.reasons.links.{reason}"))
+            .map(str::to_string)
+    });
+    let key = format!("reviewables.reasons.{reason}");
+    let Some(link_text) = link_text else {
+        let text = i18n.t(&key).unwrap_or(reason).to_string();
+        return reason_cook(&text, "");
+    };
+    // url_for
+    let url = if reason == "category" {
+        let slug: Option<String> = match r.category_id {
+            Some(id) => {
+                sqlx::query_scalar("SELECT slug FROM categories WHERE id = $1")
+                    .bind(id)
+                    .fetch_optional(&mut *conn)
+                    .await?
+            }
+            None => None,
+        };
+        format!(
+            "{}/c/{}/edit/settings",
+            urls.base_url()?,
+            slug.unwrap_or_default()
+        )
+    } else {
+        format!(
+            "{}/admin/site_settings/category/all_results?filter={link_text}",
+            urls.base_url()?
+        )
+    };
+    let link = format!("<a href=\"{url}\">{}</a>", link_text.replace('_', " "));
+    let text = if reason == "fast_typer" {
+        // fast_typer_reason: the payload's typing time, in seconds to one
+        // decimal place.
+        let msecs = r
+            .payload
+            .as_ref()
+            .and_then(|p| p.get("typing_duration_msecs"))
+            .filter(|v| present(v));
+        match msecs {
+            Some(v) => {
+                let msecs = match v {
+                    Value::Number(n) => n.as_f64().unwrap_or_default().trunc() as i64,
+                    Value::String(s) => crate::ruby::to_i(s),
+                    _ => return Err(Unsupported("a typing duration that isn't a number").into()),
+                };
+                let seconds = (msecs as f64 / 1000.0 * 10.0).round() / 10.0;
+                let (count, form) = if seconds.fract() == 0.0 {
+                    let whole = seconds as i64;
+                    (whole.to_string(), if whole == 1 { "one" } else { "other" })
+                } else {
+                    (crate::ruby::float_to_s(seconds), "other")
+                };
+                let typing_time = i18n
+                    .t_with(
+                        &format!("reviewables.reasons.fast_typer_time.{form}"),
+                        &[("count", &count)],
+                    )
+                    .unwrap_or_default();
+                i18n.t_with(
+                    "reviewables.reasons.fast_typer_with_time",
+                    &[("link", &link), ("typing_time", &typing_time)],
+                )
+            }
+            None => i18n.t_with(&key, &[("link", &link)]),
+        }
+    } else {
+        i18n.t_with(&key, &[("link", &link)])
+    };
+    reason_cook(&text.unwrap_or_else(|| reason.to_string()), &link)
+}
+
+/// `PrettyText.cook(text, REASON_COOK_OPTIONS)` for a reason: no features,
+/// a handful of markdown rules. A reason's text outside its link is plain
+/// prose, a paragraph; text the cook would change is refused.
+fn reason_cook(text: &str, link: &str) -> Result<String, AppError> {
+    let plain = if link.is_empty() {
+        text.to_string()
+    } else {
+        text.replace(link, "")
+    };
+    if plain.chars().any(|c| "*_`[]<>&\\~#|!\"\n".contains(c))
+        || plain.contains("://")
+        || plain.contains("www.")
+        || plain.trim() != plain
+        || plain.is_empty()
+    {
+        return Err(Unsupported("score reasons with markdown in their text").into());
+    }
+    Ok(format!("<p>{text}</p>"))
+}
+
+/// Ruby's `present?` for a JSON value.
+fn present(v: &Value) -> bool {
+    match v {
+        Value::Null | Value::Bool(false) => false,
+        Value::String(s) => !crate::ruby::is_blank(s),
+        Value::Array(a) => !a.is_empty(),
+        Value::Object(o) => !o.is_empty(),
+        _ => true,
+    }
 }
 
 /// `watched_words_found`: the score's context split on commas, downcased
@@ -1051,19 +1334,74 @@ struct Bundle {
     actions: Vec<String>,
 }
 
-/// `Reviewable::Actions` for a flagged post.
+/// One action as `Reviewable::Actions#add` builds it: translation keys
+/// for its label, description, confirmation (with its arguments) and
+/// completed message, read by ReviewableActionSerializer.
+#[derive(Default)]
+struct ActionSpec {
+    icon: Option<&'static str>,
+    label: String,
+    description: Option<String>,
+    confirm: Option<(String, Vec<(&'static str, String)>)>,
+    confirm_destructive: bool,
+    client_action: Option<&'static str>,
+    completed: Option<String>,
+}
+
+impl ActionSpec {
+    /// `build_action` for a core reviewable: the keys under
+    /// `reviewables.actions.<id>`.
+    fn core(
+        id: &str,
+        icon: &'static str,
+        client_action: Option<&'static str>,
+        confirm: bool,
+    ) -> Self {
+        let prefix = format!("reviewables.actions.{id}");
+        ActionSpec {
+            icon: Some(icon),
+            label: format!("{prefix}.title"),
+            description: Some(format!("{prefix}.description")),
+            confirm: confirm.then(|| (format!("{prefix}.confirm"), Vec::new())),
+            confirm_destructive: false,
+            client_action,
+            completed: Some(format!("{prefix}.complete")),
+        }
+    }
+}
+
+/// `Reviewable::Actions` for one reviewable: ids are scoped to it and
+/// named after its target's type (`post-agree_and_keep`, or
+/// `approve_post` for a queued post without a post yet).
 struct Actions<'a> {
     ctx: &'a Ctx<'a>,
     reviewable_id: i64,
+    /// `target_type&.underscore`
+    target: Option<&'static str>,
     bundles: Vec<Bundle>,
     actions: Vec<Value>,
 }
 
-impl Actions<'_> {
-    fn add_bundle(&mut self, suffix: &str, icon: &'static str, label: &'static str) -> usize {
+impl<'a> Actions<'a> {
+    fn new(ctx: &'a Ctx<'a>, r: &Reviewable) -> Actions<'a> {
+        Actions {
+            ctx,
+            reviewable_id: r.id,
+            target: (r.target_type.as_deref() == Some("Post")).then_some("post"),
+            bundles: Vec::new(),
+            actions: Vec::new(),
+        }
+    }
+
+    fn add_bundle(
+        &mut self,
+        suffix: &str,
+        icon: Option<&'static str>,
+        label: &'static str,
+    ) -> usize {
         self.bundles.push(Bundle {
             id: format!("{}-{suffix}", self.reviewable_id),
-            icon: Some(icon),
+            icon,
             label: Some(label),
             secondary: false,
             actions: Vec::new(),
@@ -1071,45 +1409,61 @@ impl Actions<'_> {
         self.bundles.len() - 1
     }
 
-    /// `build_action` for a core reviewable on a post.
+    /// `build_action` for a core reviewable.
     fn add(
         &mut self,
         id: &str,
-        icon: &str,
+        icon: &'static str,
         bundle: Option<usize>,
-        client_action: Option<&str>,
+        client_action: Option<&'static str>,
         confirm: bool,
         secondary: bool,
     ) {
+        self.push(
+            id,
+            ActionSpec::core(id, icon, client_action, confirm),
+            bundle,
+            secondary,
+        );
+    }
+
+    /// `Actions#add` with the action's attributes set.
+    fn push(&mut self, id: &str, spec: ActionSpec, bundle: Option<usize>, secondary: bool) {
         let i18n = self.ctx.i18n;
-        let action_name = format!("post-{id}");
+        let action_name = match self.target {
+            Some(t) => format!("{t}-{id}"),
+            None => id.to_string(),
+        };
         let scoped = format!("{}-{action_name}", self.reviewable_id);
-        let prefix = format!("reviewables.actions.{id}");
         let mut a = Map::new();
         a.insert("id".into(), json!(scoped));
         a.insert("action_name".into(), json!(action_name));
-        a.insert("icon".into(), json!(icon));
+        a.insert("icon".into(), json!(spec.icon));
         a.insert("button_class".into(), Value::Null);
         a.insert(
             "label".into(),
-            json!(i18n.t(&format!("{prefix}.title")).unwrap_or_default()),
+            json!(i18n.t(&spec.label).unwrap_or_default()),
         );
-        if confirm {
+        if let Some((key, args)) = &spec.confirm {
+            let args: Vec<(&str, &str)> = args.iter().map(|(k, v)| (*k, v.as_str())).collect();
             a.insert(
                 "confirm_message".into(),
-                json!(i18n.t(&format!("{prefix}.confirm")).unwrap_or_default()),
+                json!(i18n.t_with(key, &args).unwrap_or_default()),
             );
         }
-        if let Some(desc) = i18n.t(&format!("{prefix}.description")) {
+        if spec.confirm_destructive {
+            a.insert("confirm_destructive".into(), json!(true));
+        }
+        if let Some(desc) = spec.description.as_deref().and_then(|k| i18n.t(k)) {
             a.insert("description".into(), json!(desc));
         }
         a.insert("server_action".into(), json!(id));
-        if let Some(c) = client_action {
+        if let Some(c) = spec.client_action {
             a.insert("client_action".into(), json!(c));
         }
         a.insert(
             "completed_message".into(),
-            json!(i18n.t(&format!("{prefix}.complete"))),
+            json!(spec.completed.as_deref().and_then(|k| i18n.t(k))),
         );
         self.actions.push(Value::Object(a));
         let bundle = match bundle {
@@ -1127,6 +1481,320 @@ impl Actions<'_> {
         };
         self.bundles[bundle].actions.push(scoped);
     }
+
+    /// `build_penalty_actions` for the author, when can_suspend? (staff on
+    /// a regular user); authors already under a penalty are refused before.
+    fn penalties(
+        &mut self,
+        guardian: &Guardian,
+        author: Option<&UserRow>,
+        bundle: usize,
+        silence: &str,
+        suspend: &str,
+    ) {
+        if let Some(a) = author
+            && guardian.is_staff()
+            && !a.admin
+            && !a.moderator
+        {
+            if !a.silenced() {
+                self.add(
+                    silence,
+                    "microphone-slash",
+                    Some(bundle),
+                    Some("silence"),
+                    false,
+                    false,
+                );
+            }
+            if !a.suspended() {
+                self.add(suspend, "ban", Some(bundle), Some("suspend"), false, false);
+            }
+        }
+    }
+
+    /// `delete_user_actions(actions, bundle)` without a reject reason: each
+    /// confirmed, naming the user.
+    fn delete_user(&mut self, author: &UserRow, bundle: usize) {
+        for (id, icon, key) in [
+            ("delete_user", "user-xmark", "delete"),
+            ("delete_user_block", "ban", "block"),
+        ] {
+            let prefix = format!("reviewables.actions.reject_user.{key}");
+            self.push(
+                id,
+                ActionSpec {
+                    icon: Some(icon),
+                    label: format!("{prefix}.title"),
+                    description: Some(format!("{prefix}.description")),
+                    confirm: Some((
+                        format!("{prefix}.confirm"),
+                        vec![("username", author.username.clone())],
+                    )),
+                    confirm_destructive: true,
+                    ..ActionSpec::default()
+                },
+                Some(bundle),
+                false,
+            );
+        }
+    }
+
+    /// Empty bundles are dropped; the rest and their actions go to `out`.
+    fn finish(self, out: &mut Out) -> Vec<String> {
+        let i18n = self.ctx.i18n;
+        let mut ids = Vec::new();
+        for bundle in self.bundles.into_iter().filter(|b| !b.actions.is_empty()) {
+            let mut v = Map::new();
+            v.insert("id".into(), json!(bundle.id));
+            if let Some(icon) = bundle.icon {
+                v.insert("icon".into(), json!(icon));
+            }
+            if let Some(label) = bundle.label.and_then(|l| i18n.t(l)) {
+                v.insert("label".into(), json!(label));
+            }
+            if bundle.secondary {
+                v.insert("secondary".into(), json!(true));
+            }
+            v.insert("action_ids".into(), json!(bundle.actions));
+            ids.push(bundle.id);
+            out.bundles.push(Value::Object(v));
+        }
+        out.actions.extend(self.actions);
+        ids
+    }
+}
+
+/// `ReviewableQueuedPostSerializer.payload_attributes`
+const QUEUED_PAYLOAD: [&str; 14] = [
+    "raw",
+    "title",
+    "archetype",
+    "category",
+    "visible",
+    "is_warning",
+    "first_post_checks",
+    "featured_link",
+    "is_poll",
+    "typing_duration_msecs",
+    "composer_open_duration_msecs",
+    "tags",
+    "via_email",
+    "raw_email",
+];
+
+/// `ReviewableQueuedPost#build_combined_actions`; the bundles' ids.
+async fn queued_actions(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    r: &Reviewable,
+    topic: Option<&TopicRow>,
+    author: Option<&UserRow>,
+    out: &mut Out,
+) -> Result<Vec<String>, AppError> {
+    // actions_for: none without can_review_target?.
+    if !crate::reviewables::can_review_target(
+        &mut *conn,
+        ctx.settings,
+        guardian,
+        r.target_type.as_deref(),
+        r.target_id,
+    )
+    .await?
+    {
+        return Ok(Vec::new());
+    }
+    const APPROVED: i32 = 1;
+    let mut b = Actions::new(ctx, r);
+    if r.status != APPROVED {
+        // `topic`: the association leaves a deleted topic out.
+        let closed = match topic.filter(|t| t.closed) {
+            Some(t) => {
+                sqlx::query_scalar::<_, bool>("SELECT deleted_at IS NULL FROM topics WHERE id = $1")
+                    .bind(t.id)
+                    .fetch_one(&mut *conn)
+                    .await?
+            }
+            None => false,
+        };
+        if closed {
+            b.add("approve_post_closed", "check", None, None, true, false);
+        } else if author.is_some() {
+            b.add("approve_post", "check", None, None, false, false);
+        }
+    }
+    if r.status == crate::reviewables::PENDING {
+        let reject = b.add_bundle(
+            "reject-post",
+            None,
+            "reviewables.actions.reject_post_bundle.title",
+        );
+        b.add("reject_post", "xmark", Some(reject), None, false, false);
+        if author.is_some() {
+            b.add(
+                "revise_and_reject_post",
+                "envelope",
+                Some(reject),
+                None,
+                false,
+                false,
+            );
+        }
+        b.penalties(
+            guardian,
+            author,
+            reject,
+            "reject_and_silence",
+            "reject_and_suspend",
+        );
+        if let Some(a) = author
+            && can_delete_user_row(&mut *conn, ctx, guardian, a).await?
+        {
+            b.delete_user(a, reject);
+        }
+    }
+    // can_delete_reviewable_queued_post?: the author's own.
+    if r.target_created_by_id.is_some() && r.target_created_by_id == guardian.user_id() {
+        b.push(
+            "delete",
+            ActionSpec {
+                label: "reviewables.actions.delete.title".into(),
+                description: Some("reviewables.actions.delete.description".into()),
+                completed: Some("reviewables.actions.delete.complete".into()),
+                ..ActionSpec::default()
+            },
+            None,
+            false,
+        );
+    }
+    Ok(b.finish(out))
+}
+
+/// `ReviewablePost#build_combined_actions` (pending only); the bundles' ids.
+async fn post_actions(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    r: &Reviewable,
+    post: &Post,
+    author: Option<&UserRow>,
+    out: &mut Out,
+) -> Result<Vec<String>, AppError> {
+    let s = ctx.settings;
+    if !crate::reviewables::can_review_target(
+        &mut *conn,
+        s,
+        guardian,
+        r.target_type.as_deref(),
+        r.target_id,
+    )
+    .await?
+    {
+        return Ok(Vec::new());
+    }
+    let mut b = Actions::new(ctx, r);
+    let trashed = post.deleted_at.is_some();
+    // can_recover_post?: staff moderate every topic.
+    if trashed && guardian.is_staff() {
+        b.add("approve_and_restore", "check", None, None, false, false);
+    } else if post.hidden {
+        b.add("approve_and_unhide", "check", None, None, false, false);
+    } else {
+        b.add("approve", "check", None, None, false, false);
+    }
+    let reject = b.add_bundle(
+        "reject-post",
+        Some("xmark"),
+        "reviewables.actions.reject_post_bundle.title",
+    );
+    let can_penalize = author.is_some_and(|a| guardian.is_staff() && !a.admin && !a.moderator);
+    // Without a penalty to offer, the reject reads on its own.
+    let standalone = |id: &str| ActionSpec {
+        icon: Some("trash-can"),
+        label: format!("reviewables.actions.{id}_standalone.title"),
+        ..ActionSpec::default()
+    };
+    if trashed {
+        if can_penalize {
+            b.add(
+                "reject_and_keep_deleted",
+                "trash-can",
+                Some(reject),
+                None,
+                false,
+                false,
+            );
+        } else {
+            b.push(
+                "reject_and_keep_deleted",
+                standalone("reject_and_keep_deleted"),
+                Some(reject),
+                false,
+            );
+        }
+    } else if can_delete_post_or_topic(&mut *conn, ctx, guardian, post).await? {
+        if can_penalize {
+            b.add(
+                "reject_and_delete",
+                "trash-can",
+                Some(reject),
+                None,
+                false,
+                false,
+            );
+        } else {
+            b.push(
+                "reject_and_delete",
+                standalone("reject_and_delete"),
+                Some(reject),
+                false,
+            );
+        }
+    }
+    b.penalties(
+        guardian,
+        author,
+        reject,
+        "reject_and_silence",
+        "reject_and_suspend",
+    );
+    Ok(b.finish(out))
+}
+
+/// `can_delete_post_or_topic?(post)`: the topic for a first post.
+async fn can_delete_post_or_topic(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post: &Post,
+) -> Result<bool, AppError> {
+    let s = ctx.settings;
+    let access =
+        crate::posting::revisions::find_post_with_deleted_in(&mut *conn, s, guardian, post.id)
+            .await?;
+    Ok(match &access {
+        Some(a) if post.post_number == 1 => guardian.can_delete_topic(s, &a.topic)?,
+        Some(a) => guardian.can_delete_post(s, &a.topic, &a.post, a.can_see_post)?,
+        None => false,
+    })
+}
+
+/// `can_delete_user?(target_created_by)` from the user's stats.
+async fn can_delete_user_row(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    u: &UserRow,
+) -> Result<bool, AppError> {
+    let stats: (i32, i32, i32, i32, i32, Option<NaiveDateTime>) = sqlx::query_as(
+        "SELECT post_count, topic_count, flags_agreed, flags_disagreed, flags_ignored, first_post_created_at \
+         FROM user_stats WHERE user_id = $1",
+    )
+    .bind(u.id)
+    .fetch_one(&mut *conn)
+    .await?;
+    can_delete_user(conn, ctx, guardian, u, &stats).await
 }
 
 /// `ReviewableFlaggedPost#build_combined_actions`; the bundles' ids.
@@ -1139,15 +1807,13 @@ async fn actions(
     author: Option<&UserRow>,
     out: &mut Out,
 ) -> Result<Vec<String>, AppError> {
-    let s = ctx.settings;
-    let mut b = Actions {
-        ctx,
-        reviewable_id: r.id,
-        bundles: Vec::new(),
-        actions: Vec::new(),
-    };
+    let mut b = Actions::new(ctx, r);
     let trashed = post.deleted_at.is_some();
-    let agree = b.add_bundle("agree", "thumbs-up", "reviewables.actions.agree.title");
+    let agree = b.add_bundle(
+        "agree",
+        Some("thumbs-up"),
+        "reviewables.actions.agree.title",
+    );
     if trashed {
         b.add(
             "agree_and_keep_deleted",
@@ -1186,19 +1852,7 @@ async fn actions(
         );
     }
 
-    // can_delete_post_or_topic?
-    let access = crate::posting::revisions::find_post_with_deleted_in(
-        &mut *conn,
-        ctx.settings,
-        guardian,
-        post.id,
-    )
-    .await?;
-    let can_delete = match &access {
-        Some(a) if post.post_number == 1 => guardian.can_delete_topic(s, &a.topic)?,
-        Some(a) => guardian.can_delete_post(s, &a.topic, &a.post, a.can_see_post)?,
-        None => false,
-    };
+    let can_delete = can_delete_post_or_topic(&mut *conn, ctx, guardian, post).await?;
     let can_delete_existing = can_delete && !trashed;
     if can_delete_existing {
         b.add(
@@ -1248,7 +1902,7 @@ async fn actions(
     if can_delete || can_ignore {
         let disagree = b.add_bundle(
             "disagree",
-            "far-eye",
+            Some("far-eye"),
             "reviewables.actions.disagree_bundle.title",
         );
         if trashed {
@@ -1304,27 +1958,7 @@ async fn actions(
         }
     }
 
-    // Empty bundles are dropped.
-    let i18n = ctx.i18n;
-    let mut ids = Vec::new();
-    for bundle in b.bundles.into_iter().filter(|b| !b.actions.is_empty()) {
-        let mut v = Map::new();
-        v.insert("id".into(), json!(bundle.id));
-        if let Some(icon) = bundle.icon {
-            v.insert("icon".into(), json!(icon));
-        }
-        if let Some(label) = bundle.label.and_then(|l| i18n.t(l)) {
-            v.insert("label".into(), json!(label));
-        }
-        if bundle.secondary {
-            v.insert("secondary".into(), json!(true));
-        }
-        v.insert("action_ids".into(), json!(bundle.actions));
-        ids.push(bundle.id);
-        out.bundles.push(Value::Object(v));
-    }
-    out.actions.extend(b.actions);
-    Ok(ids)
+    Ok(b.finish(out))
 }
 
 #[derive(sqlx::FromRow)]
@@ -1552,7 +2186,7 @@ pub async fn web_hook_json(
     match kind.as_str() {
         "ReviewableFlaggedPost" => {
             let mut out = Out::default();
-            let mut v = serialize(conn, ctx, guardian, id, &mut out, true).await?;
+            let mut v = serialize(conn, ctx, guardian, id, &mut out, true, None).await?;
             if let Some(m) = v.as_object_mut() {
                 m.shift_remove("claimed_by_id");
             }
