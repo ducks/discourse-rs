@@ -1,13 +1,24 @@
 # Benchmarks
 
-The latest measurements expand the October 19 public Meta corpus to 1,089 topics,
-20,576 posts, and 220 users, reusing public text with synthetic authors. Rust and production Rails
-served separate copies of the same snapshot on **one PostgreSQL 18.6 instance**.
-This is still a small forum, not
-a production-capacity test. The [cleaned corpus rerun](docs/bench-public-meta-20261019.md#cleaned-corpus-rerun)
-records uncached common-term search at 127 req/s for Rust and 70 for Rails,
-selective search at 570 / 181, and no-match search at 1,653 / 689. Latest JSON
-reached 2,012 / 121. The original small-corpus baseline is retained below.
+The latest run is the [v20261024.0.0 release benchmark](docs/bench-20261024.md):
+release Rust `85672018` against production Rails `bf55a44` on the cleaned public
+Meta corpus (1,089 topics, 20,576 posts, 220 users), separate copies of the same
+snapshot on **one PostgreSQL 18.6 instance**, the same protocol as October 19.
+Uncached anonymous req/s, Rust / Rails: latest JSON 2,173 / 122, categories
+845 / 203, twenty-post topic JSON 1,051 / 112, topic HTML 490 / 74, and search
+125 / 65 (common term), 504 / 172 (selective), 1,661 / 691 (no match). Zero
+errors in all 96 samples; core response fields matched. It also records the
+first browser comparison (a cold Latest visit is content-ready in 169 ms vs
+753 ms) and memory: 50 MB idle and about 210 MB under load for Rust, 5.0 GiB
+summed RSS idle and 6.3 GiB under load for Rails' eight workers. This is still a
+small forum on one shared laptop, not a production-capacity test.
+
+Against the October 19
+[cleaned corpus rerun](docs/bench-public-meta-20261019.md#cleaned-corpus-rerun)
+(Rust 127 / 570 / 1,653 search, latest 2,012), the unchanged Rails side drifted
+up to about 7%; Rust is within that band except topic HTML, about 9% slower
+after a week of topic-page work. The original small-corpus baseline is retained
+below.
 
 The earlier search term `Discourse` matched almost every generated post because
 copied attribution URLs contained `meta.discourse.org`. Those footers have now
