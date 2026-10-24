@@ -1150,6 +1150,11 @@ async fn every_page_has_the_chat_drawer_outlet() {
             html.contains("/chat-drawer.js?v=") && html.contains(" data-homepage=\"/latest\" data-hide-presence=\"false\" data-starred=\"false\" data-scripts=\"/assets/emoji-picker.js?v&#x3D;"),
             "{path}: {html}"
         );
+        // The new message modal's errors open Ember's dialog, not an alert.
+        assert!(
+            html.contains("/dialog.js?v=") && html.contains("id=\"dialog-strings\""),
+            "{path}"
+        );
     }
     assert!(
         user1
