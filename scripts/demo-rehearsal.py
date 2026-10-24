@@ -844,7 +844,9 @@ def define_steps(run):
         title = expect_visible(page.locator("#reply-title"), "the new topic composer")
         topic_title = f"{run.label} poll and checklist"
         title.press_sequentially(topic_title, delay=10)
-        body = ("A topic for the demo rehearsal.\n\n"
+        # Labelled: Discourse refuses a body the member posted within
+        # unique_posts_mins, so a second run soon after would be refused.
+        body = (f"A topic for the demo {run.label}.\n\n"
                 "[poll type=regular results=always]\n* Rust\n* Ruby\n* Both\n[/poll]\n\n"
                 "[ ] write the demo script\n[ ] rehearse it\n")
         type_in_composer(page, body)

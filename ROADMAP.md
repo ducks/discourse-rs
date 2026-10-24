@@ -125,6 +125,27 @@ Blockers, a scripted walk-through would hit them:
   type saves with Rails' validations, and the page's list editors open
   and save them.
 
+Rehearsal findings (scripts/demo-rehearsal, 2026-10-24),
+feat/flag-and-penalty-modals:
+
+- [ ] Flagging a post does nothing: the post menu's flag button and the
+  topic footer's have no modal (step 17).
+- [ ] Admin silence and suspend answer "Not ported yet: the silence modal"
+  on the admin user page (step 23).
+- [ ] /admin/reports to a single report raises a script error: the list's
+  filter runs on the report page after a page swap (step 21).
+- [ ] The chat read marker sends message_id=NaN for the just-sent staged
+  message, answered 400 (step 14).
+- [x] Ticking a checklist box sometimes answered 422 "The checkbox could not
+  be updated." (step 8): the unique post check stood in for Rails' Redis
+  key with any recent post of the user whose current raw matched, so a
+  tick whose new raw equalled another post's ticked raw was refused as a
+  duplicate, and a body re-posted after the first copy was edited wasn't.
+  Ported as Rails keeps it: PostCreator stores `unique-post-<user>:<sha1>`
+  for unique_posts_mins in discourse_rs.cached_values and the validator
+  reads it (checklist/toggle_to_a_revised_posts_raw). The rehearsal's
+  topic body carries its label, as Rails refuses a second run's copy.
+
 Visible if clicked, avoid them in a scripted demo:
 
 - [x] Polls draw a "0 voters" stub and can't be voted on (228):

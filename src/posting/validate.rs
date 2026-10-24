@@ -649,6 +649,34 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
     }
 }
 
+/// `Post#unique_post_key`: the author, the topic's kind and `raw_hash`.
+fn unique_post_key(user_id: i32, private_message: bool, raw: &str) -> String {
+    use sha1::{Digest, Sha1};
+    format!(
+        "unique{}-post-{user_id}:{:x}",
+        if private_message { "-pm" } else { "" },
+        Sha1::digest(raw.as_bytes())
+    )
+}
+
+/// `Post#store_unique_post_key`, as PostCreator calls it once a post is
+/// created (Redis's SETEX for unique_posts_mins).
+pub async fn store_unique_post_key(
+    conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    user_id: i32,
+    private_message: bool,
+    raw: &str,
+    post_id: i32,
+) -> Result<(), AppError> {
+    let mins = settings.get("unique_posts_mins")?.to_i();
+    if mins > 0 {
+        let key = unique_post_key(user_id, private_message, raw);
+        crate::owned_schema::cached_setex(conn, &key, mins * 60, &post_id.to_string()).await?;
+    }
+    Ok(())
+}
+
 /// The post a validator looks at.
 pub struct PostInput<'a> {
     pub raw: &'a str,
@@ -789,24 +817,14 @@ pub async fn body_errors(
         errors.push(BodyError::Base(ctx.t_count("too_many_replies", max)));
     }
 
-    // unique_post_validator: Rails keeps the key in Redis for
-    // unique_posts_mins; a recent identical post by the user stands in.
+    // unique_post_validator: `matches_recent_post?`, the key PostCreator
+    // stored for a post created with this raw (an edit's new raw included)
+    // naming another post.
     let unique_mins = s.get("unique_posts_mins")?.to_i();
     if unique_mins > 0 && !acting.is_staff() && !post.raw.trim().is_empty() {
-        let dupe: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM posts p JOIN topics t ON t.id = p.topic_id \
-             WHERE p.user_id = $1 AND p.raw = $2 AND p.id IS DISTINCT FROM $3 \
-               AND p.created_at > now() - make_interval(mins => $4) \
-               AND (t.archetype = 'private_message') = $5)",
-        )
-        .bind(post.user_id)
-        .bind(post.raw)
-        .bind(post.post_id)
-        .bind(unique_mins as i32)
-        .bind(post.private_message)
-        .fetch_one(&mut *conn)
-        .await?;
-        if dupe {
+        let key = unique_post_key(post.user_id, post.private_message, post.raw);
+        let recent = crate::owned_schema::cached_get(&mut *conn, &key).await?;
+        if recent.is_some_and(|id| Some(crate::ruby::to_i(&id) as i32) != post.post_id) {
             errors.push(BodyError::Raw(ctx.t("just_posted_that")));
         }
     }

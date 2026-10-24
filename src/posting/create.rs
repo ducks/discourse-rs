@@ -1362,9 +1362,11 @@ pub async fn create(
     tx.commit().await?;
     performed.commit();
 
-    // After the transaction: track_latest_on_category, auto_close, then
-    // the deferred search index.
+    // After the transaction: store_unique_post_key, track_latest_on_category,
+    // auto_close, then the deferred search index.
     let mut conn = pool.acquire().await?;
+    super::validate::store_unique_post_key(&mut conn, s, user.id, private_message, &raw, post_id)
+        .await?;
     if let Some(category_id) = category_id {
         if new_topic {
             sqlx::query(
