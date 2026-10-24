@@ -27,6 +27,8 @@ let
   localDatabaseUrl = "postgresql:///${cfg.database.name}?host=/run/postgresql";
   share = "${cfg.package}/share/discourse-rs";
   pg = config.services.postgresql.package;
+  # Discourse.base_url, stored with a fresh site's VAPID keys.
+  baseUrl = "${if cfg.forceHttps then "https" else "http"}://${cfg.hostname}";
 in
 {
   options.services.discourse-rs = {
@@ -116,8 +118,12 @@ in
           (vendor/discourse/db/structure.sql) and seeds (seed/*.sql) into
           the database when it has no tables yet, as scripts/db-load does:
           a fresh site. discourse-rs-db-init.service does it before the
-          server starts. Turn off to restore a backup into the empty
-          database instead.
+          server starts. In the same transaction it gives the site secrets
+          of its own (the seed's are in the repo), sets the admin's password
+          from INITIAL_ADMIN_PASSWORD in `environmentFile` (required; the
+          load fails without it) and its address from INITIAL_ADMIN_EMAIL
+          when set, and locks the seed's fixture users out. Turn off to
+          restore a backup into the empty database instead.
         '';
       };
     };
@@ -129,7 +135,9 @@ in
       description = ''
         An EnvironmentFile for the secrets: DISCOURSE_SECRET_KEY_BASE,
         DISCOURSE_SMTP_ADDRESS / _PORT / _USER_NAME / _PASSWORD, an
-        external DATABASE_URL. Read by systemd as root, so it can be
+        external DATABASE_URL, and for a fresh site INITIAL_ADMIN_PASSWORD
+        (at least 15 characters) and optionally INITIAL_ADMIN_EMAIL, which
+        discourse-rs-db-init reads once. Read by systemd as root, so it can be
         root:root 0600; it never enters the Nix store (give a path as a
         string, not a Nix path literal). Without DISCOURSE_SECRET_KEY_BASE
         sessions die with every restart.
@@ -222,7 +230,9 @@ in
     # as Rails' database user does; the seeds as the superuser, since
     # their DISABLE TRIGGER ALL covers foreign key triggers. One
     # transaction: a failed load leaves the database empty for the next
-    # try, not half loaded.
+    # try, not half loaded. Its last part, from discourse-rs-fresh-site,
+    # replaces the seed's public secrets and admin password and locks the
+    # fixture users out, so a loaded site never has the seed's credentials.
     systemd.services.discourse-rs-db-init = mkIf cfg.database.createLocally {
       description = "discourse-rs database setup";
       requires = [ "postgresql.service" ];
@@ -237,6 +247,8 @@ in
         User = "postgres";
         Group = "postgres";
         RuntimeDirectory = "discourse-rs-db-init";
+        # INITIAL_ADMIN_PASSWORD for a fresh site.
+        EnvironmentFile = optional (cfg.environmentFile != null) cfg.environmentFile;
       };
       script = ''
         set -euo pipefail
@@ -254,6 +266,15 @@ in
       + lib.optionalString cfg.database.loadSchema ''
         tables="$(psql -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
         if [ "$tables" = 0 ]; then
+          # The seed's admin password and secrets are public: a fresh site
+          # gets its own, in the load's transaction, or nothing is loaded.
+          if [ -z "''${INITIAL_ADMIN_PASSWORD:-}" ]; then
+            echo "INITIAL_ADMIN_PASSWORD is not set in services.discourse-rs.environmentFile; a fresh site needs the admin's password. Nothing loaded." >&2
+            exit 1
+          fi
+          umask 077
+          ${cfg.package}/bin/discourse-rs-fresh-site ${lib.escapeShellArg baseUrl} \
+            > "$RUNTIME_DIRECTORY/secure.sql"
           echo "loading the vendored schema and seeds into $db"
           seeds=()
           for seed in ${share}/seed/*.sql; do
@@ -266,7 +287,9 @@ in
             -f ${share}/db/structure.sql \
             -c 'RESET ROLE' \
             "''${seeds[@]}" \
+            -f "$RUNTIME_DIRECTORY/secure.sql" \
             -o /dev/null
+          rm -f "$RUNTIME_DIRECTORY/secure.sql"
           echo "loaded $db: $(psql -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'") tables ($(sed -n 's/^commit=//p' ${share}/DISCOURSE_REF | cut -c1-11))"
         fi
       '';

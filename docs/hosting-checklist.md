@@ -48,9 +48,12 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
 
 ## Team-only lockdown
 
-- After the first start: give `admin` your address and a new password,
-  deactivate the seed's `user0`..`user3` (all with the password
-  `password`), and delete the fixture topics you don't want.
+- `INITIAL_ADMIN_PASSWORD` (and `INITIAL_ADMIN_EMAIL`) in the env file
+  before the first switch: the first load sets the admin's password from
+  it, replaces the seed's public secrets and locks the fixture users
+  `user0`..`user3` out, and refuses to load without it. Remove it from
+  the env file afterwards if you like; it is only read once.
+- Delete the fixture topics you don't want.
 - Turn on `login_required` and `invite_only`, then invite the team.
 - Check from a logged-out browser that `/latest` asks for a login.
 

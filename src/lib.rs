@@ -107,6 +107,7 @@ pub mod final_destination;
 pub mod flag_modal_view;
 pub mod flags;
 pub mod form_templates;
+pub mod fresh_site;
 pub mod group_manager;
 pub mod group_message;
 pub mod group_writes;

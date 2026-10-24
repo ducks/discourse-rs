@@ -42,10 +42,13 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = ../Cargo.lock;
 
-  # The release workflow's binary; src/bin/parity.rs is a dev tool.
+  # The release workflow's binary, and the tool the NixOS module secures
+  # a fresh site's seed with; src/bin/parity.rs is a dev tool.
   cargoBuildFlags = [
     "--bin"
     "discourse-rs"
+    "--bin"
+    "discourse-rs-fresh-site"
   ];
 
   # cargo-auditable would wrap rustc for build.rs's nested wasm cargo too,
