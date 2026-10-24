@@ -2684,6 +2684,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/navigation-bar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/post-stream.js", get(asset))
+        .route("/assets/discovery-topic-list.js", get(asset))
         .route("/assets/topic-admin-menu.js", get(asset))
         .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))

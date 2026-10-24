@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a, 283a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3937,9 +3937,8 @@ route table has been made, so this list may be short.
     the list, pills and sidebar after the refresh, and the buttons',
     menu's and modal's boxes and styles all match. Ember's DismissNew
     modal has no caller upstream and is not drawn. Left, split into 270b.
-    270b. `feat/topic-list-load-more` S: loading more on scroll (DLoadMore
-    with the footer's spinner): the port pages with its "Next page" link
-    instead (templates/latest.html:54); the dismiss buttons' selected
+    270b. `feat/topic-list-load-more` S: (loading more on scroll is done
+    in 283) the dismiss buttons' selected
     variants ("Dismiss (n)", topic_ids) wait for the discovery lists'
     bulk select, which is drawn without its actions (templates/latest.html:36,
     183); tag new and unread lists, and so their dismiss buttons, are
@@ -4314,7 +4313,7 @@ route table has been made, so this list may be short.
     tests/messages_pages.rs. Refused as before: sending the warning
     (is_warning, posts#create), a message to an email address
     (PostCreator), the composer actions menu (196).
-283. `feat/infinite-loading` M: found by the demo rehearsal: a topic over
+283. ~~`feat/infinite-loading`~~ (done) M: found by the demo rehearsal: a topic over
     one chunk (/t/118, 100 posts) drew its first 20 posts and scrolling
     loaded nothing, so its footer and Reply never showed and posts 21-100
     couldn't be read by scrolling; the topic lists ended with DLoadMore's
@@ -4380,8 +4379,36 @@ route table has been made, so this list may be short.
     footer, Reply and five suggested topics; /t/118/50 loaded up to post
     1 and down to 100; the timeline's click and drag to unloaded posts;
     the rehearsal's steps 1, 2, 6 and 7 pass (step 6 now scrolls to the
-    end of the topic before Reply, as a presenter does). Left: the
-    lists' DLoadMore (270b).
+    end of the topic before Reply, as a presenter does). The discovery
+    lists load their next page the same way (static/js/discovery-topic-list.js;
+    DiscoveryTopics#loadMore, TopicList#loadMore, DLoadMore with
+    LOAD_MORE_ROOT_MARGIN, 600px below the window): the sentinel carries
+    more_topics_url in place of the "Next page" link, the page is asked
+    for (its HTML, as an XHR, so no page view is counted), its rows not
+    already listed are appended with the first highlighted, the sentinel
+    takes its more_topics_url, the footer's spinner shows meanwhile, and
+    with room left in the window it goes on; with nothing more the footer
+    is the last page's (its dismiss buttons) and the page footer shows.
+    Checked in Chromium: /latest loaded page after page as it scrolled,
+    /top to its end with the dismiss row and the page footer.
+    Left, split into 283a.
+    283a. `feat/infinite-loading-rest` S: what Ember draws across chunks:
+    the time gap before a chunk's first post and the visited line after
+    the last read post when a chunk lands next to it are decided within
+    the chunk (post_view::stream); the lists' last visit separator and
+    the bottom dismiss buttons' five topic rule are the loaded page's,
+    not the whole list's; the a11y announcements while loading
+    (a11y.announce); bulk select's addTopics for loaded rows (270b); the
+    posts' cloaking (post-stream--cloaked) is not ported, so every loaded
+    post stays drawn; megatopics (isMegaTopic, lastId, fetchNextWindow
+    over post_number and asc, which GET /t/:id/posts.json answers) are
+    not, the topic view always carries the stream; keyboard navigation
+    (j/k, keyboard:move-selection loading at a boundary) waits for the
+    keyboard shortcuts, which the port doesn't have; GET
+    /t/:id/posts.json's filter, username_filters and include_raw, and GET
+    /t/:id/post_ids (TopicsController#post_ids) are not ported. The
+    messages lists draw DLoadMore's sentinel without loading more
+    (src/messages_view.rs:403).
 
 ### Phase 11: the bundled plugins' gaps (210)
 

@@ -82,22 +82,33 @@ async fn home_and_latest_render_the_topic_list() {
     }
 }
 
+/// DLoadMore's sentinel carries more_topics_url for
+/// static/js/discovery-topic-list.js, which loads that page as the reader
+/// nears it; no "Next page" link. The page footer waits in its templates
+/// while there is more to load.
 #[tokio::test]
-async fn latest_pages_link_to_the_next_html_page() {
+async fn latest_pages_carry_the_next_page_on_the_sentinel() {
     let db = TestDb::new().await;
     let (_, _, html) = get(&db.pool, "/latest?per_page=2").await;
     assert!(
-        html.contains(r#"href="/latest?page=1&#38;per_page=2" rel="next""#),
+        html.contains(r#"<div aria-hidden="true" class="load-more-sentinel" data-more-url="/latest?page=1&#38;per_page=2"></div>"#),
         "{html}"
     );
     assert!(!html.contains("no_definitions"));
+    assert!(!html.contains(r#"rel="next""#));
+    assert!(
+        html.contains(r#"<template class="deferred-footer"><div class="custom-footer-content">"#)
+    );
+    assert!(html.contains("/assets/discovery-topic-list.js?v="));
     let (_, _, last) = get(&db.pool, "/latest?page=2&per_page=2").await;
-    assert!(!last.contains(r#"rel="next""#));
+    assert!(!last.contains("data-more-url"));
+    assert!(!last.contains("deferred-footer"));
+    assert!(last.contains(r#"<div class="custom-footer-content">"#));
     // DiscoveryTopics' footer after the list, its spinner's container
     // empty either way; no education for a visitor.
     for page in [&html, &last] {
         assert!(page.contains(
-            r#"<div aria-hidden="true" class="load-more-sentinel"></div>
+            r#"></div>
    </div>
    <footer class="topic-list-bottom"><div class="loading-container"></div></footer>
   </div>"#
@@ -118,7 +129,7 @@ async fn latest_pages_apply_the_list_filters() {
         "{html}"
     );
     assert!(
-        html.contains(r#"href="/latest?page=1&#38;per_page=1&#38;tags=howto" rel="next""#),
+        html.contains(r#"data-more-url="/latest?page=1&#38;per_page=1&#38;tags=howto""#),
         "{html}"
     );
     let (status, _, body) = get(&db.pool, "/latest?before=soon").await;

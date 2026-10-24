@@ -2550,6 +2550,7 @@ pub async fn latest_page(
     // Discovery topics hides the footer while the list can load more.
     if list["topic_list"]["more_topics_url"].is_string() {
         site.chrome.show_footer = false;
+        site.chrome.defer_footer = true;
     }
     let list_bottom = list_bottom(
         i18n,

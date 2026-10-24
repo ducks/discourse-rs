@@ -44,16 +44,16 @@
       {% for row in rows %}{{ row|safe }}{% endfor %}
     </tbody>
   </table>
-  <div aria-hidden="true" class="load-more-sentinel"></div>
+  {#- DLoadMore: discovery-topic-list.js loads more_topics_url's page
+      as the reader nears it. -#}
+  <div aria-hidden="true" class="load-more-sentinel"{% if let Some(url) = more_url %} data-more-url="{{ url }}"{% endif %}></div>
   {%- endif %}
    </div>
    {{ list_bottom|safe }}
   </div>
  </div>
-  {% if let Some(url) = more_url %}
-  <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
-  {% endif %}
 </div>
+<script src="{{ crate::assets::url(base_path, "discovery-topic-list.js") }}"></script>
 {% if !category_controls.is_empty() %}<script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>{% endif %}
 {% if !tag_info.is_empty() %}<script src="{{ crate::assets::url(base_path, "tag-info.js") }}"></script>{% endif %}
 {% if !top_lists.is_empty() %}<script src="{{ crate::assets::url(base_path, "top-period.js") }}"></script>{% endif %}
