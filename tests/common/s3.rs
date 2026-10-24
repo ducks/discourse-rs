@@ -81,8 +81,9 @@ impl S3Server {
         // Up once it answers S3 requests: before that (its health checks
         // pass sooner) it says XMinioServerNotInitialized.
         let root = format!("http://127.0.0.1:{port}/");
+        // 120 s: during a full suite run on a busy box MinIO took over 30.
         let started = Instant::now();
-        while started.elapsed() < Duration::from_secs(30) {
+        while started.elapsed() < Duration::from_secs(120) {
             let answer = std::process::Command::new("curl")
                 .args(["-s", &root])
                 .output()
@@ -93,7 +94,7 @@ impl S3Server {
             }
             std::thread::sleep(Duration::from_millis(50));
         }
-        Err("MinIO did not come up in 30 seconds".into())
+        Err("MinIO did not come up in 120 seconds".into())
     }
 
     /// The (configured, real) pair for Config::object_storage_endpoints.
