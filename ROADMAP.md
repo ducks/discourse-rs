@@ -137,8 +137,10 @@ feat/flag-and-penalty-modals:
   admin-reports.js now acts only where the index template's AdminReports
   controls are, as Ember's index and show routes render different
   components under the same wrapper.
-- [ ] The chat read marker sends message_id=NaN for the just-sent staged
-  message, answered 400 (step 14).
+- [x] The chat read marker sent message_id=NaN for the just-sent staged
+  message, answered 400 (step 14): staged messages no longer count as the
+  last visible one, as firstVisibleMessageId's id never matches a
+  persisted message in Ember.
 - [x] Ticking a checklist box sometimes answered 422 "The checkbox could not
   be updated." (step 8): the unique post check stood in for Rails' Redis
   key with any recent post of the user whose current raw matched, so a

@@ -422,7 +422,9 @@
     }
     var view = scroller.getBoundingClientRect();
     var found = null;
-    channel.querySelectorAll(".chat-message-container[data-id]").forEach(function (message) {
+    // A staged message's data-id is its staged_id, which messagesManager
+    // never finds: only persisted messages mark the channel read.
+    channel.querySelectorAll(".chat-message-container[data-id]:not(.-staged)").forEach(function (message) {
       var rect = message.getBoundingClientRect();
       if (rect.bottom <= view.bottom + 1 && rect.bottom >= view.top) {
         found = message;
@@ -440,7 +442,7 @@
       return;
     }
     var id = Number(message.dataset.id);
-    if (id <= Number(channel.dataset.lastRead || 0)) {
+    if (!Number.isInteger(id) || id <= Number(channel.dataset.lastRead || 0)) {
       return;
     }
     channel.dataset.lastRead = String(id);
