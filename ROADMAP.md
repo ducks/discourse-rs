@@ -102,6 +102,19 @@ Blockers, a scripted walk-through would hit them:
   page draws, the lightbox opens, the video placeholder plays (the WebM
   in Playwright's Chromium, which has no H.264), the audio loads, the
   optimized images and og:image are there, and a mention notifies.
+- [x] A new member's post held for approval (approve_post_count,
+  approve_unless_trust_level, a watched word's require_approval) was
+  refused on /review for admins and moderators: the queue serialized
+  flagged posts only (75's leftover). feat/review-queued-posts, done:
+  /review.json serializes queued posts (ReviewableQueuedPostSerializer:
+  the payload, the raw cooked, the editable fields, the bundled actions
+  per viewer) and reviewed posts (review_every_post), with the score
+  reasons; the page draws the queued post's card as Ember does, and
+  Approve, Reject, Request Revision (its modal) and Delete user work from
+  it. Recorded on rs-ref-d (parity/writes/review: queued_list*,
+  queued_approve_then_list*); the card and the modal compared with
+  Playwright. Still refused: user reviewables (must_approve_users, 148),
+  editing a queued post and the silence and suspend client actions (194e)
 - [x] The admin's site settings answered 500 saving a list setting such as
   authorized_extensions (164), so an admin couldn't allow video or audio
   uploads; the demo sites have them set in the database
@@ -128,8 +141,9 @@ Visible if clicked, avoid them in a scripted demo:
   menu, feat/topic-admin-menus (194a), and claims and notes,
   feat/review-claims-notes (194b), done; the menus' unported actions are
   refused (194c, 194d).
-- [ ] The review queue's client actions (edit, suspend, silence) and its
-  reject reason and revise modals are refused (194e).
+- [ ] The review queue's client actions (edit, suspend, silence), its
+  reject reason modal and editing a reviewable are refused (194e); the
+  revise modal is done (feat/review-queued-posts).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
@@ -424,8 +438,9 @@ Bugs or silent gaps in what is merged, small and independent.
     user (as a spammer, account_deleted email); reviewed posts: approve,
     restore, unhide, reject, keep deleted, delete; AutoQueueHandler's
     rejections. Left: approving into a closed topic or with tags, an
-    email or plugin fields, unsilencing the author, unhiding a first post,
-    the review list still shows flagged posts only),
+    email or plugin fields, unsilencing the author, unhiding a first post;
+    the review list's queued and reviewed posts landed with
+    feat/review-queued-posts),
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
     with queued and reviewed posts landed with 75; block_urls on onebox
     engines)
@@ -1990,17 +2005,20 @@ have handlers now.
     restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
     first or last post (:698), claims and notes (review_posts.rs:257;
-    reviewable_user.rs:195,272,446; review_list.rs:589), the other
-    reviewable types (review.rs:247; review_posts.rs:211;
-    review_list.rs:570,573), queued posts approved into closed or
+    reviewable_user.rs:195,272,446), the other reviewable types
+    (review.rs:247; review_posts.rs:211), user and plugin reviewables in
+    the list (review_list.rs:594,599: ReviewableUserSerializer, the
+    user.gjs card with its reject reason modal, approve_user), queued
+    posts approved into closed or
     deleted topics, with tags, an email, plugin fields or polls,
     unsilencing their author, unhiding a first post
     (review_posts.rs:464,476,610,624,636,1262), user reviewables on
     invite-only sites or with an uploaded avatar and their rejection
-    email (reviewable_user.rs:52,82,316), score conversations, reasons
-    and types, the ids, date and additional filters
-    (review_list.rs:204,207,215,882,894,931,954), reviewable web hook
-    payloads (review_list.rs:1520,1558,1603 and `web_hooks::refuse` for
+    email (reviewable_user.rs:52,82,316), score conversations and types,
+    reasons whose text the restricted cook would change, watched word
+    scores without their words, the ids, date and additional filters
+    (review_list.rs:205,208,216,1047,1100,1246,1266), reviewable web hook
+    payloads (review_list.rs:602,2196,2233,2278 and `web_hooks::refuse` for
     the reviewable events), truncate_user_flag_stats (review.rs:534;
     review_posts.rs:1236)
 149. `feat/category-group-moderation` M: enable_category_group_moderation
@@ -3033,7 +3051,10 @@ route table has been made, so this list may be short.
     rebaking (PUT /posts/:id/rebake)
     194e. `feat/review-client-actions` M: the review queue's client
     actions (the composer's edit, suspend, silence), the reject reason
-    and revise modals and editing a reviewable
+    modal and editing a reviewable (a queued post's title, category, tags
+    and raw: PUT /review/:id, ReviewablesController#update), and a queued
+    post's raw email (RawEmailModal). The revise modal is done
+    (feat/review-queued-posts)
     194f. `feat/review-pages-rest` M: the /review/topics, /review/settings
     and /review/:id pages (the user menu's review items link to the
     last), the insights tab (IpLookup), the pin toggle and loading past
@@ -5032,12 +5053,13 @@ Logged-in readers, no writes yet.
       undoing flags, flags on posts already in review, deleting, editing,
       restoring and unhiding from the queue, penalties. The reviewed and
       queued posts' actions landed with 75; the rest: 147, 148
-- [x] The review queue (GET /review.json) for admins: flagged posts with
+- [x] The review queue (GET /review.json) for admins: flagged, queued and
+      reviewed posts with
       `list_for`'s status, type, topic, category, user, priority and sort
       filters, paging, the side-loaded users, topics, scores, score types,
       bundled actions and histories, and the meta. Measured against Rails.
-      Refused: category group moderators (149), other reviewable types, score
-      reasons, penalized authors, the date and additional filters.
+      Refused: category group moderators (149), user and plugin
+      reviewables (148), penalized authors, the date and additional filters.
       Moderators see `Reviewable.viewable_by`: what moderators may review
       outside categories and messages they can't see and posts they can't
       review, in the list, the counts, the user menu and the actions

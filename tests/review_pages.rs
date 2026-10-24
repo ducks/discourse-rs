@@ -392,3 +392,295 @@ async fn notes_and_claims_draw_in_the_queue() {
     assert!(html.contains("Claimed by <span>"));
     assert!(html.contains("\"claimed_by\":{\"user_id\":1,\"automatic\":false}"));
 }
+
+/// user0, a member with one post, under approve_post_count: what they post
+/// waits in the queue (NewPostManager), as Rails queues it. The
+/// reviewable's id.
+async fn queue(db: &TestDb, st: &AppState, params: &str) -> i64 {
+    common::set_setting(&db.pool, "approve_post_count", 3, "5").await;
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let (status, body) = user0.send(Method::POST, "/posts.json", params, true).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["action"], "enqueued", "{body}");
+    sqlx::query_scalar(
+        "SELECT id FROM reviewables WHERE type = 'ReviewableQueuedPost' ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap()
+}
+
+const QUEUED_REPLY: &str = "topic_id=35&raw=A+queued+reply+from+a+new+member+with+**bold**+text.&typing_duration_msecs=5000";
+
+/// Approving the queued reply as `username` (staff), from the queue the
+/// page draws: the card, the approval, the post it creates, the queue and
+/// counts after.
+async fn approve_a_queued_reply_as(username: &str) {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    if username == "user3" {
+        for sql in [
+            "UPDATE users SET moderator = true WHERE id = 5",
+            "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, now(), now(), 2), (3, 5, now(), now(), 2)",
+        ] {
+            sqlx::query(sql).execute(&db.pool).await.unwrap();
+        }
+    }
+    let id = queue(&db, &st, QUEUED_REPLY).await;
+    let mut staff = Client::logged_in(st, username).await;
+
+    // ReviewableQueuedPostSerializer: the payload, the raw cooked, the
+    // author side-loaded, the post_count reason, the approval and the
+    // reject bundle.
+    let (status, body) = staff.send(Method::GET, "/review.json", "", true).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let r = &json["reviewables"][0];
+    assert_eq!(r["id"], id, "{body}");
+    assert_eq!(r["type"], "ReviewableQueuedPost");
+    assert_eq!(r["topic_id"], 35);
+    assert_eq!(r["created_from_flag"], false);
+    assert_eq!(r["can_edit"], true);
+    assert_eq!(r["fancy_title"], serde_json::Value::Null);
+    assert_eq!(
+        r["cooked"],
+        "<p>A queued reply from a new member with <strong>bold</strong> text.</p>"
+    );
+    assert_eq!(
+        r["payload"]["raw"],
+        "A queued reply from a new member with **bold** text."
+    );
+    assert_eq!(r["target_created_by_id"], 2);
+    assert_eq!(
+        r["bundled_action_ids"],
+        serde_json::json!([format!("{id}-approve_post"), format!("{id}-reject-post")])
+    );
+    let actions: Vec<&str> = json["actions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|a| a["server_action"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        actions,
+        [
+            "approve_post",
+            "reject_post",
+            "revise_and_reject_post",
+            "reject_and_silence",
+            "reject_and_suspend",
+            "delete_user",
+            "delete_user_block"
+        ]
+    );
+    assert_eq!(json["reviewable_scores"][0]["reason_type"], "post_count");
+    assert!(
+        json["reviewable_scores"][0]["reason"]
+            .as_str()
+            .unwrap()
+            .starts_with("<p>The first few posts from every user must be approved by staff.")
+    );
+    assert!(
+        json["users"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|u| u["username"] == "user0")
+    );
+    assert_eq!(json["meta"]["reviewable_count"], 1);
+
+    // The card as reviewable/queued-post.gjs draws it.
+    let (status, html) = staff.page("/review").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains(&format!(
+            "<div class=\"review-item reviewable-queued-post\" data-reviewable-id=\"{id}\">"
+        )),
+        "{html}"
+    );
+    assert!(html.contains("<span class=\"review-item__flag-label\">Queued post</span>"));
+    assert!(html.contains("<span class=\"review-item__flag-reason\">Needs Approval </span>"));
+    assert!(html.contains("<div class=\"review-item__meta-label\">Topic</div>"));
+    assert!(html.contains(">Parity fixture: replies and posters</a>"));
+    assert!(html.contains("<div class=\"review-item__meta-label\">User</div>"));
+    assert!(html.contains(
+        "<div class=\"review-item__post\"><div class=\"review-item__post-content\"><div class=\"post-body\"><p>A queued reply from a new member with <strong>bold</strong> text.</p></div><span></span></div></div>"
+    ));
+    assert!(html.contains("<h3 class=\"review-item__aside-title\">Approve this post?</h3>"));
+    assert!(html.contains(
+        "<button class=\"btn btn-text btn-default reviewable-action approve-post\" type=\"button\"><span class=\"d-button-label\">Yes</span></button>"
+    ));
+    assert!(html.contains("data-value=\"revise_and_reject_post\""));
+    assert!(html.contains("data-value=\"delete_user\""));
+    assert!(html.contains("<template id=\"review-revise-modal\">"));
+    assert!(html.contains("\"server_action\":\"approve_post\""));
+
+    // Yes: the post is created as its author, the queue empties.
+    let (status, body) = staff
+        .send(
+            Method::PUT,
+            &format!("/review/{id}/perform/approve_post?version=0"),
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let result = &json["reviewable_perform_result"];
+    assert_eq!(result["created_post_topic_id"], 35, "{body}");
+    assert_eq!(result["reviewable_count"], 0);
+    let (author, raw): (i32, String) =
+        sqlx::query_as("SELECT user_id, raw FROM posts WHERE id = $1")
+            .bind(result["created_post_id"].as_i64().unwrap() as i32)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(author, 2);
+    assert_eq!(raw, "A queued reply from a new member with **bold** text.");
+    let (_, body) = staff.send(Method::GET, "/review.json", "", true).await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["reviewables"], serde_json::json!([]), "{body}");
+    assert_eq!(json["meta"]["reviewable_count"], 0);
+    let (_, html) = staff.page("/review").await;
+    assert!(html.contains("<div class=\"no-review\">There are no items to review.</div>"));
+    // The redraw review.js asks for: approved, its post linked, nothing
+    // left to do.
+    let (status, html) = staff
+        .page("/review?priority=any&status=all&topic_id=35")
+        .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains(&format!("data-reviewable-id=\"{id}\"")));
+    assert!(html.contains("<div class=\"review-item__status --approved\">Post approved</div>"));
+    assert!(!html.contains("review-item__moderator-actions"));
+}
+
+#[tokio::test]
+async fn an_admin_approves_a_queued_reply() {
+    approve_a_queued_reply_as("admin").await;
+}
+
+#[tokio::test]
+async fn a_moderator_approves_a_queued_reply() {
+    approve_a_queued_reply_as("user3").await;
+}
+
+// A queued topic: no topic yet, so the card draws the title, category and
+// tags from the payload, asks whether to approve the topic, and offers
+// editing its title, category, tags and raw.
+#[tokio::test]
+async fn a_queued_topic_draws_its_title_and_category() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let id = queue(
+        &db,
+        &st,
+        "title=A+queued+topic+%26+its+%3Cb%3Etitle%3C%2Fb%3E&raw=The+first+post+of+a+queued+topic+from+a+new+member.&category=4&typing_duration_msecs=5000",
+    )
+    .await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (_, body) = admin.send(Method::GET, "/review.json", "", true).await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let r = &json["reviewables"][0];
+    assert_eq!(r["id"], id, "{body}");
+    assert_eq!(r["topic_id"], serde_json::Value::Null);
+    assert_eq!(r["removed_topic_id"], serde_json::Value::Null);
+    assert_eq!(
+        r["fancy_title"],
+        "A queued topic &amp; its &lt;b&gt;title&lt;/b&gt;"
+    );
+    let fields: Vec<&str> = r["editable_fields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|f| f["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        fields,
+        [
+            "payload.title",
+            "category_id",
+            "payload.tags",
+            "payload.raw"
+        ]
+    );
+
+    let (status, html) = admin.page("/review").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<span class=\"review-item__flag-label\">Queued topic</span>"),
+        "{html}"
+    );
+    assert!(html.contains(
+        "<div class=\"reviewable-topic-link\"><div class=\"title-text\">A queued topic &amp; its &lt;b&gt;title&lt;/b&gt;</div><span class=\"badge-category__wrapper\""
+    ));
+    assert!(html.contains("<h3 class=\"review-item__aside-title\">Approve this topic?</h3>"));
+    assert!(html.contains(
+        "<button class=\"btn btn-text reviewable-action btn-default edit\" type=\"button\">"
+    ));
+
+    // Approving creates the topic; the redraw finds it there.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            &format!("/review/{id}/perform/approve_post?version=0"),
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let topic_id = json["reviewable_perform_result"]["created_post_topic_id"]
+        .as_i64()
+        .unwrap();
+    let title: String = sqlx::query_scalar("SELECT title FROM topics WHERE id = $1")
+        .bind(topic_id as i32)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(title, "A queued topic & its <b>title</b>");
+    let (_, html) = admin
+        .page(&format!(
+            "/review?priority=any&status=all&topic_id={topic_id}"
+        ))
+        .await;
+    assert!(
+        html.contains(&format!("data-reviewable-id=\"{id}\"")),
+        "{html}"
+    );
+}
+
+// Request Revision: the reason and feedback go with the action, the author
+// gets the system message, the post stays unposted.
+#[tokio::test]
+async fn a_queued_reply_is_sent_back_for_revision() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let id = queue(&db, &st, QUEUED_REPLY).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            &format!("/review/{id}/perform/revise_and_reject_post?version=0"),
+            "revise_reason=other_reason&revise_custom_reason=Please+add+a+source&revise_feedback=Thanks%21",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let status: i32 = sqlx::query_scalar("SELECT status FROM reviewables WHERE id = $1")
+        .bind(id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(status, 2);
+    let message: String = sqlx::query_scalar(
+        "SELECT p.raw FROM posts p JOIN topics t ON t.id = p.topic_id \
+         JOIN topic_allowed_users tau ON tau.topic_id = t.id AND tau.user_id = 2 \
+         WHERE t.archetype = 'private_message' ORDER BY p.id DESC LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(message.contains("Please add a source"), "{message}");
+    assert!(message.contains("Thanks!"), "{message}");
+}

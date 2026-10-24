@@ -1,8 +1,9 @@
 //! The review queue's page (`/review`, review.index) as the Ember app
 //! renders it from ReviewablesController#index's document: the navigation
 //! (templates/review/index.gjs), ReviewFilters, and each reviewable as
-//! components/reviewable/item.gjs draws it, with the flagged post's body
-//! (reviewable/flagged-post.gjs, reviewable/post.gjs), its timeline
+//! components/reviewable/item.gjs draws it, with the flagged or reviewed
+//! post's body (reviewable/flagged-post.gjs, reviewable/post.gjs), a
+//! queued post's (reviewable/queued-post.gjs), its timeline
 //! (reviewable/timeline.gjs) and note form, and the moderator actions
 //! (ReviewableBundledAction, ReviewableClaimedTopic).
 //!
@@ -46,6 +47,8 @@ pub struct Page<'a> {
     pub view_all_query: &'a str,
     /// reviewable_default_visibility, the priority filter.s default.
     pub default_priority: &'a str,
+    /// reviewable_revision_reasons, the revise modal's reasons.
+    pub revision_reasons: &'a str,
 }
 
 fn s(v: &Value) -> &str {
@@ -309,6 +312,7 @@ pub fn render(p: &Page) -> String {
     }
     out.push_str("</div></div></div>");
     out.push_str(&expanded_filters_template(p));
+    out.push_str(&revise_modal_template(p));
     out.push_str(&format!(
         "<script type=\"application/json\" id=\"review-page-data\">{}</script>",
         json!({
@@ -328,6 +332,51 @@ pub fn render(p: &Page) -> String {
         &["generic_error"],
     ));
     out
+}
+
+/// ReviseAndRejectPostReviewable's controls, for review.js to show in a
+/// DModal under a copy of the queued post: the reason (the
+/// reviewable_revision_reasons, then Other, chosen), the custom reason
+/// Other asks for, the optional feedback, and the footer's buttons. Only
+/// when a reviewable on the page offers the revision.
+fn revise_modal_template(p: &Page) -> String {
+    let cx = p.cx;
+    let offered = p.doc["actions"].as_array().is_some_and(|actions| {
+        actions
+            .iter()
+            .any(|a| a["server_action"] == "revise_and_reject_post")
+    });
+    if !offered {
+        return String::new();
+    }
+    let mut rows: Vec<(String, String)> = p
+        .revision_reasons
+        .split('|')
+        .filter(|r| !r.is_empty())
+        .map(|r| (r.to_string(), r.to_string()))
+        .collect();
+    rows.push((
+        "other_reason".into(),
+        t(cx, "review.revise_and_reject_post.other_reason"),
+    ));
+    let label = |key: &str| escape(&t(cx, &format!("review.revise_and_reject_post.{key}")));
+    format!(
+        "<template id=\"review-revise-modal\"><div class=\"control-group\"><label class=\"control-label\" for=\"reason\">{}</label>{}</div><div class=\"control-group\"><label class=\"control-label\" for=\"custom_reason\">{}</label><input class=\"ember-text-field ember-view revise-and-reject-reviewable__custom-reason\" name=\"custom_reason\" type=\"text\"></div><div class=\"control-group\"><label class=\"control-label\" for=\"feedback\">{} <span class=\"revise-and-reject-reviewable__optional\">({})</span></label><textarea name=\"feedback\" class=\"ember-text-area ember-view revise-and-reject-reviewable__feedback\"></textarea></div><div class=\"revise-and-reject-reviewable__footer\"><button class=\"btn btn-primary\" disabled=\"\" type=\"button\"><span class=\"d-button-label\">{}</span></button><button class=\"btn btn-flat d-modal-cancel\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></template>",
+        label("reason"),
+        combo(
+            p,
+            "revise-and-reject-reviewable__reason",
+            &rows,
+            Some("other_reason"),
+            None
+        ),
+        label("custom_reason"),
+        label("feedback"),
+        label("optional"),
+        // The footer's DButtons, a label alone.
+        label("send_pm"),
+        escape(&t(cx, "cancel")),
+    )
 }
 
 /// What review.js says on its own: the copy feedback, the toasts' close
@@ -355,6 +404,7 @@ fn strings(p: &Page) -> Value {
         "copy_link_feedback": t(cx, "review.copy_link_feedback"),
         "statuses": statuses,
         "close": t(cx, "modal.close"),
+        "revise_title": t(cx, "review.revise_and_reject_post.title"),
     })
 }
 
@@ -753,6 +803,7 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
             post_body(cx, r, store, target_created_by, "review.flagged_user")
         }
         "ReviewablePost" => post_body(cx, r, store, target_created_by, "review.review_user"),
+        "ReviewableQueuedPost" => queued_post_body(cx, r, store, target_created_by),
         // review_list refuses the others before they get here.
         _ => format!(
             "<div class=\"alert alert-error review-item__no-component\">{}</div>",
@@ -776,7 +827,7 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
         let question = if display_context_question {
             Some(context_question(cx, kind, &scores, &topic_id))
         } else {
-            user_context_question(cx, kind, status, &scores, &topic_id)
+            user_context_question(cx, kind, status, &scores, &r["topic_id"], store)
         };
         out.push_str(&format!(
             "<div class=\"review-item__moderator-actions\"><h3 class=\"review-item__aside-title\">{}</h3>",
@@ -941,6 +992,7 @@ fn user_context_question(
     status: i64,
     scores: &[Score],
     topic_id: &Value,
+    store: &Store,
 ) -> Option<String> {
     let key = match kind {
         "ReviewableUser" => {
@@ -956,7 +1008,10 @@ fn user_context_question(
                 "review.context_question.approve_user"
             }
         }
-        "ReviewableQueuedPost" if topic_id.is_null() => "review.context_question.approve_topic",
+        // resolvedType: a queued post without its topic makes one.
+        "ReviewableQueuedPost" if store.get("topics", topic_id).is_none() => {
+            "review.context_question.approve_topic"
+        }
         "ReviewableQueuedPost" | "ReviewablePost" => "review.context_question.approve_post",
         _ => return None,
     };
@@ -1101,20 +1156,10 @@ fn topic_status(cx: &ListContext, topic: &Value, topic_url: &str) -> String {
     out
 }
 
-/// reviewable/post.gjs: the topic, the author, the post's body.
-fn post_body(
-    cx: &ListContext,
-    r: &Value,
-    store: &Store,
-    author: Option<&Value>,
-    user_label_key: &str,
-) -> String {
-    let mut out = format!(
-        "<div class=\"review-item__meta-content\"><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-topic-title\">",
-        escape(&t(cx, "review.posted_in"))
-    );
-    // ReviewableTopicLink
-    out.push_str("<div class=\"reviewable-topic-link\">");
+/// reviewable/topic-link.gjs: the topic's status, title and details, a
+/// link to a deleted one, else the block given (`fallback`).
+fn topic_link(cx: &ListContext, r: &Value, store: &Store, fallback: &str) -> String {
+    let mut out = String::from("<div class=\"reviewable-topic-link\">");
     if let Some(topic) = store.get("topics", &r["topic_id"]) {
         out.push_str(&format!(
             "<div class=\"reviewable-topic-link__title-wrapper\"><div class=\"reviewable-topic-link__title-status\">{}</div><div class=\"reviewable-topic-link__title-link\"><a class=\"title-text\" href=\"{}\">{}</a></div></div>",
@@ -1137,13 +1182,7 @@ fn post_body(
             ));
         }
         out.push_str("<div class=\"reviewable-topic-link__details-tags\">");
-        let tags = &r["topic_tags"];
-        if tags.as_array().is_some_and(|t| !t.is_empty()) {
-            out.push_str(&format!(
-                "<div class=\"list-tags\">{}</div>",
-                crate::topic_list_view::tags_html(cx, &json!({ "tags": tags }), "", &[])
-            ));
-        }
+        out.push_str(&reviewable_tags(cx, &r["topic_tags"]));
         out.push_str("</div></div>");
     } else if !r["removed_topic_id"].is_null() {
         out.push_str(&format!(
@@ -1153,15 +1192,28 @@ fn post_body(
             r["removed_topic_id"],
             escape(&t(cx, "review.topics.original"))
         ));
+    } else {
+        out.push_str(fallback);
     }
     out.push_str("</div>");
-    out.push_str(&post_edits(cx, r));
-    out.push_str(&format!(
-        "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
-        escape(&t(cx, user_label_key))
-    ));
-    // reviewable/created-by.gjs
-    out.push_str("<div class=\"created-by\">");
+    out
+}
+
+/// ReviewableTags: the tags in a list, when there are any.
+fn reviewable_tags(cx: &ListContext, tags: &Value) -> String {
+    if tags.as_array().is_some_and(|t| !t.is_empty()) {
+        format!(
+            "<div class=\"list-tags\">{}</div>",
+            crate::topic_list_view::tags_html(cx, &json!({ "tags": tags }), "", &[])
+        )
+    } else {
+        String::new()
+    }
+}
+
+/// reviewable/created-by.gjs for the author.
+fn created_by(cx: &ListContext, author: Option<&Value>) -> String {
+    let mut out = String::from("<div class=\"created-by\">");
     match author {
         Some(user) => {
             out.push_str(&user_link(cx, user, &avatar(user, 24)));
@@ -1178,7 +1230,30 @@ fn post_body(
             escape(&t(cx, "review.deleted_user"))
         )),
     }
-    out.push_str("</div></div></div>");
+    out.push_str("</div>");
+    out
+}
+
+/// reviewable/post.gjs: the topic, the author, the post's body.
+fn post_body(
+    cx: &ListContext,
+    r: &Value,
+    store: &Store,
+    author: Option<&Value>,
+    user_label_key: &str,
+) -> String {
+    let mut out = format!(
+        "<div class=\"review-item__meta-content\"><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-topic-title\">",
+        escape(&t(cx, "review.posted_in"))
+    );
+    out.push_str(&topic_link(cx, r, store, ""));
+    out.push_str(&post_edits(cx, r));
+    out.push_str(&format!(
+        "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
+        escape(&t(cx, user_label_key))
+    ));
+    out.push_str(&created_by(cx, author));
+    out.push_str("</div></div>");
     out.push_str(
         "<div class=\"review-item__post\"><div class=\"review-item__post-content-wrapper\">",
     );
@@ -1194,6 +1269,53 @@ fn post_body(
         ));
     }
     out.push_str("<span></span></div></div>");
+    out
+}
+
+/// reviewable/queued-post.gjs: the topic (or the new topic's title,
+/// category and tags), the author, and the raw cooked as a preview.
+fn queued_post_body(cx: &ListContext, r: &Value, store: &Store, author: Option<&Value>) -> String {
+    let mut fallback = format!("<div class=\"title-text\">{}</div>", s(&r["fancy_title"]));
+    if let Some(category) = r["category_id"]
+        .as_i64()
+        .and_then(|id| cx.categories.get(&id))
+    {
+        fallback.push_str(&crate::topic_list_view::category_badge_html(
+            cx, category, false, false,
+        ));
+    }
+    fallback.push_str(&reviewable_tags(cx, &r["payload"]["tags"]));
+    // A post by email: the envelope (the raw email's modal for those who
+    // may see it is not ported; review.js says so).
+    if r["payload"]["via_email"] == true {
+        let envelope = format!(
+            "<span class=\"svg-icon-title\" title=\"{}\">{}</span>",
+            escape(&t(cx, "post.via_email")),
+            icon("envelope", None)
+        );
+        if r["payload"]["raw_email"].is_string() {
+            fallback.push_str(&format!(
+                "<a class=\"show-raw-email\" href=\"\">{envelope}</a>"
+            ));
+        } else {
+            fallback.push_str(&envelope);
+        }
+    }
+    let mut out = format!(
+        "<div class=\"review-item__meta-content\"><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-topic-title\">",
+        escape(&t(cx, "review.topic_label"))
+    );
+    out.push_str(&topic_link(cx, r, store, &fallback));
+    out.push_str(&format!(
+        "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
+        escape(&t(cx, "review.review_user"))
+    ));
+    out.push_str(&created_by(cx, author));
+    out.push_str("</div></div>");
+    out.push_str(&format!(
+        "<div class=\"review-item__post\"><div class=\"review-item__post-content\"><div class=\"post-body\">{}</div><span></span></div></div>",
+        s(&r["cooked"])
+    ));
     out
 }
 

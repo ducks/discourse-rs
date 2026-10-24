@@ -166,6 +166,7 @@ pub async fn index(
                 i18n: ctx.i18n,
                 config: ctx.config,
             },
+            &host,
             &guardian,
             &p,
         )
@@ -286,6 +287,7 @@ pub async fn page(
         return Err(Unsupported("the review queue for category group moderators").into());
     }
     let listed = if guardian.is_staff() {
+        let host = Host::from_state(&state);
         let p: Map<String, Value> = pairs
             .iter()
             .map(|(k, v)| (k.clone(), Value::String(v.clone())))
@@ -298,6 +300,7 @@ pub async fn page(
                     i18n: &state.i18n,
                     config: &state.config,
                 },
+                &host,
                 &guardian,
                 &p,
             )
@@ -343,6 +346,10 @@ pub async fn page(
                 viewer: &viewer,
             };
             let claiming = settings.get("reviewable_claiming")?.to_s().to_string();
+            let revision_reasons = settings
+                .get("reviewable_revision_reasons")?
+                .to_s()
+                .to_string();
             let main = crate::review_view::render(&crate::review_view::Page {
                 cx: &cx,
                 acx: &acx,
@@ -353,6 +360,7 @@ pub async fn page(
                 blur_tl0: settings.get("blur_tl0_flagged_posts_media")?.truthy(),
                 view_all_query: &view_all_query,
                 default_priority: &default_priority,
+                revision_reasons: &revision_reasons,
             });
             (main, crate::topic_list_view::t(&cx, "review.title"))
         }

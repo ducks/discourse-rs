@@ -1,0 +1,31 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9501, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, NULL, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"The first post of a **new topic** that waits for approval :wave:\", \"tags\": null, \"title\": \"A queued topic & <b>its</b> title\", \"is_poll\": true, \"typing_duration_msecs\": 4000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9502, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 3, '{\"raw\": \"A queued reply with a [link](https://example.com) in it.\", \"tags\": null, \"reply_to_post_number\": 2, \"is_poll\": true, \"typing_duration_msecs\": 1500, \"composer_open_duration_msecs\": 9000}', 0, '2026-10-02 10:01:00', TRUE, FALSE, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9503, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 34, NULL, 6, FALSE, NULL, NULL, 4, '{\"raw\": \"A tagged topic in a category that needs approval.\", \"tags\": [\"howto\", \"guide\"], \"title\": \"A tagged topic waiting in the queue\", \"is_poll\": true, \"typing_duration_msecs\": 5000, \"composer_open_duration_msecs\": 20000}', 0, '2026-10-02 10:02:00', TRUE, FALSE, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9504, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 34, 38, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"This reply says badword and waits.\", \"tags\": null, \"is_poll\": true}', 0, '2026-10-02 10:03:00', TRUE, FALSE, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9505, 'ReviewablePost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, 36, 'Post', 3, '{}', 0, '2026-10-02 10:04:00', TRUE, FALSE, '2026-10-02 10:04:00', '2026-10-02 10:04:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, context, created_at, updated_at) VALUES (9501, 9501, -1, 9, 0, 6, 0, 0, 'post_count', NULL, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9502, 9502, -1, 9, 0, 6, 0, 0, 'fast_typer', NULL, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9503, 9503, -1, 9, 0, 6, 0, 0, 'category', NULL, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9504, 9504, -1, 9, 0, 6, 0, 0, 'watched_word', 'badword', '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9505, 9505, -1, 9, 0, 6, 0, 0, NULL, NULL, '2026-10-02 10:04:00', '2026-10-02 10:04:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9501, 9501, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9502, 9502, 0, 0, -1, '2026-10-02 10:01:00', '2026-10-02 10:01:00'), (9503, 9503, 0, 0, -1, '2026-10-02 10:02:00', '2026-10-02 10:02:00'), (9504, 9504, 0, 0, -1, '2026-10-02 10:03:00', '2026-10-02 10:03:00'), (9505, 9505, 0, 0, -1, '2026-10-02 10:04:00', '2026-10-02 10:04:00')",
+    "UPDATE user_stats SET pending_posts_count = 2 WHERE user_id = 2",
+    "UPDATE user_stats SET pending_posts_count = 1 WHERE user_id IN (3, 4)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost"
+    },
+    {
+      "method": "PUT",
+      "path": "/review/9502/perform/approve_post",
+      "params": {
+        "version": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost"
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost&status=approved"
+    }
+  ]
+}

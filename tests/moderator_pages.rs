@@ -214,12 +214,10 @@ async fn the_moderator_loads_latest_their_profile_and_a_topic() {
 async fn the_review_queue_lists_what_the_moderator_may_review() {
     let (_db, st) = setup().await;
     let mut moderator = Client::logged_in(st, "user3").await;
-    let (status, json) = moderator
-        .json("/review.json?type=ReviewableFlaggedPost")
-        .await;
+    let (status, json) = moderator.json("/review.json").await;
     assert_eq!(status, StatusCode::OK, "{json}");
-    assert_eq!(ids(&json["reviewables"]), vec![9401, 9406]);
-    assert_eq!(json["meta"]["total_rows_reviewables"], 2);
+    assert_eq!(ids(&json["reviewables"]), VISIBLE.to_vec());
+    assert_eq!(json["meta"]["total_rows_reviewables"], 3);
     assert_eq!(json["meta"]["reviewable_count"], 3);
     // FlaggedUserSerializer for a moderator: the IP address
     // (moderators_view_ips) but no email (moderators_view_emails is off),
@@ -234,10 +232,16 @@ async fn the_review_queue_lists_what_the_moderator_may_review() {
     assert_eq!(admin["ip_address"], "127.0.0.1");
     assert_eq!(admin["can_delete_all_posts"], false);
 
-    let (status, html) = moderator.page("/review?type=ReviewableFlaggedPost").await;
+    let (status, html) = moderator.page("/review").await;
     assert_eq!(status, StatusCode::OK, "{html}");
     assert!(html.contains("data-reviewable-id=\"9401\""), "{html}");
     assert!(html.contains("data-reviewable-id=\"9406\""));
+    assert!(html.contains(
+        "<div class=\"review-item reviewable-queued-post\" data-reviewable-id=\"9405\">"
+    ));
+    assert!(
+        html.contains("<div class=\"post-body\"><p>A queued reply moderators review.</p></div>")
+    );
     assert!(!html.contains("data-reviewable-id=\"9402\""));
 }
 
@@ -280,6 +284,25 @@ async fn the_moderator_acts_on_what_they_may_review() {
     assert_eq!(status, StatusCode::OK, "{body}");
     let json: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(json["reviewable_perform_result"]["reviewable_count"], 2);
+    // The queued reply they may review: approved, posted as its author.
+    let (status, body) = moderator
+        .send(
+            Method::PUT,
+            "/review/9405/perform/approve_post?version=0",
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["reviewable_perform_result"]["reviewable_count"], 1);
+    assert_eq!(
+        json["reviewable_perform_result"]["created_post_topic_id"],
+        35
+    );
+    let (status, json) = moderator.json("/review.json").await;
+    assert_eq!(status, StatusCode::OK, "{json}");
+    assert_eq!(ids(&json["reviewables"]), vec![9406]);
     // Not reviewable by moderators, in a hidden category, in a hidden
     // message: not found.
     for id in [9402, 9403, 9404] {

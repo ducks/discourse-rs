@@ -12,9 +12,12 @@
 // #unclaimAutomaticReviewable) and the notes (ReviewableNoteForm, the
 // timeline's delete) go to the server, the reviewable drawn again after.
 //
+// A queued post's revision asks for its reason first
+// (ReviseAndRejectPostReviewable, a DModal over a copy of the post).
+//
 // What leans on parts not ported says so instead: the client actions
-// (edit, suspend, silence), the reject reason and revise modals, the
-// insights tab, editing and the pin toggle.
+// (edit, suspend, silence), the reject reason modal, the insights tab,
+// editing, a queued post's raw email and the pin toggle.
 (function () {
   "use strict";
 
@@ -330,20 +333,27 @@
       });
   }
 
-  // ReviewableItem#_performConfirmed, without a client action.
-  function performConfirmed(item, action) {
+  // ReviewableItem#_performConfirmed, without a client action; the
+  // modal's fields (additionalData) go with it.
+  function performConfirmed(item, action, additionalData) {
     var data = reviewableData(item);
     var id = item.dataset.reviewableId;
     setDisabled(item, true);
-    ui()
+    return ui()
       .ajax(
         "PUT",
-        "/review/" + id + "/perform/" + encodeURIComponent(action.server_action) + "?version=" + data.version
+        "/review/" + id + "/perform/" + encodeURIComponent(action.server_action) + "?version=" + data.version,
+        additionalData
       )
       .then(function (json) {
         var result = (json && json.reviewable_perform_result) || {};
         if (action.completed_message) {
           ui().toast(action.completed_message);
+        }
+        // An approved queued topic now has one: the redraw looks there.
+        if (result.created_post_topic_id && !data.topic_id) {
+          data.topic_id = result.created_post_topic_id;
+          storeData(item, data);
         }
         var ids = [id];
         Object.keys(result.reviewable_updates || {}).forEach(function (other) {
@@ -471,7 +481,11 @@
       return;
     }
     if (action.server_action === "revise_and_reject_post") {
-      notPorted("the revise and reject modal (ReviseAndRejectPostReviewable)");
+      claimReviewable(item).then(function (claimed) {
+        if (claimed) {
+          reviseModal(item, action);
+        }
+      });
       return;
     }
     if (action.client_action) {
@@ -479,6 +493,103 @@
       return;
     }
     performConfirmed(item, action);
+  }
+
+  // ReviseAndRejectPostReviewable: the queued post, the reason (Other
+  // asks for a custom one), the optional feedback; Send PM performs with
+  // them and closes the modal.
+  function reviseModal(item, action) {
+    var template = document.getElementById("review-revise-modal");
+    if (!template) {
+      return;
+    }
+    var OTHER_REASON = "other_reason";
+    var reason = OTHER_REASON;
+    var submitting = false;
+    var controls = template.content.cloneNode(true);
+    var footerButtons = controls.querySelector(".revise-and-reject-reviewable__footer");
+    footerButtons.remove();
+    Discourse.modal.show({
+      className: "revise-and-reject-reviewable",
+      title: (pageData().strings || {}).revise_title || "",
+      body: function (body) {
+        var queued = document.createElement("div");
+        queued.className = "revise-and-reject-reviewable__queued-post";
+        ["review-item__meta-content", "review-item__post"].forEach(function (name) {
+          var part = item.querySelector(".review-item__flag-summary > ." + name);
+          if (part) {
+            queued.appendChild(part.cloneNode(true));
+          }
+        });
+        body.appendChild(queued);
+        body.appendChild(controls);
+      },
+      footer: function (footer, close) {
+        Array.prototype.slice.call(footerButtons.children).forEach(function (button) {
+          footer.appendChild(button);
+        });
+        var send = footer.querySelector(".btn-primary");
+        var body = footer.parentNode.querySelector(".d-modal__body");
+        var custom = body.querySelector(".revise-and-reject-reviewable__custom-reason");
+        var customGroup = custom.closest(".control-group");
+        var feedback = body.querySelector(".revise-and-reject-reviewable__feedback");
+        var combo = body.querySelector("details.combo-box");
+
+        // sendPMDisabled
+        function update() {
+          var other = reason === OTHER_REASON;
+          customGroup.hidden = !other;
+          send.disabled = !reason || (other && !custom.value) || submitting;
+        }
+        custom.addEventListener("input", update);
+        combo.addEventListener("toggle", function () {
+          var rows = combo.querySelector("template.select-kit-rows");
+          var list = combo.querySelector(".select-kit-body");
+          combo.classList.toggle("is-expanded", combo.open);
+          if (!combo.open) {
+            list.innerHTML = "";
+            list.removeAttribute("style");
+            return;
+          }
+          list.innerHTML = '<ul aria-live="polite" class="select-kit-collection" role="menu">' + rows.innerHTML + "</ul>";
+          ui().floatBody(combo);
+        });
+        combo.addEventListener("click", function (event) {
+          var row = event.target.closest(".select-kit-row");
+          if (!row) {
+            return;
+          }
+          event.preventDefault();
+          reason = row.dataset.value;
+          var name = row.dataset.name;
+          var header = combo.querySelector("summary");
+          var choice = header.querySelector(".select-kit-selected-name");
+          [header, choice].forEach(function (el) {
+            el.dataset.name = name;
+            el.dataset.value = reason;
+          });
+          choice.title = name;
+          choice.querySelector(".name").textContent = name;
+          combo.open = false;
+          update();
+        });
+        footer.querySelector(".d-modal-cancel").addEventListener("click", close);
+        send.addEventListener("click", function () {
+          submitting = true;
+          update();
+          // As Ember sends them: the custom reason typed goes along even
+          // after another reason is chosen.
+          var data = {
+            revise_reason: reason,
+            revise_custom_reason: custom.value,
+            revise_feedback: feedback.value,
+          };
+          // A failure is shown by performConfirmed; the modal closes either way.
+          performConfirmed(item, action, data).then(close);
+        });
+        update();
+      },
+    });
   }
 
   // DropdownSelectBox: its rows drawn as it opens.
@@ -609,6 +720,12 @@
       return;
     }
 
+    if (target.closest(".show-raw-email")) {
+      event.preventDefault();
+      notPorted("a queued post's raw email (RawEmailModal)");
+      return;
+    }
+
     var pin = target.closest(".pin-toggle-button");
     if (pin) {
       event.preventDefault();
@@ -727,7 +844,9 @@
         var escaped = word.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
         var pattern = new RegExp("(\\W|^)(" + escaped + ")(\\W|$)", "i");
         item
-          .querySelectorAll(".review-item__post-content, .reviewable-topic-link__title-link .title-text")
+          .querySelectorAll(
+            ".review-item__post-content, .reviewable-topic-link__title-link .title-text, .reviewable-topic-link > .title-text"
+          )
           .forEach(function (el) {
             highlight(el, pattern);
           });
