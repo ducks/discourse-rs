@@ -1209,6 +1209,8 @@ fn menu(cx: &PostContext, p: &Value) -> String {
         } else {
             hidden_items.contains(key)
                 && !(*key == "edit" && (wiki || (can_edit && p["yours"] == true)))
+                // A post in review keeps its flag button (and count) out.
+                && !(*key == "flag" && reviewable_id(p).is_some())
         };
         let html = match *key {
             "like" => match reactions.as_ref() {
@@ -1226,7 +1228,11 @@ fn menu(cx: &PostContext, p: &Value) -> String {
                 "link",
                 &format!(" data-share-url=\"{}\"", escape(&share_url(cx, number(p)))),
             )),
-            "flag" => (member && can_flag(cx, p) && p["hidden"] != true).then(|| flag_button(cx)),
+            // PostMenuFlagButton.shouldRender: the post's reviewable, or a
+            // flag the viewer may make on a post that isn't hidden.
+            "flag" => (reviewable_id(p).is_some()
+                || (member && can_flag(cx, p) && p["hidden"] != true))
+                .then(|| flag_button(cx, p)),
             "edit" => can_edit.then(|| {
                 button(
                     "btn no-text btn-icon post-action-menu__edit edit btn-flat",
@@ -1276,7 +1282,12 @@ fn menu(cx: &PostContext, p: &Value) -> String {
         }
         let Some(html) = html else { continue };
         if collapsed && *hideable {
-            actions.push_str(&html.replacen("<button ", "<button hidden ", 1));
+            // The item hidden whole: a button, or a double button's div.
+            if html.starts_with("<div ") {
+                actions.push_str(&html.replacen("<div ", "<div hidden ", 1));
+            } else {
+                actions.push_str(&html.replacen("<button ", "<button hidden ", 1));
+            }
         } else {
             actions.push_str(html);
         }
@@ -1309,14 +1320,36 @@ fn can_flag(cx: &PostContext, p: &Value) -> bool {
         })
 }
 
-/// post/menu/buttons/flag (the flag modal is not ported).
-fn flag_button(cx: &PostContext) -> String {
-    button(
-        "btn no-text btn-icon post-action-menu__flag create-flag btn-flat",
-        &t(cx.list, "post.controls.flag"),
-        &t(cx.list, "post.controls.flag"),
-        "flag",
-        "",
+/// `post.reviewable_id`, which staff's post JSON carries (0 for none).
+fn reviewable_id(p: &Value) -> Option<i64> {
+    p["reviewable_id"].as_i64().filter(|id| *id != 0)
+}
+
+/// post/menu/buttons/flag: the count of the post's flags for staff (its
+/// reviewable, which a click opens), then the flag button, whose modal
+/// static/js/flag-modal.js opens.
+fn flag_button(cx: &PostContext, p: &Value) -> String {
+    let count = match reviewable_id(p) {
+        Some(id) => format!(
+            "<button class=\"btn no-text button-count{} btn-flat\" data-reviewable-id=\"{id}\" type=\"button\"><span>{}</span></button>",
+            if p["reviewable_score_pending_count"].as_i64().unwrap_or(0) > 0 {
+                " has-pending"
+            } else {
+                ""
+            },
+            p["reviewable_score_count"].as_i64().unwrap_or(0)
+        ),
+        None => String::new(),
+    };
+    format!(
+        "<div class=\"double-button\">{count}{}</div>",
+        button(
+            "btn no-text btn-icon post-action-menu__flag create-flag btn-flat",
+            &t(cx.list, "post.controls.flag"),
+            &t(cx.list, "post.controls.flag"),
+            "flag",
+            "",
+        )
     )
 }
 

@@ -544,6 +544,13 @@ input[type="checkbox"] {
   width: auto;
 }
 
+/* discourse.scss:371 */
+.radio input[type="radio"],
+.checkbox input[type="checkbox"] {
+  float: left;
+  margin-left: -18px;
+}
+
 /* base.scss:218 */
 input[type="checkbox"],
 input[type="radio"] {
@@ -665,6 +672,34 @@ form {
 
 .skip-link:focus {
   top: 0;
+}
+
+/* discourse.scss:572 */
+.radio,
+.checkbox {
+  min-height: 18px;
+  padding-left: 18px;
+}
+
+/* discourse.scss:576 */
+.controls > .radio:first-child,
+.controls > .checkbox:first-child {
+  padding-top: 5px;
+}
+
+/* discourse.scss:580 */
+.radio.inline,
+.checkbox.inline {
+  display: inline-block;
+  padding-top: 5px;
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+
+/* discourse.scss:589 */
+.radio.inline .radio.inline,
+.checkbox.inline .checkbox.inline {
+  margin-left: 0.67em;
 }
 
 /* discourse.scss:634 */

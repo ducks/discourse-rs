@@ -2866,8 +2866,33 @@ pub async fn topic_page(
     let timeline = crate::post_view::timeline(&cx, view);
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
+    // The flag modal for members; for staff the penalty modal its take
+    // action opens.
+    let mut flag_menus = String::new();
+    if let Some(username) = viewer {
+        flag_menus.push_str(
+            &crate::flag_modal_view::config(&mut *conn, i18n, settings, &base, view, staff).await?,
+        );
+        if staff {
+            let timezone: Option<String> = sqlx::query_scalar::<_, Option<String>>(
+                "SELECT o.timezone FROM user_options o JOIN users u ON u.id = o.user_id \
+                 WHERE u.username_lower = $1",
+            )
+            .bind(username.to_lowercase())
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten();
+            flag_menus.push_str(&crate::penalize_view::config(
+                i18n,
+                settings,
+                &crate::penalize_view::Assets { base_path: &base },
+                timezone.as_deref(),
+                None,
+            ));
+        }
+    }
     let topic_menus = format!(
-        "{topic_admin_menu}{}",
+        "{topic_admin_menu}{}{flag_menus}",
         crate::post_view::add_pm_participants_config(&cx, view)
     );
     let header_topic_info = crate::header_topic_view::template(
@@ -2891,12 +2916,13 @@ pub async fn topic_page(
     });
     let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref(), pm_counts)?;
     let quote_config = quote_button_config(conn, i18n, settings, view, viewer).await?;
-    // A message's participant removal asks first; a poll reports its
-    // errors in a dialog.
+    // A message's participant removal asks first; a poll and the flag
+    // modal report their errors in a dialog.
     let dialog_strings = if viewer.is_some()
         && (view["archetype"] == "private_message"
             || post_settings.poll.is_some()
-            || !topic_admin_menu.is_empty())
+            || !topic_admin_menu.is_empty()
+            || topic_menus.contains("flag-modal-config"))
     {
         dialog_strings(i18n)
     } else {

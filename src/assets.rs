@@ -313,6 +313,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/penalize-user.js"),
     ),
     (
+        "flag-modal.js",
+        JS,
+        include_str!("../static/js/flag-modal.js"),
+    ),
+    (
         "site-settings.js",
         JS,
         include_str!("../static/js/site-settings.js"),

@@ -104,6 +104,7 @@ pub mod excerpt;
 pub mod fast_image;
 pub mod file_store;
 pub mod final_destination;
+pub mod flag_modal_view;
 pub mod flags;
 pub mod form_templates;
 pub mod group_manager;

@@ -128,8 +128,18 @@ Blockers, a scripted walk-through would hit them:
 Rehearsal findings (scripts/demo-rehearsal, 2026-10-24),
 feat/flag-and-penalty-modals:
 
-- [ ] Flagging a post does nothing: the post menu's flag button and the
-  topic footer's have no modal (step 17).
+- [x] Flagging a post did nothing: the post menu's flag button and the
+  topic footer's had no modal (step 17). The flag modal ported
+  (static/js/flag-modal.js, src/flag_modal_view.rs): the flags the viewer
+  may use with their descriptions, the message and its length count,
+  the illegal confirmation, take action for staff (hide, or suspend and
+  silence through the penalty modal with the flag made first) and Delete
+  Spammer; the post drawn again after, its flag button gone, and staff's
+  count of a reviewed post's flags (which opens /review) as Ember draws
+  it. The backend's flags that send a message and topic flags are ported
+  with it (post_actions/flag_notify_*, flag_illegal_with_message,
+  flag_spam_with_message, flag_topic_*). Still refused, saying so in the
+  modal: official warnings, queueing for review, flags in messages (147).
 - [x] Admin silence and suspend answered "Not ported yet: the silence modal"
   on the admin user page (step 23): PenalizeUser ported
   (static/js/penalize-user.js, src/penalize_view.rs) with DFutureDateInput's

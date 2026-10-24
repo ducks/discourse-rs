@@ -1,5 +1,6 @@
 /* DModal as Rails compiles common/base/modal.scss, with the fullscreen
-   table and code modals' rules from modal-overrides.scss (modal.js). */
+   table and code modals' rules and the flag modal's from modal-overrides.scss
+   (modal.js, flag-modal.js). */
 
 /* modal.scss:295 */
 @keyframes fade {
@@ -417,4 +418,41 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   max-height: none;
   padding: 1rem;
   white-space: pre;
+}
+/* modal-overrides.scss:834, the flag modal (flag-modal.js) */
+.flag-modal-body form {
+  margin: 0;
+}
+/* modal-overrides.scss:839 */
+.flag-modal-body .flag-action-type .controls .checkbox-label {
+  margin-bottom: 0.25em;
+}
+/* modal-overrides.scss:843 */
+.flag-modal-body .flag-action-type-details {
+  width: 100%;
+  line-height: var(--line-height-large);
+}
+/* modal-overrides.scss:849 */
+.flag-modal-body .flag-action-type-details a {
+  margin: 0;
+}
+/* modal-overrides.scss:854 */
+.flag-modal-body .flag-confirmation {
+  margin-top: 0.5em;
+  padding-left: 1.125em;
+}
+/* modal-overrides.scss:860 */
+.flag-message {
+  margin: 0;
+}
+/* modal-overrides.scss:864 */
+.custom-message-length {
+  color: var(--primary-medium);
+  font-size: var(--font-down-1);
+}
+/* modal-overrides.scss:932 */
+@media (width >= 40rem) {
+  .flag-modal-body .flag-message {
+    height: 3em;
+  }
 }

@@ -1968,7 +1968,7 @@ async fn members_get_the_topic_controls() {
     assert!(page.contains(
         r#"class="btn no-text btn-icon post-action-menu__show-more show-more-actions btn-flat""#
     ));
-    assert!(page.contains(r#"<button hidden aria-label="privately flag this post for attention or send a personal message about it" class="btn no-text btn-icon post-action-menu__flag create-flag btn-flat""#));
+    assert!(page.contains(r#"<div hidden class="double-button"><button aria-label="privately flag this post for attention or send a personal message about it" class="btn no-text btn-icon post-action-menu__flag create-flag btn-flat""#));
     assert!(page.contains(
         r#"<button hidden aria-label="you don&#x27;t have permission to delete this topic""#
     ));
