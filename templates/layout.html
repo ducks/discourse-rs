@@ -327,6 +327,8 @@
         <div class="below-footer-outlet chat-drawer-outlet" id="chat-drawer-outlet" hx-preserve><div class="chat-drawer-outlet-container"></div></div>
         {%- if !chrome.chat_drawer.is_empty() %}
         <script src="{{ crate::assets::url(base_path, "chat-drawer.js") }}"{{ chrome.chat_drawer|safe }} defer></script>
+        {#- Its errors in Ember's dialog (dialog.js loads once per page). -#}
+        <script type="application/json" id="dialog-strings">{{ chrome.chat_dialog_strings|safe }}</script><script src="{{ crate::assets::url(base_path, "dialog.js") }}" defer></script>
         <script src="{{ crate::assets::url(base_path, "chat-new-message.js") }}"{{ chrome.chat_new_message|safe }} defer></script>
         {%- endif %}
         {%- endif %}
