@@ -4603,9 +4603,14 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     sidebar's), Ctrl/Cmd+K outside a field but the chat composer, and the
     profile's and the user card's Chat buttons (ChatDirectMessageButton,
     the card closed). GET /chat/new-message (chat_pages.rs) goes as the
-    route leaves a page load: to /chat, to the channel_id or channel
-    asked for (or /chat), or with recipients to the DM with them, found
-    or created through Chat::CreateDirectMessageChannel. Compared with
+    route leaves a page load: to /chat, or to the channel_id or channel
+    asked for (or /chat), a read. With recipients it serves the chat
+    page with the route's empty outlet and writes nothing (it found or
+    created the DM behind the GET at first, so a link, prefetch or
+    crawler could create channels, fix/chat-new-message-post):
+    chat-new-message.js does the route's upsertDmChannel, POST
+    /chat/api/direct-message-channels with the recipients, and opens the
+    DM, or leaves popupAjaxError's dialog over the page. Compared with
     Playwright against rs-ref-d as user1: the modal from the drawer, the
     search, the DM it opens, the new group (markup and screenshot
     identical), Ctrl+K and Escape, the page loads of /chat/new-message
@@ -4619,8 +4624,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     members, refused with the info route), and in the modal's rows the
     presence dot (is-online), user status, avatar flair, unread thread
     counts (threads, 99), emoji in channel titles; /chat/new-message with
-    a message (#seedDraft, a draft seeded in the browser, refused) or a
-    DM that can't be created (popupAjaxError over the chat page, refused)
+    a message (#seedDraft, a draft seeded in the browser, refused)
 223. `feat/chat-drawer` L: the chat drawer in the below-footer outlet with
     its routes (browse, channel, info, pins, DMs, starred, search), its
     size and resizer, the full page or drawer preference and the header

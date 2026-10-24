@@ -9,7 +9,8 @@
 // group or "New group chat" goes to the new group mode (NewGroup with
 // MembersSelector), which creates a group direct message. The profile's
 // and the user card's Chat buttons (ChatDirectMessageButton) open the
-// direct message with their user directly. A channel opens through
+// direct message with their user directly, as /chat/new-message with
+// recipients (ChatNewMessageRoute) does with them. A channel opens through
 // chat-drawer.js, in the drawer when it is preferred.
 (function () {
   "use strict";
@@ -1195,6 +1196,30 @@
     event.preventDefault();
     event.stopPropagation();
     showModal();
+  });
+
+  // ChatNewMessageRoute#beforeModel with recipients: the server serves
+  // /chat/new-message without writing (it redirects for a channel), and
+  // the direct message is found or created from here, then opened. On
+  // an error the dialog shows over the page, which stays.
+  Discourse.onPage(function () {
+    if (location.pathname !== basePath() + "/chat/new-message") {
+      return;
+    }
+    var p = new URLSearchParams(location.search);
+    var recipients = p.get("recipients");
+    if (recipients === null || p.get("channel_id") || p.get("channel")) {
+      return;
+    }
+    var left = false;
+    upsertDmChannel({ usernames: recipients.split(",") }).then(function (channel) {
+      if (channel && !left) {
+        openChannel(channel);
+      }
+    }, popupAjaxError);
+    return function () {
+      left = true;
+    };
   });
 
   Discourse.chatNewMessage = { show: showModal, startChatting: startChatting };
