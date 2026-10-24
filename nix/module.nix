@@ -161,10 +161,23 @@ in
         example = "/run/keys/discourse-admin-password";
         description = ''
           A file holding the first admin's password (at least
-          min_admin_password_length, 15, characters), handed to
+          min_password_length, 10, characters; min_admin_password_length,
+          15, for a DISCOURSE_DEVELOPER_EMAILS address, as Rails checks
+          it), handed to
           discourse-rs-db-init as a systemd credential (LoadCredential), so
           it can be root:root 0600 and never enters the Nix store or the
           environment. A string, not a Nix path literal.
+        '';
+      };
+
+      username = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        example = "siteowner";
+        description = ''
+          The first admin's username, checked as a signup's. Without it
+          the account gets the one UserNameSuggester makes from the email,
+          as `rake admin:create` does.
         '';
       };
     };
@@ -357,7 +370,10 @@ in
         admins="$(psql -d "$db" -Atc "SELECT count(*) FROM users WHERE admin AND id > 0")"
         if [ "$admins" = 0 ]; then
           PGOPTIONS='-c role=${user}' ${lib.getExe cfg.package} admin create \
-            --email ${lib.escapeShellArg cfg.initialAdmin.email} \
+            --email ${lib.escapeShellArg cfg.initialAdmin.email}${
+              lib.optionalString (cfg.initialAdmin.username != null)
+                " --username ${lib.escapeShellArg cfg.initialAdmin.username}"
+            } \
             --password-file "$CREDENTIALS_DIRECTORY/initial-admin-password"
         fi
       '';

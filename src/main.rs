@@ -63,6 +63,11 @@ enum AdminCommand {
         /// required_at_signup).
         #[arg(long)]
         name: Option<String>,
+        /// A new account's username, checked as a signup's is; without
+        /// it the one UserNameSuggester makes from the email (Rails' task
+        /// takes none). An existing account keeps its own.
+        #[arg(long)]
+        username: Option<String>,
         /// A file holding the password (a trailing newline is dropped),
         /// such as a systemd credential.
         #[arg(long, value_name = "PATH")]
@@ -81,9 +86,18 @@ async fn main() -> ExitCode {
                 AdminCommand::Create {
                     email,
                     name,
+                    username,
                     password_file,
                 },
-        }) => admin_create(&email, name.as_deref(), password_file.as_deref()).await,
+        }) => {
+            admin_create(
+                &email,
+                name.as_deref(),
+                username.as_deref(),
+                password_file.as_deref(),
+            )
+            .await
+        }
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -168,6 +182,7 @@ fn prompt_hidden(prompt: &str) -> Result<String, Box<dyn Error>> {
 async fn admin_create(
     email: &str,
     name: Option<&str>,
+    username: Option<&str>,
     password_file: Option<&std::path::Path>,
 ) -> Result<(), Box<dyn Error>> {
     let password = read_password(password_file)?;
@@ -186,6 +201,7 @@ async fn admin_create(
             email,
             password: &password,
             name,
+            username,
         },
     )
     .await?;

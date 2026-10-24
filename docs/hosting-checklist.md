@@ -54,7 +54,8 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
 ## Team-only lockdown
 
 - The first admin: `initialAdmin.email` and `initialAdmin.passwordFile`
-  (root, 0600, at least 15 characters) before the first switch.
+  (root, 0600, at least 10 characters, 15 for a developer email, as
+  Rails checks it), plus `initialAdmin.username` if you want one, before the first switch.
   discourse-rs-db-init makes the account (`discourse-rs admin create`)
   right after `discourse-rs setup` loads the fresh site, which has no
   other users. Or leave them unset and register on the finish

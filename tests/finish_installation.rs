@@ -276,6 +276,7 @@ async fn admin_create_makes_an_active_admin() {
             email: " New.Admin@Example.org ",
             password,
             name: None,
+            username: None,
         },
     )
     .await
@@ -337,35 +338,111 @@ async fn admin_create_makes_an_active_admin() {
     );
 }
 
+/// UserPasswordValidator as admin:create's save runs it: the account isn't
+/// an admin yet, so min_password_length (10) applies unless the email is a
+/// developer's, which needs min_admin_password_length (15).
 #[tokio::test]
-async fn admin_create_refuses_a_short_password() {
+async fn admin_create_checks_passwords_as_rails_does() {
     let db = TestDb::new().await;
-    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
-    let err = discourse_rs::admin_create::create(
-        &st,
-        &NewAdmin {
-            email: "short@example.org",
-            // min_password_length (10), under min_admin_password_length.
-            password: "tenletters1",
-            name: None,
-        },
+    let st = state(
+        db.pool.clone(),
+        config(RailsEnv::Test, &[("developer_emails", "dev@example.org")]),
     )
-    .await
-    .unwrap_err();
-    match err {
+    .await;
+    let short = |email: &'static str, password: &'static str| NewAdmin {
+        email,
+        password,
+        name: None,
+        username: None,
+    };
+    // Under min_password_length.
+    match discourse_rs::admin_create::create(&st, &short("short@example.org", "ninechars"))
+        .await
+        .unwrap_err()
+    {
+        AdminCreateError::Invalid(messages) => assert_eq!(
+            messages,
+            ["Password is too short (minimum is 10 characters)"]
+        ),
+        other => panic!("{other:?}"),
+    }
+    // A developer email: under min_admin_password_length.
+    match discourse_rs::admin_create::create(&st, &short("dev@example.org", "elevenchars"))
+        .await
+        .unwrap_err()
+    {
         AdminCreateError::Invalid(messages) => assert_eq!(
             messages,
             ["Password is too short (minimum is 15 characters)"]
         ),
         other => panic!("{other:?}"),
     }
-    let exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_emails WHERE email = 'short@example.org')",
+    for email in ["short@example.org", "dev@example.org"] {
+        let exists: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_emails WHERE email = $1)")
+                .bind(email)
+                .fetch_one(&db.pool)
+                .await
+                .unwrap();
+        assert!(!exists, "{email}");
+    }
+    // Eleven characters is enough for any other email.
+    discourse_rs::admin_create::create(&st, &short("plain@example.org", "elevenchars"))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn admin_create_takes_a_username() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let outcome = discourse_rs::admin_create::create(
+        &st,
+        &NewAdmin {
+            email: "named@example.org",
+            password: "a long enough password",
+            name: None,
+            username: Some("siteowner"),
+        },
     )
-    .fetch_one(&db.pool)
     .await
     .unwrap();
-    assert!(!exists);
+    assert!(matches!(
+        outcome,
+        discourse_rs::admin_create::Outcome::Created { ref username } if username == "siteowner"
+    ));
+    // A taken username is refused as a signup's would be.
+    match discourse_rs::admin_create::create(
+        &st,
+        &NewAdmin {
+            email: "other@example.org",
+            password: "a long enough password",
+            name: None,
+            username: Some("SiteOwner"),
+        },
+    )
+    .await
+    .unwrap_err()
+    {
+        AdminCreateError::Invalid(messages) => {
+            assert_eq!(messages, ["Username must be unique"])
+        }
+        other => panic!("{other:?}"),
+    }
+    // An existing account keeps its own.
+    assert!(matches!(
+        discourse_rs::admin_create::create(
+            &st,
+            &NewAdmin {
+                email: "named@example.org",
+                password: "another long enough password",
+                name: None,
+                username: Some("renamed"),
+            },
+        )
+        .await,
+        Err(AdminCreateError::Invalid(_))
+    ));
 }
 
 #[tokio::test]
@@ -378,6 +455,7 @@ async fn admin_create_promotes_an_existing_account() {
             email: "USER0@example.com",
             password: "another long enough password",
             name: None,
+            username: None,
         },
     )
     .await

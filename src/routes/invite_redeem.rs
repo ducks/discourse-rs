@@ -608,7 +608,7 @@ async fn create_user_from_invite(
                 s,
                 p,
                 &crate::accounts::PasswordOwner {
-                    admin: false,
+                    admin: crate::roles::is_developer(&state.config.globals, &email),
                     username: &available,
                     name: name.as_deref(),
                     email: Some(&email),

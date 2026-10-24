@@ -324,7 +324,8 @@ pub async fn create(
             settings,
             p,
             &accounts::PasswordOwner {
-                admin: false,
+                // UserPasswordValidator: the admin length for a developer email.
+                admin: crate::roles::is_developer(&state.config.globals, &email),
                 username: s.username,
                 name,
                 email: Some(&email),
