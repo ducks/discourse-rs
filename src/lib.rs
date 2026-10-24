@@ -152,6 +152,7 @@ pub mod optimized_images;
 pub mod owned_schema;
 pub mod params;
 pub mod parity;
+pub mod penalize_view;
 pub mod permalinks;
 pub mod plugins;
 pub mod pm_invite;

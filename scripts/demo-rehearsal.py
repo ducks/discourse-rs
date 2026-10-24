@@ -1405,8 +1405,9 @@ def define_steps(run):
         tpage.goto(run.base + "/latest")
         open_user_menu(tpage)
         tpage.locator("#user-menu-button-messages").click()
-        expect_visible(tpage.locator(".user-menu li", has_text=re.compile("silenc", re.I)), f"the silence message in {username}'s user menu").click()
-        expect_visible(tpage.locator(".topic-post .cooked", has_text=re.compile("silenc", re.I)), "the system message")
+        # SystemMessage :silenced_by_staff, "Account temporarily on hold".
+        expect_visible(tpage.locator(".user-menu li", has_text=re.compile("temporarily on hold", re.I)), f"the silence message in {username}'s user menu").click()
+        expect_visible(tpage.locator(".topic-post .cooked", has_text=re.compile("temporarily placed on hold", re.I)), "the system message")
         page.locator("button", has_text=re.compile(r"^\s*Unsilence", re.I)).first.click()
         confirm = page.locator(".dialog-footer .btn-primary, .d-modal__footer .btn-primary")
         try:

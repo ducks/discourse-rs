@@ -130,8 +130,17 @@ feat/flag-and-penalty-modals:
 
 - [ ] Flagging a post does nothing: the post menu's flag button and the
   topic footer's have no modal (step 17).
-- [ ] Admin silence and suspend answer "Not ported yet: the silence modal"
-  on the admin user page (step 23).
+- [x] Admin silence and suspend answered "Not ported yet: the silence modal"
+  on the admin user page (step 23): PenalizeUser ported
+  (static/js/penalize-user.js, src/penalize_view.rs) with DFutureDateInput's
+  shortcuts and custom date and time, the reason presets, the message,
+  the post actions when it comes from a post, the similar users and the
+  penalty history; the penalty times it sends ("YYYY-MM-DD HH:mmZ") are
+  parsed (admin_users/silence_from_penalize_modal,
+  suspend_from_penalize_modal). The member gets the "Account temporarily
+  on hold" message; unsilence and unsuspend work from the page. Still
+  refused: the delete posts decider after "delete all posts", and the
+  review queue's silence and suspend (194e).
 - [x] /admin/reports to a single report raised a script error: the list's
   filter ran on the report page after a page swap (step 21).
   admin-reports.js now acts only where the index template's AdminReports

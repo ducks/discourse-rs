@@ -519,6 +519,74 @@ async fn a_users_admin_page() {
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
 }
 
+/// What static/js/penalize-user.js draws the silence and suspend modals
+/// (PenalizeUser) from: the strings, the settings, the date libraries and
+/// the AdminUser the page penalizes.
+#[tokio::test]
+async fn a_users_admin_page_carries_the_penalty_modal() {
+    let db = TestDb::new().await;
+    sqlx::query("UPDATE user_options SET timezone = 'Europe/Paris' WHERE user_id = 1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/users/3/user1").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("/assets/penalize-user.js?v="), "{html}");
+    let config = penalize_config(&html);
+    assert_eq!(config["user"]["id"], 3);
+    assert_eq!(config["user"]["username"], "user1");
+    assert_eq!(config["user"]["admin"], false);
+    assert_eq!(config["user"]["trust_level"], 2);
+    assert!(config["user"]["next_penalty"].is_string(), "{config}");
+    assert_eq!(config["user"]["penalty_counts"]["silenced"], 0);
+    assert_eq!(config["timezone"], "Europe/Paris");
+    assert_eq!(config["settings"]["hide_suspension_reasons"], false);
+    let strings = &config["strings"];
+    assert_eq!(strings["admin.user.silence_modal_title"], "Silence User");
+    assert_eq!(strings["admin.user.suspend_modal_title"], "Suspend User");
+    assert_eq!(
+        strings["admin.user.silence_duration"],
+        "How long will the user be silenced for?"
+    );
+    assert_eq!(
+        strings["admin.user.suspend_reasons.combative"],
+        "Too combative"
+    );
+    assert_eq!(strings["time_shortcut.custom"], "Custom date and time");
+    assert_eq!(strings["select_kit.filter_by"], "Filter by: %{name}");
+    assert!(
+        strings["admin.user.penalty_history_MF"]
+            .as_str()
+            .unwrap()
+            .contains("{ SUSPENDED, plural,")
+    );
+    assert_eq!(
+        strings["admin.user.other_matches.one"],
+        "There is <b>%{count} other user</b> with the same IP address. Review and select the suspicious ones to penalize along with %{username}."
+    );
+    assert!(
+        config["assets"]["pikaday"]
+            .as_str()
+            .unwrap()
+            .starts_with("/assets/pikaday.js?v=")
+    );
+    // A staff member's: the modal says they can't be penalized.
+    let (_, html) = admin.page("/admin/users/1/admin").await;
+    assert_eq!(penalize_config(&html)["user"]["admin"], true);
+}
+
+/// The page's `#penalize-user-config` block.
+fn penalize_config(html: &str) -> serde_json::Value {
+    let start = html
+        .find("<script type=\"application/json\" id=\"penalize-user-config\">")
+        .expect("the config block");
+    let rest = &html[start..];
+    let json = &rest[rest.find('>').unwrap() + 1..rest.find("</script>").unwrap()];
+    serde_json::from_str(json).unwrap()
+}
+
 #[tokio::test]
 async fn the_site_settings_index_goes_to_required() {
     let db = TestDb::new().await;

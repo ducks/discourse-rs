@@ -336,8 +336,19 @@ pub async fn user_show(
         user_fields: &user_fields,
         now: crate::clock::now(),
     };
+    // PenalizeUser's strings and the AdminUser it penalizes.
+    let timezone = crate::penalize_view::viewer_timezone(&mut conn, shell.admin.id).await?;
+    let penalize = crate::penalize_view::config(
+        &state.i18n,
+        &shell.settings,
+        &crate::penalize_view::Assets {
+            base_path: &shell.site.base_path,
+        },
+        timezone.as_deref(),
+        Some(&user),
+    );
     let content = format!(
-        "<div class=\"admin-users admin-config-page\">{}<div class=\"admin-container admin-config-page__main-area\"></div></div><div class=\"admin-container admin-config-page__main-area\">{}</div>",
+        "<div class=\"admin-users admin-config-page\">{}<div class=\"admin-container admin-config-page__main-area\"></div></div><div class=\"admin-container admin-config-page__main-area\">{}</div>{penalize}",
         crate::admin_users_view::users_header(&cx, &header_viewer, ""),
         crate::admin_user_view::render(&cx, &list, &page, &user)
     );
