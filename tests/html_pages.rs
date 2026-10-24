@@ -1270,12 +1270,12 @@ async fn front_page_serves_the_current_homepage() {
     assert_eq!(active_nav(&html), Some("new"));
 }
 
-/// The homepages `/` has no page for: a theme's custom homepage, and the
-/// installation page while has_login_hint is on. Login required answers
-/// the front page's JSON as Rails does (home_page#blank's
-/// redirect_to_login_if_required).
+/// The homepage `/` has no page for: a theme's custom homepage; while
+/// has_login_hint is on it is the finish installation page
+/// (tests/finish_installation.rs). Login required answers the front page's
+/// JSON as Rails does (home_page#blank's redirect_to_login_if_required).
 #[tokio::test]
-async fn front_page_refuses_custom_and_finish_installation() {
+async fn front_page_refuses_custom_and_shows_finish_installation() {
     let db = TestDb::new().await;
     // The default theme's modifiers (theme -1, the seed's default_theme_id).
     sqlx::query("UPDATE theme_modifier_sets SET custom_homepage = TRUE WHERE theme_id = -1")
@@ -1293,8 +1293,9 @@ async fn front_page_refuses_custom_and_finish_installation() {
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
 
     common::set_setting(&db.pool, "has_login_hint", 5, "t").await;
-    let (status, _, _) = get(&db.pool, "/").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    let (status, _, html) = get(&db.pool, "/").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("finish-installation__register"), "{html}");
     common::set_setting(&db.pool, "has_login_hint", 5, "f").await;
 
     common::set_setting(&db.pool, "login_required", 5, "t").await;

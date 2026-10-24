@@ -1,0 +1,12 @@
+{% extends "finish_installation.html" %}
+{% block content %}
+{#- finish_installation/confirm_email.html.erb -#}
+<h1>{{ title }}</h1>
+
+{{ message|safe }}
+
+<div class='row'>
+  <form class="button_to" method="post" action="{{ head.base_path }}/finish-installation/resend-email"><input type="hidden" name="_method" value="put" /><button class="wizard-container__button btn-primary" type="submit">
+    {{ button }}
+</button><input type="hidden" name="authenticity_token" value="{{ csrf_token }}" /></form></div>
+{% endblock %}

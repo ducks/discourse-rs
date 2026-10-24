@@ -1,0 +1,59 @@
+{% extends "finish_installation.html" %}
+{% block content %}
+{#- finish_installation/register.html.erb -#}
+<h1>{{ title }}</h1>
+
+{%- if !allowed_emails.is_empty() %}
+  <form class="wizard-container__fields" action="{{ head.base_path }}/finish-installation/register" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="{{ csrf_token }}" />
+
+    <div class='wizard-container__input wizard-container__field text-field'>
+      <label for="email">
+        <span class="wizard-container__label">{{ email_label }}</span>
+      </label>
+
+      <div class='input-area'>
+        <!--email_off-->
+        <select name="email" id="email" class="combobox wizard-container__combobox">
+          {%- for email in allowed_emails %}{% if !loop.first %}
+{% endif %}<option {% if selected_email.as_deref() == Some(email.as_str()) %}selected="selected" {% endif %}value="{{ email }}">{{ email }}</option>{% endfor %}</select>
+        <!--/email_off-->
+      </div>
+    </div>
+
+    <div class='wizard-container__input wizard-container__field text-field {% if !username_errors.is_empty() %}invalid{% endif %}'>
+      <label for="username">
+        <span class="wizard-container__label">{{ username_label }}</span>
+      </label>
+
+      <div class='wizard-container__description'>{{ username_instructions }}</div>
+
+      <div class='input-area'>
+        <input type="text" name="username" id="username"{% if let Some(v) = username %} value="{{ v }}"{% endif %} class="wizard-container__text-input" />
+      </div>
+      {%- for e in username_errors %}
+        <div class='field-error-description'>{{ e }}</div>
+      {%- endfor %}
+    </div>
+
+    <div class='wizard-container__input wizard-container__field text-field {% if !password_errors.is_empty() %}invalid{% endif %}'>
+      <label for="password">
+        <span class="wizard-container__label">{{ password_label }}</span>
+      </label>
+
+      <div class='wizard-container__description'>{{ password_instructions }}</div>
+
+      <div class='input-area'>
+        <input type="password" name="password" id="password"{% if let Some(v) = password %} value="{{ v }}"{% endif %} class="wizard-container__text-input" />
+      </div>
+      {%- for e in password_errors %}
+        <div class='field-error-description'>{{ e }}</div>
+      {%- endfor %}
+    </div>
+
+    <input type="submit" name="commit" value="{{ button }}" class="wizard-container__button btn-primary" data-disable-with="{{ button }}" />
+
+</form>
+{%- else %}
+  <p>{{ no_emails|safe }}</p>
+{%- endif %}
+{% endblock %}

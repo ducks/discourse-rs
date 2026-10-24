@@ -721,7 +721,12 @@ pub async fn front_page(
             SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
         // HomePageConstraint: only finish_installation matches meanwhile.
         if settings.get("has_login_hint")?.truthy() {
-            return Err(Unsupported("the finish installation page").into());
+            drop(conn);
+            if super::wants_json(uri.query(), &headers) {
+                // finish_installation/index has only an HTML template.
+                return Err(Unsupported("the finish installation page as JSON").into());
+            }
+            return super::finish_installation::index_page(&state, &guardian, &uri).await;
         }
         crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?
     };

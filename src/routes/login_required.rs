@@ -34,6 +34,8 @@ fn exempt(path: &str) -> bool {
             | "/signup"
             | "/password-reset"
     ) || super::static_pages::is_page(path)
+        // FinishInstallationController
+        || path.starts_with("/finish-installation")
         || path.starts_with("/assets/")
         || path.starts_with("/fonts/")
         || path.starts_with("/highlight-js/")
@@ -137,6 +139,11 @@ pub async fn gate(
     }
     // /session is skip_before_action'd so people can log in.
     if path == "/session" || path == "/session.json" || path.starts_with("/session/") {
+        return Ok(next.run(request).await);
+    }
+    // The front page is finish_installation#index while the login hint is
+    // on (HomePageConstraint), which skips the gate.
+    if path == "/" && settings.get("has_login_hint")?.truthy() {
         return Ok(next.run(request).await);
     }
 

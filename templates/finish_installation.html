@@ -1,0 +1,38 @@
+{#- layouts/finish_installation.html.erb with layouts/_head.html.erb:
+    the wizard stylesheet, the color scheme stylesheets and the head
+    partial, and the page in the wizard's container. -#}
+<html>
+  <head>
+    <link href="{{ crate::assets::url(head.base_path, "wizard.css") }}" media="all" rel="stylesheet" data-target="wizard"/>
+    <link href="{{ head.base_path }}/assets/wizard_fonts.css" media="all" rel="stylesheet"/>
+    {{ head.color_links|safe }}
+
+    <meta name="generator" content="Discourse {{ head.version }} - https://github.com/discourse/discourse version {{ head.commit }}">
+    {%- if !head.favicon_url.is_empty() %}
+    <link rel="icon" type="{{ head.favicon_type }}" href="{{ head.favicon_url }}">
+    {%- endif %}
+    {%- if !head.apple_touch_icon_url.is_empty() %}
+    <link rel="apple-touch-icon" type="image/png" href="{{ head.apple_touch_icon_url }}">
+    {%- endif %}
+    {{ head.color_meta|safe }}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    {%- if !head.base_path.is_empty() %}
+    <meta name="discourse-base-uri" content="{{ head.base_path }}">
+    {%- endif %}
+    <link rel="canonical" href="{{ head.canonical }}" />
+    {%- if head.can_search %}
+    <link rel="search" type="application/opensearchdescription+xml" href="{{ head.base_url }}/opensearch.xml" title="{{ head.site_title }} Search">
+    {%- endif %}
+    <title>{{ head.title }}</title>
+  </head>
+
+  <body class='wizard'>
+    <div id='wizard-main'>
+      <div class='wizard-container'>
+        <div class='wizard-container-contents finish-installation'>
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
