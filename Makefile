@@ -1,5 +1,5 @@
 .PHONY: help version-bump release release-push build test parity-test clean clippy fmt fmt-check lint install-hooks \
-	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv reset-reference \
+	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv snapshot-clean reset-reference \
 	record-pretty-text \
 	bench bench-startup release-build install emoji-assets rehearsal
 
@@ -49,6 +49,7 @@ help:
 	@echo "  make db-test                       - (Re)load schema + seeds into $(TEST_DB)"
 	@echo "  make emoji-assets [PUBLIC_DIR=path] - Install pinned emoji images (no Rails needed)"
 	@echo "  make snapshot-dv AGENT=name        - Regenerate seed/fresh_install.sql from a dv agent"
+	@echo "  make snapshot-clean AGENT=name     - Regenerate seed/clean_install.sql (migrate + db:seed only)"
 	@echo "  make reset-reference AGENT=name    - Put a dv agent's database back to the seed (before recording)"
 	@echo "  make record-pretty-text AGENT=name - Record Rails' cooking of the corpus into parity/pretty_text"
 	@echo ""
@@ -185,6 +186,10 @@ parity-check:
 snapshot-dv:
 	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make snapshot-dv AGENT=rs-parity"; exit 2; }
 	scripts/snapshot-dv $(AGENT)
+
+snapshot-clean:
+	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make snapshot-clean AGENT=rs-clean-seed"; exit 2; }
+	scripts/snapshot-dv --clean $(AGENT)
 
 reset-reference:
 	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make reset-reference AGENT=rs-parity"; exit 2; }
