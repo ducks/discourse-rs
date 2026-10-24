@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Dress rehearsal of docs/demo-script.md in Chromium: walks the 23 steps as
+# the presenter does, one browser context per persona, and writes an HTML
+# report (index.html) and results.json to the output directory, which must
+# not exist yet. It writes to the site it is pointed at (posts, a topic,
+# chat messages, a new account), so point it at a scratch copy of the demo
+# database, never at the database a live demo will use. See the
+# "Rehearsal" section of docs/demo-script.md.
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+exec nix-shell -p 'python3.withPackages (ps: [ ps.playwright ])' playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 -u $(printf '%q ' "$root/scripts/demo-rehearsal.py" "$@")
+"

@@ -1,7 +1,7 @@
 .PHONY: help version-bump release release-push build test parity-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv reset-reference \
 	record-pretty-text \
-	bench bench-startup release-build install emoji-assets
+	bench bench-startup release-build install emoji-assets rehearsal
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -61,6 +61,9 @@ help:
 	@echo "  make release-build                 - Optimized binary in target/release"
 	@echo "  make bench TARGETS=\"rs=URL rails=URL\" - Compare request rates and latencies"
 	@echo "  make bench-startup                 - Binary size, cold start, RSS (server env from the shell)"
+	@echo ""
+	@echo "Demo (docs/demo-script.md):"
+	@echo "  make rehearsal RS_URL=...          - Walk the demo in Chromium; report in tmp/rehearsal/<time>/ (writes to that site)"
 	@echo ""
 	@echo "Next version will be: $(VERSION)"
 
@@ -201,3 +204,10 @@ bench:
 
 bench-startup: release-build
 	scripts/bench-startup
+
+# The demo's dress rehearsal (docs/demo-script.md). It writes posts, chat
+# messages and an account to the site at RS_URL: point it at a scratch
+# copy of the demo database. SERVER_LOG, if set, is that server's log file.
+rehearsal:
+	scripts/demo-rehearsal --url $(RS_URL) --out tmp/rehearsal/$$(date -u +%Y%m%d-%H%M%S) \
+		$(if $(SERVER_LOG),--server-log $(SERVER_LOG))

@@ -62,6 +62,55 @@ and reports any step that errors, so run it before showing.
 23. Admin: silence a member and show the system message they receive;
     unsilence.
 
+## Rehearsal
+
+`scripts/demo-rehearsal` walks the 23 steps in Chromium as the presenter
+does, by clicking and typing, one browser context per persona (Member and
+Second member stay open together for the live updates). Each step records
+ok, fail or skipped (a step that needs an earlier step's outcome), how long
+it took, a screenshot, and what went wrong: responses of 500 and up, page
+and console errors, visible "not ported yet" or "Something went wrong"
+text, images that didn't load, and the expected outcome that didn't
+appear. `index.html` in the output directory has a row per step;
+`results.json` has the same.
+
+It writes to the site: replies, a topic, chat messages, a new account. Run
+it against a scratch copy of the demo database on a server of its own,
+never the database the live demo uses:
+
+```bash
+nix-shell --run '
+  createdb -U postgres -O "$USER" discourse_rs_rehearsal
+  pg_dump discourse_rs_demo | psql -X -q -d discourse_rs_rehearsal
+'
+# Then start tmp/demo/discourse-rs with drs-demo@.service's environment,
+# DATABASE_URL pointing at discourse_rs_rehearsal, BIND_ADDR and
+# UNICORN_PORT 8099, TMP_DIR and PUBLIC_DIR in a scratch directory and a
+# DISCOURSE_SECRET_KEY_BASE of its own, logging to a file.
+make rehearsal RS_URL=http://127.0.0.1:8099 SERVER_LOG=/path/to/server.log
+# or: scripts/demo-rehearsal --url http://127.0.0.1:8099 --out <new dir> [--server-log <file>]
+```
+
+With `--server-log` each step also lists the server's request errors (the
+"not ported yet" reason behind a 500) and, as warnings, the jobs it
+refused; a job runs after its request, so its line can land in the next
+step. Warnings (4xx answers, the htmx SSE stream's `[object Event]`
+console error on every navigation away) are listed but don't fail a step.
+`--only 3,4` runs some steps; the rest are skipped.
+
+It can run again on the same database. What it makes is labelled
+"rehearsal <time>Z", the newcomer is `rh<timestamp>` and the watched word
+`rhword<timestamp>`. It waits between a persona's posts as a presenter
+would (Discourse refuses a second topic within 15 seconds), and replies
+elsewhere when user1 already posted last in `/t/68`. At the end it deletes
+the watched word and the color palette it made through the admin, puts
+back the settings it changed and unsilences whoever it silenced; the report
+lists what it cleaned up and what it left behind: the replies, the topic
+(unlisted by step 20), the like, bookmark, chat messages and reaction, the
+newcomer's account, the staff log's entries and the uploads. Each run also
+spends logins against `max_logins_per_ip_per_hour`; a run that can't log
+in says so.
+
 ## Steer around
 
 Known gaps that refuse with a "not ported yet" error:
