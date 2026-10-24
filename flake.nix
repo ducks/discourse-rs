@@ -54,5 +54,12 @@
             assets = lib.mkDefault packages.discourse-assets;
           };
         };
+
+      checks = forAllSystems (pkgs: {
+        vm = import ./nix/vm-test.nix {
+          inherit pkgs;
+          module = self.nixosModules.default;
+        };
+      });
     };
 }
