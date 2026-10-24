@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions",
+      "params": {"id": 35, "post_action_type_id": 7, "message": "The whole topic is off the rails.", "flag_topic": "true"}
+    }
+  ]
+}

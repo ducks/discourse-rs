@@ -2664,6 +2664,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/date-range-picker.js", get(asset))
         .route("/assets/admin-mcp.js", get(asset))
         .route("/assets/admin-user.js", get(asset))
+        .route("/assets/penalize-user.js", get(asset))
+        .route("/assets/flag-modal.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))
         .route("/assets/admin-api-keys.js", get(asset))

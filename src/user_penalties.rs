@@ -132,6 +132,13 @@ pub(crate) fn cast_time(value: Option<&str>) -> Result<Option<NaiveDateTime>, Un
     if let Ok(t) = NaiveDateTime::parse_from_str(v, "%Y-%m-%d %H:%M:%S") {
         return Ok(Some(t));
     }
+    // DFutureDateInput's FORMAT ("YYYY-MM-DD HH:mmZ"), as PenalizeUser
+    // sends the time it picked.
+    for format in ["%Y-%m-%d %H:%M%:z", "%Y-%m-%d %H:%M%z"] {
+        if let Ok(t) = chrono::DateTime::parse_from_str(v, format) {
+            return Ok(Some(t.naive_utc()));
+        }
+    }
     if let Ok(d) = NaiveDate::parse_from_str(v, "%Y-%m-%d") {
         return Ok(d.and_hms_opt(0, 0, 0));
     }

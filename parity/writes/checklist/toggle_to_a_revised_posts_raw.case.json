@@ -1,0 +1,63 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two boxes to tick:\n\n- [ ] first\n- [ ] second"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": "{{responses.0.body.id}}",
+        "expected_raw": "Two boxes to tick:\n\n- [ ] first\n- [ ] second",
+        "expected_updated_at": "{{responses.0.body.updated_at}}",
+        "mutation_id": "mutation-1",
+        "toggles": [
+          {
+            "checkbox_index": 0,
+            "checkbox_source": "2:0",
+            "checked": true
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two boxes to tick:\n\n- [x] first\n- [x] second"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/checklist/toggle.json",
+      "params": {
+        "post_id": "{{responses.2.body.id}}",
+        "expected_raw": "Two boxes to tick:\n\n- [x] first\n- [x] second",
+        "expected_updated_at": "{{responses.2.body.updated_at}}",
+        "mutation_id": "mutation-2",
+        "toggles": [
+          {
+            "checkbox_index": 1,
+            "checkbox_source": "3:0",
+            "checked": false
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two boxes to tick:\n\n- [ ] first\n- [ ] second"
+      }
+    }
+  ]
+}

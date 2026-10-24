@@ -1347,6 +1347,8 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
                 take_action: false,
                 queue_for_review: false,
                 message: None,
+                is_warning: false,
+                flag_topic: false,
                 reason: Some("watched_word"),
                 context: Some(words.join(",")),
             };

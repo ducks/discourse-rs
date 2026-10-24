@@ -571,10 +571,13 @@ pub struct NewScore {
     pub take_action: bool,
     pub reason: Option<&'static str>,
     pub context: Option<String>,
+    /// `meta_topic_id:` the message a flag sent.
+    pub meta_topic_id: Option<i32>,
 }
 
-/// `Reviewable#add_score(user, type, created_at:, take_action:)` without a
-/// reason, a meta topic or forcing review. Returns the score added.
+/// `Reviewable#add_score(user, type, created_at:, take_action:, reason:,
+/// context:, meta_topic_id:)` without forcing review. Returns the score
+/// added.
 pub async fn add_score(
     conn: &mut PgConnection,
     p: &crate::web_hooks::Payloads<'_>,
@@ -605,7 +608,7 @@ pub async fn add_score(
         "INSERT INTO reviewable_scores (reviewable_id, user_id, reviewable_score_type, status, score, \
                                         take_action_bonus, user_accuracy_bonus, meta_topic_id, reason, \
                                         context, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $8, $6, NULL, $9, $10, $7, clock_timestamp())",
+         VALUES ($1, $2, $3, $4, $5, $8, $6, $11, $9, $10, $7, clock_timestamp())",
     )
     .bind(reviewable_id)
     .bind(user.id)
@@ -617,6 +620,7 @@ pub async fn add_score(
     .bind(take_action_bonus)
     .bind(new.reason)
     .bind(&new.context)
+    .bind(new.meta_topic_id)
     .execute(&mut *conn)
     .await?;
     // update(score:, latest_score:, force_review:); still pending, so

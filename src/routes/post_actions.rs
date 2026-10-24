@@ -65,6 +65,11 @@ async fn respond(
         )
             .into_response()),
         Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),
+        Outcome::Invalid(errors) => Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "errors": errors })),
+        )
+            .into_response()),
     }
 }
 
@@ -88,12 +93,6 @@ async fn front(
     let Some(type_id) = action_type(&p) else {
         return Ok(Err(super::accounts::param_missing("post_action_type_id")));
     };
-    if p.get("flag_topic")
-        .and_then(params::scalar)
-        .is_some_and(|f| f == "true")
-    {
-        return Err(Unsupported("flagging topics").into());
-    }
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -120,7 +119,34 @@ pub async fn create(
     else {
         return Ok(super::accounts::param_missing("id"));
     };
-    let post_id = crate::ruby::to_i(&id) as i32;
+    // fetch_post_from_params: a topic's flag is its first post's, for a
+    // topic the viewer can see.
+    let post_id = if is_true(&p, "flag_topic") {
+        let topic_id = crate::ruby::to_i(&id) as i32;
+        let mut conn = state.pool.acquire().await?;
+        let Some(topic) =
+            crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, topic_id)
+                .await?
+        else {
+            return Ok(super::topics::not_found_response(&state));
+        };
+        let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
+        if !guardian.can_see_topic(&settings, &topic, true, &secure)? {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        let first: Option<i32> = sqlx::query_scalar(
+            "SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL ORDER BY id LIMIT 1",
+        )
+        .bind(topic_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some(first) = first else {
+            return Ok(super::topics::not_found_response(&state));
+        };
+        first
+    } else {
+        crate::ruby::to_i(&id) as i32
+    };
     let host = Host::from_state(&state);
     let ctx = Ctx {
         host: &host,
@@ -155,6 +181,11 @@ pub async fn create(
             take_action: is_true(&p, "take_action"),
             queue_for_review: is_true(&p, "queue_for_review"),
             message: p.get("message").and_then(params::scalar),
+            is_warning: crate::ruby::cast_boolean(
+                p.get("is_warning").and_then(params::scalar).as_deref(),
+            )
+            .unwrap_or(false),
+            flag_topic: is_true(&p, "flag_topic"),
             reason: None,
             context: None,
         };
@@ -172,13 +203,16 @@ pub async fn destroy(
     uri: Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
-    let (_, settings, type_id) =
+    let (p, settings, type_id) =
         match front(&state, &guardian, &headers, &uri, &body, "DELETE").await? {
             Ok(v) => v,
             Err(response) => return Ok(response),
         };
     if type_id != crate::post_actions::LIKE {
         return Err(Unsupported("undoing flags").into());
+    }
+    if is_true(&p, "flag_topic") {
+        return Err(Unsupported("undoing a topic's flag").into());
     }
     let post_id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id)) as i32;
     let host = Host::from_state(&state);

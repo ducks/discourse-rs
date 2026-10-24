@@ -195,6 +195,51 @@ fix/newcomer-path.
   "Approved" text Ember doesn't draw; it now looks for the approved
   status badge ("Post approved").
 
+Rehearsal findings (scripts/demo-rehearsal, 2026-10-24),
+feat/flag-and-penalty-modals:
+
+- [x] Flagging a post did nothing: the post menu's flag button and the
+  topic footer's had no modal (step 17). The flag modal ported
+  (static/js/flag-modal.js, src/flag_modal_view.rs): the flags the viewer
+  may use with their descriptions, the message and its length count,
+  the illegal confirmation, take action for staff (hide, or suspend and
+  silence through the penalty modal with the flag made first) and Delete
+  Spammer; the post drawn again after, its flag button gone, and staff's
+  count of a reviewed post's flags (which opens /review) as Ember draws
+  it. The backend's flags that send a message and topic flags are ported
+  with it (post_actions/flag_notify_*, flag_illegal_with_message,
+  flag_spam_with_message, flag_topic_*). Still refused, saying so in the
+  modal: official warnings, queueing for review, flags in messages (147).
+- [x] Admin silence and suspend answered "Not ported yet: the silence modal"
+  on the admin user page (step 23): PenalizeUser ported
+  (static/js/penalize-user.js, src/penalize_view.rs) with DFutureDateInput's
+  shortcuts and custom date and time, the reason presets, the message,
+  the post actions when it comes from a post, the similar users and the
+  penalty history; the penalty times it sends ("YYYY-MM-DD HH:mmZ") are
+  parsed (admin_users/silence_from_penalize_modal,
+  suspend_from_penalize_modal). The member gets the "Account temporarily
+  on hold" message; unsilence and unsuspend work from the page. Still
+  refused: the delete posts decider after "delete all posts", and the
+  review queue's silence and suspend (194e).
+- [x] /admin/reports to a single report raised a script error: the list's
+  filter ran on the report page after a page swap (step 21).
+  admin-reports.js now acts only where the index template's AdminReports
+  controls are, as Ember's index and show routes render different
+  components under the same wrapper.
+- [x] The chat read marker sent message_id=NaN for the just-sent staged
+  message, answered 400 (step 14): staged messages no longer count as the
+  last visible one, as firstVisibleMessageId's id never matches a
+  persisted message in Ember.
+- [x] Ticking a checklist box sometimes answered 422 "The checkbox could not
+  be updated." (step 8): the unique post check stood in for Rails' Redis
+  key with any recent post of the user whose current raw matched, so a
+  tick whose new raw equalled another post's ticked raw was refused as a
+  duplicate, and a body re-posted after the first copy was edited wasn't.
+  Ported as Rails keeps it: PostCreator stores `unique-post-<user>:<sha1>`
+  for unique_posts_mins in discourse_rs.cached_values and the validator
+  reads it (checklist/toggle_to_a_revised_posts_raw). The rehearsal's
+  topic body carries its label, as Rails refuses a second run's copy.
+
 Visible if clicked, avoid them in a scripted demo:
 
 - [x] Polls draw a "0 voters" stub and can't be voted on (228):
@@ -2069,13 +2114,15 @@ have handlers now.
     (jobs/user_email.rs:93,101,105,507), sendmail delivery
     (email/mod.rs:169), mailing list mode (the
     notify_mailing_list_subscribers job)
-147. `feat/flags-rest` M: flags that send a message (notify user,
-    notify moderators, illegal: flags.rs:130), undoing flags
-    (routes/post_actions.rs:181), flagging topics (:95), flags in
-    messages (flags.rs:120), flags on posts already in review (:185),
-    staff queueing a post for review (:176), hiding on a trusted user's
-    spam flag (:380), silencing new users on spam flags and the scoring
-    behind it (:417; guardian.rs:392; current_user.rs:909)
+147. `feat/flags-rest` M: official warnings (is_warning, flags.rs:194;
+    PostCreator's is_warning and UserWarning), undoing flags
+    (routes/post_actions.rs:211), flags in messages (flags.rs:127),
+    flags on posts already in review (:184), staff queueing a post for
+    review (:175), hiding on a trusted user's spam flag (:531), silencing
+    new users on spam flags and the scoring behind it (:568;
+    guardian.rs:392; current_user.rs:909). Flags that send a message
+    (notify user, notify moderators, illegal, spam with a message) and
+    flagging topics are ported (feat/flag-and-penalty-modals).
 148. `feat/review-actions-rest` L: review actions that delete, edit,
     restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's

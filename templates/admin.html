@@ -20,6 +20,10 @@
 <script src="{{ crate::assets::url(base_path, "chartjs-adapter-moment.min.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "admin-report-charts.js") }}"></script>
 {%- endif %}
+{%- if script == "admin-user.js" %}
+{#- The silence and suspend modal (PenalizeUser). -#}
+<script src="{{ crate::assets::url(base_path, "penalize-user.js") }}"></script>
+{%- endif %}
 {%- if !script.is_empty() %}
 <script src="{{ crate::assets::url(base_path, script) }}"></script>
 {%- endif %}

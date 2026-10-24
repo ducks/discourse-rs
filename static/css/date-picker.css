@@ -4,10 +4,25 @@
  * DCalendarDateTimeInput (calendar-date-time-input.scss), the select-kit
  * combo box and multi select rules the category chooser's port left out
  * (select-kit.scss, combo-box.scss, multi-select.scss), and the modal's own
- * (modal-overrides.scss). Extracted from the reference's compiled
+ * (modal-overrides.scss), and DDatePicker's wrapper (date-picker.scss) the
+ * penalty modal's DatePickerFuture uses. Extracted from the reference's compiled
  * common.css by source map, each tagged with its SCSS file and line; the
  * phone rules are in mobile.css.
  */
+
+/* date-picker.scss:10 */
+.date-picker-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+
+/* date-picker.scss:15 */
+input.date-picker {
+  margin: 0;
+  max-width: 180px;
+}
+
 
 /* pikaday.scss:34 */
 .pika-single {

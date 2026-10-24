@@ -9,6 +9,9 @@
 //       and returns its close function. body fills .d-modal__body, footer
 //       a .d-modal__footer after it (the <:footer> block); onClose runs
 //       once it is gone. A modal shown while one is open replaces it.
+//       beforeClose, when given, runs as the modal is asked to close (the
+//       close button, Escape, the backdrop, the returned function) and
+//       keeps it open by answering false.
 //
 // Dismissable as DModal is when given @closeModal: the close button,
 // Escape and a click on the backdrop close it, after the exit animation.
@@ -120,6 +123,11 @@
     // #animatePopOff, then @closeModal.
     function close() {
       if (closing || removed) {
+        return;
+      }
+      // A @closeModal that may keep the modal open (PenalizeUser's
+      // warnBeforeClosing).
+      if (opts.beforeClose && opts.beforeClose() === false) {
         return;
       }
       closing = true;

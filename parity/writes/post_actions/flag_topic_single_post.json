@@ -1,0 +1,504 @@
+{
+  "name": "flag_topic_single_post",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions",
+      "params": {
+        "id": 41,
+        "post_action_type_id": 8,
+        "flag_topic": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T09:53:46.002762",
+  "transaction_started_at": "2026-10-24T09:53:44.180241",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 46,
+        "name": "User0",
+        "username": "user0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "created_at": "2026-09-30T07:28:30.163Z",
+        "cooked": "<p>An archived topic whose first post got a like, for like_count and op_like_count.</p>",
+        "post_number": 1,
+        "post_type": 1,
+        "posts_count": 1,
+        "updated_at": "2026-09-30T07:28:30.163Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 1,
+        "readers_count": 0,
+        "score": 15.2,
+        "yours": false,
+        "topic_id": 41,
+        "topic_slug": "parity-fixture-liked-and-archived",
+        "display_username": "User0",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": false,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": false,
+        "can_wiki": false,
+        "user_title": null,
+        "bookmarked": false,
+        "actions_summary": [
+          {
+            "id": 2,
+            "count": 1,
+            "acted": true
+          },
+          {
+            "id": 8,
+            "count": 1,
+            "acted": true
+          }
+        ],
+        "moderator": false,
+        "admin": false,
+        "staff": false,
+        "user_id": 2,
+        "hidden": false,
+        "trust_level": 1,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "post_url": "/t/parity-fixture-liked-and-archived/41/1",
+        "reactions": [
+          {
+            "id": "heart",
+            "type": "emoji",
+            "count": 1
+          }
+        ],
+        "current_user_reaction": {
+          "id": "heart",
+          "type": "emoji",
+          "can_undo": false
+        },
+        "reaction_users_count": 1,
+        "current_user_used_main_reaction": true,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null,
+        "can_vote": false
+      }
+    }
+  ],
+  "changes": {
+    "post_actions": {
+      "inserted": [
+        {
+          "id": 3,
+          "post_id": 46,
+          "user_id": 3,
+          "agreed_at": null,
+          "created_at": "2026-10-24T09:53:46.068104",
+          "deleted_at": null,
+          "updated_at": "2026-10-24T09:53:46.094672",
+          "deferred_at": null,
+          "agreed_by_id": null,
+          "disagreed_at": null,
+          "deleted_by_id": null,
+          "targets_topic": false,
+          "deferred_by_id": null,
+          "disagreed_by_id": null,
+          "related_post_id": null,
+          "staff_took_action": false,
+          "post_action_type_id": 8
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 46,
+            "raw": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "wiki": false,
+            "reads": 1,
+            "score": 15.2,
+            "cooked": "<p>An archived topic whose first post got a like, for like_count and op_like_count.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-09-30T07:28:30.163751",
+            "topic_id": 41,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:30.163794",
+            "deleted_at": null,
+            "like_count": 1,
+            "like_score": 1,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T07:28:30.163794",
+            "word_count": 13,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-09-30T07:28:30.18697",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 46,
+            "raw": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "wiki": false,
+            "reads": 1,
+            "score": 15.2,
+            "cooked": "<p>An archived topic whose first post got a like, for like_count and op_like_count.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-09-30T07:28:30.163751",
+            "topic_id": 41,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:30.163794",
+            "deleted_at": null,
+            "like_count": 1,
+            "like_score": 1,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 1,
+            "updated_at": "2026-09-30T07:28:30.163794",
+            "word_count": 13,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-09-30T07:28:30.18697",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": null,
+          "status": 0,
+          "created_at": "2026-10-24T09:53:46.137221",
+          "updated_at": "2026-10-24T09:53:46.137221",
+          "created_by_id": 3,
+          "reviewable_id": 1,
+          "reviewable_history_type": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_scores": {
+      "inserted": [
+        {
+          "id": 1,
+          "score": 3,
+          "reason": null,
+          "status": 0,
+          "context": null,
+          "user_id": 3,
+          "created_at": "2026-10-24T09:53:46.068104",
+          "updated_at": "2026-10-24T09:53:46.160454",
+          "reviewed_at": null,
+          "meta_topic_id": null,
+          "reviewable_id": 1,
+          "reviewed_by_id": null,
+          "take_action_bonus": 0,
+          "user_accuracy_bonus": 0,
+          "reviewable_score_type": 8
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewables": {
+      "inserted": [
+        {
+          "id": 1,
+          "type": "ReviewableFlaggedPost",
+          "score": 3,
+          "status": 0,
+          "payload": {
+            "targets_topic": false
+          },
+          "version": 0,
+          "topic_id": 41,
+          "target_id": 46,
+          "created_at": "2026-10-24T09:53:46.133069",
+          "updated_at": "2026-10-24T09:53:46.168314",
+          "category_id": 4,
+          "target_type": "Post",
+          "type_source": "core",
+          "force_review": false,
+          "latest_score": "2026-10-24T09:53:46.068104",
+          "created_by_id": 3,
+          "reject_reason": null,
+          "potential_spam": true,
+          "potentially_illegal": false,
+          "target_created_by_id": 2,
+          "reviewable_by_group_id": null,
+          "reviewable_by_moderator": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 41,
+            "slug": "parity-fixture-liked-and-archived",
+            "score": 7.699999999999999,
+            "title": "Parity fixture: liked and archived",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": true,
+            "archetype": "regular",
+            "bumped_at": "2026-09-30T07:28:30.163794",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:30.067335",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T10:46:34.843989",
+            "word_count": 13,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: liked and archived",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-09-30T07:28:30.163794",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": null,
+            "last_post_user_id": 2,
+            "participant_count": 2,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 1,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          },
+          "after": {
+            "id": 41,
+            "slug": "parity-fixture-liked-and-archived",
+            "score": 7.699999999999999,
+            "title": "Parity fixture: liked and archived",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": true,
+            "archetype": "regular",
+            "bumped_at": "2026-09-30T07:28:30.163794",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:30.067335",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-24T09:53:46.177478",
+            "word_count": 13,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": null,
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-09-30T07:28:30.163794",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 3,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": null,
+            "last_post_user_id": 2,
+            "participant_count": 2,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 1,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 390,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hbFGj3sSpvGShclATn/HHGIVdVU=",
+            "created_at": "2026-10-24T09:53:44.958282",
+            "rotated_at": "2026-10-24T09:53:44.956897",
+            "updated_at": "2026-10-24T09:53:44.958282",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "hbFGj3sSpvGShclATn/HHGIVdVU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 390,
+            "seen_at": "2026-10-24T09:53:46.01617",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hbFGj3sSpvGShclATn/HHGIVdVU=",
+            "created_at": "2026-10-24T09:53:44.958282",
+            "rotated_at": "2026-10-24T09:53:44.956897",
+            "updated_at": "2026-10-24T09:53:44.958282",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "hbFGj3sSpvGShclATn/HHGIVdVU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 46,
+        "input": "reply"
+      }
+    ],
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 1
+      }
+    ],
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 1
+      }
+    ]
+  ],
+  "next_ids": {
+    "post_actions": 3,
+    "reviewable_histories": 1,
+    "reviewable_scores": 1,
+    "reviewables": 1
+  },
+  "recorded_from": {
+    "case": "1502472bf7fc6905a700df1dc2294bd4fa9893b306d9e7ff59d9609ba3027042",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

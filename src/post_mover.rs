@@ -1087,6 +1087,16 @@ impl Mover<'_, '_> {
         .bind(drafts_saved)
         .execute(&mut *conn)
         .await?;
+        // create!'s store_unique_post_key.
+        crate::posting::validate::store_unique_post_key(
+            &mut *conn,
+            s,
+            author,
+            private_message,
+            &post.raw,
+            new_id,
+        )
+        .await?;
         if let Some(notice) = notice {
             sqlx::query(
                 "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \

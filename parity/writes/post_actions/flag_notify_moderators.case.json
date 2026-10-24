@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions",
+      "params": {"id": 36, "post_action_type_id": 7, "message": "This reply repeats a rumour from elsewhere.", "flag_topic": "false"}
+    }
+  ]
+}

@@ -1716,3 +1716,127 @@ async fn staff_get_the_topic_and_post_admin_menus() {
     assert!(!html.contains("show-post-admin-menu"));
     assert!(!html.contains("admin-post-menu-content"));
 }
+
+/// The page's `<script type="application/json" id="...">` block, parsed.
+fn json_block(html: &str, id: &str) -> Option<serde_json::Value> {
+    let open = format!("<script type=\"application/json\" id=\"{id}\">");
+    let start = html.find(&open)? + open.len();
+    let end = start + html[start..].find("</script>")?;
+    Some(serde_json::from_str(&html[start..end]).unwrap())
+}
+
+/// What static/js/flag-modal.js draws the flag modal from: the flag types
+/// with their descriptions, the topic's actions summary, the strings; for
+/// staff the penalty modal's config too (take action), and on a flagged
+/// post staff's count of its flags.
+#[tokio::test]
+async fn a_members_topic_page_carries_the_flag_modal() {
+    let db = TestDb::new().await;
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut member = Member::logged_in(state.clone(), "user0").await;
+    let html = member
+        .page("/t/parity-fixture-replies-and-posters/35")
+        .await;
+    assert!(html.contains("/assets/flag-modal.js?v="), "{html}");
+    assert!(!html.contains("/assets/penalize-user.js"));
+    assert!(html.contains("<script type=\"application/json\" id=\"dialog-strings\">"));
+    let flag = json_block(&html, "flag-modal-config").expect("the flag modal's config");
+    assert_eq!(flag["staff"], false);
+    assert_eq!(flag["min_personal_message_post_length"], 10);
+    assert_eq!(flag["topic"]["id"], 35);
+    assert_eq!(flag["topic"]["archetype"], "regular");
+    assert!(flag["topic"]["actions_summary"].is_array(), "{flag}");
+    let types = flag["post_action_types"].as_array().unwrap();
+    let inappropriate = types
+        .iter()
+        .find(|t| t["name_key"] == "inappropriate")
+        .unwrap();
+    assert_eq!(inappropriate["is_flag"], true);
+    assert_eq!(inappropriate["require_message"], false);
+    assert_eq!(
+        inappropriate["description"],
+        "This post contains content that a reasonable person would consider offensive, abusive, to be hateful conduct or a violation of <a href=\"/guidelines\">our community guidelines</a>."
+    );
+    let notify_user = types
+        .iter()
+        .find(|t| t["name_key"] == "notify_user")
+        .unwrap();
+    assert_eq!(notify_user["name"], "Send @%{username} a message");
+    assert_eq!(notify_user["require_message"], true);
+    assert!(
+        types
+            .iter()
+            .any(|t| t["name_key"] == "like" && t["is_flag"] == false)
+    );
+    let topic_types: Vec<&str> = flag["topic_flag_types"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|t| t["name_key"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        topic_types,
+        ["inappropriate", "spam", "illegal", "notify_moderators"]
+    );
+    let strings = &flag["strings"];
+    assert_eq!(
+        strings["flagging.title"],
+        "Thanks for keeping our community civil!"
+    );
+    assert_eq!(strings["flagging.action"], "Flag Post");
+    assert_eq!(strings["flagging_topic.action"], "Flag Topic");
+    assert_eq!(strings["flagging.formatted_name.spam"], "It's Spam");
+    assert_eq!(
+        strings["flagging.custom_message.at_least.other"],
+        "enter at least %{count} characters"
+    );
+    // The flag button in its double button, behind show more for a member.
+    assert!(html.contains(r#"<div hidden class="double-button"><button aria-label="privately flag this post for attention or send a personal message about it" class="btn no-text btn-icon post-action-menu__flag create-flag btn-flat""#), "{html}");
+
+    // user0 flags user1's reply; staff then see its count, which opens
+    // the reviewable, and get the penalty modal's config.
+    let csrf = member
+        .send(
+            Request::get("/session/csrf.json").header("x-requested-with", "XMLHttpRequest"),
+            "",
+        )
+        .await;
+    let csrf: serde_json::Value = serde_json::from_str(&csrf).unwrap();
+    let flagged = member
+        .send(
+            Request::post("/post_actions")
+                .header("x-csrf-token", csrf["csrf"].as_str().unwrap())
+                .header("x-requested-with", "XMLHttpRequest")
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded"),
+            "id=36&post_action_type_id=4&flag_topic=false",
+        )
+        .await;
+    assert!(flagged.contains("\"id\":36"), "{flagged}");
+    // The flagger's flag button is gone: no flag left to make.
+    let html = member
+        .page("/t/parity-fixture-replies-and-posters/35")
+        .await;
+    let reply = &html[html.find("data-post-id=\"36\"").unwrap()..];
+    let reply = &reply[..reply.find("</article>").unwrap()];
+    assert!(!reply.contains("create-flag"), "{reply}");
+    let reviewable: i64 = sqlx::query_scalar(
+        "SELECT id FROM reviewables WHERE target_type = 'Post' AND target_id = 36",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let mut admin = Member::logged_in(state, "admin").await;
+    let html = admin.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(html.contains("/assets/penalize-user.js?v="), "{html}");
+    let flag = json_block(&html, "flag-modal-config").unwrap();
+    assert_eq!(flag["staff"], true);
+    let penalize = json_block(&html, "penalize-user-config").expect("the penalty config");
+    assert!(penalize["user"].is_null());
+    assert_eq!(penalize["strings"]["admin.user.silence"], "Silence");
+    assert!(html.contains(&format!(
+        "<div class=\"double-button\"><button class=\"btn no-text button-count has-pending btn-flat\" data-reviewable-id=\"{reviewable}\" type=\"button\"><span>1</span></button><button aria-label=\"privately flag this post for attention or send a personal message about it\" class=\"btn no-text btn-icon post-action-menu__flag create-flag btn-flat\""
+    )), "{html}");
+    // A visitor gets neither.
+    let (_, _, visitor) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35").await;
+    assert!(!visitor.contains("flag-modal-config"));
+}

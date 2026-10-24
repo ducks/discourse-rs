@@ -195,6 +195,10 @@
   outline: 2px solid var(--d-input-focused-color);
   outline-offset: -2px;
 }
+/* single-select.scss:25 */
+.select-kit.single-select.is-disabled .select-kit-header {
+  opacity: 0.5;
+}
 
 /* common/select-kit/combo-box.scss */
 

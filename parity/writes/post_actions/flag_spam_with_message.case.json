@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions",
+      "params": {"id": 36, "post_action_type_id": 8, "message": "Same link posted in five topics.", "flag_topic": "false"}
+    }
+  ]
+}

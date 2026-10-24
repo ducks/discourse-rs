@@ -515,6 +515,15 @@ fn unrandom(s: &str) -> String {
     static PORT: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"//localhost:\d{4}\b").unwrap());
     let s = PORT.replace_all(&s, "//localhost:<port>");
+    // The same port in a search index (a flag's message links the post):
+    // the tsvector splits the URL into 'localhost' and '<port>/t/...'.
+    static TS_PORT: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"'\d{4}/t/").unwrap());
+    let s = if s.contains("'localhost':") {
+        TS_PORT.replace_all(&s, "'<port>/t/").into_owned()
+    } else {
+        s.into_owned()
+    };
     // A compiled stylesheet: the light-dark() polyfill's toggles are
     // namespaced by a hash of the compile's output with its source map
     // annotation, which names the stylesheet's digest (Rails'

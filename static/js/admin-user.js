@@ -2,14 +2,14 @@
 // browser, its actions through the admin user endpoints: log out, edit
 // the name and title (AdminEditableField, PUT /u/:username), activate and
 // deactivate, approve, grant and revoke admin and moderation, change and
-// lock the trust level, unsuspend and unsilence, clear the penalty
+// lock the trust level, suspend and silence (PenalizeUser, in
+// static/js/penalize-user.js), unsuspend and unsilence, clear the penalty
 // history, the primary group, impersonate, anonymize, delete. The page is
 // loaded again after a change, as the controller refreshes its model.
 // Not ported, and saying so when used: the username's edit, checking the
 // email, the bounce score's reset, the activation email, the IP lookup,
-// disabling two-factor, the suspend and silence modals, the upcoming
-// changes and merge modals, the custom groups' picker, deleting every
-// post, and the user archive export.
+// disabling two-factor, the upcoming changes and merge modals, the custom
+// groups' picker, deleting every post, and the user archive export.
 (function () {
   "use strict";
 
@@ -95,6 +95,23 @@
 
   function username() {
     return page().dataset.username;
+  }
+
+  // adminTools.showSuspendModal / showSilenceModal with the page's
+  // AdminUser (static/js/penalize-user.js), the page loaded again after.
+  function showPenalty(type) {
+    var el = document.getElementById("penalize-user-config");
+    var user = null;
+    try {
+      user = el ? JSON.parse(el.textContent).user : null;
+    } catch (e) {
+      user = null;
+    }
+    if (!user || !Discourse.penalizeUser) {
+      unsupported("the " + type + " modal");
+      return;
+    }
+    Discourse.penalizeUser.show({ penaltyType: type, user: user, successCallback: refresh });
   }
 
   function put(action, data) {
@@ -352,9 +369,9 @@
         },
       });
     } else if (is("admin.user.suspend")) {
-      unsupported("the suspend modal");
+      showPenalty("suspend");
     } else if (is("admin.user.silence")) {
-      unsupported("the silence modal");
+      showPenalty("silence");
     } else if (is("admin.users.check_email.text") || is("admin.users.check_sso.text")) {
       unsupported("revealing the email");
     } else if (is("admin.user.reset_bounce_score.label")) {

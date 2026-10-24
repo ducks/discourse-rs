@@ -1,15 +1,18 @@
-//! Flags: PostActionCreator for the flag types that go to review without
-//! a message (off topic, inappropriate, spam): the post action and the
+//! Flags: PostActionCreator for the flag types: the post action and the
 //! post's count of it (PostAction#update_counters), the post's
-//! ReviewableFlaggedPost and the flag's score, and the rules a flag is held
-//! to (auto close, auto hide, auto silence). Staff taking action hide the
-//! post and agree with its flags.
+//! ReviewableFlaggedPost and the flag's score for the types that go to
+//! review, and the rules a flag is held to (auto close, auto hide, auto
+//! silence). Staff taking action hide the post and agree with its flags.
+//! A flag with a message (notify user, notify moderators, illegal, spam)
+//! first creates the message (create_message_creator): to the author for
+//! notify user, else to the moderators, its post the action's related post
+//! and its topic the score's meta topic. A topic's flag (flag_topic) is its
+//! first post's, targeting the topic when it has replies.
 //!
-//! Refused: flags that send a message (notify user, notify moderators,
-//! illegal), queueing for review as staff, flagging topics, flags on posts
-//! already in review, flags in messages, and the rules when they would
-//! close the topic, hide on a trusted spam flag or silence the author. The
-//! badge queue is not ported; flags write no user actions or
+//! Refused: official warnings (is_warning), queueing for review as staff,
+//! flags on posts already in review, flags in messages, and the rules when
+//! they would close the topic, hide on a trusted spam flag or silence the
+//! author. The badge queue is not ported; flags write no user actions or
 //! notifications.
 
 use sqlx::{PgConnection, PgPool};
@@ -28,6 +31,10 @@ pub struct FlagRequest {
     pub take_action: bool,
     pub queue_for_review: bool,
     pub message: Option<String>,
+    /// `is_warning`: the message as an official warning.
+    pub is_warning: bool,
+    /// `flag_topic`: the topic's flag, made on its first post.
+    pub flag_topic: bool,
     /// `reason:` and `context:`, which the reviewable score keeps (a
     /// watched word flag's).
     pub reason: Option<&'static str>,
@@ -124,14 +131,6 @@ pub async fn flag(
     let Some(name) = types.name(req.type_id).map(str::to_string) else {
         return Err(Unsupported("post action types that are neither likes nor flags").into());
     };
-    if types.requires_message(req.type_id)
-        || req.message.as_deref().is_some_and(|m| !m.trim().is_empty())
-    {
-        return Err(Unsupported(
-            "flags that send a message (notify user, notify moderators, illegal)",
-        )
-        .into());
-    }
     // @take_action = take_action && guardian.is_staff?
     let take_action = req.take_action && staff;
 
@@ -185,11 +184,37 @@ pub async fn flag(
         return Err(Unsupported("flags on posts already in review").into());
     }
 
+    // create meta topic / post if needed: a message present for a type
+    // that sends one, spam and illegal included.
+    let mut meta_post: Option<MetaPost> = None;
+    if let Some(message) = req.message.as_deref().filter(|m| !m.trim().is_empty())
+        && (types.requires_message(req.type_id) || name == "spam" || name == "illegal")
+    {
+        if req.is_warning {
+            return Err(Unsupported("official warnings (is_warning)").into());
+        }
+        match create_message(pool, ctx, guardian, &access, &name, message).await? {
+            Ok(meta) => meta_post = Some(meta),
+            Err(errors) => return Ok(Outcome::Invalid(errors)),
+        }
+    }
+    // @targets_topic: a topic's flag targets the topic once it has replies.
+    let targets_topic = if req.flag_topic {
+        let posts_count: i32 = sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
+            .bind(access.topic_id)
+            .fetch_one(&mut *tx)
+            .await?;
+        posts_count != 1
+    } else {
+        false
+    };
+    let related_post_id = meta_post.as_ref().map(|m| m.post_id);
+
     // create_post_action: a trashed flag that was never reviewed comes
     // back, else a new one.
     let revived = sqlx::query(
         "UPDATE post_actions SET deleted_at = NULL, deleted_by_id = NULL, staff_took_action = $5, \
-                related_post_id = NULL, targets_topic = FALSE, created_at = $4, updated_at = clock_timestamp() \
+                related_post_id = $6, targets_topic = $7, created_at = $4, updated_at = clock_timestamp() \
          WHERE id = (SELECT id FROM post_actions WHERE post_id = $1 AND user_id = $2 AND post_action_type_id = $3 \
                        AND deleted_at IS NOT NULL AND agreed_at IS NULL AND disagreed_at IS NULL \
                        AND deferred_at IS NULL ORDER BY id LIMIT 1)",
@@ -199,20 +224,24 @@ pub async fn flag(
     .bind(req.type_id as i32)
     .bind(created_at)
     .bind(take_action)
+    .bind(related_post_id)
+    .bind(targets_topic)
     .execute(&mut *tx)
     .await?
     .rows_affected();
     if revived == 0 {
         sqlx::query(
             "INSERT INTO post_actions (post_id, user_id, post_action_type_id, staff_took_action, targets_topic, \
-                                       created_at, updated_at) \
-             VALUES ($1, $2, $3, $5, FALSE, $4, clock_timestamp())",
+                                       related_post_id, created_at, updated_at) \
+             VALUES ($1, $2, $3, $5, $7, $6, $4, clock_timestamp())",
         )
         .bind(post.id)
         .bind(user.id)
         .bind(req.type_id as i32)
         .bind(created_at)
         .bind(take_action)
+        .bind(related_post_id)
+        .bind(targets_topic)
         .execute(&mut *tx)
         .await?;
         // PostAction.create's after_create: the day's flags.
@@ -260,7 +289,7 @@ pub async fn flag(
                 post_user_id: post.user_id,
                 potential_spam: name == "spam",
                 potentially_illegal: name == "illegal",
-                targets_topic: false,
+                targets_topic,
             },
         )
         .await?;
@@ -285,6 +314,7 @@ pub async fn flag(
                 take_action,
                 reason: req.reason,
                 context: req.context.clone(),
+                meta_topic_id: meta_post.as_ref().map(|m| m.topic_id),
             },
         )
         .await?;
@@ -315,6 +345,127 @@ pub async fn flag(
     }
     tx.commit().await?;
     Ok(Outcome::Done)
+}
+
+/// The message a flag sends: its post and topic.
+struct MetaPost {
+    post_id: i32,
+    topic_id: i32,
+}
+
+/// ActiveSupport's `String#truncate(length, separator: /\s/)`.
+fn truncate_at_space(s: &str, length: usize) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    if chars.len() <= length {
+        return s.to_string();
+    }
+    let stop = length.saturating_sub(3);
+    // rindex(separator, stop): the last whitespace at or before `stop`.
+    let cut = chars[..=stop.min(chars.len() - 1)]
+        .iter()
+        .rposition(|c| c.is_whitespace())
+        .unwrap_or(stop);
+    format!("{}...", chars[..cut].iter().collect::<String>())
+}
+
+/// `create_message_creator` then `creator.create`: a message from the
+/// flagger, to the post's author for notify user, else to the moderators
+/// group (and the category's moderation groups). The creator's errors when
+/// it refuses.
+async fn create_message(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    access: &crate::posting::revisions::PostAccess,
+    name: &str,
+    message: &str,
+) -> Result<Result<MetaPost, Vec<String>>, AppError> {
+    let s = ctx.settings;
+    let mut conn = pool.acquire().await?;
+    let (topic_title, slug, category_id): (String, Option<String>, Option<i32>) =
+        sqlx::query_as("SELECT title, slug, category_id FROM topics WHERE id = $1")
+            .bind(access.topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    // I18n.t("post_action_types.#{name}.email_title", default: illegal's).
+    let key = |part: &str| {
+        let own = format!("post_action_types.{name}.{part}");
+        if ctx.i18n.t(&own).is_some() {
+            own
+        } else {
+            format!("post_action_types.illegal.{part}")
+        }
+    };
+    let title = ctx
+        .i18n
+        .t_with(&key("email_title"), &[("title", &topic_title)])
+        .ok_or(Unsupported("a flag message's title"))?;
+    let base_url = crate::url::Urls {
+        config: ctx.config,
+        settings: s,
+    }
+    .base_url()?;
+    // Post#url
+    let link = format!(
+        "{base_url}/t/{}/{}/{}",
+        slug.unwrap_or_default(),
+        access.topic_id,
+        access.post.post_number
+    );
+    let raw = ctx
+        .i18n
+        .t_with(&key("email_body"), &[("message", message), ("link", &link)])
+        .ok_or(Unsupported("a flag message's body"))?;
+    let max_title = s.get("max_topic_title_length")?.to_i().max(0) as usize;
+    let mut post = crate::posting::create::NewPost {
+        raw,
+        title: Some(truncate_at_space(&title, max_title)),
+        ..Default::default()
+    };
+    if name == "notify_user" {
+        post.subtype = Some("notify_user".to_string());
+        let username: Option<String> =
+            sqlx::query_scalar("SELECT username_lower FROM users WHERE id = $1")
+                .bind(access.post.user_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        post.pm_recipients = Some(username.into_iter().collect());
+    } else {
+        post.subtype = Some("notify_moderators".to_string());
+        let mut groups: Vec<String> = sqlx::query_scalar("SELECT name FROM groups WHERE id = 2")
+            .fetch_all(&mut *conn)
+            .await?;
+        if s.get("enable_category_group_moderation")?.truthy()
+            && let Some(category_id) = category_id
+        {
+            let more: Vec<String> = sqlx::query_scalar(
+                "SELECT g.name FROM groups g JOIN category_moderation_groups cmg ON cmg.group_id = g.id \
+                 WHERE cmg.category_id = $1",
+            )
+            .bind(category_id)
+            .fetch_all(&mut *conn)
+            .await?;
+            for group in more {
+                if !groups.contains(&group) {
+                    groups.push(group);
+                }
+            }
+        }
+        post.pm_recipients = Some(Vec::new());
+        post.pm_groups = groups.iter().map(|g| g.to_lowercase()).collect();
+    }
+    drop(conn);
+    match crate::posting::create::create(pool, ctx, guardian, post).await? {
+        crate::posting::create::Outcome::Created { post_id } => {
+            let topic_id: i32 = sqlx::query_scalar("SELECT topic_id FROM posts WHERE id = $1")
+                .bind(post_id)
+                .fetch_one(pool)
+                .await?;
+            Ok(Ok(MetaPost { post_id, topic_id }))
+        }
+        crate::posting::create::Outcome::Invalid(errors) => Ok(Err(errors)),
+        _ => Err(Unsupported("a flag message PostCreator answered otherwise").into()),
+    }
 }
 
 /// `enforce_rules`: auto close, auto hide, auto silence. Hiding is ported;
