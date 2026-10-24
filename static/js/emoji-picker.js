@@ -362,7 +362,21 @@
     return { x: x, y: y };
   }
 
+  // DMenu's updatePosition (float.js over floating-ui): offset, flip
+  // through FLOAT_UI_PLACEMENTS within the viewport less the header, then
+  // shift on both axes, so a picker too tall for either side stays below
+  // the header instead of opening above the viewport. The fit check below
+  // is for a page without float.js.
   function place(trigger, content, placements) {
+    if (window.FloatingUIDOM && window.Discourse && Discourse.float && Discourse.float.position) {
+      // MENU's options: its placement, FLOAT_UI_PLACEMENTS (float.js's
+      // default) as the fallbacks, the menu offset.
+      Discourse.float.position(trigger, content, {
+        placement: placements[0],
+        offset: MENU_OFFSET,
+      });
+      return;
+    }
     var t = trigger.getBoundingClientRect();
     var w = content.offsetWidth;
     var h = content.offsetHeight;

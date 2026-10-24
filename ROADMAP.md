@@ -131,6 +131,13 @@ Blockers, a scripted walk-through would hit them:
   conversation", the sidebar's "Start DM or group chat"
   (/chat/new-message answered 405) and the profile's Chat button did
   nothing (the rehearsal's step 15): feat/message-composers (222), done.
+- [x] Chat's emoji picker opened partly above the viewport: it took the
+  first placement that fit the window, else its default unclamped.
+  feat/message-composers, done: emoji-picker.js places it with float.js
+  as DMenu's updatePosition does (offset, flip through
+  FLOAT_UI_PLACEMENTS within the viewport less the header, shift on both
+  axes); the reaction picker in the drawer lands where Ember's does at
+  1280x900 and 1280x560 (rs-ref-d).
 
 Visible if clicked, avoid them in a scripted demo:
 
