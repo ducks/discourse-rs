@@ -957,7 +957,7 @@ def define_steps(run):
         page.wait_for_url("**/preferences/**", timeout=WAIT)
         page.locator("a[href$='/preferences/interface']").first.click()
         page.wait_for_url("**/preferences/interface", timeout=WAIT)
-        light_bg = page.evaluate("() => getComputedStyle(document.body).backgroundColor")
+        light_bg = page.evaluate("() => getComputedStyle(document.documentElement).backgroundColor")
         palettes = page.locator(".control-group.color-scheme")
         if palettes.count() == 0:
             # Palettes show only when one is user selectable
@@ -973,10 +973,10 @@ def define_steps(run):
             page.reload()
 
         choose(re.compile("dark", re.I), "a dark palette in the chooser")
-        wait_until(page, "bg => getComputedStyle(document.body).backgroundColor !== bg", light_bg, "the page drawn dark")
-        s.notes.append(f"background {light_bg} -> {page.evaluate('() => getComputedStyle(document.body).backgroundColor')}")
+        wait_until(page, "bg => getComputedStyle(document.documentElement).backgroundColor !== bg", light_bg, "the page drawn dark")
+        s.notes.append(f"background {light_bg} -> {page.evaluate('() => getComputedStyle(document.documentElement).backgroundColor')}")
         choose(re.compile(r"^(?!.*dark)", re.I), "a light palette in the chooser")
-        wait_until(page, "bg => getComputedStyle(document.body).backgroundColor === bg", light_bg, "the page back to light")
+        wait_until(page, "bg => getComputedStyle(document.documentElement).backgroundColor === bg", light_bg, "the page back to light")
 
     @step(12, "Member", "upload a video in a reply; placeholder, then it plays")
     def _(run, s):
