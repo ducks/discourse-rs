@@ -1104,8 +1104,10 @@ def define_steps(run):
         creator = page.locator(".chat-message-creator, .d-modal.chat-modal-new-message")
         # The tab's list draws after a request: wait for a row or the empty
         # state before choosing (a rerun finds the DM the last run made).
+        # Wait for this tab's own outcome: the channels tab's rows are still
+        # drawn for a moment after the switch and would satisfy any row.
         try:
-            drawer.locator(".chat-channel-row, .empty-state__cta button, .channels-list-empty").first.wait_for(state="visible", timeout=WAIT)
+            dm.or_(drawer.locator(".empty-state__cta button, .channels-list-empty")).first.wait_for(state="visible", timeout=WAIT)
         except PlaywrightTimeout:
             pass
         if dm.count() == 0:
