@@ -1,0 +1,74 @@
+{
+  "name": "list_crawler_browser",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/slow_down_crawler_user_agents.json",
+      "params": {
+        "slow_down_crawler_user_agents": "bingbot|firefox"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:30.440116",
+  "transaction_started_at": "2026-10-24T00:42:27.879846",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You cannot add any of the following values to the setting: apple, windows, linux, ubuntu, gecko, firefox, chrome, safari, applewebkit, webkit, mozilla, macintosh, khtml, intel, osx, os x, iphone, ipad, mac."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9s1WfN7UQbn10AMksUTB74sq7hg=",
+            "created_at": "2026-10-24T00:42:29.046103",
+            "rotated_at": "2026-10-24T00:42:29.043927",
+            "updated_at": "2026-10-24T00:42:29.046103",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9s1WfN7UQbn10AMksUTB74sq7hg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:30.457135",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9s1WfN7UQbn10AMksUTB74sq7hg=",
+            "created_at": "2026-10-24T00:42:29.046103",
+            "rotated_at": "2026-10-24T00:42:29.043927",
+            "updated_at": "2026-10-24T00:42:29.046103",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9s1WfN7UQbn10AMksUTB74sq7hg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "14899e8878dea173120e425a094b823ee0d40316f07a96c0eaae18508e5a0824",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "name": "list_emoji_list",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/default_emoji_reactions.json",
+      "params": {
+        "default_emoji_reactions": "heart|tada|+1"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:50.082042",
+  "transaction_started_at": "2026-10-24T00:42:48.054345",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "default_emoji_reactions",
+          "value": "heart|tada|+1",
+          "data_type": 24,
+          "created_at": "2026-10-24T00:42:50.113447",
+          "updated_at": "2026-10-24T00:42:50.113447"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "64b2c80UehX4fe1tWD6ee90BnYc=",
+            "created_at": "2026-10-24T00:42:48.951735",
+            "rotated_at": "2026-10-24T00:42:48.949768",
+            "updated_at": "2026-10-24T00:42:48.951735",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "64b2c80UehX4fe1tWD6ee90BnYc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:50.091368",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "64b2c80UehX4fe1tWD6ee90BnYc=",
+            "created_at": "2026-10-24T00:42:48.951735",
+            "rotated_at": "2026-10-24T00:42:48.949768",
+            "updated_at": "2026-10-24T00:42:48.951735",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "64b2c80UehX4fe1tWD6ee90BnYc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "default_emoji_reactions",
+          "topic_id": null,
+          "new_value": "heart|tada|+1",
+          "admin_only": true,
+          "created_at": "2026-10-24T00:42:50.118407",
+          "ip_address": null,
+          "updated_at": "2026-10-24T00:42:50.118407",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "+1|heart|tada",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "6066dea71806aa3689623018b9b0118aa3394384c09177738a806ee48a616f1e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

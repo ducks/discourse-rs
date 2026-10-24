@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/digest_suppress_categories.json",
+      "params": {
+        "digest_suppress_categories": "1|9999"
+      }
+    }
+  ]
+}

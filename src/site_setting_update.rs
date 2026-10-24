@@ -6,19 +6,22 @@
 //! Ported for core's and the bundled plugins' settings of the plain types
 //! (string, integer, float, bool, enum with listed, recorded or enum
 //! class choices), uploads (by URL: the staff log's URLs, the upload
-//! reference, SiteIconManager's optimized icons), the font and simple
-//! lists (with their choices), a plugin
+//! reference, SiteIconManager's optimized icons), the list types (list of
+//! every list_type but those of an enum class, url_list, host_list,
+//! value_list, simple_list, emoji_list, category_list, group_list,
+//! tag_list: their choices, mandatory values, disallowed groups and
+//! validator classes, crate::site_setting_lists), a plugin
 //! setting's change running the handlers of the plugins the port
 //! has started (crate::plugins::site_setting_changed), and the default
 //! user preferences that are user options with their backfill
 //! (crate::user_option_defaults). Refused: enabling a
 //! bundled plugin the port has not started (unless the reference has
 //! it on by default), themeable and upcoming change settings, the other
-//! types (the other lists, uploaded image lists, groups,
-//! categories, objects...), settings with a validator class or a custom
+//! types (uploaded image lists, tag group lists, lists of an enum class,
+//! objects...), settings with a validator class the port lacks or a custom
 //! validation, the category and tag defaults (their backfill), client strings
 //! with markup (sanitize_field), settings shadowed by a global setting,
-//! bulk updates, an archived site, and the settings whose change handlers
+//! an archived site, and the settings whose change handlers
 //! write (the welcome topic for title and site_description, approving
 //! users, emoji links, slugs, review priorities, site icons...).
 
@@ -38,6 +41,57 @@ pub const SIDEBAR_DEFAULTS: [&str; 2] = [
     "default_navigation_menu_categories",
     "default_navigation_menu_tags",
 ];
+
+/// `SiteSetting::DEFAULT_USER_PREFERENCES`: the defaults whose change can
+/// update the existing users.
+pub const DEFAULT_USER_PREFERENCES: &[&str] = &[
+    "default_email_digest_frequency",
+    "default_include_tl0_in_digests",
+    "default_email_level",
+    "default_email_messages_level",
+    "default_email_mailing_list_mode",
+    "default_email_mailing_list_mode_frequency",
+    "default_email_previous_replies",
+    "default_email_in_reply_to",
+    "default_hide_profile",
+    "default_hide_presence",
+    "default_other_new_topic_duration_minutes",
+    "default_other_auto_track_topics_after_msecs",
+    "default_other_notification_level_when_replying",
+    "default_other_external_links_in_new_tab",
+    "default_other_enable_quoting",
+    "default_other_enable_smart_lists",
+    "default_other_dynamic_favicon",
+    "default_other_like_notification_frequency",
+    "default_other_skip_new_user_tips",
+    "default_other_enable_markdown_monospace_font",
+    "default_topics_automatic_unpin",
+    "default_categories_watching",
+    "default_categories_tracking",
+    "default_categories_muted",
+    "default_categories_watching_first_post",
+    "default_categories_normal",
+    "default_tags_watching",
+    "default_tags_tracking",
+    "default_tags_muted",
+    "default_tags_watching_first_post",
+    "default_text_size",
+    "default_title_count_mode",
+    "default_navigation_menu_categories",
+    "default_navigation_menu_tags",
+    "default_sidebar_link_to_filtered_list",
+    "default_sidebar_show_count_of_new_items",
+    "default_composition_mode",
+    "default_watched_precedence_over_muted",
+];
+
+/// A default user preference whose backfill the port lacks (the category
+/// and tag defaults and the rest that are not user options).
+pub fn preference_not_ported(name: &str) -> bool {
+    DEFAULT_USER_PREFERENCES.contains(&name)
+        && !SIDEBAR_DEFAULTS.contains(&name)
+        && !crate::user_option_defaults::is_user_option(name)
+}
 
 /// `SiteSettings::DeprecatedSettings::SETTINGS`: old name, new name and
 /// whether the old one still overrides the new.
@@ -75,6 +129,9 @@ const CHANGE_HANDLERS_WRITE: &[&str] = &[
     "splash_screen_image",
     "simple_email_subject",
     "content_localization_enabled",
+    // config/initializers/020-discourse-mcp.rb: revoke_disallowed_clients!
+    "mcp_oauth_client_id_metadata_policy",
+    "mcp_oauth_client_id_metadata_domains",
 ];
 
 /// `SiteSettings::Validations#validate_<name>` and TypeSupervisor's
@@ -83,7 +140,6 @@ const CUSTOM_VALIDATIONS: &[&str] = &[
     "allow_all_users_to_flag_illegal_content",
     "allow_likes_in_anonymous_mode",
     "backup_location",
-    "cors_origins",
     "enable_local_logins",
     "enable_page_publishing",
     "enable_s3_uploads",
@@ -91,8 +147,6 @@ const CUSTOM_VALIDATIONS: &[&str] = &[
     "s3_backup_bucket",
     "s3_upload_bucket",
     "secure_uploads",
-    "share_quote_buttons",
-    "slow_down_crawler_user_agents",
     "strip_image_metadata",
 ];
 
@@ -152,15 +206,10 @@ async fn upload_url(conn: &mut PgConnection, value: &Value) -> Result<Option<Str
         .await
 }
 
-/// A list setting's `list_type`.
-fn list_type(def: &crate::site_settings::Definition) -> Option<&str> {
-    opt(def, "list_type").and_then(Yaml::as_str)
-}
-
 /// The setting's choices (`@choices[name]`'s values): listed in its
 /// definition, or, for a Ruby expression (`BaseFontSetting.values`), as
 /// recorded from the reference (crate::setting_enums).
-fn choice_values(def: &crate::site_settings::Definition) -> Vec<String> {
+pub(crate) fn choice_values(def: &crate::site_settings::Definition) -> Vec<String> {
     match opt(def, "choices") {
         Some(Yaml::Sequence(choices)) => choices
             .iter()
@@ -260,13 +309,14 @@ pub async fn update(
         validator,
         Some("CssColorValidator" | "CssColorWithBlankValidator")
     );
-    if CUSTOM_VALIDATIONS.contains(&name) || (validator.is_some() && !css_validator) {
+    if CUSTOM_VALIDATIONS.contains(&name) {
         return Err(Unsupported("settings with custom validations").into());
     }
-    if name.starts_with("default_")
-        && !SIDEBAR_DEFAULTS.contains(&name)
-        && !crate::user_option_defaults::is_user_option(name)
-    {
+    let list_validator = validator.filter(|v| crate::site_setting_lists::VALIDATORS.contains(v));
+    if validator.is_some() && !css_validator && list_validator.is_none() {
+        return Err(Unsupported("site settings with a validator class not ported").into());
+    }
+    if preference_not_ported(name) {
         return Err(Unsupported("default_* settings (user preference backfills)").into());
     }
     if opt(def, "shadowed_by_global").is_some_and(|v| matches!(v, Yaml::Bool(true))) {
@@ -274,7 +324,8 @@ pub async fn update(
     }
 
     // The value, stripped and cast for its type, as Ruby holds it.
-    let value = raw.trim();
+    let value = crate::ruby::strip(raw);
+    let list = crate::site_setting_lists::is_list(def.data_type);
     let new_value = match def.data_type {
         DataType::Integer => {
             let digits: String = value
@@ -289,11 +340,14 @@ pub async fn update(
         | DataType::Color
         | DataType::Email
         | DataType::Username
-        | DataType::Group
-        | DataType::GroupList => Value::Str(value.to_string()),
-        DataType::CategoryList | DataType::TagList if SIDEBAR_DEFAULTS.contains(&name) => {
-            Value::Str(value.to_string())
+        | DataType::Group => Value::Str(value.to_string()),
+        // A list of an enum class's values (the content localization
+        // locales) validates through the class.
+        DataType::List if opt(def, "enum").is_some() => {
+            return Err(Unsupported("list settings of an enum class").into());
         }
+        // The list types, `|` separated strings.
+        _ if list => Value::Str(value.to_string()),
         DataType::Enum => match &def.default {
             Value::Int(_) => Value::Int(crate::ruby::to_i(value)),
             _ => Value::Str(value.to_string()),
@@ -305,15 +359,16 @@ pub async fn update(
                 None => Value::Str(String::new()),
             }
         }
-        // The list kinds kept as strings (`|` separated), with no change
-        // handler or validator beyond their choices.
-        DataType::List if matches!(list_type(def), Some("font" | "simple")) => {
-            Value::Str(value.to_string())
+        DataType::UploadedImageList => {
+            return Err(Unsupported("uploaded image list settings").into());
         }
+        DataType::TagGroupList => return Err(Unsupported("tag group list settings").into()),
+        DataType::Objects => return Err(Unsupported("objects settings").into()),
         _ => {
-            return Err(
-                Unsupported("setting types other than string, number, bool and enum").into(),
-            );
+            return Err(Unsupported(
+                "setting types other than string, number, bool, enum, upload and the lists",
+            )
+            .into());
         }
     };
 
@@ -342,25 +397,57 @@ pub async fn update(
         return Ok(Outcome::Done);
     }
 
-    // TypeSupervisor#validate_value: a list that allows no other values
-    // than its choices raises the invalid choices.
-    if def.data_type == DataType::List
-        && opt(def, "allow_any").is_some_and(|v| matches!(v, Yaml::Bool(false)))
-    {
-        let choices = choice_values(def);
+    // set's filter_value never applies here: HOSTNAME_SETTINGS holds
+    // strings and the service passes the name as a symbol.
+    if list {
         let wanted = new_value.to_s();
-        let diff: Vec<&str> = wanted
-            .split('|')
-            .filter(|v| !v.is_empty() && !choices.iter().any(|c| c == v))
-            .collect();
-        if !diff.is_empty() {
-            let message = i18n
-                .t_count(
-                    "errors.site_settings.invalid_choice",
-                    diff.len() as i64,
-                    &[("name", &diff.join(","))],
+        // TypeSupervisor#validate_value: a list that allows no other
+        // values than its choices raises the invalid choices.
+        if def.data_type == DataType::List
+            && opt(def, "allow_any").is_some_and(|v| matches!(v, Yaml::Bool(false)))
+        {
+            let choices = choice_values(def);
+            if choices.is_empty() {
+                return Err(Unsupported("list settings whose choices are not recorded").into());
+            }
+            let diff: Vec<&str> = crate::ruby::split(&wanted, "|")
+                .into_iter()
+                .filter(|v| !choices.iter().any(|c| c == v))
+                .collect();
+            if !diff.is_empty() {
+                let message = i18n
+                    .t_count(
+                        "errors.site_settings.invalid_choice",
+                        diff.len() as i64,
+                        &[("name", &diff.join(","))],
+                    )
+                    .unwrap_or_default();
+                return Ok(Outcome::Invalid(message));
+            }
+        }
+        // The setting's validator class, else its type's: a list's
+        // StringSettingValidator, a host list's HostListSettingValidator.
+        let error = match list_validator {
+            Some(class) => {
+                crate::site_setting_lists::validate(
+                    &mut *conn, settings, defs, i18n, class, &wanted,
                 )
-                .unwrap_or_default();
+                .await?
+            }
+            None => match def.data_type {
+                DataType::List => string_validator(def, &wanted, i18n)?,
+                DataType::HostList if !crate::site_setting_lists::host_list_valid(&wanted) => i18n
+                    .t("site_settings.errors.invalid_domain_hostname")
+                    .map(str::to_string),
+                _ => None,
+            },
+        };
+        if let Some(message) = error {
+            return Ok(Outcome::Invalid(format!("{name}: {message}")));
+        }
+        if let Some(message) =
+            crate::site_setting_lists::validate_named(name, &wanted, settings, i18n)?
+        {
             return Ok(Outcome::Invalid(message));
         }
     }
@@ -468,7 +555,7 @@ pub async fn update(
     } else {
         None
     };
-    set_and_log_details(
+    let changed = set_and_log_details(
         &mut *conn,
         bus,
         def,
@@ -478,8 +565,12 @@ pub async fn update(
         details.as_deref(),
     )
     .await?;
-    crate::plugins::site_setting_changed(&mut *conn, defs, settings, name, &previous, &new_value)
+    if changed {
+        crate::plugins::site_setting_changed(
+            &mut *conn, defs, settings, name, &previous, &new_value,
+        )
         .await?;
+    }
     // SiteIconManager.ensure_optimized! for the icons' settings, with the
     // settings as they are now.
     if crate::site_icons::watched(name) {
@@ -505,14 +596,24 @@ pub async fn update(
     Ok(Outcome::Done)
 }
 
-/// `add_override!`'s `sanitize_field` of a client setting's string: the
-/// value stored and published (the log keeps the given one). Applied to
-/// string settings; the port leaves the other string-valued types (lists,
-/// enums) as given.
+/// `add_override!`'s `sanitize_field` of a client setting's string, then a
+/// list's mandatory values and disallowed groups: the value stored (the
+/// log keeps the given one). Sanitized for string and list settings; the
+/// port leaves enums' strings as given.
 fn stored_value(
     def: &crate::site_settings::Definition,
     new_value: &Value,
 ) -> Result<Value, AppError> {
+    let list = crate::site_setting_lists::is_list(def.data_type);
+    if list {
+        let mut text = new_value.to_s();
+        if def.client {
+            text = crate::sanitize_field::sanitize_field(&text, &[])?;
+        }
+        return Ok(Value::Str(
+            crate::site_setting_lists::apply_mandatory_and_disallowed(def, &text),
+        ));
+    }
     if !def.client || def.data_type != DataType::String {
         return Ok(new_value.clone());
     }
@@ -528,6 +629,26 @@ fn stored_value(
             })
         }
     }
+}
+
+/// A list setting's `current[name]` before the save: its row's value,
+/// else its default (the getter's value, `previous`, has the mandatory
+/// values merged in).
+async fn current_raw(
+    conn: &mut PgConnection,
+    def: &crate::site_settings::Definition,
+    previous: &Value,
+) -> Result<String, sqlx::Error> {
+    let row: Option<Option<String>> =
+        sqlx::query_scalar("SELECT value FROM site_settings WHERE name = $1")
+            .bind(&def.name)
+            .fetch_optional(&mut *conn)
+            .await?;
+    Ok(match row {
+        Some(value) => value.unwrap_or_default(),
+        None if def.mandatory_values.is_some() => def.default.to_s(),
+        None => previous.to_s(),
+    })
 }
 
 /// `SiteSetting.<name> = value` for a boolean (`add_override!`): the
@@ -564,11 +685,14 @@ pub async fn set_and_log(
     new_value: &Value,
     actor_id: i32,
 ) -> Result<(), AppError> {
-    set_and_log_details(conn, bus, def, previous, new_value, actor_id, None).await
+    set_and_log_details(conn, bus, def, previous, new_value, actor_id, None).await?;
+    Ok(())
 }
 
 /// `set_and_log` with the log's details (the backfill answer of default
-/// user preference settings).
+/// user preference settings). Whether `current[name]` changed, so
+/// `site_setting_changed` is triggered: always for the types other than
+/// lists, whose stored value is the one given.
 pub async fn set_and_log_details(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
@@ -577,14 +701,21 @@ pub async fn set_and_log_details(
     new_value: &Value,
     actor_id: i32,
     details: Option<&str>,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     let name = def.name.as_str();
+    let list = crate::site_setting_lists::is_list(def.data_type);
     let stored = stored_value(def, new_value)?;
+    let old_raw = if list {
+        Some(current_raw(&mut *conn, def, previous).await?)
+    } else {
+        None
+    };
     let db_value = match &stored {
         Value::Bool(b) => if *b { "t" } else { "f" }.to_string(),
         other => other.to_s(),
     };
     save_override(&mut *conn, def, &db_value).await?;
+    let changed = old_raw.is_none_or(|old| old != db_value);
     // An upload setting's value is its Upload, whose to_s is its URL.
     let urls = if def.data_type == DataType::Upload {
         // SiteSetting's after_save: UploadReference.ensure_exist! for the
@@ -603,8 +734,9 @@ pub async fn set_and_log_details(
     } else {
         None
     };
-    // notify_clients!: the new value to every client, for client settings.
-    if def.client {
+    // notify_clients!: the getter's new value to every client, for client
+    // settings whose value changed.
+    if def.client && changed {
         let value = match &stored {
             Value::Int(_) if urls.is_some() => {
                 serde_json::json!(urls.as_ref().map(|(_, new)| new.clone()))
@@ -612,6 +744,10 @@ pub async fn set_and_log_details(
             Value::Bool(b) => serde_json::json!(b),
             Value::Int(i) => serde_json::json!(i),
             Value::Float(f) => serde_json::json!(f),
+            other if list => serde_json::json!(crate::site_setting_lists::with_mandatory(
+                def,
+                &other.to_s()
+            )),
             other => serde_json::json!(other.to_s()),
         };
         bus.publish(
@@ -622,9 +758,13 @@ pub async fn set_and_log_details(
         )
         .await?;
     }
+    // set: Discourse.request_refresh! for the settings declared `refresh`.
+    if opt(def, "refresh").is_some_and(|v| matches!(v, Yaml::Bool(true))) {
+        crate::bus::request_refresh(bus, &mut *conn).await?;
+    }
     // SiteSettingExtension#log
     if opt(def, "hidden").is_some_and(|v| matches!(v, Yaml::Bool(true))) {
-        return Ok(());
+        return Ok(changed);
     }
     let secret = opt(def, "secret").is_some_and(|v| matches!(v, Yaml::Bool(true)));
     let (previous, new_value) = if secret {
@@ -642,7 +782,8 @@ pub async fn set_and_log_details(
         &new_value,
         details,
     )
-    .await
+    .await?;
+    Ok(changed)
 }
 
 /// StaffActionLogger#log_site_setting_change.

@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/authorized_extensions.json",
+      "params": {
+        "authorized_extensions": "jpg|png|mp4"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/authorized_extensions.json",
+      "params": {
+        "authorized_extensions": " jpg|png|mp4 "
+      }
+    }
+  ]
+}

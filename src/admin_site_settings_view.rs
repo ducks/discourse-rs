@@ -885,9 +885,28 @@ fn form_kit(cx: &AdminCx, page: &Page, setting: &Value, control: &str, disabled:
             "tag_list" => {
                 let values: Vec<&str> = value.split('|').filter(|v| !v.is_empty()).collect();
                 let names: Vec<String> = values.iter().map(|v| v.to_string()).collect();
+                // TagChooser (everyTag): its rows come from /tags/filter/search.
+                let selected: Vec<Value> = values
+                    .iter()
+                    .map(|v| serde_json::json!({ "id": v, "name": v }))
+                    .collect();
+                let mut attrs = chooser_attrs(
+                    &value,
+                    selected,
+                    false,
+                    "",
+                    &t(i18n, "tagging.choose_for_topic"),
+                );
+                attrs.push_str(&format!(
+                    " data-tag-search=\"{}\"",
+                    cx.settings
+                        .get("max_tag_search_results")
+                        .map(|v| v.to_i())
+                        .unwrap_or(5)
+                ));
                 format!(
                     "<div class=\"form-kit__control-custom\">{}</div>",
-                    multi_header(cx, "tag-chooser", &names, &values)
+                    multi_header(cx, "tag-chooser", &names, &values, &attrs)
                 )
             }
             other => format!(
@@ -1082,7 +1101,13 @@ fn category_combo(cx: &AdminCx, page: &Page, value: &str, disabled: bool) -> Str
 /// ValueList: each value's input with remove and (with more than one)
 /// shift buttons, then the ComboBox of the choices not listed, headed by
 /// the add key's label if any.
-fn value_list(cx: &AdminCx, value: &str, delimiter: char, add_key: Option<&str>) -> String {
+fn value_list(
+    cx: &AdminCx,
+    value: &str,
+    delimiter: char,
+    add_key: Option<&str>,
+    choices: Vec<String>,
+) -> String {
     let values: Vec<&str> = value.split(delimiter).filter(|v| !v.is_empty()).collect();
     let small = |class: &str, name: &str| {
         format!(
@@ -1090,7 +1115,13 @@ fn value_list(cx: &AdminCx, value: &str, delimiter: char, add_key: Option<&str>)
             icon(name, None)
         )
     };
-    let mut out = String::from("<div><div class=\"value-list\">");
+    // site-settings.js edits it: its delimiter and the choices to add.
+    let mut out = format!(
+        "<div><div class=\"value-list\" data-delimiter=\"{}\" data-choices=\"{}\" data-placeholder=\"{}\">",
+        if delimiter == '\n' { "&#10;" } else { "|" },
+        escape(&Value::from(choices).to_string()),
+        escape(&filter_placeholder(cx, true))
+    );
     if !values.is_empty() {
         out.push_str("<div class=\"values\">");
         for (i, v) in values.iter().enumerate() {
@@ -1173,10 +1204,158 @@ fn secret_list(setting: &Value, value: &str) -> String {
     out
 }
 
-/// A closed MultiSelect's header: the selection's names, or Select….
-fn multi_header(cx: &AdminCx, class: &str, names: &[String], values: &[&str]) -> String {
+/// What site-settings.js opens a MultiSelect with: the value (`|`
+/// separated), its content (`[{id, name, html?}]`), whether a typed value
+/// can be created (allowAny), the values that cannot be removed and the
+/// filter's placeholder.
+fn chooser_attrs(
+    value: &str,
+    choices: Vec<Value>,
+    allow_any: bool,
+    mandatory: &str,
+    placeholder: &str,
+) -> String {
     format!(
-        "<details class=\"select-kit multi-select {class}{}\"><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",
+        " data-list-value=\"{}\" data-choices=\"{}\" data-allow-any=\"{allow_any}\" data-mandatory=\"{}\" data-placeholder=\"{}\"",
+        escape(value),
+        escape(&Value::Array(choices).to_string()),
+        escape(mandatory),
+        escape(placeholder)
+    )
+}
+
+fn filter_placeholder(cx: &AdminCx, allow_any: bool) -> String {
+    t(
+        cx.i18n,
+        if allow_any {
+            "select_kit.filter_placeholder_with_any"
+        } else {
+            "select_kit.filter_placeholder"
+        },
+    )
+}
+
+/// ListSetting's content for the compact, file types, host and group
+/// lists (CompactList, FileTypesList, HostList, GroupList).
+fn list_setting_attrs(
+    cx: &AdminCx,
+    page: &Page,
+    setting: &Value,
+    kind: &str,
+    value: &str,
+    values: &[&str],
+) -> String {
+    let named = |id: &str, name: &str| serde_json::json!({ "id": id, "name": name });
+    // SiteSettingComponent#allowAny: allow_any unless false.
+    let mut allow_any = setting["allow_any"] != Value::Bool(false);
+    let mut value = value.to_string();
+    let choices: Vec<Value> = match kind {
+        "group_list" => {
+            allow_any = false;
+            // groupChoices: the site's groups less the disallowed ones,
+            // everyone shown as logged in users while the granular
+            // permissions are on (mapEveryoneToLoggedInUsersIds).
+            let granular = cx
+                .settings
+                .get("granular_anonymous_and_logged_in_groups_permissions")
+                .is_ok_and(|v| v.truthy());
+            let disallowed: Vec<&str> = s(&setting["disallowed_groups"])
+                .split('|')
+                .filter(|v| !v.is_empty())
+                .collect();
+            let groups: Vec<&(i64, String)> = page
+                .groups
+                .iter()
+                .filter(|(id, _)| !disallowed.contains(&id.to_string().as_str()))
+                .collect();
+            let map = |id: String| {
+                if granular && id == "0" {
+                    "5".to_string()
+                } else {
+                    id
+                }
+            };
+            let mut ids: Vec<String> = Vec::new();
+            for (id, _) in &groups {
+                let id = map(id.to_string());
+                if !ids.contains(&id) {
+                    ids.push(id);
+                }
+            }
+            if granular && values.contains(&"0") {
+                let mut mapped: Vec<String> = Vec::new();
+                for v in values {
+                    let v = map(v.to_string());
+                    if !mapped.contains(&v) {
+                        mapped.push(v);
+                    }
+                }
+                value = mapped.join("|");
+            }
+            ids.iter()
+                .filter_map(|id| {
+                    let (_, name) = groups.iter().find(|(g, _)| g.to_string() == *id)?;
+                    let name = if name == "everyone" {
+                        "everyone (legacy)"
+                    } else {
+                        name.as_str()
+                    };
+                    Some(named(id, name))
+                })
+                .collect()
+        }
+        // HostList: the values are the choices.
+        "host_list" => values.iter().map(|v| named(v, v)).collect(),
+        _ => match setting["valid_values"].as_array().filter(|v| !v.is_empty()) {
+            Some(valid) => valid
+                .iter()
+                .map(|v| named(&value_string(&v["value"]), &value_string(&v["name"])))
+                .collect(),
+            None => {
+                let mut c: Vec<String> = values.iter().map(|v| v.to_string()).collect();
+                for choice in setting["choices"].as_array().into_iter().flatten() {
+                    let choice = value_string(choice);
+                    if !c.contains(&choice) {
+                        c.push(choice);
+                    }
+                }
+                c.iter().map(|v| named(v, v)).collect()
+            }
+        },
+    };
+    let mut attrs = chooser_attrs(
+        &value,
+        choices,
+        allow_any,
+        s(&setting["mandatory_values"]),
+        &filter_placeholder(cx, allow_any),
+    );
+    if kind == "host_list" {
+        // HostList#onChange ignores a value with a wildcard.
+        attrs.push_str(" data-refuse=\"?*\"");
+    }
+    if kind == "group_list" {
+        attrs.push_str(&format!(
+            " data-stored=\"{}\" data-granular=\"{}\"",
+            escape(&value_string(&setting["value"])),
+            cx.settings
+                .get("granular_anonymous_and_logged_in_groups_permissions")
+                .is_ok_and(|v| v.truthy())
+        ));
+    }
+    attrs
+}
+
+/// A closed MultiSelect's header: the selection's names, or Select….
+fn multi_header(
+    cx: &AdminCx,
+    class: &str,
+    names: &[String],
+    values: &[&str],
+    attrs: &str,
+) -> String {
+    format!(
+        "<details class=\"select-kit multi-select {class}{}\"{attrs}><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",
         if values.is_empty() {
             ""
         } else {
@@ -1298,6 +1477,15 @@ fn legacy(cx: &AdminCx, page: &Page, setting: &Value, kind: &str, disabled: bool
                 &value,
                 delimiter,
                 (kind == "url_list").then_some("admin.site_settings.add_url"),
+                // List hands ValueList the setting's choices.
+                if kind == "list" {
+                    setting["choices"]
+                        .as_array()
+                        .map(|a| a.iter().map(value_string).collect())
+                        .unwrap_or_default()
+                } else {
+                    Vec::new()
+                },
             )
         }
         "secret_list" => secret_list(setting, &value),
@@ -1310,8 +1498,15 @@ fn legacy(cx: &AdminCx, page: &Page, setting: &Value, kind: &str, disabled: bool
         // SettingLocaleList draws as a compact list.
         "compact_list" | "locale_list" | "group_list" | "file_types_list" | "host_list" => {
             let names = multi_names(page, setting, &values);
+            // ListSetting's content, for site-settings.js to open with
+            // (not for the locale list, whose chooser is not ported).
+            let chooser = if kind == "locale_list" {
+                String::new()
+            } else {
+                list_setting_attrs(cx, page, setting, kind, &value, &values)
+            };
             let header = format!(
-                "<details class=\"select-kit multi-select list-setting{}\"><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",
+                "<details class=\"select-kit multi-select list-setting{}\"{chooser}><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",
                 if values.is_empty() {
                     ""
                 } else {
@@ -1351,6 +1546,13 @@ fn legacy(cx: &AdminCx, page: &Page, setting: &Value, kind: &str, disabled: bool
         }
         // SettingCategoryList's CategorySelector, closed.
         "category_list" => {
+            // Its content: every category, drawn as its badge.
+            let choices: Vec<Value> = page
+                .categories
+                .iter()
+                .map(|c| serde_json::json!({ "id": c.id.to_string(), "name": c.name, "html": c.badge }))
+                .collect();
+            let attrs = chooser_attrs(&value, choices, false, "", &filter_placeholder(cx, false));
             let names: Vec<String> = values
                 .iter()
                 .map(|v| {
@@ -1363,7 +1565,7 @@ fn legacy(cx: &AdminCx, page: &Page, setting: &Value, kind: &str, disabled: bool
                 .collect();
             format!(
                 "<div>{}</div>",
-                multi_header(cx, "category-selector", &names, &values)
+                multi_header(cx, "category-selector", &names, &values, &attrs)
             )
         }
         "upload" => upload(cx, setting, &value, disabled),
@@ -1806,6 +2008,11 @@ fn client_strings(cx: &AdminCx, settings: &[Value]) -> String {
         "upload_selector.select_file",
         "select_kit.default_header_text",
         "admin.site_settings.file_types_list.add_types_toast",
+        "admin.site_settings.mandatory_group",
+        "select_kit.create",
+        "select_kit.delete_item",
+        "select_kit.results_count.one",
+        "select_kit.results_count.other",
         "generic_error",
     ];
     let mut map: serde_json::Map<String, Value> = KEYS

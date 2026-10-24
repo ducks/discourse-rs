@@ -1,0 +1,114 @@
+{
+  "name": "list_host_list",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/blocked_email_domains.json",
+      "params": {
+        "blocked_email_domains": "spam.com|https://bad.org/x"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:43:09.597513",
+  "transaction_started_at": "2026-10-24T00:43:07.384233",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "blocked_email_domains",
+          "value": "spam.com|https://bad.org/x",
+          "data_type": 10,
+          "created_at": "2026-10-24T00:43:09.634871",
+          "updated_at": "2026-10-24T00:43:09.634871"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NDP1AOLlOVH7tZHrsL4asBlwkik=",
+            "created_at": "2026-10-24T00:43:08.153096",
+            "rotated_at": "2026-10-24T00:43:08.13767",
+            "updated_at": "2026-10-24T00:43:08.153096",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NDP1AOLlOVH7tZHrsL4asBlwkik=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:43:09.61041",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NDP1AOLlOVH7tZHrsL4asBlwkik=",
+            "created_at": "2026-10-24T00:43:08.153096",
+            "rotated_at": "2026-10-24T00:43:08.13767",
+            "updated_at": "2026-10-24T00:43:08.153096",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NDP1AOLlOVH7tZHrsL4asBlwkik=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "blocked_email_domains",
+          "topic_id": null,
+          "new_value": "spam.com|https://bad.org/x",
+          "admin_only": true,
+          "created_at": "2026-10-24T00:43:09.63889",
+          "ip_address": null,
+          "updated_at": "2026-10-24T00:43:09.63889",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "mailinator.com",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "fa74f141abe3f6d9e3dedf34f64c8b1a03abfd4f6630650bf1a80f3afbffb5f4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/direct_message_enabled_groups.json",
+      "params": {
+        "direct_message_enabled_groups": ""
+      }
+    }
+  ]
+}

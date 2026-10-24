@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/allowed_iframes.json",
+      "params": {
+        "allowed_iframes": "https://a.example.org/embed|ftp://b.example.org/"
+      }
+    }
+  ]
+}

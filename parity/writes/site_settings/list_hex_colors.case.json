@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/restrict_letter_avatar_colors.json",
+      "params": {
+        "restrict_letter_avatar_colors": "aabbcc|zzzzzz"
+      }
+    }
+  ]
+}

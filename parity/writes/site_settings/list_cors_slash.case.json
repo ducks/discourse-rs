@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/cors_origins.json",
+      "params": {
+        "cors_origins": "https://a.example.org/"
+      }
+    }
+  ]
+}

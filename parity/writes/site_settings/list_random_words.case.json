@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/random_username_adjectives.json",
+      "params": {
+        "random_username_adjectives": "happy|sad face"
+      }
+    }
+  ]
+}

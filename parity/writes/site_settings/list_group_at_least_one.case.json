@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/anonymous_posting_allowed_groups.json",
+      "params": {
+        "anonymous_posting_allowed_groups": ""
+      }
+    }
+  ]
+}

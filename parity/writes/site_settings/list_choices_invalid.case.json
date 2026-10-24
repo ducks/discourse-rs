@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/share_links.json",
+      "params": {
+        "share_links": "twitter|myspace|friendster"
+      }
+    }
+  ]
+}

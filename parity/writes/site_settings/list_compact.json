@@ -1,0 +1,114 @@
+{
+  "name": "list_compact",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/blocked_attachment_filenames.json",
+      "params": {
+        "blocked_attachment_filenames": "smime.p7s|winmail.dat"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:24.624142",
+  "transaction_started_at": "2026-10-24T00:42:22.39229",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "blocked_attachment_filenames",
+          "value": "smime.p7s|winmail.dat",
+          "data_type": 8,
+          "created_at": "2026-10-24T00:42:24.657952",
+          "updated_at": "2026-10-24T00:42:24.657952"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NOtoxDojygXl82G505yhmnaXt+s=",
+            "created_at": "2026-10-24T00:42:23.472375",
+            "rotated_at": "2026-10-24T00:42:23.470135",
+            "updated_at": "2026-10-24T00:42:23.472375",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NOtoxDojygXl82G505yhmnaXt+s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:24.63364",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NOtoxDojygXl82G505yhmnaXt+s=",
+            "created_at": "2026-10-24T00:42:23.472375",
+            "rotated_at": "2026-10-24T00:42:23.470135",
+            "updated_at": "2026-10-24T00:42:23.472375",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NOtoxDojygXl82G505yhmnaXt+s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "blocked_attachment_filenames",
+          "topic_id": null,
+          "new_value": "smime.p7s|winmail.dat",
+          "admin_only": true,
+          "created_at": "2026-10-24T00:42:24.662251",
+          "ip_address": null,
+          "updated_at": "2026-10-24T00:42:24.662251",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "smime.p7s|signature.asc|winmail.dat",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "7c4b238258d6b172aa5f4553c9a7ba4898e95782d05c5cfa18fefc37b9a569cd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/emoji_deny_list.json",
+      "params": {
+        "emoji_deny_list": "poop"
+      }
+    }
+  ]
+}

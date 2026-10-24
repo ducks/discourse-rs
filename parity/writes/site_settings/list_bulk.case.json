@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/bulk_update.json",
+      "params": {
+        "settings": {
+          "authorized_extensions": {
+            "value": "jpg|png|mov",
+            "backfill": "false"
+          },
+          "whispers_allowed_groups": {
+            "value": "0|3|4|11",
+            "backfill": "false"
+          }
+        }
+      }
+    }
+  ]
+}

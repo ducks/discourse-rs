@@ -8,10 +8,12 @@
 // that saves or discards every changed setting. A setting saves through
 // PUT /admin/site_settings/:name, the banner through bulk_update,
 // confirming first when one requires it. The route's filters are the
-// URL's query; the page for them is swapped in as a link's is. Not
-// ported, and saying so when used: the editors the page says so of, the
-// pickers' dropdowns, uploading, the emoji picker and the backfill
-// question.
+// URL's query; the page for them is swapped in as a link's is. The list
+// settings' editors: ListSetting's MultiSelect (compact, file types, host
+// and group lists), ValueList (list, url and value lists), the category
+// list's CategorySelector and the tag list's TagChooser. Not ported, and
+// saying so when used: the editors the page says so of, the other
+// pickers' dropdowns, uploading, the emoji picker and the backfill question.
 (function () {
   "use strict";
 
@@ -180,9 +182,17 @@
     if (color) {
       return color.dataset.value !== undefined ? color.dataset.value : row.dataset.value;
     }
-    var listSetting = row.querySelector(".setting-value details.list-setting");
-    if (listSetting && listSetting.dataset.listValue !== undefined) {
-      return listSetting.dataset.listValue;
+    var chooser = row.querySelector(".setting-value details.multi-select[data-list-value]");
+    if (chooser) {
+      return chooser.dataset.listValue;
+    }
+    var valueList = row.querySelector(".setting-value .value-list[data-delimiter]");
+    if (valueList) {
+      return valueListValues(valueList)
+        .filter(function (v) {
+          return v !== "";
+        })
+        .join(valueList.dataset.delimiter);
     }
     var input = row.querySelector(
       ".setting-value input.form-kit__control-input, .setting-value input.form-kit__control-password, .setting-value textarea, .setting-value input.input-setting-string, .setting-value input.input-setting-integer"
@@ -220,13 +230,17 @@
       setUpload(row, uploader, value);
       return;
     }
-    var listSetting = row.querySelector(".setting-value details.list-setting");
-    if (listSetting && row.querySelector(".file-types-list__button")) {
-      setFileTypes(listSetting, value);
+    var chooser = row.querySelector(".setting-value details.multi-select[data-list-value]");
+    if (chooser) {
+      setChooser(chooser, value);
       return;
     }
-    if (listSetting && listSetting.dataset.choices) {
-      setListSetting(listSetting, value);
+    var valueList = row.querySelector(".setting-value .value-list[data-delimiter]");
+    if (valueList) {
+      renderList(
+        valueList,
+        value.split(valueList.dataset.delimiter).filter(Boolean)
+      );
       return;
     }
     var colorPicker = row.querySelector(".setting-value .color-picker");
@@ -710,77 +724,351 @@
     }
   }
 
-  // The file types list's closed MultiSelect, naming its values.
-  function setFileTypes(details, value) {
-    details.dataset.listValue = value;
-    var values = value.split("|").filter(Boolean);
-    var summary = details.querySelector("summary");
-    summary.dataset.value = values.join(",");
-    summary.dataset.name = values.join(",");
-    details.classList.toggle("has-selection", values.length > 0);
-    details.querySelector(".formatted-selection").textContent = values.length
-      ? values.join(", ")
-      : strings["select_kit.default_header_text"] || "";
+  // The MultiSelects of the list settings (data-list-value, data-choices
+  // as the page drew them): ListSetting for the compact, file types, host
+  // and group lists, CategorySelector for a category list and TagChooser
+  // for a tag list (data-tag-search, its rows searched for). Open, the body
+  // has the filter, each chosen value (SelectedChoice, its button removing
+  // it; a mandatory one read only) and the content not chosen that the
+  // filter matches, led by the typed value to create when allowAny.
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
   }
 
-  // ListSetting's MultiSelect over its choices (data-choices): the header
-  // names the values; open, its body has each chosen one (SelectedChoice,
-  // its button removing it) over the choices not chosen.
-  function setListSetting(details, value) {
-    setFileTypes(details, value);
+  function chooserValues(details) {
+    return (details.dataset.listValue || "").split("|").filter(Boolean);
+  }
+
+  // The content as {id, name, html}: what the page drew, plus the values
+  // created or removed since (onChangeChoices) and the tags found.
+  function chooserContent(details) {
+    var content = JSON.parse(details.dataset.choices || "[]").map(function (c) {
+      return typeof c === "object" ? { id: String(c.id), name: String(c.name), html: c.html } : { id: String(c), name: String(c) };
+    });
+    (details.extraChoices || []).forEach(function (c) {
+      if (!content.some(function (o) { return o.id === c.id; })) {
+        content.push(c);
+      }
+    });
+    return content;
+  }
+
+  function choiceNamed(details, id) {
+    var found = chooserContent(details).filter(function (c) {
+      return c.id === id;
+    })[0];
+    return found || { id: id, name: id };
+  }
+
+  function addExtraChoice(details, choice) {
+    details.extraChoices = (details.extraChoices || []).filter(function (c) {
+      return c.id !== choice.id;
+    });
+    details.extraChoices.push(choice);
+  }
+
+  // The header names the values; the body follows when open.
+  function setChooser(details, value) {
+    details.dataset.listValue = value;
+    var values = chooserValues(details);
+    var names = values.map(function (v) {
+      return choiceNamed(details, v).name;
+    });
+    var summary = details.querySelector("summary");
+    summary.dataset.value = values.join(",");
+    summary.dataset.name = names.join(",");
+    details.classList.toggle("has-selection", values.length > 0);
+    details.querySelector(".formatted-selection").textContent = values.length
+      ? names.join(", ")
+      : strings["select_kit.default_header_text"] || "";
     if (details.classList.contains("is-expanded")) {
-      openListSetting(details);
+      drawChooser(details);
     }
   }
 
-  function openListSetting(details) {
-    var values = (details.dataset.listValue || "").split("|").filter(Boolean);
-    var esc = function (s) {
-      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-    };
+  function openChooser(details) {
     details.classList.add("is-expanded");
     details.open = true;
-    var chosen = values
-      .map(function (v) {
-        return (
-          '<button class="btn btn-default selected-choice" data-name="' +
-          esc(v) +
-          '" data-value="' +
-          esc(v) +
-          '" type="button">' +
-          icon("xmark") +
-          '<span class="d-button-label">' +
-          esc(v) +
-          "</span></button>"
-        );
-      })
-      .join("");
-    var rest = JSON.parse(details.dataset.choices).filter(function (c) {
-      return values.indexOf(String(c)) === -1;
-    });
-    details.querySelector(".select-kit-body").innerHTML =
-      (chosen ? '<div class="selected-content">' + chosen + "</div>" : "") +
-      '<div class="select-kit-collection" role="listbox">' +
-      rest
-        .map(function (c) {
-          return (
-            '<div class="select-kit-row" role="option" tabindex="0" data-value="' +
-            esc(c) +
-            '" data-name="' +
-            esc(c) +
-            '"><span class="name">' +
-            esc(c) +
-            "</span></div>"
-          );
-        })
-        .join("") +
-      "</div>";
+    drawChooser(details);
+    var input = details.querySelector(".select-kit-body .filter-input");
+    if (input) {
+      input.focus();
+    }
   }
 
-  function closeListSetting(details) {
+  function closeChooser(details) {
     details.classList.remove("is-expanded");
     details.open = false;
     details.querySelector(".select-kit-body").innerHTML = "";
+  }
+
+  function chooserRow(choice, index, highlighted, label) {
+    var tag = choice.tag === true;
+    return (
+      '<li aria-checked="false" role="menuitemradio" data-index="' +
+      index +
+      '" data-name="' +
+      esc(choice.name) +
+      '" data-value="' +
+      esc(choice.id) +
+      '" title="' +
+      esc(choice.name) +
+      '" tabindex="0" class="select-kit-row' +
+      (tag ? " tag-chooser-row" : choice.html ? " category-row" : "") +
+      (highlighted ? " is-highlighted" : "") +
+      '">' +
+      (tag
+        ? '<a data-tag-name="' + esc(choice.name) + '" class="discourse-tag simple">' + esc(choice.name) + "</a>" +
+          (choice.count ? ' <span class="discourse-tag-count">x' + esc(choice.count) + "</span>" : "")
+        : choice.html
+          ? '<div class="category-status">' + choice.html + "</div>"
+          : '<span class="name">' + esc(label || choice.name) + "</span>") +
+      "</li>"
+    );
+  }
+
+  function drawChooser(details) {
+    var body = details.querySelector(".select-kit-body");
+    var old = body.querySelector(".filter-input");
+    var term = old ? old.value : "";
+    var hadFocus = old && document.activeElement === old;
+    var values = chooserValues(details);
+    var mandatory = (details.dataset.mandatory || "").split("|").filter(Boolean);
+    var html =
+      '<div class="select-kit-filter multi-select-filter is-expanded"><input class="filter-input" autocapitalize="off" autocomplete="off" autocorrect="off" name="filter-input-search" placeholder="' +
+      esc(details.dataset.placeholder || "") +
+      '" spellcheck="false" tabindex="0" type="search"></div>';
+    if (values.length) {
+      html +=
+        '<div class="selected-content">' +
+        values
+          .map(function (v) {
+            var choice = choiceNamed(details, v);
+            if (mandatory.indexOf(v) !== -1) {
+              return (
+                '<button class="btn btn-default disabled tag-choice" title="' +
+                esc(strings["admin.site_settings.mandatory_group"] || "") +
+                '">' +
+                esc(choice.name) +
+                "</button>"
+              );
+            }
+            return (
+              '<button aria-label="' +
+              esc(t("select_kit.delete_item", { name: choice.name })) +
+              '" class="btn btn-default selected-choice tag-choice " data-name="' +
+              esc(choice.name) +
+              '" data-value="' +
+              esc(v) +
+              '" type="button">' +
+              icon("xmark") +
+              (choice.html ? choice.html : '<span class="d-button-label">' + esc(choice.name) + "</span>") +
+              "</button>"
+            );
+          })
+          .join("") +
+        "</div>";
+    }
+    body.innerHTML = html + '<ul aria-live="polite" class="select-kit-collection" role="menu"></ul>';
+    var input = body.querySelector(".filter-input");
+    input.value = term;
+    if (hadFocus) {
+      input.focus();
+    }
+    if (details.dataset.tagSearch) {
+      searchTags(details, term);
+    } else {
+      drawRows(details, rowsFor(details, term), term);
+    }
+  }
+
+  // The content not chosen that the filter matches, the typed value first
+  // when it can be created.
+  function rowsFor(details, term) {
+    var values = chooserValues(details);
+    var needle = term.trim().toLowerCase();
+    var content = chooserContent(details);
+    var rows = content.filter(function (c) {
+      return values.indexOf(c.id) === -1 && (!needle || c.name.toLowerCase().indexOf(needle) !== -1);
+    });
+    var typed = term.trim();
+    var exists = content.some(function (c) {
+      return c.id === typed;
+    });
+    if (details.dataset.allowAny === "true" && typed && !exists && values.indexOf(typed) === -1) {
+      rows.unshift({ id: typed, name: typed, create: true });
+    }
+    return rows;
+  }
+
+  function drawRows(details, rows, term) {
+    var collection = details.querySelector(".select-kit-collection");
+    if (!collection) {
+      return;
+    }
+    collection.innerHTML = rows
+      .map(function (c, i) {
+        return chooserRow(c, i, term.trim() !== "" && i === 0, c.create ? t("select_kit.create", { content: c.name }) : null);
+      })
+      .join("");
+    var count = details.querySelector(".select-kit-body .results-count");
+    if (count) {
+      count.remove();
+    }
+    if (term.trim()) {
+      collection.insertAdjacentHTML(
+        "afterend",
+        '<span class="results-count" role="alert">' + esc(tCountName("select_kit.results_count", rows.length)) + "</span>"
+      );
+    }
+  }
+
+  function tCountName(key, count) {
+    return t(key + "." + (count === 1 ? "one" : "other"), { count: count });
+  }
+
+  // TagChooser's search (everyTag, the chosen tags left out).
+  function searchTags(details, term) {
+    var params = new URLSearchParams({ q: term, limit: details.dataset.tagSearch, filterForInput: "true" });
+    chooserValues(details).forEach(function (name) {
+      params.append("selected_tags[]", name);
+    });
+    fetch(base() + "/tags/filter/search.json?" + params.toString(), {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (response) {
+        return response.ok ? response.json() : { results: [] };
+      })
+      .then(function (json) {
+        var input = details.querySelector(".select-kit-body .filter-input");
+        if (!input || input.value !== term) {
+          return;
+        }
+        var values = chooserValues(details);
+        var rows = (json.results || [])
+          .filter(function (r) {
+            return values.indexOf(r.name) === -1;
+          })
+          .map(function (r) {
+            return { id: r.name, name: r.name, count: r.count, tag: true };
+          });
+        drawRows(details, rows, term);
+      });
+  }
+
+  // A chosen row or removed value: the new value through the setting's
+  // component (HostList refusing wildcards, GroupList storing everyone
+  // back while the granular permissions keep it).
+  function changeChooser(details, values) {
+    var refuse = details.dataset.refuse || "";
+    if (
+      refuse &&
+      values.some(function (v) {
+        return refuse.split("").some(function (ch) {
+          return v.indexOf(ch) !== -1;
+        });
+      })
+    ) {
+      return;
+    }
+    if (details.dataset.granular === "true") {
+      var stored = (details.dataset.stored || "").split("|").filter(Boolean);
+      if (stored.indexOf("0") !== -1 && stored.indexOf("5") === -1) {
+        values = values
+          .map(function (v) {
+            return v === "5" ? "0" : v;
+          })
+          .filter(function (v, i, all) {
+            return all.indexOf(v) === i;
+          });
+      }
+    }
+    setChooser(details, values.join("|"));
+    var row = details.closest(ROW);
+    if (row) {
+      syncRow(row);
+    }
+  }
+
+  function pickRow(details, rowEl) {
+    var value = rowEl.dataset.value;
+    var choice = { id: value, name: rowEl.dataset.name };
+    if (rowEl.classList.contains("tag-chooser-row")) {
+      choice.tag = true;
+    }
+    addExtraChoice(details, choice);
+    var input = details.querySelector(".select-kit-body .filter-input");
+    if (input) {
+      input.value = "";
+    }
+    changeChooser(details, chooserValues(details).concat([value]));
+  }
+
+  // ValueList: the values (its delimiter's), each editable, removable and
+  // shifted by renderList's buttons, and the ComboBox adding a choice or
+  // the typed value.
+  function valueListValues(list) {
+    return Array.prototype.map.call(list.querySelectorAll(":scope > .values input.value-input"), function (input) {
+      return input.value;
+    });
+  }
+
+  function drawValueListAdder(details) {
+    var list = details.closest(".value-list");
+    var body = details.querySelector(".select-kit-body");
+    var old = body.querySelector(".filter-input");
+    var term = old ? old.value : "";
+    var values = valueListValues(list);
+    var needle = term.trim().toLowerCase();
+    var rows = JSON.parse(list.dataset.choices || "[]")
+      .map(String)
+      .filter(function (c) {
+        return values.indexOf(c) === -1 && (!needle || c.toLowerCase().indexOf(needle) !== -1);
+      })
+      .map(function (c) {
+        return { id: c, name: c };
+      });
+    if (term.trim() && !rows.some(function (r) { return r.id === term.trim(); })) {
+      rows.unshift({ id: term.trim(), name: term.trim(), create: true });
+    }
+    body.innerHTML =
+      '<div class="select-kit-filter is-expanded"><input class="filter-input" autocapitalize="off" autocomplete="off" autocorrect="off" name="filter-input-search" placeholder="' +
+      esc(list.dataset.placeholder || "") +
+      '" spellcheck="false" tabindex="0" type="search">' +
+      icon("magnifying-glass").replace("svg-string", "filter-icon svg-string") +
+      "</div>" +
+      (rows.length
+        ? '<ul aria-live="polite" class="select-kit-collection" role="menu">' +
+          rows
+            .map(function (c, i) {
+              return chooserRow(c, i, needle !== "" && i === 0, c.create ? t("select_kit.create", { content: c.name }) : null);
+            })
+            .join("") +
+          "</ul>"
+        : "") +
+      (needle ? '<span class="results-count" role="alert">' + esc(tCountName("select_kit.results_count", rows.length)) + "</span>" : "");
+    var input = body.querySelector(".filter-input");
+    input.value = term;
+    input.focus();
+  }
+
+  function closeValueListAdder(details) {
+    details.classList.remove("is-expanded");
+    details.open = false;
+    details.querySelector(".select-kit-body").innerHTML = "";
+  }
+
+  // ValueList#addValue: a value not listed yet.
+  function addValueListValue(details, value) {
+    var list = details.closest(".value-list");
+    var values = valueListValues(list);
+    if (value && values.indexOf(value) === -1) {
+      values.push(value);
+    }
+    closeValueListAdder(details);
+    renderList(list, values);
+    syncRow(list.closest(ROW));
   }
 
   // FileTypesList#insertDefaultTypes, with its toast.
@@ -799,7 +1087,7 @@
       return;
     }
     toast(t("admin.site_settings.file_types_list.add_types_toast", { types: diff.join(", ") }));
-    setFileTypes(row.querySelector(".setting-value details.list-setting"), newTypes.join("|"));
+    setChooser(row.querySelector(".setting-value details.list-setting"), newTypes.join("|"));
     syncRow(row);
   }
 
@@ -993,6 +1281,21 @@
       }, INPUT_DELAY);
       return;
     }
+    var chooserFilter = event.target.closest("details.multi-select[data-list-value] .filter-input");
+    if (chooserFilter) {
+      var filtered = chooserFilter.closest("details");
+      if (filtered.dataset.tagSearch) {
+        searchTags(filtered, chooserFilter.value);
+      } else {
+        drawRows(filtered, rowsFor(filtered, chooserFilter.value), chooserFilter.value);
+      }
+      return;
+    }
+    var adderFilter = event.target.closest(".value-list[data-delimiter] > details.combo-box .filter-input");
+    if (adderFilter) {
+      drawValueListAdder(adderFilter.closest("details"));
+      return;
+    }
     var addInput = event.target.closest(".simple-list .add-value-input");
     if (addInput) {
       addInput.parentElement.querySelector(".add-value-btn").disabled = addInput.value === "";
@@ -1042,6 +1345,57 @@
     if (row) {
       syncRow(row);
     }
+  });
+
+  // The choosers' filter: Enter takes the highlighted row (else the first),
+  // Escape closes; neither submits the setting's form.
+  document.addEventListener("keydown", function (event) {
+    var input =
+      event.target.closest &&
+      event.target.closest("details.multi-select[data-list-value] .filter-input, .value-list[data-delimiter] > details.combo-box .filter-input");
+    if (!input || (event.key !== "Enter" && event.key !== "Escape")) {
+      return;
+    }
+    event.preventDefault();
+    var details = input.closest("details");
+    var adder = details.classList.contains("combo-box");
+    if (event.key === "Escape") {
+      if (adder) {
+        closeValueListAdder(details);
+      } else {
+        closeChooser(details);
+      }
+      return;
+    }
+    var highlighted =
+      details.querySelector(".select-kit-collection .select-kit-row.is-highlighted") ||
+      details.querySelector(".select-kit-collection .select-kit-row");
+    if (adder) {
+      // ValueList#keyDown adds what was typed.
+      addValueListValue(details, highlighted ? highlighted.dataset.value : input.value.trim());
+    } else if (highlighted) {
+      pickRow(details, highlighted);
+    }
+  });
+
+  // A click elsewhere closes an open chooser.
+  document.addEventListener("click", function (event) {
+    // A row or choice just taken is redrawn away, not elsewhere.
+    if (!event.target.isConnected) {
+      return;
+    }
+    document
+      .querySelectorAll("details.multi-select[data-list-value].is-expanded, .value-list[data-delimiter] > details.combo-box.is-expanded")
+      .forEach(function (details) {
+        if (details.contains(event.target)) {
+          return;
+        }
+        if (details.classList.contains("combo-box")) {
+          closeValueListAdder(details);
+        } else {
+          closeChooser(details);
+        }
+      });
   });
 
   document.addEventListener("keydown", function (event) {
@@ -1132,28 +1486,50 @@
       defaultsButton.remove();
       return;
     }
-    var listChoices = target.closest("details.list-setting[data-choices]");
-    if (listChoices) {
+    var chooser = target.closest("details.multi-select[data-list-value]");
+    if (chooser) {
+      if (target.closest(".select-kit-filter")) {
+        return;
+      }
       event.preventDefault();
-      var chosen = (listChoices.dataset.listValue || "").split("|").filter(Boolean);
       var pick = target.closest(".select-kit-row");
       var drop = target.closest(".selected-choice");
       if (pick) {
-        chosen.push(pick.dataset.value);
+        pickRow(chooser, pick);
       } else if (drop) {
-        chosen = chosen.filter(function (v) {
-          return v !== drop.dataset.value;
-        });
-      } else {
-        if (listChoices.classList.contains("is-expanded")) {
-          closeListSetting(listChoices);
-        } else {
-          openListSetting(listChoices);
+        // ListSetting#deselect: the value stays among the choices.
+        addExtraChoice(chooser, choiceNamed(chooser, drop.dataset.value));
+        changeChooser(
+          chooser,
+          chooserValues(chooser).filter(function (v) {
+            return v !== drop.dataset.value;
+          })
+        );
+      } else if (target.closest("summary")) {
+        if (chooser.classList.contains("is-expanded")) {
+          closeChooser(chooser);
+        } else if (!row.classList.contains("disabled")) {
+          openChooser(chooser);
         }
+      }
+      return;
+    }
+    var adder = target.closest(".value-list[data-delimiter] > details.combo-box");
+    if (adder) {
+      if (target.closest(".select-kit-filter")) {
         return;
       }
-      setListSetting(listChoices, chosen.join("|"));
-      syncRow(row);
+      event.preventDefault();
+      var added = target.closest(".select-kit-row");
+      if (added) {
+        addValueListValue(adder, added.dataset.value);
+      } else if (adder.classList.contains("is-expanded")) {
+        closeValueListAdder(adder);
+      } else {
+        adder.classList.add("is-expanded");
+        adder.open = true;
+        drawValueListAdder(adder);
+      }
       return;
     }
     var typesButton = target.closest(".file-types-list__button");

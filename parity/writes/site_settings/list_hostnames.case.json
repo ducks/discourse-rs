@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/exclude_rel_nofollow_domains.json",
+      "params": {
+        "exclude_rel_nofollow_domains": "https://Example.com/path| mail.org |mail.org"
+      }
+    }
+  ]
+}

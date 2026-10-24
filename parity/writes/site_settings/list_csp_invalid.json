@@ -1,0 +1,74 @@
+{
+  "name": "list_csp_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/content_security_policy_script_src.json",
+      "params": {
+        "content_security_policy_script_src": "'unsafe-eval'|foo"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:36.684146",
+  "transaction_started_at": "2026-10-24T00:42:34.180492",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "content_security_policy_script_src: Value must be either 'unsafe-eval' or 'wasm-unsafe-eval', or in the form '<hash algorithm>-<base64 value>' where supported hash algorithms are sha256, sha384 or sha512. Ensure that your input is wrapped in single quotation marks."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gcYnnZEcHZwT3hfNZuJMPjNYtxM=",
+            "created_at": "2026-10-24T00:42:35.374969",
+            "rotated_at": "2026-10-24T00:42:35.373107",
+            "updated_at": "2026-10-24T00:42:35.374969",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gcYnnZEcHZwT3hfNZuJMPjNYtxM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:36.696495",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gcYnnZEcHZwT3hfNZuJMPjNYtxM=",
+            "created_at": "2026-10-24T00:42:35.374969",
+            "rotated_at": "2026-10-24T00:42:35.373107",
+            "updated_at": "2026-10-24T00:42:35.374969",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gcYnnZEcHZwT3hfNZuJMPjNYtxM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d338c5ff053130655f4b4ab64e1b28e60d2eb3c4bc3d2016de3e0d6d8941d233",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
