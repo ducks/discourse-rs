@@ -11,6 +11,9 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
   no binary cache for it): a release build with LTO takes a while and a
   few GB of disk. Building on a bigger machine and deploying the closure
   (`nixos-rebuild --target-host`) avoids that on a small VPS.
+- The en_US.UTF-8 locale in `i18n.supportedLocales` (there by default):
+  the local database is created with it, and the module refuses a
+  configuration without it.
 
 ## DNS, Caddy and TLS
 

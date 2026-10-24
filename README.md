@@ -567,7 +567,11 @@ admin's settings page can't turn them off. Off leaves them to the site
 settings.
 
 Uploads live in `/var/lib/discourse-rs/public` (`PUBLIC_DIR`), backups
-and the avatar cache in `/var/lib/discourse-rs/tmp` (`TMP_DIR`).
+and the avatar cache in `/var/lib/discourse-rs/tmp` (`TMP_DIR`). The
+local database is created with the `en_US.UTF-8` locale (the
+reference's collation, as `scripts/db-load` creates it), so that locale
+must be in `i18n.supportedLocales`; it is by default, and the module
+refuses a configuration without it.
 
 Bringing up a fresh site:
 

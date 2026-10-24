@@ -96,7 +96,13 @@ in
       name = mkOption {
         type = types.str;
         default = "discourse";
-        description = "The local database's name.";
+        description = ''
+          The local database's name. discourse-rs-db-init creates it with
+          the en_US.UTF-8 locale, the reference's collation (as
+          scripts/db-load does), so the host must have that locale in
+          `i18n.supportedLocales`, as it does by default; the module
+          refuses a configuration without it.
+        '';
       };
 
       url = mkOption {
@@ -224,6 +230,15 @@ in
         assertion =
           !cfg.database.createLocally -> (cfg.database.url != null || cfg.environmentFile != null);
         message = "services.discourse-rs: an external database needs database.url, or DATABASE_URL in environmentFile.";
+      }
+      {
+        assertion =
+          cfg.database.createLocally
+          -> (
+            builtins.elem "all" config.i18n.supportedLocales
+            || builtins.elem "en_US.UTF-8/UTF-8" config.i18n.supportedLocales
+          );
+        message = ''services.discourse-rs: the local database is created with the en_US.UTF-8 locale; add "en_US.UTF-8/UTF-8" to i18n.supportedLocales.'';
       }
     ];
 
