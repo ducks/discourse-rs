@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a, 283a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -3984,9 +3984,8 @@ route table has been made, so this list may be short.
     the list, pills and sidebar after the refresh, and the buttons',
     menu's and modal's boxes and styles all match. Ember's DismissNew
     modal has no caller upstream and is not drawn. Left, split into 270b.
-    270b. `feat/topic-list-load-more` S: loading more on scroll (DLoadMore
-    with the footer's spinner): the port pages with its "Next page" link
-    instead (templates/latest.html:54); the dismiss buttons' selected
+    270b. `feat/topic-list-load-more` S: (loading more on scroll is done
+    in 283) the dismiss buttons' selected
     variants ("Dismiss (n)", topic_ids) wait for the discovery lists'
     bulk select, which is drawn without its actions (templates/latest.html:36,
     183); tag new and unread lists, and so their dismiss buttons, are
@@ -4361,6 +4360,102 @@ route table has been made, so this list may be short.
     tests/messages_pages.rs. Refused as before: sending the warning
     (is_warning, posts#create), a message to an email address
     (PostCreator), the composer actions menu (196).
+283. ~~`feat/infinite-loading`~~ (done) M: found by the demo rehearsal: a topic over
+    one chunk (/t/118, 100 posts) drew its first 20 posts and scrolling
+    loaded nothing, so its footer and Reply never showed and posts 21-100
+    couldn't be read by scrolling; the topic lists ended with DLoadMore's
+    sentinel and a "Next page" link. The server side is done: GET
+    /t/:topic_id/posts(.json) (TopicsController#posts,
+    TopicViewPostsSerializer): the posts by `post_ids[]` (or one id),
+    those after or before a `post_number` with `asc`
+    (filter_posts_by_post_number, the megatopics' window), the related
+    messages, suggested topics and group name only with
+    include_suggested=true, and the topic's id; a missing topic is a 404,
+    a message for a visitor a 403 not_logged_in, a topic the viewer can't
+    see a 404 unless detailed_404 is on
+    (hide_inaccessible_topic_when_detailed_404_disabled). TopicView takes
+    post_number, then post_ids, then filter_post_number, as filter_posts
+    does, and topics#show now leaves out the related messages too while
+    there is a next page (perform_show_response turns off both). Refused:
+    filter, username_filters and include_raw. Ten golden cases recorded
+    from rs-ref-d: topic 35 by ids, with its suggested topics, as user1,
+    after and before a post number, the default chunk; message 42 for a
+    visitor, a stranger and a participant (its related messages and
+    group name); a missing topic.
+    The topic's post stream loads more as Ember's does
+    (static/js/post-stream.js; PostStream#appendMore and #prependMore,
+    post-stream.gjs, PostLoadMoreAccessible, DLoadMore): #posts carries
+    the stream's ids and chunk size, and whether the view had its
+    suggested topics; while the first post isn't drawn the stream starts
+    with a load more sentinel and its screen reader heading ("Load more
+    posts above"), while the last isn't it ends with one ("... below")
+    where the bottom boundary was, and the posts wrapper has
+    PostStream's `<span>` and its two spinners. A sentinel coming into
+    view (its observer made again after each chunk, so one still in view
+    goes on) asks for the next 20 ids of the stream, or the 20 before,
+    with Ember's params (post_ids[], include_suggested=true until a chunk
+    brought the suggested topics) from /live/posts/:id, which draws them
+    as the page does (html::topic_page on the same view; Ember draws the
+    posts.json in the browser). While a chunk loads its sentinel goes,
+    the spinner beside the stream shows and, below, a placeholder stands
+    in for each post; posts above keep the first post on screen where it
+    was. Once the last post is in (loadedAllPosts) what Ember draws only
+    then comes out of templates: the bottom topic map, the reply where,
+    the footer buttons with Reply, the more topics (the chunk's suggested
+    topics when the page had none) and the page footer
+    (Discourse.showFooter, page.js, for Chrome::defer_footer). After
+    each chunk the page's live stream connects again from its last event
+    with the posts drawn, with the tail once at the end, and the server
+    no longer sends changes to posts outside the page's range
+    (PostStream#triggerChangedPost finds only loaded posts), which also
+    ends the console errors a revision of an undrawn post caused. The
+    timeline: a click on the track or a date and the scroller's drag
+    (d-pointer-drag: pointer capture, `--dragging`, the body's
+    `dragging`, data-pointer-drag on the desktop scroller too) set the
+    percentage under the pointer and commit as the container does,
+    jumping to the index's post, or past the end to the last post; a
+    post the page doesn't draw is looked up by id with GET
+    /t/:id/posts.json, then the topic is routed to its number, which
+    loads the posts around it (TopicController#_jumpToPostId). The URL
+    keeps following the post at the eyeline and screen-track times the
+    posts loaded. Ember's posts wrapper before and after a load
+    and the request it sends, as Playwright saw them on rs-ref-d with
+    topic 35 grown to 35 posts, are what the page and post-stream.js draw
+    and send (tests/html_pages.rs). Checked in Chromium
+    on a copy of the demo database: /t/118 scrolled to post 100 with the
+    footer, Reply and five suggested topics; /t/118/50 loaded up to post
+    1 and down to 100; the timeline's click and drag to unloaded posts;
+    the rehearsal's steps 1, 2, 6 and 7 pass (step 6 now scrolls to the
+    end of the topic before Reply, as a presenter does). The discovery
+    lists load their next page the same way (static/js/discovery-topic-list.js;
+    DiscoveryTopics#loadMore, TopicList#loadMore, DLoadMore with
+    LOAD_MORE_ROOT_MARGIN, 600px below the window): the sentinel carries
+    more_topics_url in place of the "Next page" link, the page is asked
+    for (its HTML, as an XHR, so no page view is counted), its rows not
+    already listed are appended with the first highlighted, the sentinel
+    takes its more_topics_url, the footer's spinner shows meanwhile, and
+    with room left in the window it goes on; with nothing more the footer
+    is the last page's (its dismiss buttons) and the page footer shows.
+    Checked in Chromium: /latest loaded page after page as it scrolled,
+    /top to its end with the dismiss row and the page footer.
+    Left, split into 283a.
+    283a. `feat/infinite-loading-rest` S: what Ember draws across chunks:
+    the time gap before a chunk's first post and the visited line after
+    the last read post when a chunk lands next to it are decided within
+    the chunk (post_view::stream); the lists' last visit separator and
+    the bottom dismiss buttons' five topic rule are the loaded page's,
+    not the whole list's; the a11y announcements while loading
+    (a11y.announce); bulk select's addTopics for loaded rows (270b); the
+    posts' cloaking (post-stream--cloaked) is not ported, so every loaded
+    post stays drawn; megatopics (isMegaTopic, lastId, fetchNextWindow
+    over post_number and asc, which GET /t/:id/posts.json answers) are
+    not, the topic view always carries the stream; keyboard navigation
+    (j/k, keyboard:move-selection loading at a boundary) waits for the
+    keyboard shortcuts, which the port doesn't have; GET
+    /t/:id/posts.json's filter, username_filters and include_raw, and GET
+    /t/:id/post_ids (TopicsController#post_ids) are not ported. The
+    messages lists draw DLoadMore's sentinel without loading more
+    (src/messages_view.rs:403).
 
 ### Phase 11: the bundled plugins' gaps (210)
 

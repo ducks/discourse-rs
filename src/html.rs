@@ -238,6 +238,10 @@ pub struct Chrome {
     /// footer (a list with more to load, a topic not loaded to its end, the
     /// admin) go without PoweredByDiscourse and the theme's footer.
     pub show_footer: bool,
+    /// The footer is hidden only until the page loads the rest of its
+    /// list or topic: it waits in `template.deferred-footer`s that
+    /// static/js/page.js's Discourse.showFooter draws.
+    pub defer_footer: bool,
     /// PoweredByDiscourse below the content, where the footer shows:
     /// enable_powered_by_discourse.
     pub powered_by: bool,
@@ -2360,11 +2364,15 @@ pub struct TopicPage {
     /// The topic admin menu's content for its triggers and the add
     /// participant modal's config (each empty without one).
     pub topic_menus: String,
-    pub prev_url: Option<String>,
-    pub next_url: Option<String>,
     pub topic_id: i64,
-    /// The last page: live updates append new posts here.
+    /// PostStream#loadedAllPosts: the stream's last post is drawn. Until
+    /// then what Ember draws only once it is (the bottom topic map, the
+    /// reply where, the footer buttons, the more topics and the page
+    /// footer) waits in templates static/js/post-stream.js shows, and new
+    /// posts are not appended (the live stream's tail).
     pub live: bool,
+    /// What static/js/post-stream.js loads more from (PostStream's state).
+    pub stream: PostStreamState,
     /// discourse-reactions is on: its script runs the reaction controls.
     pub reactions: bool,
     /// discourse-solved is on: its script runs the Solved button and the
@@ -2381,6 +2389,46 @@ pub struct TopicPage {
     pub dialog_strings: String,
     /// discourse-poll is on: its widget's script and strings.
     pub poll_scripts: String,
+}
+
+/// TopicPage::stream for the view.
+fn post_stream_state(i18n: &I18n, view: &Value, chunk_size: i64) -> PostStreamState {
+    let ids: Vec<i64> = view["post_stream"]["stream"]
+        .as_array()
+        .map(|s| s.iter().filter_map(Value::as_i64).collect())
+        .unwrap_or_default();
+    let posts = view["post_stream"]["posts"]
+        .as_array()
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    let t = |key: &str| {
+        i18n.t(&format!("js.{key}"))
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("[en.{key}]"))
+    };
+    PostStreamState {
+        ids: serde_json::to_string(&ids).unwrap_or_else(|_| "[]".into()),
+        chunk_size,
+        has_suggested: view.get("suggested_topics").is_some(),
+        // hasPosts && firstPostNotLoaded
+        can_prepend: !posts.is_empty() && !posts.iter().any(|p| p["post_number"] == 1),
+        above_label: t("post.load_more_posts_above"),
+        below_label: t("post.load_more_posts_below"),
+    }
+}
+
+/// The post stream's state on the topic page (TopicPage::stream).
+pub struct PostStreamState {
+    /// The stream's post ids, as JSON.
+    pub ids: String,
+    pub chunk_size: i64,
+    /// `topic.suggested_topics` is set: later chunks don't ask for them.
+    pub has_suggested: bool,
+    /// canPrependMore: the first post is not drawn.
+    pub can_prepend: bool,
+    /// The load more headings (post.load_more_posts_above and _below).
+    pub above_label: String,
+    pub below_label: String,
 }
 
 /// `categories` rows the pages link to.
@@ -2502,6 +2550,7 @@ pub async fn latest_page(
     // Discovery topics hides the footer while the list can load more.
     if list["topic_list"]["more_topics_url"].is_string() {
         site.chrome.show_footer = false;
+        site.chrome.defer_footer = true;
     }
     let list_bottom = list_bottom(
         i18n,
@@ -2994,9 +3043,11 @@ pub async fn topic_page(
                 .as_array()
                 .is_some_and(|posts| posts.iter().any(|p| p["id"].as_i64() == Some(id)))
         });
-    // topic.gjs hides the footer until the post stream is loaded to its end.
+    // topic.gjs hides the footer until the post stream is loaded to its end
+    // (static/js/post-stream.js shows it then).
     if !loaded_all {
         site.chrome.show_footer = false;
+        site.chrome.defer_footer = true;
     }
     // topic.gjs's body classes: AddCategoryTagClasses, AddTopicStatusClasses
     // and the archetype's.
@@ -3038,8 +3089,7 @@ pub async fn topic_page(
         } else {
             String::new()
         },
-        prev_url: (page > 1).then(|| page_url(page - 1)),
-        next_url: (page < last_page).then(|| page_url(page + 1)),
+        stream: post_stream_state(i18n, view, chunk),
     })
 }
 

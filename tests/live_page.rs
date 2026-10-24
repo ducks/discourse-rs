@@ -68,7 +68,9 @@ async fn the_topic_page_connects_to_its_live_stream() {
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     let html = String::from_utf8_lossy(&bytes);
     assert!(html.contains("/assets/htmx.min.js"));
-    assert!(html.contains(r#"<div class="post-stream" id="posts">"#));
+    assert!(html.contains(
+        r#"<div class="post-stream" id="posts" data-stream="[35,36,37,38,52]" data-chunk-size="20" data-has-suggested>"#
+    ));
     assert!(
         html.contains(r#"sse-connect="/live?position="#) && html.contains("&amp;topic=35"),
         "the stream starts at the page's position"
@@ -324,4 +326,55 @@ async fn a_topic_edit_redraws_the_title() {
     publish(&st, first, "revised").await;
     let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(!html.contains(r#"id="topic-title""#), "{html}");
+}
+
+/// PostStream#triggerChangedPost redraws only a post the stream has
+/// loaded: changes to posts outside the page's `posts` range are not sent,
+/// but a page at the topic's end (the tail) has every post after its
+/// first, new ones too. static/js/post-stream.js connects again with the
+/// range as it loads more.
+#[tokio::test(flavor = "multi_thread")]
+async fn changes_to_posts_the_page_does_not_draw_are_not_sent() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let ids: Vec<(i32, i32)> = sqlx::query_as(
+        "SELECT id, post_number FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
+         ORDER BY post_number",
+    )
+    .bind(TOPIC)
+    .fetch_all(&st.pool)
+    .await
+    .unwrap();
+    let (first, last) = (ids[0], ids[ids.len() - 1]);
+
+    let from = st.bus.now().await.unwrap();
+    let response = get(
+        &st,
+        &format!("/live?topic={TOPIC}&posts=1-1&position={from}"),
+    )
+    .await;
+    let mut body = response.into_body();
+    let mut buffer = String::new();
+    publish(&st, last.0, "revised").await;
+    publish(&st, first.0, "revised").await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(html.contains("#post_1 "), "{html}");
+    assert!(
+        !html.contains(&format!(r#"id="post_{}""#, last.1)),
+        "{html}"
+    );
+
+    let from = st.bus.now().await.unwrap();
+    let response = get(
+        &st,
+        &format!("/live?topic={TOPIC}&tail=1&posts=2-2&position={from}"),
+    )
+    .await;
+    let mut body = response.into_body();
+    let mut buffer = String::new();
+    publish(&st, first.0, "revised").await;
+    publish(&st, last.0, "revised").await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(html.contains(&format!(r#"id="post_{}""#, last.1)), "{html}");
+    assert!(!html.contains("#post_1 "), "{html}");
 }

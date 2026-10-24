@@ -534,6 +534,18 @@ pre {{ white-space:pre-wrap; font-size:11px; }}
 # --------------------------------------------------------------------------
 # Shared actions
 
+def scroll_to_topic_end(page):
+    """Scroll as a presenter does until the post stream has loaded its last
+    post and drawn the footer (Ember draws it only then)."""
+    footer = page.locator("#topic-footer-buttons, .topic-footer-main-buttons")
+    for _ in range(60):
+        if footer.count() and footer.first.is_visible():
+            return
+        page.mouse.wheel(0, 5000)
+        settle(page, 300)
+    expect_visible(footer, "the topic footer after scrolling to the end")
+
+
 def open_composer_reply(page):
     page.locator("#topic-footer-buttons .create, .topic-footer-main-buttons button.create").first.click()
     return expect_visible(page.locator("#reply-control.open .d-editor-input"), "the composer to open")
@@ -740,6 +752,7 @@ def define_steps(run):
         second.goto(run.base + "/latest")
         page.goto(run.base + f"/t/{LONG_TOPIC}")
         expect_visible(page.locator(".topic-post"), "the topic")
+        scroll_to_topic_end(page)
         # A rerun would stack the member's replies at the end of the same
         # topic until max_consecutive_replies refuses one; a presenter picks
         # another topic then, and so does the rehearsal.
@@ -753,6 +766,7 @@ def define_steps(run):
             expect_visible(rows, "a topic in /latest the member didn't post last in").locator("a.title").first.click()
             page.wait_for_url("**/t/**", timeout=WAIT)
             expect_visible(page.locator(".topic-post"), "the topic")
+            scroll_to_topic_end(page)
             s.notes.append(f"user1 posted last in /t/{LONG_TOPIC} (an earlier rehearsal), so this reply went to {topic_url(page.url)}")
         marker = f"{run.label} reply"
         page.evaluate("() => { window.__rehearsalNoReload = true }")

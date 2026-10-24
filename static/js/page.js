@@ -14,6 +14,8 @@
 //                         came by a navigation inside the app, not a load.
 //   Discourse.refresh()   the router's refresh(): this page asked for again
 //                         and swapped in where it stands, no history entry.
+//   Discourse.showFooter() the page footer a list or topic held back until
+//                         it loaded to its end.
 //
 // What stays across pages is marked hx-preserve (the composer); it takes
 // the new page's values of the attributes it lists in data-page-attrs.
@@ -59,6 +61,15 @@
     }
     loaded[name] = true;
     return true;
+  };
+
+  // The footer service's showFooter turning on for a page that hid the
+  // footer only until it loaded the rest of its list or topic: the
+  // footer waits in its templates (Chrome::defer_footer).
+  Discourse.showFooter = function () {
+    document.querySelectorAll("template.deferred-footer").forEach(function (template) {
+      template.replaceWith(template.content);
+    });
   };
 
   function run(entry) {

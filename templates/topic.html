@@ -7,33 +7,36 @@
 {#- The docked header's logo and topic info (header-topic-info.js). -#}
 {{ header_topic_info|safe }}
 <div class="container posts">
-  {{ bottom_map|safe }}
+  {% if live %}{{ bottom_map|safe }}{% else %}<template class="loaded-all-posts">{{ bottom_map|safe }}</template>{% endif %}
   {{ timeline|safe }}
   <div class="row">
     <section class="topic-area" data-topic-id="{{ topic_id }}" id="topic">
-      <div class="posts-wrapper">
-        <div class="post-stream" id="posts"{% if !ignored_users.is_empty() %} data-ignored-users="{{ ignored_users }}"{% endif %}>{% for post in posts %}{{ post|safe }}{% endfor %}<div class="post-stream__bottom-boundary"></div></div>
-      </div>
-      <div id="topic-bottom"></div>{{ reply_where|safe }}
+      <div class="posts-wrapper"><span></span>
+        {#- PostStream: DConditionalLoadingSpinner above and below the
+            stream for loadingAbove and loadingBelow, and DLoadMore's
+            sentinels (PostLoadMoreAccessible) while there is more to load
+            above (canPrependMore) or below (canAppendMore), where the
+            bottom boundary is drawn once the last post is in. The
+            stream's state is what static/js/post-stream.js loads more
+            from. -#}<div class="loading-container"></div><div class="post-stream" id="posts" data-stream="{{ stream.ids }}" data-chunk-size="{{ stream.chunk_size }}"{% if stream.has_suggested %} data-has-suggested{% endif %}{% if !ignored_users.is_empty() %} data-ignored-users="{{ ignored_users }}"{% endif %}>
+          {%- if stream.can_prepend %}<div aria-hidden="true" class="load-more-sentinel"></div><div class="post-stream-load-more-accessible sr-only"><h2 class="post-stream-load-more-accessible__heading" id="post-stream-load-more-heading__above">{{ stream.above_label }}</h2></div>{% endif -%}
+          {%- for post in posts %}{{ post|safe }}{% endfor -%}
+          {%- if live %}<div class="post-stream__bottom-boundary"></div>{% else %}<div aria-hidden="true" class="load-more-sentinel"></div><div class="post-stream-load-more-accessible sr-only"><h2 class="post-stream-load-more-accessible__heading" id="post-stream-load-more-heading__below">{{ stream.below_label }}</h2></div>{% endif -%}</div><div class="loading-container"></div></div>
+      <div id="topic-bottom"></div>{% if live %}{{ reply_where|safe }}{% else if !reply_where.is_empty() %}<template class="loaded-all-posts">{{ reply_where|safe }}</template>{% endif %}
       <div class="loading-container"><div class="topic-timer-info"></div></div>
     </section>
   </div>
 </div>
-{% if prev_url.is_some() || next_url.is_some() %}
-<div class="topic-pagination">
-  {% if let Some(url) = prev_url %}<a href="{{ url }}" rel="prev">Previous page</a>{% endif %}
-  {% if let Some(url) = next_url %}<a href="{{ url }}" rel="next">Next page</a>{% endif %}
-</div>
-{% endif %}
 {#- Ember shows the footer and the suggested topics once every post is
-    loaded: here, on the last page. -#}
-{% if live %}{{ footer_buttons|safe }}{% endif %}
-{% if live %}<br>{{ more_topics|safe }}{% endif %}
+    loaded (post-stream.js draws them from here then, the suggested
+    topics from the posts it loaded when the page had none). -#}
+{% if live %}{{ footer_buttons|safe }}<br>{{ more_topics|safe }}{% else %}<template class="loaded-all-posts">{{ footer_buttons|safe }}<br>{{ more_topics|safe }}</template>{% endif %}
 </div>
 {{ topic_menus|safe }}
 <script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>
 {% if !dialog_strings.is_empty() %}<script type="application/json" id="dialog-strings">{{ dialog_strings|safe }}</script><script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "topic.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "post-stream.js") }}"></script>
 {#- The topic admin menu and the posts' admin menus. -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
 {#- A message's add participant modal (AddPmParticipants). -#}

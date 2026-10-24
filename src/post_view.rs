@@ -2847,7 +2847,7 @@ fn timeline_container(
         )
     } else {
         format!(
-            "<div class=\"timeline-scroller\" style=\"height: 50px\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{replies}</div>{ago}</div></div>"
+            "<div class=\"timeline-scroller\" style=\"height: 50px\" data-pointer-drag=\"none\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{replies}</div>{ago}</div></div>"
         )
     };
     format!(

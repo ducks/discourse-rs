@@ -1123,7 +1123,6 @@
           el.remove();
         });
     }
-    var chunk = parseInt(container.dataset.chunkSize, 10) || 20;
     var area = container.querySelector(".timeline-scrollarea");
     var paddings = area ? area.querySelectorAll(".timeline-padding") : [];
     var replies = container.querySelector(".timeline-replies");
@@ -1223,31 +1222,148 @@
       onScroll();
     }
 
-    // A click on the scroll area: to that post, on this page or its own.
-    if (area) {
+    // updatePercentage: a click on the track or a date, or the scroller
+    // dragged, puts the scroller's centre at the pointer (less where on
+    // the scroller the drag took hold), then commits: the scroller and
+    // its labels follow, and unless a drag goes on the topic goes there
+    // (jumpToIndex), or to its last post past the end (jumpEnd).
+    var dragging = false;
+    var dragOffset = null;
+    var percentage = null;
+    var scroller = area ? area.querySelector(".timeline-scroller") : null;
+
+    function updatePercentage(event) {
+      event.preventDefault();
+      var desired = event.pageY - (dragOffset || 0);
+      var areaTop = area.getBoundingClientRect().top + window.scrollY;
+      var scrollerHeight = scroller.offsetHeight;
+      var scrollableTop = areaTop + scrollerHeight / 2;
+      var scrollableHeight = area.offsetHeight - scrollerHeight;
+      percentage = clamp((desired - scrollableTop) / scrollableHeight, 0, 1);
+      commit();
+    }
+
+    function commit() {
+      render(percentage);
+      if (dragging) {
+        return;
+      }
+      var scrollPosition = clamp(Math.floor(total * percentage), 0, total) + 1;
+      if (current === scrollPosition) {
+        jumpToIndex(current);
+      } else {
+        jumpEnd();
+      }
+    }
+
+    // TopicController#_jumpToIndex and _jumpToPostId: a post the page
+    // draws is gone to; another is loaded by id first (findPostsByIds, GET
+    // /t/:id/posts.json) for its number, and the topic is routed to it,
+    // which loads the posts around it.
+    function jumpToIndex(index) {
+      var postId = stream[clamp(index, 1, stream.length) - 1];
+      if (!postId) {
+        return;
+      }
+      var post = document.querySelector('#posts article[data-post-id="' + postId + '"]');
+      if (post) {
+        goToPost(parseInt(post.parentElement.dataset.postNumber, 10));
+        return;
+      }
+      var url = container.dataset.topicUrl;
+      var topicId = url.split("/").pop();
+      var base = (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+      fetch(base + "/t/" + topicId + "/posts.json?post_ids%5B%5D=" + postId, {
+        credentials: "same-origin",
+        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+      })
+        .then(function (r) {
+          if (!r.ok) {
+            throw new Error("/t/" + topicId + "/posts.json: " + r.status);
+          }
+          return r.json();
+        })
+        .then(function (json) {
+          var found = json.post_stream && json.post_stream.posts && json.post_stream.posts[0];
+          if (found) {
+            routeToPost(url + "/" + found.post_number);
+          }
+        })
+        .catch(function (e) {
+          console.error(e);
+        });
+    }
+
+    // jumpEnd: the topic's last post (lastPostUrl, the now date's link).
+    function jumpEnd() {
+      var now = container.querySelector(".now-date");
+      var m = now && /\/(\d+)$/.exec(now.getAttribute("href"));
+      if (!m) {
+        return;
+      }
+      var number = parseInt(m[1], 10);
+      if (document.getElementById("post_" + number)) {
+        goToPost(number);
+      } else {
+        routeToPost(container.dataset.topicUrl + "/" + number);
+      }
+    }
+
+    if (area && scroller) {
       area.addEventListener("click", function (event) {
-        if (!event.target.closest(".timeline-padding")) {
-          return;
-        }
-        var areaTop = area.getBoundingClientRect().top;
-        var percent = clamp(
-          (event.clientY - (areaTop + SCROLLER / 2)) / (height - SCROLLER),
-          0,
-          1
-        );
-        var index = clamp(Math.floor(total * percent) + 1, 1, total);
-        var post = document.querySelector(
-          '#posts article[data-post-id="' + stream[index - 1] + '"]'
-        );
-        // jumpToIndex: the post's URL, highlighted and jumped to.
-        if (post) {
-          goToPost(parseInt(post.parentElement.dataset.postNumber, 10));
-        } else {
-          var page = Math.floor((index - 1) / chunk) + 1;
-          location.href =
-            container.dataset.topicUrl + (page > 1 ? "?page=" + page : "");
+        if (event.target.closest(".timeline-padding")) {
+          updatePercentage(event);
         }
       });
+      container.querySelectorAll(".start-date, .now-date").forEach(function (link) {
+        link.addEventListener("click", updatePercentage);
+      });
+      // d-pointer-drag on the scroller: the drag holds the pointer, marks
+      // the area --dragging and the body dragging, and commits on release
+      // (or on a cancel, cancelCommits).
+      var pointerId = null;
+      var endDrag = function () {
+        if (pointerId === null) {
+          return;
+        }
+        try {
+          scroller.releasePointerCapture(pointerId);
+        } catch (e) {
+          // Already released.
+        }
+        pointerId = null;
+        dragging = false;
+        dragOffset = null;
+        area.classList.remove("--dragging");
+        document.body.classList.remove("dragging");
+        commit();
+      };
+      scroller.addEventListener("pointerdown", function (event) {
+        if (event.button !== 0 || pointerId !== null) {
+          return;
+        }
+        try {
+          scroller.setPointerCapture(event.pointerId);
+        } catch (e) {
+          return;
+        }
+        pointerId = event.pointerId;
+        var rect = scroller.getBoundingClientRect();
+        dragOffset = event.pageY - (rect.top + window.scrollY + scroller.offsetHeight / 2);
+        dragging = true;
+        area.classList.add("--dragging");
+        document.body.classList.add("dragging");
+      });
+      scroller.addEventListener("pointermove", function (event) {
+        if (event.pointerId !== pointerId) {
+          return;
+        }
+        event.stopPropagation();
+        updatePercentage(event);
+      });
+      scroller.addEventListener("pointerup", endDrag);
+      scroller.addEventListener("pointercancel", endDrag);
+      scroller.addEventListener("lostpointercapture", endDrag);
     }
 
     // Where the scroller starts (calculatePosition from the constructor):

@@ -577,7 +577,7 @@ async fn show(
             page,
             post_number,
             show_deleted: params.show_deleted.is_some(),
-            post_ids: None,
+            ..Default::default()
         },
         post_types: Vec::new(),
         logo_small_url: None,

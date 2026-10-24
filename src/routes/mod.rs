@@ -117,6 +117,7 @@ mod topic_convert;
 mod topic_excerpts;
 mod topic_move;
 mod topic_notifications;
+mod topic_posts;
 mod topic_status;
 mod topic_timer;
 mod topic_update;
@@ -195,6 +196,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/user-card/{username}", get(user_card::show))
         .route("/live/post/{id}", get(live::post))
         .route("/live/gap/{topic_id}", get(live::gap))
+        .route("/live/posts/{topic_id}", get(live::posts))
         .route("/live/chat/drawer", get(chat_pages::drawer))
         .route("/live/poll/{post_id}/{poll_name}", get(live::poll))
         .route(
@@ -547,6 +549,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#timer; {slug} holds the topic id.
         .route("/t/{slug}/timer", post(topic_timer::timer))
+        // TopicsController#posts; {slug} holds the topic id.
+        .route("/t/{slug}/posts", get(topic_posts::posts))
+        .route("/t/{slug}/posts.json", get(topic_posts::posts))
         .route("/t/{slug}/excerpts", get(topic_excerpts::excerpts))
         .route("/t/{slug}/excerpts.json", get(topic_excerpts::excerpts))
         .route("/t/{slug}/slow_mode", put(topic_timer::slow_mode))
@@ -2680,6 +2685,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chartjs-adapter-moment.min.js", get(asset))
         .route("/assets/navigation-bar.js", get(asset))
         .route("/assets/topic.js", get(asset))
+        .route("/assets/post-stream.js", get(asset))
+        .route("/assets/discovery-topic-list.js", get(asset))
         .route("/assets/topic-admin-menu.js", get(asset))
         .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))

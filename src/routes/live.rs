@@ -485,6 +485,15 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
     if kind == "created" && !live.tail {
         return Ok(None);
     }
+    // A change to a post the page doesn't draw (PostStream#findLoadedPost
+    // finds none): nothing to redraw. A page at the topic's end draws
+    // every post after its first, the new ones too.
+    if kind != "created"
+        && let Some((first, last)) = live.posts
+        && (post_number < i64::from(first) || (!live.tail && post_number > i64::from(last)))
+    {
+        return Ok(None);
+    }
     let html = render_post(
         &live.state,
         &live.settings,
@@ -1093,6 +1102,108 @@ pub async fn gap(
     if !tail.is_empty() {
         let rest: Vec<Value> = tail.iter().map(|id| Value::from(*id)).collect();
         html.push_str(&crate::post_view::gap(&cx, &rest));
+    }
+    Ok((
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        html,
+    )
+        .into_response())
+}
+
+/// GET /live/posts/:topic_id: a chunk of the topic's posts as the post
+/// stream loads more of them on scroll (PostStream#appendMore and
+/// #prependMore), with the params Ember sends GET /t/:id/posts.json
+/// (`post_ids[]`, `include_suggested`; topic_posts::PostsParams). Ember
+/// draws the JSON in the browser; here the server draws the posts as the
+/// topic page does (html::topic_page on the same view), and, when the
+/// suggested topics were asked for, the more topics block in a
+/// `template.post-stream-more-topics` for static/js/post-stream.js to show
+/// with the footer once the last post is in.
+pub async fn posts(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(topic_id): axum::extract::Path<String>,
+    headers: HeaderMap,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    let Ok(topic_id) = topic_id.parse::<i32>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let params = super::topic_posts::PostsParams::parse(uri.query().unwrap_or_default())
+        .map_err(crate::Unsupported)?;
+    if params.post_ids.as_ref().is_none_or(Vec::is_empty) {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let mut view = crate::topic_view::TopicView {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        options: crate::topic_view::Options {
+            post_ids: params.post_ids,
+            include_suggested: Some(params.include_suggested),
+            ..Default::default()
+        },
+        post_types: Vec::new(),
+        logo_small_url: None,
+    };
+    let rendered = match view.render(topic_id).await {
+        Ok(rendered) => rendered,
+        Err(
+            crate::topic_view::TopicViewError::NotFound
+            | crate::topic_view::TopicViewError::InvalidAccess
+            | crate::topic_view::TopicViewError::NotLoggedIn,
+        ) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Err(e) => return Err(e.into()),
+    };
+    drop(view);
+    let json = &rendered.json;
+    let base = state.config.globals.relative_url_root().to_string();
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base)?;
+    site.viewer = vs.viewer;
+    // The more topics' browse line counts the viewer's tracking state with
+    // this topic read through the posts loaded (topic_page's update_seen).
+    site.chrome.tracking =
+        crate::topic_tracking_report::load(&mut conn, &settings, &guardian).await?;
+    let highest_seen = json["post_stream"]["posts"]
+        .as_array()
+        .and_then(|p| p.iter().filter_map(|p| p["post_number"].as_i64()).max())
+        .and_then(|n| i32::try_from(n).ok())
+        .unwrap_or(0);
+    let pm_counts = if params.include_suggested && json["archetype"] == "private_message" {
+        Some(
+            crate::pm_tracking_state::browse_more_counts(
+                &mut conn,
+                &settings,
+                &guardian,
+                json["suggested_group_name"].as_str(),
+                (topic_id, highest_seen),
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
+    let page = crate::html::topic_page(&mut conn, &state.i18n, &settings, site, json, 1, pm_counts)
+        .await?;
+    let mut html = page.posts.concat();
+    if params.include_suggested {
+        html.push_str(&format!(
+            "<template class=\"post-stream-more-topics\">{}</template>",
+            page.more_topics
+        ));
     }
     Ok((
         [
