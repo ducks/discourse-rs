@@ -239,6 +239,10 @@ feat/flag-and-penalty-modals:
   for unique_posts_mins in discourse_rs.cached_values and the validator
   reads it (checklist/toggle_to_a_revised_posts_raw). The rehearsal's
   topic body carries its label, as Rails refuses a second run's copy.
+- [x] The moderator's header avatar had no count for the pending flag
+  (step 18): the header drew only the unread notifications count, and
+  NotifyReviewable didn't publish. Done: 194g, the avatar's badges by
+  Ember's precedence, drawn with the page and kept current live.
 
 Visible if clicked, avoid them in a scripted demo:
 
@@ -3181,9 +3185,31 @@ route table has been made, so this list may be short.
     and /review/:id pages (the user menu's review items link to the
     last), the insights tab (IpLookup), the pin toggle and loading past
     the first ten
-    194g. `feat/header-avatar-badges` S: the header avatar's
-    new-reviewables and new-pms badges and show_user_menu_avatars
-    (routes/user_menu.rs:51)
+    194g. ~~`feat/header-avatar-badges`~~ (done) S: the header avatar's
+    badge as Header::UserDropdown::Notifications draws it
+    (src/header_badge.rs): the do not disturb moon, else the first of
+    new message notifications (envelope, new-pms), new reviewables (flag,
+    new-reviewables, staff's unseen_reviewable_count) and the unread
+    notifications count, with Ember's titles, labels and classes. Drawn
+    with the page and redrawn over the live stream from the member's
+    /notification (all_unread_notifications_count,
+    new_personal_messages_notifications_count), /reviewable_counts and
+    /do-not-disturb messages, the toggle button's contents swapped. Jobs
+    NotifyReviewable (admins, then moderators for what they may review,
+    with the `updates` of the reviewables an action resolved) and
+    RefreshUsersReviewableCounts are ported, so a flag made or handled
+    reaches staff's badges and the sidebar's review count, now kept
+    current live too. Compared on rs-ref-d as admin and moderator: a
+    flag shows the badge live, agreeing clears it, a new message shows
+    its badge. Still refused: category group moderators' counts
+    (enable_category_group_moderation). Not drawn: the moon going away
+    on its own when do not disturb ends (the notifications service's
+    timer; a reload or the next message redraws it), the first
+    notification user tip, and the perform result's fast-tracked counts
+    (the job's message follows within the worker's poll)
+    194h. `feat/user-menu-avatars` S: show_user_menu_avatars, the user
+    menu items' avatars (routes/user_menu.rs:51, refused; 193b's
+    notifications page likewise)
 195. `feat/rss` M: the .rss feeds of the lists, categories, tags, topics,
     a user's posts and activity, topic voting's votes feed, and the
     bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the

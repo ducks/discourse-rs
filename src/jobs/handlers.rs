@@ -16,10 +16,8 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "post_update_topic_tracking_state" => {
             post_update_topic_tracking_state(state, &job.args).await
         }
-        // Publishes reviewable counts to staff on MessageBus, likewise.
-        "notify_reviewable" => Ok(()),
-        // Publishes each staff member's reviewable counts, likewise.
-        "refresh_users_reviewable_counts" => Ok(()),
+        "notify_reviewable" => reviewable_counts_job(state, &job.args, false).await,
+        "refresh_users_reviewable_counts" => reviewable_counts_job(state, &job.args, true).await,
         "cleanup_acls_for_deleted" => cleanup_acls_for_deleted(state, &job.args).await,
         "bulk_grant_trust_level" => bulk_grant_trust_level(state, &job.args).await,
         "notify_users_added_to_group" => notify_users_added_to_group(state, &job.args).await,
@@ -577,6 +575,22 @@ async fn settings(state: &AppState, conn: &mut PgConnection) -> Result<SiteSetti
 /// counts told about a post, in one transaction. Messages
 /// (PrivateMessageTopicTrackingState, TopicGroup.new_message_update) are
 /// not ported and left alone, as before.
+/// Jobs::NotifyReviewable, or Jobs::RefreshUsersReviewableCounts with
+/// `refresh`: staff's reviewable counts on MessageBus.
+async fn reviewable_counts_job(
+    state: &AppState,
+    args: &Value,
+    refresh: bool,
+) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    if refresh {
+        crate::reviewables::refresh_users_reviewable_counts(&mut conn, &state.bus, &s, args).await
+    } else {
+        crate::reviewables::notify_reviewable(&mut conn, &state.bus, &s, args).await
+    }
+}
+
 async fn post_update_topic_tracking_state(state: &AppState, args: &Value) -> Result<(), AppError> {
     let Some(post_id) = args.get("post_id").and_then(Value::as_i64) else {
         return Ok(());

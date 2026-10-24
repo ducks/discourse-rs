@@ -744,6 +744,10 @@ def define_steps(run):
         expect_visible(page.locator(".topic-post"), "the topic")
         topic = topic_url(page.url)
         page.locator(".d-header a[href='/login'], .d-header .login-button").first.click()
+        # As Persona.login: the modal moves focus to the username field
+        # once it's drawn, which can take the password typed before it.
+        page.locator("#login-account-name").first.wait_for(state="visible", timeout=WAIT)
+        settle(page, 400)
         page.locator("#login-account-name").fill(member.username)
         page.locator("#login-account-password").fill(PASSWORD)
         page.locator("#login-button").click()

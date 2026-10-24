@@ -448,15 +448,162 @@ pub async fn bump_last_seen(
         .bind(i32::try_from(max).unwrap_or(i32::MAX))
         .execute(&mut *conn)
         .await?;
+    publish_counts(&mut *conn, bus, s, guardian, None).await
+}
+
+/// `User#publish_reviewable_counts(extra_data)`: the user's pending and
+/// unseen counts, with `updates` when given, on `/reviewable_counts/:id`
+/// to the user alone.
+pub async fn publish_counts(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    s: &SiteSettings,
+    guardian: &Guardian,
+    updates: Option<&serde_json::Map<String, serde_json::Value>>,
+) -> Result<(), AppError> {
+    let user_id = guardian
+        .user_id()
+        .ok_or(Unsupported("reviewable counts for anonymous users"))?;
     let (count, unseen) = staff_counts(&mut *conn, s, guardian).await?;
+    let mut data = json!({ "reviewable_count": count, "unseen_reviewable_count": unseen });
+    // `extra_data.present?`
+    if let Some(updates) = updates.filter(|u| !u.is_empty()) {
+        data["updates"] = serde_json::Value::Object(updates.clone());
+    }
     bus.publish(
         &mut *conn,
         &format!("/reviewable_counts/{user_id}"),
-        &json!({ "reviewable_count": count, "unseen_reviewable_count": unseen }),
+        &data,
         Some(&[crate::bus::user_tag(user_id)]),
     )
     .await?;
     Ok(())
+}
+
+/// `Jobs::NotifyReviewable#execute`: every admin's reviewable counts, then
+/// every moderator's not yet told when moderators may review it, each with
+/// the `updates` (the reviewables the action resolved, their status and
+/// who performed it) that staff member may see.
+pub async fn notify_reviewable(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    s: &SiteSettings,
+    args: &serde_json::Value,
+) -> Result<(), AppError> {
+    let Some(id) = args["reviewable_id"].as_i64() else {
+        return Ok(());
+    };
+    let reviewable: Option<(bool, Option<i32>)> = sqlx::query_as(
+        "SELECT reviewable_by_moderator, category_id FROM reviewables WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((by_moderator, category_id)) = reviewable else {
+        return Ok(());
+    };
+    let group_moderation = s.get("enable_category_group_moderation")?.truthy();
+    if group_moderation && category_id.is_some() {
+        return Err(Unsupported("notify_reviewable for category group moderators").into());
+    }
+    let mut admin_updates = serde_json::Map::new();
+    let mut moderator_updates = serde_json::Map::new();
+    let updated: Vec<i64> = args["updated_reviewable_ids"]
+        .as_array()
+        .map(|ids| ids.iter().filter_map(serde_json::Value::as_i64).collect())
+        .unwrap_or_default();
+    if !updated.is_empty() {
+        let rows: Vec<(i64, i32, bool, Option<i32>)> = sqlx::query_as(
+            "SELECT id, status, reviewable_by_moderator, category_id FROM reviewables \
+             WHERE id = ANY($1)",
+        )
+        .bind(&updated)
+        .fetch_all(&mut *conn)
+        .await?;
+        for (rid, status, rid_by_moderator, rid_category) in rows {
+            if group_moderation && rid_category.is_some() {
+                return Err(Unsupported(
+                    "notify_reviewable's updates for category group moderators",
+                )
+                .into());
+            }
+            let payload = json!({
+                "last_performing_username": args["performing_username"],
+                "status": status,
+            });
+            admin_updates.insert(rid.to_string(), payload.clone());
+            if rid_by_moderator {
+                moderator_updates.insert(rid.to_string(), payload);
+            }
+        }
+    }
+    // User.real.admins, then User.real.moderators not already told, each
+    // by id (find_each).
+    let real = "id > 0 AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id)";
+    let admins: Vec<i32> = sqlx::query_scalar(&format!(
+        "SELECT id FROM users WHERE admin AND {real} ORDER BY id"
+    ))
+    .fetch_all(&mut *conn)
+    .await?;
+    let moderators: Vec<i32> = if by_moderator {
+        sqlx::query_scalar(&format!(
+            "SELECT id FROM users WHERE moderator AND NOT admin AND {real} ORDER BY id"
+        ))
+        .fetch_all(&mut *conn)
+        .await?
+    } else {
+        Vec::new()
+    };
+    for (ids, updates) in [(admins, &admin_updates), (moderators, &moderator_updates)] {
+        for user_id in ids {
+            publish_counts_of(&mut *conn, bus, s, user_id, Some(updates)).await?;
+        }
+    }
+    Ok(())
+}
+
+/// `Jobs::RefreshUsersReviewableCounts#execute`: the reviewable counts of
+/// every human member of the groups.
+pub async fn refresh_users_reviewable_counts(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    s: &SiteSettings,
+    args: &serde_json::Value,
+) -> Result<(), AppError> {
+    let group_ids: Vec<i64> = args["group_ids"]
+        .as_array()
+        .map(|ids| ids.iter().filter_map(serde_json::Value::as_i64).collect())
+        .unwrap_or_default();
+    if group_ids.is_empty() {
+        return Ok(());
+    }
+    // `.each` without an order: by id here.
+    let users: Vec<i32> = sqlx::query_scalar(
+        "SELECT id FROM users WHERE id > 0 AND id IN \
+           (SELECT user_id FROM group_users WHERE group_id = ANY($1)) ORDER BY id",
+    )
+    .bind(&group_ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    for user_id in users {
+        publish_counts_of(&mut *conn, bus, s, user_id, None).await?;
+    }
+    Ok(())
+}
+
+/// `publish_reviewable_counts` for a user by id.
+async fn publish_counts_of(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    s: &SiteSettings,
+    user_id: i32,
+    updates: Option<&serde_json::Map<String, serde_json::Value>>,
+) -> Result<(), AppError> {
+    let Some(user) = crate::session::current::SessionUser::load(&mut *conn, user_id).await? else {
+        return Ok(());
+    };
+    let guardian = Guardian::for_user(&mut *conn, &user).await?;
+    publish_counts(&mut *conn, bus, s, &guardian, updates).await
 }
 
 /// `ReviewableScore.calc_user_accuracy_bonus(agreed, disagreed)`

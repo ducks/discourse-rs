@@ -1477,7 +1477,15 @@ async fn members_hear_their_notifications_on_every_page() {
     .fetch_one(&db.pool)
     .await
     .unwrap();
-    // One unread notification newer than the last seen.
+    // Their message notifications read, as the new messages badge would
+    // come first, and one unread notification newer than the last seen.
+    sqlx::query(
+        "UPDATE notifications SET read = TRUE WHERE user_id = $1 AND notification_type = 6",
+    )
+    .bind(user_id)
+    .execute(&db.pool)
+    .await
+    .unwrap();
     sqlx::query(
         "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, \
                                     created_at, updated_at) \
@@ -1488,30 +1496,35 @@ async fn members_hear_their_notifications_on_every_page() {
     .await
     .unwrap();
 
-    let page = client.get("/categories").await;
-    assert!(page.body.contains(
-        r#"<span id="notification-count" class="badge-notification unread-notifications"></span>"#
-    ));
-    assert!(
-        page.body.contains(r#"sse-connect="/live?position="#),
-        "{}",
-        page.body
-    );
-
     let mut conn = db.pool.acquire().await.unwrap();
     let unread = discourse_rs::bus::all_unread_notifications_count(&mut conn, user_id)
         .await
         .unwrap();
     drop(conn);
     assert!(unread > 0);
+    let badge = format!(
+        r##"<a aria-label="Notifications" class="badge-notification unread-notifications" href="#" title="{unread} unseen notification{}">{unread}</a></button>"##,
+        if unread == 1 { "" } else { "s" }
+    );
+
+    // Drawn with the page.
+    let page = client.get("/categories").await;
+    assert!(page.body.contains(&badge), "{}", page.body);
+    assert!(
+        page.body.contains(r#"sse-connect="/live?position="#),
+        "{}",
+        page.body
+    );
+
+    // And on connecting, the button's contents swapped.
     let mut body = client.open("/live").await;
     let mut buffer = String::new();
-    assert_eq!(
-        common::next_sse_event(&mut body, &mut buffer, "header").await,
-        format!(
-            r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true">{unread}</span>"#
-        )
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        header.starts_with(r#"<button id="toggle-current-user" hx-swap-oob="innerHTML"><img alt="" width="48" height="48" src=""#),
+        "{header}"
     );
+    assert!(header.ends_with(&badge), "{header}");
 
     // An alert, its user content escaped.
     let mut tx = db.pool.begin().await.unwrap();
@@ -1549,10 +1562,8 @@ async fn members_hear_their_notifications_on_every_page() {
         .send(Method::PUT, "/notifications/mark-read.json", &[], "")
         .await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
-    assert_eq!(
-        common::next_sse_event(&mut body, &mut buffer, "header").await,
-        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#
-    );
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.ends_with(r#"class="avatar"></button>"#), "{header}");
 }
 
 /// A member likes a post from the topic page as its button does, and the
@@ -1855,10 +1866,9 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
     let mut body = client.open("/live").await;
     let mut buffer = String::new();
     let count = common::next_sse_event(&mut body, &mut buffer, "header").await;
-    assert_ne!(
-        count,
-        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#,
-        "something unread before the menu opens"
+    assert!(
+        count.contains(r#"class="badge-notification "#),
+        "something unread before the menu opens: {count}"
     );
 
     let menu = client.get("/user-menu").await;
@@ -1877,10 +1887,10 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
     // The tabs, with their unread counts.
     assert!(menu.body.contains(r#"<div class="user-menu revamped menu-panel drop-down" data-max-width="320" data-tab-id="all-notifications">"#));
     assert!(menu.body.contains(r#"title="Replies - 2 unread replies""#));
-    assert_eq!(
-        common::next_sse_event(&mut body, &mut buffer, "header").await,
-        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#,
-        "seen now"
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        header.ends_with(r#"class="avatar"></button>"#),
+        "seen now: {header}"
     );
 }
 
