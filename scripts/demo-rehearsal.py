@@ -1249,7 +1249,8 @@ def define_steps(run):
         page.goto(run.base + "/review")
         item = expect_visible(page.locator(".review-item.reviewable-queued-post").filter(has_text=run.watched_word), "the held post in /review")
         item.locator("button.approve-post").first.click()
-        expect_visible(item.locator("*", has_text=re.compile(r"^\s*Approved\s*$")), "the held post shown approved")
+        # The status badge (statuses.approved_post: "Post approved").
+        expect_visible(item.locator(".review-item__status.--approved"), "the held post shown approved")
 
     @step(20, "Admin", "topic admin wrench: close, reopen, unlist", needs=[8])
     def _(run, s):

@@ -53,7 +53,10 @@ and reports any step that errors, so run it before showing.
 18. Moderator: the review count in the header and sidebar; open /review,
     add a note, agree with the flag.
 19. Admin: watched word with "require approval"; Newcomer posts with it;
-    the post is held; approve it from /review.
+    the post is held; approve it from /review. Type the post rather than
+    pasting it: as in Discourse, a first post typed in under
+    fast_typing_threshold (3 seconds) is held and its author silenced
+    (the card shows the silence, and approving the post lifts it).
 20. Admin: the topic admin wrench: close and reopen a topic, unlist it.
 21. Admin: the dashboard and a report, the staff action log showing the
     steps above.
@@ -115,9 +118,6 @@ in says so.
 
 Known gaps that refuse with a "not ported yet" error:
 
-- A brand-new member who types their first post very fast is held and
-  auto-silenced, and a silenced author makes /review refuse. Type at a
-  human pace in step 19.
 - New-user approval cards (`must_approve_users`, 148), editing a queued
   post (194e), the review queue's silence and suspend client actions.
 - Pinning from the topic wrench (194c) and most post admin actions (194d).

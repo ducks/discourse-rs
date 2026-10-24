@@ -170,6 +170,16 @@ fix/newcomer-path.
   category group moderators exempt and deleted posts out of
   ordered_posts. Recorded on rs-ref-c: posts/max_consecutive_replies,
   _one and _topic_owner.
+- [x] The newcomer journey walked in Chromium on a copy of the demo
+  database (enable_local_logins_via_code off): signup by password, the
+  admin's activation, a first reply typed at a person's pace with an
+  upload in its draft (created, not held, author not silenced), a first
+  reply pasted in at once (held, author silenced, /review drawing the
+  silence, approval lifting it), a watched word's held topic approved
+  from /review (rehearsal steps 13, 16, 19), and a fourth reply in a row
+  showing Rails' message in the composer. Step 19's check looked for an
+  "Approved" text Ember doesn't draw; it now looks for the approved
+  status badge ("Post approved").
 
 Visible if clicked, avoid them in a scripted demo:
 
