@@ -201,8 +201,47 @@
   right: -3px;
 }
 
+.d-header-icons .badge-notification.with-icon.new-pms {
+  background-color: var(--success);
+}
+
+.d-header-icons .badge-notification.with-icon.new-reviewables {
+  background-color: var(--danger);
+}
+
+.d-header-icons .badge-notification.with-icon .d-icon {
+  color: var(--secondary);
+  font-size: var(--font-down-1);
+  width: 1em;
+}
+
 .d-header-icons .unread-notifications {
   background-color: var(--tertiary-med-or-tertiary);
+}
+
+/* discourse.scss: the avatar's moon while notifications are paused */
+.d-header .header-dropdown-toggle .do-not-disturb-background {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+}
+
+.do-not-disturb-background {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  background-color: var(--secondary);
+  border-radius: 50%;
+  height: 1em;
+  box-shadow: 0 0 0 2px var(--secondary);
+}
+
+.do-not-disturb-background .d-icon.d-icon-discourse-dnd {
+  color: var(--header_primary-medium) !important;
+  font-size: 1em;
+  height: 1em;
+  width: 1em;
 }
 
 /* badges.scss: %badge and .badge-notification */
@@ -225,11 +264,6 @@
 .badge-notification[href],
 .badge-notification:hover {
   color: var(--secondary);
-}
-
-/* The live count's span is there, empty, while there is nothing unread. */
-.badge-notification:empty {
-  display: none;
 }
 
 /* uc-modernize-foundation-theme/header.scss */

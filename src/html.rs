@@ -229,6 +229,9 @@ pub struct Chrome {
     /// TopicDraftsDropdown's menu trigger beside New Topic, while the
     /// member has drafts (`draft_count`); empty otherwise.
     pub drafts_menu_trigger: String,
+    /// The header avatar's badge (crate::header_badge), empty for a
+    /// visitor or while nothing applies.
+    pub avatar_badge: String,
     /// A member's topic tracking state, for the nav pills' counts.
     pub tracking: Option<crate::topic_tracking_report::Tracking>,
     /// What the page's live updates keep counted besides the stream's own
@@ -1157,6 +1160,10 @@ impl Site {
                     .await?;
             self.chrome.drafts_menu_trigger =
                 drafts_menu_trigger(&state.i18n, i64::from(draft_count.unwrap_or(0)));
+            self.chrome.avatar_badge =
+                crate::header_badge::Badge::load(&mut *conn, settings, guardian)
+                    .await?
+                    .html(&state.i18n);
             self.chrome.composer = self
                 .composer(&mut *conn, state, settings, guardian, options.as_ref())
                 .await?;

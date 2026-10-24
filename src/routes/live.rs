@@ -12,8 +12,10 @@
 //!   nav pills (`nav`, the active pill) and on the sidebar's links
 //!   (`sidebar`, its Active key); on connect and after the tracking
 //!   messages they may hear.
-//! - `header`, for members: the unread notification count, on connect and
-//!   from their notification state, and the alert for a new notification.
+//! - `header`, for members: the avatar's badge (crate::header_badge), on
+//!   connect and from their notification state, reviewable counts and do
+//!   not disturb, and the alert for a new notification. A staff member's
+//!   reviewable counts also redraw the sidebar's review link.
 //!
 //! The stream starts after the Last-Event-ID header (the browser
 //! reconnecting), else `position` (the page's `bus-position`), else now;
@@ -144,6 +146,8 @@ pub async fn page(
         channels.push(format!("/unread/{id}"));
         channels.push(crate::bus::notification_channel(id));
         channels.push(format!("/notification-alert/{id}"));
+        channels.push(format!("/reviewable_counts/{id}"));
+        channels.push(format!("/do-not-disturb/{id}"));
     }
     // Chat's unread state: its followed channels' new messages and the
     // member's mentions in them, and their own read tracking.
@@ -192,6 +196,8 @@ pub async fn page(
         chat,
         chat_channels,
         sent_chat: None,
+        badge: crate::header_badge::Badge::default(),
+        sent_badge: None,
         sent_lists: None,
         started: false,
         pending: VecDeque::new(),
@@ -255,6 +261,10 @@ struct Live {
     chat_channels: Vec<String>,
     /// Chat's chrome last sent.
     sent_chat: Option<String>,
+    /// What the avatar's badge reads, kept as the member's messages
+    /// change it, and the button's contents last sent.
+    badge: crate::header_badge::Badge,
+    sent_badge: Option<String>,
     /// The list HTML last computed, sent or (when empty) not.
     sent_lists: Option<String>,
     started: bool,
@@ -263,17 +273,15 @@ struct Live {
     deadline: tokio::time::Instant,
 }
 
-/// What the page needs as soon as it connects: the member's notification
-/// count, and the lists as they are now.
+/// What the page needs as soon as it connects: the member's avatar badge,
+/// and the lists as they are now.
 async fn initial(live: &mut Live) -> Result<(), AppError> {
-    if let Some(user_id) = live.user_id {
+    if live.user_id.is_some() {
         let mut conn = live.state.pool.acquire().await?;
-        let count = crate::bus::all_unread_notifications_count(&mut conn, user_id).await?;
-        live.pending.push_back(
-            Event::default()
-                .event("header")
-                .data(notification_count(count)),
-        );
+        live.badge =
+            crate::header_badge::Badge::load(&mut conn, &live.settings, &live.guardian).await?;
+        drop(conn);
+        push_badge(live, None)?;
     }
     if live.lists {
         recount_lists(live, None).await?;
@@ -300,6 +308,8 @@ async fn handle_batch(
 ) -> Result<(), AppError> {
     let notification = live.user_id.map(crate::bus::notification_channel);
     let alert = live.user_id.map(|id| format!("/notification-alert/{id}"));
+    let reviewable_counts = live.user_id.map(|id| format!("/reviewable_counts/{id}"));
+    let do_not_disturb = live.user_id.map(|id| format!("/do-not-disturb/{id}"));
     let mut tracking: Option<Position> = None;
     let mut chat = false;
     let mut last: Option<Position> = None;
@@ -322,15 +332,27 @@ async fn handle_batch(
             live.pending
                 .push_back(Event::default().event("poll").id(id).data(data.to_string()));
         } else if notification.as_ref() == Some(&message.channel) {
-            let count = message.data["all_unread_notifications_count"]
+            // onNotification's counts.
+            let count = |key: &str| message.data[key].as_i64().unwrap_or(0);
+            live.badge.all_unread = count("all_unread_notifications_count");
+            live.badge.new_pms = count("new_personal_messages_notifications_count");
+            push_badge(live, Some(id))?;
+        } else if reviewable_counts.as_ref() == Some(&message.channel) {
+            // onReviewableCounts: the unseen count for the badge, the
+            // pending count for the sidebar's review link.
+            live.badge.unseen_reviewables = message.data["unseen_reviewable_count"]
                 .as_i64()
                 .unwrap_or(0);
-            live.pending.push_back(
-                Event::default()
-                    .event("header")
-                    .id(id)
-                    .data(notification_count(count)),
-            );
+            push_badge(live, Some(id))?;
+            if live.sidebar.is_some() {
+                tracking = Some(message.position);
+            }
+        } else if do_not_disturb.as_ref() == Some(&message.channel) {
+            // onDoNotDisturb: updateDoNotDisturbStatus(ends_at), an HTTP date.
+            live.badge.do_not_disturb_until = message.data["ends_at"]
+                .as_str()
+                .and_then(|s| NaiveDateTime::parse_from_str(s, "%a, %d %b %Y %H:%M:%S GMT").ok());
+            push_badge(live, Some(id))?;
         } else if alert.as_ref() == Some(&message.channel) {
             let base = live.state.config.globals.relative_url_root();
             live.pending.push_back(
@@ -373,17 +395,39 @@ async fn recount_lists(live: &mut Live, id: Option<Position>) -> Result<(), AppE
     Ok(())
 }
 
-/// The unread notification count, the badge on a member's avatar
-/// (empty, and so hidden, at none).
-fn notification_count(count: i64) -> String {
-    let shown = if count > 0 {
-        count.to_string()
-    } else {
-        String::new()
+/// The avatar's badge as it is now, when it changed: the toggle button's
+/// contents swapped, the avatar with it (Ember draws no element for the
+/// badge when none applies, so there is nothing of its own to swap).
+fn push_badge(live: &mut Live, id: Option<String>) -> Result<(), AppError> {
+    let Some(user) = live.guardian.user() else {
+        return Ok(());
     };
-    format!(
-        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true">{shown}</span>"#
-    )
+    let urls = Urls {
+        config: &live.state.config,
+        settings: &live.settings,
+    };
+    let avatar_url = crate::avatar::avatar_template(
+        &urls,
+        user.id,
+        &user.username,
+        user.uploaded_avatar_id,
+        None,
+    )?
+    .replace("{size}", "48");
+    let contents =
+        crate::header_badge::toggle_contents(&avatar_url, &live.badge.html(&live.state.i18n));
+    if live.sent_badge.as_ref() == Some(&contents) {
+        return Ok(());
+    }
+    live.sent_badge = Some(contents.clone());
+    let html =
+        format!(r#"<button id="toggle-current-user" hx-swap-oob="innerHTML">{contents}</button>"#);
+    let mut event = Event::default().event("header").data(html);
+    if let Some(id) = id {
+        event = event.id(id);
+    }
+    live.pending.push_back(event);
+    Ok(())
 }
 
 /// The alert PostAlerter publishes, shown in the header: who, what and

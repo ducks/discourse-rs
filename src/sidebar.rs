@@ -281,19 +281,23 @@ pub fn tracked_links(site: &Value, cx: &Context) -> Result<Vec<String>, SettingE
     };
     let mut out = Vec::new();
     let sections = m.fields.get("sidebar_sections").and_then(Value::as_array);
-    let everything = sections
+    let community: Vec<Value> = sections
         .into_iter()
         .flatten()
         .filter(|s| s["section_type"] == "community")
         .flat_map(|s| s["links"].as_array().cloned().unwrap_or_default())
-        .find(|l| l["value"] == "/latest");
-    if let Some(link) = everything
-        && let Some(link) = community_link(&link, cx)?
-    {
-        out.push(oob(
-            &link,
-            "#d-sidebar li[data-list-item-name='everything']".into(),
-        ));
+        .collect();
+    // Everything's new and unread, and the review queue's pending count
+    // (the reviewable_count /reviewable_counts updates).
+    for (value, name) in [("/latest", "everything"), ("/review", "review")] {
+        if let Some(link) = community.iter().find(|l| l["value"] == value)
+            && let Some(link) = community_link(link, cx)?
+        {
+            out.push(oob(
+                &link,
+                format!("#d-sidebar li[data-list-item-name='{name}']"),
+            ));
+        }
     }
     for (id, link) in category_links(site, cx)? {
         out.push(oob(

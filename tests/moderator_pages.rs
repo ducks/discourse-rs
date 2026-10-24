@@ -132,6 +132,27 @@ impl Client {
         let json = serde_json::from_str(&body).unwrap_or_else(|_| panic!("{status}: {body}"));
         (status, json)
     }
+
+    /// A streamed response's body, such as the page's /live stream.
+    async fn open(&self, path: &str) -> Body {
+        let cookies: Vec<String> = self
+            .cookies
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect();
+        let response = discourse_rs::app(self.state.clone())
+            .oneshot(
+                Request::get(path)
+                    .header(header::HOST, "test.localhost")
+                    .header(header::COOKIE, cookies.join("; "))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{path}");
+        response.into_body()
+    }
 }
 
 async fn setup() -> (TestDb, AppState) {
@@ -351,4 +372,221 @@ async fn the_moderator_sees_the_admin_pages_rails_shows_them() {
         let (status, _) = moderator.page(path).await;
         assert_eq!(status, StatusCode::NOT_FOUND, "{path}");
     }
+}
+
+/// The header avatar's toggle button as a page draws it.
+fn toggle_button(html: &str) -> &str {
+    let start = html
+        .find(r#"id="toggle-current-user""#)
+        .expect("the avatar's button");
+    let end = start + html[start..].find("</button>").unwrap();
+    &html[start..end]
+}
+
+/// The avatar's badge by Ember's precedence: do not disturb, then new
+/// message notifications, new reviewables, unread notifications.
+#[tokio::test]
+async fn the_header_avatar_badge_shows_the_first_that_applies() {
+    let (db, st) = setup().await;
+    // Everything the moderator had seen, as nothing new before the test.
+    sqlx::query(
+        "UPDATE users SET seen_notification_id = COALESCE((SELECT MAX(id) FROM notifications), 0) \
+         WHERE id = 5",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let mut moderator = Client::logged_in(st.clone(), "user3").await;
+
+    // The three reviewables they may review, none seen.
+    let (_, html) = moderator.page("/latest").await;
+    assert!(
+        toggle_button(&html).ends_with(
+            r##"class="avatar"><a aria-label="3 new reviewables" class="badge-notification with-icon new-reviewables" href="#" title="3 new reviewables"><svg class="fa d-icon d-icon-flag svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#flag"></use></svg></a>"##
+        ),
+        "{}",
+        toggle_button(&html)
+    );
+    // The admin's seven.
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (_, html) = admin.page("/latest").await;
+    assert!(
+        toggle_button(&html).contains(r#"title="7 new reviewables""#),
+        "{}",
+        toggle_button(&html)
+    );
+
+    // A new message notification comes first.
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
+                                    high_priority, created_at, updated_at) \
+         VALUES (6, 5, 43, 1, '{}', FALSE, TRUE, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (_, html) = moderator.page("/latest").await;
+    assert!(
+        toggle_button(&html).ends_with(
+            r##"class="avatar"><a aria-label="1 new message notification" class="badge-notification with-icon new-pms" href="#" title="1 new message notification"><svg class="fa d-icon d-icon-envelope svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#envelope"></use></svg></a>"##
+        ),
+        "{}",
+        toggle_button(&html)
+    );
+
+    // Do not disturb before anything.
+    sqlx::query(
+        "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) \
+         VALUES (5, now() - interval '1 minute', now() + interval '1 hour', FALSE)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (_, html) = moderator.page("/latest").await;
+    assert!(
+        toggle_button(&html).ends_with(
+            r##"class="avatar"><div class="do-not-disturb-background" title="Notifications paused"><svg class="fa d-icon d-icon-discourse-dnd svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#discourse-dnd"></use></svg></div>"##
+        ),
+        "{}",
+        toggle_button(&html)
+    );
+    sqlx::query("DELETE FROM do_not_disturb_timings WHERE user_id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+
+    // The message read and the reviewables seen: the unread count, of
+    // every unread notification past the last seen.
+    sqlx::query("UPDATE notifications SET read = TRUE WHERE user_id = 5 AND notification_type = 6")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE users SET last_seen_reviewable_id = 9407 WHERE id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
+                                    high_priority, created_at, updated_at) \
+         VALUES (1, 5, 35, 2, '{}', FALSE, FALSE, now(), now()), \
+                (2, 5, 35, 3, '{}', FALSE, FALSE, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (_, html) = moderator.page("/latest").await;
+    assert!(
+        toggle_button(&html).ends_with(
+            r##"class="avatar"><a aria-label="Notifications" class="badge-notification unread-notifications" href="#" title="2 unseen notifications">2</a>"##
+        ),
+        "{}",
+        toggle_button(&html)
+    );
+
+    // Nothing.
+    sqlx::query("UPDATE notifications SET read = TRUE WHERE user_id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = moderator.page("/latest").await;
+    assert!(
+        toggle_button(&html).ends_with(r#"class="avatar">"#),
+        "{}",
+        toggle_button(&html)
+    );
+}
+
+/// A flag made and agreed with redraws the moderator's badge and the
+/// sidebar's review count live: Jobs::NotifyReviewable's
+/// /reviewable_counts, then a new message notification's /notification.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_header_avatar_badge_follows_flags_live() {
+    let (db, st) = setup().await;
+    sqlx::query(
+        "UPDATE users SET seen_notification_id = COALESCE((SELECT MAX(id) FROM notifications), 0) \
+         , last_seen_at = now() WHERE id = 5",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let moderator = Client::logged_in(st.clone(), "user3").await;
+    let mut body = moderator.open("/live?sidebar=discovery").await;
+    let mut buffer = String::new();
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        header.starts_with(r#"<button id="toggle-current-user" hx-swap-oob="innerHTML"><img alt="" width="48" height="48" src=""#),
+        "{header}"
+    );
+    assert!(header.contains(r#"title="3 new reviewables""#), "{header}");
+    let list = common::next_sse_event(&mut body, &mut buffer, "list").await;
+    assert!(list.contains("3 pending"), "{list}");
+
+    // user1 flags the admin's post: a new reviewable moderators review.
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (status, reply) = user1
+        .send(
+            Method::POST,
+            "/post_actions.json",
+            "id=34&post_action_type_id=4&flag_topic=false",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{reply}");
+    discourse_rs::jobs::drain(&st).await.unwrap();
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.contains(r#"title="4 new reviewables""#), "{header}");
+    let list = common::next_sse_event(&mut body, &mut buffer, "list").await;
+    assert!(
+        list.contains(r#"hx-swap-oob="outerHTML:#d-sidebar li[data-list-item-name='review']""#),
+        "{list}"
+    );
+    assert!(list.contains("4 pending"), "{list}");
+
+    // The moderator agrees with it.
+    let id: i64 = sqlx::query_scalar(
+        "SELECT id FROM reviewables WHERE target_type = 'Post' AND target_id = 34",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let mut acting = Client::logged_in(st.clone(), "user3").await;
+    let (status, reply) = acting
+        .send(
+            Method::PUT,
+            &format!("/review/{id}/perform/agree_and_keep?version=0"),
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{reply}");
+    discourse_rs::jobs::drain(&st).await.unwrap();
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.contains(r#"title="3 new reviewables""#), "{header}");
+
+    // A new message notification takes the badge.
+    let mut tx = db.pool.begin().await.unwrap();
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
+                                    high_priority, created_at, updated_at) \
+         VALUES (6, 5, 43, 1, '{}', FALSE, TRUE, now(), now())",
+    )
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut tx,
+        &st.site_setting_defs,
+        &st.config.globals,
+    )
+    .await
+    .unwrap();
+    discourse_rs::bus::publish_notifications_state(&st.bus, &mut tx, &settings, 5)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        header.contains(r##"class="badge-notification with-icon new-pms" href="#" title="1 new message notification""##),
+        "{header}"
+    );
 }
