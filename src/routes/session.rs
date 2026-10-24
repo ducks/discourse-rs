@@ -543,9 +543,11 @@ pub(super) async fn complete_login(
             .execute(&mut *conn)
             .await?;
     }
-    if crate::roles::bootstrap_first_admin(&mut conn, &state.i18n, user.id).await? {
-        user.moderator = true;
-    }
+    let grants =
+        crate::roles::bootstrap_first_admin(&mut conn, &state.i18n, &state.config.globals, user.id)
+            .await?;
+    user.admin |= grants.admin;
+    user.moderator |= grants.moderator;
     token::enforce_session_count_limit(
         &mut conn,
         user.id,

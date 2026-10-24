@@ -25,10 +25,18 @@ let
   user = "discourse-rs";
   stateDir = "/var/lib/discourse-rs";
   localDatabaseUrl = "postgresql:///${cfg.database.name}?host=/run/postgresql";
-  share = "${cfg.package}/share/discourse-rs";
   pg = config.services.postgresql.package;
-  # Discourse.base_url, stored with a fresh site's VAPID keys.
-  baseUrl = "${if cfg.forceHttps then "https" else "http"}://${cfg.hostname}";
+  # The environment the server and its one-off commands share: what makes
+  # up Discourse.base_url and the globals.
+  siteEnvironment = {
+    RAILS_ENV = "production";
+    DISCOURSE_HOSTNAME = cfg.hostname;
+  }
+  // optionalAttrs cfg.forceHttps { DISCOURSE_FORCE_HTTPS = "true"; }
+  // optionalAttrs cfg.loginRequired { DISCOURSE_LOGIN_REQUIRED = "true"; }
+  // optionalAttrs cfg.inviteOnly { DISCOURSE_INVITE_ONLY = "true"; }
+  // cfg.extraEnvironment;
+  hasInitialAdmin = cfg.initialAdmin.email != null;
 in
 {
   options.services.discourse-rs = {
@@ -120,16 +128,43 @@ in
         type = types.bool;
         default = true;
         description = ''
-          With `createLocally`, load the vendored schema
-          (vendor/discourse/db/structure.sql) and seeds (seed/*.sql) into
-          the database when it has no tables yet, as scripts/db-load does:
-          a fresh site. discourse-rs-db-init.service does it before the
-          server starts. In the same transaction it gives the site secrets
-          of its own (the seed's are in the repo), sets the admin's password
-          from INITIAL_ADMIN_PASSWORD in `environmentFile` (required; the
-          load fails without it) and its address from INITIAL_ADMIN_EMAIL
-          when set, and locks the seed's fixture users out. Turn off to
-          restore a backup into the empty database instead.
+          With `createLocally`, make a fresh site in the database while it
+          has no tables: discourse-rs-db-init.service runs `discourse-rs
+          setup` (the vendored schema and what Discourse's db:seed creates,
+          in one transaction, owned by the discourse-rs role) before the
+          server starts, and then `discourse-rs admin create` for
+          `initialAdmin`. Turn off to restore a backup into the empty
+          database instead.
+        '';
+      };
+    };
+
+    initialAdmin = {
+      email = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        example = "you@example.com";
+        description = ''
+          The first admin's email. While the site has no admin,
+          discourse-rs-db-init runs `discourse-rs admin create` for it
+          (as `rake admin:create`: a new account, activated, granted
+          admin), with the password from `initialAdmin.passwordFile`.
+          Without it, register the admin on the finish installation page
+          (DISCOURSE_DEVELOPER_EMAILS and SMTP), or run `discourse-rs
+          admin create` yourself.
+        '';
+      };
+
+      passwordFile = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        example = "/run/keys/discourse-admin-password";
+        description = ''
+          A file holding the first admin's password (at least
+          min_admin_password_length, 15, characters), handed to
+          discourse-rs-db-init as a systemd credential (LoadCredential), so
+          it can be root:root 0600 and never enters the Nix store or the
+          environment. A string, not a Nix path literal.
         '';
       };
     };
@@ -141,12 +176,11 @@ in
       description = ''
         An EnvironmentFile for the secrets: DISCOURSE_SECRET_KEY_BASE,
         DISCOURSE_SMTP_ADDRESS / _PORT / _USER_NAME / _PASSWORD, an
-        external DATABASE_URL, and for a fresh site INITIAL_ADMIN_PASSWORD
-        (at least 15 characters) and optionally INITIAL_ADMIN_EMAIL, which
-        discourse-rs-db-init reads once. Read by systemd as root, so it can be
+        external DATABASE_URL. Read by systemd as root, so it can be
         root:root 0600; it never enters the Nix store (give a path as a
         string, not a Nix path literal). Without DISCOURSE_SECRET_KEY_BASE
-        sessions die with every restart.
+        the server generates one and keeps it in the database, as Rails
+        keeps it in Redis.
       '';
     };
 
@@ -240,6 +274,14 @@ in
           );
         message = ''services.discourse-rs: the local database is created with the en_US.UTF-8 locale; add "en_US.UTF-8/UTF-8" to i18n.supportedLocales.'';
       }
+      {
+        assertion = hasInitialAdmin -> cfg.initialAdmin.passwordFile != null;
+        message = "services.discourse-rs.initialAdmin.email needs initialAdmin.passwordFile.";
+      }
+      {
+        assertion = hasInitialAdmin -> (cfg.database.createLocally && cfg.database.loadSchema);
+        message = "services.discourse-rs.initialAdmin is made by discourse-rs-db-init, which needs database.createLocally and database.loadSchema; run `discourse-rs admin create` yourself otherwise.";
+      }
     ];
 
     users.users.${user} = {
@@ -259,37 +301,42 @@ in
       extensions = ps: [ ps.pgvector ];
     };
 
-    # The role and database, and on an empty database the schema and seeds
-    # (scripts/db-load). Runs as the superuser on every start and only does
-    # what is missing. The extensions are made as the superuser (vector is
-    # untrusted); the schema as the service's role, so it owns the tables,
-    # as Rails' database user does; the seeds as the superuser, since
-    # their DISABLE TRIGGER ALL covers foreign key triggers. One
-    # transaction: a failed load leaves the database empty for the next
-    # try, not half loaded. Its last part, from discourse-rs-fresh-site,
-    # replaces the seed's public secrets and admin password and locks the
-    # fixture users out, so a loaded site never has the seed's credentials.
+    # The role and database, and on an empty database a fresh site
+    # (`discourse-rs setup`, Discourse's db:migrate on a new install), then
+    # the first admin while there is none (`discourse-rs admin create`).
+    # Runs as the superuser on every start and only does what is missing.
+    # setup creates the extensions as the superuser (vector is untrusted)
+    # and the rest as the service's role (--owner), so it owns the tables,
+    # as Rails' database user does, in one transaction: a failed load
+    # leaves the database empty for the next try. admin create runs as the
+    # service's role too (PGOPTIONS), with the password as a credential.
     systemd.services.discourse-rs-db-init = mkIf cfg.database.createLocally {
       description = "discourse-rs database setup";
       requires = [ "postgresql.service" ];
       after = [ "postgresql.service" ];
-      path = [
-        pg
-        pkgs.gnugrep
-      ];
+      path = [ pg ];
+      # The globals setup and admin create read (the base url, the
+      # developer emails), as the server has them.
+      environment = siteEnvironment // {
+        DATABASE_URL = localDatabaseUrl;
+        RUST_LOG = "warn";
+      };
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         User = "postgres";
         Group = "postgres";
-        RuntimeDirectory = "discourse-rs-db-init";
-        # INITIAL_ADMIN_PASSWORD for a fresh site.
         EnvironmentFile = optional (cfg.environmentFile != null) cfg.environmentFile;
+        LoadCredential = optional (
+          hasInitialAdmin && cfg.initialAdmin.passwordFile != null
+        ) "initial-admin-password:${cfg.initialAdmin.passwordFile}";
       };
       script = ''
         set -euo pipefail
         psql() { command psql -X -q -v ON_ERROR_STOP=1 "$@"; }
         db=${lib.escapeShellArg cfg.database.name}
+        # The local database, whatever the environment file says.
+        export DATABASE_URL=${lib.escapeShellArg localDatabaseUrl}
 
         if [ "$(psql -d postgres -Atc "SELECT 1 FROM pg_roles WHERE rolname = '${user}'")" != 1 ]; then
           psql -d postgres -c 'CREATE ROLE "${user}" LOGIN'
@@ -302,31 +349,16 @@ in
       + lib.optionalString cfg.database.loadSchema ''
         tables="$(psql -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
         if [ "$tables" = 0 ]; then
-          # The seed's admin password and secrets are public: a fresh site
-          # gets its own, in the load's transaction, or nothing is loaded.
-          if [ -z "''${INITIAL_ADMIN_PASSWORD:-}" ]; then
-            echo "INITIAL_ADMIN_PASSWORD is not set in services.discourse-rs.environmentFile; a fresh site needs the admin's password. Nothing loaded." >&2
-            exit 1
-          fi
-          umask 077
-          ${cfg.package}/bin/discourse-rs-fresh-site ${lib.escapeShellArg baseUrl} \
-            > "$RUNTIME_DIRECTORY/secure.sql"
-          echo "loading the vendored schema and seeds into $db"
-          seeds=()
-          for seed in ${share}/seed/*.sql; do
-            seeds+=(-f "$seed")
-          done
-          grep '^CREATE EXTENSION' ${share}/db/structure.sql > "$RUNTIME_DIRECTORY/extensions.sql"
-          psql -d "$db" --single-transaction \
-            -f "$RUNTIME_DIRECTORY/extensions.sql" \
-            -c 'SET ROLE "${user}"' \
-            -f ${share}/db/structure.sql \
-            -c 'RESET ROLE' \
-            "''${seeds[@]}" \
-            -f "$RUNTIME_DIRECTORY/secure.sql" \
-            -o /dev/null
-          rm -f "$RUNTIME_DIRECTORY/secure.sql"
-          echo "loaded $db: $(psql -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'") tables ($(sed -n 's/^commit=//p' ${share}/DISCOURSE_REF | cut -c1-11))"
+          echo "setting up a fresh site in $db"
+          ${lib.getExe cfg.package} setup --owner ${user}
+        fi
+      ''
+      + lib.optionalString (cfg.database.loadSchema && hasInitialAdmin) ''
+        admins="$(psql -d "$db" -Atc "SELECT count(*) FROM users WHERE admin AND id > 0")"
+        if [ "$admins" = 0 ]; then
+          PGOPTIONS='-c role=${user}' ${lib.getExe cfg.package} admin create \
+            --email ${lib.escapeShellArg cfg.initialAdmin.email} \
+            --password-file "$CREDENTIALS_DIRECTORY/initial-admin-password"
         fi
       '';
     };
@@ -345,8 +377,6 @@ in
         BIND_ADDR = "${
           if lib.hasInfix ":" cfg.listenAddress then "[${cfg.listenAddress}]" else cfg.listenAddress
         }:${toString cfg.port}";
-        RAILS_ENV = "production";
-        DISCOURSE_HOSTNAME = cfg.hostname;
         DISCOURSE_SRC = "${cfg.assets}";
         # The backup's uploads/ go here; the local store writes uploads here.
         PUBLIC_DIR = "${stateDir}/public";
@@ -357,11 +387,8 @@ in
       // optionalAttrs cfg.database.createLocally { DATABASE_URL = localDatabaseUrl; }
       // optionalAttrs (cfg.database.url != null) { DATABASE_URL = cfg.database.url; }
       // optionalAttrs (cfg.letterAvatarFont != null) { LETTER_AVATAR_FONT = "${cfg.letterAvatarFont}"; }
-      // optionalAttrs cfg.forceHttps { DISCOURSE_FORCE_HTTPS = "true"; }
-      // optionalAttrs cfg.loginRequired { DISCOURSE_LOGIN_REQUIRED = "true"; }
-      // optionalAttrs cfg.inviteOnly { DISCOURSE_INVITE_ONLY = "true"; }
       // optionalAttrs (!cfg.jobs.enable) { DISCOURSE_RS_JOBS = "off"; }
-      // cfg.extraEnvironment;
+      // siteEnvironment;
 
       serviceConfig = {
         Type = "simple";

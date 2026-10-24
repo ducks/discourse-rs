@@ -9,6 +9,7 @@
 use serde_json::json;
 use sqlx::{Acquire, PgConnection};
 
+use crate::config::GlobalSettings;
 use crate::i18n::I18n;
 use crate::{AppError, Unsupported};
 
@@ -38,21 +39,85 @@ const AUTOMATIC_GROUPS: [(i32, &str, Option<&str>); 11] = [
 /// `Group::AUTO_GROUP_IDS`: every automatic group.
 const AUTO_GROUP_IDS: &str = "0,1,2,3,4,5,10,11,12,13,14";
 
-/// `bootstrap_first_admin(user)`, from log_on_user: the site's only admin,
-/// logging in for the first time, is made a moderator too, logged as the
-/// system user's grant. True when it granted.
+/// `Rails.configuration.developer_emails`: DISCOURSE_DEVELOPER_EMAILS,
+/// downcased and stripped.
+pub fn developer_emails(globals: &GlobalSettings) -> Vec<String> {
+    globals
+        .get("developer_emails")
+        .map(|list| {
+            list.split(',')
+                .map(|e| e.to_lowercase().trim().to_string())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// `make_developer_admin(user)`, from log_on_user: an active user whose
+/// email is a developer's becomes an admin (how the account registered on
+/// the finish installation page gets its role once activated). True when
+/// it granted.
+pub async fn make_developer_admin(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    globals: &GlobalSettings,
+    user_id: i32,
+) -> Result<bool, AppError> {
+    let developers = developer_emails(globals);
+    if developers.is_empty() {
+        return Ok(false);
+    }
+    let row: Option<(bool, bool, Option<String>)> = sqlx::query_as(
+        "SELECT active, admin, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\") \
+         FROM users u WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((true, false, Some(email))) = row else {
+        return Ok(false);
+    };
+    if !developers.contains(&email) {
+        return Ok(false);
+    }
+    // user.admin = true; user.save, then
+    // Group.refresh_automatic_groups!(:staff, :admins).
+    sqlx::query("UPDATE users SET admin = TRUE, updated_at = clock_timestamp() WHERE id = $1")
+        .bind(user_id)
+        .execute(&mut *conn)
+        .await?;
+    crate::setup::clear_global_notice_if_needed(conn, user_id).await?;
+    refresh_staff_groups(conn, i18n).await?;
+    Ok(true)
+}
+
+/// What log_on_user's role upkeep granted.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct LogOnGrants {
+    pub admin: bool,
+    pub moderator: bool,
+}
+
+/// log_on_user's `make_developer_admin(user)` then
+/// `bootstrap_first_admin(user)`: the site's only admin, logging in for
+/// the first time, is made a moderator too, logged as the system user's
+/// grant.
 pub async fn bootstrap_first_admin(
     conn: &mut PgConnection,
     i18n: &I18n,
+    globals: &GlobalSettings,
     user_id: i32,
-) -> Result<bool, AppError> {
+) -> Result<LogOnGrants, AppError> {
+    let mut grants = LogOnGrants {
+        admin: make_developer_admin(conn, i18n, globals, user_id).await?,
+        moderator: false,
+    };
     let (admin, moderator, never_seen): (bool, bool, bool) =
         sqlx::query_as("SELECT admin, moderator, last_seen_at IS NULL FROM users WHERE id = $1")
             .bind(user_id)
             .fetch_one(&mut *conn)
             .await?;
     if !admin || moderator || !never_seen {
-        return Ok(false);
+        return Ok(grants);
     }
     // is_singular_admin?: no other human admin.
     let singular: bool = sqlx::query_scalar(
@@ -62,7 +127,7 @@ pub async fn bootstrap_first_admin(
     .fetch_one(&mut *conn)
     .await?;
     if !singular {
-        return Ok(false);
+        return Ok(grants);
     }
     grant_moderation(conn, i18n, user_id).await?;
     sqlx::query(
@@ -73,7 +138,8 @@ pub async fn bootstrap_first_admin(
     .bind(user_id)
     .execute(&mut *conn)
     .await?;
-    Ok(true)
+    grants.moderator = true;
+    Ok(grants)
 }
 
 /// `grant_moderation!` for a user who is not a moderator yet.
@@ -106,6 +172,8 @@ pub async fn grant(
     .bind(user_id)
     .execute(&mut *tx)
     .await?;
+    // save!'s after_save clear_global_notice_if_needed
+    crate::setup::clear_global_notice_if_needed(&mut tx, user_id).await?;
     refresh_staff_groups(&mut tx, i18n).await?;
     tx.commit().await?;
 

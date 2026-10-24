@@ -31,7 +31,9 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
 
 - `DISCOURSE_SECRET_KEY_BASE` in `/etc/discourse-rs/env` (root, 0600),
   `openssl rand -hex 64` for a new site, the Rails site's value when
-  moving a forum over. Without it every restart logs everyone out.
+  moving a forum over. Without it the server generates one and keeps it
+  in the database (`discourse_rs.persistent_values`), as Rails keeps it
+  in Redis.
 - Keep a copy with the backups: losing it logs everyone out and voids
   outstanding email tokens.
 
@@ -46,17 +48,21 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
   logs the mailer it built at start (`outgoing mail`).
 - The `notification_email` site setting is the From address; it must be
   one the relay may send as.
-- Test it: invites and password resets need it, and the seeded admin's
-  password is changed through a reset email.
+- Test it: invites, password resets and the finish installation page's
+  activation email need it.
 
 ## Team-only lockdown
 
-- `INITIAL_ADMIN_PASSWORD` (and `INITIAL_ADMIN_EMAIL`) in the env file
-  before the first switch: the first load sets the admin's password from
-  it, replaces the seed's public secrets and locks the fixture users
-  `user0`..`user3` out, and refuses to load without it. Remove it from
-  the env file afterwards if you like; it is only read once.
-- Delete the fixture topics you don't want.
+- The first admin: `initialAdmin.email` and `initialAdmin.passwordFile`
+  (root, 0600, at least 15 characters) before the first switch.
+  discourse-rs-db-init makes the account (`discourse-rs admin create`)
+  right after `discourse-rs setup` loads the fresh site, which has no
+  other users. Or leave them unset and register on the finish
+  installation page with an address in `DISCOURSE_DEVELOPER_EMAILS`
+  (needs SMTP). The password file is only read while there is no admin;
+  it can go once the admin has logged in.
+- The seeded welcome, guidelines and admin guide topics are Discourse's
+  own; edit or delete them.
 - `loginRequired = true` and `inviteOnly = true` in the module, then
   invite the team.
 - Check from a logged-out browser that `/latest` asks for a login.
@@ -105,10 +111,10 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
   flake, or pin a release tag in its url) and `nixos-rebuild switch`.
   The unit restarts on the new binary; SIGTERM lets requests finish.
 - A release embeds the schema vendored at its tag and refuses a database
-  behind it. `discourse-rs-db-init` loads a fresh site's schema once and
-  never migrates it, and the port runs no Discourse migrations: before an
-  upgrade, compare `vendor/discourse/DISCOURSE_REF` between the two
-  revisions. The same commit upgrades freely; a newer one has no upgrade
-  path for the database yet.
+  behind it. `discourse-rs-db-init` runs `discourse-rs setup` once, on an
+  empty database, and never migrates it, and the port runs no Discourse
+  migrations: before an upgrade, compare `vendor/discourse/DISCOURSE_REF`
+  between the two revisions. The same commit upgrades freely; a newer
+  one has no upgrade path for the database yet.
 - Roll back with `nixos-rebuild switch --rollback` (the database is not
   rolled back).

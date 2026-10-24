@@ -259,6 +259,44 @@ pub fn password_error(
     Ok(None)
 }
 
+/// The message ActiveModel gives a [`password_error`] key on UserPassword's
+/// `password`: `too_short` and `blank` from errors.messages (`min`, the
+/// length that applied, for too_short), the rest from the model's own.
+pub fn password_error_message(i18n: &crate::i18n::I18n, key: &str, min: i64) -> String {
+    match key {
+        "too_short" => i18n
+            .t_count(
+                "errors.messages.too_short",
+                min,
+                &[("count", &min.to_string())],
+            )
+            .unwrap_or_default(),
+        "blank" => i18n.t("errors.messages.blank").unwrap_or(key).to_string(),
+        _ => i18n
+            .t(&format!(
+                "activerecord.errors.models.user_password.attributes.password.{key}"
+            ))
+            .unwrap_or(key)
+            .to_string(),
+    }
+}
+
+/// The `count` of a too_short [`password_error`]: min_admin_password_length
+/// when that is the rule the password broke (an admin's or developer's),
+/// else min_password_length.
+pub fn too_short_count(
+    settings: &crate::site_settings::SiteSettings,
+    admin: bool,
+    password: &str,
+) -> Result<i64, AppError> {
+    let min_admin = settings.get("min_admin_password_length")?.to_i();
+    Ok(if admin && (password.chars().count() as i64) < min_admin {
+        min_admin
+    } else {
+        settings.get("min_password_length")?.to_i()
+    })
+}
+
 /// `UserPassword::TARGET_PASSWORD_ALGORITHM`
 pub const PASSWORD_ALGORITHM: &str = "$pbkdf2-sha256$i=600000,l=32$";
 

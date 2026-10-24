@@ -93,6 +93,14 @@ script that reads window.moment and window.Chart, so both load before it.
               admin_<digest>.css a reference page links and strip the same
               two things.
 
+  wizard.css  Discourse's wizard stylesheet as Rails compiles it at the
+              vendored commit (app/assets/stylesheets/wizard.scss, served
+              as /stylesheets/wizard_<digest>.css on the finish
+              installation page), up to the fonts Stylesheet::Importer
+              appends (from `.body-font-arial`), which the port serves as
+              /assets/wizard_fonts.css, and less its source map comment.
+              Fetched the same way as admin.css.
+
   discourse-solved-admin.css  discourse-solved's admin stylesheet as Rails
               compiles it (its `:admin` assets, dashboard-support.scss and
               report-related-items.scss, served as

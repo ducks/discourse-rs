@@ -2244,7 +2244,7 @@ have handlers now.
     (user_updater.rs's REFUSED; the date of birth is
     discourse-cakeday's, 202), user custom fields with several values
     (current_user.rs:467; routes/groups.rs:1122; review_list.rs:1411),
-    clearing the login hint (user_updater.rs:911), the profile page's
+    the profile page's
     public user fields (87b), user tips and redirected_to_top
     (current_user.rs:1203,1226), view_user_route profile-hidden
     (routes/users.rs:673), setting another user's topic notification
@@ -3418,9 +3418,10 @@ route table has been made, so this list may be short.
     as BuildCategoryRoute does; one whose parent Site leaves out (a hidden
     grandparent), or found by lazy loading, is refused, as Ember's
     titleToken throws there. Refused, not ported: a theme's custom
-    homepage (and custom_homepage_crawler_route), finish_installation
-    while has_login_hint, and `?format=` other than json or html (Rails
-    406s rss; markdown not ported)
+    homepage (and custom_homepage_crawler_route) and `?format=` other
+    than json or html (Rails 406s rss; markdown not ported);
+    finish_installation while has_login_hint is served since
+    feat/setup-command
 260. ~~`feat/theme-html-fields`~~ (done) S: the theme's html fields drawn
     into the pages (theme_html.rs): Theme.lookup_field over the default
     theme and its enabled components (transform_ids), each theme's common
@@ -5198,6 +5199,22 @@ could put behind Caddy and leave running.
 - [x] Deploy: systemd unit, Caddy snippet and `make install` (`deploy/`),
       a static binary attached to each date-versioned release; the env
       file needs DISCOURSE_SECRET_KEY_BASE (README: Deploying)
+- [x] Fresh install: `discourse-rs setup` loads the vendored schema and
+      what db:seed creates (seed/clean_install.sql, `scripts/snapshot-dv
+      --clean`) into an empty database in one transaction, with the
+      site-dependent and random parts of db:seed made for the site
+      (VAPID keys and push_api_secret_key, also made at start when
+      missing, notification_email, the system users' passwords, the login
+      hint); `discourse-rs admin create` (rake admin:create); the NixOS
+      module runs both, the admin's password from a systemd credential.
+      GlobalSetting's generated secret_key_base is kept in the database
+      as Rails keeps it in Redis. The `discourse-rs-fresh-site` stopgap is
+      gone
+- [x] The finish installation page (FinishInstallationController: index,
+      the front page while has_login_hint, register with the developer
+      emails, confirm-email, resend-email), make_developer_admin at login
+      and clear_global_notice_if_needed. Not ported: its Discourse ID
+      setup (DISCOURSE_SKIP_EMAIL_SETUP)
 - [x] Bench harness: `make bench` and `make bench-startup` (BENCH.md has
       the runs and the caveats); a production-mode Discourse reference is
       still needed for numbers that mean something

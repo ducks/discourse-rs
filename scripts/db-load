@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Create a database from the vendored Discourse schema
-# (vendor/discourse/db/structure.sql), then apply seed/*.sql in order: the
-# rows Discourse's db/fixtures create on a fresh install.
+# (vendor/discourse/db/structure.sql), then load seed/fresh_install.sql: the
+# parity fixture, a dv agent's development database with its test users
+# and topics. A real site is made with `discourse-rs setup` instead, from
+# seed/clean_install.sql.
 #
 # Refuses to touch an existing database unless --force is given, in which
 # case it is dropped and recreated. Connection settings come from the usual
@@ -38,9 +40,7 @@ fi
 # do; test databases are copies of this one and inherit it.
 createdb --template=template0 --locale=en_US.UTF-8 "$db"
 psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$schema" -o /dev/null
-for seed in "$root"/seed/*.sql; do
-  psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$seed" -o /dev/null
-done
+psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/seed/fresh_install.sql" -o /dev/null
 
 tables="$(psql -X -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
 versions="$(psql -X -d "$db" -Atc "SELECT count(*) FROM schema_migrations")"

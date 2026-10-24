@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage {
   inherit (manifest.package) version;
 
   # What the build reads, so editing docs or parity goldens doesn't
-  # rebuild it. tests/ is there for Cargo.toml's [[test]] target; seed/ is
-  # installed for a fresh site's database.
+  # rebuild it. tests/ is there for Cargo.toml's [[test]] target; seed/ for
+  # the clean install `discourse-rs setup` embeds.
   src = fs.toSource {
     root = ../.;
     fileset = fs.unions [
@@ -42,13 +42,10 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = ../Cargo.lock;
 
-  # The release workflow's binary, and the tool the NixOS module secures
-  # a fresh site's seed with; src/bin/parity.rs is a dev tool.
+  # The release workflow's binary; src/bin/parity.rs is a dev tool.
   cargoBuildFlags = [
     "--bin"
     "discourse-rs"
-    "--bin"
-    "discourse-rs-fresh-site"
   ];
 
   # cargo-auditable would wrap rustc for build.rs's nested wasm cargo too,
@@ -58,12 +55,11 @@ rustPlatform.buildRustPackage {
   # The tests need Postgres: the VM test and CI run them.
   doCheck = false;
 
-  # The schema and seeds scripts/db-load loads, for a fresh site's
-  # database (the NixOS module's discourse-rs-db-init).
+  # The vendored schema, for restoring a backup by hand (the binary embeds
+  # it, and `discourse-rs setup` loads it with the clean install's seed).
   postInstall = ''
     install -Dm644 vendor/discourse/db/structure.sql \
       $out/share/discourse-rs/db/structure.sql
-    install -Dm644 -t $out/share/discourse-rs/seed seed/*.sql
     install -Dm644 vendor/discourse/DISCOURSE_REF \
       $out/share/discourse-rs/DISCOURSE_REF
   '';

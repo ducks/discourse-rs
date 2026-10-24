@@ -52,6 +52,11 @@ pub fn user_agent() -> String {
     )
 }
 
+/// The vendored structure.sql, which `discourse-rs setup` loads.
+pub fn structure_sql() -> &'static str {
+    STRUCTURE_SQL
+}
+
 /// Schema versions listed in the trailing `INSERT INTO schema_migrations`
 /// block of structure.sql, one `('20120311163914'),` per line.
 pub fn expected_versions() -> Vec<&'static str> {

@@ -1,5 +1,5 @@
 mod about;
-mod accounts;
+pub(crate) mod accounts;
 mod admin_advanced;
 mod admin_api_keys;
 mod admin_badges;
@@ -52,6 +52,7 @@ mod drafts;
 mod email;
 mod emojis;
 mod external_uploads;
+mod finish_installation;
 mod group_membership;
 mod groups;
 mod hashtags;
@@ -1680,6 +1681,24 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/config/design-wizard.json",
             get(wizard::design_wizard).put(wizard::update_design_wizard),
         )
+        // FinishInstallationController
+        .route("/finish-installation", get(finish_installation::index))
+        .route(
+            "/finish-installation/register",
+            get(finish_installation::register_form).post(finish_installation::register),
+        )
+        .route(
+            "/finish-installation/redirect-discourse-id",
+            get(finish_installation::redirect_discourse_id),
+        )
+        .route(
+            "/finish-installation/confirm-email",
+            get(finish_installation::confirm_email),
+        )
+        .route(
+            "/finish-installation/resend-email",
+            put(finish_installation::resend_email).post(finish_installation::resend_email),
+        )
         .route("/wizard", get(wizard::index))
         .route("/wizard.json", get(wizard::index))
         .route(
@@ -2649,6 +2668,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/login.js", get(asset))
         .route("/assets/user-invited.js", get(asset))
         .route("/assets/admin.css", get(asset))
+        .route("/assets/wizard.css", get(asset))
         .route("/assets/discourse-solved-admin.css", get(asset))
         .route("/assets/admin.js", get(asset))
         .route("/assets/admin-dashboard.js", get(asset))
