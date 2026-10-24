@@ -663,6 +663,9 @@
 
   Discourse.chatDrawer = {
     fetchRoute: fetchRoute,
+    // router.transitionTo for chat-new-message.js: a channel opens in the
+    // drawer when it is preferred, else in full-page chat.
+    transitionTo: transitionTo,
     hidePresence: function () {
       return config().hidePresence === "true";
     },

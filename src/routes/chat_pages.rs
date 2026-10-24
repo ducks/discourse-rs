@@ -383,35 +383,19 @@ pub async fn browse_more(
 /// GET /chat/c/:slug/:id and /chat/c/:slug/:id/:message_id: the channel
 /// (withChatChannel: one the member can't open goes back to /chat, a
 /// wrong slug to the channel's own).
-pub async fn channel(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-    headers: HeaderMap,
-    Path(params): Path<std::collections::HashMap<String, String>>,
-) -> Result<Response, AppError> {
-    let mut conn = state.pool.acquire().await?;
-    let settings = match gate(&state, &mut conn, &guardian, false).await? {
-        Ok(settings) => settings,
-        Err(response) => return Ok(response),
-    };
-    let base_path = state.config.globals.relative_url_root();
-    let get = |name: &str| params.get(name).cloned();
-    let slug = get("slug").unwrap_or_default();
-    let id = get("id").unwrap_or_default();
-    let message_id = get("message_id");
-    let mut cx = context(&state, &mut conn, &settings, &guardian);
-    let channel = match cx.find_joinable(&id).await? {
-        Found::Channel(channel) => channel,
-        Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
-    };
-    // slugifiedTitle: a DM has no slug; its title (for the viewer) is
-    // slugified, and titles the page without the channel's "#".
+/// The channel's slugifiedTitle (its route's slug) and, for a DM, its
+/// title for the viewer: a DM has no slug, so its title is slugified (and
+/// titles the page without the channel's "#").
+async fn slugified_title(
+    cx: &mut Context<'_>,
+    channel: &crate::plugins::chat::channels::ChannelRow,
+) -> Result<(String, Option<String>), AppError> {
     let dm_title = if channel.chatable_type == "DirectMessage" {
         let title = match &channel.name {
             Some(name) => name.clone(),
             None => {
                 let dm = cx.direct_message(channel.chatable_id).await?;
-                cx.dm_title(&channel, &dm)?
+                cx.dm_title(channel, &dm)?
                     .as_str()
                     .map(str::to_string)
                     .ok_or(crate::Unsupported(
@@ -434,6 +418,124 @@ pub async fn channel(
             .filter(|s| !s.is_empty())
             .ok_or(crate::Unsupported("chat channels without a slug"))?,
     };
+    Ok((own_slug, dm_title))
+}
+
+/// GET /chat/new-message: ChatNewMessageRoute's beforeModel on a page
+/// load. With `channel_id` or `channel` (a slug: the member's channel,
+/// else a public one) it goes to that channel, or to /chat when there is
+/// none; with `recipients` it finds or creates the direct message with
+/// them (chat.upsertDmChannel, through Chat::CreateDirectMessageChannel)
+/// and goes to it; with neither it goes to /chat, as a page load has no
+/// page to open the new message modal over (static/js/chat-new-message.js
+/// opens it for a link followed in the app). The query is read as the
+/// router reads it.
+pub async fn new_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let query: std::collections::HashMap<String, String> =
+        url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+            .into_owned()
+            .collect();
+    let param = |name: &str| query.get(name).filter(|v| !v.is_empty()).cloned();
+    // #seedDraft: the message goes into the channel's draft in the
+    // browser, never saved.
+    if param("message").is_some() {
+        return Err(crate::Unsupported(
+            "chat's /chat/new-message with a message (a draft seeded in the browser)",
+        )
+        .into());
+    }
+    let to_channel = |slug: String, id: i64| format!("{base_path}/chat/c/{slug}/{id}");
+    if param("channel_id").is_some() || param("channel").is_some() {
+        let mut cx = context(&state, &mut conn, &settings, &guardian);
+        // #findChannel: by id, else by slug.
+        let id = match param("channel_id") {
+            Some(id) => Some(id),
+            None => sqlx::query_scalar::<_, i64>(
+                "SELECT id FROM chat_channels WHERE slug = $1 AND deleted_at IS NULL ORDER BY id LIMIT 1",
+            )
+            .bind(param("channel"))
+            .fetch_optional(&mut *cx.conn)
+            .await?
+            .map(|id| id.to_string()),
+        };
+        let found = match id {
+            Some(id) => cx.find_joinable(&id).await?,
+            None => Found::NotFound,
+        };
+        return Ok(match found {
+            Found::Channel(channel) => {
+                let (slug, _) = slugified_title(&mut cx, &channel).await?;
+                redirect(to_channel(slug, channel.id))
+            }
+            Found::NotFound | Found::Forbidden => redirect(format!("{base_path}/chat")),
+        });
+    }
+    let Some(recipients) = param("recipients") else {
+        return Ok(redirect(format!("{base_path}/chat")));
+    };
+    use crate::plugins::chat::dm_create::{Outcome, Params};
+    let params = Params {
+        name: None,
+        target_usernames: recipients.split(',').map(str::to_string).collect(),
+        target_groups: Vec::new(),
+        upsert: true,
+    };
+    drop(conn);
+    let mut tx = state.pool.begin().await?;
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    match cx.create_direct_message_channel(&params).await? {
+        Outcome::Created(body) => {
+            let id = body["channel"]["id"].as_i64().ok_or(crate::Unsupported(
+                "a direct message channel created without an id",
+            ))?;
+            let found = cx.find_joinable(&id.to_string()).await?;
+            let Found::Channel(channel) = found else {
+                return Err(crate::Unsupported("a direct message channel the member can't open").into());
+            };
+            let (slug, _) = slugified_title(&mut cx, &channel).await?;
+            tx.commit().await?;
+            Ok(redirect(to_channel(slug, id)))
+        }
+        // popupAjaxError over the chat page, the route left waiting.
+        Outcome::NotFound | Outcome::Refused(_) | Outcome::Unprocessable(_) => Err(crate::Unsupported(
+            "chat's /chat/new-message when the direct message can't be created (popupAjaxError)",
+        )
+        .into()),
+    }
+}
+
+pub async fn channel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    Path(params): Path<std::collections::HashMap<String, String>>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let get = |name: &str| params.get(name).cloned();
+    let slug = get("slug").unwrap_or_default();
+    let id = get("id").unwrap_or_default();
+    let message_id = get("message_id");
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let channel = match cx.find_joinable(&id).await? {
+        Found::Channel(channel) => channel,
+        Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
+    };
+    let (own_slug, dm_title) = slugified_title(&mut cx, &channel).await?;
     let target = match &message_id {
         None => None,
         Some(m) => match m.parse::<i64>() {

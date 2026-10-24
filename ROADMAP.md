@@ -127,6 +127,10 @@ Blockers, a scripted walk-through would hit them:
 - [x] A member couldn't start a private message from a profile, the
   messages page or /new-message (the rehearsal's step 10):
   feat/message-composers (282), done.
+- [x] A member couldn't start a chat DM: the drawer's "Start a
+  conversation", the sidebar's "Start DM or group chat"
+  (/chat/new-message answered 405) and the profile's Chat button did
+  nothing (the rehearsal's step 15): feat/message-composers (222), done.
 
 Visible if clicked, avoid them in a scripted demo:
 
@@ -4188,8 +4192,7 @@ route table has been made, so this list may be short.
     280a. `fix/chat-dm-thread-pages-rest` S: the threads list with
     threads (UserThreads' rows, ThreadPreview, the load more; refused at
     plugins/chat/view.rs threads_route and routes/chat.rs me_threads,
-    with 160's threads), the Start a conversation button's new message
-    modal (222), the DM list's filtered empty state
+    with 160's threads), the DM list's filtered empty state
     (ChatSidebarChannelListFilterEmptyState, refused), long press and
     swipe on a row (99), the filter toggle's and list options' menus
     (99). On rs-ref-a's headless Chromium `(hover: none)` matches on
@@ -4363,12 +4366,54 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     log_entity_export, with 200); the category editor's Chat tab
     (category_edit_view.rs:369). Drawing webhook messages stays with 162
     (plugins/chat/messages.rs:598)
-222. `feat/chat-new-message` M: /chat/new-message and the new message
-    modal (the message creator's chatable search, new group, add
-    members), the Cmd/Ctrl+K quick palette, the user card's and
-    profile's Chat buttons (user_card_view.rs:338;
-    user_profile_view.rs:485), the browse empty state's button
-    (plugins/chat/page.rs:1705)
+222. ~~`feat/chat-new-message`~~ (done, as feat/message-composers) M:
+    /chat/new-message answered 405 and the drawer's "Start a
+    conversation", the sidebar's "Start DM or group chat" and the
+    profile's and user card's Chat buttons did nothing (the demo
+    rehearsal's step 15). Now the new message modal
+    (static/js/chat-new-message.js: ChatModalNewMessage, DModal
+    --quick-palette without its header, over MessageCreator): the search
+    mode lists "New group chat" (chatGuardian.canUseGroupChat) and the
+    member's channels as ChatablesLoader preloads them (from
+    /chat/api/me/channels: followed public channels by slug, then DMs by
+    activity, starred first, a one-person DM as its user), searches GET
+    /chat/api/chatables as typed (INPUT_DELAY), sorts as sortChatables
+    and draws ChatableUser, ChatableGroup and Channel with their unread
+    indicators and disabled warnings; arrows, Enter, Shift+Enter or
+    Shift+click (a new group with the item), hover and the cancel button
+    as ListHandler and List do. A user opens the DM with them
+    (upsertDmChannel: POST /chat/api/direct-message-channels with
+    target_usernames[], an empty target_groups and name, upsert), a
+    channel opens, a group or "New group chat" goes to the new group
+    mode: its name, the members counter against
+    chat_max_direct_message_users, MembersSelector's search without
+    channels, chips with Backspace, arrow and Enter handling, the max
+    members warning, Cancel back to the search, and Create group chat
+    (createDmChannel). The channel opens through chat-drawer.js's
+    transitionTo, in the drawer when it is preferred. Ways in: the DMs
+    list's empty state (drawer and full page), the browse page's empty
+    state, a link to /chat/new-message followed in the app (the
+    sidebar's), Ctrl/Cmd+K outside a field but the chat composer, and the
+    profile's and the user card's Chat buttons (ChatDirectMessageButton,
+    the card closed). GET /chat/new-message (chat_pages.rs) goes as the
+    route leaves a page load: to /chat, to the channel_id or channel
+    asked for (or /chat), or with recipients to the DM with them, found
+    or created through Chat::CreateDirectMessageChannel. Compared with
+    Playwright against rs-ref-d as user1: the modal from the drawer, the
+    search, the DM it opens, the new group (markup and screenshot
+    identical), Ctrl+K and Escape, the page loads of /chat/new-message
+    and the profile's Chat button, with the same requests. Recorded as
+    chat/dm_create_from_new_message_modal (rs-ref-d); tests/plugin_pages.rs.
+    Left, split into 222a.
+    222a. `feat/chat-new-message-rest` S: the channel list options menu
+    (ChatChannelListSidebarMenu: Start DM and Start group chat among its
+    items; the drawer's and full-page lists draw its button without a
+    menu), the add members mode (MODES.add_members, from a channel's
+    members, refused with the info route), and in the modal's rows the
+    presence dot (is-online), user status, avatar flair, unread thread
+    counts (threads, 99), emoji in channel titles; /chat/new-message with
+    a message (#seedDraft, a draft seeded in the browser, refused) or a
+    DM that can't be created (popupAjaxError over the chat page, refused)
 223. `feat/chat-drawer` L: the chat drawer in the below-footer outlet with
     its routes (browse, channel, info, pins, DMs, starred, search), its
     size and resizer, the full page or drawer preference and the header

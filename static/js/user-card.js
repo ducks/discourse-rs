@@ -317,6 +317,8 @@
   Discourse.showUserCard = function (username, target) {
     show(username, target);
   };
+  // card:close, from chat-new-message.js's Chat button.
+  Discourse.closeUserCard = close;
 
   // dom:clean: a new page closes it.
   Discourse.onPage(function () {

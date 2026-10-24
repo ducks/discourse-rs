@@ -338,6 +338,9 @@ pub struct Chrome {
     /// chat-drawer.js's attributes, empty when the viewer can't chat (no
     /// drawer opens).
     pub chat_drawer: String,
+    /// chat-new-message.js's attributes (the new message modal), empty when
+    /// the viewer can't chat.
+    pub chat_new_message: String,
     /// The translations the templates' client strings come from (site
     /// texts included); the vendored files when the page loaded no chrome.
     pub i18n: Option<std::sync::Arc<I18n>>,
@@ -1133,6 +1136,12 @@ impl Site {
                 chat.starred,
             )
             .await?;
+            self.chrome.chat_new_message = crate::plugins::chat::new_message::script_attrs(
+                settings,
+                guardian,
+                &state.i18n,
+                &self.base_path,
+            )?;
         }
         self.chrome.chat_drawer_outlet = crate::plugins::chat::enabled(settings)?;
         if let Some(user_id) = guardian.user_id() {

@@ -1,5 +1,6 @@
 /* DModal as Rails compiles common/base/modal.scss, with the fullscreen
-   table and code modals' rules from modal-overrides.scss (modal.js). */
+   table and code modals' and the quick palette's rules from
+   modal-overrides.scss (modal.js). */
 
 /* modal.scss:295 */
 @keyframes fade {
@@ -388,6 +389,25 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   margin-left: .5em;
   color: var(--secondary-high);
 }
+/* modal-overrides.scss:310: chat's new message modal
+   (static/js/chat-new-message.js). */
+.d-modal.chat-modal-new-message.--quick-palette .chat-message-creator__add-members-header-container {
+  padding-inline: 1rem .5rem;
+}
+/* modal-overrides.scss:314 */
+.d-modal.chat-modal-new-message.--quick-palette .chat-message-creator__add-members-header {
+  align-items: center;
+}
+/* modal-overrides.scss:318 */
+.d-modal.chat-modal-new-message.--quick-palette .chat-message-creator__members {
+  min-height: unset;
+  padding: 0 .5rem;
+}
+/* modal-overrides.scss:323 */
+.d-modal.chat-modal-new-message.--quick-palette .chat-message-creator__add-members__close-btn {
+  margin-top: 0;
+  height: 33px;
+}
 /* modal-overrides.scss:343 */
 .d-modal.fullscreen-table-modal .d-modal__container,
 .d-modal.fullscreen-code-modal .d-modal__container {
@@ -417,4 +437,23 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   max-height: none;
   padding: 1rem;
   white-space: pre;
+}
+/* modal-overrides.scss:573 */
+.d-modal.--quick-palette {
+  align-items: flex-start;
+}
+/* modal-overrides.scss:577 */
+.d-modal.--quick-palette .d-modal__container {
+  width: var(--modal-max-width, 100%);
+  margin-top: 1rem;
+  padding-block: 1rem;
+}
+/* modal-overrides.scss:583 */
+.d-modal.--quick-palette .d-modal__body {
+  padding: 0;
+  gap: 0;
+}
+/* modal-overrides.scss:587 */
+.d-modal.--quick-palette .d-modal__body input {
+  width: auto;
 }

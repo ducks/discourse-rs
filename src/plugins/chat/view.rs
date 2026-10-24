@@ -623,7 +623,7 @@ impl Context<'_> {
             }
         ));
         if dms.is_empty() {
-            // The CTA opens the new message modal (222).
+            // The CTA opens the new message modal (static/js/chat-new-message.js).
             let cta = if can_create {
                 format!(
                     "<div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div>",

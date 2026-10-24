@@ -2048,3 +2048,125 @@ async fn the_system_user_toggles_a_box() {
     assert_eq!(saved, "- [x] first\n- [x] second");
     assert_eq!(editor, Some(-1));
 }
+
+// Chat's new message modal (static/js/chat-new-message.js) rides on every
+// page for a member who can chat, with what the modal reads of the site
+// and the member; a visitor gets neither.
+#[tokio::test]
+async fn every_page_carries_the_new_message_modal() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    for path in ["/latest", "/u/user0/summary", "/chat/browse/open"] {
+        let html = user1.page(path).await;
+        let at = html
+            .find("/assets/chat-new-message.js?v=")
+            .unwrap_or_else(|| panic!("{path}: {html}"));
+        assert!(
+            html.find("/assets/chat-drawer.js?v=").unwrap() < at,
+            "{path}"
+        );
+        let config = &html[at..at + html[at..].find(" defer>").unwrap()];
+        for want in [
+            "&quot;filter&quot;:&quot;Filter&quot;",
+            "&quot;newGroupChat&quot;:&quot;New group chat&quot;",
+            "&quot;addMembers&quot;:&quot;...add more members&quot;",
+            "&quot;groupName&quot;:&quot;Group chat name (optional)&quot;",
+            "&quot;membersOther&quot;:&quot;%{count}/%{max} members&quot;",
+            "&quot;createGroup&quot;:&quot;Create group chat&quot;",
+            "&quot;canGroupChat&quot;:true",
+            "&quot;maxDmUsers&quot;:20",
+            "&quot;canDirectMessage&quot;:true",
+            "&quot;publicChannels&quot;:true",
+            "&quot;prioritizeUsername&quot;:true",
+            "&quot;username&quot;:&quot;user1&quot;",
+        ] {
+            assert!(config.contains(want), "{path}: {want} in {config}");
+        }
+    }
+    assert!(
+        user1
+            .page("/assets/chat-new-message.js")
+            .await
+            .contains("ChatModalNewMessage")
+    );
+    let html = Client {
+        state: st,
+        cookies: Vec::new(),
+        csrf: None,
+    }
+    .page("/latest")
+    .await;
+    assert!(!html.contains("chat-new-message.js"));
+}
+
+// GET /chat/new-message, as ChatNewMessageRoute leaves a page load: to
+// /chat without params, to the channel asked for (by id or slug) or /chat
+// when it can't be opened, and with recipients to the direct message
+// with them, found or created. A seeded draft is refused; a visitor goes
+// where the chat route sends them.
+#[tokio::test]
+async fn chat_new_message_goes_where_the_route_goes() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    assert_eq!(
+        user1.head("/chat/new-message").await,
+        (302, Some("/chat".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/new-message?channel_id=2").await,
+        (302, Some("/chat/c/general/2".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/new-message?channel=general").await,
+        (302, Some("/chat/c/general/2".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/new-message?channel_id=1").await,
+        (302, Some("/chat".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/new-message?channel=nope").await,
+        (302, Some("/chat".into()))
+    );
+    let (status, location) = user1.head("/chat/new-message?recipients=user0").await;
+    assert_eq!(status, 302);
+    let location = location.unwrap();
+    let id: i64 = location
+        .strip_prefix("/chat/c/user0/")
+        .unwrap_or_else(|| panic!("{location}"))
+        .parse()
+        .unwrap();
+    let members: Vec<String> = sqlx::query_scalar(
+        "SELECT u.username FROM chat_channels c \
+         JOIN direct_message_users d ON d.direct_message_channel_id = c.chatable_id \
+         JOIN users u ON u.id = d.user_id WHERE c.id = $1 ORDER BY u.username",
+    )
+    .bind(id)
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(members, ["user0", "user1"]);
+    // Found again, not created twice.
+    assert_eq!(
+        user1.head("/chat/new-message?recipients=user0").await,
+        (302, Some(location.clone()))
+    );
+    assert_eq!(
+        user1
+            .head("/chat/new-message?recipients=user0&message=hello")
+            .await
+            .0,
+        500
+    );
+    let mut visitor = Client {
+        state: st,
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    assert_eq!(
+        visitor.head("/chat/new-message?recipients=user0").await,
+        (302, Some("/latest".into()))
+    );
+}

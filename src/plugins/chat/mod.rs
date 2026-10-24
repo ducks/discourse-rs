@@ -22,6 +22,7 @@ pub mod membership;
 pub mod mentions;
 pub mod messages;
 pub mod modify;
+pub mod new_message;
 pub mod notify;
 pub mod page;
 pub mod presence;
