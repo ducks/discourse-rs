@@ -37,6 +37,7 @@
     {
       packages = forAllSystems (pkgs: rec {
         discourse-rs = pkgs.callPackage ./nix/package.nix { };
+        discourse-assets = pkgs.callPackage ./nix/assets.nix { };
         default = discourse-rs;
       });
     };
