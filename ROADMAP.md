@@ -125,6 +125,19 @@ Blockers, a scripted walk-through would hit them:
   type saves with Rails' validations, and the page's list editors open
   and save them.
 
+Found by the demo rehearsal (scripts/demo-rehearsal), the newcomer path:
+fix/newcomer-path.
+
+- [x] Every newcomer's first post was silenced as a fast typer however
+  slowly it was typed: composer.js sent no typing_duration_msecs or
+  composer_open_duration_msecs, so NewPostManager read 0. Done: the
+  composer keeps Ember's typing time (composer-body's keyUp, a 100ms
+  throttle adding 100ms) and open time (composerOpened while the compose
+  state is open, composerTotalOpened across minimizing and fullscreen),
+  sends both with a new post (_create_serializer; an edit sends neither,
+  as _update_serializer), saves them in the draft (composerTime,
+  typingTime) and takes them back from it as loadDraft does.
+
 Visible if clicked, avoid them in a scripted demo:
 
 - [x] Polls draw a "0 voters" stub and can't be voted on (228):

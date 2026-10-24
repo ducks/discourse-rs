@@ -125,6 +125,8 @@
   // _draft_serializer's fields the composer has.
   function draftData(s) {
     var d = { reply: textarea.value, action: draftAction(s.mode), archetypeId: "regular" };
+    d.composerTime = composerTime(s);
+    d.typingTime = s.typingTime;
     d.original_text = s.originalText === undefined ? null : s.originalText;
     if (s.mode === "create-topic") {
       d.title = title.value;
@@ -375,6 +377,11 @@
     if (found) {
       s.draftSequence = found.sequence;
     }
+    // loadDraft: the draft's composerTime and typingTime carry on.
+    if (draft) {
+      s.composerTotalOpened = draft.composerTime || 0;
+      s.typingTime = draft.typingTime || 0;
+    }
     var editDraft = draft && draft.action === "edit";
     // selectText: a quote opens the reply with it, after the key's draft
     // when there is one (composerOpts.reply), else as the text it
@@ -453,6 +460,10 @@
     }
     state = opts;
     var s = state;
+    // clearState's timings.
+    s.typingTime = 0;
+    s.composerOpened = null;
+    s.composerTotalOpened = 0;
     // The topic as the reply-where dialog shows it, should the reply be
     // saved from another topic's page (composer.topic).
     if (opts.mode === "reply") {
@@ -614,6 +625,47 @@
     composeStateChanged();
   }
 
+  // Composer#composeStateChanged's timing: composerOpened while the
+  // compose state is open (not minimized, not fullscreen), the time spent
+  // so added to composerTotalOpened when it leaves it.
+  function composerTiming() {
+    if (!state) {
+      return;
+    }
+    var oldOpen = state.composerOpened;
+    if (control.classList.contains("open")) {
+      state.composerOpened = oldOpen || Date.now();
+    } else {
+      if (oldOpen) {
+        state.composerTotalOpened = (state.composerTotalOpened || 0) + (Date.now() - oldOpen);
+      }
+      state.composerOpened = null;
+    }
+  }
+
+  // Composer#composerTime
+  function composerTime(s) {
+    var total = s.composerTotalOpened || 0;
+    if (s.composerOpened) {
+      total += Date.now() - s.composerOpened;
+    }
+    return total;
+  }
+
+  // Composer#typing, on composer-body's keyUp: a throttle that adds 100ms
+  // at the end of each 100ms a key was released in.
+  var typingThrottle = null;
+  control.addEventListener("keyup", function () {
+    var s = state;
+    if (!s || typingThrottle) {
+      return;
+    }
+    typingThrottle = setTimeout(function () {
+      typingThrottle = null;
+      s.typingTime = (s.typingTime || 0) + 100;
+    }, 100);
+  });
+
   // The composer's height (model.composerHeight): the default it opened
   // with, then what the grippie set; a minimized composer opens again at it.
   var composerHeight = null;
@@ -622,6 +674,7 @@
   // is padded by the composer's height so its end scrolls clear of it),
   // html.fullscreen-composer while fullscreen.
   function composeStateChanged() {
+    composerTiming();
     root.classList.toggle("composer-open", control.classList.contains("open"));
     root.classList.toggle("fullscreen-composer", control.classList.contains("fullscreen"));
     syncPreviewClass();
@@ -1976,6 +2029,9 @@
           pairs.push(["reply_to_post_number", state.replyTo]);
         }
       }
+      // _create_serializer's typingTime and composerTime.
+      pairs.push(["typing_duration_msecs", state.typingTime || 0]);
+      pairs.push(["composer_open_duration_msecs", composerTime(state)]);
       request = fetch(base + "/posts", {
         method: "POST",
         headers: csrfHeaders(),
