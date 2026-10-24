@@ -2,13 +2,15 @@
 //! without its prompts. The email names the account: an existing one gets
 //! the new password (the task's default answer to "reset the password?"),
 //! otherwise a new one is made with UserNameSuggester's username for the
-//! email. Either way it is activated and granted admin (the default answer
-//! to "grant Admin privileges?"): `grant_admin!`, trust level 1 at least,
-//! its email tokens confirmed and `activate`. Nothing is mailed.
+//! email, or the --username given (an addition: the task takes none).
+//! Either way it is activated and granted admin (the default answer to
+//! "grant Admin privileges?"): `grant_admin!`, trust level 1 at least, its
+//! email tokens confirmed and `activate`. Nothing is mailed.
 //!
-//! The password must meet min_admin_password_length; the task's own save
-//! checks min_password_length unless the email is a developer's, since the
-//! account is not an admin yet when it is saved.
+//! The password goes through UserPasswordValidator as the task's save
+//! runs it: min_admin_password_length only for an account that is already
+//! an admin or a developer email, min_password_length otherwise (the
+//! account is granted admin after the save).
 
 use sqlx::{Acquire, PgConnection};
 
@@ -22,6 +24,9 @@ pub struct NewAdmin<'a> {
     /// The full name, asked when full_name_requirement is
     /// required_at_signup and the account has none.
     pub name: Option<&'a str>,
+    /// A new account's username, validated as a signup's is; without it
+    /// UserNameSuggester's. An existing account keeps its own.
+    pub username: Option<&'a str>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -88,8 +93,9 @@ fn password_message(
     settings: &SiteSettings,
     key: &str,
     password: &str,
+    admin: bool,
 ) -> Result<String, AppError> {
-    let count = crate::accounts::too_short_count(settings, true, password)?;
+    let count = crate::accounts::too_short_count(settings, admin, password)?;
     let label = state
         .i18n
         .t("activerecord.attributes.user.password")
@@ -113,13 +119,22 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
     let given_name = admin.name.map(str::trim).filter(|n| !n.is_empty());
     let mut errors = Vec::new();
 
+    let developer = crate::roles::is_developer(&state.config.globals, &email);
     let (user_id, username, created) = match existing {
         Some((user_id, username)) => {
-            let current_name: Option<String> =
-                sqlx::query_scalar("SELECT name FROM users WHERE id = $1")
+            if let Some(wanted) = admin.username.map(str::trim)
+                && !wanted.eq_ignore_ascii_case(&username)
+            {
+                return Err(AdminCreateError::Invalid(vec![format!(
+                    "An account with this email already exists as {username}; --username names only a new account"
+                )]));
+            }
+            let (current_name, already_admin): (Option<String>, bool) =
+                sqlx::query_as("SELECT name, admin FROM users WHERE id = $1")
                     .bind(user_id)
                     .fetch_one(&mut *tx)
                     .await?;
+            let admin_rules = already_admin || developer;
             let name = given_name.map(str::to_string).or(current_name.clone());
             if name_required && current_name.as_deref().is_none_or(|n| n.trim().is_empty()) {
                 match given_name {
@@ -145,7 +160,7 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
                 &settings,
                 admin.password,
                 &crate::accounts::PasswordOwner {
-                    admin: true,
+                    admin: admin_rules,
                     username: &username,
                     name: name.as_deref(),
                     email: Some(&email),
@@ -154,7 +169,13 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
                         .map(|(h, s, a)| (h.as_str(), s.as_str(), a.as_str())),
                 },
             )? {
-                errors.push(password_message(state, &settings, key, admin.password)?);
+                errors.push(password_message(
+                    state,
+                    &settings,
+                    key,
+                    admin.password,
+                    admin_rules,
+                )?);
             }
             if !errors.is_empty() {
                 return Err(AdminCreateError::Invalid(errors));
@@ -168,18 +189,51 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
             (user_id, username, false)
         }
         None => {
-            let username = crate::user_name_suggester::suggest(
-                &mut tx,
-                &settings,
-                &state.i18n,
-                &[Some(&email)],
-                None,
-                true,
-            )
-            .await?
-            .ok_or_else(|| {
-                AppError::from(Unsupported("an email no username can be suggested for"))
-            })?;
+            let username = match admin.username.map(str::trim).filter(|u| !u.is_empty()) {
+                // As a signup checks it: UsernameValidator's format, then
+                // uniqueness against users and groups.
+                Some(wanted) => {
+                    let label = state
+                        .i18n
+                        .t("activerecord.attributes.user.username")
+                        .unwrap_or("Username");
+                    if let Some(e) =
+                        crate::signup::username_format_error(&settings, &state.i18n, wanted)?
+                    {
+                        errors.push(format!("{label} {e}"));
+                    } else {
+                        let lower =
+                            crate::accounts::normalize_username(wanted).map_err(AppError::from)?;
+                        let taken: bool = sqlx::query_scalar(
+                            "SELECT EXISTS (SELECT 1 FROM users WHERE username_lower = $1) \
+                             OR EXISTS (SELECT 1 FROM groups WHERE lower(name) = $1)",
+                        )
+                        .bind(&lower)
+                        .fetch_one(&mut *tx)
+                        .await?;
+                        if taken {
+                            let unique = state
+                                .i18n
+                                .t("user.username.unique")
+                                .unwrap_or("must be unique");
+                            errors.push(format!("{label} {unique}"));
+                        }
+                    }
+                    wanted.to_string()
+                }
+                None => crate::user_name_suggester::suggest(
+                    &mut tx,
+                    &settings,
+                    &state.i18n,
+                    &[Some(&email)],
+                    None,
+                    true,
+                )
+                .await?
+                .ok_or_else(|| {
+                    AppError::from(Unsupported("an email no username can be suggested for"))
+                })?,
+            };
             if !crate::accounts::valid_email(&email) {
                 let label = state
                     .i18n
@@ -195,14 +249,20 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
                 &settings,
                 admin.password,
                 &crate::accounts::PasswordOwner {
-                    admin: true,
+                    admin: developer,
                     username: &username,
                     name: given_name,
                     email: Some(&email),
                     current: None,
                 },
             )? {
-                errors.push(password_message(state, &settings, key, admin.password)?);
+                errors.push(password_message(
+                    state,
+                    &settings,
+                    key,
+                    admin.password,
+                    developer,
+                )?);
             }
             if !errors.is_empty() {
                 return Err(AdminCreateError::Invalid(errors));

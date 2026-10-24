@@ -29,6 +29,7 @@ pkgs.testers.runNixOSTest {
         environmentFile = "/etc/discourse-rs/env";
         initialAdmin = {
           email = adminEmail;
+          username = "siteowner";
           passwordFile = "/etc/discourse-rs/admin-password";
         };
         caddy.enable = true;
@@ -116,7 +117,7 @@ pkgs.testers.runNixOSTest {
 
       with subtest("no test users: db:seed's and the admin from the credential"):
           users = sql("SELECT string_agg(id || ':' || username, ',' ORDER BY id) FROM users")
-          assert users.startswith("-2:discobot,-1:system,1:"), users
+          assert users == "-2:discobot,-1:system,1:siteowner", users
           assert sql("SELECT count(*) FROM users WHERE id > 0") == "1", users
           assert sql("SELECT count(*) FROM users WHERE username IN ('admin', 'user0', 'user1', 'user2', 'user3') AND id <> 1") == "0"
           assert sql("SELECT email FROM user_emails WHERE user_id = 1 AND \"primary\"") == "admin@forum.test"

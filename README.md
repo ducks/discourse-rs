@@ -518,12 +518,17 @@ A new site:
 3. The first admin. Either `discourse-rs admin create` (as `rake
    admin:create`: a new account for the email, or the existing one with a
    new password, activated and granted admin; no mail needed), the
-   password from a file or standard input, never the command line:
+   password from a file or standard input, never the command line. A new
+   account gets UserNameSuggester's username for the email unless you pass
+   `--username`; the password needs `min_password_length` (10), or
+   `min_admin_password_length` (15) for a developer email, as Rails checks
+   it:
 
    ```bash
    sudo systemd-run --pipe --wait -p User=discourse-rs \
      -p EnvironmentFile=/etc/discourse-rs/env \
-     /usr/local/bin/discourse-rs admin create --email you@example.com < password.txt
+     /usr/local/bin/discourse-rs admin create --email you@example.com \
+       --username you < password.txt
    ```
 
    or put `DISCOURSE_DEVELOPER_EMAILS=you@example.com` in the env file
@@ -628,7 +633,7 @@ Options (all under `services.discourse-rs`):
 | `database.name` | `discourse` | |
 | `database.url` | `null` | an external `DATABASE_URL` without a password (else put it in the env file) |
 | `database.loadSchema` | `true` | `discourse-rs setup` on an empty local database: a fresh site |
-| `initialAdmin.email`, `initialAdmin.passwordFile` | `null` | the first admin, made by `discourse-rs admin create` while there is none; the password file goes in as a systemd credential |
+| `initialAdmin.email`, `initialAdmin.passwordFile`, `initialAdmin.username` | `null` | the first admin, made by `discourse-rs admin create` while there is none; the password file goes in as a systemd credential; the username is optional |
 | `environmentFile` | `null` | secrets: `DISCOURSE_SECRET_KEY_BASE`, `DISCOURSE_SMTP_*`, an external `DATABASE_URL`; also `DISCOURSE_DEVELOPER_EMAILS` |
 | `loginRequired` | `false` | `DISCOURSE_LOGIN_REQUIRED=true`: members only |
 | `inviteOnly` | `false` | `DISCOURSE_INVITE_ONLY=true`: accounts only by invite |
@@ -674,8 +679,8 @@ Bringing up a fresh site:
    topics; no other users), with the site's own VAPID keys,
    push_api_secret_key and system passwords, in one transaction, owned
    by the `discourse-rs` role. Then, while there is no admin, it runs
-   `discourse-rs admin create` for `initialAdmin.email` (at least 15
-   characters of password, read from the credential, never the
+   `discourse-rs admin create` for `initialAdmin.email` (at least 10
+   characters of password, 15 for a developer email, read from the credential, never the
    environment): the account is created, activated and granted admin, as
    `rake admin:create` does. It runs before every start and does
    nothing once the database has tables and an admin. Its log:

@@ -52,6 +52,13 @@ pub fn developer_emails(globals: &GlobalSettings) -> Vec<String> {
         .unwrap_or_default()
 }
 
+/// UserPasswordValidator's `is_developer?(email)`: the email is one of
+/// DISCOURSE_DEVELOPER_EMAILS.
+pub fn is_developer(globals: &GlobalSettings, email: &str) -> bool {
+    let email = email.trim().to_lowercase();
+    developer_emails(globals).contains(&email)
+}
+
 /// `make_developer_admin(user)`, from log_on_user: an active user whose
 /// email is a developer's becomes an admin (how the account registered on
 /// the finish installation page gets its role once activated). True when
