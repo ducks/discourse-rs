@@ -908,7 +908,7 @@ pub(crate) async fn after_save(
 ) -> Result<(), AppError> {
     // clear_global_notice_if_needed
     if active_admin && s.get("has_login_hint")?.truthy() {
-        return Err(Unsupported("clearing the login hint").into());
+        crate::setup::clear_global_notice_if_needed(conn, user_id).await?;
     }
     // badge_grant
     crate::badge_granter::queue_user_change(conn, s, user_id).await?;

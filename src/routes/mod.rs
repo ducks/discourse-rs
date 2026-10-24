@@ -1,5 +1,5 @@
 mod about;
-mod accounts;
+pub(crate) mod accounts;
 mod admin_advanced;
 mod admin_api_keys;
 mod admin_badges;

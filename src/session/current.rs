@@ -55,10 +55,63 @@ impl Keys {
     /// A random secret for a process started without one: sessions work
     /// but die with the process, and Rails cookies are not readable.
     pub fn ephemeral() -> Keys {
-        let mut bytes = [0u8; 64];
-        rand::RngCore::fill_bytes(&mut rand::thread_rng(), &mut bytes);
-        Keys::new(bytes.iter().map(|b| format!("{b:02x}")).collect())
+        Keys::new(random_secret())
     }
+}
+
+/// `SecureRandom.hex(64)`
+fn random_secret() -> String {
+    let mut bytes = [0u8; 64];
+    rand::RngCore::fill_bytes(&mut rand::thread_rng(), &mut bytes);
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// `GlobalSetting::VALID_SECRET_KEY`: 128 lowercase hex digits.
+pub fn valid_secret_key(token: &str) -> bool {
+    token.len() == 128
+        && token
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+}
+
+/// `GlobalSetting::REDIS_SECRET_KEY`, in the port's stand-in for Redis.
+const SECRET_TOKEN_KEY: &str = "SECRET_TOKEN";
+
+/// `GlobalSetting.safe_secret_key_base` without a valid configured secret:
+/// the one kept in Redis (without a namespace, so the default site's
+/// database here), generated and kept on first use, so sessions survive
+/// a restart.
+pub async fn stored_secret_key_base(conn: &mut PgConnection) -> Result<String, sqlx::Error> {
+    let stored: Option<String> =
+        sqlx::query_scalar("SELECT value FROM discourse_rs.persistent_values WHERE key = $1")
+            .bind(SECRET_TOKEN_KEY)
+            .fetch_optional(&mut *conn)
+            .await?;
+    match stored {
+        Some(token) if valid_secret_key(&token) => return Ok(token),
+        Some(_) => {
+            sqlx::query("UPDATE discourse_rs.persistent_values SET value = $2 WHERE key = $1")
+                .bind(SECRET_TOKEN_KEY)
+                .bind(random_secret())
+                .execute(&mut *conn)
+                .await?;
+        }
+        // Another process starting at once may win; its secret is kept.
+        None => {
+            sqlx::query(
+                "INSERT INTO discourse_rs.persistent_values (key, value) VALUES ($1, $2) \
+                 ON CONFLICT (key) DO NOTHING",
+            )
+            .bind(SECRET_TOKEN_KEY)
+            .bind(random_secret())
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    sqlx::query_scalar("SELECT value FROM discourse_rs.persistent_values WHERE key = $1")
+        .bind(SECRET_TOKEN_KEY)
+        .fetch_one(&mut *conn)
+        .await
 }
 
 /// The user a request runs as.

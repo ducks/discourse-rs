@@ -791,7 +791,8 @@ pub async fn password_reset_update(
             Some(uri.path()),
         )
         .await?;
-        crate::roles::bootstrap_first_admin(&mut tx, &state.i18n, user_id).await?;
+        crate::roles::bootstrap_first_admin(&mut tx, &state.i18n, &state.config.globals, user_id)
+            .await?;
         crate::session::token::enforce_session_count_limit(
             &mut tx,
             user_id,
@@ -1316,7 +1317,8 @@ pub async fn perform_account_activation(
         Some(uri.path()),
     )
     .await?;
-    crate::roles::bootstrap_first_admin(&mut tx, &state.i18n, user_id).await?;
+    crate::roles::bootstrap_first_admin(&mut tx, &state.i18n, &state.config.globals, user_id)
+        .await?;
     crate::session::token::enforce_session_count_limit(
         &mut tx,
         user_id,

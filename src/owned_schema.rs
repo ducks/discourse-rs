@@ -1,11 +1,17 @@
 //! The tables discourse-rs owns, in their own `discourse_rs` schema so
 //! Rails never sees them: the job queue (Sidekiq's role), server sessions
-//! and expiring keys (what Rails keeps in Redis). Created at startup.
+//! and expiring keys (what Rails keeps in Redis). Created at startup, and
+//! by `discourse-rs setup` with the schema.
 
-use sqlx::PgPool;
+use sqlx::{PgConnection, PgPool};
 
 pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
     let mut conn = pool.acquire().await?;
+    migrate_conn(&mut conn).await
+}
+
+/// [`migrate`] on a connection (setup runs it in its transaction).
+pub async fn migrate_conn(conn: &mut PgConnection) -> Result<(), sqlx::Error> {
     for statement in [
         "CREATE SCHEMA IF NOT EXISTS discourse_rs",
         "CREATE TABLE IF NOT EXISTS discourse_rs.jobs ( \
@@ -36,6 +42,11 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
            key text PRIMARY KEY, \
            value text NOT NULL, \
            expires_at timestamp NOT NULL)",
+        // Redis values without a TTL, such as GlobalSetting's generated
+        // secret_key_base (SECRET_TOKEN).
+        "CREATE TABLE IF NOT EXISTS discourse_rs.persistent_values ( \
+           key text PRIMARY KEY, \
+           value text NOT NULL)",
         // BadgeGranter's `badge_queue` Redis list: `{type, post_ids |
         // user_ids}` payloads, popped newest first.
         "CREATE TABLE IF NOT EXISTS discourse_rs.badge_queue ( \

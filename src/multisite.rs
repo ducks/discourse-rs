@@ -341,8 +341,26 @@ pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn E
         Ok(n) => tracing::info!(site = db, files = n, "stored the core themes' screenshots"),
         Err(e) => tracing::error!(site = db, "core theme screenshots: {e}"),
     }
+    // db:seed's VAPID keys and push_api_secret_key, which every Rails
+    // deploy runs: made when missing (or the base url moved).
+    match crate::setup::ensure_push_keys(&mut conn, &state.site_setting_defs, &state.config).await {
+        Ok(set) if set.is_empty() => {}
+        Ok(set) => tracing::info!(site = db, settings = ?set, "generated push notification keys"),
+        Err(e) => tracing::error!(site = db, "push notification keys: {e}"),
+    }
     drop(conn);
     Ok(state)
+}
+
+/// A site's state for a one-off task (`discourse-rs admin create`): the
+/// schema verified, the port's own schema and pg-bus, without the
+/// server's start-up work.
+pub async fn connect_task(shared: &Shared, config: Config) -> Result<AppState, Box<dyn Error>> {
+    let pool = connect_pool(&config.site.database_url, 2).await?;
+    crate::schema::verify(&mut *pool.acquire().await?).await?;
+    crate::owned_schema::migrate(&pool).await?;
+    let bus = pg_bus::Bus::start(pool.clone(), crate::bus::config()).await?;
+    Ok(shared.site(pool, bus, config, MemoryStore::default()))
 }
 
 /// A site's shutdown: the tracker's lists kept for the next start (the
