@@ -939,3 +939,239 @@ async fn the_email_logs_pages() {
         );
     }
 }
+
+/// The list settings through PUT /admin/site_settings/:id as Rails saves
+/// them: the value stored (mandatory values kept, disallowed groups
+/// dropped), the staff log with the value as given, the client setting
+/// published with the getter's value only when the stored value changed,
+/// the refresh asked for by `refresh: true`, Rails' refusals, and the types
+/// still not ported refused.
+#[tokio::test]
+async fn list_settings_save_log_and_publish() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let stored = |name: &'static str| {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_scalar::<_, Option<String>>(
+                "SELECT value FROM site_settings WHERE name = $1",
+            )
+            .bind(name)
+            .fetch_optional(&pool)
+            .await
+            .unwrap()
+            .flatten()
+        }
+    };
+    let logs = |name: &'static str| {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_as::<_, (Option<String>, Option<String>)>(
+                "SELECT previous_value, new_value FROM user_histories \
+                 WHERE action = 3 AND subject = $1 ORDER BY id",
+            )
+            .bind(name)
+            .fetch_all(&pool)
+            .await
+            .unwrap()
+        }
+    };
+    let from = st.bus.now().await.unwrap();
+
+    // A file types list: client and refresh.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/authorized_extensions",
+            "authorized_extensions=jpg%7Cpng%7Cmp4",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "{body}");
+    assert_eq!(
+        stored("authorized_extensions").await.as_deref(),
+        Some("jpg|png|mp4")
+    );
+    assert_eq!(
+        logs("authorized_extensions").await,
+        vec![(
+            Some("jpg|jpeg|png|gif|heic|heif|webp|avif|svg|jxl".to_string()),
+            Some("jpg|png|mp4".to_string())
+        )]
+    );
+
+    // A group list: the mandatory groups kept in front, the disallowed
+    // one dropped, the value as given in the log.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/tag_topic_allowed_groups.json",
+            "tag_topic_allowed_groups=4%7C11",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "{body}");
+    assert_eq!(
+        stored("tag_topic_allowed_groups").await.as_deref(),
+        Some("1|2|11")
+    );
+    // The same stored value again: logged, not published.
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/tag_topic_allowed_groups.json",
+            "tag_topic_allowed_groups=11",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    assert_eq!(
+        logs("tag_topic_allowed_groups").await,
+        vec![
+            (Some("1|2|10".to_string()), Some("4|11".to_string())),
+            (Some("1|2|11".to_string()), Some("11".to_string())),
+        ]
+    );
+
+    let messages =
+        common::bus_messages(&st, from, &["/client_settings", "/global/asset-version"]).await;
+    let seen: Vec<(String, serde_json::Value)> = messages
+        .iter()
+        .map(|m| (m.channel.clone(), m.data.clone()))
+        .collect();
+    let client = |name: &str, value: &str| {
+        (
+            "/client_settings".to_string(),
+            serde_json::json!({ "name": name, "value": value, "scoped_to": null }),
+        )
+    };
+    let refresh = (
+        "/global/asset-version".to_string(),
+        serde_json::json!("clobber"),
+    );
+    assert_eq!(
+        seen,
+        vec![
+            client("authorized_extensions", "jpg|png|mp4"),
+            refresh.clone(),
+            client("tag_topic_allowed_groups", "1|2|11"),
+            refresh.clone(),
+            refresh,
+        ],
+        "{messages:?}"
+    );
+
+    // Rails' refusals: a choice the list lacks, a validator's message.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/share_links",
+            "share_links=twitter%7Cmyspace",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(body, r#"{"errors":["'myspace' is an invalid choice."]}"#);
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/blocked_email_domains",
+            "blocked_email_domains=*.example.org",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        body,
+        r#"{"errors":["blocked_email_domains: Must not include * or ? characters."]}"#
+    );
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/anonymous_posting_allowed_groups",
+            "anonymous_posting_allowed_groups=",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        body,
+        r#"{"errors":["anonymous_posting_allowed_groups: You must specify at least one group for this setting."]}"#
+    );
+
+    // Still refused: an uploaded image list, a list of an enum class.
+    for (name, value) in [
+        ("selectable_avatars", ""),
+        ("content_localization_supported_locales", "en"),
+    ] {
+        let (status, _) = admin
+            .send(
+                Method::PUT,
+                &format!("/admin/site_settings/{name}"),
+                &format!("{name}={value}"),
+                true,
+            )
+            .await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{name}");
+    }
+}
+
+/// The list settings' editors carry what site-settings.js opens them with:
+/// ListSetting's content, allowAny and mandatory values, ValueList's
+/// delimiter and choices, the category list's categories and the tag
+/// list's search.
+#[tokio::test]
+async fn list_setting_editors_carry_their_content() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let page =
+        |filter: &'static str| format!("/admin/site_settings/category/all_results?filter={filter}");
+
+    let (_, html) = admin.page(&page("authorized_extensions")).await;
+    assert!(
+        html.contains("data-list-value=\"jpg|jpeg|png|gif|heic|heif|webp|avif|svg|jxl\""),
+        "{html}"
+    );
+    assert!(html.contains("data-allow-any=\"true\""));
+    assert!(html.contains("data-placeholder=\"Search or create…\""));
+
+    let (_, html) = admin.page(&page("tag_topic_allowed_groups")).await;
+    assert!(html.contains("data-mandatory=\"1|2\""), "{html}");
+    assert!(html.contains("data-allow-any=\"false\""));
+    assert!(
+        html.contains("{&quot;id&quot;:&quot;11&quot;,&quot;name&quot;:&quot;trust_level_1&quot;}")
+    );
+    // The disallowed group is not offered.
+    assert!(!html.contains("&quot;id&quot;:&quot;4&quot;"));
+
+    let (_, html) = admin.page(&page("blocked_onebox_domains")).await;
+    assert!(html.contains("data-refuse=\"?*\""), "{html}");
+
+    let (_, html) = admin.page(&page("allowed_link_domains")).await;
+    assert!(
+        html.contains("<div class=\"value-list\" data-delimiter=\"|\" data-choices=\"[]\""),
+        "{html}"
+    );
+    let (_, html) = admin.page(&page("default_avatars")).await;
+    assert!(
+        html.contains("<div class=\"value-list\" data-delimiter=\"&#10;\""),
+        "{html}"
+    );
+
+    let (_, html) = admin.page(&page("digest_suppress_categories")).await;
+    assert!(
+        html.contains("class=\"select-kit multi-select category-selector\""),
+        "{html}"
+    );
+    assert!(html.contains("&quot;name&quot;:&quot;Uncategorized&quot;"));
+
+    let (_, html) = admin.page(&page("digest_suppress_tags")).await;
+    assert!(
+        html.contains("class=\"select-kit multi-select tag-chooser\""),
+        "{html}"
+    );
+    assert!(html.contains("data-tag-search=\""));
+    assert!(html.contains("data-placeholder=\"Optional tags…\""));
+}

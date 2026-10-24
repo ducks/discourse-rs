@@ -1,0 +1,74 @@
+{
+  "name": "list_group_at_least_one",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/anonymous_posting_allowed_groups.json",
+      "params": {
+        "anonymous_posting_allowed_groups": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:55.833198",
+  "transaction_started_at": "2026-10-24T00:42:53.634791",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "anonymous_posting_allowed_groups: You must specify at least one group for this setting."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Ph+vm7fU5MEJqWQUx9Lplmz9Uc0=",
+            "created_at": "2026-10-24T00:42:54.456017",
+            "rotated_at": "2026-10-24T00:42:54.448788",
+            "updated_at": "2026-10-24T00:42:54.456017",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Ph+vm7fU5MEJqWQUx9Lplmz9Uc0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:55.843462",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Ph+vm7fU5MEJqWQUx9Lplmz9Uc0=",
+            "created_at": "2026-10-24T00:42:54.456017",
+            "rotated_at": "2026-10-24T00:42:54.448788",
+            "updated_at": "2026-10-24T00:42:54.456017",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Ph+vm7fU5MEJqWQUx9Lplmz9Uc0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "8fdc801e8a24eb73e754254c79f534ff873ae4accd4685f1f304817b408396b7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

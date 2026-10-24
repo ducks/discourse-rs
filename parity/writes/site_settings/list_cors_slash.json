@@ -1,0 +1,74 @@
+{
+  "name": "list_cors_slash",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/cors_origins.json",
+      "params": {
+        "cors_origins": "https://a.example.org/"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:27.399194",
+  "transaction_started_at": "2026-10-24T00:42:25.158324",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You should not add the trailing slash (/) to CORS origins."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Lw97nQmGgqYEO5/nAR54lg/tP+M=",
+            "created_at": "2026-10-24T00:42:26.203868",
+            "rotated_at": "2026-10-24T00:42:26.20164",
+            "updated_at": "2026-10-24T00:42:26.203868",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Lw97nQmGgqYEO5/nAR54lg/tP+M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:27.409599",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Lw97nQmGgqYEO5/nAR54lg/tP+M=",
+            "created_at": "2026-10-24T00:42:26.203868",
+            "rotated_at": "2026-10-24T00:42:26.20164",
+            "updated_at": "2026-10-24T00:42:26.203868",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Lw97nQmGgqYEO5/nAR54lg/tP+M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "83ec9b77f49305898172cbb57bc1841670d6f34e0cdcd042abd3faf411f680fb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

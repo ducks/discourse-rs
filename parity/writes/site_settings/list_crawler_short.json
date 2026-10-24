@@ -1,0 +1,74 @@
+{
+  "name": "list_crawler_short",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/slow_down_crawler_user_agents.json",
+      "params": {
+        "slow_down_crawler_user_agents": "ab"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:33.58378",
+  "transaction_started_at": "2026-10-24T00:42:31.004271",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "User agents must be at least 3 characters long to avoid accidentally rate-limiting legitimate users."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Fb7FJZhX9ZvuIozBLcDFeTZCNCA=",
+            "created_at": "2026-10-24T00:42:32.127454",
+            "rotated_at": "2026-10-24T00:42:32.125286",
+            "updated_at": "2026-10-24T00:42:32.127454",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Fb7FJZhX9ZvuIozBLcDFeTZCNCA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:33.59511",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Fb7FJZhX9ZvuIozBLcDFeTZCNCA=",
+            "created_at": "2026-10-24T00:42:32.127454",
+            "rotated_at": "2026-10-24T00:42:32.125286",
+            "updated_at": "2026-10-24T00:42:32.127454",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Fb7FJZhX9ZvuIozBLcDFeTZCNCA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "9c567701838d3971222ca04589883237d290ede17aaa31b2cee0535165e3146d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

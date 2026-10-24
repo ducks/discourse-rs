@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/share_quote_buttons.json",
+      "params": {
+        "share_quote_buttons": "twitter|facebook"
+      }
+    }
+  ]
+}

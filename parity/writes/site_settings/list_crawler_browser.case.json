@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/slow_down_crawler_user_agents.json",
+      "params": {
+        "slow_down_crawler_user_agents": "bingbot|firefox"
+      }
+    }
+  ]
+}

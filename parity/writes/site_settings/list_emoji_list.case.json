@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/default_emoji_reactions.json",
+      "params": {
+        "default_emoji_reactions": "heart|tada|+1"
+      }
+    }
+  ]
+}

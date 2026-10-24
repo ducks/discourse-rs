@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/blocked_email_domains.json",
+      "params": {
+        "blocked_email_domains": "spam.com|*.evil.com"
+      }
+    }
+  ]
+}

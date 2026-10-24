@@ -1,0 +1,74 @@
+{
+  "name": "list_choices_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/share_links.json",
+      "params": {
+        "share_links": "twitter|myspace|friendster"
+      }
+    }
+  ],
+  "started_at": "2026-10-24T00:42:21.910345",
+  "transaction_started_at": "2026-10-24T00:42:20.007855",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "'myspace,friendster' are invalid choices."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 381,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "L68I5vsk7uDPhpf/HLEQP6jZuNQ=",
+            "created_at": "2026-10-24T00:42:20.746817",
+            "rotated_at": "2026-10-24T00:42:20.74489",
+            "updated_at": "2026-10-24T00:42:20.746817",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "L68I5vsk7uDPhpf/HLEQP6jZuNQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 381,
+            "seen_at": "2026-10-24T00:42:21.921949",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "L68I5vsk7uDPhpf/HLEQP6jZuNQ=",
+            "created_at": "2026-10-24T00:42:20.746817",
+            "rotated_at": "2026-10-24T00:42:20.74489",
+            "updated_at": "2026-10-24T00:42:20.746817",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "L68I5vsk7uDPhpf/HLEQP6jZuNQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "349c2d0270793393643d4aeaca03aed6647841a0ee0b7d2458696574195cef19",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

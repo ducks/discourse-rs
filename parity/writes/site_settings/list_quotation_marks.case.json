@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/markdown_typographer_quotation_marks.json",
+      "params": {
+        "markdown_typographer_quotation_marks": "a|b"
+      }
+    }
+  ]
+}

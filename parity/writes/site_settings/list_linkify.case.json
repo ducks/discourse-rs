@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/markdown_linkify_tlds.json",
+      "params": {
+        "markdown_linkify_tlds": "com|*"
+      }
+    }
+  ]
+}

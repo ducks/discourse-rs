@@ -517,6 +517,34 @@ impl Definitions {
         self.parsed.index.get(name).map(|&i| &self.parsed.list[i])
     }
 
+    /// `type_supervisor.dependencies.order`: TSort over the settings as
+    /// declared, each after the settings it `depends_on`; each name's index.
+    pub fn dependency_order(&self) -> HashMap<&str, usize> {
+        fn visit<'a>(
+            defs: &'a Definitions,
+            name: &'a str,
+            order: &mut HashMap<&'a str, usize>,
+            seen: &mut HashSet<&'a str>,
+        ) {
+            if !seen.insert(name) {
+                return;
+            }
+            if let Some(def) = defs.get(name) {
+                for dep in &def.depends_on {
+                    visit(defs, dep, order, seen);
+                }
+            }
+            let next = order.len();
+            order.insert(name, next);
+        }
+        let mut order = HashMap::new();
+        let mut seen = HashSet::new();
+        for def in self.iter() {
+            visit(self, &def.name, &mut order, &mut seen);
+        }
+        order
+    }
+
     /// A setting's place among the definitions (site_settings.yml's order,
     /// then the plugins').
     pub fn position(&self, name: &str) -> Option<usize> {

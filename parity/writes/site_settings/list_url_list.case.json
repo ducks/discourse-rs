@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/default_avatars.json",
+      "params": {
+        "default_avatars": "https://a.example.org/x.png"
+      }
+    }
+  ]
+}

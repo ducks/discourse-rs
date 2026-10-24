@@ -17,7 +17,7 @@ work, so the two together are the count of what is left.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -102,10 +102,12 @@ Blockers, a scripted walk-through would hit them:
   page draws, the lightbox opens, the video placeholder plays (the WebM
   in Playwright's Chromium, which has no H.264), the audio loads, the
   optimized images and og:image are there, and a mention notifies.
-- [ ] The admin's site settings answer 500 saving a list setting such as
-  authorized_extensions (164), so an admin can't allow video or audio
+- [x] The admin's site settings answered 500 saving a list setting such as
+  authorized_extensions (164), so an admin couldn't allow video or audio
   uploads; the demo sites have them set in the database
-  (docs/demo-servers.md).
+  (docs/demo-servers.md): feat/list-settings (164a), done: every list
+  type saves with Rails' validations, and the page's list editors open
+  and save them.
 
 Visible if clicked, avoid them in a scripted demo:
 
@@ -907,12 +909,11 @@ then by what running a forum needs (milestone 6). Briefs:
     modal), uploading a site setting file, the emoji picker on this page,
     the editors of the locale_list, tag_group_list, topic, date and icon
     settings and of the JSON and objects schema settings (their Edit
-    buttons), the List, UrlList and ValueList editing (Ember's ValueList
-    never hands the change back, so it can't be saved there either), the
-    secret list's editing, the uploaded image list's modal, the category,
-    MultiSelect list and tag pickers' dropdowns; saving any list type
-    still hits the server's refusal of list settings
-    (site_setting_update). Left: the category chooser's selected
+    buttons), the secret list's editing, the uploaded image list's
+    modal, the category picker's dropdown and the locale list's chooser;
+    the list editors (ListSetting's MultiSelect, ValueList, the category
+    list's CategorySelector and the tag list's TagChooser) since edit and
+    save in 164a. Left: the category chooser's selected
     category shows its name, not its badge; the font selector's fonts
     are not drawn in their own font), 90g4.
     ~~`feat/admin-shell-groups`~~ (done) S (/admin/groups: the admin
@@ -969,8 +970,9 @@ then by what running a forum needs (milestone 6). Briefs:
     levels, group permissions, site admin, legal, interface, navigation,
     security, spam, developer, rate limits, onebox, files, search,
     experimental and GIFs; a locale list setting drawn as Ember's
-    compact list, whose chooser, as the other list settings', is still
-    refused when opened. Then feat/admin-shell-config-flags: the flags
+    compact list, whose chooser is still refused when opened (the
+    other list settings' open and save since 164a). Then
+    feat/admin-shell-config-flags: the flags
     list with its toggles, edit and its menu's move and delete, the
     settings tab, and the new and edit forms with FormKit's validation,
     counters and the applies-to MultiSelect. Then
@@ -2177,18 +2179,82 @@ have handlers now.
     routes/solved.rs:359), accepted solutions' related items
     without a viewer (reports/counts.rs:1145)
 164. `feat/site-settings-types` L: setting types beyond string, number,
-    bool and enum through PUT /admin/site_settings/:id: lists, uploads,
-    groups, categories, objects (site_setting_update.rs:315,704,718;
-    the /admin/config pages' SiteSetting::Update takes some of them
-    already, 90g6), enum classes, regex and JSON schema validations
-    (:372,826,830,880; setting_enums.rs:128), enabling a bundled plugin
-    the port hasn't started (:451, with 202), change handlers that write
-    and custom validations (:256,264; the setup wizard's title,
-    wizard.rs:345), default_* backfills and their user counts (:270;
-    routes/admin_site_settings.rs:76,172,192; sidebar_backfill.rs:64),
-    deprecated, upcoming and globally shadowed settings
-    (site_setting_update.rs:234,253,273), an archived site (:220).
-    Bulk updates are done (90g3)
+    bool, enum and upload through PUT /admin/site_settings/:id and the
+    /admin/config pages' SiteSetting::Update (the same path). Split into
+    the slices below, in the order an admin is likely to hit them. Bulk
+    updates are done (90g3).
+    164a. ~~`feat/list-settings`~~ (done) M: the list types (list of every
+    list_type, url_list, host_list, value_list, simple_list, emoji_list,
+    category_list, group_list, tag_list) through site_setting_update.rs
+    and site_setting_lists.rs: TypeSupervisor#validate_value's choices
+    for a list that allows no others (Ruby's split, the invalid ones
+    named), the type's validator (a list's StringSettingValidator, a
+    host list's HostListSettingValidator) or the setting's class
+    (AllowedIframes, AtLeastOneGroup, ColorList, CspScriptSrc,
+    EmojiPickerPinnedGroups, MarkdownLinkifyTlds,
+    MarkdownTypographerQuotationMarks, RandomUsernameWordList,
+    RegexpList for regexes both engines take, TopMenu, chat's
+    DirectMessageEnabledGroups, discourse-reactions'
+    ReactionsExcludedFromLike), validate_share_quote_buttons,
+    validate_cors_origins and validate_slow_down_crawler_user_agents;
+    add_override!'s sanitize_field for client lists, mandatory_values
+    and disallowed_groups; the staff log with the value as given; the
+    client setting published with the getter's value only when the
+    stored value changed (site_setting_changed likewise); `refresh:
+    true`'s Discourse.request_refresh! for every type; a bulk update in
+    the settings' dependency order. Rails' Category, Group and Tag
+    lists check no existence, and filter_value's hostnames never apply
+    on this path (HOSTNAME_SETTINGS holds strings, the service passes
+    symbols), so neither does the port. The default_* refusal is now
+    SiteSetting::DEFAULT_USER_PREFERENCES' list (default_emoji_reactions,
+    default_avatars and the like save). The page's editors open and save:
+    ListSetting's MultiSelect for the compact, file types, host and
+    group lists (filter, create, mandatory values read only, GroupList's
+    everyone aliasing, HostList's wildcard refusal), ValueList for the
+    list, url and value lists, the category list's CategorySelector, the
+    tag list's TagChooser (/tags/filter/search). Write cases
+    site_settings/list_*; tests/admin_pages.rs
+    list_settings_save_log_and_publish and
+    list_setting_editors_carry_their_content. Left here: RegexpList's
+    message for a regex Ruby refuses (site_setting_lists.rs:197), the
+    plugins' AssignStatuses, GithubBadgesRepo and discourse-events'
+    validators (:249), the locale list (an enum class, 164d), the
+    mcp_oauth_client_id_metadata_* settings (their change handler
+    revokes clients, 164e), the emoji list's picker.
+    164b. `feat/settings-file-size-and-pickers` M: the other plain types
+    an admin meets on the common pages: file_size_restriction (the files
+    page's sizes), category, topic, locale_enum (default_locale and its
+    handlers), icon, date, datetime, regex, time
+    (site_setting_update.rs:368).
+    164c. `feat/settings-validators` M: the validator classes left
+    (site_setting_update.rs:317): AuthProviderCredentials (the login
+    providers, 12 settings), the username length and unicode ones, the
+    reply by email, SSO and local login ones, the search ones, the
+    selectable avatars, video conversion and upload ones, and the
+    bundled plugins' (discourse-ai's, chat's, voice, events); custom
+    validations (:313; s3, second factor, local logins, backups, secure
+    uploads, image metadata, illegal content flags, anonymous likes).
+    164d. `feat/settings-enum-classes` M: enum classes not recorded
+    (:457; setting_enums.rs:128), lists of an enum class (:347, the
+    content localization locales), list settings whose choices are not
+    recorded (:411), regex and JSON schema validations (:1039).
+    164e. `feat/settings-change-handlers` M: change handlers that write
+    (:305: must_approve_users, emoji_set, slug_generation_method,
+    reviewable priorities, splash_screen_image, simple_email_subject,
+    content_localization_enabled, the MCP client id metadata settings)
+    and the setup wizard's title (wizard.rs:345).
+    164f. `feat/settings-default-backfills` M: default_* backfills and
+    their user counts for the category and tag defaults and the
+    preferences that are not user options (:320;
+    routes/admin_site_settings.rs:78,174,194; sidebar_backfill.rs:64),
+    with validate_default_categories_* and validate_default_tags_*.
+    164g. `feat/settings-uploads-objects` M: uploaded image lists (:363),
+    uploading a file through the page, objects settings (:366), tag
+    group lists (:365).
+    164h. `feat/settings-rest` S: enabling a bundled plugin the port
+    hasn't started (:536, with 202), overriding deprecated settings
+    (:283), upcoming change settings (:302), globally shadowed settings
+    (:323), an archived site (:269).
 165. `feat/reply-by-email-rest` L: bounces, forwarded emails, staged and
     unknown senders, attachments, unsubscribing, likes and notification
     levels by email, group and category addresses (email_in), replies to

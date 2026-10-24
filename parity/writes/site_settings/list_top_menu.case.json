@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/top_menu.json",
+      "params": {
+        "top_menu": "latest|new|top"
+      }
+    }
+  ]
+}

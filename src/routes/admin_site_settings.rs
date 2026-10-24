@@ -66,13 +66,15 @@ pub async fn update(
             truthy(p.get("update_existing_user")),
         )]
     };
+    // before_validation: the settings saved in their dependency order.
+    let mut updates = updates;
+    let order = state.site_setting_defs.dependency_order();
+    updates.sort_by_key(|(name, _, _)| order.get(name.as_str()).copied().unwrap_or(usize::MAX));
     // The backfill only applies to default user preferences.
-    if updates.iter().any(|(name, _, backfill)| {
-        *backfill
-            && name.starts_with("default_")
-            && !site_setting_update::SIDEBAR_DEFAULTS.contains(&name.as_str())
-            && !crate::user_option_defaults::is_user_option(name)
-    }) {
+    if updates
+        .iter()
+        .any(|(name, _, backfill)| *backfill && site_setting_update::preference_not_ported(name))
+    {
         return Err(Unsupported("backfilling user preferences (update_existing_user)").into());
     }
     // One transaction: a setting refused rolls back the ones before it, as

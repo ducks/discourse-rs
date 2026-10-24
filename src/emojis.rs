@@ -326,6 +326,22 @@ fn load_denied(list: &str) -> Vec<String> {
     denied
 }
 
+/// `Emoji.allowed.map(&:group)`: the groups of the standard and custom
+/// emoji the deny list leaves.
+pub fn allowed_groups(settings: &SiteSettings) -> Vec<String> {
+    let emojis = settings.emojis();
+    let standard = STANDARD
+        .iter()
+        .filter(|e| !emojis.is_denied(&e.name))
+        .map(|e| e.group.clone());
+    let custom = emojis
+        .custom
+        .iter()
+        .filter(|e| !emojis.is_denied(&e.name))
+        .map(|e| e.group.clone());
+    standard.chain(custom).collect()
+}
+
 /// `Emoji.grouped`: the allowed emoji (standard, then custom, less the
 /// denied) by group, in order of first appearance, the pinned groups
 /// (emoji_picker_pinned_groups) first.

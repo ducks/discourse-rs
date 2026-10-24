@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/digest_suppress_tags.json",
+      "params": {
+        "digest_suppress_tags": "foo|bar"
+      }
+    }
+  ]
+}
