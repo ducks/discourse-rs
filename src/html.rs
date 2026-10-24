@@ -1296,6 +1296,21 @@ impl Site {
                 max_title_length: settings.get("max_topic_title_length")?.to_i(),
                 dialog_src: crate::assets::url(&self.base_path, "dialog.js"),
                 dialog_strings: dialog_strings(&state.i18n),
+                pm: crate::composer_view::PmUi {
+                    username: guardian
+                        .user()
+                        .map(|u| u.username.clone())
+                        .unwrap_or_default(),
+                    staff: guardian.is_staff(),
+                    // can_send_private_email_messages
+                    allow_emails: settings.get("enable_staged_users")?.truthy()
+                        && guardian
+                            .in_setting_groups(settings, "personal_message_enabled_groups")?
+                        && guardian
+                            .in_setting_groups(settings, "send_email_messages_allowed_groups")?,
+                    // site.can_tag_pms
+                    can_tag_pms: guardian.can_tag_pms(settings)?,
+                },
             },
         );
         self.categories = Some(categories);

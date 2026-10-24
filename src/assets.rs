@@ -575,6 +575,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/search-menu.js"),
     ),
+    (
+        "email-group-user-chooser.js",
+        JS,
+        include_str!("../static/js/email-group-user-chooser.js"),
+    ),
     ("composer.js", JS, include_str!("../static/js/composer.js")),
     (
         "screen-track.js",

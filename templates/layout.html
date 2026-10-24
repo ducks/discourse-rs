@@ -336,6 +336,7 @@
       {%- endif %}
       {%- if !chrome.composer.is_empty() %}
       {{ chrome.composer|safe }}
+      <script src="{{ crate::assets::url(base_path, "email-group-user-chooser.js") }}" defer></script>
       <script src="{{ crate::assets::url(base_path, "composer.js") }}" defer></script>
       {%- endif %}
     </section>

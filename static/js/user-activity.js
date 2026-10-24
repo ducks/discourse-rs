@@ -430,16 +430,12 @@
       return;
     }
     var key = item.dataset.draftKey;
-    if (key.indexOf("new_private_message") === 0) {
-      unported("resuming a message draft (the message composer, 196)");
-      return;
-    }
     if (!window.composer) {
       unported("the composer on this page");
       return;
     }
     window.composer.open({
-      mode: "create-topic",
+      mode: key.indexOf("new_private_message") === 0 ? "private-message" : "create-topic",
       draftKey: key,
       draftSequence: parseInt(item.dataset.draftSequence, 10) || 0,
     });

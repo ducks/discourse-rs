@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "new_private_message_1792832483305",
+        "sequence": 0,
+        "data": "{\"reply\":\"Hello there, this is a message from the composer.\",\"action\":\"privateMessage\",\"archetypeId\":\"private_message\",\"original_text\":null,\"title\":\"A message started from a profile\",\"categoryId\":null,\"tags\":[],\"recipients\":\"user0\"}",
+        "owner": "3ff1837e14034bc490bfd72824c33621",
+        "force_save": "false"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts",
+      "params": {
+        "raw": "Hello there, this is a message from the composer.",
+        "draft_key": "new_private_message_1792832483305",
+        "title": "A message started from a profile",
+        "archetype": "private_message",
+        "target_recipients": "user0"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/drafts.json"
+    }
+  ]
+}

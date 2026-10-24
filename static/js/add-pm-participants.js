@@ -37,174 +37,28 @@
     }
   }
 
+  // The chooser's helpers (email-group-user-chooser.js), looked up when
+  // the modal opens: the layout loads that script deferred.
+  function helpers() {
+    return Discourse.emailGroupUserChooser;
+  }
   function escapeHtml(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+    return helpers().escapeHtml(s);
   }
-
   function icon(name, extra) {
-    return (
-      '<svg class="fa d-icon d-icon-' +
-      name +
-      " svg-icon fa-width-auto" +
-      (extra ? " " + extra : "") +
-      ' svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#' +
-      name +
-      '"></use></svg>'
-    );
+    return helpers().icon(name, extra);
   }
-
-  // lib/utilities' emailValid
-  var EMAIL =
-    /^[a-zA-Z0-9!#$%&'*+\/=?\^_`{|}~\-]+(?:\.[a-zA-Z0-9!#$%&'\*+\/=?\^_`{|}~\-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?$/;
   function emailValid(s) {
-    return EMAIL.test(s);
+    return helpers().emailValid(s);
   }
-
-  // lib/user-search's skipSearch
-  var IGNORE = /([ -⁯⸀-⹿\\'!"#$%&()*,\/:;<=>?\[\]^`{|}~])|\s\s|^\s$|^[^+]*\+[^@]*$/;
   function skipSearch(term, allowEmails) {
-    if (term.indexOf("@") !== -1 && !allowEmails) {
-      return true;
-    }
-    return IGNORE.test(term);
+    return helpers().skipSearch(term, allowEmails);
   }
-
-  function lowerCaseIncludes(string, term) {
-    return !!(string && term && string.toLowerCase().indexOf(term.toLowerCase()) !== -1);
-  }
-
-  // lib/user-search's organizeResults, then EmailGroupUserChooser#search's
-  // items: { id, name, isUser | isGroup | isEmail, avatar_template }.
   function organize(r, term, exclude, allowEmails, limit) {
-    var first = ((term || "").trim().split(/\s/, 1) || [])[0];
-    var users = (r.users || []).filter(function (u) {
-      return exclude.indexOf(u.username) === -1;
-    });
-    users.forEach(function (u) {
-      u.isMetadataMatch = !!first && !lowerCaseIncludes(u.username, first) && !lowerCaseIncludes(u.name, first);
-    });
-    var groups = (r.groups || []).filter(function (g) {
-      return exclude.indexOf(g.name) === -1;
-    });
-    var emails = allowEmails && emailValid(term) ? [{ username: term, isEmail: true }] : [];
-    var lower = function (v) {
-      return v == null ? v : String(v).toLowerCase();
-    };
-    var seenUsers = {};
-    var seenGroups = {};
-    var pickUsers = function (test) {
-      return users.filter(function (u) {
-        if (seenUsers[u.username] || !test(u)) {
-          return false;
-        }
-        seenUsers[u.username] = true;
-        return true;
-      });
-    };
-    var pickGroups = function (test) {
-      return groups.filter(function (g) {
-        if (seenGroups[g.name] || !test(g)) {
-          return false;
-        }
-        seenGroups[g.name] = true;
-        return true;
-      });
-    };
-    var ranked = [].concat(
-      pickUsers(function (u) {
-        return lower(u.username) === lower(first);
-      }),
-      pickGroups(function (g) {
-        return lower(g.name) === lower(first);
-      }),
-      emails,
-      pickUsers(function (u) {
-        return !u.isMetadataMatch && !(first && !lowerCaseIncludes(u.username, first));
-      }),
-      pickGroups(function (g) {
-        return !(first && !lowerCaseIncludes(g.name, first));
-      }),
-      pickUsers(function (u) {
-        return lower(u.name) === lower(first) && !u.isMetadataMatch;
-      }),
-      pickUsers(function (u) {
-        return lowerCaseIncludes(u.name, first) && !u.isMetadataMatch;
-      }),
-      pickGroups(function (g) {
-        return !!g.full_name && lower(g.full_name) === lower(first);
-      }),
-      pickGroups(function (g) {
-        return !!g.full_name && lowerCaseIncludes(g.full_name, first);
-      }),
-      users.filter(function (u) {
-        return u.isMetadataMatch;
-      })
-    );
-    return ranked.slice(0, limit).map(function (item) {
-      if (item.isEmail) {
-        return { id: item.username, isEmail: true };
-      }
-      if (item.username) {
-        return { id: item.username, name: item.name, isUser: true, avatar_template: item.avatar_template };
-      }
-      return { id: item.name, name: item.full_name || item.name, full_name: item.full_name, isGroup: true };
-    });
+    return helpers().organize(r, term, exclude, allowEmails, limit);
   }
-
-  function avatar(template, username) {
-    var root = base();
-    var src = String(template || "").replace("{size}", "24");
-    if (root && src.indexOf(root) !== 0 && src.charAt(0) === "/" && src.charAt(1) !== "/") {
-      src = root + src;
-    }
-    return (
-      '<img alt="" width="24" height="24" src="' +
-      escapeHtml(src) +
-      '" class="avatar" title="' +
-      escapeHtml(username) +
-      '">'
-    );
-  }
-
-  // EmailGroupUserChooserRow, in a select-kit row.
   function row(item, index) {
-    var attrs =
-      'aria-checked="false" role="menuitemradio" data-index="' +
-      index +
-      '"' +
-      (item.name ? ' data-name="' + escapeHtml(item.name) + '"' : "") +
-      ' data-value="' +
-      escapeHtml(item.id) +
-      '"' +
-      (item.name ? ' title="' + escapeHtml(item.name) + '"' : "") +
-      ' tabindex="0" class="select-kit-row email-group-user-chooser-row' +
-      (index === 0 ? " is-highlighted" : "") +
-      '"';
-    var inner;
-    if (item.isUser) {
-      inner =
-        avatar(item.avatar_template, item.id) +
-        '<div class="email-group-user-chooser__user --username-first"><span class="identifier">' +
-        escapeHtml(item.id) +
-        "</span>" +
-        (item.name ? ' <span class="name">' + escapeHtml(item.name) + "</span>" : "") +
-        "</div>";
-    } else if (item.isGroup) {
-      inner =
-        icon("users") +
-        '<div class="email-group-user-chooser__group --group-name-first"><span class="identifier">' +
-        escapeHtml(item.id) +
-        '</span> <span class="name">' +
-        escapeHtml(item.full_name || "") +
-        "</span></div>";
-    } else {
-      inner = icon("envelope") + '<span class="identifier">' + escapeHtml(item.id) + "</span>";
-    }
-    return "<li " + attrs + ">" + inner + "</li>";
+    return helpers().row(item, index);
   }
 
   function show(cfg) {
@@ -267,25 +121,7 @@
     }
 
     function position() {
-      var body = chooser.querySelector(".select-kit-body");
-      var summary = chooser.querySelector("summary");
-      var ui = window.FloatingUIDOM;
-      if (!ui) {
-        return;
-      }
-      body.style.position = "fixed";
-      body.style.minWidth = Math.round(summary.getBoundingClientRect().width) + "px";
-      body.style.top = "0px";
-      body.style.left = "0px";
-      ui.computePosition(summary, body, {
-        placement: "bottom-start",
-        strategy: "fixed",
-        middleware: [ui.flip({ padding: 3 }), ui.shift({ limiter: ui.limitShift() }), ui.offset(3)],
-      }).then(function (result) {
-        body.style.transform = "translate(" + Math.round(result.x) + "px, " + Math.round(result.y) + "px)";
-        body.style.visibility = "visible";
-        body.style.pointerEvents = "auto";
-      });
+      helpers().position(chooser);
     }
 
     function renderBody(rows) {

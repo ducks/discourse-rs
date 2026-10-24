@@ -124,6 +124,9 @@ Blockers, a scripted walk-through would hit them:
   (docs/demo-servers.md): feat/list-settings (164a), done: every list
   type saves with Rails' validations, and the page's list editors open
   and save them.
+- [x] A member couldn't start a private message from a profile, the
+  messages page or /new-message (the rehearsal's step 10):
+  feat/message-composers (282), done.
 
 Visible if clicked, avoid them in a scripted demo:
 
@@ -3079,8 +3082,7 @@ route table has been made, so this list may be short.
     buttons, the sidebar's header actions and Customize (milestone 4.5),
     the login, signup and logout dialogs (79c), the Edit Directory
     Columns modal (74), BookmarkModal (editing a bookmark from the
-    bookmarks tab, 193c), the message composer (resuming a message draft
-    from the drafts tab, 193c), the ForgotPassword modal a password
+    bookmarks tab, 193c), the ForgotPassword modal a password
     reset code opens (from the security tab, 193e). Split when started
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
@@ -3639,8 +3641,7 @@ route table has been made, so this list may be short.
     focus, the saved draft), and the same login, logging in through the
     form back to the composer, and in-place links from a topic. Found by
     the screenshot run. Left, split into 269a.
-    269a. `feat/new-topic-route-rest` S: the message composer itself
-    (196; static/js/composer.js:954,970); creating a shared draft
+    269a. `feat/new-topic-route-rest` S: creating a shared draft
     (CREATE_SHARED_DRAFT, :917) and a category the composer shows
     read-only (readOnlyCategoryId, :921); lazy-loaded categories
     (Category.asyncFindById and asyncFindBySlugPath,
@@ -4206,6 +4207,45 @@ route table has been made, so this list may be short.
     maps `last` too. The page without a slug redirects to the canonical
     URL with the post kept, JSON answers 200. Recorded as
     topics/show_topic_and_post_number (rs-ref-b); tests/topic_json.rs.
+282. ~~`feat/message-composers`~~ (done) M: a member couldn't start a
+    private message (the demo rehearsal's step 10): the profile's Message
+    button and the messages page's New Message had no handler, and
+    /new-message refused "the message composer" (269a, 196). Now the
+    composer's privateMessage action (static/js/composer.js): the
+    composer-action-private-message and private-message classes, the
+    title with its own placeholder and no category (tags only with
+    site.can_tag_pms), the recipients above it (PmUserSelector:
+    EmailGroupUserChooser over /u/search/users with the messageable
+    groups and, for can_send_private_email_messages, an email, as a
+    multi-select: typing on the header opens it, rows ranked as
+    organizeResults, the chosen ones excluded and listed as removable
+    choices, backspace highlighting then removing the last, Escape and
+    clicking outside closing; static/js/email-group-user-chooser.js,
+    whose helpers add-pm-participants.js now shares), the staff's
+    official warning toggle for one user, "Create message" and "Send
+    message" with the envelope, focus on the recipients while there are
+    none, its draft (new_private_message_<time>, action privateMessage
+    with title, recipients and archetypeId) and the post with title,
+    archetype and target_recipients, going to the new message. Every way
+    Ember opens it: the profile's Message button (composePrivateMessage
+    to the profile's user), the messages page's New Message (to no one),
+    the user card's Message button (to its user, with the post's link and
+    "RE: <title>" when the card was opened on a post), /new-message with
+    username, groupname (after Group.messageable), title, body and tags
+    on a page load or a link, and resuming a message draft from the
+    drafts menu and the drafts tab, which opened it as a new topic or
+    refused. A reply in a message now says Message and saves as "Send
+    message" with the envelope (saveLabel, saveIcon). The reply area's
+    with-category and with-tags follow the mode, with compose.scss's
+    user-selector, add-warning and private-message rules. Compared with
+    Playwright against rs-ref-d as user1: the composer opened from the
+    profile and the messages page (markup, focus, screenshot), the
+    chooser's search, rows, choices and body position, the draft and
+    the POST it sends; same but the composer actions caret and the rich
+    editor (196). Recorded as messages/compose_new_message (rs-ref-d);
+    tests/messages_pages.rs. Refused as before: sending the warning
+    (is_warning, posts#create), a message to an email address
+    (PostCreator), the composer actions menu (196).
 
 ### Phase 11: the bundled plugins' gaps (210)
 

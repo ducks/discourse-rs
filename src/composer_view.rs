@@ -467,6 +467,49 @@ pub struct RouteData {
     pub max_title_length: i64,
     pub dialog_src: String,
     pub dialog_strings: String,
+    pub pm: PmUi,
+}
+
+/// What the message composer (the composer's privateMessage action) needs
+/// of the member: the recipients chooser's emails
+/// (`can_send_private_email_messages`), the staff's warning toggle
+/// (showWarning), the tags a message may take (canEditTags with
+/// `site.can_tag_pms`), and who they are (focusTarget).
+pub struct PmUi {
+    pub username: String,
+    pub staff: bool,
+    pub allow_emails: bool,
+    pub can_tag_pms: bool,
+}
+
+/// PmUserSelector: ComposerUserSelector's EmailGroupUserChooser
+/// (`#private-message-users`, closed and empty; composer.js runs it with
+/// email-group-user-chooser.js) and, for staff, the official warning
+/// toggle. Hidden until the composer opens to create a message.
+fn user_selector(list: &ListContext, pm: &PmUi) -> String {
+    let options = serde_json::json!({
+        "none": t(list, "composer.users_placeholder"),
+        "placeholder": t(list, "select_kit.filter_placeholder"),
+        "noContent": t(list, "select_kit.no_content"),
+        "resultsOne": t(list, "select_kit.results_count.one"),
+        "resultsOther": t(list, "select_kit.results_count.other"),
+        "deleteItem": t(list, "select_kit.delete_item"),
+        "allowEmails": pm.allow_emails,
+    });
+    let warning = if pm.staff {
+        format!(
+            "<label class=\"add-warning\" hidden><input class=\"ember-checkbox\" type=\"checkbox\"><span>{}</span></label>",
+            escape(&t(list, "composer.add_warning"))
+        )
+    } else {
+        String::new()
+    };
+    format!(
+        "<div class=\"user-selector\" hidden><div class=\"users-input\"><details id=\"private-message-users\" class=\"select-kit multi-select user-chooser email-group-user-chooser\" data-options=\"{}\"><summary data-name=\"\" data-value=\"\" tabindex=\"0\" id=\"private-message-users-header\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div id=\"private-message-users-body\" class=\"select-kit-body\"></div></details></div>{warning}</div>",
+        escape(&options.to_string()),
+        escape(&t(list, "composer.users_placeholder")),
+        icon("plus", Some("angle-icon")),
+    )
 }
 
 /// The closed composer with its category chooser. `default_category` is
@@ -518,6 +561,33 @@ pub fn render(
             escape(label)
         )
     };
+    // The message composer: its action title and save button (envelope,
+    // as a reply in a message saves too), its title placeholder (no
+    // featured link for a message), composePrivateMessage's reference
+    // title, and who the member is.
+    let pm_data = format!(
+        " data-action-private-message=\"{}\" data-submit-private-message=\"{}\" data-action-reply-message=\"{}\" data-label-title-message=\"{}\" data-label-reference-title=\"{}\" data-username=\"{}\"{}",
+        escape(&action(
+            "envelope",
+            &t(
+                list,
+                "composer.composer_actions.create_personal_message.label"
+            )
+        )),
+        escape(&action("envelope", &t(list, "composer.create_pm"))),
+        escape(&action(
+            "share",
+            &t(list, "composer.composer_actions.reply_to_message.trigger")
+        )),
+        escape(&t(list, "composer.title_placeholder")),
+        escape(&t(list, "composer.reference_topic_title")),
+        escape(&route.pm.username),
+        if route.pm.can_tag_pms && tags.is_some() {
+            " data-can-tag-pms=\"true\""
+        } else {
+            ""
+        },
+    );
     let by_id: HashMap<i64, &ChooserCategory> = allowed.iter().map(|c| (c.id, c)).collect();
     let rows: String = chooser_order(list.categories, allowed)
         .iter()
@@ -686,7 +756,7 @@ pub fn render(
         ),
     );
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data}{route_data}{save_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" data-pointer-drag=\"none\" data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data}{route_data}{pm_data}{save_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" data-pointer-drag=\"none\" data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\">{user_selector}<div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -743,6 +813,7 @@ pub fn render(
         tags_input = tags
             .map(|t| tag_chooser(list, t, selected.map(|c| c.id)))
             .unwrap_or_default(),
+        user_selector = user_selector(list, &route.pm),
     )
 }
 
