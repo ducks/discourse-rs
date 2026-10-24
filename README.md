@@ -51,7 +51,19 @@ dv agent at the vendored commit), taken with `make snapshot-dv AGENT=<name>`.
 It is the database the parity golden files were recorded from, so tests and
 recordings see the same data. Browsing the reference changes its database
 (Ember saves drafts and read timings as you go), so put it back first with
-`make reset-reference AGENT=<name>` before recording.
+`make reset-reference AGENT=<name>` before recording. Its test users
+(`admin`, `user0`..`user3`, password `password`), keys and topics are
+public: it is for tests only.
+
+`seed/clean_install.sql` is what a production install has after `rake
+db:migrate` (the migrations, then db:seed) and nothing else: the system
+and discobot users, groups, the four seeded categories, badges, the
+welcome, guidelines and admin guide topics, themes and color schemes.
+`make snapshot-clean AGENT=<name>` takes it from a scratch database
+inside a dv agent at the vendored commit, leaving out what db:seed derives
+from the site or makes at random (the VAPID keys, push_api_secret_key, the
+system users' passwords and email tokens, notification_email, the login
+hint). `discourse-rs setup` loads it and makes those (Deploying, below).
 
 Configuration mirrors Discourse: `RAILS_ENV` (default development, as in
 Rails) changes URL generation the same way, and every `DISCOURSE_*` env var is
@@ -462,26 +474,83 @@ sudo deploy/install-emoji /var/lib/discourse-rs/public
 That installs `/usr/local/bin/discourse-rs`, `discourse-rs.service`, the
 `discourse-rs` account (systemd-sysusers) and `/etc/discourse-rs/env` from
 `deploy/env.example`. Running it again upgrades the binary and keeps the
-env file. Then:
+env file. Then fill in `/etc/discourse-rs/env`: `DATABASE_URL`,
+`DISCOURSE_HOSTNAME` and `DISCOURSE_SECRET_KEY_BASE` (`openssl rand -hex
+64`; without one the server generates one and keeps it in the database,
+as Rails keeps it in Redis) and the `DISCOURSE_SMTP_*` relay.
+
+The service owns its database and the tables in it, as Rails' database
+user does: at start it creates its own `discourse_rs` schema, and jobs
+reindex tables.
+
+A new site:
+
+1. Create the role and an empty database it owns, with the reference's
+   collation:
+
+   ```bash
+   sudo -u postgres createuser discourse-rs
+   sudo -u postgres createdb -O discourse-rs -T template0 -E UTF8 \
+     --locale=en_US.UTF-8 discourse
+   ```
+2. `discourse-rs setup` makes the site, as `rake db:migrate` does on a
+   fresh install: the vendored schema and what Discourse's db:seed
+   creates (the system user, groups, categories, badges, the welcome,
+   guidelines and admin guide topics; no other users), with the parts of
+   db:seed that belong to the site made for it (VAPID keys,
+   push_api_secret_key, notification_email from the hostname, the system
+   users' random passwords). One transaction; a database with tables is
+   refused. The vector extension needs a superuser, so run it as one
+   with `--owner` naming the service's role, which then owns everything;
+   it reads the env file for the database (a URL without a user, as
+   env.example has it, reaches it as the superuser over the socket) and
+   the hostname (the base url goes into the seeded topics and the VAPID
+   keys):
+
+   ```bash
+   sudo systemd-run --pipe --wait -p User=postgres \
+     -p EnvironmentFile=/etc/discourse-rs/env \
+     /usr/local/bin/discourse-rs setup --owner discourse-rs
+   ```
+
+   (Or create the extension as a superuser first, `CREATE EXTENSION
+   vector`, and run setup as the database's owner without `--owner`.)
+3. The first admin. Either `discourse-rs admin create` (as `rake
+   admin:create`: a new account for the email, or the existing one with a
+   new password, activated and granted admin; no mail needed), the
+   password from a file or standard input, never the command line:
+
+   ```bash
+   sudo systemd-run --pipe --wait -p User=discourse-rs \
+     -p EnvironmentFile=/etc/discourse-rs/env \
+     /usr/local/bin/discourse-rs admin create --email you@example.com < password.txt
+   ```
+
+   or put `DISCOURSE_DEVELOPER_EMAILS=you@example.com` in the env file
+   with a working SMTP relay and register on the front page, which is
+   the finish installation page until there is an admin; the account
+   becomes the admin when it logs in after confirming its email.
+4. `systemctl enable --now discourse-rs`, and add `deploy/Caddyfile` to
+   Caddy's config with the real hostname. Plain starts never load
+   anything.
+
+Moving a forum over:
 
 1. Restore the backup (`scripts/restore-backup`, above) and put its
    `uploads/` under `/var/lib/discourse-rs/public`.
-2. Give the service its database. It owns the database and its tables,
-   as Rails' database user does: at start it creates its own
-   `discourse_rs` schema, and jobs reindex tables. A restore run as the
-   `postgres` superuser leaves the tables owned by `postgres`;
-   `scripts/db-chown` hands the database and everything in it to the
-   service's role (`REASSIGN OWNED BY postgres` can't, since the
-   bootstrap superuser owns the system's objects too):
+2. Give the service its database. A restore run as the `postgres`
+   superuser leaves the tables owned by `postgres`; `scripts/db-chown`
+   hands the database and everything in it to the service's role
+   (`REASSIGN OWNED BY postgres` can't, since the bootstrap superuser
+   owns the system's objects too):
 
    ```bash
    sudo -u postgres createuser discourse-rs
    sudo -u postgres scripts/db-chown discourse discourse-rs
    ```
-3. Fill in `/etc/discourse-rs/env`: `DATABASE_URL`, `DISCOURSE_HOSTNAME`
-   and `DISCOURSE_SECRET_KEY_BASE`. The secret must be the Rails site's
-   for its sessions to survive a cutover; Rails keeps it in redis when it
-   is not configured (`rails runner 'puts GlobalSetting.safe_secret_key_base'`).
+3. `DISCOURSE_SECRET_KEY_BASE` must be the Rails site's for its sessions
+   to survive a cutover; Rails keeps it in redis when it is not
+   configured (`rails runner 'puts GlobalSetting.safe_secret_key_base'`).
 4. `systemctl enable --now discourse-rs`, and add `deploy/Caddyfile` to
    Caddy's config with the real hostname.
 
@@ -504,7 +573,8 @@ stock images, fonts and emoji at the vendored commit) and a NixOS module,
 `services.discourse-rs`: the unit above with its hardening, PostgreSQL 16
 with pgvector on the host, the job worker in the process, and optionally
 Caddy in front. `nix build .#checks.x86_64-linux.vm -L` boots it in a VM,
-logs in, posts, serves the assets and checks the team-only lockdown.
+makes a fresh site and its admin, logs in, posts, serves the assets and
+checks the team-only lockdown.
 
 A team-only forum on one VPS, from the host's flake:
 
@@ -527,6 +597,11 @@ A team-only forum on one VPS, from the host's flake:
             hostname = "forum.example.com";
             # Secrets, outside the store: a string, not a ./path.
             environmentFile = "/etc/discourse-rs/env";
+            # The first admin, made on the first boot.
+            initialAdmin = {
+              email = "you@example.com";
+              passwordFile = "/etc/discourse-rs/admin-password";
+            };
             # Members only, and accounts only by invite.
             loginRequired = true;
             inviteOnly = true;
@@ -552,8 +627,9 @@ Options (all under `services.discourse-rs`):
 | `database.createLocally` | `true` | PostgreSQL 16 + pgvector here, the database owned by the `discourse-rs` role, peer auth over the socket |
 | `database.name` | `discourse` | |
 | `database.url` | `null` | an external `DATABASE_URL` without a password (else put it in the env file) |
-| `database.loadSchema` | `true` | load the vendored schema and seeds into an empty local database, and secure them |
-| `environmentFile` | `null` | secrets: `DISCOURSE_SECRET_KEY_BASE`, `DISCOURSE_SMTP_*`, `INITIAL_ADMIN_PASSWORD`, an external `DATABASE_URL` |
+| `database.loadSchema` | `true` | `discourse-rs setup` on an empty local database: a fresh site |
+| `initialAdmin.email`, `initialAdmin.passwordFile` | `null` | the first admin, made by `discourse-rs admin create` while there is none; the password file goes in as a systemd credential |
+| `environmentFile` | `null` | secrets: `DISCOURSE_SECRET_KEY_BASE`, `DISCOURSE_SMTP_*`, an external `DATABASE_URL`; also `DISCOURSE_DEVELOPER_EMAILS` |
 | `loginRequired` | `false` | `DISCOURSE_LOGIN_REQUIRED=true`: members only |
 | `inviteOnly` | `false` | `DISCOURSE_INVITE_ONLY=true`: accounts only by invite |
 | `jobs.enable` | `true` | the job worker; off sets `DISCOURSE_RS_JOBS=off` |
@@ -575,43 +651,44 @@ refuses a configuration without it.
 
 Bringing up a fresh site:
 
-1. Write the env file before the first switch (root-owned, read by
+1. Write the secrets before the first switch (root-owned, read by
    systemd before it drops privileges):
 
    ```bash
    sudo install -d -m 755 /etc/discourse-rs
    sudo install -m 600 /dev/null /etc/discourse-rs/env
-   {
-     echo "DISCOURSE_SECRET_KEY_BASE=$(openssl rand -hex 64)"
-     echo "INITIAL_ADMIN_PASSWORD=$(openssl rand -base64 24)"
-     echo "INITIAL_ADMIN_EMAIL=you@example.com"
-   } | sudo tee -a /etc/discourse-rs/env > /dev/null
+   echo "DISCOURSE_SECRET_KEY_BASE=$(openssl rand -hex 64)" \
+     | sudo tee -a /etc/discourse-rs/env > /dev/null
    # and the relay's DISCOURSE_SMTP_ADDRESS, _PORT, _USER_NAME, _PASSWORD
+   sudo install -m 600 /dev/null /etc/discourse-rs/admin-password
+   # prints the password it keeps
+   openssl rand -base64 24 | sudo tee /etc/discourse-rs/admin-password
    ```
 
 2. `nixos-rebuild switch`. `discourse-rs-db-init.service` creates the
-   role and the database and, while it has no tables, loads
-   `vendor/discourse/db/structure.sql` and `seed/*.sql` as
-   `scripts/db-load` does. The seed is the parity fixture's install, with
-   public secrets and the password `password` for every user, so the
-   same transaction secures it (`discourse-rs-fresh-site`):
-   - new VAPID keys and `push_api_secret_key`;
-   - the `admin` password from `INITIAL_ADMIN_PASSWORD` (at least 15
-     characters, hashed as Rails hashes it), and its address from
-     `INITIAL_ADMIN_EMAIL` if set;
-   - every other password removed, and the fixture users `user0`..`user3`
-     deactivated and suspended (the purge of unactivated users then
-     deletes the ones without posts);
-   - the seed's sessions, API keys, invites, email tokens and
-     unsubscribe keys deleted.
-
-   Without `INITIAL_ADMIN_PASSWORD` it fails and loads nothing. It runs
-   before every start and does nothing once the database has tables, so
-   the variable can leave the env file after the first boot. Its log:
+   role and the database and, while it has no tables, runs `discourse-rs
+   setup --owner discourse-rs` as the `postgres` superuser: the vendored
+   schema and what Discourse's db:seed creates on a new install (the
+   system user, groups, the Uncategorized, Site Feedback, Staff and
+   General categories, badges, the welcome, guidelines and admin guide
+   topics; no other users), with the site's own VAPID keys,
+   push_api_secret_key and system passwords, in one transaction, owned
+   by the `discourse-rs` role. Then, while there is no admin, it runs
+   `discourse-rs admin create` for `initialAdmin.email` (at least 15
+   characters of password, read from the credential, never the
+   environment): the account is created, activated and granted admin, as
+   `rake admin:create` does. It runs before every start and does
+   nothing once the database has tables and an admin. Its log:
    `journalctl -u discourse-rs-db-init`.
 
-3. Log in as `admin`, delete the fixture topics you don't want, and
-   invite the team.
+   Without `initialAdmin`, the front page is the finish installation
+   page until there is an admin: set `DISCOURSE_DEVELOPER_EMAILS` (in the
+   env file or `extraEnvironment`) and SMTP, and register with one of
+   those addresses; the account becomes the admin when it first logs in
+   after confirming its email. Or run `discourse-rs admin create` by
+   hand, as the service's user, with the password on standard input.
+
+3. Log in with the admin's email and invite the team.
 
 Moving an existing forum over instead: set `database.loadSchema = false`
 so the database stays empty, then, with the server stopped
