@@ -338,6 +338,9 @@ pub struct Chrome {
     /// chat-drawer.js's attributes, empty when the viewer can't chat (no
     /// drawer opens).
     pub chat_drawer: String,
+    /// chat-new-message.js's attributes (the new message modal), empty when
+    /// the viewer can't chat.
+    pub chat_new_message: String,
     /// The translations the templates' client strings come from (site
     /// texts included); the vendored files when the page loaded no chrome.
     pub i18n: Option<std::sync::Arc<I18n>>,
@@ -1133,6 +1136,12 @@ impl Site {
                 chat.starred,
             )
             .await?;
+            self.chrome.chat_new_message = crate::plugins::chat::new_message::script_attrs(
+                settings,
+                guardian,
+                &state.i18n,
+                &self.base_path,
+            )?;
         }
         self.chrome.chat_drawer_outlet = crate::plugins::chat::enabled(settings)?;
         if let Some(user_id) = guardian.user_id() {
@@ -1296,6 +1305,21 @@ impl Site {
                 max_title_length: settings.get("max_topic_title_length")?.to_i(),
                 dialog_src: crate::assets::url(&self.base_path, "dialog.js"),
                 dialog_strings: dialog_strings(&state.i18n),
+                pm: crate::composer_view::PmUi {
+                    username: guardian
+                        .user()
+                        .map(|u| u.username.clone())
+                        .unwrap_or_default(),
+                    staff: guardian.is_staff(),
+                    // can_send_private_email_messages
+                    allow_emails: settings.get("enable_staged_users")?.truthy()
+                        && guardian
+                            .in_setting_groups(settings, "personal_message_enabled_groups")?
+                        && guardian
+                            .in_setting_groups(settings, "send_email_messages_allowed_groups")?,
+                    // site.can_tag_pms
+                    can_tag_pms: guardian.can_tag_pms(settings)?,
+                },
             },
         );
         self.categories = Some(categories);

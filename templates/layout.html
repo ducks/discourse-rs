@@ -326,6 +326,7 @@
         <div class="below-footer-outlet chat-drawer-outlet" id="chat-drawer-outlet" hx-preserve><div class="chat-drawer-outlet-container"></div></div>
         {%- if !chrome.chat_drawer.is_empty() %}
         <script src="{{ crate::assets::url(base_path, "chat-drawer.js") }}"{{ chrome.chat_drawer|safe }} defer></script>
+        <script src="{{ crate::assets::url(base_path, "chat-new-message.js") }}"{{ chrome.chat_new_message|safe }} defer></script>
         {%- endif %}
         {%- endif %}
       </div>
@@ -336,6 +337,7 @@
       {%- endif %}
       {%- if !chrome.composer.is_empty() %}
       {{ chrome.composer|safe }}
+      <script src="{{ crate::assets::url(base_path, "email-group-user-chooser.js") }}" defer></script>
       <script src="{{ crate::assets::url(base_path, "composer.js") }}" defer></script>
       {%- endif %}
     </section>

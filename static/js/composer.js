@@ -25,6 +25,12 @@
   var data = control.dataset;
   var state = null;
   var base = control.dataset.basePath || "";
+  // The message composer's recipients (PmUserSelector) and the staff's
+  // official warning toggle.
+  var userSelector = control.querySelector(".user-selector");
+  var warning = control.querySelector(".add-warning");
+  var titlePlaceholder = title.placeholder;
+  var recipients = null;
 
   function csrfHeaders() {
     var headers = {};
@@ -65,23 +71,42 @@
 
   // canEditTitle: creating a topic, or editing a first post (with its
   // title, category and tags above the editor).
+  // A message (creatingPrivateMessage) also edits its title, with its
+  // recipients above it and no category; tags only where messages may
+  // take them (site.can_tag_pms).
   function setMode(mode, firstPost) {
-    var titled = mode === "create-topic" || (mode === "edit" && !!firstPost);
-    ["reply", "create-topic", "edit"].forEach(function (m) {
+    var pm = mode === "private-message";
+    var titled = mode === "create-topic" || pm || (mode === "edit" && !!firstPost);
+    ["reply", "create-topic", "edit", "private-message"].forEach(function (m) {
       control.classList.toggle("composer-action-" + m, m === mode);
     });
+    control.classList.toggle("private-message", pm);
     control.classList.toggle("edit-title", titled);
     control.classList.toggle("topic", mode === "create-topic");
     fields.hidden = !titled;
     title.disabled = false;
-    chooser.closest(".category-input").hidden = false;
-    actionButton.innerHTML = data["action" + modeName(mode)];
-    submit.innerHTML = data["submit" + modeName(mode)];
+    chooser.closest(".category-input").hidden = pm;
+    replyArea.classList.toggle("with-category", !pm);
+    var tagsInput = control.querySelector(".tags-input");
+    if (tagsInput) {
+      tagsInput.hidden = pm && !data.canTagPms;
+      replyArea.classList.toggle("with-tags", !tagsInput.hidden);
+    }
+    if (userSelector) {
+      userSelector.hidden = !pm;
+    }
+    title.placeholder = pm ? data.labelTitleMessage : titlePlaceholder;
+    title.setAttribute("aria-label", title.placeholder);
+    // A reply in a message: the action names the message and saves as one
+    // (saveLabel and saveIcon).
+    var inMessage = mode === "reply" && document.body.classList.contains("archetype-private_message");
+    actionButton.innerHTML = inMessage ? data.actionReplyMessage : data["action" + modeName(mode)];
+    submit.innerHTML = inMessage ? data.submitPrivateMessage : data["submit" + modeName(mode)];
   }
 
   // The mode as the data attributes name it.
   function modeName(mode) {
-    return { reply: "Reply", "create-topic": "CreateTopic", edit: "Edit" }[mode];
+    return { reply: "Reply", "create-topic": "CreateTopic", edit: "Edit", "private-message": "PrivateMessage" }[mode];
   }
 
   function showError(messages) {
@@ -119,7 +144,7 @@
 
   // The composer's action as a draft names it.
   function draftAction(mode) {
-    return { reply: "reply", "create-topic": "createTopic", edit: "edit" }[mode];
+    return { reply: "reply", "create-topic": "createTopic", edit: "edit", "private-message": "privateMessage" }[mode];
   }
 
   // _draft_serializer's fields the composer has.
@@ -135,6 +160,12 @@
       if (tagChooser) {
         d.tags = serializedTags();
       }
+    } else if (s.mode === "private-message") {
+      d.title = title.value;
+      d.categoryId = null;
+      d.tags = data.canTagPms ? serializedTags() : [];
+      d.archetypeId = "private_message";
+      d.recipients = recipientsValue().join(",");
     } else if (s.mode === "edit") {
       d.postId = parseInt(s.postId, 10);
       // A first post's draft keeps the topic fields being edited and what
@@ -160,7 +191,7 @@
     if (!state || state.loading || draftSaving) {
       return false;
     }
-    if (state.mode === "create-topic") {
+    if (state.mode === "create-topic" || state.mode === "private-message") {
       return textarea.value !== "" || title.value !== "";
     }
     return textarea.value !== "";
@@ -417,7 +448,13 @@
       });
     }
     if (draft && !editDraft) {
-      if (s.mode === "create-topic") {
+      if (s.mode === "private-message") {
+        title.value = draft.title || "";
+        setRecipients(draft.recipients);
+        if (draft.tags && data.canTagPms) {
+          setTags(draft.tags);
+        }
+      } else if (s.mode === "create-topic") {
         title.value = draft.title || "";
         if (draft.categoryId) {
           selectCategory(draft.categoryId);
@@ -487,6 +524,15 @@
       title.value = opts.title || "";
       setTags(opts.tags || []);
     }
+    if (opts.mode === "private-message") {
+      // composer.open: the recipients, title and tags it was opened with.
+      title.value = opts.title || "";
+      setRecipients(opts.recipients);
+      setTags(opts.tags || []);
+      if (warning) {
+        warning.querySelector("input").checked = false;
+      }
+    }
     s.firstPost = opts.mode === "edit" && String(opts.postNumber) === "1";
     if (s.firstPost) {
       setMode("edit", true);
@@ -500,8 +546,11 @@
     updatePreview();
 
     var resuming = Boolean(opts.draftKey);
+    var creating = opts.mode === "create-topic" || opts.mode === "private-message";
     if (opts.mode === "create-topic") {
       s.draftKey = opts.draftKey || "new_topic_" + Date.now();
+    } else if (opts.mode === "private-message") {
+      s.draftKey = opts.draftKey || "new_private_message_" + Date.now();
     } else {
       s.draftKey = "topic_" + opts.topicId;
     }
@@ -510,18 +559,15 @@
     textarea.disabled = true;
     announce();
     // A new topic's key is new: there is no draft to look up.
-    var lookup =
-      opts.mode === "create-topic" && !resuming
-        ? Promise.resolve(null)
-        : fetchDraft(s.draftKey);
-    var prefilled = opts.mode === "create-topic" && !resuming && Boolean(opts.title || opts.body);
+    var lookup = creating && !resuming ? Promise.resolve(null) : fetchDraft(s.draftKey);
+    var prefilled = creating && !resuming && Boolean(opts.title || opts.body);
     // Editing a first post: the topic's title, category and tags, as
     // the topic model holds them in Ember.
     var topicLoad = s.firstPost ? loadTopic(s) : Promise.resolve();
     Promise.all([lookup, topicLoad])
       .then(function (results) {
         // The new-topic route's topicBody.
-        if (opts.mode === "create-topic" && !resuming && opts.body) {
+        if (creating && !resuming && opts.body) {
           return opts.body;
         }
         return initialText(s, results[0]);
@@ -550,7 +596,12 @@
         // A prefilled composer opened empty, then took the route's title
         // and body: the title has the focus it took then, and what was
         // filled in is saved as a draft once it settles.
-        if (s.mode === "create-topic" && (title.value === "" || prefilled)) {
+        // focusTarget: a message's recipients while it has none but the
+        // member, else its title.
+        var to = recipientsValue().join(",");
+        if (s.mode === "private-message" && recipients && (to === "" || to === data.username)) {
+          recipients.focus();
+        } else if (s.mode === "private-message" || (s.mode === "create-topic" && (title.value === "" || prefilled))) {
           title.focus();
         } else {
           textarea.focus();
@@ -562,6 +613,9 @@
   }
 
   function close() {
+    if (recipients) {
+      recipients.close();
+    }
     cancelUploads();
     clearTimeout(draftTimer);
     draftTimer = null;
@@ -1233,12 +1287,114 @@
       });
   }
 
-  // The message composer itself is 196's; a group is checked first, as
-  // the route does (Group.messageable).
+  // The message composer's recipients: EmailGroupUserChooser
+  // (email-group-user-chooser.js) over the composer's targetRecipients.
+  if (userSelector && window.Discourse && Discourse.emailGroupUserChooser) {
+    var recipientOpts = {};
+    try {
+      recipientOpts = JSON.parse(userSelector.querySelector("details").dataset.options || "{}");
+    } catch (_) {}
+    recipientOpts.onChange = function () {
+      syncWarning();
+      scheduleDraft();
+    };
+    recipients = Discourse.emailGroupUserChooser.attach(userSelector.querySelector("details"), recipientOpts);
+  }
+
+  function recipientsValue() {
+    return recipients ? recipients.values() : [];
+  }
+
+  // targetRecipients as a string ("a,b") or a list.
+  function setRecipients(list) {
+    if (!recipients) {
+      return;
+    }
+    if (typeof list === "string") {
+      list = list.split(",");
+    }
+    recipients.set(list || []);
+    syncWarning();
+  }
+
+  // showWarning: staff sending to exactly one user (no group).
+  function syncWarning() {
+    if (!warning) {
+      return;
+    }
+    var show = recipientsValue().length === 1 && !recipients.hasGroups();
+    warning.hidden = !show;
+    userSelector.querySelector(".users-input").classList.toggle("can-warn", show);
+  }
+
+  // Composer#createPost for a message: its title, archetype and
+  // target_recipients, the warning when staff check it, and its tags
+  // where messages take them.
+  function messagePairs(pairs) {
+    pairs.push(["title", title.value]);
+    if (warning && !warning.hidden && warning.querySelector("input").checked) {
+      pairs.push(["is_warning", "true"]);
+    }
+    pairs.push(["archetype", "private_message"]);
+    pairs.push(["target_recipients", recipientsValue().join(",")]);
+    if (data.canTagPms) {
+      serializedTags().forEach(function (t) {
+        if (t.id) {
+          pairs.push(["tags[][id]", t.id]);
+        }
+        pairs.push(["tags[][name]", t.name]);
+      });
+    }
+  }
+
+  // The application route's composePrivateMessage: to a user (or no one),
+  // and from a user card opened on a post, that post's link with a
+  // reference title.
+  function composePrivateMessage(username, post) {
+    open({
+      mode: "private-message",
+      recipients: username ? [username] : [],
+      body: post ? location.protocol + "//" + location.host + post.url : undefined,
+      title: post ? data.labelReferenceTitle.split("%{title}").join(post.topicTitle) : undefined,
+    });
+  }
+
+  // composer.openNewMessage: the route's title within
+  // max_topic_title_length, its body, and its tags (as a new topic takes
+  // them) where messages take tags.
+  function openMessageComposer(params, to) {
+    filterTags(data.canTagPms && tagChooser ? params.tags : null)
+      .catch(function () {
+        return null;
+      })
+      .then(function (tags) {
+        var opts = { mode: "private-message", recipients: to || "", body: params.body };
+        var max = parseInt(data.maxTitleLength, 10);
+        if (params.title && params.title.length <= max) {
+          opts.title = params.title;
+        }
+        if (tags && data.canTagPms && tagChooser) {
+          opts.tags = escapeExpression(tags)
+            .split(",")
+            .slice(0, tagOpts.maximum)
+            .map(function (tag) {
+              return tag.substring(0, tagOpts.maxLength);
+            });
+        }
+        open(opts);
+      });
+  }
+
+  // The new-message route: to a username, or to a group once
+  // Group.messageable says it may be messaged, or to no one.
   function openNewMessage(params) {
     var groupname = params.groupname || params.group_name;
-    if (params.username || !groupname) {
-      unported("the message composer");
+    if (params.username) {
+      openMessageComposer(params, params.username);
+      return;
+    }
+    if (!groupname) {
+      openMessageComposer(params, "");
       return;
     }
     fetch(base + "/groups/" + encodeURIComponent(groupname) + "/messageable.json", {
@@ -1254,7 +1410,7 @@
       .then(
         function (json) {
           if (json.messageable) {
-            unported("the message composer");
+            openMessageComposer(params, groupname);
           } else {
             alertText(data.labelCantSendPm.split("%{username}").join(groupname));
           }
@@ -2023,6 +2179,8 @@
           }
           pairs.push(["tags[][name]", t.name]);
         });
+      } else if (state.mode === "private-message") {
+        messagePairs(pairs);
       } else {
         pairs.push(["topic_id", state.topicId]);
         if (state.replyTo) {
@@ -2663,6 +2821,19 @@
       open({ mode: "create-topic", category: create.dataset.category });
       return;
     }
+    // composePrivateMessage: the profile's Message button, to the user the
+    // profile is for, and the messages page's New Message, to no one. The
+    // user card's are user-card.js's.
+    if (event.target.closest("#new-private-message-btn")) {
+      composePrivateMessage(null, null);
+      return;
+    }
+    var profilePm = event.target.closest("button.compose-pm");
+    if (profilePm && !profilePm.closest("#user-card")) {
+      var match = location.pathname.slice(base.length).match(/^\/u\/([^/?#]+)/);
+      composePrivateMessage(match ? decodeURIComponent(match[1]) : null, null);
+      return;
+    }
     var topic = document.querySelector("#topic[data-topic-id]");
     var topicId = topic && topic.dataset.topicId;
     var edit = event.target.closest(".post-action-menu__edit");
@@ -3174,7 +3345,7 @@
         window.location.href = draftPostUrl(draft);
       } else {
         open({
-          mode: "create-topic",
+          mode: draft.draft_key.indexOf("new_private_message") === 0 ? "private-message" : "create-topic",
           draftKey: draft.draft_key,
           draftSequence: draft.sequence,
         });
@@ -3248,5 +3419,5 @@
     routeArrived();
   }
 
-  window.composer = { open: open };
+  window.composer = { open: open, composePrivateMessage: composePrivateMessage };
 })();

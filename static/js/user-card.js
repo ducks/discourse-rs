@@ -280,11 +280,45 @@
     }
   });
 
+  // composePM(user, post): the post the card was opened on, when it was
+  // opened on one, as its url and topic title.
+  function cardPost(target) {
+    var article = target && target.closest && target.closest("article[data-post-id]");
+    var number = article && article.parentElement && article.parentElement.dataset.postNumber;
+    var topic = location.pathname.slice(basePath().length).match(/^\/t\/([^/]+)\/(\d+)/);
+    if (!number || !topic) {
+      return null;
+    }
+    var title = document.querySelector("#topic-title .fancy-title");
+    return {
+      url: basePath() + "/t/" + topic[1] + "/" + topic[2] + (parseInt(number, 10) > 1 ? "/" + number : ""),
+      topicTitle: title ? title.textContent.trim() : "",
+    };
+  }
+
+  // The card's Message button: the message composer to its user (the
+  // application route's composePrivateMessage), the card closed.
+  document.addEventListener("click", function (event) {
+    if (!card || !(event.target instanceof Element)) {
+      return;
+    }
+    var button = event.target.closest("#user-card .compose-pm button");
+    if (!button || !window.composer || !window.composer.composePrivateMessage) {
+      return;
+    }
+    var username = card.username;
+    var post = cardPost(card.target);
+    close();
+    window.composer.composePrivateMessage(username, post);
+  });
+
   // topic-header:trigger-user-card: the docked header's participants open
   // the card by their avatar (static/js/header-topic-info.js).
   Discourse.showUserCard = function (username, target) {
     show(username, target);
   };
+  // card:close, from chat-new-message.js's Chat button.
+  Discourse.closeUserCard = close;
 
   // dom:clean: a new page closes it.
   Discourse.onPage(function () {

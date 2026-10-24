@@ -124,6 +124,20 @@ Blockers, a scripted walk-through would hit them:
   (docs/demo-servers.md): feat/list-settings (164a), done: every list
   type saves with Rails' validations, and the page's list editors open
   and save them.
+- [x] A member couldn't start a private message from a profile, the
+  messages page or /new-message (the rehearsal's step 10):
+  feat/message-composers (282), done.
+- [x] A member couldn't start a chat DM: the drawer's "Start a
+  conversation", the sidebar's "Start DM or group chat"
+  (/chat/new-message answered 405) and the profile's Chat button did
+  nothing (the rehearsal's step 15): feat/message-composers (222), done.
+- [x] Chat's emoji picker opened partly above the viewport: it took the
+  first placement that fit the window, else its default unclamped.
+  feat/message-composers, done: emoji-picker.js places it with float.js
+  as DMenu's updatePosition does (offset, flip through
+  FLOAT_UI_PLACEMENTS within the viewport less the header, shift on both
+  axes); the reaction picker in the drawer lands where Ember's does at
+  1280x900 and 1280x560 (rs-ref-d).
 
 Found by the demo rehearsal (scripts/demo-rehearsal), the newcomer path:
 fix/newcomer-path.
@@ -3137,8 +3151,7 @@ route table has been made, so this list may be short.
     buttons, the sidebar's header actions and Customize (milestone 4.5),
     the login, signup and logout dialogs (79c), the Edit Directory
     Columns modal (74), BookmarkModal (editing a bookmark from the
-    bookmarks tab, 193c), the message composer (resuming a message draft
-    from the drafts tab, 193c), the ForgotPassword modal a password
+    bookmarks tab, 193c), the ForgotPassword modal a password
     reset code opens (from the security tab, 193e). Split when started
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
@@ -3697,8 +3710,7 @@ route table has been made, so this list may be short.
     focus, the saved draft), and the same login, logging in through the
     form back to the composer, and in-place links from a topic. Found by
     the screenshot run. Left, split into 269a.
-    269a. `feat/new-topic-route-rest` S: the message composer itself
-    (196; static/js/composer.js:954,970); creating a shared draft
+    269a. `feat/new-topic-route-rest` S: creating a shared draft
     (CREATE_SHARED_DRAFT, :917) and a category the composer shows
     read-only (readOnlyCategoryId, :921); lazy-loaded categories
     (Category.asyncFindById and asyncFindBySlugPath,
@@ -4245,8 +4257,7 @@ route table has been made, so this list may be short.
     280a. `fix/chat-dm-thread-pages-rest` S: the threads list with
     threads (UserThreads' rows, ThreadPreview, the load more; refused at
     plugins/chat/view.rs threads_route and routes/chat.rs me_threads,
-    with 160's threads), the Start a conversation button's new message
-    modal (222), the DM list's filtered empty state
+    with 160's threads), the DM list's filtered empty state
     (ChatSidebarChannelListFilterEmptyState, refused), long press and
     swipe on a row (99), the filter toggle's and list options' menus
     (99). On rs-ref-a's headless Chromium `(hover: none)` matches on
@@ -4264,6 +4275,45 @@ route table has been made, so this list may be short.
     maps `last` too. The page without a slug redirects to the canonical
     URL with the post kept, JSON answers 200. Recorded as
     topics/show_topic_and_post_number (rs-ref-b); tests/topic_json.rs.
+282. ~~`feat/message-composers`~~ (done) M: a member couldn't start a
+    private message (the demo rehearsal's step 10): the profile's Message
+    button and the messages page's New Message had no handler, and
+    /new-message refused "the message composer" (269a, 196). Now the
+    composer's privateMessage action (static/js/composer.js): the
+    composer-action-private-message and private-message classes, the
+    title with its own placeholder and no category (tags only with
+    site.can_tag_pms), the recipients above it (PmUserSelector:
+    EmailGroupUserChooser over /u/search/users with the messageable
+    groups and, for can_send_private_email_messages, an email, as a
+    multi-select: typing on the header opens it, rows ranked as
+    organizeResults, the chosen ones excluded and listed as removable
+    choices, backspace highlighting then removing the last, Escape and
+    clicking outside closing; static/js/email-group-user-chooser.js,
+    whose helpers add-pm-participants.js now shares), the staff's
+    official warning toggle for one user, "Create message" and "Send
+    message" with the envelope, focus on the recipients while there are
+    none, its draft (new_private_message_<time>, action privateMessage
+    with title, recipients and archetypeId) and the post with title,
+    archetype and target_recipients, going to the new message. Every way
+    Ember opens it: the profile's Message button (composePrivateMessage
+    to the profile's user), the messages page's New Message (to no one),
+    the user card's Message button (to its user, with the post's link and
+    "RE: <title>" when the card was opened on a post), /new-message with
+    username, groupname (after Group.messageable), title, body and tags
+    on a page load or a link, and resuming a message draft from the
+    drafts menu and the drafts tab, which opened it as a new topic or
+    refused. A reply in a message now says Message and saves as "Send
+    message" with the envelope (saveLabel, saveIcon). The reply area's
+    with-category and with-tags follow the mode, with compose.scss's
+    user-selector, add-warning and private-message rules. Compared with
+    Playwright against rs-ref-d as user1: the composer opened from the
+    profile and the messages page (markup, focus, screenshot), the
+    chooser's search, rows, choices and body position, the draft and
+    the POST it sends; same but the composer actions caret and the rich
+    editor (196). Recorded as messages/compose_new_message (rs-ref-d);
+    tests/messages_pages.rs. Refused as before: sending the warning
+    (is_warning, posts#create), a message to an email address
+    (PostCreator), the composer actions menu (196).
 
 ### Phase 11: the bundled plugins' gaps (210)
 
@@ -4381,12 +4431,54 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     log_entity_export, with 200); the category editor's Chat tab
     (category_edit_view.rs:369). Drawing webhook messages stays with 162
     (plugins/chat/messages.rs:598)
-222. `feat/chat-new-message` M: /chat/new-message and the new message
-    modal (the message creator's chatable search, new group, add
-    members), the Cmd/Ctrl+K quick palette, the user card's and
-    profile's Chat buttons (user_card_view.rs:338;
-    user_profile_view.rs:485), the browse empty state's button
-    (plugins/chat/page.rs:1705)
+222. ~~`feat/chat-new-message`~~ (done, as feat/message-composers) M:
+    /chat/new-message answered 405 and the drawer's "Start a
+    conversation", the sidebar's "Start DM or group chat" and the
+    profile's and user card's Chat buttons did nothing (the demo
+    rehearsal's step 15). Now the new message modal
+    (static/js/chat-new-message.js: ChatModalNewMessage, DModal
+    --quick-palette without its header, over MessageCreator): the search
+    mode lists "New group chat" (chatGuardian.canUseGroupChat) and the
+    member's channels as ChatablesLoader preloads them (from
+    /chat/api/me/channels: followed public channels by slug, then DMs by
+    activity, starred first, a one-person DM as its user), searches GET
+    /chat/api/chatables as typed (INPUT_DELAY), sorts as sortChatables
+    and draws ChatableUser, ChatableGroup and Channel with their unread
+    indicators and disabled warnings; arrows, Enter, Shift+Enter or
+    Shift+click (a new group with the item), hover and the cancel button
+    as ListHandler and List do. A user opens the DM with them
+    (upsertDmChannel: POST /chat/api/direct-message-channels with
+    target_usernames[], an empty target_groups and name, upsert), a
+    channel opens, a group or "New group chat" goes to the new group
+    mode: its name, the members counter against
+    chat_max_direct_message_users, MembersSelector's search without
+    channels, chips with Backspace, arrow and Enter handling, the max
+    members warning, Cancel back to the search, and Create group chat
+    (createDmChannel). The channel opens through chat-drawer.js's
+    transitionTo, in the drawer when it is preferred. Ways in: the DMs
+    list's empty state (drawer and full page), the browse page's empty
+    state, a link to /chat/new-message followed in the app (the
+    sidebar's), Ctrl/Cmd+K outside a field but the chat composer, and the
+    profile's and the user card's Chat buttons (ChatDirectMessageButton,
+    the card closed). GET /chat/new-message (chat_pages.rs) goes as the
+    route leaves a page load: to /chat, to the channel_id or channel
+    asked for (or /chat), or with recipients to the DM with them, found
+    or created through Chat::CreateDirectMessageChannel. Compared with
+    Playwright against rs-ref-d as user1: the modal from the drawer, the
+    search, the DM it opens, the new group (markup and screenshot
+    identical), Ctrl+K and Escape, the page loads of /chat/new-message
+    and the profile's Chat button, with the same requests. Recorded as
+    chat/dm_create_from_new_message_modal (rs-ref-d); tests/plugin_pages.rs.
+    Left, split into 222a.
+    222a. `feat/chat-new-message-rest` S: the channel list options menu
+    (ChatChannelListSidebarMenu: Start DM and Start group chat among its
+    items; the drawer's and full-page lists draw its button without a
+    menu), the add members mode (MODES.add_members, from a channel's
+    members, refused with the info route), and in the modal's rows the
+    presence dot (is-online), user status, avatar flair, unread thread
+    counts (threads, 99), emoji in channel titles; /chat/new-message with
+    a message (#seedDraft, a draft seeded in the browser, refused) or a
+    DM that can't be created (popupAjaxError over the chat page, refused)
 223. `feat/chat-drawer` L: the chat drawer in the below-footer outlet with
     its routes (browse, channel, info, pins, DMs, starred, search), its
     size and resizer, the full page or drawer preference and the header

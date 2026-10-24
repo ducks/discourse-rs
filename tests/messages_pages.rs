@@ -435,3 +435,125 @@ async fn a_message_carries_its_add_participants_modal() {
     assert!(invite_config(&html).is_none());
     assert!(!html.contains("add-pm-participants.js"));
 }
+
+/// The member's composer as the page draws it, up to its script.
+fn composer(html: &str) -> &str {
+    let start = html
+        .find("<div id=\"reply-control\"")
+        .expect("the composer");
+    &html[start..start + html[start..].find("<script").unwrap()]
+}
+
+// The message composer (the composer's privateMessage action): its
+// recipients chooser (PmUserSelector's EmailGroupUserChooser, closed and
+// empty), the strings composer.js swaps in for the mode, and the chooser's
+// script ahead of the composer's. Staff get the official warning toggle.
+#[tokio::test]
+async fn the_composer_carries_the_message_mode() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let html = user1.page("/latest").await;
+    let c = composer(&html);
+    assert!(c.contains(
+        "<div class=\"composer-fields\"><div class=\"user-selector\" hidden><div class=\"users-input\"><details id=\"private-message-users\" class=\"select-kit multi-select user-chooser email-group-user-chooser\" data-options=\""
+    ), "{c}");
+    assert!(c.contains(
+        "<summary data-name=\"\" data-value=\"\" tabindex=\"0\" id=\"private-message-users-header\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">Add users or groups</span><svg class=\"fa d-icon d-icon-plus svg-icon fa-width-auto angle-icon svg-string\""
+    ));
+    assert!(c.contains(
+        "<div id=\"private-message-users-body\" class=\"select-kit-body\"></div></details></div></div><div class=\"title-and-category\" hidden>"
+    ));
+    // can_send_private_email_messages: send_email_messages_allowed_groups
+    // is staff.
+    assert!(c.contains("&quot;allowEmails&quot;:false"));
+    assert!(c.contains("&quot;deleteItem&quot;:&quot;Delete %{name}&quot;"));
+    assert!(!c.contains("add-warning"));
+    assert!(c.contains(" data-username=\"user1\""));
+    assert!(c.contains(
+        " data-label-title-message=\"What is this discussion about in one brief sentence?\""
+    ));
+    assert!(c.contains(" data-label-reference-title=\"RE: %{title}\""));
+    // The action title and save button: Create message and Send message,
+    // with the envelope; a reply in a message names it.
+    assert!(c.contains(
+        "data-action-private-message=\"&lt;svg class&#x3D;&quot;fa d-icon d-icon-envelope svg-icon fa-width-auto svg-string&quot;"
+    ));
+    assert!(c.contains("Create message&lt;/span&gt;\""));
+    assert!(c.contains("Send message&lt;/span&gt;\""));
+    assert!(c.contains("Message&lt;/span&gt;\" data-label-title-message"));
+    let chooser_js = html
+        .find("/assets/email-group-user-chooser.js?v=")
+        .expect("the chooser's script");
+    assert!(chooser_js < html.find("/assets/composer.js?v=").unwrap());
+
+    let mut admin = Client::logged_in(st, "admin").await;
+    let html = admin.page("/latest").await;
+    assert!(composer(&html).contains("&quot;allowEmails&quot;:true"));
+    assert!(composer(&html).contains(
+        "</details></div><label class=\"add-warning\" hidden><input class=\"ember-checkbox\" type=\"checkbox\"><span>This is an official warning.</span></label></div>"
+    ));
+}
+
+// What composer.js sends for a message started from a profile: the draft
+// it saved under a new_private_message key, then the post with its title,
+// archetype and target_recipients. The message is created to its
+// recipient, the draft goes, and the recipient's inbox lists it.
+#[tokio::test]
+async fn a_message_from_the_composer_reaches_its_recipient() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let draft = user1
+        .send(
+            Method::POST,
+            "/drafts.json",
+            "draft_key=new_private_message_1792832483305&sequence=0&data=%7B%22reply%22%3A%22Hello%22%2C%22action%22%3A%22privateMessage%22%2C%22title%22%3A%22A%20message%20from%20the%20composer%22%2C%22recipients%22%3A%22user0%22%7D",
+        )
+        .await;
+    assert!(draft.contains("\"draft_sequence\""), "{draft}");
+    let body = user1
+        .send(
+            Method::POST,
+            "/posts",
+            "raw=Hello%20there%2C%20this%20is%20a%20message%20from%20the%20composer.&draft_key=new_private_message_1792832483305&title=A%20message%20from%20the%20composer&archetype=private_message&target_recipients=user0",
+        )
+        .await;
+    let post: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let topic_id = post["topic_id"].as_i64().expect("the message's topic");
+    assert_eq!(post["topic_slug"], "a-message-from-the-composer");
+    let (archetype, allowed): (String, Vec<String>) = sqlx::query_as(
+        "SELECT t.archetype, ARRAY(SELECT u.username FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id WHERE tau.topic_id = t.id ORDER BY u.username) FROM topics t WHERE t.id = $1",
+    )
+    .bind(topic_id as i32)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(archetype, "private_message");
+    assert_eq!(allowed, ["user0", "user1"]);
+    let drafts: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM drafts WHERE draft_key = 'new_private_message_1792832483305'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(drafts, 0);
+    let mut user0 = Client::logged_in(st, "user0").await;
+    let inbox = user0.page("/u/user0/messages").await;
+    assert!(inbox.contains(&format!("data-topic-id=\"{topic_id}\"")));
+}
+
+// The profile's Message button that opens the message composer
+// (composePrivateMessage), and none on one's own profile.
+#[tokio::test]
+async fn a_profile_offers_to_message_its_user() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/u/user0/summary").await;
+    assert!(html.contains(
+        "<li><button class=\"btn btn-icon-text btn-primary compose-pm\" type=\"button\"><svg class=\"fa d-icon d-icon-envelope svg-icon fa-width-auto svg-string\""
+    ));
+    let own = user1.page("/u/user1/summary").await;
+    assert!(!own.contains("compose-pm"));
+}

@@ -37,7 +37,7 @@
 {#- The topic admin menu and the posts' admin menus. -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
 {#- A message's add participant modal (AddPmParticipants). -#}
-{% if topic_menus.contains("add-pm-participants-config") %}<script src="{{ crate::assets::url(base_path, "add-pm-participants.js") }}"></script>{% endif %}
+{% if topic_menus.contains("add-pm-participants-config") %}<script src="{{ crate::assets::url(base_path, "email-group-user-chooser.js") }}"></script><script src="{{ crate::assets::url(base_path, "add-pm-participants.js") }}"></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "header-topic-info.js") }}"></script>
 <script type="application/json" id="quote-button-config">{{ quote_config|safe }}</script>
 <script src="{{ crate::assets::url(base_path, "quote-button.js") }}"></script>

@@ -860,12 +860,25 @@ html.composer-open:not(.has-full-page-chat) #main-outlet {
   }
 }
 /* compose.scss:303 */
+#reply-control .user-selector,
 #reply-control .title-and-category {
   display: flex;
   width: 100%;
   align-items: center;
   position: relative;
   gap: 0 var(--space-2);
+}
+/* compose.scss:313 */
+@media(width < 40rem) {
+  #reply-control .user-selector {
+    flex-wrap: wrap;
+  }
+}
+/* compose.scss:317 */
+@media(width >= 40rem) {
+  #reply-control .user-selector {
+    margin-bottom: .5em;
+  }
 }
 /* compose.scss:322 */
 #reply-control .title-input {
@@ -947,6 +960,34 @@ html.composer-open:not(.has-full-page-chat) #main-outlet {
   min-width: 0;
   flex-wrap: wrap;
   max-width: calc(50% - 4px);
+}
+/* compose.scss:419 */
+#reply-control .add-warning {
+  color: var(--primary-high);
+  padding: .5em;
+  display: flex;
+  line-height: var(--line-height-medium);
+  margin: 0;
+}
+/* compose.scss:426 */
+@media(width < 40rem) {
+  #reply-control .add-warning {
+    margin-bottom: .15em;
+  }
+}
+/* compose.scss:430 */
+#reply-control .add-warning input {
+  margin-right: 8px;
+}
+/* compose.scss:435 */
+@media(width < 40rem) {
+  #reply-control .users-input,
+  #reply-control .add-warning {
+    width: 100%;
+  }
+  #reply-control .users-input .select-kit.multi-select {
+    width: 100%;
+  }
 }
 /* compose.scss:446 */
 #reply-control #reply-title {
@@ -1196,6 +1237,42 @@ html.composer-open:not(.has-full-page-chat) #main-outlet {
 /* compose.scss:642 */
 #reply-control .select-kit.is-expanded.user-chooser {
   z-index: 702;
+}
+/* compose.scss:651 */
+@media(width >= 40rem) {
+  #reply-control.private-message .with-tags .title-and-category {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+  }
+  #reply-control.private-message .with-tags .title-and-category .tags-input {
+    max-width: 50%;
+    flex: 1 1 auto;
+  }
+  #reply-control.private-message .with-tags .title-input {
+    max-width: 50%;
+    min-width: 0;
+  }
+  #reply-control.private-message .with-tags .title-input input {
+    min-width: 0;
+  }
+  #reply-control.private-message #private-message-users,
+  #reply-control.private-message .users-input {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+  #reply-control.private-message #private-message-users.can-warn,
+  #reply-control.private-message .users-input.can-warn {
+    width: 60%;
+  }
+  #reply-control.private-message .add-warning {
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+  #reply-control.private-message .add-warning span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 /* compose.scss:695 */
 #reply-control.closed .grippie {

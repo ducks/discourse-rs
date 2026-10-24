@@ -478,6 +478,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/chat-drawer.js"),
     ),
     (
+        "chat-new-message.js",
+        JS,
+        include_str!("../static/js/chat-new-message.js"),
+    ),
+    (
         "emoji-picker.js",
         JS,
         include_str!("../static/js/emoji-picker.js"),
@@ -574,6 +579,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "search-menu.js",
         JS,
         include_str!("../static/js/search-menu.js"),
+    ),
+    (
+        "email-group-user-chooser.js",
+        JS,
+        include_str!("../static/js/email-group-user-chooser.js"),
     ),
     ("composer.js", JS, include_str!("../static/js/composer.js")),
     (
