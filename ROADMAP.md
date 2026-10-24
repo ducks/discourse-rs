@@ -137,6 +137,24 @@ fix/newcomer-path.
   sends both with a new post (_create_serializer; an edit sends neither,
   as _update_serializer), saves them in the draft (composerTime,
   typingTime) and takes them back from it as loadDraft does.
+- [x] /review answered 500 for a silenced or suspended author ("authors
+  under a penalty"), and approving a silenced newcomer's held post
+  refused on the unsilence. Done: ReviewableSerializer's author_penalties
+  (ReviewableAuthorPenaltySerializer: kind, forever, expires_at, the
+  reason, applied_at and applied_by from the latest silence or suspend
+  record, automatic, from_this_target, can_lift), FlaggedUserSerializer's
+  silenced_till, silence_reason, suspended_till and suspend_reason, a
+  flagged post's penalty_effect on each action and its unsilence_user
+  action, and penalty actions offered only for a penalty not already in
+  place. The card draws the penalty icons with their titles, the
+  timeline's "Author silenced/suspended" event for a penalty from this
+  reviewable or post, each action's effect after its description, and
+  Ember's toast with Undo when an action leaves the author silenced.
+  Approving a queued post unsilences its author (UserSilencer.unsilence
+  with the reviewable). Recorded on rs-ref-c: review/penalized_authors_list,
+  review/queued_approve_silenced_author. Still refused: performing a
+  flag's unsilence_user (with the flag actions that delete, edit or
+  penalize, 194e), a reason with markup (sanitize_staff_reason).
 
 Visible if clicked, avoid them in a scripted demo:
 
@@ -454,7 +472,8 @@ Bugs or silent gaps in what is merged, small and independent.
     user (as a spammer, account_deleted email); reviewed posts: approve,
     restore, unhide, reject, keep deleted, delete; AutoQueueHandler's
     rejections. Left: approving into a closed topic or with tags, an
-    email or plugin fields, unsilencing the author, unhiding a first post;
+    email or plugin fields, unhiding a first post (unsilencing the author
+    on approval landed with fix/newcomer-path);
     the review list's queued and reviewed posts landed with
     feat/review-queued-posts),
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer

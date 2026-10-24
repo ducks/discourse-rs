@@ -405,6 +405,9 @@ fn strings(p: &Page) -> Value {
         "statuses": statuses,
         "close": t(cx, "modal.close"),
         "revise_title": t(cx, "review.revise_and_reject_post.title"),
+        "still_silenced": t(cx, "review.author_penalty.toast.still_silenced"),
+        "undo_penalty": t(cx, "review.author_penalty.toast.undo"),
+        "penalty_undone": t(cx, "review.author_penalty.toast.undone"),
     })
 }
 
@@ -717,6 +720,11 @@ fn script_data(p: &Page, store: &Store, r: &Value) -> Value {
         "deletable_notes": deletable_notes,
         "actions": actions,
         "watched_words": words,
+        "author_penalties": r["author_penalties"],
+        "target_created_by": store
+            .user(&r["target_created_by_id"])
+            .map(|u| json!({ "id": u["id"], "username": u["username"] }))
+            .unwrap_or(Value::Null),
     })
 }
 
@@ -836,12 +844,12 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
         let (secondary, primary): (Vec<&Bundle>, Vec<&Bundle>) =
             bundles.iter().partition(|b| b.row["secondary"] == true);
         for b in &primary {
-            out.push_str(&bundled_action(cx, b));
+            out.push_str(&bundled_action(cx, b, &r["author_penalties"]));
         }
         if !secondary.is_empty() || r["can_edit"] == true {
             out.push_str("<div class=\"review-item__secondary-actions\">");
             for b in &secondary {
-                out.push_str(&bundled_action(cx, b));
+                out.push_str(&bundled_action(cx, b, &r["author_penalties"]));
             }
             if r["can_edit"] == true {
                 out.push_str(&text_button(
@@ -1020,7 +1028,7 @@ fn user_context_question(
 
 /// ReviewableBundledAction: a button for one action, else the
 /// DropdownSelectBox of them, its rows in a template for review.js.
-fn bundled_action(cx: &ListContext, bundle: &Bundle) -> String {
+fn bundled_action(cx: &ListContext, bundle: &Bundle, penalties: &Value) -> String {
     let Some(first) = bundle.actions.first() else {
         return String::new();
     };
@@ -1068,10 +1076,20 @@ fn bundled_action(cx: &ListContext, bundle: &Bundle) -> String {
             .as_str()
             .map(|name| icon(name, None))
             .unwrap_or_default();
+        // bundleActions: the description, then the penalty effect.
+        let description = [
+            a["description"].as_str().map(str::to_string),
+            penalty_effect_description(cx, a, penalties),
+        ]
+        .into_iter()
+        .flatten()
+        .filter(|d| !d.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
         rows.push_str(&format!(
             "<li aria-checked=\"false\" role=\"menuitemradio\" data-index=\"{index}\" data-name=\"{label}\" data-value=\"{}\" title=\"{label}\" tabindex=\"0\" class=\"select-kit-row dropdown-select-box-row\"><div class=\"icons\"><span class=\"selection-indicator\"></span>{icon_html}</div><div class=\"texts\"><span class=\"name\">{label}</span><span class=\"desc\">{}</span></div></li>",
             escape(s(&a["action_name"])),
-            escape(s(&a["description"]))
+            escape(&description)
         ));
     }
     format!(
@@ -1211,16 +1229,80 @@ fn reviewable_tags(cx: &ListContext, tags: &Value) -> String {
     }
 }
 
+/// lib/reviewable-penalty's penaltyPastTense.
+fn penalty_past_tense(kind: &str) -> &'static str {
+    if kind == "suspension" {
+        "suspended"
+    } else {
+        "silenced"
+    }
+}
+
+/// lib/reviewable-penalty's penaltyIcon.
+fn penalty_icon(kind: &str) -> &'static str {
+    if kind == "suspension" {
+        "ban"
+    } else {
+        "microphone-slash"
+    }
+}
+
+/// lib/reviewable-penalty's penaltyEffectDescription: what an action does
+/// to the author's penalties, for its row's description.
+fn penalty_effect_description(
+    cx: &ListContext,
+    action: &Value,
+    penalties: &Value,
+) -> Option<String> {
+    let effect = action["penalty_effect"].as_str()?;
+    let penalties = penalties.as_array().filter(|p| !p.is_empty())?;
+    if effect == "lifts_penalty" {
+        return Some(t(cx, "review.author_penalty.effect.lifts_silence"));
+    }
+    let silence = penalties.iter().any(|p| p["kind"] == "silence");
+    let suspension = penalties.iter().any(|p| p["kind"] == "suspension");
+    let key = if silence && suspension {
+        "review.author_penalty.effect.retains_silence_and_suspension"
+    } else if suspension {
+        "review.author_penalty.effect.retains_suspension"
+    } else {
+        "review.author_penalty.effect.retains_silence"
+    };
+    Some(t(cx, key))
+}
+
 /// reviewable/created-by.gjs for the author.
-fn created_by(cx: &ListContext, author: Option<&Value>) -> String {
+fn created_by(cx: &ListContext, author: Option<&Value>, penalties: &Value) -> String {
     let mut out = String::from("<div class=\"created-by\">");
     match author {
         Some(user) => {
             out.push_str(&user_link(cx, user, &avatar(user, 24)));
-            // ReviewableCreatedByName; review_list refuses authors under
-            // a penalty, so there are no penalty icons.
+            // ReviewableCreatedByName: the username, then an icon per
+            // penalty titled with how long it lasts.
+            let mut icons = String::new();
+            for p in penalties.as_array().into_iter().flatten() {
+                let kind = s(&p["kind"]);
+                let state = penalty_past_tense(kind);
+                let title = match time(&p["expires_at"]) {
+                    Some(at) if p["forever"] != true => t_with(
+                        cx,
+                        &format!("user.{state}_notice"),
+                        &[("date", &crate::viewer_dates::long_marker(cx, at))],
+                    ),
+                    // longDate(undefined) interpolates as nothing.
+                    None if p["forever"] != true => {
+                        t_with(cx, &format!("user.{state}_notice"), &[("date", "")])
+                    }
+                    _ => t(cx, &format!("user.{state}_permanently")),
+                };
+                icons.push_str(&format!(
+                    "<span class=\"svg-icon-title\"{}>{}</span>",
+                    crate::viewer_dates::attr(cx, "title", &title),
+                    icon(penalty_icon(kind), Some("reviewable-penalty-icon"))
+                ));
+            }
             out.push_str(&format!(
-                "<div class=\"names\"><span class=\"username\">{}</span></div>",
+                "<div class=\"names\"><span class=\"username\">{}{icons}</span></div>",
                 user_link(cx, user, &escape(s(&user["username"])))
             ));
         }
@@ -1252,7 +1334,7 @@ fn post_body(
         "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
         escape(&t(cx, user_label_key))
     ));
-    out.push_str(&created_by(cx, author));
+    out.push_str(&created_by(cx, author, &r["author_penalties"]));
     out.push_str("</div></div>");
     out.push_str(
         "<div class=\"review-item__post\"><div class=\"review-item__post-content-wrapper\">",
@@ -1310,7 +1392,7 @@ fn queued_post_body(cx: &ListContext, r: &Value, store: &Store, author: Option<&
         "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
         escape(&t(cx, "review.review_user"))
     ));
-    out.push_str(&created_by(cx, author));
+    out.push_str(&created_by(cx, author, &r["author_penalties"]));
     out.push_str("</div></div>");
     out.push_str(&format!(
         "<div class=\"review-item__post\"><div class=\"review-item__post-content\"><div class=\"post-body\">{}</div><span></span></div></div>",
@@ -1438,6 +1520,36 @@ fn timeline(
                 });
             }
         }
+    }
+    // The author's penalties applied for this reviewable or its post.
+    for penalty in r["author_penalties"].as_array().into_iter().flatten() {
+        if penalty["from_this_target"] != true {
+            continue;
+        }
+        let Some(at) = time(&penalty["applied_at"]) else {
+            continue;
+        };
+        let suspended = penalty["kind"] == "suspension";
+        let key = match (suspended, penalty["automatic"] == true) {
+            (false, true) => "review.timeline.author_silenced_automatically",
+            (false, false) => "review.timeline.author_silenced_by",
+            (true, true) => "review.timeline.author_suspended_automatically",
+            (true, false) => "review.timeline.author_suspended_by",
+        };
+        events.push(Event {
+            at,
+            icon: penalty_icon(s(&penalty["kind"])),
+            key,
+            user: Some(&penalty["applied_by"]).filter(|u| u.is_object()),
+            flag_reason: None,
+            // sanitize(penalty.reason): format_penalty_reason's text,
+            // which holds no markup (markup is refused).
+            description: penalty["reason"]
+                .as_str()
+                .filter(|r| !r.is_empty())
+                .map(escape),
+            note_id: None,
+        });
     }
     // The notes, each deletable by its author or an admin.
     for note in store.many("reviewable_notes", &r["reviewable_note_ids"]) {

@@ -599,7 +599,7 @@ async fn penalty_reasons(
 }
 
 /// `User.format_penalty_reason`: the sanitized reason's first line.
-fn format_penalty_reason(details: Option<&Option<String>>) -> Result<Value, AppError> {
+pub(crate) fn format_penalty_reason(details: Option<&Option<String>>) -> Result<Value, AppError> {
     let Some(Some(details)) = details else {
         return Ok(Value::Null);
     };
