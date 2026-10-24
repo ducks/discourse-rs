@@ -1,5 +1,5 @@
 //! The review queue's bookkeeping that flagging goes through: Reviewable
-//! (`needs_review!` for a new reviewable, `add_score`, `log_history`), the
+//! (`needs_review!`, `add_score`, `recalculate_score`, `log_history`), the
 //! score of a flag (ReviewableScore), and the thresholds flags are held to
 //! (`sensitivity_score` and `min_score_for_priority`, from the priorities
 //! Jobs::ReviewablePriorities keeps in the plugin store).
@@ -25,8 +25,12 @@ pub const STI_NAMES: [&str; 5] = [
 pub const PENDING: i32 = 0;
 /// `ReviewableScore.statuses[:agreed]`
 pub const AGREED: i32 = 1;
+/// `Reviewable.statuses[:approved]`
+const APPROVED: i32 = 1;
 /// `ReviewableHistory.types[:created]`
 const HISTORY_CREATED: i32 = 0;
+/// `ReviewableHistory.types[:transitioned]`
+const HISTORY_TRANSITIONED: i32 = 1;
 
 /// `Reviewable.typical_sensitivity`
 const TYPICAL_SENSITIVITY: f64 = 12.5;
@@ -659,10 +663,116 @@ pub struct NewFlaggedPost {
     pub targets_topic: bool,
 }
 
+/// `ReviewableFlaggedPost.needs_review!`: the post's reviewable set back
+/// to pending (potential_spam and potentially_illegal only ever turned
+/// on), and when it had been reviewed its score recalculated and a
+/// `transitioned` history logged by the flagger; a new one when the post
+/// has none.
+pub async fn flagged_post_needs_review(
+    conn: &mut PgConnection,
+    p: &crate::web_hooks::Payloads<'_>,
+    r: &NewFlaggedPost,
+) -> Result<InReview, AppError> {
+    let old: Option<(i64, i32, f64, Option<i32>)> = sqlx::query_as(
+        "UPDATE reviewables SET status = $1, \
+                potential_spam = COALESCE($3, reviewables.potential_spam), \
+                potentially_illegal = COALESCE($4, reviewables.potentially_illegal) \
+         FROM reviewables AS old_reviewables \
+         WHERE reviewables.target_id = $2 AND reviewables.target_type = 'Post' \
+           AND reviewables.type = 'ReviewableFlaggedPost' AND old_reviewables.id = reviewables.id \
+         RETURNING reviewables.id, old_reviewables.status, old_reviewables.score, reviewables.topic_id",
+    )
+    .bind(PENDING)
+    .bind(r.post_id)
+    .bind(r.potential_spam.then_some(true))
+    .bind(r.potentially_illegal.then_some(true))
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((id, old_status, loaded_score, topic_id)) = old else {
+        let id = create_flagged_post(conn, p, r).await?;
+        return Ok(InReview {
+            id,
+            loaded_score: 0.0,
+            topic_id: Some(r.topic_id),
+        });
+    };
+    if old_status != PENDING {
+        recalculate_score(&mut *conn, p, id).await?;
+        // log_history(:transitioned, created_by), the status now pending.
+        sqlx::query(
+            "INSERT INTO reviewable_histories (reviewable_id, reviewable_history_type, status, \
+                                               created_by_id, edited, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, NULL, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(id)
+        .bind(HISTORY_TRANSITIONED)
+        .bind(PENDING)
+        .bind(r.created_by_id)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(InReview {
+        id,
+        loaded_score,
+        topic_id,
+    })
+}
+
+/// The reviewable a flag scores, as `needs_review!` hands it on.
+pub struct InReview {
+    pub id: i64,
+    /// Its score as loaded (0 for a new one). recalculate_score assigns
+    /// the recalculated score, so add_score's `update(score:)` is a no-op
+    /// for score when the sum lands back on this value: an ignored or
+    /// disagreed flag's reviewable reopens at 0 and the new score is lost
+    /// on the reviewable (not the topic), as on Rails.
+    pub loaded_score: f64,
+    pub topic_id: Option<i32>,
+}
+
+/// `Reviewable#recalculate_score`: the pending and agreed scores' sum,
+/// then the topic's from its pending and approved reviewables, then
+/// reviewable_score_updated.
+pub async fn recalculate_score(
+    conn: &mut PgConnection,
+    p: &crate::web_hooks::Payloads<'_>,
+    reviewable_id: i64,
+) -> Result<(), AppError> {
+    let topic_id: Option<i32> = sqlx::query_scalar(
+        "UPDATE reviewables SET score = COALESCE(( \
+             SELECT sum(score) FROM reviewable_scores AS rs \
+             WHERE rs.reviewable_id = $1 AND rs.status IN ($2, $3)), 0.0) \
+         WHERE id = $1 RETURNING topic_id",
+    )
+    .bind(reviewable_id)
+    .bind(PENDING)
+    .bind(AGREED)
+    .fetch_one(&mut *conn)
+    .await?;
+    sqlx::query(
+        "UPDATE topics SET reviewable_score = COALESCE(( \
+             SELECT SUM(score) FROM reviewables AS r \
+             WHERE r.topic_id = $1 AND r.status IN ($2, $3)), 0.0) \
+         WHERE id = $1",
+    )
+    .bind(topic_id)
+    .bind(PENDING)
+    .bind(APPROVED)
+    .execute(&mut *conn)
+    .await?;
+    crate::web_hooks::enqueue_reviewable_hooks(
+        &mut *conn,
+        p,
+        "reviewable_score_updated",
+        reviewable_id,
+    )
+    .await
+}
+
 /// `ReviewableFlaggedPost.needs_review!` for a post with no reviewable:
 /// saved, its `created` history logged, notify_reviewable enqueued on
 /// commit as it is pending.
-pub async fn create_flagged_post(
+async fn create_flagged_post(
     conn: &mut PgConnection,
     p: &crate::web_hooks::Payloads<'_>,
     r: &NewFlaggedPost,
@@ -728,11 +838,11 @@ pub struct NewScore {
 pub async fn add_score(
     conn: &mut PgConnection,
     p: &crate::web_hooks::Payloads<'_>,
-    reviewable_id: i64,
-    topic_id: i32,
+    reviewable: &InReview,
     user: &Flagger,
     new: &NewScore,
 ) -> Result<f64, AppError> {
+    let reviewable_id = reviewable.id;
     let s = p.settings;
     let (score_type, created_at) = (new.score_type, new.created_at);
     let take_action_bonus = if new.take_action { 5.0 } else { 0.0 };
@@ -771,14 +881,17 @@ pub async fn add_score(
     .execute(&mut *conn)
     .await?;
     // update(score:, latest_score:, force_review:); still pending, so
-    // notify_reviewable again on commit.
+    // notify_reviewable again on commit. Dirty tracking leaves score
+    // alone when the sum equals the score as loaded (see InReview).
     sqlx::query(
-        "UPDATE reviewables SET score = score + $2, latest_score = $3, updated_at = clock_timestamp() \
+        "UPDATE reviewables SET score = CASE WHEN score + $2 = $4 THEN score ELSE score + $2 END, \
+                latest_score = $3, updated_at = clock_timestamp() \
          WHERE id = $1",
     )
     .bind(reviewable_id)
     .bind(score)
     .bind(created_at)
+    .bind(reviewable.loaded_score)
     .execute(&mut *conn)
     .await?;
     crate::jobs::enqueue(
@@ -795,8 +908,10 @@ pub async fn add_score(
         reviewable_id,
     )
     .await?;
-    // topic.update(reviewable_score: topic.reviewable_score + rs.score)
-    update_topic_reviewable_score(conn, s, topic_id, score).await?;
+    // topic.update(reviewable_score: topic.reviewable_score + rs.score) if topic
+    if let Some(topic_id) = reviewable.topic_id {
+        update_topic_reviewable_score(conn, s, topic_id, score).await?;
+    }
     Ok(score)
 }
 

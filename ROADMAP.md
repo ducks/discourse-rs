@@ -2118,15 +2118,17 @@ have handlers now.
     (jobs/user_email.rs:93,101,105,507), sendmail delivery
     (email/mod.rs:169), mailing list mode (the
     notify_mailing_list_subscribers job)
-147. `feat/flags-rest` M: official warnings (is_warning, flags.rs:194;
+147. `feat/flags-rest` M: official warnings (is_warning, flags.rs:204;
     PostCreator's is_warning and UserWarning), undoing flags
-    (routes/post_actions.rs:211), flags in messages (flags.rs:127),
-    flags on posts already in review (:184), staff queueing a post for
-    review (:175), hiding on a trusted user's spam flag (:531), silencing
-    new users on spam flags and the scoring behind it (:568;
-    guardian.rs:392; current_user.rs:909). Flags that send a message
-    (notify user, notify moderators, illegal, spam with a message) and
-    flagging topics are ported (feat/flag-and-penalty-modals).
+    (routes/post_actions.rs:212), flags in messages (flags.rs:129),
+    staff queueing a post for review (:177), hiding on a trusted user's
+    spam flag (:578), silencing new users on spam flags and the scoring
+    behind it (:615; guardian.rs:392; current_user.rs:909). Flags that
+    send a message (notify user, notify moderators, illegal, spam with a
+    message) and flagging topics are ported
+    (feat/flag-and-penalty-modals); flags on posts already in review
+    (the reviewable's new score, reopening a reviewed one, and
+    cannot_flag_again?'s refusal) are ported (fix/flags-on-reviewed-posts).
 148. `feat/review-actions-rest` L: review actions that delete, edit,
     restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
@@ -5375,7 +5377,7 @@ Logged-in readers, no writes yet.
       Rails
 - [ ] Flags and reviews that go further: closing topics and silencing new
       users on flags, notify user and notify moderators messages, illegal,
-      undoing flags, flags on posts already in review, deleting, editing,
+      undoing flags, deleting, editing,
       restoring and unhiding from the queue, penalties. The reviewed and
       queued posts' actions landed with 75; the rest: 147, 148
 - [x] The review queue (GET /review.json) for admins: flagged, queued and
