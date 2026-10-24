@@ -1,0 +1,41 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The first of several replies in a row, each one different.",
+        "typing_duration_msecs": 12000
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A second reply in a row, written before anyone else answered.",
+        "typing_duration_msecs": 12000
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A third reply in a row, which the default limit still allows.",
+        "typing_duration_msecs": 12000
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A fourth reply in a row, past max_consecutive_replies by default.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

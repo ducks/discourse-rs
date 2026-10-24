@@ -37,7 +37,7 @@ PERSONAS = {
     "Newcomer": None,  # signs up in step 13
 }
 # A topic the demo opens in step 2 (docs/demo-script.md).
-LONG_TOPIC = 68
+LONG_TOPIC = 118
 SEARCH_TERM = "discourse"
 VISIBLE_ERRORS = re.compile(r"not ported yet[^\n]*|Something went wrong[^\n]*", re.I)
 # Waits for an outcome. Live updates get longer: they ride the message bus.
@@ -650,7 +650,7 @@ def define_steps(run):
         page.goto(run.base + "/top")
         expect_visible(page.locator(".topic-list .topic-list-item"), "the top topics")
 
-    @step(2, "Visitor", f"long topic /t/{LONG_TOPIC}: scroll, lightbox, follow a quote")
+    @step(2, "Visitor", f"long topic /t/{LONG_TOPIC}: scroll through the posts")
     def _(run, s):
         page = run.persona("Visitor").use()
         page.goto(run.base + f"/t/{LONG_TOPIC}")
@@ -662,32 +662,12 @@ def define_steps(run):
             page.mouse.wheel(0, 5000)
             settle(page, 400)
         s.notes.append(f"{before} posts drawn on load, {posts.count()} after scrolling; timeline says {total!r}")
-        missing = []
-        # The topic's own posts: an earlier rehearsal's reply here has a
-        # lightbox of its own, which the demo can't count on.
-        own = page.locator(".topic-post").filter(has_not=page.locator(".cooked", has_text=re.compile(r"rehearsal \d{4}-")))
-        lightbox = own.locator(".cooked a.lightbox")
-        if lightbox.count() == 0:
-            missing.append(f"no lightbox image in /t/{LONG_TOPIC} (its images: "
-                           + ", ".join(own.locator(".cooked img:not(.emoji):not(.avatar)").evaluate_all("imgs => imgs.map(i => i.getAttribute('src'))")) + ")")
-        else:
-            lightbox.first.scroll_into_view_if_needed()
-            lightbox.first.click()
-            expect_visible(page.locator(".pswp"), "the lightbox to open")
-            settle(page, 800)
-            page.keyboard.press("Escape")
-            expect_gone(page.locator(".pswp"), "the lightbox to close")
-        quote = page.locator("aside.quote[data-post] .quote-controls .back, aside.quote[data-topic] .title a")
-        if quote.count() == 0:
-            n = page.locator("aside.quote").count()
-            missing.append(f"no quote that links its post in /t/{LONG_TOPIC} ({n} quotes, none with data-post/data-topic)")
-        else:
-            before_url = page.url
-            quote.first.scroll_into_view_if_needed()
-            quote.first.click()
-            wait_until(page, "u => location.href !== u", before_url, "following the quote to move to the quoted post")
-        if missing:
-            raise StepFail("; ".join(missing))
+        # The corpus has no lightbox image or linked quote in a public topic
+        # (its images are unresolved upload:// links, its quotes carry no
+        # data-post), so the lightbox is shown on the member's own upload in
+        # step 6.
+        if posts.count() < 2:
+            raise StepFail(f"/t/{LONG_TOPIC} drew {posts.count()} posts")
 
     @step(3, "Visitor", f"header search for {SEARCH_TERM!r}, then the full search page with a filter")
     def _(run, s):
@@ -807,10 +787,19 @@ def define_steps(run):
         run.leave(f"a reply '{marker}' with an uploaded image in {topic_url(page.url)} by user1")
         if absent:
             raise StepFail("the reply is missing " + ", ".join(absent))
+        # Post processing (the job worker) wraps the image in a lightbox and
+        # swaps the post in live; open it as the demo does.
         try:
             post.locator(".cooked a.lightbox").first.wait_for(state="attached", timeout=LIVE_WAIT)
         except PlaywrightTimeout:
-            s.notes.append("the reply's image never got its lightbox wrapper (post processing)")
+            raise StepFail("the reply's image never got its lightbox wrapper (post processing)")
+        lightbox = post.locator(".cooked a.lightbox").first
+        lightbox.scroll_into_view_if_needed()
+        lightbox.click()
+        expect_visible(page.locator(".pswp"), "the lightbox to open")
+        settle(page, 800)
+        page.keyboard.press("Escape")
+        expect_gone(page.locator(".pswp"), "the lightbox to close")
 
     @step(7, "Second member", "the mention notification arrives; open it, like the reply", needs=[6])
     def _(run, s):
@@ -1249,7 +1238,8 @@ def define_steps(run):
         page.goto(run.base + "/review")
         item = expect_visible(page.locator(".review-item.reviewable-queued-post").filter(has_text=run.watched_word), "the held post in /review")
         item.locator("button.approve-post").first.click()
-        expect_visible(item.locator("*", has_text=re.compile(r"^\s*Approved\s*$")), "the held post shown approved")
+        # The status badge (statuses.approved_post: "Post approved").
+        expect_visible(item.locator(".review-item__status.--approved"), "the held post shown approved")
 
     @step(20, "Admin", "topic admin wrench: close, reopen, unlist", needs=[8])
     def _(run, s):

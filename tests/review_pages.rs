@@ -684,3 +684,102 @@ async fn a_queued_reply_is_sent_back_for_revision() {
     assert!(message.contains("Please add a source"), "{message}");
     assert!(message.contains("Thanks!"), "{message}");
 }
+
+/// A newcomer's first post typed too fast: held and the author silenced
+/// (NewPostManager's fast typer). The queue draws the silence (the icon,
+/// the timeline's event, what each flag action does to it) and approving
+/// the post lifts it.
+#[tokio::test]
+async fn a_fast_typers_silence_draws_and_approving_lifts_it() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    for sql in [
+        "UPDATE users SET trust_level = 0 WHERE id = 2",
+        "UPDATE user_stats SET post_count = 0, topic_count = 0 WHERE user_id = 2",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    let id = queue(
+        &db,
+        &st,
+        "topic_id=35&raw=A+first+reply+pasted+in+far+too+fast+to+be+typed.&typing_duration_msecs=100",
+    )
+    .await;
+    // A flag on one of the author's posts, for the actions' effects.
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (status, body) = user1
+        .send(
+            Method::POST,
+            "/post_actions.json",
+            "id=52&post_action_type_id=4&flag_topic=false",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let mut admin = Client::logged_in(st, "admin").await;
+
+    let (status, body) = admin.send(Method::GET, "/review.json", "", true).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let queued = json["reviewables"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["id"] == id)
+        .expect("the queued post");
+    let penalty = &queued["author_penalties"][0];
+    assert_eq!(penalty["kind"], "silence", "{body}");
+    assert_eq!(penalty["forever"], true);
+    assert_eq!(penalty["reason"], "New user typed too fast");
+    assert_eq!(penalty["automatic"], true);
+    assert_eq!(penalty["from_this_target"], true);
+    assert_eq!(penalty["applied_by"]["username"], "system");
+    let unsilence = json["actions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|a| a["server_action"] == "unsilence_user")
+        .expect("the flag's unsilence action");
+    assert_eq!(unsilence["penalty_effect"], "lifts_penalty");
+
+    let (status, html) = admin.page("/review").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains(
+            "<span class=\"svg-icon-title\" title=\"This user is silenced.\"><svg class=\"fa d-icon d-icon-microphone-slash svg-icon fa-width-auto reviewable-penalty-icon svg-string\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains("Author silenced automatically · <span>"));
+    assert!(
+        html.contains("<div class=\"timeline-event__description\">New user typed too fast</div>")
+    );
+    assert!(html.contains("The author stays silenced.</span>"));
+    assert!(html.contains("reviewable-action post-unsilence-user"));
+
+    // Approving the post unsilences its author, logged for the reviewable.
+    let (status, body) = admin
+        .send(
+            Method::PUT,
+            &format!("/review/{id}/perform/approve_post?version=0"),
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let silenced: Option<chrono::NaiveDateTime> =
+        sqlx::query_scalar("SELECT silenced_till FROM users WHERE id = 2")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(silenced, None);
+    let logged: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM user_histories WHERE action = 31 AND target_user_id = 2 \
+         AND acting_user_id = 1 AND reviewable_id = $1",
+    )
+    .bind(id)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(logged, 1);
+}

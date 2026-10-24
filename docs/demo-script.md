@@ -21,14 +21,16 @@ and reports any step that errors, so run it before showing.
 ## Core forum
 
 1. Visitor: `/latest`, scroll, then `/categories`, a category, `/top`.
-2. Visitor: open a long topic (`/t/68`), scroll through posts, open the
-   lightbox on an image, follow a quote.
+2. Visitor: open a long topic (`/t/118`, 100 posts) and scroll through it;
+   the timeline follows. (The corpus has no lightbox images or linked
+   quotes, so step 6 shows the lightbox on the member's own upload.)
 3. Visitor: search a common term from the header, then the full search
    page with a filter.
 4. Visitor: a tag page, a user profile.
 5. Member logs in from a topic and comes back to it.
 6. Member: reply with formatting, a mention of `@user0`, an emoji, an
-   uploaded image; the reply appears without a reload.
+   uploaded image; the reply appears without a reload, its image gets a
+   lightbox once processed, and opening it shows the full image.
 7. Second member (another browser): the mention notification arrives;
    open it, like the reply.
 8. Member: new topic with a poll and a checklist; vote on the poll; tick a
@@ -53,7 +55,10 @@ and reports any step that errors, so run it before showing.
 18. Moderator: the review count in the header and sidebar; open /review,
     add a note, agree with the flag.
 19. Admin: watched word with "require approval"; Newcomer posts with it;
-    the post is held; approve it from /review.
+    the post is held; approve it from /review. Type the post rather than
+    pasting it: as in Discourse, a first post typed in under
+    fast_typing_threshold (3 seconds) is held and its author silenced
+    (the card shows the silence, and approving the post lifts it).
 20. Admin: the topic admin wrench: close and reopen a topic, unlist it.
 21. Admin: the dashboard and a report, the staff action log showing the
     steps above.
@@ -102,7 +107,7 @@ It can run again on the same database. What it makes is labelled
 "rehearsal <time>Z", the newcomer is `rh<timestamp>` and the watched word
 `rhword<timestamp>`. It waits between a persona's posts as a presenter
 would (Discourse refuses a second topic within 15 seconds), and replies
-elsewhere when user1 already posted last in `/t/68`. At the end it deletes
+elsewhere when user1 already posted last in `/t/118`. At the end it deletes
 the watched word and the color palette it made through the admin, puts
 back the settings it changed and unsilences whoever it silenced; the report
 lists what it cleaned up and what it left behind: the replies, the topic
@@ -115,9 +120,6 @@ in says so.
 
 Known gaps that refuse with a "not ported yet" error:
 
-- A brand-new member who types their first post very fast is held and
-  auto-silenced, and a silenced author makes /review refuse. Type at a
-  human pace in step 19.
 - New-user approval cards (`must_approve_users`, 148), editing a queued
   post (194e), the review queue's silence and suspend client actions.
 - Pinning from the topic wrench (194c) and most post admin actions (194d).

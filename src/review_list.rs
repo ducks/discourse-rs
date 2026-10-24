@@ -11,9 +11,9 @@
 //! group moderators (before the list), user reviewables (must_approve_users)
 //! and plugin ones on a page, the `ids`, date and additional filters, score
 //! conversations, watched word scores without their words, reasons whose
-//! text the restricted cook would change, authors under a penalty, posts
-//! the user deleted, potential spam and illegal content (the delete user
-//! actions), bot users, and content localization.
+//! text the restricted cook would change, posts the user deleted, potential
+//! spam and illegal content (the delete user actions), bot users, and
+//! content localization.
 
 use std::collections::HashSet;
 
@@ -626,6 +626,8 @@ async fn serialize(
     let target_deleted_at = post
         .as_ref()
         .and_then(|p| p.deleted_by_id.and(p.deleted_at));
+    // target_post (with deleted), which a penalty may have been for.
+    let target_post_id = post.as_ref().map(|p| p.id);
     // A web hook's serializer runs outside `with_deleted_content`: a
     // trashed post or topic is no target.
     let post = post.filter(|p| !web_hook || p.deleted_at.is_none());
@@ -643,12 +645,12 @@ async fn serialize(
         Some(uid) => Some(load_user(&mut *conn, ctx, uid).await?),
         None => None,
     };
-    if author
-        .as_ref()
-        .is_some_and(|a| a.silenced() || a.suspended())
-    {
-        return Err(Unsupported("authors under a penalty (author_penalties)").into());
-    }
+    // author_penalties: AuthorPenalty.all_for(target_created_by,
+    // target_post:, reviewable_id:).
+    let penalties = match &author {
+        Some(a) => author_penalties(&mut *conn, a).await?,
+        None => Vec::new(),
+    };
 
     let mut seen = Seen {
         web_hook,
@@ -899,7 +901,28 @@ async fn serialize(
     let bundle_ids = match kind {
         Kind::Flagged => match &post {
             Some(p) if r.status == crate::reviewables::PENDING => {
-                actions(&mut *conn, ctx, guardian, &r, p, author.as_ref(), out).await?
+                let effects = match &author {
+                    Some(a) if !penalties.is_empty() => Some(FlagPenaltyEffects {
+                        // disagree_lifts_silence?
+                        disagree_lifts: p.hidden
+                            && p.deleted_at.is_none()
+                            && a.silenced()
+                            && was_silenced_for(&mut *conn, p.id).await?,
+                        author_silenced: a.silenced(),
+                    }),
+                    _ => None,
+                };
+                actions(
+                    &mut *conn,
+                    ctx,
+                    guardian,
+                    &r,
+                    p,
+                    author.as_ref(),
+                    effects,
+                    out,
+                )
+                .await?
             }
             _ => Vec::new(),
         },
@@ -973,7 +996,17 @@ async fn serialize(
         history_ids.push(hid);
     }
     d.insert("reviewable_history_ids".into(), json!(history_ids));
-    d.insert("author_penalties".into(), json!([]));
+    // has_many :author_penalties (ReviewableAuthorPenaltySerializer,
+    // embedded).
+    let mut penalty_json = Vec::new();
+    if let Some(a) = &author {
+        for p in &penalties {
+            penalty_json.push(
+                penalty_value(&mut *conn, ctx, guardian, &urls, a, p, r.id, target_post_id).await?,
+            );
+        }
+    }
+    d.insert("author_penalties".into(), Value::Array(penalty_json));
     // has_one :claimed_by: ReviewableClaimedTopic.claimed_hash, automatic
     // claims alone while claiming is off (ReviewableClaimedTopicSerializer,
     // its user side-loaded with custom fields).
@@ -1441,6 +1474,8 @@ struct Actions<'a> {
     target: Option<&'static str>,
     bundles: Vec<Bundle>,
     actions: Vec<Value>,
+    /// A flagged post's `penalty_effect_for`, when its author has penalties.
+    effects: Option<FlagPenaltyEffects>,
 }
 
 impl<'a> Actions<'a> {
@@ -1451,6 +1486,7 @@ impl<'a> Actions<'a> {
             target: (r.target_type.as_deref() == Some("Post")).then_some("post"),
             bundles: Vec::new(),
             actions: Vec::new(),
+            effects: None,
         }
     }
 
@@ -1526,6 +1562,9 @@ impl<'a> Actions<'a> {
             "completed_message".into(),
             json!(spec.completed.as_deref().and_then(|k| i18n.t(k))),
         );
+        if let Some(e) = &self.effects {
+            a.insert("penalty_effect".into(), json!(e.effect(id)));
+        }
         self.actions.push(Value::Object(a));
         let bundle = match bundle {
             Some(b) => b,
@@ -1544,7 +1583,7 @@ impl<'a> Actions<'a> {
     }
 
     /// `build_penalty_actions` for the author, when can_suspend? (staff on
-    /// a regular user); authors already under a penalty are refused before.
+    /// a regular user): each penalty the author isn't under already.
     fn penalties(
         &mut self,
         guardian: &Guardian,
@@ -1859,6 +1898,7 @@ async fn can_delete_user_row(
 }
 
 /// `ReviewableFlaggedPost#build_combined_actions`; the bundles' ids.
+#[allow(clippy::too_many_arguments)]
 async fn actions(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -1866,9 +1906,11 @@ async fn actions(
     r: &Reviewable,
     post: &Post,
     author: Option<&UserRow>,
+    effects: Option<FlagPenaltyEffects>,
     out: &mut Out,
 ) -> Result<Vec<String>, AppError> {
     let mut b = Actions::new(ctx, r);
+    b.effects = effects;
     let trashed = post.deleted_at.is_some();
     let agree = b.add_bundle(
         "agree",
@@ -1935,29 +1977,13 @@ async fn actions(
             );
         }
     }
-    // build_penalty_actions: can_suspend?, and the author is neither
-    // silenced nor suspended (refused above).
-    if let Some(a) = author
-        && !a.admin
-        && !a.moderator
-    {
-        b.add(
-            "agree_and_silence",
-            "microphone-slash",
-            Some(agree),
-            Some("silence"),
-            false,
-            false,
-        );
-        b.add(
-            "agree_and_suspend",
-            "ban",
-            Some(agree),
-            Some("suspend"),
-            false,
-            false,
-        );
-    }
+    b.penalties(
+        guardian,
+        author,
+        agree,
+        "agree_and_silence",
+        "agree_and_suspend",
+    );
 
     let can_ignore = trashed || !post.hidden || guardian.user_id() == Some(-1);
     if can_delete || can_ignore {
@@ -2018,8 +2044,182 @@ async fn actions(
             }
         }
     }
+    // build_unsilence_action: a silenced author, can_unsilence_user?.
+    if let Some(a) = author
+        && a.silenced()
+        && can_lift_penalty(guardian, a)
+    {
+        b.add(
+            "unsilence_user",
+            "microphone-slash",
+            None,
+            None,
+            false,
+            true,
+        );
+    }
 
     Ok(b.finish(out))
+}
+
+/// `ReviewableFlaggedPost#penalty_effect_for` while the author has a
+/// penalty (a post the user deleted is refused before, so
+/// user_silenced_for_post? is false).
+struct FlagPenaltyEffects {
+    /// `disagree_lifts_silence?`
+    disagree_lifts: bool,
+    /// `author_silenced?`
+    author_silenced: bool,
+}
+
+impl FlagPenaltyEffects {
+    fn effect(&self, action_id: &str) -> &'static str {
+        let lifts = match action_id {
+            "disagree" | "disagree_and_restore" => self.disagree_lifts,
+            "unsilence_user_and_ignore" => false,
+            "unsilence_user" => self.author_silenced,
+            _ => false,
+        };
+        if lifts {
+            "lifts_penalty"
+        } else {
+            "retains_penalty"
+        }
+    }
+}
+
+/// `UserSilencer.was_silenced_for?(post)`
+async fn was_silenced_for(conn: &mut PgConnection, post_id: i32) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM user_histories WHERE action = $1 AND post_id = $2)",
+    )
+    .bind(SILENCE_USER)
+    .bind(post_id)
+    .fetch_one(conn)
+    .await
+}
+
+/// `can_unsilence_user?` and `can_unsuspend?`: staff, on a user who isn't
+/// staff unless the viewer is an admin.
+fn can_lift_penalty(guardian: &Guardian, u: &UserRow) -> bool {
+    guardian.is_staff() && (!(u.admin || u.moderator) || guardian.is_admin())
+}
+
+/// One `Reviewable::AuthorPenalty`: its kind, when it ends and its
+/// UserHistory (`silenced_record`, `suspend_record`).
+struct Penalty {
+    kind: &'static str,
+    expires_at: Option<NaiveDateTime>,
+    history: Option<PenaltyRecord>,
+}
+
+#[derive(sqlx::FromRow)]
+struct PenaltyRecord {
+    created_at: NaiveDateTime,
+    acting_user_id: Option<i32>,
+    details: Option<String>,
+    reviewable_id: Option<i64>,
+    post_id: Option<i32>,
+}
+
+/// `AuthorPenalty.all_for(user)`: a silence, then a suspension, each
+/// with the user's latest record of it.
+async fn author_penalties(
+    conn: &mut PgConnection,
+    u: &UserRow,
+) -> Result<Vec<Penalty>, sqlx::Error> {
+    let mut out = Vec::new();
+    for (kind, active, till, action) in [
+        ("silence", u.silenced(), u.silenced_till, SILENCE_USER),
+        ("suspension", u.suspended(), u.suspended_till, SUSPEND_USER),
+    ] {
+        if !active {
+            continue;
+        }
+        let history: Option<PenaltyRecord> = sqlx::query_as(
+            "SELECT created_at, acting_user_id, details, reviewable_id, post_id FROM user_histories \
+             WHERE target_user_id = $1 AND action = $2 ORDER BY id DESC LIMIT 1",
+        )
+        .bind(u.id)
+        .bind(action)
+        .fetch_optional(&mut *conn)
+        .await?;
+        out.push(Penalty {
+            kind,
+            expires_at: till,
+            history,
+        });
+    }
+    Ok(out)
+}
+
+/// `ReviewableAuthorPenaltySerializer`
+#[allow(clippy::too_many_arguments)]
+async fn penalty_value(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    urls: &Urls<'_>,
+    author: &UserRow,
+    p: &Penalty,
+    reviewable_id: i64,
+    target_post_id: Option<i32>,
+) -> Result<Value, AppError> {
+    // forever: past AuthorPenalty::FOREVER_THRESHOLD (100.years.from_now).
+    let threshold = crate::clock::now_naive()
+        .checked_add_months(chrono::Months::new(1200))
+        .ok_or(Unsupported("a penalty threshold past the calendar"))?;
+    let forever = p.expires_at.is_some_and(|t| t > threshold);
+    let mut v = Map::new();
+    v.insert("kind".into(), json!(p.kind));
+    v.insert("forever".into(), json!(forever));
+    if !forever {
+        v.insert("expires_at".into(), json!(p.expires_at.map(time_json)));
+    }
+    let h = p.history.as_ref();
+    let reason = crate::admin_users::format_penalty_reason(h.map(|h| &h.details))?;
+    if !reason.is_null() {
+        v.insert("reason".into(), reason);
+    }
+    v.insert(
+        "applied_at".into(),
+        json!(h.map(|h| time_json(h.created_at))),
+    );
+    let applied_by = match h.and_then(|h| h.acting_user_id) {
+        Some(uid) => {
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+                    .bind(uid)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            if exists {
+                Some(load_user(&mut *conn, ctx, uid).await?)
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+    // automatic: applied by a bot (a user id below 1).
+    v.insert(
+        "automatic".into(),
+        json!(applied_by.as_ref().is_some_and(|u| u.id <= 0)),
+    );
+    let from_this_target = match h {
+        None => false,
+        Some(h) if h.reviewable_id == Some(reviewable_id) => true,
+        Some(h) => target_post_id.is_some() && h.post_id == target_post_id,
+    };
+    v.insert("from_this_target".into(), json!(from_this_target));
+    v.insert("can_lift".into(), json!(can_lift_penalty(guardian, author)));
+    v.insert(
+        "applied_by".into(),
+        match &applied_by {
+            Some(u) => basic_user(ctx, urls, u)?,
+            None => Value::Null,
+        },
+    );
+    Ok(Value::Object(v))
 }
 
 #[derive(sqlx::FromRow)]
@@ -2208,6 +2408,41 @@ async fn flagged_user(
     .fetch_one(&mut *conn)
     .await?;
     v["rejected_posts_count"] = json!(rejected);
+    // silenced_till and silence_reason while silenced, suspended_till and
+    // suspend_reason while suspended (each reason when present).
+    for (active, till, action, till_key, reason_key) in [
+        (
+            u.silenced(),
+            u.silenced_till,
+            SILENCE_USER,
+            "silenced_till",
+            "silence_reason",
+        ),
+        (
+            u.suspended(),
+            u.suspended_till,
+            SUSPEND_USER,
+            "suspended_till",
+            "suspend_reason",
+        ),
+    ] {
+        if !active {
+            continue;
+        }
+        v[till_key] = json!(till.map(time_json));
+        let details: Option<Option<String>> = sqlx::query_scalar(
+            "SELECT details FROM user_histories WHERE target_user_id = $1 AND action = $2 \
+             ORDER BY id DESC LIMIT 1",
+        )
+        .bind(u.id)
+        .bind(action)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let reason = crate::admin_users::format_penalty_reason(details.as_ref())?;
+        if !reason.is_null() {
+            v[reason_key] = reason;
+        }
+    }
     Ok(v)
 }
 
@@ -2298,7 +2533,7 @@ async fn user_json(
         config: ctx.config,
         settings: ctx.settings,
     };
-    let target = match r.target_id {
+    let target_user = match r.target_id {
         Some(uid) => {
             let exists: bool =
                 sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
@@ -2306,12 +2541,15 @@ async fn user_json(
                     .fetch_one(&mut *conn)
                     .await?;
             if exists {
-                let u = load_user(&mut *conn, ctx, uid).await?;
-                Some(flagged_user(&mut *conn, ctx, guardian, &urls, &u).await?)
+                Some(load_user(&mut *conn, ctx, uid).await?)
             } else {
                 None
             }
         }
+        None => None,
+    };
+    let target = match &target_user {
+        Some(u) => Some(flagged_user(&mut *conn, ctx, guardian, &urls, u).await?),
         None => None,
     };
     let score_ids: Vec<i64> = sqlx::query_scalar(
@@ -2443,6 +2681,14 @@ async fn user_json(
     .await?;
     d.insert("reviewable_note_ids".into(), json!(note_ids));
     d.insert("reviewable_history_ids".into(), json!(history_ids));
-    d.insert("author_penalties".into(), json!([]));
+    // author_penalties: the target user's (target_created_by), no post.
+    let mut penalty_json = Vec::new();
+    if let Some(u) = &target_user {
+        for p in &author_penalties(&mut *conn, u).await? {
+            penalty_json
+                .push(penalty_value(&mut *conn, ctx, guardian, &urls, u, p, r.id, None).await?);
+        }
+    }
+    d.insert("author_penalties".into(), Value::Array(penalty_json));
     Ok(Value::Object(d))
 }

@@ -993,6 +993,40 @@ pub async fn lift_silence(
     Ok(())
 }
 
+/// `UserSilencer.unsilence(user, by_user, reviewable_id:)` from a review
+/// perform: the silence lifted and the unsilenced system message as
+/// lift_silence does (their own transactions, committed before the
+/// perform's, which holds nothing they write), the staff action logged
+/// with the reviewable inside the perform's transaction.
+pub async fn lift_silence_for_reviewable(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    by_user_id: i32,
+    user_id: i32,
+    reviewable_id: i64,
+) -> Result<(), AppError> {
+    let pool = &ctx.host.pool;
+    sqlx::query(
+        "UPDATE users SET silenced_till = NULL, updated_at = clock_timestamp() WHERE id = $1",
+    )
+    .bind(user_id)
+    .execute(pool)
+    .await?;
+    crate::system_message::create(pool, ctx, user_id, "unsilenced", &[], None).await?;
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, reviewable_id, admin_only, \
+                                     created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, FALSE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(UNSILENCE_USER)
+    .bind(by_user_id)
+    .bind(user_id)
+    .bind(reviewable_id)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 /// `Admin::UsersController#unsilence` -> `UserSilencer.unsilence`
 pub async fn unsilence(
     pool: &sqlx::PgPool,

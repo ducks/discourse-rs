@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9521, 3, 'topic_35', '{\"reply\":\"A reply with ![gravatar|100x100](upload://sLckxyrYcJI4X5RPt6GOaGETgux.png)\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO upload_references (id, upload_id, target_type, target_id, created_at, updated_at) VALUES (9521, 34, 'Draft', 9521, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that was a draft with an image, posted without it.",
+        "draft_key": "topic_35",
+        "typing_duration_msecs": 12000,
+        "composer_open_duration_msecs": 30000
+      }
+    }
+  ]
+}

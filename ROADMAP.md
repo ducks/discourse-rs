@@ -139,6 +139,62 @@ Blockers, a scripted walk-through would hit them:
   axes); the reaction picker in the drawer lands where Ember's does at
   1280x900 and 1280x560 (rs-ref-d).
 
+Found by the demo rehearsal (scripts/demo-rehearsal), the newcomer path:
+fix/newcomer-path.
+
+- [x] Every newcomer's first post was silenced as a fast typer however
+  slowly it was typed: composer.js sent no typing_duration_msecs or
+  composer_open_duration_msecs, so NewPostManager read 0. Done: the
+  composer keeps Ember's typing time (composer-body's keyUp, a 100ms
+  throttle adding 100ms) and open time (composerOpened while the compose
+  state is open, composerTotalOpened across minimizing and fullscreen),
+  sends both with a new post (_create_serializer; an edit sends neither,
+  as _update_serializer), saves them in the draft (composerTime,
+  typingTime) and takes them back from it as loadDraft does.
+- [x] /review answered 500 for a silenced or suspended author ("authors
+  under a penalty"), and approving a silenced newcomer's held post
+  refused on the unsilence. Done: ReviewableSerializer's author_penalties
+  (ReviewableAuthorPenaltySerializer: kind, forever, expires_at, the
+  reason, applied_at and applied_by from the latest silence or suspend
+  record, automatic, from_this_target, can_lift), FlaggedUserSerializer's
+  silenced_till, silence_reason, suspended_till and suspend_reason, a
+  flagged post's penalty_effect on each action and its unsilence_user
+  action, and penalty actions offered only for a penalty not already in
+  place. The card draws the penalty icons with their titles, the
+  timeline's "Author silenced/suspended" event for a penalty from this
+  reviewable or post, each action's effect after its description, and
+  Ember's toast with Undo when an action leaves the author silenced.
+  Approving a queued post unsilences its author (UserSilencer.unsilence
+  with the reviewable). Recorded on rs-ref-c: review/penalized_authors_list,
+  review/queued_approve_silenced_author. Still refused: performing a
+  flag's unsilence_user (with the flag actions that delete, edit or
+  penalize, 194e), a reason with markup (sanitize_staff_reason).
+- [x] Saving a draft holding an upload answered 500 ("drafts with uploads
+  (UploadReference)"). Done: Draft.set ends with
+  UploadReference.ensure_exist! over Upload.extract_upload_ids(data) (the
+  `/<40 hex>` sha1s and every `/<base62>` segment decoded), and the
+  draft's references go with it when a post advances its sequence
+  (DraftSequence.next!'s destroy_all), as Draft.clear already did.
+  Recorded on rs-ref-c: drafts/draft_with_uploads,
+  posts/reply_clears_draft_with_uploads.
+- [x] A reply past max_consecutive_replies answered 500 instead of Rails'
+  message. Done: PostValidator#force_edit_last_validator's error (422,
+  "No more than %{count} consecutive replies are allowed...") when the
+  member could edit the topic's last post, with the topic owner and
+  category group moderators exempt and deleted posts out of
+  ordered_posts. Recorded on rs-ref-c: posts/max_consecutive_replies,
+  _one and _topic_owner.
+- [x] The newcomer journey walked in Chromium on a copy of the demo
+  database (enable_local_logins_via_code off): signup by password, the
+  admin's activation, a first reply typed at a person's pace with an
+  upload in its draft (created, not held, author not silenced), a first
+  reply pasted in at once (held, author silenced, /review drawing the
+  silence, approval lifting it), a watched word's held topic approved
+  from /review (rehearsal steps 13, 16, 19), and a fourth reply in a row
+  showing Rails' message in the composer. Step 19's check looked for an
+  "Approved" text Ember doesn't draw; it now looks for the approved
+  status badge ("Post approved").
+
 Visible if clicked, avoid them in a scripted demo:
 
 - [x] Polls draw a "0 voters" stub and can't be voted on (228):
@@ -455,7 +511,8 @@ Bugs or silent gaps in what is merged, small and independent.
     user (as a spammer, account_deleted email); reviewed posts: approve,
     restore, unhide, reject, keep deleted, delete; AutoQueueHandler's
     rejections. Left: approving into a closed topic or with tags, an
-    email or plugin fields, unsilencing the author, unhiding a first post;
+    email or plugin fields, unhiding a first post (unsilencing the author
+    on approval landed with fix/newcomer-path);
     the review list's queued and reviewed posts landed with
     feat/review-queued-posts),
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
@@ -1755,12 +1812,13 @@ have handlers now.
     message, and silenced as fast typers (keep_posts); left:) posting
     as a staged user (posting/validate.rs:157), staged users on
     restricted categories (topic_guardian.rs:270), approving a staged
-    user's queued post (posting/create.rs:331), max_consecutive_replies
-    (posting/validate.rs:961), flagging a new user's linked posts as
-    spam once has_host_spam? refuses a post (flag_linked_posts_as_spam,
-    posting/create.rs:634), flag_sockpuppets (:681), silencing a TL0
-    user without keep_posts (user_penalties.rs:929, hide_posts; chat's
-    rate limit silence), TL0 bio links (users.rs:708, strip_links)
+    user's queued post (posting/create.rs:331), flagging a new user's
+    linked posts as spam once has_host_spam? refuses a post
+    (flag_linked_posts_as_spam, posting/create.rs:634), flag_sockpuppets
+    (:681), silencing a TL0 user without keep_posts
+    (user_penalties.rs:929, hide_posts; chat's rate limit silence), TL0
+    bio links (users.rs:708, strip_links). max_consecutive_replies landed
+    with fix/newcomer-path
 135. ~~`feat/quoted-posts`~~ (done, left: quoting into a new topic when
     the viewer can't reply (composer.js:1934, with the composer's reply
     as new topic); the selection's markdown for what the rich editor's
