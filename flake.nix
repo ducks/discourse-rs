@@ -2,7 +2,7 @@
   description = "discourse-rs: a Rust port of Discourse";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     # The revision shell.nix pins, so both build the same Rust release.
     rust-overlay = {
       url = "github:oxalica/rust-overlay/368fee9beaab04ca6fe7af28db63caa9badb22fa";

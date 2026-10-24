@@ -503,7 +503,7 @@ A team-only forum on one VPS, from the host's flake:
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     discourse-rs.url = "github:ducks/discourse-rs";
   };
 
