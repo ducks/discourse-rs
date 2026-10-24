@@ -441,6 +441,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (
+        "post-stream.js",
+        JS,
+        include_str!("../static/js/post-stream.js"),
+    ),
+    (
         "topic-admin-menu.js",
         JS,
         include_str!("../static/js/topic-admin-menu.js"),

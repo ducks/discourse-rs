@@ -4335,8 +4335,53 @@ route table has been made, so this list may be short.
     from rs-ref-d: topic 35 by ids, with its suggested topics, as user1,
     after and before a post number, the default chunk; message 42 for a
     visitor, a stranger and a participant (its related messages and
-    group name); a missing topic. Left: the client's loading (the topic's
-    post stream, the lists' DLoadMore).
+    group name); a missing topic.
+    The topic's post stream loads more as Ember's does
+    (static/js/post-stream.js; PostStream#appendMore and #prependMore,
+    post-stream.gjs, PostLoadMoreAccessible, DLoadMore): #posts carries
+    the stream's ids and chunk size, and whether the view had its
+    suggested topics; while the first post isn't drawn the stream starts
+    with a load more sentinel and its screen reader heading ("Load more
+    posts above"), while the last isn't it ends with one ("... below")
+    where the bottom boundary was, and the posts wrapper has
+    PostStream's `<span>` and its two spinners. A sentinel coming into
+    view (its observer made again after each chunk, so one still in view
+    goes on) asks for the next 20 ids of the stream, or the 20 before,
+    with Ember's params (post_ids[], include_suggested=true until a chunk
+    brought the suggested topics) from /live/posts/:id, which draws them
+    as the page does (html::topic_page on the same view; Ember draws the
+    posts.json in the browser). While a chunk loads its sentinel goes,
+    the spinner beside the stream shows and, below, a placeholder stands
+    in for each post; posts above keep the first post on screen where it
+    was. Once the last post is in (loadedAllPosts) what Ember draws only
+    then comes out of templates: the bottom topic map, the reply where,
+    the footer buttons with Reply, the more topics (the chunk's suggested
+    topics when the page had none) and the page footer
+    (Discourse.showFooter, page.js, for Chrome::defer_footer). After
+    each chunk the page's live stream connects again from its last event
+    with the posts drawn, with the tail once at the end, and the server
+    no longer sends changes to posts outside the page's range
+    (PostStream#triggerChangedPost finds only loaded posts), which also
+    ends the console errors a revision of an undrawn post caused. The
+    timeline: a click on the track or a date and the scroller's drag
+    (d-pointer-drag: pointer capture, `--dragging`, the body's
+    `dragging`, data-pointer-drag on the desktop scroller too) set the
+    percentage under the pointer and commit as the container does,
+    jumping to the index's post, or past the end to the last post; a
+    post the page doesn't draw is looked up by id with GET
+    /t/:id/posts.json, then the topic is routed to its number, which
+    loads the posts around it (TopicController#_jumpToPostId). The URL
+    keeps following the post at the eyeline and screen-track times the
+    posts loaded. Ember's posts wrapper before and after a load
+    and the request it sends, as Playwright saw them on rs-ref-d with
+    topic 35 grown to 35 posts, are what the page and post-stream.js draw
+    and send (tests/html_pages.rs). Checked in Chromium
+    on a copy of the demo database: /t/118 scrolled to post 100 with the
+    footer, Reply and five suggested topics; /t/118/50 loaded up to post
+    1 and down to 100; the timeline's click and drag to unloaded posts;
+    the rehearsal's steps 1, 2, 6 and 7 pass (step 6 now scrolls to the
+    end of the topic before Reply, as a presenter does). Left: the
+    lists' DLoadMore (270b).
 
 ### Phase 11: the bundled plugins' gaps (210)
 

@@ -313,11 +313,15 @@
           </div>
           {%- if chrome.show_footer && chrome.powered_by %}
           <a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>{{ chrome.t("powered_by_discourse") }}</span></span></a>
+          {%- else if chrome.defer_footer && chrome.powered_by %}
+          <template class="deferred-footer"><a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>{{ chrome.t("powered_by_discourse") }}</span></span></a></template>
           {%- endif %}
         </div>
         {#- DCustomHtml "footer": the theme's footer, where the footer shows. -#}
         {%- if chrome.show_footer %}
         <div class="custom-footer-content">{{ chrome.theme_html.footer|safe }}</div>
+        {%- else if chrome.defer_footer %}
+        <template class="deferred-footer"><div class="custom-footer-content">{{ chrome.theme_html.footer|safe }}</div></template>
         {%- endif %}
         {#- The below-footer outlet's ChatDrawerOutlet, kept across pages
             (hx-preserve) as Ember keeps the drawer across routes;

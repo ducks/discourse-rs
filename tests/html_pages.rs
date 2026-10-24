@@ -581,8 +581,142 @@ async fn a_topic_entered_near_its_end_is_loaded_to_the_end() {
         .await;
     assert!(start.contains(r#" id="post_3">"#));
     assert!(!start.contains(r#" id="post_25">"#));
-    assert!(!start.contains(r#"id="topic-footer-buttons""#));
+    // The footer waits for static/js/post-stream.js to load the rest.
+    let deferred = start
+        .find(r#"<template class="loaded-all-posts">"#)
+        .unwrap();
+    let footer = start.find(r#"id="topic-footer-buttons""#).unwrap();
+    assert!(deferred < footer, "{start}");
     assert!(!start.contains("&amp;tail=1"));
+    assert!(
+        start.contains(r#"<template class="deferred-footer"><div class="custom-footer-content">"#)
+    );
+    assert!(!end.contains("loaded-all-posts"));
+    assert!(!end.contains("deferred-footer"));
+}
+
+/// What static/js/post-stream.js loads more from: the stream's ids and
+/// chunk size on #posts, DLoadMore's sentinels with their headings where
+/// there is more above or below (the bottom boundary once the last post
+/// is drawn), whether the view had its suggested topics, and the chunks
+/// /live/posts draws with the params GET /t/:id/posts.json takes.
+#[tokio::test]
+async fn a_long_topic_draws_what_the_post_stream_loads_more_from() {
+    let db = TestDb::new().await;
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(state, "admin").await;
+    let xhr = |r: axum::http::request::Builder| r.header("x-requested-with", "XMLHttpRequest");
+    let csrf = admin
+        .send(xhr(Request::get("/session/csrf.json")), "")
+        .await;
+    let csrf: serde_json::Value = serde_json::from_str(&csrf).unwrap();
+    for n in 0..40 {
+        let reply = Request::post("/posts")
+            .header("x-csrf-token", csrf["csrf"].as_str().unwrap())
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+        let body = admin
+            .send(
+                xhr(reply),
+                &format!("topic_id=35&raw=Reply+{n}+making+the+topic+several+chunks+long"),
+            )
+            .await;
+        assert!(body.contains("\"post_number\""), "{body}");
+    }
+    let view = admin.json("/t/35.json").await;
+    let stream: Vec<i64> = view["post_stream"]["stream"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|id| id.as_i64().unwrap())
+        .collect();
+    assert_eq!(stream.len(), 45);
+    let ids = format!(
+        "[{}]",
+        stream
+            .iter()
+            .map(i64::to_string)
+            .collect::<Vec<_>>()
+            .join(",")
+    );
+    let sentinel = |direction: &str| {
+        let label = if direction == "above" {
+            "above"
+        } else {
+            "below"
+        };
+        format!(
+            r#"<div aria-hidden="true" class="load-more-sentinel"></div><div class="post-stream-load-more-accessible sr-only"><h2 class="post-stream-load-more-accessible__heading" id="post-stream-load-more-heading__{direction}">Load more posts {label}</h2></div>"#
+        )
+    };
+
+    // The first page: more below only, no suggested topics yet.
+    let first = admin.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(
+        first.contains(&format!(
+            r#"<div class="posts-wrapper"><span></span><div class="loading-container"></div><div class="post-stream" id="posts" data-stream="{ids}" data-chunk-size="20">"#
+        )),
+        "{first}"
+    );
+    assert!(first.contains(&format!(
+        r#"{}</div><div class="loading-container"></div>"#,
+        sentinel("below")
+    )));
+    assert!(!first.contains("post-stream-load-more-heading__above"));
+    assert!(!first.contains("post-stream__bottom-boundary"));
+    assert!(first.contains("/assets/post-stream.js?v="));
+    assert!(!first.contains(r#"rel="next""#));
+
+    // Entered mid-topic: more both ways.
+    let middle = admin
+        .page("/t/parity-fixture-replies-and-posters/35/25")
+        .await;
+    assert!(
+        middle.contains(&format!(
+            r#"data-chunk-size="20">{}<div"#,
+            sentinel("above")
+        )),
+        "{middle}"
+    );
+    assert!(middle.contains(&sentinel("below")));
+    assert!(!middle.contains(r#" id="post_1">"#));
+
+    // Entered at the end: more above, the bottom boundary, the suggested
+    // topics with the view.
+    let end = admin
+        .page("/t/parity-fixture-replies-and-posters/35/45")
+        .await;
+    assert!(
+        end.contains(r#"data-chunk-size="20" data-has-suggested>"#),
+        "{end}"
+    );
+    assert!(end.contains(&sentinel("above")));
+    assert!(end.contains(r#"<div class="post-stream__bottom-boundary"></div></div><div class="loading-container"></div>"#));
+    assert!(!end.contains("post-stream-load-more-heading__below"));
+
+    // The next chunk below the first page, as appendMore asks for it.
+    let query: String = stream[20..40]
+        .iter()
+        .map(|id| format!("post_ids%5B%5D={id}&"))
+        .collect();
+    let chunk = admin
+        .page(&format!("/live/posts/35?{query}include_suggested=true"))
+        .await;
+    assert!(chunk.starts_with(r#"<div class="topic-post"#), "{chunk}");
+    assert!(chunk.contains(r#" id="post_21">"#));
+    assert!(chunk.contains(r#" id="post_40">"#));
+    assert!(!chunk.contains(r#" id="post_20">"#));
+    assert!(!chunk.contains(r#" id="post_41">"#));
+    assert!(chunk.contains(
+        r#"<template class="post-stream-more-topics"><div class="more-topics__container">"#
+    ));
+    let later = admin
+        .page(&format!(
+            "/live/posts/35?post_ids%5B%5D={}&include_suggested=false",
+            stream[44]
+        ))
+        .await;
+    assert!(later.contains(r#" id="post_45">"#));
+    assert!(!later.contains("post-stream-more-topics"));
 }
 
 /// What composer.js's save draws from a member's topic page: the topic
