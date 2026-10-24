@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Make a role the owner of a database and of everything in it, as Rails'
+# database user owns a Discourse database. discourse-rs needs that: at
+# start it creates its own discourse_rs schema, and jobs reindex tables
+# (CREATE INDEX CONCURRENTLY on post_search_data). A restore run by the
+# postgres superuser (scripts/restore-backup) leaves every table owned by
+# postgres; this hands them over.
+#
+# REASSIGN OWNED BY postgres can't do it (the bootstrap superuser's
+# objects include the system's), so each object is altered: non-system
+# schemas, tables, views and standalone sequences (a table's indexes and
+# owned sequences follow it), functions, and enum, domain and composite
+# types. Extension members stay with the extension's owner.
+#
+# Run as a superuser, with the usual libpq env vars (PGHOST, PGUSER):
+#   sudo -u postgres scripts/db-chown discourse discourse-rs
+#
+# Usage: scripts/db-chown <dbname> <role>
+set -euo pipefail
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 <dbname> <role>" >&2
+  exit 64
+fi
+db="$1"
+role="$2"
+
+psql -X -q -v ON_ERROR_STOP=1 -d "$db" -v role="$role" <<'SQL'
+SELECT set_config('db_chown.role', :'role', false) \gset
+DO $$
+DECLARE
+  target text := current_setting('db_chown.role');
+  r record;
+BEGIN
+  EXECUTE format('ALTER DATABASE %I OWNER TO %I', current_database(), target);
+
+  FOR r IN
+    SELECT n.nspname FROM pg_namespace n
+    WHERE n.nspname NOT LIKE 'pg\_%' AND n.nspname NOT IN ('information_schema', 'public')
+      AND NOT EXISTS (SELECT 1 FROM pg_depend d
+                      WHERE d.classid = 'pg_namespace'::regclass AND d.objid = n.oid AND d.deptype = 'e')
+  LOOP
+    EXECUTE format('ALTER SCHEMA %I OWNER TO %I', r.nspname, target);
+  END LOOP;
+
+  FOR r IN
+    SELECT c.oid::regclass AS rel, c.relkind FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname NOT LIKE 'pg\_%' AND n.nspname <> 'information_schema'
+      AND c.relkind IN ('r', 'p', 'v', 'm', 'f', 'S')
+      AND NOT EXISTS (SELECT 1 FROM pg_depend d
+                      WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid AND d.deptype = 'e')
+      -- serial and identity sequences move with their table
+      AND NOT (c.relkind = 'S' AND EXISTS (
+        SELECT 1 FROM pg_depend d
+        WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid
+          AND d.refclassid = 'pg_class'::regclass AND d.deptype IN ('a', 'i')))
+  LOOP
+    EXECUTE format('ALTER %s %s OWNER TO %I',
+      CASE r.relkind WHEN 'v' THEN 'VIEW' WHEN 'm' THEN 'MATERIALIZED VIEW'
+        WHEN 'S' THEN 'SEQUENCE' WHEN 'f' THEN 'FOREIGN TABLE' ELSE 'TABLE' END,
+      r.rel, target);
+  END LOOP;
+
+  FOR r IN
+    SELECT p.oid::regprocedure AS fn, p.prokind FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname NOT LIKE 'pg\_%' AND n.nspname <> 'information_schema'
+      AND NOT EXISTS (SELECT 1 FROM pg_depend d
+                      WHERE d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e')
+  LOOP
+    EXECUTE format('ALTER %s %s OWNER TO %I',
+      CASE r.prokind WHEN 'p' THEN 'PROCEDURE' WHEN 'a' THEN 'AGGREGATE' ELSE 'FUNCTION' END,
+      r.fn, target);
+  END LOOP;
+
+  FOR r IN
+    SELECT t.oid::regtype AS typ, t.typtype FROM pg_type t
+    JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE n.nspname NOT LIKE 'pg\_%' AND n.nspname <> 'information_schema'
+      AND (t.typtype IN ('e', 'd')
+           OR (t.typtype = 'c' AND EXISTS (SELECT 1 FROM pg_class c
+                                           WHERE c.oid = t.typrelid AND c.relkind = 'c')))
+      AND NOT EXISTS (SELECT 1 FROM pg_depend d
+                      WHERE d.classid = 'pg_type'::regclass AND d.objid = t.oid AND d.deptype = 'e')
+  LOOP
+    EXECUTE format('ALTER %s %s OWNER TO %I',
+      CASE r.typtype WHEN 'd' THEN 'DOMAIN' ELSE 'TYPE' END, r.typ, target);
+  END LOOP;
+END
+$$;
+SQL
+
+left="$(psql -X -At -d "$db" -v role="$role" <<'SQL'
+SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname NOT LIKE 'pg\_%' AND n.nspname <> 'information_schema'
+  AND c.relkind IN ('r', 'p', 'v', 'm', 'f', 'S')
+  AND c.relowner <> (SELECT oid FROM pg_roles WHERE rolname = :'role')
+  AND NOT EXISTS (SELECT 1 FROM pg_depend d
+                  WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid AND d.deptype = 'e')
+SQL
+)"
+if [ "$left" != 0 ]; then
+  echo "db-chown: $left relations in $db are still owned by another role" >&2
+  exit 1
+fi
+echo "$role owns $db and everything in it"

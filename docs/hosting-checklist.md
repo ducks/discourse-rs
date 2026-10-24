@@ -92,6 +92,9 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
 - Both, plus the env file, off the host (restic or borg to object
   storage, `services.restic.backups`). Restore one onto a scratch VM
   once, so the procedure is known before it is needed.
+- A database restored as `postgres` belongs to `postgres`: hand it to the
+  service with `scripts/db-chown discourse discourse-rs` before starting
+  it (README, "Deploying").
 
 ## Upgrading
 

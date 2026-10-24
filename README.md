@@ -466,10 +466,18 @@ env file. Then:
 
 1. Restore the backup (`scripts/restore-backup`, above) and put its
    `uploads/` under `/var/lib/discourse-rs/public`.
-2. Give the service a database role. It reads everything and writes
-   sessions, visits, search logs and sitemaps:
-   `createuser discourse-rs`, then
-   `GRANT pg_read_all_data, pg_write_all_data TO "discourse-rs"`.
+2. Give the service its database. It owns the database and its tables,
+   as Rails' database user does: at start it creates its own
+   `discourse_rs` schema, and jobs reindex tables. A restore run as the
+   `postgres` superuser leaves the tables owned by `postgres`;
+   `scripts/db-chown` hands the database and everything in it to the
+   service's role (`REASSIGN OWNED BY postgres` can't, since the
+   bootstrap superuser owns the system's objects too):
+
+   ```bash
+   sudo -u postgres createuser discourse-rs
+   sudo -u postgres scripts/db-chown discourse discourse-rs
+   ```
 3. Fill in `/etc/discourse-rs/env`: `DATABASE_URL`, `DISCOURSE_HOSTNAME`
    and `DISCOURSE_SECRET_KEY_BASE`. The secret must be the Rails site's
    for its sessions to survive a cutover; Rails keeps it in redis when it
@@ -603,15 +611,13 @@ Bringing up a fresh site:
 
 Moving an existing forum over instead: set `database.loadSchema = false`
 so the database stays empty, then, with the server stopped
-(`systemctl stop discourse-rs`), restore the backup by hand as "Serving a
-backup" describes, from a checkout, as the `postgres` user
-(`scripts/restore-backup --force <backup.tar.gz> discourse <dir>`). The
-restored tables belong to `postgres`, so give the service its database
-and the role need above:
+(`systemctl stop discourse-rs`), restore the backup by hand from a
+checkout as "Serving a backup" describes, as the `postgres` user, and
+give the service the restored tables, as in "Deploying":
 
 ```bash
-sudo -u postgres psql -c 'ALTER DATABASE discourse OWNER TO "discourse-rs"' \
-  -c 'GRANT pg_read_all_data, pg_write_all_data TO "discourse-rs"'
+sudo -u postgres scripts/restore-backup --force <backup.tar.gz> discourse <dir>
+sudo -u postgres scripts/db-chown discourse discourse-rs
 ```
 
 Then move the backup's `uploads/` into `/var/lib/discourse-rs/public`,

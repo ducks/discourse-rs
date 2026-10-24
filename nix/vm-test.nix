@@ -43,6 +43,9 @@ pkgs.testers.runNixOSTest {
         '';
       };
 
+      # scripts/db-chown, tested on a superuser's load below.
+      environment.etc."discourse-rs-test/db-chown".source = ../scripts/db-chown;
+
       environment.systemPackages = [
         pkgs.curl
         pkgs.jq
@@ -175,6 +178,31 @@ pkgs.testers.runNixOSTest {
           machine.succeed("systemctl restart discourse-rs-db-init.service")
           machine.succeed("journalctl -u discourse-rs-db-init.service -b | grep -c 'loading the vendored schema' | grep -qx 1")
           assert sql("SELECT value FROM site_settings WHERE name = 'vapid_public_key'") == vapid
+
+      with subtest("db-chown hands a superuser's load to the service"):
+          share = "${nodes.machine.services.discourse-rs.package}/share/discourse-rs"
+          machine.succeed("sudo -u postgres createdb -T template0 restored")
+          machine.succeed(
+              f"sudo -u postgres psql -X -q -v ON_ERROR_STOP=1 -d restored -f {share}/db/structure.sql -o /dev/null"
+          )
+          owners = lambda: machine.succeed(
+              "sudo -u postgres psql -X -At -d restored -c "
+              + shlex.quote(
+                  "SELECT (SELECT tableowner FROM pg_tables WHERE tablename = 'posts') || ' ' || "
+                  "(SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname = 'discourse_functions') || ' ' || "
+                  "(SELECT string_agg(DISTINCT pg_get_userbyid(proowner), ',') FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace "
+                  "WHERE n.nspname = 'discourse_functions') || ' ' || "
+                  "(SELECT pg_get_userbyid(typowner) FROM pg_type WHERE typname = 'hotlinked_media_status') || ' ' || "
+                  "(SELECT pg_get_userbyid(relowner) FROM pg_class WHERE relname = 'posts_id_seq')"
+              )
+          ).strip()
+          assert owners() == "postgres postgres postgres postgres postgres", owners()
+          machine.succeed("sudo -u postgres bash /etc/discourse-rs-test/db-chown restored discourse-rs")
+          assert owners() == "discourse-rs discourse-rs discourse-rs discourse-rs discourse-rs", owners()
+          assert machine.succeed(
+              "sudo -u postgres psql -X -At -d postgres -c "
+              "\"SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = 'restored'\""
+          ).strip() == "discourse-rs"
 
       with subtest("team-only: loginRequired sends the anonymous to the login"):
           machine.succeed("/run/booted-system/specialisation/team-only/bin/switch-to-configuration test")
