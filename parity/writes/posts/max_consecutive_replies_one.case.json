@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "settings": {
+    "max_consecutive_replies": 1
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "One reply, which a limit of a single reply in a row allows.",
+        "typing_duration_msecs": 12000
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A second reply in a row, which a limit of one does not allow.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

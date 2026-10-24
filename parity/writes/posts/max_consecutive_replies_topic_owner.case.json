@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "settings": {
+    "max_consecutive_replies": 1
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The topic owner replies right after their own last reply.",
+        "typing_duration_msecs": 12000
+      }
+    }
+  ]
+}

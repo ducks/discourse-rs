@@ -163,6 +163,13 @@ fix/newcomer-path.
   (DraftSequence.next!'s destroy_all), as Draft.clear already did.
   Recorded on rs-ref-c: drafts/draft_with_uploads,
   posts/reply_clears_draft_with_uploads.
+- [x] A reply past max_consecutive_replies answered 500 instead of Rails'
+  message. Done: PostValidator#force_edit_last_validator's error (422,
+  "No more than %{count} consecutive replies are allowed...") when the
+  member could edit the topic's last post, with the topic owner and
+  category group moderators exempt and deleted posts out of
+  ordered_posts. Recorded on rs-ref-c: posts/max_consecutive_replies,
+  _one and _topic_owner.
 
 Visible if clicked, avoid them in a scripted demo:
 
@@ -1781,12 +1788,13 @@ have handlers now.
     message, and silenced as fast typers (keep_posts); left:) posting
     as a staged user (posting/validate.rs:157), staged users on
     restricted categories (topic_guardian.rs:270), approving a staged
-    user's queued post (posting/create.rs:331), max_consecutive_replies
-    (posting/validate.rs:961), flagging a new user's linked posts as
-    spam once has_host_spam? refuses a post (flag_linked_posts_as_spam,
-    posting/create.rs:634), flag_sockpuppets (:681), silencing a TL0
-    user without keep_posts (user_penalties.rs:929, hide_posts; chat's
-    rate limit silence), TL0 bio links (users.rs:708, strip_links)
+    user's queued post (posting/create.rs:331), flagging a new user's
+    linked posts as spam once has_host_spam? refuses a post
+    (flag_linked_posts_as_spam, posting/create.rs:634), flag_sockpuppets
+    (:681), silencing a TL0 user without keep_posts
+    (user_penalties.rs:929, hide_posts; chat's rate limit silence), TL0
+    bio links (users.rs:708, strip_links). max_consecutive_replies landed
+    with fix/newcomer-path
 135. ~~`feat/quoted-posts`~~ (done, left: quoting into a new topic when
     the viewer can't reply (composer.js:1934, with the composer's reply
     as new topic); the selection's markdown for what the rich editor's

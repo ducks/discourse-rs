@@ -935,21 +935,58 @@ pub async fn base_errors(
         if max_replies > 0
             && let Some(topic_id) = post.topic_id
         {
-            let (op_user, count, last_post): (Option<i32>, i64, Option<i32>) = sqlx::query_as(
-                    "SELECT (SELECT user_id FROM posts WHERE topic_id = $1 ORDER BY post_number LIMIT 1), \
-                       (SELECT COUNT(*) FROM (SELECT user_id FROM posts WHERE deleted_at IS NULL AND NOT hidden \
-                          AND topic_id = $1 ORDER BY post_number DESC LIMIT $3) c WHERE c.user_id = $2), \
-                       (SELECT id FROM posts WHERE topic_id = $1 ORDER BY post_number DESC LIMIT 1)",
-                )
-                .bind(topic_id)
-                .bind(acting_user.id)
-                .bind(max_replies)
-                .fetch_one(&mut *conn)
-                .await?;
-            if op_user != Some(post.user_id) && count >= max_replies && last_post.is_some() {
-                // guardian.can_edit?(topic.ordered_posts.last): the
-                // user's own recent post; checking it is not ported.
-                return Err(Unsupported("max_consecutive_replies reached").into());
+            // topic.ordered_posts (Trashable's default scope leaves the
+            // deleted out): the first's author and the last.
+            let (op_user, category_id, count, last_post): (
+                Option<i32>,
+                Option<i32>,
+                i64,
+                Option<i32>,
+            ) = sqlx::query_as(
+                "SELECT (SELECT user_id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
+                           ORDER BY post_number LIMIT 1), \
+                        (SELECT category_id FROM topics WHERE id = $1), \
+                   (SELECT COUNT(*) FROM (SELECT user_id FROM posts WHERE deleted_at IS NULL AND NOT hidden \
+                      AND topic_id = $1 ORDER BY post_number DESC LIMIT $3) c WHERE c.user_id = $2), \
+                   (SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
+                      ORDER BY post_number DESC LIMIT 1)",
+            )
+            .bind(topic_id)
+            .bind(acting_user.id)
+            .bind(max_replies)
+            .fetch_one(&mut *conn)
+            .await?;
+            // is_category_group_moderator?(topic.category)
+            let group_moderator = match category_id {
+                Some(cid) if acting.category_group_moderation_allowed(s)? => {
+                    match acting.category_group_moderator_sql() {
+                        Some(moderated) => {
+                            sqlx::query_scalar::<_, bool>(&format!("SELECT $1 IN ({moderated})"))
+                                .bind(cid)
+                                .fetch_one(&mut *conn)
+                                .await?
+                        }
+                        None => false,
+                    }
+                }
+                _ => false,
+            };
+            if op_user != Some(post.user_id) && !group_moderator && count >= max_replies {
+                // guardian.can_edit?(topic.ordered_posts.last)
+                let can_edit = match last_post {
+                    Some(last) => {
+                        match crate::posting::revisions::find_post(&mut *conn, ctx, acting, last)
+                            .await?
+                        {
+                            Some(access) => access.can_edit(ctx, acting)?,
+                            None => false,
+                        }
+                    }
+                    None => false,
+                };
+                if can_edit {
+                    errors.push(ctx.t_count("max_consecutive_replies", max_replies));
+                }
             }
         }
     }
