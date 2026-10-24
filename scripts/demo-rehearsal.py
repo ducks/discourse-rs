@@ -206,8 +206,17 @@ class Persona:
 
     def login(self, page, from_path="/login"):
         page.goto(self.run.base + from_path)
+        # A persona whose own flow already signed it in (the newcomer, after
+        # signup and activation): /login sends a logged-in visitor home.
+        if page.locator("#current-user").count() and page.locator("#current-user").first.is_visible():
+            self.logged_in = True
+            return
         if from_path != "/login":
             page.locator(".d-header .login-button, .d-header a[href='/login']").first.click()
+            # The modal moves focus to the username field once it's drawn;
+            # typing before that sent the password into the username field.
+            page.locator("#login-account-name").first.wait_for(state="visible", timeout=WAIT)
+            settle(page, 400)
         page.locator("#login-account-name").fill(self.username)
         page.locator("#login-account-password").fill(PASSWORD)
         page.locator("#login-button").click()
@@ -1093,6 +1102,12 @@ def define_steps(run):
         expect_visible(drawer.locator("#c-footer-direct-messages"), "the drawer's DMs tab").click()
         dm = drawer.locator(".chat-channel-row", has_text="user0")
         creator = page.locator(".chat-message-creator, .d-modal.chat-modal-new-message")
+        # The tab's list draws after a request: wait for a row or the empty
+        # state before choosing (a rerun finds the DM the last run made).
+        try:
+            drawer.locator(".chat-channel-row, .empty-state__cta button, .channels-list-empty").first.wait_for(state="visible", timeout=WAIT)
+        except PlaywrightTimeout:
+            pass
         if dm.count() == 0:
             drawer.locator(".c-navbar__new-dm-button, .empty-state__cta button, button:has-text('Start a conversation')").first.click()
             try:
@@ -1407,8 +1422,26 @@ def define_steps(run):
         run.leave(f"a silence and unsilence of {username} in the staff log, and the system message they got")
         tpage = run.persona(target).use()
         tpage.goto(run.base + "/latest")
+        # The notification comes from a job a moment after the silence, and the
+        # menu fetches its list when it opens: reload until it's there, as a
+        # presenter switching windows would see it.
+        notice = tpage.locator(".user-menu li", has_text=re.compile("temporarily on hold", re.I))
+        for _ in range(5):
+            open_user_menu(tpage)
+            try:
+                notice.first.wait_for(state="visible", timeout=2000)
+                break
+            except PlaywrightTimeout:
+                tpage.reload()
         open_user_menu(tpage)
-        tpage.locator("#user-menu-button-messages").click()
+        # The menu's messages tab shows only to members who may send PMs, which
+        # a new or silenced account can't; the menu opens on the notifications
+        # tab, which lists the system message for everyone. Clicking that tab
+        # while it's active would follow its linkWhenActive to the
+        # notifications page, as Ember does, so it isn't clicked.
+        messages_tab = tpage.locator("#user-menu-button-messages")
+        if messages_tab.count() and messages_tab.first.is_visible():
+            messages_tab.first.click()
         # SystemMessage :silenced_by_staff, "Account temporarily on hold".
         expect_visible(tpage.locator(".user-menu li", has_text=re.compile("temporarily on hold", re.I)), f"the silence message in {username}'s user menu").click()
         expect_visible(tpage.locator(".topic-post .cooked", has_text=re.compile("temporarily placed on hold", re.I)), "the system message")
