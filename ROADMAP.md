@@ -113,7 +113,10 @@ Blockers, a scripted walk-through would hit them:
   Approve, Reject, Request Revision (its modal) and Delete user work from
   it. Recorded on rs-ref-d (parity/writes/review: queued_list*,
   queued_approve_then_list*); the card and the modal compared with
-  Playwright. Still refused: user reviewables (must_approve_users, 148),
+  Playwright. A watched word score has no context when
+  NewPostManager queues the post, so its words are found from the
+  payload as Rails does (fix/watched-word-reason-guess; the queue had
+  answered 500 on every real watched-word hold). Still refused: user reviewables (must_approve_users, 148),
   editing a queued post and the silence and suspend client actions (194e)
 - [x] The admin's site settings answered 500 saving a list setting such as
   authorized_extensions (164), so an admin couldn't allow video or audio

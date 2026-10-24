@@ -1050,7 +1050,10 @@ async fn scores(
         let (reason, reason_type, reason_data) = match sc.reason.as_deref() {
             None => (None, Value::Null, Value::Null),
             Some("watched_word") => {
-                let words = watched_words_found(sc.context.as_deref())?;
+                let words = match sc.context.as_deref() {
+                    Some(context) => watched_words_found(context),
+                    None => watched_words_guessed(&mut *conn, ctx, r).await?,
+                };
                 (
                     Some(watched_word_reason(ctx, urls, &words)?),
                     json!("watched_word"),
@@ -1260,11 +1263,9 @@ fn present(v: &Value) -> bool {
     }
 }
 
-/// `watched_words_found`: the score's context split on commas, downcased
-/// and unique. Without a context Rails guesses from the post's current
-/// raw, which isn't ported.
-fn watched_words_found(context: Option<&str>) -> Result<Vec<String>, AppError> {
-    let context = context.ok_or(Unsupported("watched word scores without their words"))?;
+/// `watched_words_found` with a context: the score's context split on
+/// commas, downcased and unique.
+fn watched_words_found(context: &str) -> Vec<String> {
     let mut words: Vec<String> = Vec::new();
     // Ruby's split drops trailing empty strings.
     let mut parts: Vec<&str> = context.split(',').collect();
@@ -1272,6 +1273,66 @@ fn watched_words_found(context: Option<&str>) -> Result<Vec<String>, AppError> {
         parts.pop();
     }
     for w in parts {
+        let w = w.to_lowercase();
+        if !words.contains(&w) {
+            words.push(w);
+        }
+    }
+    words
+}
+
+/// `watched_words_found` without a context, which is how NewPostManager
+/// queues a post (add_score passes no context): the words of every action
+/// matched in the payload's raw (and title), or the post's raw (and its
+/// topic's title on the first post), as `word_matches_across_all_actions`
+/// finds them, downcased and unique.
+async fn watched_words_guessed(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    r: &Reviewable,
+) -> Result<Vec<String>, AppError> {
+    let text = if r.kind == "ReviewableQueuedPost" {
+        let payload = r.payload.as_ref().and_then(Value::as_object);
+        let raw = payload
+            .and_then(|p| p.get("raw"))
+            .and_then(Value::as_str)
+            .ok_or(Unsupported(
+                "a watched word score on a queued post without its raw",
+            ))?;
+        let mut s = raw.to_string();
+        // `s << " #{payload["title"]}" if payload.key?("title")`
+        if let Some(title) = payload.and_then(|p| p.get("title")) {
+            s.push(' ');
+            s.push_str(title.as_str().unwrap_or(""));
+        }
+        s
+    } else if r.target_type.as_deref() == Some("Post") {
+        let (raw, post_number, title): (String, i32, String) = sqlx::query_as(
+            "SELECT p.raw, p.post_number, t.title FROM posts p JOIN topics t ON t.id = p.topic_id \
+             WHERE p.id = $1",
+        )
+        .bind(r.target_id)
+        .fetch_optional(&mut *conn)
+        .await?
+        .ok_or(Unsupported("a watched word score on a post that is gone"))?;
+        if post_number == 1 {
+            format!("{raw} {title}")
+        } else {
+            raw
+        }
+    } else {
+        return Err(Unsupported("watched word scores on reviewables without a post").into());
+    };
+    let mut found: Vec<String> = Vec::new();
+    for (_, action) in crate::word_watcher::ACTIONS {
+        let compiled =
+            crate::word_watcher::compiled_for_action(&mut *conn, ctx.settings, action).await?;
+        found.extend(crate::word_watcher::matches(&text, &compiled, true)?);
+    }
+    found.sort();
+    found.dedup();
+    let mut words: Vec<String> = Vec::new();
+    for w in found {
         let w = w.to_lowercase();
         if !words.contains(&w) {
             words.push(w);
