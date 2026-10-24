@@ -4314,6 +4314,29 @@ route table has been made, so this list may be short.
     tests/messages_pages.rs. Refused as before: sending the warning
     (is_warning, posts#create), a message to an email address
     (PostCreator), the composer actions menu (196).
+283. `feat/infinite-loading` M: found by the demo rehearsal: a topic over
+    one chunk (/t/118, 100 posts) drew its first 20 posts and scrolling
+    loaded nothing, so its footer and Reply never showed and posts 21-100
+    couldn't be read by scrolling; the topic lists ended with DLoadMore's
+    sentinel and a "Next page" link. The server side is done: GET
+    /t/:topic_id/posts(.json) (TopicsController#posts,
+    TopicViewPostsSerializer): the posts by `post_ids[]` (or one id),
+    those after or before a `post_number` with `asc`
+    (filter_posts_by_post_number, the megatopics' window), the related
+    messages, suggested topics and group name only with
+    include_suggested=true, and the topic's id; a missing topic is a 404,
+    a message for a visitor a 403 not_logged_in, a topic the viewer can't
+    see a 404 unless detailed_404 is on
+    (hide_inaccessible_topic_when_detailed_404_disabled). TopicView takes
+    post_number, then post_ids, then filter_post_number, as filter_posts
+    does, and topics#show now leaves out the related messages too while
+    there is a next page (perform_show_response turns off both). Refused:
+    filter, username_filters and include_raw. Ten golden cases recorded
+    from rs-ref-d: topic 35 by ids, with its suggested topics, as user1,
+    after and before a post number, the default chunk; message 42 for a
+    visitor, a stranger and a participant (its related messages and
+    group name); a missing topic. Left: the client's loading (the topic's
+    post stream, the lists' DLoadMore).
 
 ### Phase 11: the bundled plugins' gaps (210)
 

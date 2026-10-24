@@ -387,3 +387,13 @@ GET /admin/users/2.json as=admin ignore=/last_seen_age,/last_emailed_age,/create
 GET /admin/users/3.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
 GET /admin/users/4.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
 GET /admin/users/5.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /t/35/posts.json?post_ids[]=36&post_ids[]=37
+GET /t/35/posts.json?post_ids[]=38&post_ids[]=52&include_suggested=true ignore=/suggested_topics
+GET /t/35/posts.json?post_ids[]=36&post_ids[]=52 as=user1 ignore=/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/35/posts.json?post_number=2&asc=true
+GET /t/35/posts.json?post_number=5&asc=false
+GET /t/35/posts.json
+GET /t/42/posts.json?post_ids[]=49
+GET /t/42/posts.json?post_ids[]=49 as=user2
+GET /t/42/posts.json?post_ids[]=49&include_suggested=true as=user1 ignore=/suggested_topics,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/999999/posts.json?post_ids[]=1

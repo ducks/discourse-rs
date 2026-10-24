@@ -267,6 +267,16 @@ pub struct Options {
     /// `post_ids`: these posts instead of a page (filter_posts_by_ids),
     /// what a gap loads when it is filled.
     pub post_ids: Option<Vec<i32>>,
+    /// `filter_post_number` and `asc` (topics#posts' post_number): the
+    /// chunk after (or before) that post (filter_posts_by_post_number).
+    pub filter_post_number: Option<(i64, bool)>,
+    /// `include_suggested` and `include_related`: None as topics#show
+    /// leaves them (on unless there is a next page), else as given.
+    pub include_suggested: Option<bool>,
+    /// Discourse::NotLoggedIn and InvalidAccess as raised, not turned into
+    /// NotFound while detailed_404 is off (topics#show's rescue alone does
+    /// that).
+    pub raise_access_errors: bool,
 }
 
 /// `setup_filtered_posts`: which of the topic's posts the view streams.
@@ -395,6 +405,7 @@ impl TopicView<'_> {
         // turns into a plain 404 while detailed_404 is off.
         let detailed_404 = self.settings.get("detailed_404")?.truthy();
         let pm = topic.archetype == "private_message";
+        let detailed_404 = detailed_404 || self.options.raise_access_errors;
         if pm && self.guardian.is_anonymous() {
             return Err(if detailed_404 {
                 TopicViewError::NotLoggedIn
@@ -423,16 +434,25 @@ impl TopicView<'_> {
         } else {
             self.calculate_page(topic.id, post_number, &filter).await?
         };
-        let posts = match (&self.options.post_ids, self.options.post_number) {
-            (Some(ids), _) => {
-                let ids = ids.clone();
-                self.filter_posts_by_ids(topic.id, &ids, &filter).await?
-            }
-            (None, Some(_)) => {
+        // filter_posts: post_number, then post_ids, then filter_post_number.
+        let posts = match (
+            self.options.post_number,
+            &self.options.post_ids,
+            self.options.filter_post_number,
+        ) {
+            (Some(_), _, _) => {
                 self.filter_posts_near(topic.id, post_number, &filter)
                     .await?
             }
-            (None, None) => self.filter_posts_paged(topic.id, page, &filter).await?,
+            (None, Some(ids), _) if !ids.is_empty() => {
+                let ids = ids.clone();
+                self.filter_posts_by_ids(topic.id, &ids, &filter).await?
+            }
+            (None, _, Some((number, asc))) => {
+                self.filter_posts_by_post_number(topic.id, number, asc, &filter)
+                    .await?
+            }
+            _ => self.filter_posts_paged(topic.id, page, &filter).await?,
         };
         // TopicView#gaps: the filtered stream against the unfiltered one.
         let gaps = if filter.contains_gaps() {
@@ -495,13 +515,18 @@ impl TopicView<'_> {
             && self
                 .guardian
                 .in_setting_groups(self.settings, "personal_message_enabled_groups")?;
-        if pm_eligible {
+        // perform_show_response turns both off while there is a next page.
+        let include_suggested = self
+            .options
+            .include_suggested
+            .unwrap_or(next_page.is_none());
+        if pm_eligible && include_suggested {
             out.insert(
                 "related_messages".into(),
                 self.related_messages(&topic).await?,
             );
         }
-        if next_page.is_none() {
+        if include_suggested {
             if pm {
                 if pm_eligible {
                     out.insert(
@@ -1415,6 +1440,39 @@ impl TopicView<'_> {
             ids.extend(more);
         }
         self.filter_posts_by_ids(topic_id, &ids, filter).await
+    }
+
+    /// `filter_posts_by_post_number`: up to a chunk of the filtered posts
+    /// after the post's sort order (`asc`), else before it, nearest last.
+    async fn filter_posts_by_post_number(
+        &mut self,
+        topic_id: i32,
+        post_number: i64,
+        asc: bool,
+        filter: &PostFilter,
+    ) -> Result<Vec<PostRow>, TopicViewError> {
+        let Some(sort_order) = self.get_sort_order(topic_id, post_number).await? else {
+            return Ok(Vec::new());
+        };
+        let (cmp, order) = if asc { (">", "ASC") } else { ("<", "DESC") };
+        let sql = format!(
+            "SELECT id FROM posts WHERE {} AND posts.sort_order {cmp} $4 \
+             ORDER BY sort_order {order} LIMIT $5",
+            filter.filtered()
+        );
+        let ids: Vec<i32> = sqlx::query_scalar(&sql)
+            .bind(topic_id)
+            .bind(&self.post_types)
+            .bind(&filter.ignored)
+            .bind(sort_order)
+            .bind(CHUNK_SIZE)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        let mut posts = self.filter_posts_by_ids(topic_id, &ids, filter).await?;
+        if !asc {
+            posts.reverse();
+        }
+        Ok(posts)
     }
 
     /// `filter_posts_by_ids`: the topic's posts among `ids` of the visible

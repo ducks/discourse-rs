@@ -117,6 +117,7 @@ mod topic_convert;
 mod topic_excerpts;
 mod topic_move;
 mod topic_notifications;
+mod topic_posts;
 mod topic_status;
 mod topic_timer;
 mod topic_update;
@@ -547,6 +548,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#timer; {slug} holds the topic id.
         .route("/t/{slug}/timer", post(topic_timer::timer))
+        // TopicsController#posts; {slug} holds the topic id.
+        .route("/t/{slug}/posts", get(topic_posts::posts))
+        .route("/t/{slug}/posts.json", get(topic_posts::posts))
         .route("/t/{slug}/excerpts", get(topic_excerpts::excerpts))
         .route("/t/{slug}/excerpts.json", get(topic_excerpts::excerpts))
         .route("/t/{slug}/slow_mode", put(topic_timer::slow_mode))
