@@ -21,14 +21,16 @@ and reports any step that errors, so run it before showing.
 ## Core forum
 
 1. Visitor: `/latest`, scroll, then `/categories`, a category, `/top`.
-2. Visitor: open a long topic (`/t/68`), scroll through posts, open the
-   lightbox on an image, follow a quote.
+2. Visitor: open a long topic (`/t/118`, 100 posts) and scroll through it;
+   the timeline follows. (The corpus has no lightbox images or linked
+   quotes, so step 6 shows the lightbox on the member's own upload.)
 3. Visitor: search a common term from the header, then the full search
    page with a filter.
 4. Visitor: a tag page, a user profile.
 5. Member logs in from a topic and comes back to it.
 6. Member: reply with formatting, a mention of `@user0`, an emoji, an
-   uploaded image; the reply appears without a reload.
+   uploaded image; the reply appears without a reload, its image gets a
+   lightbox once processed, and opening it shows the full image.
 7. Second member (another browser): the mention notification arrives;
    open it, like the reply.
 8. Member: new topic with a poll and a checklist; vote on the poll; tick a
@@ -102,7 +104,7 @@ It can run again on the same database. What it makes is labelled
 "rehearsal <time>Z", the newcomer is `rh<timestamp>` and the watched word
 `rhword<timestamp>`. It waits between a persona's posts as a presenter
 would (Discourse refuses a second topic within 15 seconds), and replies
-elsewhere when user1 already posted last in `/t/68`. At the end it deletes
+elsewhere when user1 already posted last in `/t/118`. At the end it deletes
 the watched word and the color palette it made through the admin, puts
 back the settings it changed and unsilences whoever it silenced; the report
 lists what it cleaned up and what it left behind: the replies, the topic
