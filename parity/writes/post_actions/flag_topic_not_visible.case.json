@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions",
+      "params": {"id": 36, "post_action_type_id": 4, "flag_topic": "true"}
+    }
+  ]
+}

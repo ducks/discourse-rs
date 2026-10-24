@@ -2032,13 +2032,15 @@ have handlers now.
     (jobs/user_email.rs:93,101,105,507), sendmail delivery
     (email/mod.rs:169), mailing list mode (the
     notify_mailing_list_subscribers job)
-147. `feat/flags-rest` M: flags that send a message (notify user,
-    notify moderators, illegal: flags.rs:130), undoing flags
-    (routes/post_actions.rs:181), flagging topics (:95), flags in
-    messages (flags.rs:120), flags on posts already in review (:185),
-    staff queueing a post for review (:176), hiding on a trusted user's
-    spam flag (:380), silencing new users on spam flags and the scoring
-    behind it (:417; guardian.rs:392; current_user.rs:909)
+147. `feat/flags-rest` M: official warnings (is_warning, flags.rs:194;
+    PostCreator's is_warning and UserWarning), undoing flags
+    (routes/post_actions.rs:211), flags in messages (flags.rs:127),
+    flags on posts already in review (:184), staff queueing a post for
+    review (:175), hiding on a trusted user's spam flag (:531), silencing
+    new users on spam flags and the scoring behind it (:568;
+    guardian.rs:392; current_user.rs:909). Flags that send a message
+    (notify user, notify moderators, illegal, spam with a message) and
+    flagging topics are ported (feat/flag-and-penalty-modals).
 148. `feat/review-actions-rest` L: review actions that delete, edit,
     restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's

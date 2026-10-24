@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions",
+      "params": {"id": 36, "post_action_type_id": 10, "message": "It links to pirated material.", "flag_topic": "false"}
+    }
+  ]
+}

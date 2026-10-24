@@ -28,6 +28,9 @@ pub enum Outcome {
     Forbidden(&'static str),
     /// RateLimiter::LimitExceeded, out of the creator or destroyer.
     RateLimited(crate::rate_limiter::LimitExceeded),
+    /// `render_json_error(result)` for the errors a flag's message
+    /// creator added: 422.
+    Invalid(Vec<String>),
 }
 
 /// The acting user as the limiters key them.
