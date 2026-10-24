@@ -7,13 +7,15 @@
 //! first creates the message (create_message_creator): to the author for
 //! notify user, else to the moderators, its post the action's related post
 //! and its topic the score's meta topic. A topic's flag (flag_topic) is its
-//! first post's, targeting the topic when it has replies.
+//! first post's, targeting the topic when it has replies. A post already
+//! in review takes the flag's score on its reviewable, which is reopened
+//! when it had been reviewed, unless the same type was reviewed lately
+//! and the post not edited since (cannot_flag_again?).
 //!
 //! Refused: official warnings (is_warning), queueing for review as staff,
-//! flags on posts already in review, flags in messages, and the rules when
-//! they would close the topic, hide on a trusted spam flag or silence the
-//! author. The badge queue is not ported; flags write no user actions or
-//! notifications.
+//! flags in messages, and the rules when they would close the topic, hide
+//! on a trusted spam flag or silence the author. The badge queue is not
+//! ported; flags write no user actions or notifications.
 
 use sqlx::{PgConnection, PgPool};
 
@@ -174,14 +176,22 @@ pub async fn flag(
     if req.queue_for_review {
         return Err(Unsupported("queueing a post for review as staff").into());
     }
-    let in_review: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM reviewables WHERE target_type = 'Post' AND target_id = $1)",
+    // Reviewable.find_by(target: @post), of any type.
+    let reviewable: Option<i64> = sqlx::query_scalar(
+        "SELECT id FROM reviewables WHERE target_type = 'Post' AND target_id = $1 ORDER BY id LIMIT 1",
     )
     .bind(post.id)
-    .fetch_one(&mut *tx)
+    .fetch_optional(&mut *tx)
     .await?;
-    if in_review {
-        return Err(Unsupported("flags on posts already in review").into());
+    if let Some(reviewable_id) = reviewable
+        && types.is_notify_flag(req.type_id)
+        && cannot_flag_again(&mut tx, ctx, &types, reviewable_id, post.id, req.type_id).await?
+    {
+        let message = ctx
+            .i18n
+            .t("reviewables.already_handled")
+            .ok_or(Unsupported("reviewables.already_handled's text"))?;
+        return Ok(Outcome::Invalid(vec![message.to_string()]));
     }
 
     // create meta topic / post if needed: a message present for a type
@@ -274,7 +284,7 @@ pub async fn flag(
     // create_reviewable, for flags that go to review; none for bots' posts.
     let mut reviewable_score = None;
     if types.is_notify_flag(req.type_id) && post.user_id.is_some_and(|id| id >= 0) {
-        let reviewable_id = reviewables::create_flagged_post(
+        let reviewable = reviewables::flagged_post_needs_review(
             &mut tx,
             &crate::web_hooks::Payloads {
                 settings: ctx.settings,
@@ -305,8 +315,7 @@ pub async fn flag(
                 i18n: ctx.i18n,
                 config: ctx.config,
             },
-            reviewable_id,
-            access.topic_id,
+            &reviewable,
             &flagger,
             &NewScore {
                 score_type: req.type_id,
@@ -320,7 +329,7 @@ pub async fn flag(
         .await?;
         reviewable_score =
             sqlx::query_scalar::<_, f64>("SELECT score FROM reviewables WHERE id = $1")
-                .bind(reviewable_id)
+                .bind(reviewable.id)
                 .fetch_optional(&mut *tx)
                 .await?;
     }
@@ -338,6 +347,11 @@ pub async fn flag(
         take_action,
     )
     .await?;
+    // notify_subscribers: a flag that goes to review redraws the post.
+    if types.is_notify_flag(req.type_id) {
+        crate::bus::publish_post_change(ctx, &mut tx, post.id, "acted", Default::default(), false)
+            .await?;
+    }
     // Taking action agrees with the post's flags, this one included.
     if take_action {
         crate::review::agree_with_flags(&mut tx, ctx, user.id, &user.username, post.id).await?;
@@ -345,6 +359,39 @@ pub async fn flag(
     }
     tx.commit().await?;
     Ok(Outcome::Done)
+}
+
+/// `cannot_flag_again?(reviewable)`: not for notify moderators; a type
+/// already reviewed on the post's reviewable, the post not edited since
+/// and the review within cooldown_hours_until_reflag.
+async fn cannot_flag_again(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    types: &ActionTypes,
+    reviewable_id: i64,
+    post_id: i32,
+    type_id: i64,
+) -> Result<bool, AppError> {
+    if types.name(type_id) == Some("notify_moderators") {
+        return Ok(false);
+    }
+    let hours = ctx.settings.get("cooldown_hours_until_reflag")?.to_i();
+    let refused: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM reviewable_scores rs \
+                        WHERE rs.reviewable_id = r.id AND rs.reviewable_score_type = $2 \
+                          AND rs.status <> $4) \
+            AND (p.last_version_at IS NULL OR r.updated_at > p.last_version_at) \
+            AND r.updated_at > clock_timestamp()::timestamp - make_interval(hours => $5) \
+         FROM reviewables r, posts p WHERE r.id = $1 AND p.id = $3",
+    )
+    .bind(reviewable_id)
+    .bind(type_id as i32)
+    .bind(post_id)
+    .bind(reviewables::PENDING)
+    .bind(hours as i32)
+    .fetch_one(conn)
+    .await?;
+    Ok(refused)
 }
 
 /// The message a flag sends: its post and topic.
