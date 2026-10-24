@@ -97,8 +97,12 @@ impl TestDb {
             conn.close().await.ok();
         }
 
+        // sqlx's default 30 s acquire timeout failed whole suite runs with
+        // PoolTimedOut whenever the box was busy (a parallel build, agents'
+        // test runs): a backend starting on a fresh clone can take longer.
         let pool = PgPoolOptions::new()
             .max_connections(4)
+            .acquire_timeout(std::time::Duration::from_secs(120))
             .connect_with(
                 opts.statement_cache_capacity(discourse_rs::multisite::STATEMENT_CACHE_CAPACITY),
             )
