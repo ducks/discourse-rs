@@ -448,6 +448,27 @@ pub async fn color_definitions(
     })
 }
 
+/// [`link_tags`] kept per site, theme, direction and hostname until the
+/// theme tables or the site settings change (crate::theme_cache), as
+/// Stylesheet::Manager keeps its stylesheet details.
+pub async fn link_tags_at(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    theme_id: i32,
+    rtl: bool,
+    at: &crate::theme_cache::Fingerprint,
+) -> Result<String, AppError> {
+    static KEPT: crate::theme_cache::Kept<(i32, bool, String), String> =
+        crate::theme_cache::Kept::new();
+    let key = (theme_id, rtl, cx.urls().current_hostname()?);
+    if let Some(tags) = KEPT.get(at, key.clone()) {
+        return Ok(tags);
+    }
+    let tags = link_tags(conn, cx, theme_id, rtl).await?;
+    KEPT.put(at, key, tags.clone());
+    Ok(tags)
+}
+
 /// The theme stylesheets a page links (`discourse_stylesheet_link_tag`
 /// for common_theme, mobile_theme and desktop_theme with `supports_rtl`):
 /// one per theme of `theme_id` with SCSS for the target, the `_rtl`

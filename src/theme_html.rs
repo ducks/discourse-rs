@@ -69,6 +69,26 @@ async fn rows(conn: &mut PgConnection, ids: &[i32], target: i32) -> Result<Vec<R
     .await
 }
 
+/// [`lookup`] kept per site, theme and target until the theme tables
+/// change (crate::theme_cache), as `Theme.lookup_field` keeps it in its
+/// cache. A lookup that fails is not kept.
+pub async fn lookup_at(
+    conn: &mut PgConnection,
+    cx: &themes::Ctx<'_>,
+    theme_id: Option<i64>,
+    mobile: bool,
+    at: &crate::theme_cache::Fingerprint,
+) -> Result<Fields, AppError> {
+    static KEPT: crate::theme_cache::Kept<(Option<i64>, bool), Fields> =
+        crate::theme_cache::Kept::new();
+    if let Some(fields) = KEPT.get(at, (theme_id, mobile)) {
+        return Ok(fields);
+    }
+    let fields = lookup(conn, cx, theme_id, mobile).await?;
+    KEPT.put(at, (theme_id, mobile), fields.clone());
+    Ok(fields)
+}
+
 /// `Theme.lookup_field(theme_id, mobile_device? ? :mobile : :desktop, name)`
 /// for every html field a page draws.
 pub async fn lookup(
