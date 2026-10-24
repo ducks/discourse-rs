@@ -10,8 +10,12 @@
     return;
   }
 
+  // The index's AdminReports (admin-reports/index.gjs), not the single
+  // report (admin-reports/show.gjs), which shares the route's wrapper but
+  // has no filter controls: a page swap from the index keeps this script.
   function page() {
-    return document.querySelector(".admin-contents.admin-reports");
+    var root = document.querySelector(".admin-contents.admin-reports");
+    return root && root.querySelector(".admin-config-area__full-width > .d-filter-controls") ? root : null;
   }
 
   function terms(value) {

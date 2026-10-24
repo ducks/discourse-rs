@@ -732,6 +732,11 @@ async fn the_reports_index() {
     assert!(html.contains("value=\"sign\" placeholder=\"Filter reports...\""));
     assert!(html.contains("<option class=\"d-native-select__option\" value=\"traffic\">"));
     assert!(html.contains("/admin-reports.js"));
+    // admin-reports.js filters this page only: AdminReports' controls,
+    // inside the index template's full-width area.
+    assert!(html.contains(
+        "<div class=\"admin-config-area__full-width\"><div class=\"d-filter-controls\">"
+    ));
     // The JSON stays the list.
     let (status, body) = admin.send(Method::GET, "/admin/reports", "", true).await;
     assert_eq!(status, StatusCode::OK);
@@ -776,6 +781,10 @@ async fn the_report_page() {
     assert!(html.contains("admin-report-related-items__username\">user1</span>"));
     assert!(html.contains("id=\"admin-report-data\""));
     assert!(html.contains("/admin-report-charts.js") && html.contains("/admin-report.js"));
+    // The show template has none of the index's filter controls, which
+    // admin-reports.js (kept across a page swap from the index) looks for.
+    assert!(!html.contains("admin-config-area__full-width"));
+    assert!(!html.contains("d-filter-controls"));
     // A table carries no groupings; its mode is the script's to draw.
     let (_, html) = admin
         .page("/admin/reports/signups?mode=table&start_date=2026-01-01&end_date=2026-01-31")

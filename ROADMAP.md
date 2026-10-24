@@ -132,8 +132,11 @@ feat/flag-and-penalty-modals:
   topic footer's have no modal (step 17).
 - [ ] Admin silence and suspend answer "Not ported yet: the silence modal"
   on the admin user page (step 23).
-- [ ] /admin/reports to a single report raises a script error: the list's
-  filter runs on the report page after a page swap (step 21).
+- [x] /admin/reports to a single report raised a script error: the list's
+  filter ran on the report page after a page swap (step 21).
+  admin-reports.js now acts only where the index template's AdminReports
+  controls are, as Ember's index and show routes render different
+  components under the same wrapper.
 - [ ] The chat read marker sends message_id=NaN for the just-sent staged
   message, answered 400 (step 14).
 - [x] Ticking a checklist box sometimes answered 422 "The checkbox could not
