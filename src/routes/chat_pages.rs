@@ -424,15 +424,20 @@ async fn slugified_title(
 /// GET /chat/new-message: ChatNewMessageRoute's beforeModel on a page
 /// load. With `channel_id` or `channel` (a slug: the member's channel,
 /// else a public one) it goes to that channel, or to /chat when there is
-/// none; with `recipients` it finds or creates the direct message with
-/// them (chat.upsertDmChannel, through Chat::CreateDirectMessageChannel)
-/// and goes to it; with neither it goes to /chat, as a page load has no
-/// page to open the new message modal over (static/js/chat-new-message.js
-/// opens it for a link followed in the app). The query is read as the
-/// router reads it.
+/// none, a read the redirect does where the route's transition ends; with
+/// neither nor `recipients` it goes to /chat, as a page load has no page
+/// to open the new message modal over (static/js/chat-new-message.js
+/// opens it for a link followed in the app). With `recipients` the page
+/// is served with the route's empty outlet and nothing is written here:
+/// the route's chat.upsertDmChannel is chat-new-message.js's, which finds
+/// or creates the direct message with POST
+/// /chat/api/direct-message-channels and goes to it, or leaves the error
+/// over this page (popupAjaxError). The query is read as the router
+/// reads it.
 pub async fn new_message(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -480,38 +485,24 @@ pub async fn new_message(
             Found::NotFound | Found::Forbidden => redirect(format!("{base_path}/chat")),
         });
     }
-    let Some(recipients) = param("recipients") else {
+    // `params.recipients?.split(",")`: an empty one is still recipients.
+    if !query.contains_key("recipients") {
         return Ok(redirect(format!("{base_path}/chat")));
-    };
-    use crate::plugins::chat::dm_create::{Outcome, Params};
-    let params = Params {
-        name: None,
-        target_usernames: recipients.split(',').map(str::to_string).collect(),
-        target_groups: Vec::new(),
-        upsert: true,
-    };
-    drop(conn);
-    let mut tx = state.pool.begin().await?;
-    let mut cx = context(&state, &mut tx, &settings, &guardian);
-    match cx.create_direct_message_channel(&params).await? {
-        Outcome::Created(body) => {
-            let id = body["channel"]["id"].as_i64().ok_or(crate::Unsupported(
-                "a direct message channel created without an id",
-            ))?;
-            let found = cx.find_joinable(&id.to_string()).await?;
-            let Found::Channel(channel) = found else {
-                return Err(crate::Unsupported("a direct message channel the member can't open").into());
-            };
-            let (slug, _) = slugified_title(&mut cx, &channel).await?;
-            tx.commit().await?;
-            Ok(redirect(to_channel(slug, id)))
-        }
-        // popupAjaxError over the chat page, the route left waiting.
-        Outcome::NotFound | Outcome::Refused(_) | Outcome::Unprocessable(_) => Err(crate::Unsupported(
-            "chat's /chat/new-message when the direct message can't be created (popupAjaxError)",
-        )
-        .into()),
     }
+    // The new-message route has no template or title token of its own.
+    let title = format!("{} - ", chat_title(&state));
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::Chat,
+        title,
+        "",
+        true,
+    )
+    .await
 }
 
 pub async fn channel(

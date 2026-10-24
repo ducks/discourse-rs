@@ -2102,9 +2102,11 @@ async fn every_page_carries_the_new_message_modal() {
 
 // GET /chat/new-message, as ChatNewMessageRoute leaves a page load: to
 // /chat without params, to the channel asked for (by id or slug) or /chat
-// when it can't be opened, and with recipients to the direct message
-// with them, found or created. A seeded draft is refused; a visitor goes
-// where the chat route sends them.
+// when it can't be opened. With recipients the page is served and nothing
+// is written; the browser finds or creates the direct message with the
+// POST chat-new-message.js sends (recorded as
+// chat/dm_create_from_new_message_modal) and opens it. A seeded draft is
+// refused; a visitor goes where the chat route sends them.
 #[tokio::test]
 async fn chat_new_message_goes_where_the_route_goes() {
     let db = TestDb::new().await;
@@ -2130,14 +2132,39 @@ async fn chat_new_message_goes_where_the_route_goes() {
         user1.head("/chat/new-message?channel=nope").await,
         (302, Some("/chat".into()))
     );
-    let (status, location) = user1.head("/chat/new-message?recipients=user0").await;
-    assert_eq!(status, 302);
-    let location = location.unwrap();
-    let id: i64 = location
-        .strip_prefix("/chat/c/user0/")
-        .unwrap_or_else(|| panic!("{location}"))
-        .parse()
-        .unwrap();
+    let channels = |pool: sqlx::PgPool| async move {
+        sqlx::query_scalar::<_, i64>(
+            "SELECT (SELECT count(*) FROM chat_channels) + (SELECT count(*) FROM direct_message_channels) \
+             + (SELECT count(*) FROM direct_message_users) + (SELECT count(*) FROM user_chat_channel_memberships)",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap()
+    };
+    let before = channels(db.pool.clone()).await;
+    for path in [
+        "/chat/new-message?recipients=user0",
+        "/chat/new-message?recipients=user0,user2",
+        "/chat/new-message?recipients=",
+    ] {
+        assert_eq!(user1.head(path).await, (200, None), "{path}");
+    }
+    let html = user1.page("/chat/new-message?recipients=user0").await;
+    assert!(
+        html.contains("<div class=\"main-chat-outlet chat-view\" id=\"main-chat-outlet\"></div>")
+    );
+    assert!(html.contains("/assets/chat-new-message.js?v="));
+    assert_eq!(channels(db.pool.clone()).await, before, "a GET wrote");
+    // chat.upsertDmChannel's request, then the channel it opens.
+    let body = "target_usernames%5B%5D=user0&target_groups=&upsert=true&name=";
+    let created: serde_json::Value = serde_json::from_str(
+        &user1
+            .send(Method::POST, "/chat/api/direct-message-channels.json", body)
+            .await,
+    )
+    .unwrap();
+    let id = created["channel"]["id"].as_i64().unwrap();
+    assert_eq!(created["channel"]["title"], "user0");
     let members: Vec<String> = sqlx::query_scalar(
         "SELECT u.username FROM chat_channels c \
          JOIN direct_message_users d ON d.direct_message_channel_id = c.chatable_id \
@@ -2148,11 +2175,18 @@ async fn chat_new_message_goes_where_the_route_goes() {
     .await
     .unwrap();
     assert_eq!(members, ["user0", "user1"]);
-    // Found again, not created twice.
     assert_eq!(
-        user1.head("/chat/new-message?recipients=user0").await,
-        (302, Some(location.clone()))
+        user1.head(&format!("/chat/c/user0/{id}")).await,
+        (200, None)
     );
+    // Found again, not created twice.
+    let again: serde_json::Value = serde_json::from_str(
+        &user1
+            .send(Method::POST, "/chat/api/direct-message-channels.json", body)
+            .await,
+    )
+    .unwrap();
+    assert_eq!(again["channel"]["id"].as_i64(), Some(id));
     assert_eq!(
         user1
             .head("/chat/new-message?recipients=user0&message=hello")
