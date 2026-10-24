@@ -14,10 +14,9 @@
 //! unhiding, rejecting, keeping deleted and deleting.
 //!
 //! Refused: approving into a closed topic, a payload with tags, an email
-//! or plugin fields, a silenced author's approval (UserSilencer.unsilence),
-//! unhiding a first post (the topic's visibility), a pending claim on the
-//! topic, flag stats past the truncation limit, and moderators reviewing
-//! posts (reviewable_post_scope).
+//! or plugin fields, unhiding a first post (the topic's visibility), a
+//! pending claim on the topic, flag stats past the truncation limit, and
+//! moderators reviewing posts (reviewable_post_scope).
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -628,9 +627,6 @@ async fn approve(
     if payload.get("is_poll") == Some(&Value::Bool(true)) && raw.contains("[poll") {
         return Err(Unsupported("approving a queued post with polls").into());
     }
-    if author.silenced() {
-        return Err(Unsupported("unsilencing the author of an approved post").into());
-    }
     let author_user = SessionUser::load(&mut *conn, author.id)
         .await?
         .ok_or(Unsupported("approving a post for a user who is gone"))?;
@@ -691,6 +687,17 @@ async fn approve(
     .bind(topic_id)
     .execute(&mut *conn)
     .await?;
+    // A silenced author (a fast typer, say) is unsilenced.
+    if author.silenced() {
+        crate::user_penalties::lift_silence_for_reviewable(
+            &mut *conn,
+            ctx,
+            performer.id,
+            author.id,
+            row.id,
+        )
+        .await?;
+    }
     if performer.admin || performer.moderator {
         let action = crate::staff_action_logs::action_id("post_approved")
             .ok_or(Unsupported("UserHistory.actions[:post_approved]"))?;

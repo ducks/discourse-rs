@@ -1,0 +1,32 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"An image ![gravatar|100x100](upload://sLckxyrYcJI4X5RPt6GOaGETgux.png) and [a link](/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png) to another, upload://nothing0here\",\"action\":\"reply\",\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"Only [a link](/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png) and ![other|100x100](upload://wK4u9bgcJlj4aMHkRe5KSUKQBBm.png) now\",\"action\":\"reply\",\"composerTime\":6000,\"typingTime\":4000}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/drafts/topic_35.json"
+    }
+  ],
+  "unordered": {
+    "upload_references": [
+      "id"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET trust_level = 0, silenced_till = '3026-10-01 00:00:00' WHERE id = 2",
+    "UPDATE user_stats SET post_count = 0, topic_count = 0, pending_posts_count = 1 WHERE user_id = 2",
+    "INSERT INTO user_histories (id, action, acting_user_id, target_user_id, details, context, reviewable_id, admin_only, created_at, updated_at) VALUES (9611, 30, -1, 2, 'New user typed too fast', 'silenced_by_staff: New user typed too fast', 9611, FALSE, '2026-10-02 10:00:01', '2026-10-02 10:00:01')",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9611, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A first reply typed far too fast, waiting for approval.\", \"tags\": null, \"typing_duration_msecs\": 100, \"composer_open_duration_msecs\": 900}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9611, 9611, -1, 9, 0, 6, 0, 0, 'fast_typer', '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9611, 9611, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost"
+    },
+    {
+      "method": "PUT",
+      "path": "/review/9611/perform/approve_post",
+      "params": {
+        "version": 0
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost&status=approved"
+    }
+  ]
+}

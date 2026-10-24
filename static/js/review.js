@@ -333,6 +333,90 @@
       });
   }
 
+  // lib/reviewable-penalty's survivingPenalty: a silence the action keeps
+  // that the viewer may lift.
+  function survivingPenalty(action, penalties) {
+    if (!action || action.penalty_effect !== "retains_penalty") {
+      return null;
+    }
+    return (
+      (penalties || []).find(function (p) {
+        return p.kind === "silence" && p.can_lift;
+      }) || null
+    );
+  }
+
+  function interpolateUsername(text, username) {
+    return (text || "").replace("%{username}", username);
+  }
+
+  // ReviewableItem#showCompletedToast: the completed message, or, while
+  // the author stays silenced, a toast that stays with an Undo that lifts
+  // the silence (#liftPenalty), one per author.
+  function showCompletedToast(item, action, data) {
+    var penalty = survivingPenalty(action, data.author_penalties);
+    var author = data.target_created_by;
+    if (!penalty || !author) {
+      if (action.completed_message) {
+        ui().toast(action.completed_message);
+      }
+      return;
+    }
+    var strings = pageData().strings || {};
+    var key = "reviewable-author-penalty-" + author.id;
+    var section = document.querySelector("section.fk-d-toasts");
+    if (!section) {
+      section = document.createElement("section");
+      section.className = "fk-d-toasts";
+      document.body.appendChild(section);
+    }
+    var old = section.querySelector('output[data-toast-key="' + key + '"]');
+    if (old) {
+      old.remove();
+    }
+    var output = document.createElement("output");
+    output.className = "fk-d-toast";
+    output.setAttribute("role", "status");
+    output.dataset.toastKey = key;
+    output.innerHTML =
+      '<div class="fk-d-default-toast -success"><div class="fk-d-default-toast__icon-container">' +
+      ui().icon("check") +
+      '</div><div class="fk-d-default-toast__main-container"><div class="fk-d-default-toast__texts">' +
+      '<div class="fk-d-default-toast__title"></div><div class="fk-d-default-toast__message"></div></div>' +
+      '<div class="fk-d-default-toast__actions"><button class="btn btn-text btn-transparent reviewable-undo-penalty" tabindex="0" type="button"><span class="d-button-label"></span></button></div>' +
+      '</div><div class="fk-d-default-toast__close-container"><button class="btn no-text btn-icon btn-transparent" type="button">' +
+      ui().icon("xmark") +
+      '<span aria-hidden="true">&#8203;</span></button></div></div>';
+    var title = output.querySelector(".fk-d-default-toast__title");
+    if (action.completed_message) {
+      title.textContent = action.completed_message;
+    } else {
+      title.remove();
+    }
+    output.querySelector(".fk-d-default-toast__message").textContent = interpolateUsername(
+      strings.still_silenced,
+      author.username
+    );
+    output.querySelector(".reviewable-undo-penalty .d-button-label").textContent = strings.undo_penalty || "";
+    var close = function () {
+      output.remove();
+    };
+    output.querySelector(".fk-d-default-toast__close-container button").addEventListener("click", close);
+    output.querySelector(".reviewable-undo-penalty").addEventListener("click", function () {
+      ui()
+        .ajax("PUT", "/admin/users/" + author.id + "/unsilence")
+        .then(function () {
+          close();
+          ui().toast(interpolateUsername(strings.penalty_undone, author.username));
+          return redraw(item, [item.dataset.reviewableId]);
+        })
+        .catch(function (error) {
+          ui().failed(error);
+        });
+    });
+    section.appendChild(output);
+  }
+
   // ReviewableItem#_performConfirmed, without a client action; the
   // modal's fields (additionalData) go with it.
   function performConfirmed(item, action, additionalData) {
@@ -347,9 +431,7 @@
       )
       .then(function (json) {
         var result = (json && json.reviewable_perform_result) || {};
-        if (action.completed_message) {
-          ui().toast(action.completed_message);
-        }
+        showCompletedToast(item, action, data);
         // An approved queued topic now has one: the redraw looks there.
         if (result.created_post_topic_id && !data.topic_id) {
           data.topic_id = result.created_post_topic_id;

@@ -119,11 +119,22 @@ pub async fn next_draft_sequence(
     .bind(key)
     .fetch_one(&mut *conn)
     .await?;
-    sqlx::query("DELETE FROM drafts WHERE user_id = $1 AND draft_key = $2")
-        .bind(user_id)
-        .bind(key)
+    // Draft.where(...).destroy_all: each draft's upload references go
+    // with it.
+    let ids: Vec<i32> =
+        sqlx::query_scalar("DELETE FROM drafts WHERE user_id = $1 AND draft_key = $2 RETURNING id")
+            .bind(user_id)
+            .bind(key)
+            .fetch_all(&mut *conn)
+            .await?;
+    if !ids.is_empty() {
+        sqlx::query(
+            "DELETE FROM upload_references WHERE target_type = 'Draft' AND target_id = ANY($1)",
+        )
+        .bind(&ids)
         .execute(&mut *conn)
         .await?;
+    }
     sqlx::query(
         "UPDATE user_stats SET draft_count = (SELECT COUNT(*) FROM drafts WHERE user_id = $1) \
          WHERE user_id = $1",
