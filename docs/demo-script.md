@@ -18,6 +18,23 @@ and reports any step that errors, so run it before showing.
 | Moderator | `user2` | moderator |
 | Admin | `admin` | admin |
 
+## The numbers (30 seconds, before or after the click-through)
+
+From docs/bench-20261024.md: release v20261024.0.0 against production Rails
+on the same 20,576-post corpus and the same PostgreSQL 18 server.
+
+- Same answers: latest, categories, topic posts with cooked HTML and search
+  matched field for field.
+- Uncached JSON: 4x to 18x the throughput (latest 2,173 vs 122 req/s), with
+  p50 latency 7 vs 124 ms. Search narrows to 2x to 3x.
+- Memory: one process at 50 MB idle against Rails' 0.85 GiB (PSS, the fair
+  sum across its 11 processes; 5 GiB summed RSS).
+- Startup: 87 ms to the first answered request against 9.8 s.
+- Say the caveats with them: one laptop runs client, servers and database,
+  anonymous traffic, no keep-alive, a 20k-post synthetic corpus. In the browser
+  comparison Rails served its own assets without nginx and sent HTML and CSS
+  uncompressed, so quote its ready times (content visible) loosely.
+
 ## Core forum
 
 1. Visitor: `/latest`, scroll, then `/categories`, a category, `/top`.
