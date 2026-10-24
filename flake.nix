@@ -40,5 +40,19 @@
         discourse-assets = pkgs.callPackage ./nix/assets.nix { };
         default = discourse-rs;
       });
+
+      # services.discourse-rs, with this flake's builds as its packages.
+      nixosModules.default =
+        { pkgs, ... }:
+        let
+          packages = self.packages.${pkgs.stdenv.hostPlatform.system};
+        in
+        {
+          imports = [ ./nix/module.nix ];
+          services.discourse-rs = {
+            package = lib.mkDefault packages.discourse-rs;
+            assets = lib.mkDefault packages.discourse-assets;
+          };
+        };
     };
 }
