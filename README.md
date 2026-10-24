@@ -488,6 +488,130 @@ finish. A release binary embeds the schema vendored at its tag; a backup
 older than that needs a build from a checkout vendored at the backup's
 commit.
 
+## Deploying on NixOS
+
+The flake builds the server (`packages.<system>.default`), what a
+Discourse checkout supplied as `DISCOURSE_SRC` (`discourse-assets`: the
+stock images, fonts and emoji at the vendored commit) and a NixOS module,
+`services.discourse-rs`: the unit above with its hardening, PostgreSQL 16
+with pgvector on the host, the job worker in the process, and optionally
+Caddy in front. `nix build .#checks.x86_64-linux.vm -L` boots it in a VM
+and logs in, posts and serves the assets.
+
+A team-only forum on one VPS, from the host's flake:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    discourse-rs.url = "github:ducks/discourse-rs";
+  };
+
+  outputs = { nixpkgs, discourse-rs, ... }: {
+    nixosConfigurations.forum = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./configuration.nix
+        discourse-rs.nixosModules.default
+        {
+          services.discourse-rs = {
+            enable = true;
+            hostname = "forum.example.com";
+            # Secrets, outside the store: a string, not a ./path.
+            environmentFile = "/etc/discourse-rs/env";
+            caddy.enable = true;
+          };
+          networking.firewall.allowedTCPPorts = [ 80 443 ];
+        }
+      ];
+    };
+  };
+}
+```
+
+Options (all under `services.discourse-rs`):
+
+| Option | Default | |
+|---|---|---|
+| `enable` | `false` | |
+| `package`, `assets` | the flake's builds | the binary; `DISCOURSE_SRC` |
+| `hostname` | | `DISCOURSE_HOSTNAME`, and Caddy's site |
+| `forceHttps` | `true` | `DISCOURSE_FORCE_HTTPS` |
+| `listenAddress`, `port` | `127.0.0.1`, `8080` | `BIND_ADDR`; keep it on loopback |
+| `database.createLocally` | `true` | PostgreSQL 16 + pgvector here, the database owned by the `discourse-rs` role, peer auth over the socket |
+| `database.name` | `discourse` | |
+| `database.url` | `null` | an external `DATABASE_URL` without a password (else put it in the env file) |
+| `database.loadSchema` | `true` | load the vendored schema and seeds into an empty local database |
+| `environmentFile` | `null` | secrets: `DISCOURSE_SECRET_KEY_BASE`, `DISCOURSE_SMTP_*`, an external `DATABASE_URL` |
+| `jobs.enable` | `true` | the job worker; off sets `DISCOURSE_RS_JOBS=off` |
+| `letterAvatarFont` | NimbusSans, as `shell.nix` | `LETTER_AVATAR_FONT` |
+| `extraEnvironment` | `{}` | more `DISCOURSE_*` globals, `RUST_LOG`; not for secrets |
+| `caddy.enable` | `false` | a `services.caddy` virtual host as `deploy/Caddyfile` |
+
+Uploads live in `/var/lib/discourse-rs/public` (`PUBLIC_DIR`), backups
+and the avatar cache in `/var/lib/discourse-rs/tmp` (`TMP_DIR`).
+
+Bringing up a fresh site:
+
+1. Write the env file before the first switch (root-owned, read by
+   systemd before it drops privileges):
+
+   ```bash
+   sudo install -d -m 755 /etc/discourse-rs
+   sudo install -m 600 /dev/null /etc/discourse-rs/env
+   echo "DISCOURSE_SECRET_KEY_BASE=$(openssl rand -hex 64)" | sudo tee -a /etc/discourse-rs/env
+   # and the relay's DISCOURSE_SMTP_ADDRESS, _PORT, _USER_NAME, _PASSWORD
+   ```
+
+2. `nixos-rebuild switch`. `discourse-rs-db-init.service` creates the
+   role and the database and, while it has no tables, loads
+   `vendor/discourse/db/structure.sql` and `seed/*.sql` in one
+   transaction, as `scripts/db-load` does. It runs before every start
+   and does nothing once the database exists. Its log:
+   `journalctl -u discourse-rs-db-init`.
+
+3. The seed is the parity fixture's fresh install: `admin` and
+   `user0`..`user3`, all with the password `password`, and some fixture
+   topics. Before anyone else can reach the site, give `admin` your
+   address and take a new password through the reset email (the SMTP
+   relay must work), then deactivate the fixture users in the admin's
+   user pages:
+
+   ```bash
+   sudo -u postgres psql discourse -c \
+     "UPDATE user_emails SET email = 'you@example.com' WHERE user_id = 1 AND \"primary\""
+   ```
+
+4. Make it team-only: log in as `admin` and turn on the `login_required`
+   and `invite_only` site settings (Admin, Settings), then invite the
+   team. From a shell instead (the server reads site settings at
+   start, so restart it):
+
+   ```bash
+   sudo -u postgres psql discourse -c \
+     "INSERT INTO site_settings (name, data_type, value, created_at, updated_at)
+      VALUES ('login_required', 5, 't', now(), now()), ('invite_only', 5, 't', now(), now())
+      ON CONFLICT (name) DO UPDATE SET value = 't', updated_at = now()"
+   sudo systemctl restart discourse-rs
+   ```
+
+Moving an existing forum over instead: set `database.loadSchema = false`
+so the database stays empty, then, with the server stopped
+(`systemctl stop discourse-rs`), restore the backup by hand as "Serving a
+backup" describes, from a checkout, as the `postgres` user
+(`scripts/restore-backup --force <backup.tar.gz> discourse <dir>`). The
+restored tables belong to `postgres`, so give the service its database
+and the role need above:
+
+```bash
+sudo -u postgres psql -c 'ALTER DATABASE discourse OWNER TO "discourse-rs"' \
+  -c 'GRANT pg_read_all_data, pg_write_all_data TO "discourse-rs"'
+```
+
+Then move the backup's `uploads/` into `/var/lib/discourse-rs/public`,
+owned by `discourse-rs`. [docs/hosting-checklist.md](docs/hosting-checklist.md)
+lists what to settle when picking the host.
+
 ## License
 
 discourse-rs is a port of [Discourse](https://github.com/discourse/discourse),
