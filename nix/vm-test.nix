@@ -1,6 +1,6 @@
 # The NixOS module end to end: a VM with a local PostgreSQL, the schema
 # and seeds loaded and secured by discourse-rs-db-init, the server with
-# its job worker, Caddy in front.
+# its job worker, Caddy in front, then the team-only options switched on.
 # Run: nix build .#checks.x86_64-linux.vm -L
 { pkgs, module }:
 
@@ -26,6 +26,11 @@ pkgs.testers.runNixOSTest {
         forceHttps = false;
         environmentFile = "/etc/discourse-rs/env";
         caddy.enable = true;
+      };
+
+      specialisation.team-only.configuration.services.discourse-rs = {
+        loginRequired = true;
+        inviteOnly = true;
       };
 
       # Test secrets; a real host keeps this file out of the store.
@@ -170,5 +175,16 @@ pkgs.testers.runNixOSTest {
           machine.succeed("systemctl restart discourse-rs-db-init.service")
           machine.succeed("journalctl -u discourse-rs-db-init.service -b | grep -c 'loading the vendored schema' | grep -qx 1")
           assert sql("SELECT value FROM site_settings WHERE name = 'vapid_public_key'") == vapid
+
+      with subtest("team-only: loginRequired sends the anonymous to the login"):
+          machine.succeed("/run/booted-system/specialisation/team-only/bin/switch-to-configuration test")
+          machine.wait_for_unit("discourse-rs.service")
+          machine.wait_for_open_port(8080)
+          env = machine.succeed("systemctl show -p Environment discourse-rs.service")
+          assert "DISCOURSE_LOGIN_REQUIRED=true" in env and "DISCOURSE_INVITE_ONLY=true" in env, env
+          answer = machine.succeed(
+              f"curl -s -o /dev/null -w '%{{http_code}} %{{redirect_url}}' {base}/latest"
+          ).strip()
+          assert answer == "302 http://localhost:8080/login", answer
     '';
 }

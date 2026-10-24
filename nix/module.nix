@@ -181,6 +181,27 @@ in
       '';
     };
 
+    loginRequired = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Sets DISCOURSE_LOGIN_REQUIRED=true: the login_required site
+        setting, shadowed as Rails' GlobalSetting shadows it, so only
+        signed-in members see the forum and the admin can't turn it off.
+        Off leaves it to the site setting.
+      '';
+    };
+
+    inviteOnly = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Sets DISCOURSE_INVITE_ONLY=true: the invite_only site setting,
+        shadowed, so accounts come only from invites. Off leaves it to the
+        site setting.
+      '';
+    };
+
     caddy.enable = mkOption {
       type = types.bool;
       default = false;
@@ -322,6 +343,8 @@ in
       // optionalAttrs (cfg.database.url != null) { DATABASE_URL = cfg.database.url; }
       // optionalAttrs (cfg.letterAvatarFont != null) { LETTER_AVATAR_FONT = "${cfg.letterAvatarFont}"; }
       // optionalAttrs cfg.forceHttps { DISCOURSE_FORCE_HTTPS = "true"; }
+      // optionalAttrs cfg.loginRequired { DISCOURSE_LOGIN_REQUIRED = "true"; }
+      // optionalAttrs cfg.inviteOnly { DISCOURSE_INVITE_ONLY = "true"; }
       // optionalAttrs (!cfg.jobs.enable) { DISCOURSE_RS_JOBS = "off"; }
       // cfg.extraEnvironment;
 

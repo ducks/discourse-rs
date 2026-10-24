@@ -54,7 +54,8 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
   `user0`..`user3` out, and refuses to load without it. Remove it from
   the env file afterwards if you like; it is only read once.
 - Delete the fixture topics you don't want.
-- Turn on `login_required` and `invite_only`, then invite the team.
+- `loginRequired = true` and `inviteOnly = true` in the module, then
+  invite the team.
 - Check from a logged-out browser that `/latest` asks for a login.
 
 ## The job worker

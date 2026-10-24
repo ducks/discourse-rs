@@ -496,7 +496,7 @@ stock images, fonts and emoji at the vendored commit) and a NixOS module,
 `services.discourse-rs`: the unit above with its hardening, PostgreSQL 16
 with pgvector on the host, the job worker in the process, and optionally
 Caddy in front. `nix build .#checks.x86_64-linux.vm -L` boots it in a VM,
-logs in, posts, serves the assets and checks the fresh site's lockdown.
+logs in, posts, serves the assets and checks the team-only lockdown.
 
 A team-only forum on one VPS, from the host's flake:
 
@@ -519,6 +519,9 @@ A team-only forum on one VPS, from the host's flake:
             hostname = "forum.example.com";
             # Secrets, outside the store: a string, not a ./path.
             environmentFile = "/etc/discourse-rs/env";
+            # Members only, and accounts only by invite.
+            loginRequired = true;
+            inviteOnly = true;
             caddy.enable = true;
           };
           networking.firewall.allowedTCPPorts = [ 80 443 ];
@@ -543,10 +546,17 @@ Options (all under `services.discourse-rs`):
 | `database.url` | `null` | an external `DATABASE_URL` without a password (else put it in the env file) |
 | `database.loadSchema` | `true` | load the vendored schema and seeds into an empty local database, and secure them |
 | `environmentFile` | `null` | secrets: `DISCOURSE_SECRET_KEY_BASE`, `DISCOURSE_SMTP_*`, `INITIAL_ADMIN_PASSWORD`, an external `DATABASE_URL` |
+| `loginRequired` | `false` | `DISCOURSE_LOGIN_REQUIRED=true`: members only |
+| `inviteOnly` | `false` | `DISCOURSE_INVITE_ONLY=true`: accounts only by invite |
 | `jobs.enable` | `true` | the job worker; off sets `DISCOURSE_RS_JOBS=off` |
 | `letterAvatarFont` | NimbusSans, as `shell.nix` | `LETTER_AVATAR_FONT` |
 | `extraEnvironment` | `{}` | more `DISCOURSE_*` globals, `RUST_LOG`; not for secrets |
 | `caddy.enable` | `false` | a `services.caddy` virtual host as `deploy/Caddyfile` |
+
+`loginRequired` and `inviteOnly` set globals, which shadow the site
+settings of the same name as Rails' GlobalSetting does: while on, the
+admin's settings page can't turn them off. Off leaves them to the site
+settings.
 
 Uploads live in `/var/lib/discourse-rs/public` (`PUBLIC_DIR`), backups
 and the avatar cache in `/var/lib/discourse-rs/tmp` (`TMP_DIR`).
@@ -588,9 +598,8 @@ Bringing up a fresh site:
    the variable can leave the env file after the first boot. Its log:
    `journalctl -u discourse-rs-db-init`.
 
-3. Log in as `admin`, delete the fixture topics you don't want, turn on
-   the `login_required` and `invite_only` site settings (Admin,
-   Settings), and invite the team.
+3. Log in as `admin`, delete the fixture topics you don't want, and
+   invite the team.
 
 Moving an existing forum over instead: set `database.loadSchema = false`
 so the database stays empty, then, with the server stopped
