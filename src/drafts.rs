@@ -3,9 +3,8 @@
 //! draft count.
 //!
 //! Refused: drafts backed up to a message (backup_drafts_to_pm_length),
-//! drafts holding uploads (UploadReference), the edit conflict check on a
-//! first post's tags, reading a draft at a given sequence, and acting on
-//! another user's drafts.
+//! the edit conflict check on a first post's tags, reading a draft at a
+//! given sequence, and acting on another user's drafts.
 
 use sqlx::PgConnection;
 
@@ -45,14 +44,6 @@ async fn update_draft_count(conn: &mut PgConnection, user_id: i32) -> Result<(),
     Ok(())
 }
 
-/// What is not ported about a draft's data.
-fn refuse_data(data: &str) -> Result<(), Unsupported> {
-    if data.contains("upload://") || data.contains("/uploads/") {
-        return Err(Unsupported("drafts with uploads (UploadReference)"));
-    }
-    Ok(())
-}
-
 /// What a save sends: the draft's key, the sequence the client holds, the
 /// data, its owner and `force_save`.
 pub struct NewDraft<'a> {
@@ -85,7 +76,6 @@ pub async fn set(
     if backup > 0 && (backup as usize) < data.chars().count() {
         return Err(Unsupported("drafts backed up to a message").into());
     }
-    refuse_data(data)?;
     let existing: Option<(i32, Option<String>)> =
         sqlx::query_as("SELECT id, owner FROM drafts WHERE user_id = $1 AND draft_key = $2")
             .bind(user_id)
@@ -139,11 +129,15 @@ pub async fn set(
         update_draft_count(&mut *conn, user_id).await?;
         (id, sequence)
     };
-    // UploadReference.ensure_exist!: the draft holds no uploads.
-    sqlx::query("DELETE FROM upload_references WHERE target_type = 'Draft' AND target_id = $1")
-        .bind(draft_id)
-        .execute(&mut *conn)
-        .await?;
+    // UploadReference.ensure_exist!(upload_ids: Upload.extract_upload_ids(data))
+    let upload_ids = crate::upload_references::extract_upload_ids(&mut *conn, data).await?;
+    crate::upload_references::ensure_exist_many(
+        &mut *conn,
+        "Draft",
+        i64::from(draft_id),
+        &upload_ids,
+    )
+    .await?;
     Ok(Saved::Sequence(sequence))
 }
 

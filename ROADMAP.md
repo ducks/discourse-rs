@@ -155,6 +155,14 @@ fix/newcomer-path.
   review/queued_approve_silenced_author. Still refused: performing a
   flag's unsilence_user (with the flag actions that delete, edit or
   penalize, 194e), a reason with markup (sanitize_staff_reason).
+- [x] Saving a draft holding an upload answered 500 ("drafts with uploads
+  (UploadReference)"). Done: Draft.set ends with
+  UploadReference.ensure_exist! over Upload.extract_upload_ids(data) (the
+  `/<40 hex>` sha1s and every `/<base62>` segment decoded), and the
+  draft's references go with it when a post advances its sequence
+  (DraftSequence.next!'s destroy_all), as Draft.clear already did.
+  Recorded on rs-ref-c: drafts/draft_with_uploads,
+  posts/reply_clears_draft_with_uploads.
 
 Visible if clicked, avoid them in a scripted demo:
 

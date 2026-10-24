@@ -460,6 +460,61 @@ async fn handle_video_thumbnail(
     Ok(())
 }
 
+/// The sha1s `Upload.extract_upload_ids` looks for in a raw: each
+/// `/(\h{40})`, then each `/([a-zA-Z0-9]+)` decoded from base62 (None
+/// where it doesn't decode to a sha1), as Ruby's two scans find them.
+fn extract_sha1s(raw: &str) -> Vec<Option<String>> {
+    let bytes = raw.as_bytes();
+    let slashes: Vec<usize> = raw.match_indices('/').map(|(i, _)| i).collect();
+    let mut sha1s = Vec::new();
+    for &i in &slashes {
+        let hex = &bytes[i + 1..];
+        if hex.len() >= SHA1_LENGTH && hex[..SHA1_LENGTH].iter().all(u8::is_ascii_hexdigit) {
+            sha1s.push(Some(raw[i + 1..i + 1 + SHA1_LENGTH].to_string()));
+        }
+    }
+    for &i in &slashes {
+        let run = bytes[i + 1..]
+            .iter()
+            .take_while(|b| b.is_ascii_alphanumeric())
+            .count();
+        if run > 0 {
+            sha1s.push(sha1_from_base62(&raw[i + 1..i + 1 + run]));
+        }
+    }
+    sha1s
+}
+
+/// `Upload.extract_upload_ids(raw)`: the uploads whose sha1 the raw names
+/// (`Upload.where(sha1: sha1s.uniq).pluck(:id)`, so a sha1 that didn't
+/// decode matches uploads without one).
+pub async fn extract_upload_ids(
+    conn: &mut PgConnection,
+    raw: &str,
+) -> Result<Vec<i64>, sqlx::Error> {
+    if crate::ruby::is_blank(raw) {
+        return Ok(Vec::new());
+    }
+    let sha1s = extract_sha1s(raw);
+    if sha1s.is_empty() {
+        return Ok(Vec::new());
+    }
+    let with_nil = sha1s.iter().any(Option::is_none);
+    let mut found: Vec<String> = Vec::new();
+    for sha1 in sha1s.into_iter().flatten() {
+        if !found.contains(&sha1) {
+            found.push(sha1);
+        }
+    }
+    sqlx::query_scalar(
+        "SELECT id::bigint FROM uploads WHERE sha1 = ANY($1) OR ($2 AND sha1 IS NULL)",
+    )
+    .bind(&found)
+    .bind(with_nil)
+    .fetch_all(conn)
+    .await
+}
+
 /// `UploadReference.ensure_exist!(upload_ids: [upload_id], target:)` for
 /// one upload: the target's other references deleted and the upload's
 /// inserted when missing; with none, every reference of the target
@@ -538,6 +593,21 @@ mod tests {
     use super::*;
 
     const SHA1: &str = "e9d71f5ee7c92d6dc9e92ffdad17b8bd49418f98";
+
+    #[test]
+    fn a_raw_names_uploads_by_sha1_and_short_url() {
+        let raw = format!(
+            "![a|1x1](upload://sLckxyrYcJI4X5RPt6GOaGETgux.png) [b](/uploads/default/original/1X/{SHA1}.png)"
+        );
+        let found = extract_sha1s(&raw);
+        // The 40 hex digits first, then every path segment from base62:
+        // `/`, `uploads`, `default`, ... decode to no upload or none.
+        assert_eq!(found[0].as_deref(), Some(SHA1));
+        assert!(found.contains(&Some("c992b9f1e934fb321456b9b2b1c6928ac81ad3ad".into())));
+        // A segment longer than MAX_BASE62_SHA1_LENGTH is no sha1.
+        assert!(found.contains(&None));
+        assert!(extract_sha1s("no slashes at all").is_empty());
+    }
 
     #[test]
     fn upload_urls_carry_their_sha1() {
