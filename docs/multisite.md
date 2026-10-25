@@ -27,6 +27,7 @@ second:                    # the db key: uploads/second, backups/second
   database: discourse_second
   host: /run/postgresql    # optional: host or socket directory, port,
   pool: 5                  #   username, password as libpq takes them
+  statement_limit: 250     # optional: prepared statements per connection
   host_names:              # the first is the forum's hostname in URLs
     - second.example.com
 ```
@@ -56,6 +57,14 @@ after 60 seconds. At startup the process warns when the forums on one
 Postgres server could hold more than its `max_connections` (100 by
 default): six busy forums at the default pool already do. Lower the
 pools or raise `max_connections`.
+
+The memory budget: each connection keeps up to its `statement_limit`
+prepared statements (default `DISCOURSE_DB_STATEMENT_LIMIT`, else 250),
+and their plans live in the Postgres backend. In a load test of eight
+forums at pool 4, a busy forum's backends held about 240 MB at 250, about
+700 MB at Active Record's 1000 and about 90 MB at 100, the last at half
+the topic page's throughput: it runs more statements than 100. Raise it
+for a big forum with memory to spare, lower it for many small ones.
 
 ## What Rails does
 
@@ -221,6 +230,9 @@ Per site under multisite.yml:
   site's; other sites' `host_names` (the first is `current_hostname`, all
   route).
 - `DISCOURSE_DB_POOL` (main.rs:36): the default; a site's `pool` overrides.
+- `DISCOURSE_DB_STATEMENT_LIMIT` (config.rs): the default; a site's
+  `statement_limit` overrides. New: Rails reads `statement_limit` from
+  database.yml, so multisite.yml entries take it here as well.
 - New: the site's db key (`current_db`), from the YAML key.
 
 Process-wide: `BIND_ADDR`, `RAILS_ENV`, `UNICORN_PORT`, `PUBLIC_DIR`

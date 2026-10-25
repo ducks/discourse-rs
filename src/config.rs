@@ -67,6 +67,11 @@ pub struct SiteConfig {
     /// GlobalSetting db_pool's role: DISCOURSE_DB_POOL, else 10; a
     /// multisite.yml entry's `pool`.
     pub pool: u32,
+    /// Prepared statements each of the pool.s connections keeps,
+    /// ActiveRecord.s `statement_limit`: DISCOURSE_DB_STATEMENT_LIMIT, else
+    /// crate::multisite::DEFAULT_STATEMENT_LIMIT; a multisite.yml entry.s
+    /// `statement_limit`.
+    pub statement_limit: usize,
     /// `Rails.configuration.multisite`: the process runs under a
     /// multisite.yml (every site, the default included).
     pub multisite: bool,
@@ -79,6 +84,7 @@ impl Default for SiteConfig {
             database_url: String::new(),
             host_names: Vec::new(),
             pool: 10,
+            statement_limit: crate::multisite::DEFAULT_STATEMENT_LIMIT,
             multisite: false,
         }
     }
@@ -237,6 +243,9 @@ impl Config {
                 pool: var("DISCOURSE_DB_POOL")
                     .and_then(|v| v.parse().ok())
                     .unwrap_or(10),
+                statement_limit: var("DISCOURSE_DB_STATEMENT_LIMIT")
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(crate::multisite::DEFAULT_STATEMENT_LIMIT),
                 ..SiteConfig::default()
             },
             bind,
@@ -324,5 +333,33 @@ impl Config {
             }
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn site(extra: &[(&str, &str)]) -> SiteConfig {
+        let vars = [("DATABASE_URL", "postgresql://localhost/x")]
+            .iter()
+            .chain(extra)
+            .map(|(k, v)| (k.to_string(), v.to_string()));
+        Config::from_vars(vars).unwrap().site
+    }
+
+    #[test]
+    fn pool_and_statement_limit_come_from_the_environment() {
+        let default = site(&[]);
+        assert_eq!(default.pool, 10);
+        assert_eq!(
+            default.statement_limit,
+            crate::multisite::DEFAULT_STATEMENT_LIMIT
+        );
+        let set = site(&[
+            ("DISCOURSE_DB_POOL", "4"),
+            ("DISCOURSE_DB_STATEMENT_LIMIT", "1000"),
+        ]);
+        assert_eq!((set.pool, set.statement_limit), (4, 1000));
     }
 }

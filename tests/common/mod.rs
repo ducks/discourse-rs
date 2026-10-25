@@ -104,7 +104,7 @@ impl TestDb {
             .max_connections(4)
             .acquire_timeout(std::time::Duration::from_secs(120))
             .connect_with(
-                opts.statement_cache_capacity(discourse_rs::multisite::STATEMENT_CACHE_CAPACITY),
+                opts.statement_cache_capacity(discourse_rs::multisite::DEFAULT_STATEMENT_LIMIT),
             )
             .await
             .expect("connecting to the cloned test database");

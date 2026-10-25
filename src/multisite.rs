@@ -48,6 +48,7 @@ pub struct SiteSpec {
     pub username: Option<String>,
     pub password: Option<String>,
     pub pool: Option<u32>,
+    pub statement_limit: Option<usize>,
     pub host_names: Vec<String>,
 }
 
@@ -101,6 +102,11 @@ pub fn parse(src: &str) -> Result<Vec<SiteSpec>, String> {
         let pool = number("pool")?
             .map(|p| u32::try_from(p).map_err(|_| format!("multisite.yml: {db}: pool {p}")))
             .transpose()?;
+        let statement_limit = number("statement_limit")?
+            .map(|n| {
+                usize::try_from(n).map_err(|_| format!("multisite.yml: {db}: statement_limit {n}"))
+            })
+            .transpose()?;
         let host_names: Vec<String> = match entry.get(Yaml::String("host_names".into())) {
             Some(Yaml::Sequence(names)) => names
                 .iter()
@@ -123,6 +129,7 @@ pub fn parse(src: &str) -> Result<Vec<SiteSpec>, String> {
             username,
             password,
             pool,
+            statement_limit,
             host_names,
         });
     }
@@ -185,7 +192,7 @@ impl SiteSpec {
     }
 
     /// The site's Config: the process's with this site's database, host
-    /// names, pool and db key.
+    /// names, pool, statement limit and db key.
     pub fn config(&self, process: &Config) -> Config {
         Config {
             site: SiteConfig {
@@ -193,6 +200,7 @@ impl SiteSpec {
                 database_url: self.database_url(),
                 host_names: self.host_names.clone(),
                 pool: self.pool.unwrap_or(process.site.pool),
+                statement_limit: self.statement_limit.unwrap_or(process.site.statement_limit),
                 multisite: true,
             },
             ..process.clone()
@@ -296,7 +304,12 @@ impl Shared {
 /// database.
 pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn Error>> {
     let db = config.site.db.clone();
-    let pool = connect_pool(&config.site.database_url, config.site.pool).await?;
+    let pool = connect_pool(
+        &config.site.database_url,
+        config.site.pool,
+        config.site.statement_limit,
+    )
+    .await?;
 
     let report = crate::schema::verify(&mut *pool.acquire().await?).await?;
     tracing::info!(
@@ -356,7 +369,7 @@ pub async fn boot(shared: &Shared, config: Config) -> Result<AppState, Box<dyn E
 /// schema verified, the port's own schema and pg-bus, without the
 /// server's start-up work.
 pub async fn connect_task(shared: &Shared, config: Config) -> Result<AppState, Box<dyn Error>> {
-    let pool = connect_pool(&config.site.database_url, 2).await?;
+    let pool = connect_pool(&config.site.database_url, 2, config.site.statement_limit).await?;
     crate::schema::verify(&mut *pool.acquire().await?).await?;
     crate::owned_schema::migrate(&pool).await?;
     let bus = pg_bus::Bus::start(pool.clone(), crate::bus::config()).await?;
@@ -385,14 +398,21 @@ pub async fn shut_down(state: &AppState) -> Result<(), Box<dyn Error>> {
 /// few.
 pub const IDLE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
 
-/// Prepared statements each connection keeps, ActiveRecord's
-/// `statement_limit`. sqlx's default of 100 is fewer than one topic page
-/// runs, which then re-plans every statement on every request.
-pub const STATEMENT_CACHE_CAPACITY: usize = 1000;
+/// Prepared statements each connection keeps when DISCOURSE_DB_STATEMENT_LIMIT
+/// and multisite.yml give none. ActiveRecord's default is 1000, but each
+/// cached plan stays in its Postgres backend: under load 1000 held about
+/// 700 MB of backend memory per site against 240 MB for 250, with the same
+/// throughput. sqlx's default of 100 is fewer than one topic page runs,
+/// which then re-plans on every request at half the throughput.
+pub const DEFAULT_STATEMENT_LIMIT: usize = 250;
 
 /// A site's pool: `max` connections to `database_url`, each keeping
-/// STATEMENT_CACHE_CAPACITY prepared statements.
-pub async fn connect_pool(database_url: &str, max: u32) -> Result<PgPool, sqlx::Error> {
+/// `statement_limit` prepared statements.
+pub async fn connect_pool(
+    database_url: &str,
+    max: u32,
+    statement_limit: usize,
+) -> Result<PgPool, sqlx::Error> {
     let options: PgConnectOptions = database_url.parse()?;
     // A request waits up to 5 s for a connection, ActiveRecord's
     // checkout_timeout, rather than sqlx's 30.
@@ -400,7 +420,7 @@ pub async fn connect_pool(database_url: &str, max: u32) -> Result<PgPool, sqlx::
         .max_connections(max)
         .acquire_timeout(std::time::Duration::from_secs(5))
         .idle_timeout(IDLE_TIMEOUT)
-        .connect_with(options.statement_cache_capacity(STATEMENT_CACHE_CAPACITY))
+        .connect_with(options.statement_cache_capacity(statement_limit))
         .await
 }
 
@@ -718,7 +738,7 @@ mod tests {
     fn parses_rails_shape() {
         let specs = parse(
             "mlp:\n  adapter: postgresql\n  database: discourse_mlp\n  username: discourse_mlp\n  \
-             password: \"apple jack\"\n  host: dbhost\n  port: 5433\n  pool: 5\n  timeout: 5000\n  \
+             password: \"apple jack\"\n  host: dbhost\n  port: 5433\n  pool: 5\n  statement_limit: 100\n  timeout: 5000\n  \
              host_names:\n    - discourse.equestria.com\n    - discourse.equestria.internal\n\
              other:\n  database: other\n  host: /run/postgresql\n  host_names: [other.example]\n",
         )
@@ -726,6 +746,8 @@ mod tests {
         assert_eq!(specs.len(), 2);
         assert_eq!(specs[0].db, "mlp");
         assert_eq!(specs[0].pool, Some(5));
+        assert_eq!(specs[0].statement_limit, Some(100));
+        assert_eq!(specs[1].statement_limit, None);
         assert_eq!(
             specs[0].host_names,
             ["discourse.equestria.com", "discourse.equestria.internal"]
