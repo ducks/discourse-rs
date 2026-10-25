@@ -33,6 +33,8 @@ pkgs.testers.runNixOSTest {
           passwordFile = "/etc/discourse-rs/admin-password";
         };
         caddy.enable = true;
+        database.pool = 4;
+        database.statementLimit = 100;
       };
 
       specialisation.team-only.configuration.services.discourse-rs = {
@@ -127,6 +129,10 @@ pkgs.testers.runNixOSTest {
           # The credential, not the environment, carried the password.
           env = machine.succeed("systemctl show -p Environment -p EnvironmentFiles discourse-rs-db-init.service")
           assert "INITIAL_ADMIN" not in env and "${adminPassword}" not in env, env
+
+      with subtest("the pool and statement limit reach the server"):
+          env = machine.succeed("systemctl show -p Environment discourse-rs.service")
+          assert "DISCOURSE_DB_POOL=4" in env and "DISCOURSE_DB_STATEMENT_LIMIT=100" in env, env
 
       with subtest("the secrets are the site's own"):
           assert setting("vapid_base_url") == "http://localhost"
