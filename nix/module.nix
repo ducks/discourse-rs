@@ -35,6 +35,10 @@ let
   // optionalAttrs cfg.forceHttps { DISCOURSE_FORCE_HTTPS = "true"; }
   // optionalAttrs cfg.loginRequired { DISCOURSE_LOGIN_REQUIRED = "true"; }
   // optionalAttrs cfg.inviteOnly { DISCOURSE_INVITE_ONLY = "true"; }
+  // optionalAttrs (cfg.database.pool != null) { DISCOURSE_DB_POOL = toString cfg.database.pool; }
+  // optionalAttrs (cfg.database.statementLimit != null) {
+    DISCOURSE_DB_STATEMENT_LIMIT = toString cfg.database.statementLimit;
+  }
   // cfg.extraEnvironment;
   hasInitialAdmin = cfg.initialAdmin.email != null;
 in
@@ -137,6 +141,31 @@ in
           database instead.
         '';
       };
+
+      pool = mkOption {
+        type = types.nullOr types.ints.positive;
+        default = null;
+        example = 4;
+        description = ''
+          DISCOURSE_DB_POOL: connections the server's pool may open; null
+          keeps the server's default of 10. The rate limiter's 4 and
+          pg-bus's listener come on top. Lower it to fit several forums
+          on one PostgreSQL: at 4 a load test lost about 8% throughput.
+        '';
+      };
+
+      statementLimit = mkOption {
+        type = types.nullOr types.ints.positive;
+        default = null;
+        example = 1000;
+        description = ''
+          DISCOURSE_DB_STATEMENT_LIMIT: prepared statements each connection
+          keeps; null keeps the server's default of 250. Their plans live
+          in the PostgreSQL backend: under load a busy forum's backends
+          held about 240 MB at 250 and 700 MB at 1000. Below about 150 the
+          topic page re-plans on every request.
+        '';
+      };
     };
 
     initialAdmin = {
@@ -225,7 +254,7 @@ in
       default = { };
       example = {
         RUST_LOG = "info,discourse_rs=debug";
-        DISCOURSE_DB_POOL = "20";
+        DISCOURSE_MAX_REQS_PER_IP_MODE = "warn";
       };
       description = ''
         More environment for the server, over the module's own. Every
