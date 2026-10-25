@@ -60,8 +60,10 @@ jobs:
           --health-retries 5
 
     env:
-      # Limit concurrent compiler/linker processes, independently of nextest concurrency.
-      CARGO_BUILD_JOBS: "2"
+      # One compiler at a time: the lib and its unit-test build each peak
+      # near 7.6 GB, and two at once ran the 16 GB runner out of memory
+      # (killed, exit 143). Independent of nextest's test concurrency.
+      CARGO_BUILD_JOBS: "1"
       # Reduce compiler/linker memory and artifact size; debug assertions remain enabled.
       CARGO_PROFILE_TEST_DEBUG: "0"
       LETTER_AVATAR_FONT: /usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf
