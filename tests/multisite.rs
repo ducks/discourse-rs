@@ -47,6 +47,7 @@ async fn two_sites(make: impl Fn() -> Config) -> (Site, Site) {
         database_url: db_b.url(),
         host_names: vec![B_HOST.into(), B_OTHER_HOST.into()],
         pool: 4,
+        statement_limit: discourse_rs::multisite::DEFAULT_STATEMENT_LIMIT,
         multisite: true,
     };
     let a = state(db_a.pool.clone(), config_a).await;
@@ -957,6 +958,7 @@ async fn a_site_that_fails_to_start_answers_503_and_the_others_serve() {
         username: None,
         password: None,
         pool: Some(1),
+        statement_limit: None,
         host_names: vec!["gone.example".into()],
     };
     let sites = boot_all(&shared, process, Some(vec![missing]))
@@ -1009,13 +1011,10 @@ async fn the_connection_budget_warns_past_max_connections() {
     );
 }
 
-/// A site's pool keeps ActiveRecord's 1000 prepared statements per
-/// connection: more than a topic page runs, which sqlx's default of 100
-/// made re-plan on every request.
-#[tokio::test]
-async fn site_pools_keep_a_thousand_prepared_statements() {
-    let db = TestDb::new().await;
-    let pool = discourse_rs::multisite::connect_pool(&db.url(), 1)
+/// Prepared statements a connection of `connect_pool(.., limit)` holds
+/// after running 150 distinct statements.
+async fn prepared_after_150(db: &TestDb, limit: usize) -> i64 {
+    let pool = discourse_rs::multisite::connect_pool(&db.url(), 1, limit)
         .await
         .unwrap();
     let mut conn = pool.acquire().await.unwrap();
@@ -1029,7 +1028,23 @@ async fn site_pools_keep_a_thousand_prepared_statements() {
         .fetch_one(&mut *conn)
         .await
         .unwrap();
-    assert!(prepared >= 150, "{prepared} prepared statements kept");
     drop(conn);
     pool.close().await;
+    prepared
+}
+
+/// A site's pool keeps DEFAULT_STATEMENT_LIMIT prepared statements per
+/// connection, more than a topic page runs (sqlx's default of 100 made it
+/// re-plan on every request), and a configured limit caps what each
+/// backend holds.
+#[tokio::test]
+async fn site_pools_keep_their_statement_limit() {
+    let db = TestDb::new().await;
+    let kept = prepared_after_150(&db, discourse_rs::multisite::DEFAULT_STATEMENT_LIMIT).await;
+    assert!(kept >= 150, "{kept} prepared statements kept by default");
+    let capped = prepared_after_150(&db, 50).await;
+    assert!(
+        capped <= 50,
+        "{capped} prepared statements kept under a limit of 50"
+    );
 }
