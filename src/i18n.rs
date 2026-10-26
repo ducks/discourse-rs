@@ -82,6 +82,15 @@ impl I18n {
                 Arc::make_mut(&mut i18n.strings).extend(Arc::unwrap_or_clone(plugin.strings));
             }
         }
+        // The installed plugins' (crate::plugin_api), last.
+        for plugin in crate::plugin_api::registered() {
+            for src in plugin.locale_ymls() {
+                let strings = Self::parse(src)
+                    .map_err(|e| format!("plugin {}: {e}", plugin.name()))?
+                    .strings;
+                Arc::make_mut(&mut i18n.strings).extend(Arc::unwrap_or_clone(strings));
+            }
+        }
         Ok(i18n)
     }
 

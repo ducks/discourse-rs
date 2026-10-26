@@ -20,6 +20,8 @@ pub enum HtmlError {
     Template(askama::Error),
     MessageFormat(crate::message_format::ParseError),
     Unsupported(crate::Unsupported),
+    /// An installed plugin's hook failed (plugin_api).
+    Plugin(crate::AppError),
 }
 
 impl std::fmt::Display for HtmlError {
@@ -30,6 +32,7 @@ impl std::fmt::Display for HtmlError {
             HtmlError::Template(e) => write!(f, "rendering template: {e}"),
             HtmlError::MessageFormat(e) => e.fmt(f),
             HtmlError::Unsupported(e) => e.fmt(f),
+            HtmlError::Plugin(e) => write!(f, "plugin: {e}"),
         }
     }
 }
@@ -2408,6 +2411,8 @@ pub struct TopicPage {
     pub dialog_strings: String,
     /// discourse-poll is on: its widget's script and strings.
     pub poll_scripts: String,
+    /// The installed plugins' `topic-above-posts` outlet (plugin_api).
+    pub above_posts: String,
 }
 
 /// TopicPage::stream for the view.
@@ -3074,7 +3079,18 @@ pub async fn topic_page(
     site.chrome
         .body_classes
         .push_str(&topic_body_classes(&list, view, &archetype));
+    let above_posts = crate::plugin_api::outlet_html(
+        &mut crate::plugin_api::Ctx {
+            conn: &mut *conn,
+            settings,
+            i18n,
+        },
+        &crate::plugin_api::Outlet::TopicAbovePosts { view },
+    )
+    .await
+    .map_err(HtmlError::Plugin)?;
     Ok(TopicPage {
+        above_posts,
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,

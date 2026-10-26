@@ -734,6 +734,28 @@ async fn paused(pool: &PgPool) -> bool {
         .is_ok_and(|v| v.is_some())
 }
 
+/// An installed plugin's scheduled job, while the plugin is enabled.
+async fn run_plugin_scheduled(
+    state: &AppState,
+    plugin: &dyn crate::plugin_api::Plugin,
+    name: &str,
+) -> Result<(), AppError> {
+    let settings = {
+        let mut conn = state.pool.acquire().await?;
+        crate::site_settings::SiteSettings::load(
+            &mut conn,
+            &state.site_setting_defs,
+            &state.config.globals,
+        )
+        .await?
+    };
+    if !crate::plugin_api::is_enabled(plugin, &settings)? {
+        return Ok(());
+    }
+    stamp_performed(&state.pool).await?;
+    plugin.run_job(state, name, &Value::Null).await
+}
+
 /// A site's worker: drains the queue, then polls once a second, until
 /// `stop` resolves. Scheduled jobs run between polls when due, the first
 /// time once `stagger` has passed, so several sites do not all run every
@@ -742,6 +764,11 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>, 
     tokio::pin!(stop);
     let scheduled_from = std::time::Instant::now() + stagger;
     let mut last_run: Vec<Option<std::time::Instant>> = vec![None; SCHEDULED.len()];
+    let plugin_scheduled: Vec<_> = crate::plugin_api::registered()
+        .iter()
+        .flat_map(|p| p.scheduled().into_iter().map(move |(n, e)| (p, n, e)))
+        .collect();
+    let mut plugin_last_run: Vec<Option<std::time::Instant>> = vec![None; plugin_scheduled.len()];
     loop {
         // Sidekiq.pause! (a backup restore): no job, scheduled or not.
         if paused(&state.pool).await {
@@ -766,6 +793,19 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>, 
                 tracing::error!("job queue: {e}");
             }
             if let Err(e) = run_scheduled(&state, name).await {
+                tracing::error!("scheduled job {name}: {e}");
+            }
+        }
+        // The installed plugins' scheduled jobs, on the same terms.
+        for (i, (plugin, name, every)) in plugin_scheduled.iter().enumerate() {
+            if std::time::Instant::now() < scheduled_from {
+                break;
+            }
+            if plugin_last_run[i].is_some_and(|at| at.elapsed() < *every) {
+                continue;
+            }
+            plugin_last_run[i] = Some(std::time::Instant::now());
+            if let Err(e) = run_plugin_scheduled(&state, plugin.as_ref(), name).await {
                 tracing::error!("scheduled job {name}: {e}");
             }
         }

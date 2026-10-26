@@ -11,6 +11,8 @@
   {{ timeline|safe }}
   <div class="row">
     <section class="topic-area" data-topic-id="{{ topic_id }}" id="topic">
+      {#- The plugins' topic-above-posts outlet. -#}
+      {{ above_posts|safe }}
       <div class="posts-wrapper"><span></span>
         {#- PostStream: DConditionalLoadingSpinner above and below the
             stream for loadingAbove and loadingBelow, and DLoadMore's

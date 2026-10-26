@@ -850,6 +850,13 @@ impl TopicView<'_> {
             )
             .await?;
         }
+        // The installed plugins' keys (add_to_serializer(:topic_view)).
+        let mut ctx = crate::plugin_api::Ctx {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            i18n: self.i18n,
+        };
+        crate::plugin_api::topic_view_fields(&mut ctx, self.guardian, topic.id, &mut out).await?;
 
         Ok(Rendered {
             json: Value::Object(out),

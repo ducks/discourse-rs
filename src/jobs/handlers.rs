@@ -172,11 +172,14 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
                 Err(e) => Err(e),
             }
         }
-        other => {
-            return Err(JobError::Unported(format!(
-                "not ported yet: the {other} job"
-            )));
-        }
+        other => match crate::plugin_api::job_owner(other) {
+            Some(plugin) => plugin.run_job(state, other, &job.args).await,
+            None => {
+                return Err(JobError::Unported(format!(
+                    "not ported yet: the {other} job"
+                )));
+            }
+        },
     };
     Ok(result?)
 }
