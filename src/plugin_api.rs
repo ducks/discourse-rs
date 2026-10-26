@@ -19,6 +19,11 @@
 //! - `add_to_serializer(:current_user)` and `(:topic_view)`:
 //!   [`Plugin::current_user_fields`], [`Plugin::topic_view_fields`];
 //! - plugin outlets in the server-rendered pages: [`Plugin::outlet_html`].
+//! - a page of its own in core's head: [`PageHead`].
+//!
+//! A plugin's crate repeats this crate's `[patch.crates-io]` for
+//! grass_compiler: Cargo applies patches from the top-level crate only,
+//! and the unpatched compiler fails on core's own stylesheets.
 
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
@@ -121,6 +126,126 @@ pub trait Plugin: Send + Sync {
     ) -> Result<Option<String>, AppError> {
         Ok(None)
     }
+}
+
+/// What a plugin's own page (a layout of its own, as Rails plugins render
+/// with `layout "..."`) takes from core's head: layouts/_head's icons,
+/// the color schemes' stylesheets, core's stylesheet, the default theme's
+/// stylesheets and its `head_tag` and `body_tag` (theme_lookup).
+pub struct PageHead {
+    /// `html_lang`: default_locale with a hyphen.
+    pub lang: String,
+    /// Goes in `<head>`, as it is: the icon links, the color scheme meta
+    /// and stylesheets, core's stylesheet, the theme's stylesheets, then
+    /// the theme's head_tag.
+    pub head: String,
+    /// `theme_lookup("body_tag")`, first in `<body>`.
+    pub body_tag: String,
+}
+
+impl PageHead {
+    pub async fn load(
+        conn: &mut PgConnection,
+        state: &AppState,
+        settings: &SiteSettings,
+        guardian: &Guardian,
+    ) -> Result<PageHead, AppError> {
+        let base = state.config.globals.relative_url_root().to_string();
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings,
+        };
+        let theme_state = crate::theme_cache::read(&mut *conn).await?;
+        let mut head = String::new();
+        let favicon = crate::site_icons::site_url(&mut *conn, &urls, "favicon").await?;
+        if !favicon.is_empty() {
+            head.push_str(&format!(
+                "<link rel=\"icon\" type=\"{}\" href=\"{}\">\n",
+                crate::site_icons::mime_type(&favicon),
+                escape(&favicon)
+            ));
+        }
+        let touch = crate::site_icons::site_url(&mut *conn, &urls, "apple_touch_icon").await?;
+        if !touch.is_empty() {
+            head.push_str(&format!(
+                "<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"{}\">\n",
+                escape(&touch)
+            ));
+        }
+        let options: Option<(Option<i32>, Option<i32>, i32)> = match guardian.user() {
+            Some(user) => {
+                sqlx::query_as(
+                    "SELECT color_scheme_id, dark_scheme_id, interface_color_mode \
+                     FROM user_options WHERE user_id = $1",
+                )
+                .bind(user.id)
+                .fetch_optional(&mut *conn)
+                .await?
+            }
+            None => None,
+        };
+        let options = options.map(|(light, dark, mode)| crate::color_mode::Options {
+            color_scheme_id: light,
+            dark_scheme_id: dark,
+            interface_color_mode: mode,
+        });
+        let colors = crate::color_mode::head_at(
+            &mut *conn,
+            settings,
+            &state.i18n,
+            &base,
+            &crate::color_mode::cookies(),
+            options.as_ref(),
+            &theme_state,
+        )
+        .await?;
+        head.push_str(&colors.meta);
+        head.push_str(&colors.links);
+        head.push_str(&format!(
+            "\n<link rel=\"stylesheet\" href=\"{}\">\n",
+            crate::assets::url(&base, "discourse.css")
+        ));
+        let theme_id = settings.get("default_theme_id")?.to_i();
+        if let Ok(theme_id) = i32::try_from(theme_id) {
+            head.push_str(
+                &crate::stylesheet::manager::link_tags_at(
+                    &mut *conn,
+                    &crate::stylesheet::manager::Cx {
+                        config: &state.config,
+                        settings,
+                    },
+                    theme_id,
+                    false,
+                    &theme_state,
+                )
+                .await?,
+            );
+        }
+        let html = crate::theme_html::lookup_at(
+            &mut *conn,
+            &crate::themes::Ctx {
+                settings,
+                i18n: &state.i18n,
+                urls: &urls,
+                defs: &state.site_setting_defs,
+            },
+            Some(theme_id),
+            crate::mobile::on_mobile_device(),
+            &theme_state,
+        )
+        .await?;
+        head.push('\n');
+        head.push_str(&html.head_tag);
+        Ok(PageHead {
+            lang: settings.get("default_locale")?.to_s().replace('_', "-"),
+            head,
+            body_tag: html.body_tag,
+        })
+    }
+}
+
+fn escape(value: &str) -> String {
+    crate::admin_site_settings::escape_html(value)
 }
 
 static REGISTERED: OnceLock<Vec<Arc<dyn Plugin>>> = OnceLock::new();

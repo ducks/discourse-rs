@@ -294,3 +294,50 @@ async fn plugins_install_once() {
     assert!(discourse_rs::plugin_api::install(Vec::new()).is_err());
     assert_eq!(discourse_rs::plugin_api::registered().len(), 1);
 }
+
+/// A plugin page's head: core's icons, color schemes and stylesheet, the
+/// default theme's stylesheets and head_tag, and its body_tag.
+#[tokio::test]
+async fn a_plugin_page_gets_cores_head() {
+    install();
+    let db = TestDb::new().await;
+    let theme: i32 =
+        sqlx::query_scalar("SELECT value::int FROM site_settings WHERE name = 'default_theme_id'")
+            .fetch_optional(&db.pool)
+            .await
+            .unwrap()
+            .unwrap_or(-1);
+    for (name, value) in [
+        ("head_tag", "<meta name=\"echo-head\">"),
+        ("body_tag", "<div id=\"echo-body\"></div>"),
+    ] {
+        sqlx::query(
+            "INSERT INTO theme_fields (theme_id, target_id, name, value, type_id, created_at, updated_at) \
+             VALUES ($1, 0, $2, $3, 0, now(), now())",
+        )
+        .bind(theme)
+        .bind(name)
+        .bind(value)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    }
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &st.site_setting_defs, &st.config.globals)
+        .await
+        .unwrap();
+    let head =
+        discourse_rs::plugin_api::PageHead::load(&mut conn, &st, &settings, &Guardian::anonymous())
+            .await
+            .unwrap();
+    assert_eq!(head.lang, "en");
+    assert!(head.head.contains("color_definitions"), "{}", head.head);
+    assert!(head.head.contains("/assets/discourse.css"), "{}", head.head);
+    assert!(
+        head.head.contains("<meta name=\"echo-head\">"),
+        "{}",
+        head.head
+    );
+    assert!(head.body_tag.contains("echo-body"), "{}", head.body_tag);
+}
