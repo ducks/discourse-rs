@@ -369,6 +369,8 @@ pub struct Chrome {
     pub color_head: crate::color_mode::Head,
     /// The theme stylesheets' link tags (crate::stylesheet::manager).
     pub theme_stylesheets: String,
+    /// The enabled installed plugins' stylesheet links (plugin_api).
+    pub plugin_stylesheets: String,
 }
 
 impl Chrome {
@@ -1043,6 +1045,8 @@ impl Site {
             )
             .await?;
         }
+        self.chrome.plugin_stylesheets =
+            crate::plugin_api::stylesheet_links(settings, &self.base_path)?;
         if let Some(o) = &options {
             self.chrome.save_timezone = o.timezone.as_deref().is_none_or(str::is_empty);
             // UserOption.text_sizes
@@ -3084,6 +3088,7 @@ pub async fn topic_page(
             conn: &mut *conn,
             settings,
             i18n,
+            base_path: &base,
         },
         &crate::plugin_api::Outlet::TopicAbovePosts { view },
     )

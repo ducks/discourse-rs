@@ -44,6 +44,8 @@ pub struct Ctx<'a> {
     pub conn: &'a mut PgConnection,
     pub settings: &'a SiteSettings,
     pub i18n: &'a I18n,
+    /// `Discourse.base_path`.
+    pub base_path: &'a str,
 }
 
 /// A plugin outlet in a server-rendered page.
@@ -73,6 +75,18 @@ pub trait Plugin: Send + Sync {
     /// Locale files, each with its `en:` root: server.en.yml as it is,
     /// client.en.yml with its keys under `js.` (`en: js: ...`).
     fn locale_ymls(&self) -> &[&'static str] {
+        &[]
+    }
+
+    /// `register_asset` for a stylesheet: where the plugin serves its CSS
+    /// (from its own routes). Core's pages link it after the theme's while
+    /// the plugin is enabled, as Rails links each plugin's target.
+    fn stylesheet_url(&self, _base_path: &str) -> Option<String> {
+        None
+    }
+
+    /// `register_svg_icon`: icons added to the site's sprite.
+    fn svg_icons(&self) -> &[&'static str] {
         &[]
     }
 
@@ -234,6 +248,7 @@ impl PageHead {
             &theme_state,
         )
         .await?;
+        head.push_str(&stylesheet_links(settings, &base)?);
         head.push('\n');
         head.push_str(&html.head_tag);
         Ok(PageHead {
@@ -316,6 +331,28 @@ pub async fn outlet_html(ctx: &mut Ctx<'_>, outlet: &Outlet<'_>) -> Result<Strin
         }
     }
     Ok(html)
+}
+
+/// The enabled plugins' stylesheet links, for a page's head.
+pub fn stylesheet_links(settings: &SiteSettings, base_path: &str) -> Result<String, AppError> {
+    let mut out = String::new();
+    for plugin in enabled(settings)? {
+        if let Some(url) = plugin.stylesheet_url(base_path) {
+            out.push_str(&format!(
+                "<link href=\"{}\" media=\"all\" rel=\"stylesheet\" data-target=\"{}\"/>\n",
+                escape(&url),
+                escape(plugin.name())
+            ));
+        }
+    }
+    Ok(out)
+}
+
+/// Every installed plugin's `svg_icons` (DiscoursePluginRegistry.svg_icons).
+pub fn svg_icons() -> impl Iterator<Item = &'static str> {
+    registered()
+        .iter()
+        .flat_map(|p| p.svg_icons().iter().copied())
 }
 
 /// The plugin that runs a regular job by this name, enabled or not.

@@ -78,6 +78,12 @@ impl Plugin for Echo {
     fn locale_ymls(&self) -> &[&'static str] {
         &[SERVER_EN]
     }
+    fn stylesheet_url(&self, base_path: &str) -> Option<String> {
+        Some(format!("{base_path}/echo.css"))
+    }
+    fn svg_icons(&self) -> &[&'static str] {
+        &["record-vinyl"]
+    }
     fn routes(&self) -> Router<AppState> {
         Router::new().route("/echo.json", get(echo_json))
     }
@@ -229,6 +235,10 @@ async fn a_disabled_plugin_declares_its_settings_and_does_nothing_else() {
     assert!(topic_json(&st).await.get("echo_topic").is_none());
     let (_, page) = send(&st, "/t/about-the-site-feedback-category/1", None).await;
     assert!(!page.contains("echo-card"), "{page}");
+    assert!(
+        !page.contains("data-target=\"echo\""),
+        "no stylesheet while disabled"
+    );
 }
 
 #[tokio::test]
@@ -260,6 +270,20 @@ async fn an_enabled_plugin_serves_its_routes_and_adds_its_keys_and_outlet() {
         .find("<div class=\"echo-card\">1</div>")
         .expect("the outlet");
     assert!(card < page.find("class=\"posts-wrapper\"").unwrap());
+    assert!(
+        page.contains(
+            r#"<link href="/echo.css" media="all" rel="stylesheet" data-target="echo"/>"#
+        ),
+        "the stylesheet on core's page"
+    );
+    // The icon is in the sprite, enabled or not (register_svg_icon).
+    let start = page.find("/svg-sprite/").expect("the sprite script");
+    let path = &page[start..start + page[start..].find('"').unwrap()];
+    let (_, sprite) = send(&st, path, None).await;
+    assert!(
+        sprite.contains(r#"id=\"record-vinyl\""#),
+        "the plugin's icon in the sprite"
+    );
 }
 
 #[tokio::test]

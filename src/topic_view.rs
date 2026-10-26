@@ -855,6 +855,7 @@ impl TopicView<'_> {
             conn: &mut *self.conn,
             settings: self.settings,
             i18n: self.i18n,
+            base_path: self.urls.config.globals.relative_url_root(),
         };
         crate::plugin_api::topic_view_fields(&mut ctx, self.guardian, topic.id, &mut out).await?;
 

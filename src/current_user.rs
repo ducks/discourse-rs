@@ -888,6 +888,7 @@ pub async fn serialize(
             conn: &mut *conn,
             settings,
             i18n: &state.i18n,
+            base_path: state.config.globals.relative_url_root(),
         };
         crate::plugin_api::current_user_fields(&mut ctx, &guardian, &mut out).await?;
     }
