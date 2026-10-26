@@ -355,6 +355,32 @@ pub fn svg_icons() -> impl Iterator<Item = &'static str> {
         .flat_map(|p| p.svg_icons().iter().copied())
 }
 
+/// `form_authenticity_token` for a plugin's HTML form: the session's token,
+/// masked, and the session cookie to set when the token was just made.
+pub fn form_authenticity_token(
+    state: &AppState,
+    headers: &axum::http::HeaderMap,
+    settings: &SiteSettings,
+) -> Result<(String, Option<String>), AppError> {
+    let mut session = crate::session::forum::load_forum_session(state, headers);
+    let stored = session.csrf_token();
+    let masked = crate::session::csrf::mask(&stored)
+        .ok_or(crate::Unsupported("session csrf token not decodable"))?;
+    Ok((masked, session.set_cookie(state, settings)?))
+}
+
+/// `verify_authenticity_token` for a plugin's write: the session's token
+/// against `X-CSRF-Token` or the form's `authenticity_token`. API keys pass.
+pub fn verify_authenticity_token(
+    state: &AppState,
+    headers: &axum::http::HeaderMap,
+    form: &[(String, String)],
+    path: &str,
+    method: &str,
+) -> bool {
+    crate::routes::csrf_ok(state, headers, form, path, method)
+}
+
 /// The plugin that runs a regular job by this name, enabled or not.
 pub fn job_owner(name: &str) -> Option<&'static Arc<dyn Plugin>> {
     registered().iter().find(|p| p.jobs().contains(&name))

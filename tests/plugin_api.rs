@@ -54,6 +54,35 @@ en:
     hello: \"Hello from echo\"
 ";
 
+/// A write that checks the session's token, and hands out a form's.
+async fn echo_write(
+    State(state): State<AppState>,
+    headers: axum::http::HeaderMap,
+    uri: axum::http::Uri,
+) -> StatusCode {
+    if discourse_rs::plugin_api::verify_authenticity_token(
+        &state,
+        &headers,
+        &[],
+        uri.path(),
+        "POST",
+    ) {
+        StatusCode::OK
+    } else {
+        StatusCode::FORBIDDEN
+    }
+}
+
+async fn echo_token(
+    State(state): State<AppState>,
+    headers: axum::http::HeaderMap,
+) -> Result<String, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    Ok(discourse_rs::plugin_api::form_authenticity_token(&state, &headers, &settings)?.0)
+}
+
 async fn echo_json(State(state): State<AppState>) -> Result<axum::Json<Value>, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -85,7 +114,10 @@ impl Plugin for Echo {
         &["record-vinyl"]
     }
     fn routes(&self) -> Router<AppState> {
-        Router::new().route("/echo.json", get(echo_json))
+        Router::new()
+            .route("/echo.json", get(echo_json))
+            .route("/echo/write", axum::routing::post(echo_write))
+            .route("/echo/token", get(echo_token))
     }
     fn jobs(&self) -> &[&'static str] {
         &["echo_job"]
@@ -364,4 +396,33 @@ async fn a_plugin_page_gets_cores_head() {
         head.head
     );
     assert!(head.body_tag.contains("echo-body"), "{}", head.body_tag);
+}
+
+/// A plugin's write checks the session's token as core's do, and its form
+/// gets one that passes.
+#[tokio::test]
+async fn a_plugin_checks_and_hands_out_the_sessions_token() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let cookie = login_cookie(&st, "user0").await;
+    let post = async |token: Option<&str>| {
+        let mut request = Request::post("/echo/write")
+            .header(header::HOST, "test.localhost")
+            .header(header::COOKIE, &cookie);
+        if let Some(token) = token {
+            request = request.header("x-csrf-token", token);
+        }
+        discourse_rs::app(st.clone())
+            .oneshot(request.body(Body::empty()).unwrap())
+            .await
+            .unwrap()
+            .status()
+    };
+    let (status, token) = send(&st, "/echo/token", Some(&cookie)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(post(Some(&token)).await, StatusCode::OK);
+    assert_eq!(post(Some("forged")).await, StatusCode::FORBIDDEN);
+    assert_eq!(post(None).await, StatusCode::FORBIDDEN);
 }
