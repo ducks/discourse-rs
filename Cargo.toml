@@ -91,6 +91,12 @@ libtest-mimic = "0.8.2"
 name = "writes"
 harness = false
 
+# File and line in backtraces, no variable info: each test binary links
+# the whole crate, and full debug info made the suite's build output tens
+# of gigabytes.
+[profile.dev]
+debug = "line-tables-only"
+
 # PBKDF2 at 600k iterations (Discourse's password hashing) is unusable
 # unoptimized; keep the crypto fast in debug builds and tests.
 [profile.dev.package.sha2]
