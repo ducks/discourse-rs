@@ -14,6 +14,8 @@ FILES=(
   config/site_settings.yml
   config/locales/server.en.yml
   config/locales/client.en.yml
+  config/locales/server.fr.yml
+  config/locales/client.fr.yml
   lib/common_passwords/10-char-common-passwords.txt
   lib/onebox/templates/discourse_topic_onebox.mustache
   lib/onebox/templates/discourse_user_onebox.mustache
