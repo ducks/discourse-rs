@@ -90,6 +90,15 @@ pub struct MembershipRow {
 /// `UserChatChannelMembership::NOTIFICATION_LEVELS`
 const NOTIFICATION_LEVELS: [&str; 3] = ["never", "mention", "always"];
 
+/// A category chatable's id as categories.id holds it (integer). The
+/// statement is shared with core, which binds int4; sqlx caches prepared
+/// statements by their text per connection, so binding int8 here breaks
+/// the other on a connection that prepared it first. An id past int4 is
+/// no category's.
+pub(crate) fn category_id(chatable_id: i64) -> i32 {
+    i32::try_from(chatable_id).unwrap_or(-1)
+}
+
 pub(crate) fn time_json(t: NaiveDateTime) -> String {
     crate::topic_list::time_json(t)
 }
@@ -602,7 +611,7 @@ impl Context<'_> {
         // groups that can see it, and staff.
         let restricted: Option<bool> =
             sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
-                .bind(channel.chatable_id)
+                .bind(category_id(channel.chatable_id))
                 .fetch_optional(&mut *self.conn)
                 .await?;
         if restricted == Some(true) {
@@ -867,7 +876,7 @@ impl Context<'_> {
     pub(crate) async fn can_see_category(&mut self, category_id: i64) -> Result<bool, AppError> {
         let read_restricted: Option<bool> =
             sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
-                .bind(category_id)
+                .bind(self::category_id(category_id))
                 .fetch_optional(&mut *self.conn)
                 .await?;
         match read_restricted {

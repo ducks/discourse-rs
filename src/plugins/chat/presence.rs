@@ -80,7 +80,7 @@ pub async fn config(
     // staff and the category's groups.
     let restricted: Option<bool> =
         sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
-            .bind(chatable_id)
+            .bind(super::channels::category_id(chatable_id))
             .fetch_optional(&mut *conn)
             .await?;
     if restricted != Some(true) {
