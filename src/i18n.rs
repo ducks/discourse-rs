@@ -1,7 +1,11 @@
 //! Translations from the vendored config/locales/server.en.yml,
-//! client.en.yml and the bundled plugins' client.en.yml files.
+//! client.en.yml and the bundled plugins' client.en.yml files, and the
+//! other vendored locales (server.fr.yml, client.fr.yml).
 //!
-//! Only the default locale is loaded, and only string leaves are indexed.
+//! English is what core serves; [`I18n::locale`] reads another locale
+//! with Discourse's fallbacks (`FallbackLocaleList`: the locale, then
+//! English) and its plural rules. String leaves are indexed, and lists of
+//! strings (`date.month_names`) apart from them.
 //! Discourse's I18n.t has one quirk that matters for parity: interpolation
 //! runs only when arguments are passed. With none, `%{name}` placeholders are
 //! returned literally; with some, a placeholder that has no argument makes
@@ -26,6 +30,17 @@ const PLUGIN_CLIENT_EN_YML: &str =
     include_str!("../vendor/discourse/config/locales/plugin_client.en.yml");
 const PLUGIN_SERVER_EN_YML: &str =
     include_str!("../vendor/discourse/config/locales/plugin_server.en.yml");
+/// The other locales core carries, server and client files each.
+const OTHER_LOCALE_YMLS: &[(&str, &str)] = &[
+    (
+        "server.fr.yml",
+        include_str!("../vendor/discourse/config/locales/server.fr.yml"),
+    ),
+    (
+        "client.fr.yml",
+        include_str!("../vendor/discourse/config/locales/client.fr.yml"),
+    ),
+];
 
 /// The locale whose overrides apply: the port serves English only (the
 /// places that would translate refuse other locales).
@@ -33,16 +48,33 @@ pub const OVERRIDE_LOCALE: &str = "en";
 
 #[derive(Debug)]
 pub struct I18n {
-    /// The vendored strings, shared by every site of the process.
+    /// The vendored English strings, shared by every site of the process.
     strings: Arc<HashMap<String, String>>,
+    /// English lists of strings.
+    lists: Arc<HashMap<String, List>>,
+    /// The other locales, by name.
+    locales: Arc<HashMap<String, Table>>,
     overrides: RwLock<Overrides>,
+}
+
+/// A YAML list of strings; `~` entries are None (`month_names[0]`).
+pub type List = Vec<Option<String>>;
+
+/// One locale's strings and lists.
+#[derive(Debug, Clone, Default)]
+struct Table {
+    strings: HashMap<String, String>,
+    lists: HashMap<String, List>,
 }
 
 #[derive(Debug, Default)]
 struct Overrides {
     /// What the table held when the map was read.
     fingerprint: Option<String>,
+    /// English's.
     values: HashMap<String, &'static str>,
+    /// The other locales', by locale.
+    others: HashMap<String, HashMap<String, &'static str>>,
 }
 
 /// Override values handed out as `&str` for as long as the I18n lives,
@@ -66,11 +98,10 @@ impl I18n {
     /// the bundled plugins' client translations, which cooking reads
     /// (`js.poll.*`), and their server ones (their settings' descriptions,
     /// badge names). Later files win, as in Rails' load path.
+    /// Then the other locales' files.
     pub fn vendored() -> Result<Self, String> {
         let mut i18n = Self::parse(SERVER_EN_YML)?;
-        let client =
-            Self::parse(CLIENT_EN_YML).map_err(|e| e.replace("server.en.yml", "client.en.yml"))?;
-        Arc::make_mut(&mut i18n.strings).extend(Arc::unwrap_or_clone(client.strings));
+        i18n.add_yml("client.en.yml", CLIENT_EN_YML)?;
         for (name, src) in [
             ("plugin_client.en.yml", PLUGIN_CLIENT_EN_YML),
             ("plugin_server.en.yml", PLUGIN_SERVER_EN_YML),
@@ -78,22 +109,61 @@ impl I18n {
             for document in serde_yaml_ng::Deserializer::from_str(src) {
                 let root: Yaml = serde::Deserialize::deserialize(document)
                     .map_err(|e| format!("{name}: {e}"))?;
-                let plugin = Self::from_yaml(root).map_err(|e| e.replace("server.en.yml", name))?;
-                Arc::make_mut(&mut i18n.strings).extend(Arc::unwrap_or_clone(plugin.strings));
+                i18n.add(name, root)?;
             }
+        }
+        for (name, src) in OTHER_LOCALE_YMLS {
+            i18n.add_yml(name, src)?;
         }
         Ok(i18n)
     }
 
     pub fn parse(src: &str) -> Result<Self, String> {
-        let root: Yaml = serde_yaml_ng::from_str(src).map_err(|e| format!("server.en.yml: {e}"))?;
-        Self::from_yaml(root)
+        let mut i18n = I18n::new(HashMap::new());
+        i18n.add_yml("server.en.yml", src)?;
+        Ok(i18n)
+    }
+
+    /// A locale file over what is loaded, later files winning: each of
+    /// its top-level keys is a locale (`en:`, `fr:`).
+    pub fn add_yml(&mut self, name: &str, src: &str) -> Result<(), String> {
+        let root: Yaml = serde_yaml_ng::from_str(src).map_err(|e| format!("{name}: {e}"))?;
+        self.add(name, root)
+    }
+
+    fn add(&mut self, name: &str, mut root: Yaml) -> Result<(), String> {
+        root.apply_merge()
+            .map_err(|e| format!("{name} merge keys: {e}"))?;
+        let locales = root
+            .as_mapping()
+            .filter(|m| !m.is_empty())
+            .ok_or(format!("{name}: missing a top-level locale"))?;
+        for (locale, tree) in locales {
+            let locale = locale
+                .as_str()
+                .ok_or(format!("{name}: a top-level key that is not a locale"))?;
+            let mut table = Table::default();
+            flatten(tree, String::new(), &mut table);
+            if locale == "en" {
+                Arc::make_mut(&mut self.strings).extend(table.strings);
+                Arc::make_mut(&mut self.lists).extend(table.lists);
+            } else {
+                let into = Arc::make_mut(&mut self.locales)
+                    .entry(locale.to_string())
+                    .or_default();
+                into.strings.extend(table.strings);
+                into.lists.extend(table.lists);
+            }
+        }
+        Ok(())
     }
 
     /// The same strings with no overrides read yet, for another site.
     pub fn for_site(&self) -> I18n {
         I18n {
             strings: self.strings.clone(),
+            lists: self.lists.clone(),
+            locales: self.locales.clone(),
             overrides: RwLock::new(Overrides::default()),
         }
     }
@@ -101,21 +171,41 @@ impl I18n {
     fn new(strings: HashMap<String, String>) -> Self {
         I18n {
             strings: Arc::new(strings),
+            lists: Arc::default(),
+            locales: Arc::default(),
             overrides: RwLock::new(Overrides::default()),
         }
     }
 
+    /// The loaded locales: English and the others.
+    pub fn available_locales(&self) -> Vec<&str> {
+        let mut all: Vec<&str> = self.locales.keys().map(String::as_str).collect();
+        all.push("en");
+        all.sort_unstable();
+        all
+    }
+
+    /// Lookups in `locale` (`I18n.with_locale`), falling back to English.
+    pub fn locale<'a>(&'a self, locale: &'a str) -> Localized<'a> {
+        let locale = match locale {
+            // LocaleSiteSetting::FALLBACKS
+            "en_GB" => "en",
+            other => other,
+        };
+        Localized { i18n: self, locale }
+    }
+
     /// `I18n.overrides_by_locale`: the overrides read again when the
-    /// table's rows for the locale changed since the last read.
+    /// table's rows changed since the last read. Every locale's: English
+    /// is the one core serves, the others are read by [`Localized`].
     pub async fn refresh_overrides(
         &self,
         conn: &mut sqlx::PgConnection,
     ) -> Result<(), sqlx::Error> {
         let fingerprint: String = sqlx::query_scalar(
             "SELECT count(*)::text || '/' || COALESCE(md5(string_agg(translation_key || chr(31) \
-             || value, chr(30) ORDER BY id)), '') FROM translation_overrides WHERE locale = $1",
+             || value || chr(31) || locale, chr(30) ORDER BY id)), '') FROM translation_overrides",
         )
-        .bind(OVERRIDE_LOCALE)
         .fetch_one(&mut *conn)
         .await?;
         {
@@ -124,23 +214,35 @@ impl I18n {
                 return Ok(());
             }
         }
-        let rows: Vec<(String, String)> = sqlx::query_as(
-            "SELECT translation_key, value FROM translation_overrides WHERE locale = $1",
-        )
-        .bind(OVERRIDE_LOCALE)
-        .fetch_all(&mut *conn)
-        .await?;
-        self.set_overrides(rows, Some(fingerprint));
+        let rows: Vec<(String, String, String)> =
+            sqlx::query_as("SELECT locale, translation_key, value FROM translation_overrides")
+                .fetch_all(&mut *conn)
+                .await?;
+        let mut english = Vec::new();
+        let mut others: HashMap<String, HashMap<String, &'static str>> = HashMap::new();
+        for (locale, key, value) in rows {
+            if locale == OVERRIDE_LOCALE {
+                english.push((key, value));
+            } else {
+                others.entry(locale).or_default().insert(key, intern(value));
+            }
+        }
+        self.set_overrides(english, Some(fingerprint));
+        self.overrides
+            .write()
+            .unwrap_or_else(|e| e.into_inner())
+            .others = others;
         Ok(())
     }
 
-    /// Replaces the overrides (the read above, and tests).
+    /// Replaces the English overrides (the read above, and tests).
     pub fn set_overrides(&self, rows: Vec<(String, String)>, fingerprint: Option<String>) {
         let values = rows.into_iter().map(|(k, v)| (k, intern(v))).collect();
         let mut current = self.overrides.write().unwrap_or_else(|e| e.into_inner());
         *current = Overrides {
             fingerprint,
             values,
+            others: HashMap::new(),
         };
     }
 
@@ -175,17 +277,9 @@ impl I18n {
         self.strings.iter().map(|(k, v)| (k.as_str(), v.as_str()))
     }
 
-    fn from_yaml(mut root: Yaml) -> Result<Self, String> {
-        root.apply_merge()
-            .map_err(|e| format!("server.en.yml merge keys: {e}"))?;
-        let locale = root
-            .as_mapping()
-            .and_then(|m| m.get(Yaml::String("en".into())))
-            .ok_or("server.en.yml: missing top-level `en`")?;
-
-        let mut strings = HashMap::new();
-        flatten(locale, String::new(), &mut strings);
-        Ok(I18n::new(strings))
+    /// `I18n.t(key)` for a list of strings, in English.
+    pub fn list(&self, key: &str) -> Option<&List> {
+        self.lists.get(key)
     }
 
     /// `I18n.t(key)` with no arguments: the raw string, placeholders
@@ -229,32 +323,12 @@ impl I18n {
 
     /// `I18n.t(key, **args)`: every `%{name}` must have an argument.
     pub fn t_with(&self, key: &str, args: &[(&str, &str)]) -> Option<String> {
-        let raw = self.t(key)?;
-        let mut out = String::with_capacity(raw.len());
-        let mut rest = raw;
-        while let Some(start) = rest.find("%{") {
-            out.push_str(&rest[..start]);
-            let after = &rest[start + 2..];
-            let end = after.find('}')?;
-            let name = &after[..end];
-            let value = args.iter().find(|(k, _)| *k == name)?.1;
-            out.push_str(value);
-            rest = &after[end + 1..];
-        }
-        out.push_str(rest);
-        Some(out)
+        interpolate(self.t(key)?, args)
     }
 
-    /// `I18n.t(key, count: n, **args)` in English: the `one` form for 1,
-    /// `other` otherwise, `%{count}` filled with `n` unless given.
+    /// `I18n.t(key, count: n, **args)` in English: [`Localized::t_count`].
     pub fn t_count(&self, key: &str, count: i64, args: &[(&str, &str)]) -> Option<String> {
-        let form = if count == 1 { "one" } else { "other" };
-        let count = count.to_string();
-        let mut all: Vec<(&str, &str)> = args.to_vec();
-        if !all.iter().any(|(k, _)| *k == "count") {
-            all.push(("count", &count));
-        }
-        self.t_with(&format!("{key}.{form}"), &all)
+        self.locale("en").t_count(key, count, args)
     }
 
     pub fn len(&self) -> usize {
@@ -266,7 +340,135 @@ impl I18n {
     }
 }
 
-fn flatten(node: &Yaml, prefix: String, out: &mut HashMap<String, String>) {
+/// Lookups in one locale, as `I18n.with_locale(locale) { I18n.t(...) }`:
+/// each key from the locale's overrides and files, else English's.
+pub struct Localized<'a> {
+    i18n: &'a I18n,
+    locale: &'a str,
+}
+
+impl<'a> Localized<'a> {
+    pub fn name(&self) -> &'a str {
+        self.locale
+    }
+
+    fn table(&self) -> Option<&'a Table> {
+        self.i18n.locales.get(self.locale)
+    }
+
+    /// The locale's own string: its override, else its file's.
+    fn own(&self, key: &str) -> Option<&'a str> {
+        let overridden = {
+            let current = self
+                .i18n
+                .overrides
+                .read()
+                .unwrap_or_else(|e| e.into_inner());
+            current
+                .others
+                .get(self.locale)
+                .and_then(|o| o.get(key))
+                .copied()
+        };
+        overridden.or_else(|| {
+            self.table()
+                .and_then(|t| t.strings.get(key))
+                .map(String::as_str)
+        })
+    }
+
+    /// Whether the locale itself has a plural entry under `key`.
+    fn has_own_plural(&self, key: &str) -> bool {
+        ["zero", "one", "two", "few", "many", "other"]
+            .iter()
+            .any(|form| self.own(&format!("{key}.{form}")).is_some())
+    }
+
+    /// `I18n.t(key)` with no arguments.
+    pub fn t(&self, key: &str) -> Option<&'a str> {
+        if self.locale == "en" {
+            return self.i18n.t(key);
+        }
+        self.own(key).or_else(|| self.i18n.t(key))
+    }
+
+    /// `I18n.t(key, **args)`.
+    pub fn t_with(&self, key: &str, args: &[(&str, &str)]) -> Option<String> {
+        interpolate(self.t(key)?, args)
+    }
+
+    /// `I18n.t(key, count: n, **args)`: the entry from the first locale of
+    /// the chain that has one, pluralized by that locale's rule
+    /// (I18n::Backend::Pluralization): `zero` for 0 when present, the
+    /// explicit `0` and `1` forms, then the rule's category, else `other`.
+    pub fn t_count(&self, key: &str, count: i64, args: &[(&str, &str)]) -> Option<String> {
+        let own = self.locale != "en" && self.has_own_plural(key);
+        let locale = if own { self.locale } else { "en" };
+        let form = |f: &str| {
+            let k = format!("{key}.{f}");
+            if own { self.own(&k) } else { self.i18n.t(&k) }
+        };
+        let raw = (count == 0)
+            .then(|| form("zero"))
+            .flatten()
+            .or_else(|| {
+                (count == 0 || count == 1)
+                    .then(|| form(&count.to_string()))
+                    .flatten()
+            })
+            .or_else(|| form(plural_category(locale, count)?))
+            .or_else(|| form("other"))?;
+        let count = count.to_string();
+        let mut all: Vec<(&str, &str)> = args.to_vec();
+        if !all.iter().any(|(k, _)| *k == "count") {
+            all.push(("count", &count));
+        }
+        interpolate(raw, &all)
+    }
+
+    /// `I18n.t(key)` for a list of strings.
+    pub fn list(&self, key: &str) -> Option<&'a List> {
+        self.table()
+            .and_then(|t| t.lists.get(key))
+            .or_else(|| self.i18n.list(key))
+    }
+}
+
+/// config/locales/plurals.rb's rule for an integer count, for the locales
+/// this crate carries; None for another (only `other` then applies).
+fn plural_category(locale: &str, n: i64) -> Option<&'static str> {
+    let n = n.unsigned_abs();
+    match locale {
+        "en" => Some(if n == 1 { "one" } else { "other" }),
+        "fr" => Some(if n <= 1 {
+            "one"
+        } else if n.is_multiple_of(1_000_000) {
+            "many"
+        } else {
+            "other"
+        }),
+        _ => None,
+    }
+}
+
+/// `%{name}` filled from `args`; a placeholder without one fails.
+fn interpolate(raw: &str, args: &[(&str, &str)]) -> Option<String> {
+    let mut out = String::with_capacity(raw.len());
+    let mut rest = raw;
+    while let Some(start) = rest.find("%{") {
+        out.push_str(&rest[..start]);
+        let after = &rest[start + 2..];
+        let end = after.find('}')?;
+        let name = &after[..end];
+        let value = args.iter().find(|(k, _)| *k == name)?.1;
+        out.push_str(value);
+        rest = &after[end + 1..];
+    }
+    out.push_str(rest);
+    Some(out)
+}
+
+fn flatten(node: &Yaml, prefix: String, out: &mut Table) {
     match node {
         Yaml::Mapping(m) => {
             for (k, v) in m {
@@ -280,9 +482,22 @@ fn flatten(node: &Yaml, prefix: String, out: &mut HashMap<String, String>) {
             }
         }
         Yaml::String(s) => {
-            out.insert(prefix, s.clone());
+            out.strings.insert(prefix, s.clone());
         }
-        // Numbers, booleans, and lists aren't translation strings.
+        // A list of strings and nulls (`month_names`); others are not
+        // translations.
+        Yaml::Sequence(items)
+            if items
+                .iter()
+                .all(|i| matches!(i, Yaml::String(_) | Yaml::Null)) =>
+        {
+            let list = items
+                .iter()
+                .map(|i| i.as_str().map(str::to_string))
+                .collect();
+            out.lists.insert(prefix, list);
+        }
+        // Numbers and booleans aren't translation strings.
         _ => {}
     }
 }
@@ -310,6 +525,70 @@ mod tests {
         );
         // A placeholder without an argument fails the lookup.
         assert_eq!(i.t_with("a", &[("base_path", "")]), None);
+    }
+
+    const TWO: &str = "\
+en:
+  greeting: \"Hello\"
+  only_en: \"English\"
+  songs:
+    one: \"%{count} song\"
+    other: \"%{count} songs\"
+  months: [~, January, February]
+fr:
+  greeting: \"Bonjour\"
+  songs:
+    one: \"%{count} chanson\"
+    other: \"%{count} chansons\"
+";
+
+    #[test]
+    fn reads_a_locale_falling_back_to_english() {
+        let i = I18n::parse(TWO).unwrap();
+        assert_eq!(i.t("greeting"), Some("Hello"));
+        let fr = i.locale("fr");
+        assert_eq!(fr.t("greeting"), Some("Bonjour"));
+        assert_eq!(fr.t("only_en"), Some("English"));
+        assert_eq!(fr.t("missing"), None);
+        // A locale nothing loaded is English throughout.
+        assert_eq!(i.locale("de").t("greeting"), Some("Hello"));
+        assert_eq!(i.available_locales(), ["en", "fr"]);
+        let months = fr.list("months").unwrap();
+        assert_eq!(months[0], None);
+        assert_eq!(months[2].as_deref(), Some("February"));
+    }
+
+    #[test]
+    fn pluralizes_by_the_locales_rule() {
+        let i = I18n::parse(TWO).unwrap();
+        let fr = i.locale("fr");
+        // French: 0 and 1 are `one`; a million is `many`, absent here,
+        // so `other`.
+        assert_eq!(fr.t_count("songs", 0, &[]).as_deref(), Some("0 chanson"));
+        assert_eq!(fr.t_count("songs", 1, &[]).as_deref(), Some("1 chanson"));
+        assert_eq!(fr.t_count("songs", 2, &[]).as_deref(), Some("2 chansons"));
+        assert_eq!(
+            fr.t_count("songs", 1_000_000, &[]).as_deref(),
+            Some("1000000 chansons")
+        );
+        // English: 0 is `other`.
+        assert_eq!(i.t_count("songs", 0, &[]).as_deref(), Some("0 songs"));
+        assert_eq!(i.t_count("songs", 1, &[]).as_deref(), Some("1 song"));
+    }
+
+    #[test]
+    fn the_vendored_french_carries_date_names() {
+        let i = I18n::vendored().unwrap();
+        let fr = i.locale("fr");
+        assert_eq!(
+            fr.list("date.month_names").unwrap()[8].as_deref(),
+            Some("Août")
+        );
+        assert_eq!(
+            i.list("date.month_names").unwrap()[8].as_deref(),
+            Some("August")
+        );
+        assert_ne!(fr.t("js.log_in"), i.t("js.log_in"));
     }
 
     #[test]
