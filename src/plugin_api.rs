@@ -18,7 +18,9 @@
 //!   [`Plugin::scheduled`], [`Plugin::run_job`];
 //! - `add_to_serializer(:current_user)` and `(:topic_view)`:
 //!   [`Plugin::current_user_fields`], [`Plugin::topic_view_fields`];
-//! - plugin outlets in the server-rendered pages: [`Plugin::outlet_html`].
+//! - plugin outlets in the server-rendered pages: [`Plugin::outlet_html`];
+//! - `register_homepage`: [`Plugin::homepage`],
+//!   [`Plugin::homepage_available`];
 //! - a page of its own in core's head: [`PageHead`].
 //!
 //! A plugin's crate repeats this crate's `[patch.crates-io]` for
@@ -53,6 +55,26 @@ pub enum Outlet<'a> {
     /// `topic-above-posts`: above a topic's post stream. `view` is the
     /// topic view's JSON, with the plugins' `topic_view_fields` in it.
     TopicAbovePosts { view: &'a Value },
+}
+
+/// `register_homepage`: an option for the default_homepage setting. While
+/// it is the visitor's homepage, `/` answers as the plugin's own route at
+/// `path` does (Rails mounts `route` at `/`; here the route is the one
+/// behind `path`), and `path` stays the page's canonical URL. Offered
+/// while the plugin is enabled, which is the `enabled` condition a
+/// plugin passes in practice.
+#[derive(Debug, Clone, Copy)]
+pub struct Homepage {
+    /// The stored setting value.
+    pub id: &'static str,
+    /// The client translation key the admin setting shows.
+    pub name: &'static str,
+    /// The application path, without the subfolder.
+    pub path: &'static str,
+    /// Whether logged-out visitors may have it.
+    pub anonymous: bool,
+    /// Whether navigating to it takes a full page request.
+    pub server_side: bool,
 }
 
 #[async_trait]
@@ -139,6 +161,23 @@ pub trait Plugin: Send + Sync {
         _outlet: &Outlet<'_>,
     ) -> Result<Option<String>, AppError> {
         Ok(None)
+    }
+
+    /// `register_homepage`.
+    fn homepage(&self) -> Option<Homepage> {
+        None
+    }
+
+    /// `register_homepage(available:)`: false gives this visitor the top
+    /// menu's homepage instead. It runs whenever the homepage is
+    /// resolved, so keep it cheap.
+    async fn homepage_available(
+        &self,
+        _conn: &mut PgConnection,
+        _settings: &SiteSettings,
+        _guardian: &Guardian,
+    ) -> Result<bool, AppError> {
+        Ok(true)
     }
 }
 
@@ -295,6 +334,38 @@ pub fn enabled(settings: &SiteSettings) -> Result<Vec<&'static Arc<dyn Plugin>>,
         }
     }
     Ok(on)
+}
+
+/// A plugin's homepage option, with the plugin that registered it.
+pub type HomepageOption = (&'static Arc<dyn Plugin>, Homepage);
+
+/// `DiscoursePluginRegistry.homepage_options`: the enabled plugins'.
+pub fn homepages(settings: &SiteSettings) -> Result<Vec<HomepageOption>, AppError> {
+    Ok(enabled(settings)?
+        .into_iter()
+        .filter_map(|plugin| plugin.homepage().map(|h| (plugin, h)))
+        .collect())
+}
+
+/// `HomepageHelper.option_available?`: true for a homepage no plugin
+/// registered. A failing check is logged and counts as unavailable, so
+/// it cannot take the front page down.
+pub async fn homepage_available(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    id: &str,
+) -> Result<bool, AppError> {
+    let Some((plugin, _)) = homepages(settings)?.into_iter().find(|(_, h)| h.id == id) else {
+        return Ok(true);
+    };
+    match plugin.homepage_available(conn, settings, guardian).await {
+        Ok(available) => Ok(available),
+        Err(e) => {
+            tracing::warn!("Homepage availability check failed for '{id}': {e}");
+            Ok(false)
+        }
+    }
 }
 
 /// The enabled plugins' `current_user_fields`, merged into `out`.

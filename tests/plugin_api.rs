@@ -1,6 +1,7 @@
 //! An installed plugin (plugin_api) on every hook: its settings and
 //! translations, its routes, its jobs, its keys on the current user and
-//! the topic view, and its outlet above a topic's posts; all of them off
+//! the topic view, its outlet above a topic's posts, and its homepage
+//! option; all of them off
 //! while its enabled setting is. Each test installs the plugin first, as a
 //! plugin's binary does before it serves (nextest runs a test per process).
 
@@ -19,7 +20,7 @@ use axum::routing::get;
 use common::{TestDb, config, set_setting, state};
 use discourse_rs::config::RailsEnv;
 use discourse_rs::guardian::Guardian;
-use discourse_rs::plugin_api::{Ctx, Outlet, Plugin};
+use discourse_rs::plugin_api::{Ctx, Homepage, Outlet, Plugin};
 use discourse_rs::site_settings::SiteSettings;
 use discourse_rs::{AppError, AppState};
 use http_body_util::BodyExt;
@@ -93,6 +94,11 @@ async fn echo_json(State(state): State<AppState>) -> Result<axum::Json<Value>, A
     })))
 }
 
+/// The homepage's page, with the query it was asked with.
+async fn echo_home(uri: axum::http::Uri) -> String {
+    format!("echo home {}", uri.query().unwrap_or(""))
+}
+
 #[async_trait]
 impl Plugin for Echo {
     fn name(&self) -> &'static str {
@@ -118,6 +124,25 @@ impl Plugin for Echo {
             .route("/echo.json", get(echo_json))
             .route("/echo/write", axum::routing::post(echo_write))
             .route("/echo/token", get(echo_token))
+            .route("/echo", get(echo_home))
+    }
+    fn homepage(&self) -> Option<Homepage> {
+        Some(Homepage {
+            id: "echo",
+            name: "echo.homepage_option",
+            path: "/echo",
+            anonymous: true,
+            server_side: true,
+        })
+    }
+    /// Closed while the greeting is "closed".
+    async fn homepage_available(
+        &self,
+        _conn: &mut sqlx::PgConnection,
+        settings: &SiteSettings,
+        _guardian: &Guardian,
+    ) -> Result<bool, AppError> {
+        Ok(settings.get("echo_greeting")?.to_s() != "closed")
     }
     fn jobs(&self) -> &[&'static str] {
         &["echo_job"]
@@ -425,4 +450,71 @@ async fn a_plugin_checks_and_hands_out_the_sessions_token() {
     assert_eq!(post(Some(&token)).await, StatusCode::OK);
     assert_eq!(post(Some("forged")).await, StatusCode::FORBIDDEN);
     assert_eq!(post(None).await, StatusCode::FORBIDDEN);
+}
+
+async fn site_json(st: &AppState) -> Value {
+    let (status, body) = send(st, "/site.json", None).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    serde_json::from_str(&body).unwrap()
+}
+
+#[tokio::test]
+async fn a_plugins_homepage_answers_the_root_while_it_is_the_homepage() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    set_setting(&db.pool, "default_homepage", 7, "echo").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+
+    let site = site_json(&st).await;
+    assert_eq!(
+        site["homepage_options"],
+        json!([{"id": "echo", "path": "/echo", "server_side": true}])
+    );
+    assert!(
+        site["homepage_choices"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("echo"))
+    );
+
+    // Anonymous visitors may have it, members too; the query goes along.
+    let (status, body) = send(&st, "/?year=2026", None).await;
+    assert_eq!(
+        (status, body.as_str()),
+        (StatusCode::OK, "echo home year=2026")
+    );
+    let cookie = login_cookie(&st, "user0").await;
+    assert_eq!(send(&st, "/", Some(&cookie)).await.1, "echo home ");
+    // The canonical path answers as it always does.
+    assert_eq!(send(&st, "/echo", None).await.1, "echo home ");
+}
+
+#[tokio::test]
+async fn an_unavailable_or_disabled_plugin_homepage_falls_back_to_the_top_menu() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    set_setting(&db.pool, "default_homepage", 7, "echo").await;
+    set_setting(&db.pool, "echo_greeting", STRING, "closed").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (status, body) = send(&st, "/", None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(!body.contains("echo home"));
+    assert!(body.contains("topic-list"), "the latest list");
+
+    set_setting(&db.pool, "echo_greeting", STRING, "hi").await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "f").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (status, body) = send(&st, "/", None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(!body.contains("echo home"));
+    let site = site_json(&st).await;
+    assert_eq!(site["homepage_options"], json!([]));
+    assert!(
+        !site["homepage_choices"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("echo"))
+    );
 }

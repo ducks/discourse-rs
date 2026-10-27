@@ -1596,7 +1596,7 @@ async fn forgot_password_over_homepage(
     }
     let homepage = {
         let mut conn = state.pool.acquire().await?;
-        crate::homepage::current(&mut conn, settings, guardian.user_id()).await?
+        crate::homepage::current(&mut conn, settings, &guardian).await?
     };
     if homepage == "custom" || homepage == "blank" {
         return Err(Unsupported("/password-reset over a custom or blank homepage").into());

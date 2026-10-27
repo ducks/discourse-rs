@@ -204,7 +204,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
         )
-        .route("/", cached!(get(list::front_page)))
+        .route("/", cached!(get(list::root)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))
         .route("/top", cached!(get(list::top)))
