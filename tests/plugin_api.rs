@@ -47,6 +47,12 @@ settings:
       default: hi
 ";
 
+const SERVER_FR: &str = "\
+fr:
+  echo:
+    hello: \"Bonjour de echo\"
+";
+
 const SERVER_EN: &str = "\
 en:
   site_settings:
@@ -111,7 +117,7 @@ impl Plugin for Echo {
         Some(SETTINGS)
     }
     fn locale_ymls(&self) -> &[&'static str] {
-        &[SERVER_EN]
+        &[SERVER_EN, SERVER_FR]
     }
     fn stylesheet_url(&self, base_path: &str) -> Option<String> {
         Some(format!("{base_path}/echo.css"))
@@ -285,6 +291,15 @@ async fn a_disabled_plugin_declares_its_settings_and_does_nothing_else() {
     assert!(!settings.get("echo_enabled").unwrap().truthy());
     assert_eq!(settings.get("echo_greeting").unwrap().to_s(), "hi");
     assert_eq!(st.i18n.t("echo.hello"), Some("Hello from echo"));
+    assert_eq!(
+        st.i18n.locale("fr").t("echo.hello"),
+        Some("Bonjour de echo")
+    );
+    assert_eq!(
+        st.i18n.locale("fr").t("site_settings.echo_enabled"),
+        Some("Enable the echo plugin"),
+        "English where French has none"
+    );
 
     assert_eq!(send(&st, "/echo.json", None).await.0, StatusCode::NOT_FOUND);
     let cookie = login_cookie(&st, "user0").await;

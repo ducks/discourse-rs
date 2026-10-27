@@ -1723,3 +1723,40 @@ async fn admin_search() {
     let all = admin.get("/admin/search/all.json").await;
     ok("/admin/search/all.json", &all);
 }
+
+/// One statement text, one bind type: sqlx caches a connection's prepared
+/// statements by their text, so the same SQL bound as int8 in one place
+/// and int4 in another fails ("incorrect binary data format") on a
+/// connection that prepared the other. A chat channel's category check
+/// and a category permalink, alternating over a pool of two connections
+/// (a request may hold one while it takes another).
+#[tokio::test]
+async fn a_statement_shared_across_modules_binds_one_type() {
+    let (db, _) = app().await;
+    let two = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(2)
+        .connect_with(db.pool.connect_options().as_ref().clone())
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO permalinks (url, category_id, created_at, updated_at) \
+         VALUES ('old-shows', 4, now(), now())",
+    )
+    .execute(&two)
+    .await
+    .unwrap();
+    let state = state(two, config(RailsEnv::Test, &[])).await;
+    let mut member = member(&state, "user1").await;
+    let mut visitor = anonymous(&state).await;
+    for round in 0..4 {
+        let reply = member
+            .get(&format!("/chat/api/channels/{CHANNEL}/messages.json"))
+            .await;
+        ok(
+            &format!("round {round}: a category channel's messages"),
+            &reply,
+        );
+        let reply = visitor.page("/old-shows").await;
+        ok(&format!("round {round}: a category's permalink"), &reply);
+    }
+}

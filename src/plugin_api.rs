@@ -94,8 +94,10 @@ pub trait Plugin: Send + Sync {
         None
     }
 
-    /// Locale files, each with its `en:` root: server.en.yml as it is,
-    /// client.en.yml with its keys under `js.` (`en: js: ...`).
+    /// Locale files, each rooted at its locale: server.en.yml or
+    /// server.fr.yml as they are, client.en.yml with its keys under `js.`
+    /// (`en: js: ...`). Read another locale with `ctx.i18n.locale(..)`,
+    /// which falls back to English.
     fn locale_ymls(&self) -> &[&'static str] {
         &[]
     }
