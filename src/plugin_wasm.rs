@@ -43,6 +43,8 @@ use crate::i18n::I18n;
 use crate::plugins::PosterInputs;
 use crate::site_settings::{SettingError, SiteSettings};
 
+mod api;
+
 /// The ABI version this host speaks (`api` in the manifest).
 pub const API: u32 = 1;
 
@@ -157,6 +159,17 @@ pub enum Phase {
     AfterLoad,
     BeforeSerialize,
     AfterSerialize,
+    /// `route.handle`: one of the plugin's routes.
+    Route,
+    /// `job.run`: a regular or scheduled job.
+    Job,
+    /// `serializer.current_user` and `serializer.topic_view`.
+    CurrentUser,
+    TopicView,
+    /// `outlet.topic_above_posts`.
+    TopicAbovePosts,
+    /// `homepage.available`.
+    HomepageAvailable,
 }
 
 impl Phase {
@@ -165,15 +178,23 @@ impl Phase {
             Phase::AfterLoad => "after_load",
             Phase::BeforeSerialize => "before_serialize",
             Phase::AfterSerialize => "after_serialize",
+            Phase::Route => "handle",
+            Phase::Job => "run",
+            Phase::CurrentUser => "current_user",
+            Phase::TopicView => "topic_view",
+            Phase::TopicAbovePosts => "topic_above_posts",
+            Phase::HomepageAvailable => "available",
         }
     }
 
     /// What a phase may call. Reads only on the read pipelines; before
-    /// serialize works on what after load kept, without the database.
+    /// serialize works on what after load kept, without the database, and
+    /// homepage.available runs whenever `/` is resolved, so it is kept off
+    /// the database too.
     fn allows(self, call: &str) -> bool {
         match self {
-            Phase::AfterLoad | Phase::AfterSerialize => true,
-            Phase::BeforeSerialize => matches!(call, "t" | "setting"),
+            Phase::BeforeSerialize | Phase::HomepageAvailable => matches!(call, "t" | "setting"),
+            _ => true,
         }
     }
 }
@@ -204,12 +225,143 @@ struct Manifest {
     core_reads: HashMap<String, Vec<String>>,
     #[serde(default)]
     topic_list: Option<Pipeline>,
+    /// `[[routes]]`: mounted beside core's, answered by `route.handle`.
+    #[serde(default)]
+    routes: Vec<RouteDecl>,
+    /// Regular jobs (`Jobs.enqueue`), run by `job.run`.
+    #[serde(default)]
+    jobs: Vec<String>,
+    /// `[[scheduled]]`: scheduled jobs, run by `job.run` too.
+    #[serde(default)]
+    scheduled: Vec<ScheduledDecl>,
+    /// Keys `serializer.current_user` adds to `/session/current.json`.
+    #[serde(default)]
+    current_user: Option<Keys>,
+    /// Keys `serializer.topic_view` adds to the topic view.
+    #[serde(default)]
+    topic_view: Option<Keys>,
+    #[serde(default)]
+    outlets: Outlets,
+    #[serde(default)]
+    homepage: Option<HomepageDecl>,
 }
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct SettingsGrant {
     read: Vec<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RouteDecl {
+    /// get, post, put, patch or delete.
+    method: String,
+    /// An axum path: `/echo/{id}`.
+    path: String,
+    /// A page with a form: its input carries the session's masked CSRF
+    /// token (`form_authenticity_token`), its response the session cookie.
+    #[serde(default)]
+    form: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ScheduledDecl {
+    name: String,
+    every_secs: u64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Keys {
+    /// `[[key, type], ...]`, in order.
+    keys: Vec<(String, KeyType)>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Outlets {
+    #[serde(default)]
+    topic_above_posts: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct HomepageDecl {
+    id: String,
+    name: String,
+    path: String,
+    #[serde(default)]
+    anonymous: bool,
+    #[serde(default)]
+    server_side: bool,
+    /// The module exports `homepage.available`; without it the option is
+    /// always available while the plugin is enabled.
+    #[serde(default)]
+    available: bool,
+}
+
+/// What a plugin's directory carries beside the module.
+#[derive(Debug, Default)]
+pub struct Files {
+    /// `settings.yml`, of plugin_settings.yml's shape.
+    pub settings_yml: Option<String>,
+    /// `locales/*.yml`, by file name.
+    pub locales: Vec<String>,
+    /// `public/`, served at `/plugins/<name>/` as Rails serves a plugin's
+    /// public directory.
+    pub public: Option<std::path::PathBuf>,
+}
+
+impl Files {
+    pub fn read(dir: &Path) -> Result<Files, LoadError> {
+        let fail = |path: &Path, e: std::io::Error| LoadError(format!("{}: {e}", path.display()));
+        let settings = dir.join("settings.yml");
+        let settings_yml = match std::fs::read_to_string(&settings) {
+            Ok(src) => Some(src),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+            Err(e) => return Err(fail(&settings, e)),
+        };
+        let mut locales = Vec::new();
+        let locale_dir = dir.join("locales");
+        if locale_dir.is_dir() {
+            let mut paths: Vec<_> = std::fs::read_dir(&locale_dir)
+                .map_err(|e| fail(&locale_dir, e))?
+                .filter_map(|e| e.ok().map(|e| e.path()))
+                .filter(|p| p.extension().is_some_and(|x| x == "yml"))
+                .collect();
+            paths.sort();
+            for path in paths {
+                locales.push(std::fs::read_to_string(&path).map_err(|e| fail(&path, e))?);
+            }
+        }
+        let public = dir.join("public");
+        Ok(Files {
+            settings_yml,
+            locales,
+            public: public.is_dir().then_some(public),
+        })
+    }
+
+    /// The settings `settings.yml` declares, which the plugin reads
+    /// without listing them under `[settings] read`.
+    fn own_settings(&self) -> Result<Vec<String>, String> {
+        let Some(src) = &self.settings_yml else {
+            return Ok(Vec::new());
+        };
+        let doc: serde_yaml_ng::Value =
+            serde_yaml_ng::from_str(src).map_err(|e| format!("settings.yml: {e}"))?;
+        let mut names = Vec::new();
+        if let Some(categories) = doc.get("settings").and_then(|s| s.as_mapping()) {
+            for (_, settings) in categories {
+                if let Some(settings) = settings.as_mapping() {
+                    names.extend(settings.keys().filter_map(|k| k.as_str().map(String::from)));
+                }
+            }
+        }
+        Ok(names)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -222,6 +374,11 @@ struct ManifestPlugin {
     /// A bundled plugin (src/plugins) whose phases on the same pipelines
     /// this one takes over while enabled.
     replaces: Option<String>,
+    /// `register_svg_icon`.
+    #[serde(default)]
+    svg_icons: Vec<String>,
+    /// `register_asset` for a stylesheet: a file under `public/`.
+    stylesheet: Option<String>,
 }
 
 /// Per plugin, from the manifest's `[limits]`.
@@ -258,16 +415,26 @@ pub struct Plugin {
     pub name: String,
     enabled_setting: Option<String>,
     replaces: Option<String>,
+    svg_icons: Vec<String>,
+    stylesheet: Option<String>,
     limits: Limits,
     grants: Grants,
     topic_list: Option<Pipeline>,
+    routes: Vec<RouteDecl>,
+    jobs: Vec<String>,
+    scheduled: Vec<ScheduledDecl>,
+    current_user: Option<Keys>,
+    topic_view: Option<Keys>,
+    outlets: Outlets,
+    homepage: Option<HomepageDecl>,
+    files: Files,
     pre: InstancePre<HostState>,
 }
 
 /// The plugins of the process.
 #[derive(Default)]
 pub struct Registry {
-    plugins: Vec<Plugin>,
+    plugins: Vec<Arc<Plugin>>,
 }
 
 static REGISTRY: LazyLock<RwLock<Arc<Registry>>> =
@@ -285,15 +452,17 @@ pub fn install(registry: Registry) {
     }
 }
 
-/// Loads `PLUGINS_DIR` when set. A broken plugin stops the boot.
-pub fn load_from_env() -> Result<usize, LoadError> {
+/// Loads `PLUGINS_DIR` when set, installs it for the topic list's phases,
+/// and hands back the plugins for plugin_api's registry (every other
+/// hook). A broken plugin stops the boot.
+pub fn load_from_env() -> Result<Vec<Arc<dyn crate::plugin_api::Plugin>>, LoadError> {
     let Some(dir) = std::env::var_os("PLUGINS_DIR") else {
-        return Ok(0);
+        return Ok(Vec::new());
     };
     let registry = Registry::load(Path::new(&dir))?;
-    let count = registry.plugins.len();
+    let plugins = registry.api_plugins();
     install(registry);
-    Ok(count)
+    Ok(plugins)
 }
 
 impl Registry {
@@ -312,15 +481,23 @@ impl Registry {
                 std::fs::read(path.join(name))
                     .map_err(|e| LoadError(format!("{}/{name}: {e}", path.display())))
             };
-            let manifest = String::from_utf8(read("plugin.toml")?)
-                .map_err(|e| LoadError(format!("{}/plugin.toml: {e}", path.display())))?;
-            registry.add(Plugin::new(runtime()?, &manifest, &read("plugin.wasm")?)?);
+            registry.add(Plugin::load_dir(runtime()?, &path, &read("plugin.wasm")?)?);
         }
         Ok(registry)
     }
 
     pub fn add(&mut self, plugin: Plugin) {
-        self.plugins.push(plugin);
+        self.plugins.push(Arc::new(plugin));
+    }
+
+    /// Each plugin as plugin_api sees it.
+    pub fn api_plugins(&self) -> Vec<Arc<dyn crate::plugin_api::Plugin>> {
+        self.plugins
+            .iter()
+            .map(|p| {
+                Arc::new(api::WasmPlugin::new(p.clone())) as Arc<dyn crate::plugin_api::Plugin>
+            })
+            .collect()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -335,7 +512,7 @@ impl Registry {
         for plugin in &self.plugins {
             match &plugin.enabled_setting {
                 Some(s) if !settings.get(s)?.truthy() => {}
-                _ => out.push(plugin),
+                _ => out.push(plugin.as_ref()),
             }
         }
         Ok(out.into_iter())
@@ -533,7 +710,9 @@ pub struct Ctx<'a> {
     pub conn: &'a mut PgConnection,
     pub settings: &'a SiteSettings,
     pub guardian: &'a Guardian,
-    pub i18n: &'a I18n,
+    /// None where the hook has no translations at hand (homepage.available,
+    /// which may call `setting` only).
+    pub i18n: Option<&'a I18n>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -587,9 +766,40 @@ impl Plugin {
     /// Compiles `wasm` and links it against the calls `manifest` grants;
     /// a module importing anything else does not load.
     pub fn new(runtime: &Runtime, manifest: &str, wasm: &[u8]) -> Result<Plugin, LoadError> {
-        let manifest: Manifest =
+        Plugin::build(runtime, manifest, wasm, Files::default())
+    }
+
+    /// A plugin directory's manifest and files, with `wasm` as its module.
+    pub fn load_dir(runtime: &Runtime, dir: &Path, wasm: &[u8]) -> Result<Plugin, LoadError> {
+        let manifest = std::fs::read_to_string(dir.join("plugin.toml"))
+            .map_err(|e| LoadError(format!("{}/plugin.toml: {e}", dir.display())))?;
+        Plugin::build(runtime, &manifest, wasm, Files::read(dir)?)
+    }
+
+    fn build(
+        runtime: &Runtime,
+        manifest: &str,
+        wasm: &[u8],
+        files: Files,
+    ) -> Result<Plugin, LoadError> {
+        let mut manifest: Manifest =
             toml::from_str(manifest).map_err(|e| LoadError(format!("plugin.toml: {e}")))?;
         let name = manifest.plugin.name.clone();
+        // Its own settings, and the one that turns it on, need no grant.
+        let own = files
+            .own_settings()
+            .map_err(|e| LoadError(format!("{name}: {e}")))?;
+        for setting in own
+            .into_iter()
+            .chain(manifest.plugin.enabled_setting.clone())
+        {
+            if !manifest.settings.read.contains(&setting) {
+                manifest.settings.read.push(setting);
+            }
+        }
+        if manifest.plugin.stylesheet.is_some() && files.public.is_none() {
+            return Err(LoadError(format!("{name}: a stylesheet but no public/")));
+        }
         let fail = |e: wasmtime::Error| LoadError(format!("{name}: {e}"));
         if manifest.plugin.api != API {
             return Err(LoadError(format!(
@@ -600,6 +810,16 @@ impl Plugin {
         if manifest.limits.memory_mib > MAX_MEMORY_MIB {
             return Err(LoadError(format!(
                 "{name}: memory_mib over {MAX_MEMORY_MIB}"
+            )));
+        }
+        if let Some(route) = manifest
+            .routes
+            .iter()
+            .find(|r| api::method_filter(&r.method).is_none())
+        {
+            return Err(LoadError(format!(
+                "{name}: route {} has method {}",
+                route.path, route.method
             )));
         }
         let module = Module::new(&runtime.engine, wasm).map_err(fail)?;
@@ -626,6 +846,27 @@ impl Plugin {
                     .map(|p| format!("topic_list.{}", p.name())),
             );
         }
+        for (declared, export) in [
+            (!manifest.routes.is_empty(), "route.handle"),
+            (
+                !manifest.jobs.is_empty() || !manifest.scheduled.is_empty(),
+                "job.run",
+            ),
+            (manifest.current_user.is_some(), "serializer.current_user"),
+            (manifest.topic_view.is_some(), "serializer.topic_view"),
+            (
+                manifest.outlets.topic_above_posts,
+                "outlet.topic_above_posts",
+            ),
+            (
+                manifest.homepage.as_ref().is_some_and(|h| h.available),
+                "homepage.available",
+            ),
+        ] {
+            if declared {
+                needed.push(export.to_string());
+            }
+        }
         if let Some(missing) = needed.iter().find(|n| !exports.contains(n)) {
             return Err(LoadError(format!("{name}: no export {missing}")));
         }
@@ -633,6 +874,8 @@ impl Plugin {
             name,
             enabled_setting: manifest.plugin.enabled_setting,
             replaces: manifest.plugin.replaces,
+            svg_icons: manifest.plugin.svg_icons,
+            stylesheet: manifest.plugin.stylesheet,
             limits: manifest.limits,
             grants: Grants {
                 settings: manifest.settings.read,
@@ -640,6 +883,14 @@ impl Plugin {
                 core_reads: manifest.core_reads,
             },
             topic_list: manifest.topic_list,
+            routes: manifest.routes,
+            jobs: manifest.jobs,
+            scheduled: manifest.scheduled,
+            current_user: manifest.current_user,
+            topic_view: manifest.topic_view,
+            outlets: manifest.outlets,
+            homepage: manifest.homepage,
+            files,
             pre,
         })
     }
@@ -828,7 +1079,12 @@ async fn answer(ctx: &mut Ctx<'_>, grants: &Grants, call: HostCall) -> Result<Ve
             let value = ctx.settings.get(&name).map_err(|e| e.to_string())?;
             serde_json::to_vec(value).map_err(|e| e.to_string())
         }
-        HostCall::T(key) => Ok(ctx.i18n.t(&key).unwrap_or(&key).as_bytes().to_vec()),
+        HostCall::T(key) => Ok(ctx
+            .i18n
+            .and_then(|i| i.t(&key))
+            .unwrap_or(&key)
+            .as_bytes()
+            .to_vec()),
     }
 }
 
@@ -895,6 +1151,7 @@ const CORE_TABLES: &[(&str, &str)] = &[
     ("topic_tags", ", \"id\""),
     ("tags", ""),
     ("topic_allowed_groups", ", \"id\""),
+    ("topics", ""),
 ];
 
 /// `core_rows`: a core table's rows, limited to the columns the manifest

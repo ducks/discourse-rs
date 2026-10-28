@@ -80,7 +80,16 @@ enum AdminCommand {
 
 /// The `discourse-rs` command line, with the plugins this binary is built
 /// with (plugin_api): what a plugin's own binary calls from its main.
-pub async fn run(plugins: Vec<Arc<dyn crate::plugin_api::Plugin>>) -> ExitCode {
+pub async fn run(mut plugins: Vec<Arc<dyn crate::plugin_api::Plugin>>) -> ExitCode {
+    // Third-party plugins (PLUGINS_DIR) beside the compiled-in ones; a
+    // broken one stops the boot.
+    match crate::plugin_wasm::load_from_env() {
+        Ok(wasm) => plugins.extend(wasm),
+        Err(e) => {
+            eprintln!("discourse-rs: {e}");
+            return ExitCode::FAILURE;
+        }
+    }
     if let Err(e) = crate::plugin_api::install(plugins) {
         eprintln!("discourse-rs: {e}");
         return ExitCode::FAILURE;
@@ -231,11 +240,6 @@ async fn serve() -> Result<(), Box<dyn Error>> {
     crate::readonly::force_from_globals(&config.globals);
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
-    // Third-party plugins (PLUGINS_DIR); a broken one stops the boot.
-    let wasm_plugins = crate::plugin_wasm::load_from_env()?;
-    if wasm_plugins > 0 {
-        tracing::info!(plugins = wasm_plugins, "loaded wasm plugins");
-    }
     tracing::info!(settings = site_setting_defs.len(), env = ?config.rails_env, "loaded site setting definitions");
 
     // multisite.yml, when DISCOURSE_MULTISITE_CONFIG_PATH names one.

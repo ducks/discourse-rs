@@ -1,0 +1,78 @@
+//! tests/plugin_api.rs' echo plugin as a WebAssembly guest: its routes,
+//! jobs, keys on the current user and the topic view, its outlet above a
+//! topic's posts and its homepage, each one export (plugin.toml declares
+//! them; settings.yml, locales/ and public/ are files beside it).
+
+use discourse_plugin::{Input, core_rows, json_reply, reply, setting, t};
+use serde_json::{Value, json};
+
+discourse_plugin::phases! {
+    "route.handle" => handle,
+    "job.run" => run_job,
+    "serializer.current_user" => current_user,
+    "serializer.topic_view" => topic_view,
+    "outlet.topic_above_posts" => topic_above_posts,
+    "homepage.available" => available,
+}
+
+fn handle(input: Input) -> Result<Value, String> {
+    let request = &input.payload;
+    Ok(match request["route"].as_str().unwrap_or("") {
+        "/echo.json" => json_reply(
+            200,
+            &json!({ "greeting": setting("echo_greeting"), "hello": t("echo.hello") }),
+        ),
+        // The host checked the session's token before the call.
+        "/echo/write" => reply(200, "text/plain; charset=utf-8", ""),
+        "/echo/token" => reply(
+            200,
+            "text/plain; charset=utf-8",
+            request["csrf_token"].as_str().unwrap_or(""),
+        ),
+        "/echo" => reply(
+            200,
+            "text/plain; charset=utf-8",
+            format!("echo home {}", request["query"].as_str().unwrap_or("")),
+        ),
+        other => return Err(format!("no route {other}")),
+    })
+}
+
+/// A regular job fails when its args ask it to, so its outcome shows in
+/// the queue.
+fn run_job(input: Input) -> Result<Value, String> {
+    let job = &input.payload;
+    match job["name"].as_str() {
+        Some("echo_scheduled") => Ok(Value::Null),
+        Some("echo_job") if job["args"]["fail"] == true => {
+            Err(format!("echo_job told to fail: {}", job["args"]))
+        }
+        Some("echo_job") => Ok(Value::Null),
+        other => Err(format!("no job {other:?}")),
+    }
+}
+
+fn current_user(input: Input) -> Result<Value, String> {
+    Ok(json!({ "echo_user": input.guardian.user_id }))
+}
+
+fn topic_view(input: Input) -> Result<Value, String> {
+    let id = input.payload["topic_id"]
+        .as_i64()
+        .ok_or("topic_view without a topic_id")?;
+    let topic = core_rows("topics", "id", &[id])
+        .into_iter()
+        .next()
+        .ok_or("no such topic")?;
+    Ok(json!({ "echo_topic": { "id": id, "title": topic["title"] } }))
+}
+
+fn topic_above_posts(input: Input) -> Result<Value, String> {
+    let id = &input.payload["view"]["echo_topic"]["id"];
+    Ok(json!(format!("<div class=\"echo-card\">{id}</div>")))
+}
+
+/// Closed while the greeting is "closed".
+fn available(_: Input) -> Result<Value, String> {
+    Ok(json!(setting("echo_greeting") != json!("closed")))
+}

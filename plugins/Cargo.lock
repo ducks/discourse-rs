@@ -324,6 +324,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "echo-wasm"
+version = "20261027.0.0"
+dependencies = [
+ "discourse-plugin",
+ "serde_json",
+]
+
+[[package]]
 name = "either"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

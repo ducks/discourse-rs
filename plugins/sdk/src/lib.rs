@@ -136,3 +136,18 @@ macro_rules! phases {
         )*
     };
 }
+
+/// `route.handle`'s answer: a JSON document.
+pub fn json_reply(status: u16, body: &Value) -> Value {
+    json!({
+        "status": status,
+        "content_type": "application/json; charset=utf-8",
+        "body": body.to_string(),
+    })
+}
+
+/// `route.handle`'s answer: text of a content type (`text/html;
+/// charset=utf-8` for a page).
+pub fn reply(status: u16, content_type: &str, body: impl Into<String>) -> Value {
+    json!({ "status": status, "content_type": content_type, "body": body.into() })
+}
