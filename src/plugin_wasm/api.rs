@@ -213,6 +213,7 @@ impl plugin_api::Plugin for WasmPlugin {
             guardian: &guardian,
             i18n: Some(&state.i18n),
             pool: Some(&state.pool),
+            config: Some(&state.config),
         };
         self.plugin
             .run(
@@ -240,6 +241,7 @@ impl plugin_api::Plugin for WasmPlugin {
             guardian,
             i18n: Some(ctx.i18n),
             pool: None,
+            config: None,
         };
         Ok(self
             .keys(&mut ctx, Phase::CurrentUser, Value::Null, &decl.keys)
@@ -261,6 +263,7 @@ impl plugin_api::Plugin for WasmPlugin {
             guardian,
             i18n: Some(ctx.i18n),
             pool: None,
+            config: None,
         };
         Ok(self
             .keys(
@@ -290,6 +293,7 @@ impl plugin_api::Plugin for WasmPlugin {
             guardian: &guardian,
             i18n: Some(ctx.i18n),
             pool: None,
+            config: None,
         };
         let result = self
             .plugin
@@ -330,6 +334,7 @@ impl plugin_api::Plugin for WasmPlugin {
             guardian,
             i18n: None,
             pool: None,
+            config: None,
         };
         let result = self
             .plugin
@@ -410,7 +415,7 @@ impl Route<'_> {
                 parts.uri.path(),
                 parts.method.as_str(),
             ) {
-                return Ok(StatusCode::FORBIDDEN.into_response());
+                return Ok(crate::routes::bad_csrf());
             }
         }
         let (csrf_token, cookie) = if self.form {
@@ -426,6 +431,7 @@ impl Route<'_> {
             "method": parts.method.as_str(),
             "path": parts.uri.path(),
             "route": self.route,
+            "base_path": state.config.globals.relative_url_root(),
             "params": params,
             "query": parts.uri.query(),
             "content_type": content_type,
@@ -438,6 +444,7 @@ impl Route<'_> {
             guardian: self.guardian,
             i18n: Some(&state.i18n),
             pool: Some(&state.pool),
+            config: Some(&state.config),
         };
         let reply: Reply =
             serde_json::from_value(plugin.run(&mut ctx, "route", Phase::Route, payload).await?)

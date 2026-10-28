@@ -233,6 +233,10 @@ struct Manifest {
     /// core table => the columns the plugin may read with `core_rows`.
     #[serde(default)]
     core_reads: HashMap<String, Vec<String>>,
+    /// `tables`: existing tables in `public`, not core's, that the plugin
+    /// reads and writes as its own (a Rails plugin's, on a restored site).
+    #[serde(default)]
+    adopt: Adopt,
     #[serde(default)]
     topic_list: Option<Pipeline>,
     /// `[[routes]]`: mounted beside core's, answered by `route.handle`.
@@ -254,6 +258,12 @@ struct Manifest {
     outlets: Outlets,
     #[serde(default)]
     homepage: Option<HomepageDecl>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Adopt {
+    tables: Vec<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -445,6 +455,7 @@ struct Grants {
     settings: Vec<String>,
     tables: HashMap<String, Vec<String>>,
     core_reads: HashMap<String, Vec<String>>,
+    adopted: Vec<String>,
 }
 
 pub struct Plugin {
@@ -755,6 +766,8 @@ pub struct Ctx<'a> {
     /// The site's pool, where the caller has it; otherwise a plugin with a
     /// database finds it from the connection (db::site_pool).
     pub pool: Option<&'a sqlx::PgPool>,
+    /// For URLs (a user's avatar_template), where the caller has it.
+    pub config: Option<&'a crate::config::Config>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -790,13 +803,30 @@ enum HostCall {
         ids: Vec<i64>,
     },
     Setting(String),
-    T(String),
+    T {
+        key: String,
+        locale: Option<String>,
+        args: Vec<(String, String)>,
+    },
+    /// Users' public cards: id, username, name, avatar_template.
+    Users(Vec<i64>),
+    /// `guardian.can_see_category?` for the hook's viewer.
+    CanSeeCategory(i64),
     /// SQL on the plugin's own connection (db.rs): rows, or rows affected.
     Sql {
         execute: bool,
         sql: String,
         params: Vec<Value>,
     },
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TArgs {
+    key: String,
+    locale: Option<String>,
+    #[serde(default)]
+    args: Map<String, Value>,
 }
 
 #[derive(Deserialize)]
@@ -816,7 +846,16 @@ struct RowsArgs {
 }
 
 /// The import module's functions, each granted by the manifest.
-const HOST_CALLS: [&str; 6] = ["rows", "core_rows", "setting", "t", "query", "execute"];
+const HOST_CALLS: [&str; 8] = [
+    "rows",
+    "core_rows",
+    "setting",
+    "t",
+    "query",
+    "execute",
+    "users",
+    "can_see_category",
+];
 
 impl Plugin {
     /// Compiles `wasm` and links it against the calls `manifest` grants;
@@ -878,7 +917,8 @@ impl Plugin {
                 route.path, route.method
             )));
         }
-        let database = manifest.database || !files.migrations.is_empty();
+        let database =
+            manifest.database || !files.migrations.is_empty() || !manifest.adopt.tables.is_empty();
         let module = Module::new(&runtime.engine, wasm).map_err(fail)?;
         let mut linker: Linker<HostState> = Linker::new(&runtime.engine);
         for call in HOST_CALLS {
@@ -939,6 +979,7 @@ impl Plugin {
                 settings: manifest.settings.read,
                 tables: manifest.tables,
                 core_reads: manifest.core_reads,
+                adopted: manifest.adopt.tables,
             },
             topic_list: manifest.topic_list,
             routes: manifest.routes,
@@ -1165,7 +1206,36 @@ fn parse(call: &str, request: &[u8]) -> Result<HostCall, String> {
             }
         }
         "setting" => HostCall::Setting(text()?),
-        "t" => HostCall::T(text()?),
+        // A key, or {"key", "locale", "args": {name: value}}.
+        "t" => match serde_json::from_slice::<TArgs>(request) {
+            Ok(args) => HostCall::T {
+                key: args.key,
+                locale: args.locale,
+                args: args
+                    .args
+                    .into_iter()
+                    .map(|(k, v)| {
+                        (
+                            k,
+                            v.as_str()
+                                .map(String::from)
+                                .unwrap_or_else(|| v.to_string()),
+                        )
+                    })
+                    .collect(),
+            },
+            Err(_) => HostCall::T {
+                key: text()?,
+                locale: None,
+                args: Vec::new(),
+            },
+        },
+        "users" => {
+            HostCall::Users(serde_json::from_slice(request).map_err(|e| format!("users: {e}"))?)
+        }
+        "can_see_category" => HostCall::CanSeeCategory(
+            serde_json::from_slice(request).map_err(|e| format!("can_see_category: {e}"))?,
+        ),
         "query" | "execute" => {
             let args: SqlArgs =
                 serde_json::from_slice(request).map_err(|e| format!("{call}: {e}"))?;
@@ -1235,15 +1305,85 @@ async fn answer(ctx: &mut Ctx<'_>, grants: &Grants, call: HostCall) -> Result<Ve
             let value = ctx.settings.get(&name).map_err(|e| e.to_string())?;
             serde_json::to_vec(value).map_err(|e| e.to_string())
         }
-        HostCall::T(key) => Ok(ctx
-            .i18n
-            .and_then(|i| i.t(&key))
-            .unwrap_or(&key)
-            .as_bytes()
-            .to_vec()),
+        HostCall::T { key, locale, args } => {
+            let args: Vec<(&str, &str)> =
+                args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+            let text = ctx.i18n.and_then(|i| match &locale {
+                Some(locale) => i.locale(locale).t_with(&key, &args),
+                None => i.t_with(&key, &args),
+            });
+            Ok(text.unwrap_or(key).into_bytes())
+        }
+        HostCall::Users(ids) => {
+            let config = ctx.config.ok_or("users is not available here")?;
+            let urls = crate::url::Urls {
+                config,
+                settings: ctx.settings,
+            };
+            let ids: Vec<i32> = ids
+                .iter()
+                .filter_map(|id| i32::try_from(*id).ok())
+                .collect();
+            let rows: Vec<(i32, String, Option<String>, Option<i32>)> = sqlx::query_as(
+                "SELECT id, username, name, uploaded_avatar_id FROM users WHERE id = ANY($1) ORDER BY id",
+            )
+            .bind(&ids)
+            .fetch_all(&mut *ctx.conn)
+            .await
+            .map_err(|e| e.to_string())?;
+            let mut users = Vec::new();
+            for (id, username, name, avatar) in rows {
+                let template = crate::avatar::avatar_template(&urls, id, &username, avatar, None)
+                    .map_err(|e| e.to_string())?;
+                users.push(json!({
+                    "id": id,
+                    "username": username,
+                    "name": name,
+                    "avatar_template": template,
+                }));
+            }
+            serde_json::to_vec(&users).map_err(|e| e.to_string())
+        }
+        HostCall::CanSeeCategory(id) => {
+            let visible = can_see_category(ctx, id).await.map_err(|e| e.to_string())?;
+            serde_json::to_vec(&visible).map_err(|e| e.to_string())
+        }
         // Plugin::run answers SQL itself, on the plugin's connection.
         HostCall::Sql { .. } => Err("SQL is not answered here".into()),
     }
+}
+
+/// `guardian.can_see_category?`: the category exists and is not read
+/// restricted, or the viewer is an admin (unless secured categories are
+/// suppressed from admins) or in a group that may see it.
+async fn can_see_category(ctx: &mut Ctx<'_>, id: i64) -> Result<bool, crate::AppError> {
+    let Ok(id) = i32::try_from(id) else {
+        return Ok(false);
+    };
+    let restricted: Option<bool> =
+        sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&mut *ctx.conn)
+            .await?;
+    let Some(restricted) = restricted else {
+        return Ok(false);
+    };
+    if ctx.guardian.is_admin()
+        && !ctx
+            .settings
+            .get("suppress_secured_categories_from_admin")?
+            .truthy()
+    {
+        return Ok(true);
+    }
+    if !restricted {
+        return Ok(true);
+    }
+    Ok(ctx
+        .guardian
+        .secure_category_ids(&mut *ctx.conn, ctx.settings)
+        .await?
+        .contains(&id))
 }
 
 /// Identifiers come from the manifest, never from the guest.

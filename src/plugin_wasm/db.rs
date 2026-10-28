@@ -167,6 +167,15 @@ impl Plugin {
                 return Err(format!("{}: core_reads may not name {table}", self.name));
             }
         }
+        // Adopted tables are a plugin's own that live in `public` (a Rails
+        // plugin's, on a restored site): never core's.
+        let structure = crate::schema::structure_sql();
+        if let Some(table) = self.grants.adopted.iter().find(|t| {
+            DENIED.iter().any(|(d, _)| d == t)
+                || structure.contains(&format!("CREATE TABLE public.{t} ("))
+        }) {
+            return Err(format!("{}: may not adopt core's {table}", self.name));
+        }
         let mut tx = app.begin().await.map_err(s)?;
         sqlx::query("SELECT pg_advisory_xact_lock(hashtext($1))")
             .bind(format!("plugin role {role}"))
@@ -230,14 +239,20 @@ impl Plugin {
                 quote(&schema),
                 quote(&role)
             ),
+            // Its own schema first, where its migrations create; then
+            // public, where every name still meets the grants below.
             format!(
-                "ALTER ROLE {} IN DATABASE {} SET search_path = {}",
+                "ALTER ROLE {} IN DATABASE {} SET search_path = {}, public",
                 quote(&role),
                 quote(db),
                 quote(&schema)
             ),
             format!(
                 "REVOKE ALL ON ALL TABLES IN SCHEMA public FROM {}",
+                quote(&role)
+            ),
+            format!(
+                "REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM {}",
                 quote(&role)
             ),
         ];
@@ -255,6 +270,34 @@ impl Plugin {
                 quote(&role)
             );
             run_sql(&mut tx, sql.as_str()).await.map_err(s)?;
+        }
+        for table in &self.grants.adopted {
+            let sql = format!(
+                "GRANT SELECT, INSERT, UPDATE, DELETE ON public.{} TO {}",
+                quote(table),
+                quote(&role)
+            );
+            run_sql(&mut tx, sql.as_str()).await.map_err(s)?;
+            // Its id sequences, for nextval on insert.
+            let sequences: Vec<String> = sqlx::query_scalar(
+                "SELECT s.relname::text FROM pg_class s \
+                 JOIN pg_depend d ON d.objid = s.oid AND d.deptype IN ('a', 'i') \
+                 JOIN pg_class t ON t.oid = d.refobjid \
+                 JOIN pg_namespace n ON n.oid = t.relnamespace \
+                 WHERE s.relkind = 'S' AND n.nspname = 'public' AND t.relname = $1",
+            )
+            .bind(table)
+            .fetch_all(&mut *tx)
+            .await
+            .map_err(s)?;
+            for sequence in sequences {
+                let sql = format!(
+                    "GRANT USAGE, SELECT ON SEQUENCE public.{} TO {}",
+                    quote(&sequence),
+                    quote(&role)
+                );
+                run_sql(&mut tx, sql.as_str()).await.map_err(s)?;
+            }
         }
         tx.commit().await.map_err(s)?;
 

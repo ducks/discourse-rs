@@ -58,7 +58,7 @@ pub(crate) fn csrf_ok(
 }
 
 /// `handle_unverified_request`
-pub(super) fn bad_csrf() -> Response {
+pub(crate) fn bad_csrf() -> Response {
     (
         StatusCode::FORBIDDEN,
         [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],

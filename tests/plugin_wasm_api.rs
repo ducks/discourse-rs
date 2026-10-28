@@ -572,10 +572,10 @@ async fn a_guests_sql_stays_in_its_sandbox() {
 
     // A session setting doesn't outlive the hook.
     for _ in 0..3 {
-        probe(&st, None, "!SET search_path = public").await;
+        probe(&st, None, "!SET search_path = pg_catalog").await;
         let path = probe(&st, None, "SELECT current_setting('search_path') AS p").await;
         assert!(
-            !path.to_string().contains("public"),
+            path.to_string().contains("plugin_echo"),
             "the role's search path again: {path}"
         );
     }
