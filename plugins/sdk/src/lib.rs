@@ -43,6 +43,10 @@ unsafe extern "C" {
     fn host_query(ptr: *const u8, len: usize) -> u64;
     #[link_name = "execute"]
     fn host_execute(ptr: *const u8, len: usize) -> u64;
+    #[link_name = "users"]
+    fn host_users(ptr: *const u8, len: usize) -> u64;
+    #[link_name = "can_see_category"]
+    fn host_can_see_category(ptr: *const u8, len: usize) -> u64;
 }
 
 /// Memory for `len` bytes the host writes into: a phase's input or a host
@@ -222,4 +226,90 @@ pub fn form(encoded: &str) -> Vec<(String, String)> {
             (decode(k), decode(v))
         })
         .collect()
+}
+
+/// A translation in `locale` (None: the site's default), with `%{name}`
+/// interpolated from `args`; the key itself when there is none.
+pub fn t_with(key: &str, locale: Option<&str>, args: &[(&str, &str)]) -> String {
+    let args: serde_json::Map<String, Value> = args
+        .iter()
+        .map(|(k, v)| (k.to_string(), Value::from(*v)))
+        .collect();
+    let request = json!({ "key": key, "locale": locale, "args": args });
+    String::from_utf8(call(host_t, request.to_string().as_bytes())).unwrap_or_else(|_| key.to_string())
+}
+
+/// Users' public cards (id, username, name, avatar_template), by id.
+pub fn users(ids: &[i64]) -> Vec<Value> {
+    if ids.is_empty() {
+        return Vec::new();
+    }
+    let answer = call(host_users, json!(ids).to_string().as_bytes());
+    serde_json::from_slice(&answer).unwrap_or_default()
+}
+
+/// Whether the viewer may see a category (`can_see_category?`).
+pub fn can_see_category(id: i64) -> bool {
+    let answer = call(host_can_see_category, id.to_string().as_bytes());
+    serde_json::from_slice(&answer).unwrap_or(false)
+}
+
+/// Rails' params from a route's input: the query and a form body, with
+/// `a[b][c]=v` nested into objects and `a[]=v` into arrays; a later
+/// scalar wins.
+pub fn params(request: &Value) -> serde_json::Map<String, Value> {
+    let mut out = serde_json::Map::new();
+    let query = request["query"].as_str().unwrap_or("");
+    let form_body = request["content_type"]
+        .as_str()
+        .is_some_and(|c| c.starts_with("application/x-www-form-urlencoded"));
+    let body = if form_body {
+        request["body"].as_str().unwrap_or("")
+    } else {
+        ""
+    };
+    for (key, value) in form(query).into_iter().chain(form(body)) {
+        let (head, rest) = match key.find('[') {
+            Some(i) => (&key[..i], &key[i..]),
+            None => (key.as_str(), ""),
+        };
+        let mut path: Vec<&str> = vec![head];
+        let mut rest = rest;
+        while let Some(stripped) = rest.strip_prefix('[') {
+            let Some(end) = stripped.find(']') else { break };
+            path.push(&stripped[..end]);
+            rest = &stripped[end + 1..];
+        }
+        insert(&mut out, &path, Value::String(value));
+    }
+    out
+}
+
+fn insert(map: &mut serde_json::Map<String, Value>, path: &[&str], value: Value) {
+    let Some((first, rest)) = path.split_first() else {
+        return;
+    };
+    match rest.first() {
+        None => {
+            map.insert(first.to_string(), value);
+        }
+        Some(&"") => {
+            let entry = map.entry(first.to_string()).or_insert_with(|| json!([]));
+            if !entry.is_array() {
+                *entry = json!([]);
+            }
+            if let Some(list) = entry.as_array_mut() {
+                list.push(value);
+            }
+        }
+        Some(_) => {
+            let entry = map.entry(first.to_string()).or_insert_with(|| json!({}));
+            if !entry.is_object() {
+                *entry = json!({});
+            }
+            if let Some(inner) = entry.as_object_mut() {
+                insert(inner, rest, value);
+            }
+        }
+    }
 }

@@ -594,6 +594,66 @@ Open:
   host calls through core's own code, not built.
 - Uninstall (revoke, drop the schema and role) is not built.
 
+## A Rails plugin's tables, core's read models, and a taper port
+
+On a site restored from Rails, a plugin's tables already live in
+`public`, created by its Ruby migrations. `[adopt] tables = [...]` names
+them: install grants the role SELECT, INSERT, UPDATE and DELETE on each,
+and USAGE on its id sequences, and refuses any table core's
+`structure.sql` defines or `DENIED` names. The role's search path is its
+own schema, then `public`, so a Rails plugin's unqualified SQL resolves
+while every name still meets the grants. The tables stay where Rails put
+them: a backup restores into either.
+
+Two things a port needs that only core can answer are host calls every
+plugin gets (read models, not tables):
+
+- `users(ids)`: id, username, name and `avatar_template` (core's own
+  computation, settings and CDN included);
+- `can_see_category(id)`: `can_see_category?` for the hook's viewer
+  (read restricted, admins and `suppress_secured_categories_from_admin`,
+  group access).
+
+`t` also takes `{"key", "locale", "args"}` for interpolation, a route's
+input carries `base_path`, and a write with a bad token gets core's
+`["BAD CSRF"]` answer.
+
+The port: `discourse-taper-rs` branch `spike/wasm-guest`, `wasm/`, is
+`POST /taper/suggest.json` and its band route as a guest, a port of
+`suggest::submit`'s JSON path, `suggestions.rs` and the model queries it
+uses: about 500 lines against the SDK, 185 KiB built. What changed in
+the port:
+
+- the SQL moved over as it was (taper's own tables, adopted; `uploads`
+  through `[core_reads]`); typed rows became JSON objects, and dates
+  cross as text (`date::text`, `$1::date`, `to_char` for Rails' JSON
+  time);
+- core calls became host calls: `can_see_archive` is
+  `can_see_category(setting("taper_category_id"))`, the serializer's
+  users come from `users`, the sequence label from `t` with args;
+- the CSRF check left the plugin (the host does it before the call);
+- regex (`\bthe\b`, the segue suffix) was hand-written to keep the
+  module small; `chrono` stays for date parsing.
+
+`tests/wasm.rs` in taper-rs installs the guest alone and holds it to
+`tests/writes.rs`' JSON examples (correction, new source, new show with
+setlist text and its nearby shows, a claim and both refusals, login,
+token, bad kind, missing payload, an unknown show, an impossible date)
+and a hidden archive (a member gets 404, an admin gets through). All
+pass; the compiled-in suite still does (137).
+
+What did not fit, or was left out:
+
+- The HTML form and its thank-you page: they render in taper's layout
+  with core's head (`PageHead`), which a guest has no call for. A
+  `page_head` host call (core's icons, color schemes, theme CSS and
+  head/body tags) would cover it.
+- The reader's language (`?lang=` and the cookie): the guest answers in
+  the default locale. The cookie reaches the guest only if the host
+  passes cookies (it passes none), or a `reader_locale` in the input.
+- `invalid_parameters`' `Cache-Control: no-cache, no-store`: a guest
+  sets no headers but the content type.
+
 ## Productionizing estimate
 
 About three to four weeks for one person, on top of what is here:
