@@ -511,12 +511,88 @@ Open, for this part:
 - Outlet HTML goes into core's page as the guest wrote it: a guest can
   put a script on every topic page. Sanitize it, or accept it as part of
   what an admin approves when installing.
-- Guests can't write: no host call changes a row, so a job or a form
-  route has no effect beyond its answer. Own tables, migrations and
-  writes are the next step (taper's suggestions need them).
 - Route bodies are text; uploads and binary answers are not covered.
 - The outlet's guest is anonymous: plugin_api's outlets carry no
   guardian.
+
+## A plugin's own tables and SQL (spike/wasm-host)
+
+`src/plugin_wasm/db.rs`. A plugin with `migrations/*.sql` (or
+`database = true`) writes SQL of its own, and Postgres, not the host,
+keeps it in bounds.
+
+Per site, at the first hook call that needs it (before that call's time
+budget starts):
+
+- a login role `dpl_<name>_<8 hex of md5(database)>` (roles are the
+  cluster's; sites and test databases share one), `NOINHERIT`, with a
+  random password in `discourse_rs.plugin_roles`;
+- a schema `plugin_<name>` owned by the role and set as its search path
+  in that database;
+- `REVOKE ALL ON ALL TABLES IN SCHEMA public`, then a column-level
+  `GRANT SELECT (cols) ON public.<table>` per `[core_reads]` entry.
+  Credentials refuse the install (`DENIED`: `user_passwords`, API keys,
+  auth tokens, email tokens, second factors, `web_hooks.secret`, the AI
+  secrets, ...);
+- `migrations/*.sql` in file order, each once, as the role, recorded in
+  its own `schema_migrations`.
+
+The guest calls `query(sql, params)` (rows as JSON objects; a write needs
+RETURNING) and `execute(sql, params)` (rows affected). Both run on a pool
+of up to 4 connections logged in as the role, never on the app's
+connection: there, `SET ROLE` could be undone by `RESET ROLE` or
+`set_config('role', ...)`, which Postgres checks against the session
+user. Logged in as the role, `RESET ROLE` lands on the role.
+
+Per hook call, one transaction, begun at the first statement:
+
+- read only, except for jobs and routes other than GET and HEAD
+  (`execute` is refused outside routes and jobs);
+- committed only when the hook succeeds, so a route that fails after
+  writing leaves nothing;
+- `SET LOCAL statement_timeout` to what is left of the budget. The guest
+  can lift it, so the host also races each statement against the
+  deadline and cancels the backend (`pg_cancel_backend`; the app is
+  granted the role for that) and waits for it to stop rather than
+  dropping the connection mid-query;
+- a statement's own error (a constraint, a denied table) goes back to
+  the guest as an error it can handle; the time limit fails the hook.
+
+Connections go back to the pool through `RESET ALL`, so a session
+setting doesn't outlive its hook. Statements are unnamed (no prepared
+statement cache shared between guest SQL texts). Parameters bind by JSON
+type: integers as bigint, other numbers as double, strings as text,
+booleans, null untyped (Postgres types it from where it goes), arrays and
+objects as JSON text; anything else is cast in the statement
+(`$1::date`, `$2::jsonb`).
+
+Hooks that have no pool at hand (serializer keys, outlets, the homepage)
+find the site's pool by `current_database()`, which `crate::app`
+registers for every site: one more round trip for a plugin with a
+database.
+
+Tested in `tests/plugin_wasm_api.rs`: the echo guest migrates its
+`echoes` table, a route inserts with the user's id, a failing route's
+insert is rolled back, a job inserts, the schema is the role's, and the
+topic view key reads `public.topics` through the column grant. The probe
+routes show the role can't read `user_passwords`, an ungranted table or
+column, `discourse_rs` or another plugin's schema; can't update a core
+table or create in `public`; can't write under GET; can't `SET ROLE` or
+`set_config('role')` to the app's user (and `RESET ROLE` stays on the
+role); doesn't keep a `SET search_path`; and a `pg_sleep(5)` stops at the
+500 ms budget either way. `scripts/drop-stale-test-dbs` sweeps the roles
+of dropped test databases.
+
+Open:
+
+- The app's database user needs `CREATEROLE` (and `CREATE` on the
+  database) to install, or a separate install step that has them.
+- What a login role can still see: `pg_catalog` (table and role names),
+  functions `PUBLIC` may execute, temporary tables, large objects. Worth
+  a pass with `REVOKE ... FROM PUBLIC` where it matters.
+- Writes to core data (a post, a notification, a pg-bus message) are
+  host calls through core's own code, not built.
+- Uninstall (revoke, drop the schema and role) is not built.
 
 ## Productionizing estimate
 

@@ -39,6 +39,10 @@ unsafe extern "C" {
     fn host_setting(ptr: *const u8, len: usize) -> u64;
     #[link_name = "t"]
     fn host_t(ptr: *const u8, len: usize) -> u64;
+    #[link_name = "query"]
+    fn host_query(ptr: *const u8, len: usize) -> u64;
+    #[link_name = "execute"]
+    fn host_execute(ptr: *const u8, len: usize) -> u64;
 }
 
 /// Memory for `len` bytes the host writes into: a phase's input or a host
@@ -150,4 +154,72 @@ pub fn json_reply(status: u16, body: &Value) -> Value {
 /// charset=utf-8` for a page).
 pub fn reply(status: u16, content_type: &str, body: impl Into<String>) -> Value {
     json!({ "status": status, "content_type": content_type, "body": body.into() })
+}
+
+fn sql(
+    f: unsafe extern "C" fn(*const u8, usize) -> u64,
+    sql: &str,
+    params: &[Value],
+) -> Result<Value, String> {
+    let request = json!({ "sql": sql, "params": params });
+    let answer: Value = serde_json::from_slice(&call(f, request.to_string().as_bytes()))
+        .map_err(|e| format!("answer: {e}"))?;
+    match answer.get("error") {
+        Some(error) => Err(error.as_str().unwrap_or("error").to_string()),
+        None => Ok(answer["ok"].clone()),
+    }
+}
+
+/// Rows of a statement on the plugin's own connection (a SELECT, or a
+/// write with RETURNING), as objects. Parameters bind by their JSON type
+/// (integers as bigint, strings as text, null untyped); cast the rest in
+/// the statement (`$1::date`). The plugin's schema is on the search path;
+/// core tables are `public.<table>`, readable where `[core_reads]` grants.
+/// A statement's error comes back here; after one, the hook's transaction
+/// is aborted and later statements fail too.
+pub fn query(statement: &str, params: &[Value]) -> Result<Vec<Value>, String> {
+    let rows = sql(host_query, statement, params)?;
+    Ok(rows.as_array().cloned().unwrap_or_default())
+}
+
+/// A statement's rows affected. Only in routes (not under GET or HEAD,
+/// whose transaction is read only) and jobs.
+pub fn execute(statement: &str, params: &[Value]) -> Result<u64, String> {
+    let answer = sql(host_execute, statement, params)?;
+    Ok(answer["rows_affected"].as_u64().unwrap_or(0))
+}
+
+/// `application/x-www-form-urlencoded` pairs (a form's body, a query).
+pub fn form(encoded: &str) -> Vec<(String, String)> {
+    fn hex(b: u8) -> Option<u8> {
+        (b as char).to_digit(16).map(|d| d as u8)
+    }
+    fn decode(s: &str) -> String {
+        let bytes = s.as_bytes();
+        let mut out = Vec::with_capacity(bytes.len());
+        let mut i = 0;
+        while i < bytes.len() {
+            match bytes[i] {
+                b'+' => out.push(b' '),
+                b'%' if i + 2 < bytes.len() => match (hex(bytes[i + 1]), hex(bytes[i + 2])) {
+                    (Some(hi), Some(lo)) => {
+                        out.push(hi << 4 | lo);
+                        i += 2;
+                    }
+                    _ => out.push(b'%'),
+                },
+                b => out.push(b),
+            }
+            i += 1;
+        }
+        String::from_utf8_lossy(&out).into_owned()
+    }
+    encoded
+        .split('&')
+        .filter(|p| !p.is_empty())
+        .map(|pair| {
+            let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
+            (decode(k), decode(v))
+        })
+        .collect()
 }

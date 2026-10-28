@@ -376,3 +376,241 @@ async fn measure() {
         );
     }
 }
+
+fn encoded(pairs: &[(&str, &str)]) -> String {
+    form_urlencoded::Serializer::new(String::new())
+        .extend_pairs(pairs)
+        .finish()
+}
+
+/// A signed-in session and a token its writes pass with.
+async fn writer(st: &AppState) -> (String, String) {
+    let cookie = login_cookie(st, "user0").await;
+    let (status, token) = send(st, "/echo/token", Some(&cookie)).await;
+    assert_eq!(status, StatusCode::OK);
+    (cookie, token)
+}
+
+async fn post_form(
+    st: &AppState,
+    path: &str,
+    (cookie, token): &(String, String),
+    pairs: &[(&str, &str)],
+) -> (StatusCode, String) {
+    let builder = Request::post(path)
+        .header(header::COOKIE, cookie)
+        .header("x-csrf-token", token)
+        .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+    request(st, builder, &encoded(pairs)).await
+}
+
+/// One statement through the probe route, its `{"ok"}` or `{"error"}`.
+async fn probe(st: &AppState, write: Option<&(String, String)>, sql: &str) -> Value {
+    let (status, body) = match write {
+        Some(session) => post_form(st, "/echo/probe", session, &[("sql", sql)]).await,
+        None => {
+            send(
+                st,
+                &format!("/echo/probe?{}", encoded(&[("sql", sql)])),
+                None,
+            )
+            .await
+        }
+    };
+    assert_eq!(status, StatusCode::OK, "{sql}: {body}");
+    serde_json::from_str::<Value>(&body).unwrap()[0].clone()
+}
+
+fn denied(result: &Value, what: &str) {
+    let error = result["error"]
+        .as_str()
+        .unwrap_or_else(|| panic!("{what}: {result}"));
+    assert!(error.contains("permission denied"), "{what}: {error}");
+}
+
+/// Its migrations ran as its role, in its schema; a route writes its own
+/// rows, a failed one leaves none, and a job writes too.
+#[tokio::test]
+async fn a_guest_migrates_its_schema_and_writes_its_own_rows() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let session = writer(&st).await;
+    let user0: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'user0'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+
+    let (status, body) = post_form(&st, "/echo/echoes", &session, &[("body", "hello there")]).await;
+    assert_eq!((status, body.as_str()), (StatusCode::OK, r#"{"id":1}"#));
+    let (status, body) = post_form(&st, "/echo/echoes", &session, &[("body", "fail")]).await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
+    assert_eq!(
+        json_of(&st, "/echo/echoes.json").await,
+        json!([{"id": 1, "body": "hello there", "user_id": user0}]),
+        "the failed route's insert rolled back"
+    );
+
+    let mut conn = db.pool.acquire().await.unwrap();
+    discourse_rs::jobs::enqueue(&mut conn, "echo_job", json!({"body": "from a job"}))
+        .await
+        .unwrap();
+    assert_eq!(discourse_rs::jobs::drain(&st).await.unwrap(), 1);
+    let rows = json_of(&st, "/echo/echoes.json").await;
+    assert_eq!(rows[1]["body"], "from a job", "{rows}");
+
+    let database: String = sqlx::query_scalar("SELECT current_database()::text")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let owner: String = sqlx::query_scalar(
+        "SELECT nspowner::regrole::text FROM pg_namespace WHERE nspname = 'plugin_echo'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(owner, plugin_wasm::role_name("echo", &database));
+    let versions: Vec<String> =
+        sqlx::query_scalar("SELECT version FROM plugin_echo.schema_migrations")
+            .fetch_all(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(versions, vec!["0001_echoes".to_string()]);
+}
+
+/// What the role can't do: read credentials, ungranted core columns, the
+/// host's tables or another plugin's schema; write core tables or create
+/// in core's schema; write under GET; get the app's role back; keep a
+/// session setting; outlast its time limit.
+#[tokio::test]
+async fn a_guests_sql_stays_in_its_sandbox() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    for sql in [
+        "CREATE SCHEMA plugin_other",
+        "CREATE TABLE plugin_other.secrets (id int)",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    let app_user: String = sqlx::query_scalar("SELECT current_user::text")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let session = writer(&st).await;
+
+    let title = probe(&st, None, "SELECT title FROM public.topics WHERE id = 1").await;
+    assert!(
+        title["ok"][0]["title"].is_string(),
+        "the granted columns: {title}"
+    );
+    for (sql, what) in [
+        (
+            "SELECT password_hash FROM public.user_passwords LIMIT 1",
+            "credentials",
+        ),
+        (
+            "SELECT username FROM public.users LIMIT 1",
+            "an ungranted table",
+        ),
+        (
+            "SELECT user_id FROM public.topics LIMIT 1",
+            "an ungranted column",
+        ),
+        (
+            "SELECT * FROM discourse_rs.plugin_roles",
+            "the host's tables",
+        ),
+        (
+            "SELECT * FROM plugin_other.secrets",
+            "another plugin's schema",
+        ),
+    ] {
+        denied(&probe(&st, None, sql).await, what);
+    }
+    for (sql, what) in [
+        ("!UPDATE public.topics SET title = 'x'", "a core write"),
+        ("!CREATE TABLE public.evil (id int)", "core's schema"),
+        (&format!("!SET ROLE \"{app_user}\"") as &str, "SET ROLE"),
+        (
+            &format!("SELECT set_config('role', '{app_user}', false)") as &str,
+            "set_config",
+        ),
+    ] {
+        denied(&probe(&st, Some(&session), sql).await, what);
+    }
+    let read_only = probe(&st, None, "!INSERT INTO echoes (body) VALUES ('x')").await;
+    assert!(
+        read_only["error"]
+            .as_str()
+            .unwrap_or("")
+            .contains("read-only"),
+        "GET is read only: {read_only}"
+    );
+    // RESET ROLE goes back to the session's user: the plugin's own role.
+    let (status, body) = post_form(
+        &st,
+        "/echo/probe",
+        &session,
+        &[
+            ("sql", "!RESET ROLE"),
+            ("sql", "SELECT current_user::text AS u"),
+        ],
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let results: Value = serde_json::from_str(&body).unwrap();
+    assert!(
+        results[1]["ok"][0]["u"]
+            .as_str()
+            .unwrap()
+            .starts_with("dpl_echo_"),
+        "{results}"
+    );
+
+    // A session setting doesn't outlive the hook.
+    for _ in 0..3 {
+        probe(&st, None, "!SET search_path = public").await;
+        let path = probe(&st, None, "SELECT current_setting('search_path') AS p").await;
+        assert!(
+            !path.to_string().contains("public"),
+            "the role's search path again: {path}"
+        );
+    }
+
+    // A query past the time limit (500 ms) stops: by statement_timeout,
+    // an error the guest sees, or, where the guest lifted that, by the
+    // host cancelling it, which fails the route. The plugin's connections
+    // still work after.
+    let started = std::time::Instant::now();
+    let slept = probe(&st, None, "SELECT pg_sleep(5)").await;
+    assert!(
+        slept["error"]
+            .as_str()
+            .unwrap_or("")
+            .contains("statement timeout"),
+        "{slept}"
+    );
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(3),
+        "{:?}",
+        started.elapsed()
+    );
+    let started = std::time::Instant::now();
+    let lifted = encoded(&[
+        ("sql", "!SET LOCAL statement_timeout = 0"),
+        ("sql", "SELECT pg_sleep(5)"),
+    ]);
+    let (status, _) = send(&st, &format!("/echo/probe?{lifted}"), None).await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(3),
+        "{:?}",
+        started.elapsed()
+    );
+    for _ in 0..5 {
+        assert!(json_of(&st, "/echo/echoes.json").await.is_array());
+    }
+}

@@ -451,6 +451,7 @@ async fn measure() {
         settings: &settings,
         guardian: &guardian,
         i18n: Some(&state.i18n),
+        pool: None,
     };
     let posters = serde_json::json!({"35": {"posters": {"user_ids": [2, 2], "descriptions": {"2": ["Original Poster", "Most Recent Poster"]}, "last_poster_stays": true}, "last_post_user_id": 2, "data": {"answerers": [3], "answered": true}}});
     let tunings = [

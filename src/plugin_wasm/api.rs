@@ -212,6 +212,7 @@ impl plugin_api::Plugin for WasmPlugin {
             settings: &settings,
             guardian: &guardian,
             i18n: Some(&state.i18n),
+            pool: Some(&state.pool),
         };
         self.plugin
             .run(
@@ -238,6 +239,7 @@ impl plugin_api::Plugin for WasmPlugin {
             settings: ctx.settings,
             guardian,
             i18n: Some(ctx.i18n),
+            pool: None,
         };
         Ok(self
             .keys(&mut ctx, Phase::CurrentUser, Value::Null, &decl.keys)
@@ -258,6 +260,7 @@ impl plugin_api::Plugin for WasmPlugin {
             settings: ctx.settings,
             guardian,
             i18n: Some(ctx.i18n),
+            pool: None,
         };
         Ok(self
             .keys(
@@ -286,6 +289,7 @@ impl plugin_api::Plugin for WasmPlugin {
             settings: ctx.settings,
             guardian: &guardian,
             i18n: Some(ctx.i18n),
+            pool: None,
         };
         let result = self
             .plugin
@@ -325,6 +329,7 @@ impl plugin_api::Plugin for WasmPlugin {
             settings,
             guardian,
             i18n: None,
+            pool: None,
         };
         let result = self
             .plugin
@@ -432,6 +437,7 @@ impl Route<'_> {
             settings: &settings,
             guardian: self.guardian,
             i18n: Some(&state.i18n),
+            pool: Some(&state.pool),
         };
         let reply: Reply =
             serde_json::from_value(plugin.run(&mut ctx, "route", Phase::Route, payload).await?)

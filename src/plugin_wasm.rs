@@ -44,6 +44,9 @@ use crate::plugins::PosterInputs;
 use crate::site_settings::{SettingError, SiteSettings};
 
 mod api;
+mod db;
+
+pub use db::{register_site, role_name, schema_name};
 
 /// The ABI version this host speaks (`api` in the manifest).
 pub const API: u32 = 1;
@@ -194,6 +197,9 @@ impl Phase {
     fn allows(self, call: &str) -> bool {
         match self {
             Phase::BeforeSerialize | Phase::HomepageAvailable => matches!(call, "t" | "setting"),
+            // Writes only where a write is the point: routes (the
+            // transaction is read only under GET and HEAD) and jobs.
+            _ if call == "execute" => matches!(self, Phase::Route | Phase::Job),
             _ => true,
         }
     }
@@ -212,6 +218,10 @@ struct Pipeline {
 #[serde(deny_unknown_fields)]
 struct Manifest {
     plugin: ManifestPlugin,
+    /// SQL of its own (query, execute) with no migrations to say so: on
+    /// core's columns its `[core_reads]` grants.
+    #[serde(default)]
+    database: bool,
     #[serde(default)]
     limits: Limits,
     /// `read`: site settings the plugin may read with `setting`.
@@ -312,6 +322,8 @@ pub struct Files {
     /// `public/`, served at `/plugins/<name>/` as Rails serves a plugin's
     /// public directory.
     pub public: Option<std::path::PathBuf>,
+    /// `migrations/*.sql`: (file stem, SQL), in file order.
+    pub migrations: Vec<(String, String)>,
 }
 
 impl Files {
@@ -336,11 +348,32 @@ impl Files {
                 locales.push(std::fs::read_to_string(&path).map_err(|e| fail(&path, e))?);
             }
         }
+        let mut migrations = Vec::new();
+        let migration_dir = dir.join("migrations");
+        if migration_dir.is_dir() {
+            let mut paths: Vec<_> = std::fs::read_dir(&migration_dir)
+                .map_err(|e| fail(&migration_dir, e))?
+                .filter_map(|e| e.ok().map(|e| e.path()))
+                .filter(|p| p.extension().is_some_and(|x| x == "sql"))
+                .collect();
+            paths.sort();
+            for path in paths {
+                let version = path
+                    .file_stem()
+                    .map(|s| s.to_string_lossy().into_owned())
+                    .unwrap_or_default();
+                migrations.push((
+                    version,
+                    std::fs::read_to_string(&path).map_err(|e| fail(&path, e))?,
+                ));
+            }
+        }
         let public = dir.join("public");
         Ok(Files {
             settings_yml,
             locales,
             public: public.is_dir().then_some(public),
+            migrations,
         })
     }
 
@@ -391,6 +424,8 @@ pub struct Limits {
     pub time_ms: u64,
     /// Host calls per phase call.
     pub host_calls: u32,
+    /// Wall-clock budget of one job.
+    pub job_time_ms: u64,
 }
 
 impl Default for Limits {
@@ -399,6 +434,7 @@ impl Default for Limits {
             memory_mib: 16,
             time_ms: 50,
             host_calls: 64,
+            job_time_ms: 30_000,
         }
     }
 }
@@ -428,6 +464,9 @@ pub struct Plugin {
     outlets: Outlets,
     homepage: Option<HomepageDecl>,
     files: Files,
+    /// Its own schema and SQL (db.rs).
+    database: bool,
+    pools: db::Pools,
     pre: InstancePre<HostState>,
 }
 
@@ -713,6 +752,9 @@ pub struct Ctx<'a> {
     /// None where the hook has no translations at hand (homepage.available,
     /// which may call `setting` only).
     pub i18n: Option<&'a I18n>,
+    /// The site's pool, where the caller has it; otherwise a plugin with a
+    /// database finds it from the connection (db::site_pool).
+    pub pool: Option<&'a sqlx::PgPool>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -749,6 +791,20 @@ enum HostCall {
     },
     Setting(String),
     T(String),
+    /// SQL on the plugin's own connection (db.rs): rows, or rows affected.
+    Sql {
+        execute: bool,
+        sql: String,
+        params: Vec<Value>,
+    },
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SqlArgs {
+    sql: String,
+    #[serde(default)]
+    params: Vec<Value>,
 }
 
 #[derive(Deserialize)]
@@ -760,7 +816,7 @@ struct RowsArgs {
 }
 
 /// The import module's functions, each granted by the manifest.
-const HOST_CALLS: [&str; 4] = ["rows", "core_rows", "setting", "t"];
+const HOST_CALLS: [&str; 6] = ["rows", "core_rows", "setting", "t", "query", "execute"];
 
 impl Plugin {
     /// Compiles `wasm` and links it against the calls `manifest` grants;
@@ -822,6 +878,7 @@ impl Plugin {
                 route.path, route.method
             )));
         }
+        let database = manifest.database || !files.migrations.is_empty();
         let module = Module::new(&runtime.engine, wasm).map_err(fail)?;
         let mut linker: Linker<HostState> = Linker::new(&runtime.engine);
         for call in HOST_CALLS {
@@ -829,6 +886,7 @@ impl Plugin {
                 "rows" => !manifest.tables.is_empty(),
                 "core_rows" => !manifest.core_reads.is_empty(),
                 "setting" => !manifest.settings.read.is_empty(),
+                "query" | "execute" => database,
                 _ => true,
             };
             if granted {
@@ -891,6 +949,8 @@ impl Plugin {
             outlets: manifest.outlets,
             homepage: manifest.homepage,
             files,
+            database,
+            pools: db::Pools::default(),
             pre,
         })
     }
@@ -913,6 +973,10 @@ impl Plugin {
             "staff": ctx.guardian.is_staff(),
             "admin": ctx.guardian.is_admin(),
         });
+        let route_writes = !matches!(
+            payload.get("method").and_then(Value::as_str),
+            Some("GET" | "HEAD")
+        );
         let input = serde_json::to_vec(&json!({ "payload": payload, "guardian": guardian }))
             .map_err(|e| e.to_string())?;
         let (requests, mut incoming) = mpsc::unbounded_channel();
@@ -928,29 +992,79 @@ impl Plugin {
                 .tables(4)
                 .build(),
         };
+        // The site's install (role, schema, migrations) before the budget
+        // starts: only the first call on a site waits for it.
+        let databases = if self.database {
+            let app = match ctx.pool {
+                Some(pool) => pool.clone(),
+                None => db::site_pool(&mut *ctx.conn).await?,
+            };
+            let pool = self.db_pool(&app).await?;
+            Some((pool, app))
+        } else {
+            None
+        };
+        let writes = match phase {
+            Phase::Job => true,
+            Phase::Route => route_writes,
+            _ => false,
+        };
+        let time_ms = match phase {
+            Phase::Job => self.limits.job_time_ms,
+            _ => self.limits.time_ms,
+        };
         let started = std::time::Instant::now();
+        let deadline = tokio::time::Instant::now() + Duration::from_millis(time_ms);
         let export = format!("{pipeline}.{}", phase.name());
-        let guest = self.call(state, export, input);
+        let guest = self.call(state, export, input, time_ms);
         // Beside the guest on this task: the host calls it sends, until
-        // its store (and the sender in it) is gone.
+        // its store (and the sender in it) is gone. SQL opens the hook's
+        // transaction on the plugin's pool at its first statement.
         let serve = async {
+            let mut tx: Option<db::HookTx> = None;
             while let Some(request) = incoming.recv().await {
-                let answer = answer(ctx, &self.grants, request.call).await;
+                let answer = match request.call {
+                    HostCall::Sql {
+                        execute,
+                        sql,
+                        params,
+                    } => {
+                        sql_call(
+                            databases.as_ref(),
+                            &mut tx,
+                            writes,
+                            deadline,
+                            execute,
+                            &sql,
+                            &params,
+                        )
+                        .await
+                    }
+                    call => answer(ctx, &self.grants, call).await,
+                };
                 let _ = request.reply.send(answer);
             }
+            tx
         };
-        let (output, ()) = tokio::join!(guest, serve);
+        let (output, tx) = tokio::join!(guest, serve);
         tracing::debug!(plugin = %self.name, phase = phase.name(), us = started.elapsed().as_micros() as u64, "plugin phase");
-        let output = output.map_err(|e| format!("{e:#}"))?;
-        let mut envelope: Value =
-            serde_json::from_slice(&output).map_err(|e| format!("output: {e}"))?;
-        if let Some(error) = envelope.get("error") {
-            return Err(format!("plugin error: {error}"));
+        let result = output.map_err(|e| format!("{e:#}")).and_then(|output| {
+            let mut envelope: Value =
+                serde_json::from_slice(&output).map_err(|e| format!("output: {e}"))?;
+            if let Some(error) = envelope.get("error") {
+                return Err(format!("plugin error: {error}"));
+            }
+            match envelope.get_mut("ok") {
+                Some(ok) => Ok(ok.take()),
+                None => Err("output is neither ok nor error".into()),
+            }
+        });
+        // A hook's writes stand only if it succeeded; dropping the
+        // transaction rolls it back.
+        if let (Ok(_), Some(tx)) = (&result, tx) {
+            tx.commit().await?;
         }
-        match envelope.get_mut("ok") {
-            Some(ok) => Ok(ok.take()),
-            None => Err("output is neither ok nor error".into()),
-        }
+        result
     }
 
     async fn call(
@@ -958,8 +1072,8 @@ impl Plugin {
         state: HostState,
         export: String,
         input: Vec<u8>,
+        time_ms: u64,
     ) -> wasmtime::Result<Vec<u8>> {
-        let time_ms = self.limits.time_ms;
         let mut store = Store::new(self.pre.module().engine(), state);
         store.limiter(|s| &mut s.limits);
         store.set_epoch_deadline(time_ms.div_ceil(TICK.as_millis() as u64));
@@ -1052,8 +1166,50 @@ fn parse(call: &str, request: &[u8]) -> Result<HostCall, String> {
         }
         "setting" => HostCall::Setting(text()?),
         "t" => HostCall::T(text()?),
+        "query" | "execute" => {
+            let args: SqlArgs =
+                serde_json::from_slice(request).map_err(|e| format!("{call}: {e}"))?;
+            HostCall::Sql {
+                execute: call == "execute",
+                sql: args.sql,
+                params: args.params,
+            }
+        }
         other => return Err(format!("no host call {other}")),
     })
+}
+
+/// `query` or `execute` on the plugin's own connection, in the hook's
+/// transaction (begun at its first statement). The statement's own error
+/// goes back to the guest as `{"error"}`; the time limit fails the hook.
+async fn sql_call(
+    databases: Option<&(sqlx::PgPool, sqlx::PgPool)>,
+    tx: &mut Option<db::HookTx>,
+    writes: bool,
+    deadline: tokio::time::Instant,
+    execute: bool,
+    sql: &str,
+    params: &[Value],
+) -> Result<Vec<u8>, String> {
+    let Some((pool, app)) = databases else {
+        return Err("this plugin has no database".into());
+    };
+    let tx = match tx {
+        Some(tx) => tx,
+        None => tx.insert(db::HookTx::begin(pool, app, writes, deadline).await?),
+    };
+    let answer = if execute {
+        tx.execute(sql, params, deadline)
+            .await?
+            .map(|n| json!({ "rows_affected": n }))
+    } else {
+        tx.query(sql, params, deadline).await?.map(Value::from)
+    };
+    let envelope = match answer {
+        Ok(ok) => json!({ "ok": ok }),
+        Err(error) => json!({ "error": error }),
+    };
+    serde_json::to_vec(&envelope).map_err(|e| e.to_string())
 }
 
 /// A host call, answered on the request's connection.
@@ -1085,6 +1241,8 @@ async fn answer(ctx: &mut Ctx<'_>, grants: &Grants, call: HostCall) -> Result<Ve
             .unwrap_or(&key)
             .as_bytes()
             .to_vec()),
+        // Plugin::run answers SQL itself, on the plugin's connection.
+        HostCall::Sql { .. } => Err("SQL is not answered here".into()),
     }
 }
 

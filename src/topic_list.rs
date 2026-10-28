@@ -995,6 +995,7 @@ impl TopicListSerializer<'_> {
             settings: self.settings,
             guardian: self.guardian,
             i18n: Some(self.i18n),
+            pool: None,
         };
         Ok(wasm
             .topic_list_load(&mut ctx, facts, posters, &last_posters)
@@ -1024,6 +1025,7 @@ impl TopicListSerializer<'_> {
             settings: self.settings,
             guardian: self.guardian,
             i18n: Some(self.i18n),
+            pool: None,
         };
         let ran = wasm.topic_list_keys(&mut ctx, &mut page).await;
         for (key, value) in page.keys(t.id) {
