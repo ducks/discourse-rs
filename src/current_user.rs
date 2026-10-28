@@ -881,6 +881,17 @@ pub async fn serialize(
         let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
         crate::plugins::poll::current_user_keys(settings, &guardian, &mut out)?;
     }
+    // The installed plugins' keys (add_to_serializer(:current_user)).
+    if !crate::plugin_api::enabled(settings)?.is_empty() {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        let mut ctx = crate::plugin_api::Ctx {
+            conn: &mut *conn,
+            settings,
+            i18n: &state.i18n,
+            base_path: state.config.globals.relative_url_root(),
+        };
+        crate::plugin_api::current_user_fields(&mut ctx, &guardian, &mut out).await?;
+    }
     Ok(Value::Object(out))
 }
 

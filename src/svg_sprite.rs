@@ -316,6 +316,7 @@ pub async fn inputs(
     let custom = merge(&[&r.plugin, &theme_svgs(conn, &theme_ids).await?]);
     let mut icons: Vec<String> = settings_icons(defs, settings);
     icons.extend(r.plugin_icons.iter().cloned());
+    icons.extend(crate::plugin_api::svg_icons().map(str::to_string));
     // plugin_icon_sources: the enabled plugins' blocks, Boards' columns.
     if settings.get("boards_enabled").is_ok_and(|v| v.truthy()) {
         let columns: Vec<String> = sqlx::query_scalar(

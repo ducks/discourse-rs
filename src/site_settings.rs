@@ -354,11 +354,18 @@ pub struct Definitions {
 
 impl Definitions {
     /// Core's settings, then each bundled plugin's, then those plugins
-    /// register from Ruby (recorded, crate::setting_enums).
+    /// register from Ruby (recorded, crate::setting_enums), then the
+    /// installed plugins' (crate::plugin_api).
     pub fn vendored() -> Result<Self, String> {
         let mut defs = Self::parse(SITE_SETTINGS_YML)?;
         defs.add_plugins(PLUGIN_SETTINGS_YML)?;
         defs.add_dynamic(crate::setting_enums::dynamic_settings())?;
+        for plugin in crate::plugin_api::registered() {
+            if let Some(yml) = plugin.settings_yml() {
+                defs.add_plugins(yml)
+                    .map_err(|e| format!("plugin {}: {e}", plugin.name()))?;
+            }
+        }
         Ok(defs)
     }
 

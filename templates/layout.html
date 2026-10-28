@@ -161,6 +161,10 @@
     {%- if !chrome.theme_stylesheets.is_empty() %}
     {{ chrome.theme_stylesheets|safe }}
     {%- endif %}
+    {#- The installed plugins' stylesheets (plugin_api). -#}
+    {%- if !chrome.plugin_stylesheets.is_empty() %}
+    {{ chrome.plugin_stylesheets|safe }}
+    {%- endif %}
     {#- The current-user-mention-css initializer: the viewer's own mentions. -#}
     {% if let Some(v) = viewer %}
     <style id="current-user-mention-css">.mention[href="{{ base_path }}/u/{{ v.username }}" i] { background: var(--tertiary-400); }</style>

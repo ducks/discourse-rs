@@ -5,6 +5,8 @@
 use sqlx::PgConnection;
 
 use crate::AppError;
+use crate::guardian::Guardian;
+use crate::plugin_api;
 use crate::site_settings::SiteSettings;
 
 /// `UserOption::HOMEPAGES` (-1 is the custom homepage, resolved below).
@@ -25,14 +27,16 @@ const ANONYMOUS_MENU_ITEMS: &[&str] = &["latest", "top", "categories", "hot", "v
 /// `current_user&.user_option&.homepage || HomepageHelper.resolve`.
 ///
 /// The theme's `custom_homepage` modifier is read for the default theme and
-/// its components, the theme the port draws every page with. The plugin
-/// registry's homepage options and `custom_homepage_enabled` modifier have
-/// nothing registered: no bundled plugin adds either.
+/// its components, the theme the port draws every page with. The
+/// homepage options are the installed plugins' (plugin_api::Homepage); the
+/// `custom_homepage_enabled` modifier has nothing registered: no bundled
+/// plugin adds it.
 pub async fn current(
     conn: &mut PgConnection,
     settings: &SiteSettings,
-    user_id: Option<i32>,
+    guardian: &Guardian,
 ) -> Result<String, AppError> {
+    let user_id = guardian.user_id();
     if let Some(user_id) = user_id {
         let homepage_id: Option<i32> =
             sqlx::query_scalar("SELECT homepage_id FROM user_options WHERE user_id = $1")
@@ -66,18 +70,52 @@ pub async fn current(
     if custom {
         return Ok("custom".to_string());
     }
-    let homepage = homepage(settings)?;
-    if user_id.is_some() {
+    let homepage = if user_id.is_some() {
+        homepage(settings)?
+    } else {
+        anonymous_homepage(settings)?
+    };
+    if plugin_api::homepage_available(conn, settings, guardian, &homepage).await? {
         return Ok(homepage);
     }
-    // SiteSetting.anonymous_homepage
-    if ANONYMOUS_MENU_ITEMS.contains(&homepage.as_str()) {
+    // top_menu_homepage
+    let names = top_menu_names(settings)?;
+    Ok(if user_id.is_some() {
+        names.into_iter().next()
+    } else {
+        names
+            .into_iter()
+            .find(|n| ANONYMOUS_MENU_ITEMS.contains(&n.as_str()))
+    }
+    .unwrap_or_default())
+}
+
+/// `SiteSetting.anonymous_homepage`: the homepage when an anonymous filter
+/// or a plugin homepage open to anonymous visitors, else the first
+/// anonymous top menu item.
+fn anonymous_homepage(settings: &SiteSettings) -> Result<String, AppError> {
+    let homepage = homepage(settings)?;
+    if ANONYMOUS_MENU_ITEMS.contains(&homepage.as_str())
+        || plugin_api::homepages(settings)?
+            .iter()
+            .any(|(_, h)| h.id == homepage && h.anonymous)
+    {
         return Ok(homepage);
     }
     Ok(top_menu_names(settings)?
         .into_iter()
         .find(|n| ANONYMOUS_MENU_ITEMS.contains(&n.as_str()))
         .unwrap_or_default())
+}
+
+/// The plugin homepage this visitor's homepage is, if any.
+pub fn plugin_homepage(
+    settings: &SiteSettings,
+    homepage: &str,
+) -> Result<Option<plugin_api::HomepageOption>, AppError> {
+    Ok(plugin_api::homepages(settings)?
+        .into_iter()
+        .find(|(_, h)| h.id == homepage))
 }
 
 /// `SiteSetting.homepage`: default_homepage when it is one of
@@ -93,8 +131,9 @@ fn homepage(settings: &SiteSettings) -> Result<String, AppError> {
         .unwrap_or_default())
 }
 
-/// `TopMenu.homepage_choices`: `choices | (Discourse.filters - unread)`,
-/// discourse-topic-voting's `votes` among the filters.
+/// `HomepageSiteSetting.choices`: `TopMenu.homepage_choices`
+/// (`choices | (Discourse.filters - unread)`, discourse-topic-voting's
+/// `votes` among the filters), then the plugins' homepages.
 fn homepage_choices(settings: &SiteSettings) -> Result<Vec<&'static str>, AppError> {
     let mut choices = vec![
         "latest",
@@ -111,6 +150,7 @@ fn homepage_choices(settings: &SiteSettings) -> Result<Vec<&'static str>, AppErr
     if !settings.get("enable_unified_new")?.truthy() {
         choices.push("unread");
     }
+    choices.extend(plugin_api::homepages(settings)?.iter().map(|(_, h)| h.id));
     Ok(choices)
 }
 

@@ -115,6 +115,14 @@ impl I18n {
         for (name, src) in OTHER_LOCALE_YMLS {
             i18n.add_yml(name, src)?;
         }
+        // The installed plugins' (crate::plugin_api), last, in whatever
+        // locales they carry.
+        for plugin in crate::plugin_api::registered() {
+            let name = format!("plugin {}", plugin.name());
+            for src in plugin.locale_ymls() {
+                i18n.add_yml(&name, src)?;
+            }
+        }
         Ok(i18n)
     }
 

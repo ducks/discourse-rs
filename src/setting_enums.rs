@@ -123,6 +123,9 @@ pub async fn runtime(
                     "value": "ai-conversations",
                 }));
             }
+            for (_, homepage) in crate::plugin_api::homepages(cx.settings)? {
+                values.push(json!({ "name": homepage.name, "value": homepage.id }));
+            }
             (json!(values), true)
         }
         _ => return Err(Unsupported("site setting values of an unported enum class").into()),

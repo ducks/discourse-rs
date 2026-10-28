@@ -709,6 +709,59 @@ pub async fn latest_json(
 /// categories#index, finish_installation#index while has_login_hint,
 /// home_page#custom and home_page#blank. The routes take JSON as well as
 /// HTML, by `?format=json` or the Accept header.
+/// `/`: HomePageConstraint's routes. A plugin's homepage is the plugin's
+/// route at its path; every other homepage is front_page's. Resolved here
+/// only while default_homepage names a plugin's, the one way a visitor's
+/// homepage can be one.
+pub async fn root(
+    State(state): State<AppState>,
+    request: axum::extract::Request,
+) -> Result<Response, AppError> {
+    let (mut parts, body) = request.into_parts();
+    let AuthGuardian(guardian) =
+        <AuthGuardian as axum::extract::FromRequestParts<AppState>>::from_request_parts(
+            &mut parts, &state,
+        )
+        .await?;
+    let plugin = {
+        let mut conn = state.pool.acquire().await?;
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        let configured = settings.get("default_homepage")?.to_s();
+        let named = crate::plugin_api::homepages(&settings)?
+            .iter()
+            .any(|(_, h)| h.id == configured);
+        if !named || settings.get("has_login_hint")?.truthy() {
+            None
+        } else {
+            let homepage = crate::homepage::current(&mut conn, &settings, &guardian).await?;
+            crate::homepage::plugin_homepage(&settings, &homepage)?
+        }
+    };
+    let Some((plugin, option)) = plugin else {
+        return front_page(
+            State(state),
+            AuthGuardian(guardian),
+            parts.headers,
+            parts.uri,
+        )
+        .await;
+    };
+    let target = match parts.uri.query() {
+        Some(query) => format!("{}?{query}", option.path),
+        None => option.path.to_string(),
+    };
+    parts.uri = target
+        .parse()
+        .map_err(|_| Unsupported("a plugin homepage path that is not a URI"))?;
+    let request = axum::extract::Request::from_parts(parts, body);
+    Ok(
+        tower::ServiceExt::oneshot(plugin.routes().with_state(state), request)
+            .await
+            .into_response(),
+    )
+}
+
 pub async fn front_page(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -728,7 +781,7 @@ pub async fn front_page(
             }
             return super::finish_installation::index_page(&state, &guardian, &uri).await;
         }
-        crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?
+        crate::homepage::current(&mut conn, &settings, &guardian).await?
     };
     // Another format is Rails' 406 page, or markdown, neither ported.
     if uri
@@ -912,7 +965,7 @@ pub async fn latest(
             &settings.get("short_site_description")?.to_s(),
         )
     } else {
-        let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+        let homepage = crate::homepage::current(&mut conn, &settings, &guardian).await?;
         let token = page.chrome.topics_title_token("latest", &homepage);
         crate::html::document_title(token.as_deref(), &page.site_title, "")
     };
@@ -1506,7 +1559,7 @@ async fn categories_response(
         crate::html::categories_page(&mut conn, &state.i18n, settings.emojis(), site, &doc).await?;
     // DiscoveryCategoriesRoute#titleToken: none when categories is the
     // homepage.
-    let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+    let homepage = crate::homepage::current(&mut conn, &settings, &guardian).await?;
     let token = (homepage != "categories").then(|| page.chrome.t("filters.categories.title"));
     page.title = crate::html::document_title(
         token.as_deref(),
@@ -1974,7 +2027,7 @@ async fn front_list(
         state.config.globals.relative_url_root(),
         kind.name(),
     )?;
-    let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+    let homepage = crate::homepage::current(&mut conn, &settings, &guardian).await?;
     let token = page.chrome.topics_title_token(kind.name(), &homepage);
     page.title = crate::html::document_title(
         token.as_deref(),

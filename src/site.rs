@@ -342,8 +342,7 @@ impl Site<'_> {
             self.anonymous_list_filters(),
         );
         out.insert("homepage_choices".into(), self.homepage_choices()?);
-        // DiscoursePluginRegistry.homepage_options: plugins only.
-        out.insert("homepage_options".into(), json!([]));
+        out.insert("homepage_options".into(), self.homepage_options()?);
         out.insert("periods".into(), str_list(PERIODS));
         out.insert("top_menu_items".into(), self.top_menu_items());
         out.insert(
@@ -652,8 +651,9 @@ impl Site<'_> {
         )
     }
 
-    /// `HomepageSiteSetting.choices` = `TopMenu.homepage_choices` (no
-    /// plugin homepages): `TopMenu.choices | (filters - ["unread"])`.
+    /// `HomepageSiteSetting.choices` = `TopMenu.homepage_choices`
+    /// (`TopMenu.choices | (filters - ["unread"])`) and the plugins'
+    /// homepages.
     fn homepage_choices(&self) -> Result<Value, SiteError> {
         let mut choices: Vec<&str> = vec![
             "latest",
@@ -674,7 +674,21 @@ impl Site<'_> {
                 choices.push(f);
             }
         }
+        for (_, homepage) in crate::plugin_api::homepages(self.settings)? {
+            choices.push(homepage.id);
+        }
         Ok(json!(choices))
+    }
+
+    /// `DiscoursePluginRegistry.homepage_options`, each with
+    /// `HomepageHelper.option_path` (a plain path, as a plugin gives it).
+    fn homepage_options(&self) -> Result<Value, SiteError> {
+        Ok(json!(
+            crate::plugin_api::homepages(self.settings)?
+                .iter()
+                .map(|(_, h)| json!({ "id": h.id, "path": h.path, "server_side": h.server_side }))
+                .collect::<Vec<_>>()
+        ))
     }
 
     /// `Discourse.top_menu_items`: core's filters + categories, memoized

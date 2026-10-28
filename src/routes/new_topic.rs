@@ -161,7 +161,7 @@ async fn show(
     // keeping the query params the discovery routes know.
     let (homepage, open) = {
         let mut conn = state.pool.acquire().await?;
-        let homepage = crate::homepage::current(&mut conn, &settings, guardian.user_id()).await?;
+        let homepage = crate::homepage::current(&mut conn, &settings, &guardian).await?;
         let open = match route {
             Route::Topic => guardian.can_create_topic(&mut conn, &settings).await?,
             Route::Message => true,

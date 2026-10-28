@@ -263,6 +263,50 @@ mod tests {
         let css = compile("@import \"theme-entrypoint/common\";", Some(&theme)).unwrap();
         assert_eq!(css, "a{y:2}b{x:1}");
     }
+
+    /// Horizon's shape: the entrypoint `@import`s a theme file that
+    /// `@use`s core's lib/viewport, which has an import-only twin that
+    /// errors.
+    #[test]
+    fn a_theme_file_imported_by_the_entrypoint_can_use_core_libs() {
+        let theme = ThemeFiles::from_exported([
+            (
+                "common/common.scss".to_string(),
+                "@import \"buttons\";".to_string(),
+            ),
+            (
+                "stylesheets/buttons.scss".to_string(),
+                "@use \"lib/viewport\"; a{ @include viewport.from(sm) { y:2 } }".to_string(),
+            ),
+        ]);
+        let css = compile("@import \"theme-entrypoint/common\";", Some(&theme));
+        assert!(css.is_ok(), "{css:?}");
+        // With the prelude the stylesheet manager puts first.
+        let colors: Vec<(String, String)> = [
+            ("primary", "222"),
+            ("secondary", "fff"),
+            ("tertiary", "08c"),
+            ("quaternary", "e45735"),
+            ("header_background", "fff"),
+            ("header_primary", "333"),
+            ("highlight", "ffff4d"),
+            ("selected", "d1f0ff"),
+            ("hover", "f2f2f2"),
+            ("danger", "c80001"),
+            ("success", "090"),
+            ("love", "fa6c8d"),
+        ]
+        .iter()
+        .map(|(n, h)| (n.to_string(), h.to_string()))
+        .collect();
+        let prelude = prepended_scss(&colors, "http://localhost/images");
+        let css = compile(
+            &format!("{prelude}@import \"theme-entrypoint/common\";"),
+            Some(&theme),
+        );
+        assert!(css.is_ok(), "{css:?}");
+        assert!(compile(&prelude, None).is_ok(), "the prelude alone");
+    }
 }
 
 /// crates/grass_compiler/PATCHES.md: each patch against what dart-sass
@@ -316,6 +360,33 @@ mod grass_patches {
         // An explicit extension is looked up in the load paths too.
         assert_eq!(compile("@import \"other.scss\";"), "b{y:from-load-path}");
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    /// A `@use` in a file that was `@import`ed is still a `@use`: the
+    /// prelude imports common/foundation/mixins, which uses lib/viewport.
+    #[test]
+    fn a_use_inside_an_imported_file_skips_import_only_files() {
+        let dir = files(
+            "nested-use",
+            &[
+                (
+                    "lib/_viewport.scss",
+                    "@mixin from($bp) { @media (min-width: 1px) { @content; } }",
+                ),
+                (
+                    "lib/viewport.import.scss",
+                    "@error \"lib/viewport should be accessed via @use not @import\";",
+                ),
+                ("common/_mixins.scss", "@use \"lib/viewport\";\n.m{x:1}"),
+            ],
+        );
+        let options = grass::Options::default()
+            .style(grass::OutputStyle::Compressed)
+            .quiet(true)
+            .load_path(&dir);
+        let css = grass::from_string("@import \"common/mixins\";".to_string(), &options);
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert_eq!(css.unwrap(), ".m{x:1}");
     }
 
     #[test]

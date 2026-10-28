@@ -204,7 +204,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
         )
-        .route("/", cached!(get(list::front_page)))
+        .route("/", cached!(get(list::root)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))
         .route("/top", cached!(get(list::top)))
@@ -2837,6 +2837,17 @@ pub fn router(state: &AppState) -> Router<AppState> {
             ServeDir::new(src.join("app/assets/images/push-notifications")),
         );
     }
+    // The installed plugins' routes, under core's filters like its own.
+    for (index, plugin) in crate::plugin_api::registered().iter().enumerate() {
+        router = router.merge(
+            plugin
+                .routes()
+                .route_layer(axum::middleware::from_fn_with_state(
+                    (state.clone(), index),
+                    plugin_gate,
+                )),
+        );
+    }
     router
         .nest_service("/images", images)
         // redirect_to_profile_if_required, after the login checks.
@@ -2866,6 +2877,32 @@ pub fn router(state: &AppState) -> Router<AppState> {
             state.clone(),
             permalinks::constraint,
         ))
+}
+
+/// `requires_plugin`: an installed plugin's routes answer 404 while it is
+/// disabled.
+async fn plugin_gate(
+    axum::extract::State((state, index)): axum::extract::State<(AppState, usize)>,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::response::IntoResponse;
+    let enabled = async {
+        let mut conn = state.pool.acquire().await?;
+        let settings = crate::site_settings::SiteSettings::load(
+            &mut conn,
+            &state.site_setting_defs,
+            &state.config.globals,
+        )
+        .await?;
+        crate::plugin_api::is_enabled(crate::plugin_api::registered()[index].as_ref(), &settings)
+    }
+    .await;
+    match enabled {
+        Ok(true) => next.run(request).await,
+        Ok(false) => topics::not_found_response(&state),
+        Err(e) => e.into_response(),
+    }
 }
 
 /// `Rack::MethodOverride`: a POST with a form `_method` (or the
