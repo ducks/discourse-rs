@@ -49,7 +49,7 @@ fn echo_wasm() -> Vec<u8> {
     std::fs::read(path).unwrap()
 }
 
-fn install() {
+fn echo_registry() -> Registry {
     let plugin = Plugin::load_dir(
         plugin_wasm::runtime().unwrap(),
         &root().join("plugins/echo"),
@@ -58,6 +58,11 @@ fn install() {
     .unwrap();
     let mut registry = Registry::default();
     registry.add(plugin);
+    registry
+}
+
+fn install() {
+    let registry = echo_registry();
     discourse_rs::plugin_api::install(registry.api_plugins()).unwrap();
     plugin_wasm::install(registry);
 }
@@ -687,6 +692,93 @@ async fn a_guest_keeps_to_its_transaction_and_leaves_no_session_behind() {
 /// A database where every role may still create in public (one upgraded
 /// from PostgreSQL 14 or older) gets no plugin roles: a plugin could
 /// shadow what the app's SQL resolves to.
+/// Its temporary files are capped where its own SET can't lift them; what
+/// any role may set on itself (password, session defaults) lasts only
+/// until the next boot's install.
+#[tokio::test]
+async fn a_guest_cannot_lift_its_limits_and_what_it_sets_on_its_role_goes_at_boot() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let session = writer(&st).await;
+
+    let shown = probe(
+        &st,
+        None,
+        "SELECT current_setting('temp_file_limit') AS temp_file_limit",
+    )
+    .await;
+    assert_eq!(shown["ok"][0]["temp_file_limit"], "1GB", "{shown}");
+    denied(&probe(&st, None, "!SET temp_file_limit = -1").await, "SET");
+    denied(
+        &probe(
+            &st,
+            None,
+            "SELECT set_config('temp_file_limit', '-1', true)",
+        )
+        .await,
+        "set_config",
+    );
+    denied(
+        &probe(
+            &st,
+            Some(&session),
+            "!ALTER ROLE CURRENT_USER RESET temp_file_limit",
+        )
+        .await,
+        "a role default",
+    );
+
+    let role = plugin_wasm::role_name("echo", &db.name());
+    let password = || async {
+        sqlx::query_scalar::<_, String>("SELECT rolpassword FROM pg_authid WHERE rolname = $1")
+            .bind(&role)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap()
+    };
+    let settings = || async {
+        sqlx::query_scalar::<_, String>(
+            "SELECT array_to_string(setconfig, ';') FROM pg_db_role_setting s \
+             JOIN pg_roles r ON r.oid = s.setrole WHERE r.rolname = $1 \
+             ORDER BY s.setdatabase",
+        )
+        .bind(&role)
+        .fetch_all(&db.pool)
+        .await
+        .unwrap()
+        .join(";")
+    };
+    for sql in [
+        "!ALTER ROLE CURRENT_USER PASSWORD 'the guests own'".to_string(),
+        "!ALTER ROLE CURRENT_USER SET work_mem = '4GB'".to_string(),
+        format!(
+            "!ALTER ROLE CURRENT_USER IN DATABASE \"{}\" SET search_path = public",
+            db.name()
+        ),
+    ] {
+        let result = probe(&st, Some(&session), &sql).await;
+        assert!(result["ok"].is_number(), "{sql}: {result}");
+    }
+    let guests = password().await;
+    let set = settings().await;
+    assert!(
+        set.contains("work_mem=4GB") && set.contains("search_path=public"),
+        "{set}"
+    );
+
+    // A restart: the plugin loaded again, installed at boot.
+    plugin_wasm::install(echo_registry());
+    plugin_wasm::install_databases(&db.pool).await.unwrap();
+    assert_ne!(password().await, guests);
+    let set = settings().await;
+    assert_eq!(
+        set, "temp_file_limit=1GB;search_path=plugin_echo, public",
+        "the install's, and only those"
+    );
+}
+
 #[tokio::test]
 async fn no_plugin_database_where_everyone_creates_in_public() {
     install();
@@ -718,7 +810,7 @@ async fn an_app_role_with_createrole_installs_plugin_databases() {
     install();
     let db = TestDb::new().await;
     set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
-    let app = app_role(&db, true).await;
+    let app = app_role(&db, true, true).await;
     plugin_wasm::install_databases(&app).await.unwrap();
     let st = state(app.clone(), config(RailsEnv::Test, &[])).await;
     let session = writer(&st).await;
@@ -733,17 +825,28 @@ async fn an_app_role_with_createrole_installs_plugin_databases() {
     );
 
     let db = TestDb::new().await;
-    let app = app_role(&db, false).await;
+    let app = app_role(&db, false, true).await;
     let error = plugin_wasm::install_databases(&app)
         .await
         .expect_err("refused");
     assert!(error.contains("CREATEROLE"), "{error}");
+
+    let db = TestDb::new().await;
+    let app = app_role(&db, true, false).await;
+    let error = plugin_wasm::install_databases(&app)
+        .await
+        .expect_err("refused");
+    assert!(
+        error.contains("GRANT SET ON PARAMETER temp_file_limit"),
+        "{error}"
+    );
 }
 
 /// A login role holding what the database's owner would (every schema,
-/// table and sequence, with grant option), with or without CREATEROLE.
+/// table and sequence, with grant option), with or without CREATEROLE and
+/// SET on temp_file_limit.
 /// Named for scripts/drop-stale-test-dbs' sweep of `dpl_` roles.
-async fn app_role(db: &TestDb, createrole: bool) -> sqlx::PgPool {
+async fn app_role(db: &TestDb, createrole: bool, temp_files: bool) -> sqlx::PgPool {
     static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let role = format!(
         "dpl_testapp_{}_{}",
@@ -769,6 +872,14 @@ async fn app_role(db: &TestDb, createrole: bool) -> sqlx::PgPool {
         ),
     ] {
         sqlx::query(&sql).execute(&db.pool).await.unwrap();
+    }
+    if temp_files {
+        sqlx::query(&format!(
+            "GRANT SET ON PARAMETER temp_file_limit TO \"{role}\""
+        ))
+        .execute(&db.pool)
+        .await
+        .unwrap();
     }
     let options = (*db.pool.connect_options())
         .clone()

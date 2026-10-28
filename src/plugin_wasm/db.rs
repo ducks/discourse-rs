@@ -68,6 +68,10 @@ const MAX_ROWS: usize = 10_000;
 /// Connections per plugin per site.
 const POOL_SIZE: u32 = 4;
 
+/// What one of a plugin's statements may spill to disk. Superuser-only,
+/// so set on the role it holds where a guest's own SET can't lift it.
+const TEMP_FILE_LIMIT: &str = "1GB";
+
 /// The sites of the process, by database name: hooks that have no pool
 /// at hand (serializer keys, outlets, the homepage) find their site's
 /// here from their connection's `current_database()`.
@@ -204,21 +208,11 @@ impl Plugin {
                 .map_err(s)?;
         let password = match (exists, stored) {
             (true, Some(password)) => password,
-            (exists, _) => {
+            _ => {
                 // Hex: safe to put in the statement, which takes no binds.
                 let password: String = (0..32)
                     .map(|_| format!("{:02x}", rand::random::<u8>()))
                     .collect();
-                let verb = if exists { "ALTER" } else { "CREATE" };
-                run_sql(&mut tx,
-                    format!(
-                        "{verb} ROLE {} LOGIN NOINHERIT NOCREATEDB NOCREATEROLE PASSWORD '{password}'",
-                        quote(&role)
-                    )
-                    .as_str(),
-                )
-                .await
-                .map_err(s)?;
                 sqlx::query(
                     "INSERT INTO discourse_rs.plugin_roles (role, password) VALUES ($1, $2) \
                      ON CONFLICT (role) DO UPDATE SET password = EXCLUDED.password",
@@ -231,7 +225,25 @@ impl Plugin {
                 password
             }
         };
+        // Every boot, not only the first: any role may change its own
+        // password and session defaults, so what a guest set there lasts
+        // until the next.
+        let verb = if exists { "ALTER" } else { "CREATE" };
         let grants = [
+            format!(
+                "{verb} ROLE {} LOGIN NOINHERIT NOCREATEDB NOCREATEROLE PASSWORD '{password}'",
+                quote(&role)
+            ),
+            format!("ALTER ROLE {} RESET ALL", quote(&role)),
+            format!(
+                "ALTER ROLE {} IN DATABASE {} RESET ALL",
+                quote(&role),
+                quote(db)
+            ),
+            format!(
+                "ALTER ROLE {} SET temp_file_limit = '{TEMP_FILE_LIMIT}'",
+                quote(&role)
+            ),
             // The app may cancel the role's queries (pg_cancel_backend
             // wants the privileges of the backend's role).
             format!("GRANT {} TO CURRENT_USER", quote(&role)),
@@ -412,6 +424,18 @@ async fn can_create_roles(app: &PgPool) -> Result<(), String> {
         return Err(format!(
             "plugins with a database need the app's role to create their roles: \
              ALTER ROLE {} CREATEROLE",
+            quote(&user)
+        ));
+    }
+    let sets_temp_file_limit: bool =
+        sqlx::query_scalar("SELECT has_parameter_privilege('temp_file_limit', 'SET')")
+            .fetch_one(app)
+            .await
+            .map_err(|e| format!("checking the app's role: {e}"))?;
+    if !sets_temp_file_limit {
+        return Err(format!(
+            "plugins with a database need the app's role to cap their temporary files: \
+             GRANT SET ON PARAMETER temp_file_limit TO {}",
             quote(&user)
         ));
     }

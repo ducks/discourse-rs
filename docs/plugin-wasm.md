@@ -594,8 +594,9 @@ plus what the database's owner holds (`discourse-rs setup --owner` makes
 it the owner). Before 16, `CREATEROLE` lets a role grant itself
 `pg_read_server_files` and the like, so the host doesn't ask for it
 there and refuses to install a plugin database unless the app is a
-superuser. Each refusal names the fix (`ALTER ROLE ... CREATEROLE`, or
-the PostgreSQL version).
+superuser. Without superuser it also needs `GRANT SET ON PARAMETER
+temp_file_limit` (below). Each refusal names the fix (`ALTER ROLE ...
+CREATEROLE`, the GRANT, or the PostgreSQL version).
 
 What `PUBLIC` reaches, checked on the vendored schema (PostgreSQL 16):
 
@@ -618,7 +619,8 @@ What `PUBLIC` reaches, checked on the vendored schema (PostgreSQL 16):
   and breaks clients. Accepted: metadata, not rows.
 - `NOTIFY` on any channel: pg-bus sends empty notifications as a wake-up
   and keeps its messages in its tables, so a plugin's NOTIFY is a
-  spurious wake-up, not a message.
+  spurious wake-up, not a message. The listener answers a burst of them
+  with one read of its backlog.
 
 The transaction: a guest's `execute("COMMIT")` or `ROLLBACK` would end
 the hook's transaction, so its next statement would commit on its own,
@@ -627,6 +629,26 @@ writable under GET and kept when the hook fails. After every successful
 fails the hook when they differ, before anything else runs. `query`
 can't, as its statement sits in a CTE. What a COMMIT commits before the
 check is the hook's own writes so far, in a write hook.
+
+What a role may set on itself: any role can change its own password and
+its session defaults (`ALTER ROLE CURRENT_USER SET ...`), and that can't
+be revoked. The install runs at every boot and puts both back: the
+stored password, `RESET ALL` on the role and on the role in the
+database, then its own settings. A guest's change lasts until the next
+boot. The password matters only where the role can log in from outside
+the app's host: keep `pg_hba.conf` to the app's address for `dpl_` roles
+(PostgreSQL 16 matches `/^dpl_`).
+
+Resources: the role holds `temp_file_limit = 1GB`, a superuser-only
+setting, so a guest's SET, `set_config` or `ALTER ROLE ... RESET` can't
+lift it and no statement fills the disk with a sort or hash. An app role
+that isn't a superuser sets it through `GRANT SET ON PARAMETER
+temp_file_limit` (PostgreSQL 15+). Memory can't be capped per role:
+`work_mem` and `hash_mem_multiplier` are anyone's to raise. Cap
+PostgreSQL as a whole (systemd `MemoryMax=` on its unit); CPU and I/O
+end with the hook's time budget. No `CONNECTION LIMIT` on the role: a
+guest can't open connections, the host's pool is the cap, and a limit
+shared by every app process would break with more than one.
 
 Multisite needs nothing more: the plugins are the process's, as Rails'
 are, enabled per site by their settings, and each site's database gets
@@ -637,12 +659,11 @@ and GET fail the hook with nothing written after; a session advisory
 lock is gone once the connection is back; an app role that isn't a
 superuser installs with `CREATEROLE` and is refused without it; a
 database where `PUBLIC` creates in `public` gets no role; two sites keep
-their rows apart. The transaction and lock checks were confirmed by
-breaking the code on purpose (the check disabled, `RESET ALL` restored).
-
-Left as accepted: a guest can `SET work_mem` high for its statements
-(bounded by its time budget), and can change its own role's password,
-which breaks only that plugin's pool.
+their rows apart; a guest can't lift its temp_file_limit, and its own
+password and role defaults are gone after the next boot's install (an
+app role without the GRANT is refused). The transaction, lock and boot
+checks were confirmed by breaking the code on purpose (the check
+disabled, `RESET ALL` restored, the password and role resets dropped).
 
 Open:
 
