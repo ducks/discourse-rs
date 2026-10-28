@@ -23,6 +23,10 @@ What is here:
 - `tests/plugin_wasm.rs`: the behaviour tests and the measurements
   (`measure`, ignored by default).
 
+On `spike/wasm-host` (2026-10-27) a guest is also a full
+`plugin_api::Plugin`, the trait compiled-in plugins implement: see
+"Every plugin_api hook" below.
+
 ## ABI: a core module, JSON over linear memory
 
 The choice was between WIT and the component model (`wasmtime::component`,
@@ -437,6 +441,83 @@ refusing a cache from another version or CPU feature set.
 7. **Who approves grants**, and whether a `replaces` of a bundled plugin
    should be allowed at all for third-party plugins.
 
+## Every plugin_api hook (spike/wasm-host)
+
+The Plugin trait (`src/plugin_api.rs`) is what a compiled-in plugin such
+as the taper port implements. `src/plugin_wasm/api.rs`'s `WasmPlugin`
+implements it for a loaded guest, so plugin_api's registry, its
+enabled-setting gates and every call site serve both kinds, and
+`cli::run` loads `PLUGINS_DIR` beside the compiled-in plugins.
+
+A plugin directory:
+
+```
+plugins/echo/
+  plugin.toml        manifest: grants, limits, the hooks below
+  plugin.wasm        the module
+  settings.yml       plugin_settings.yml's shape; readable without a grant
+  locales/*.yml      server.en.yml, server.fr.yml, ...
+  public/            served at /plugins/<name>/, as Rails serves it
+```
+
+| hook | manifest | export | input | output |
+|---|---|---|---|---|
+| routes | `[[routes]] method, path, form` | `route.handle` | method, path, route, params, query, content_type, body, csrf_token (form routes) | status, content_type, body, location |
+| jobs | `jobs`, `[[scheduled]] name, every_secs` | `job.run` | name, args | anything; an error is the job's failure |
+| current user keys | `[current_user] keys` | `serializer.current_user` | null | an object of the declared keys |
+| topic view keys | `[topic_view] keys` | `serializer.topic_view` | topic_id | an object of the declared keys |
+| outlet | `[outlets] topic_above_posts` | `outlet.topic_above_posts` | the topic view | HTML or null |
+| homepage | `[homepage] id, name, path, anonymous, server_side, available` | `homepage.available` (with `available`) | null | bool |
+| icons, stylesheet | `[plugin] svg_icons, stylesheet` | none | | |
+
+What the host does around them:
+
+- A write to a guest route (anything but GET and HEAD) is checked
+  against the session's CSRF token before the guest runs, so a guest
+  can't forget it. A `form = true` route gets the masked token in its
+  input and the session cookie on its response.
+- A route's answer reaches the response only as status, content type,
+  body and (for a redirect) location: a guest sets no cookies or other
+  headers. Bodies are UTF-8 text, at most 1 MiB in.
+- The current user is resolved for every guest route (`AuthGuardian`)
+  and crosses as `guardian` (user id, staff, admin).
+- A failing serializer hook or outlet drops its keys or HTML and logs;
+  a failing route answers 500; a failing job is retried with the
+  guest's message in `last_error`, as core's are.
+- `homepage.available` may call `setting` and `t` only: it runs
+  whenever `/` is resolved.
+
+`plugins/echo` is `tests/plugin_api.rs`' echo plugin as a guest (95 KiB,
+importing `core_rows`, `t` and `setting`), and `tests/plugin_wasm_api.rs`
+holds it to the same checks as the compiled-in one: settings and both
+locales, routes, the token, `public/` and the stylesheet link, the icon,
+jobs and their failure, scheduled jobs, both sets of keys, the outlet,
+and the homepage with its availability.
+
+Measured (release, `measure` in both test files, signed in, 2000
+requests after 200 warm-up, three rounds):
+
+| | compiled in, p50 | guest, p50 |
+|---|---|---|
+| `/echo.json` (settings, a translation) | 286 to 297 us | 368 to 395 us |
+| `/t/1.json` (topic view hook, one query) | 4.8 to 4.9 ms | 4.9 to 5.0 ms |
+
+The route's 80 to 100 us includes the session lookup the host makes for
+every guest route, which the compiled-in echo route skips; the topic
+view hook costs about 2% of the page.
+
+Open, for this part:
+
+- Outlet HTML goes into core's page as the guest wrote it: a guest can
+  put a script on every topic page. Sanitize it, or accept it as part of
+  what an admin approves when installing.
+- Guests can't write: no host call changes a row, so a job or a form
+  route has no effect beyond its answer. Own tables, migrations and
+  writes are the next step (taper's suggestions need them).
+- Route bodies are text; uploads and binary answers are not covered.
+- The outlet's guest is anonymous: plugin_api's outlets carry no
+  guardian.
+
 ## Productionizing estimate
 
 About three to four weeks for one person, on top of what is here:
@@ -456,8 +537,8 @@ About three to four weeks for one person, on top of what is here:
 
 ## Not done
 
-- Only the topic list's phases; no write phases, events, routes, jobs or
-  `html` outlets.
-- Settings of the plugin's own (tier 0) and migrations.
+- No write phases or events; routes, jobs, outlets and settings are on
+  spike/wasm-host, without writes.
+- Migrations and tables of the plugin's own.
 - Hot reload; the registry is process wide (`install` at boot).
 - The JavaScript guest ports `has_accepted_answer` only, not the posters.

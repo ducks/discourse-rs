@@ -533,3 +533,48 @@ async fn an_unavailable_or_disabled_plugin_homepage_falls_back_to_the_top_menu()
             .contains(&json!("echo"))
     );
 }
+
+/// Per-request times of the plugin's route and topic view hook
+/// (docs/plugin-wasm.md): `cargo nextest run --release --test <this>
+/// --run-ignored only --no-capture measure`.
+#[tokio::test]
+#[ignore]
+async fn measure() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    // Signed in: past the anonymous cache.
+    let cookie = login_cookie(&st, "user0").await;
+    let app = discourse_rs::app(st);
+    for path in ["/echo.json", "/t/1.json"] {
+        let mut times = Vec::new();
+        for i in 0..2200 {
+            let started = std::time::Instant::now();
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::get(path)
+                        .header(header::HOST, "test.localhost")
+                        .header("x-requested-with", "XMLHttpRequest")
+                        .header(header::COOKIE, &cookie)
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK);
+            response.into_body().collect().await.unwrap();
+            if i >= 200 {
+                times.push(started.elapsed().as_micros());
+            }
+        }
+        times.sort();
+        println!(
+            "{}: {path}: p50 {} us, p90 {} us",
+            env!("CARGO_CRATE_NAME"),
+            times[times.len() / 2],
+            times[times.len() * 9 / 10]
+        );
+    }
+}

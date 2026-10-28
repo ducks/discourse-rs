@@ -1,5 +1,5 @@
 //! Third-party plugins as WebAssembly, in wasmtime (docs/plugin-wasm.md).
-//! Spike: the topic list's lifecycle phases only.
+//! Spike: the topic list's lifecycle phases, and (api) every plugin_api hook.
 //!
 //! A plugin is a directory with `plugin.toml` (what it may read, its
 //! phases, the keys it adds, its limits) and `plugin.wasm`, a core
