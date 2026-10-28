@@ -265,6 +265,9 @@ async fn serve() -> Result<(), Box<dyn Error>> {
 
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
     let sites = multisite::boot_all(&shared, config, specs).await?;
+    for state in sites.states() {
+        crate::plugin_wasm::install_databases(&state.pool).await?;
+    }
     tracing::info!(addr = %listener.local_addr()?, "listening");
 
     // A worker per site beside the web server unless DISCOURSE_RS_JOBS=off,

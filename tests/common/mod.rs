@@ -115,6 +115,11 @@ impl TestDb {
         TestDb { pool, name, admin }
     }
 
+    /// The copy's database name.
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
     /// The copy's connection URL: TEST_DATABASE_URL naming it.
     pub fn url(&self) -> String {
         let url = test_database_url();

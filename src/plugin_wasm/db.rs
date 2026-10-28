@@ -176,6 +176,7 @@ impl Plugin {
         }) {
             return Err(format!("{}: may not adopt core's {table}", self.name));
         }
+        can_create_roles(app).await?;
         let mut tx = app.begin().await.map_err(s)?;
         sqlx::query("SELECT pg_advisory_xact_lock(hashtext($1))")
             .bind(format!("plugin role {role}"))
@@ -259,6 +260,23 @@ impl Plugin {
         for sql in grants {
             run_sql(&mut tx, sql.as_str()).await.map_err(s)?;
         }
+        // A database upgraded from PostgreSQL 14 or older keeps CREATE on
+        // public for everyone: a plugin could put functions and operators
+        // there that the app's own SQL would resolve to, and run them as
+        // the app.
+        let creates_in_public: bool =
+            sqlx::query_scalar("SELECT has_schema_privilege($1, 'public', 'CREATE')")
+                .bind(&role)
+                .fetch_one(&mut *tx)
+                .await
+                .map_err(s)?;
+        if creates_in_public {
+            return Err(format!(
+                "installing {}: every role may create in the public schema; run \
+                 REVOKE CREATE ON SCHEMA public FROM PUBLIC (the default since PostgreSQL 15)",
+                self.name
+            ));
+        }
         let mut core: Vec<_> = self.grants.core_reads.iter().collect();
         core.sort();
         for (table, columns) in core {
@@ -304,13 +322,16 @@ impl Plugin {
         let options = (*app.connect_options())
             .clone()
             .username(&role)
-            .password(&password);
+            .password(&password)
+            // DISCARD ALL on release drops prepared statements, so none
+            // are kept for reuse.
+            .statement_cache_capacity(0);
         let pool = PgPoolOptions::new()
             .max_connections(POOL_SIZE)
             .min_connections(0)
             .idle_timeout(Duration::from_secs(60))
-            // What a guest SET for its session goes when the connection
-            // comes back (the role's defaults, its search path, return).
+            // What a guest left in its session goes when the connection
+            // comes back (reset_session).
             .after_release(reset_session)
             .connect_lazy_with(options);
         self.migrate(&pool).await?;
@@ -360,9 +381,41 @@ fn reset_session(
     _: sqlx::pool::PoolConnectionMetadata,
 ) -> futures_util::future::BoxFuture<'_, Result<bool, sqlx::Error>> {
     Box::pin(async move {
-        sqlx::Executor::execute(&mut *conn, "RESET ALL").await?;
+        sqlx::Executor::execute(&mut *conn, "DISCARD ALL").await?;
         Ok(true)
     })
+}
+
+/// Whether the app's role may make plugin roles: a superuser, or a role
+/// with CREATEROLE on PostgreSQL 16 or later. Before 16, CREATEROLE lets a
+/// role grant itself the predefined roles that read and write the
+/// server's files, so the app is not asked to hold it there.
+async fn can_create_roles(app: &PgPool) -> Result<(), String> {
+    let (user, superuser, createrole, version): (String, bool, bool, i32) = sqlx::query_as(
+        "SELECT rolname::text, rolsuper, rolcreaterole, \
+                current_setting('server_version_num')::int \
+         FROM pg_roles WHERE rolname = current_user",
+    )
+    .fetch_one(app)
+    .await
+    .map_err(|e| format!("checking the app's role: {e}"))?;
+    if superuser {
+        return Ok(());
+    }
+    if version < 160000 {
+        return Err(format!(
+            "plugins with a database need PostgreSQL 16 or later when the app's role ({user}) \
+             is not a superuser"
+        ));
+    }
+    if !createrole {
+        return Err(format!(
+            "plugins with a database need the app's role to create their roles: \
+             ALTER ROLE {} CREATEROLE",
+            quote(&user)
+        ));
+    }
+    Ok(())
 }
 
 /// A statement of no binds (DDL, SET), by the simple protocol.
@@ -374,6 +427,9 @@ async fn run_sql(conn: &mut PgConnection, sql: &str) -> Result<(), sqlx::Error> 
 pub(super) struct HookTx {
     tx: Transaction<'static, Postgres>,
     pid: i32,
+    /// `now()` as the transaction began: a statement that sees another
+    /// ran outside it.
+    began: String,
     /// The site's app pool, which cancels a query past the budget.
     app: PgPool,
 }
@@ -406,13 +462,14 @@ impl HookTx {
         )
         .await
         .map_err(s)?;
-        let pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+        let (pid, began): (i32, String) = sqlx::query_as("SELECT pg_backend_pid(), now()::text")
             .fetch_one(&mut *tx)
             .await
             .map_err(s)?;
         Ok(HookTx {
             tx,
             pid,
+            began,
             app: app.clone(),
         })
     }
@@ -458,10 +515,28 @@ impl HookTx {
         let pid = self.pid;
         let app = self.app.clone();
         let query = Box::pin(bind_query(sqlx::query(sql), params).execute(&mut *self.tx));
-        Ok(within(query, deadline, &app, pid)
-            .await?
-            .map(|r| r.rows_affected())
-            .map_err(|e| e.to_string()))
+        let result = within(query, deadline, &app, pid).await?;
+        // A statement that failed leaves the transaction aborted, not
+        // ended (a COMMIT after it rolls back, and succeeds).
+        if result.is_ok() {
+            self.still_open().await?;
+        }
+        Ok(result.map(|r| r.rows_affected()).map_err(|e| e.to_string()))
+    }
+
+    /// Fails the hook when the guest's statement ended the transaction
+    /// (COMMIT, ROLLBACK): what it ran next would commit on its own,
+    /// writable under GET and kept when the hook fails. `query` can't, as
+    /// its statement sits in a CTE.
+    async fn still_open(&mut self) -> Result<(), String> {
+        let now: String = sqlx::query_scalar("SELECT now()::text")
+            .fetch_one(&mut *self.tx)
+            .await
+            .map_err(|e| e.to_string())?;
+        if now != self.began {
+            return Err("a plugin's statement ended its transaction".into());
+        }
+        Ok(())
     }
 }
 

@@ -614,3 +614,193 @@ async fn a_guests_sql_stays_in_its_sandbox() {
         assert!(json_of(&st, "/echo/echoes.json").await.is_array());
     }
 }
+
+/// Rows of the plugin's own table with this body, read as the app.
+async fn echoes(pool: &sqlx::PgPool, body: &str) -> i64 {
+    let schema = plugin_wasm::schema_name("echo");
+    sqlx::query_scalar(&format!(
+        "SELECT count(*) FROM \"{schema}\".echoes WHERE body = $1"
+    ))
+    .bind(body)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+/// A guest's COMMIT or ROLLBACK fails the hook before its next statement,
+/// which would otherwise commit on its own (and write under GET); and a
+/// connection goes back to the pool with nothing of the guest's session
+/// on it.
+#[tokio::test]
+async fn a_guest_keeps_to_its_transaction_and_leaves_no_session_behind() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let session = writer(&st).await;
+
+    for end in ["!COMMIT", "!ROLLBACK"] {
+        let after = format!("after {end}");
+        let insert = format!("!INSERT INTO echoes (body) VALUES ('{after}')");
+        let (status, _) = post_form(
+            &st,
+            "/echo/probe",
+            &session,
+            &[("sql", end), ("sql", &insert)],
+        )
+        .await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{end}");
+        let get = encoded(&[("sql", end), ("sql", &insert)]);
+        let (status, _) = send(&st, &format!("/echo/probe?{get}"), None).await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{end} under GET");
+        assert_eq!(echoes(&db.pool, &after).await, 0, "{end}");
+    }
+
+    // An advisory lock taken for the session (RESET ALL keeps it, DISCARD
+    // ALL lets it go) is gone once the connection is back in the pool.
+    let locked = probe(
+        &st,
+        Some(&session),
+        "SELECT pg_advisory_lock(424242)::text AS l",
+    )
+    .await;
+    assert!(locked["ok"].is_array(), "{locked}");
+    let mut held = 1;
+    for _ in 0..50 {
+        held = sqlx::query_scalar::<_, i64>(
+            "SELECT count(*) FROM pg_locks WHERE locktype = 'advisory' AND objid = 424242",
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        if held == 0 {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+    }
+    assert_eq!(held, 0, "the lock went with the session");
+    for _ in 0..5 {
+        assert!(json_of(&st, "/echo/echoes.json").await.is_array());
+    }
+}
+
+/// A database where every role may still create in public (one upgraded
+/// from PostgreSQL 14 or older) gets no plugin roles: a plugin could
+/// shadow what the app's SQL resolves to.
+#[tokio::test]
+async fn no_plugin_database_where_everyone_creates_in_public() {
+    install();
+    let db = TestDb::new().await;
+    sqlx::query("GRANT CREATE ON SCHEMA public TO PUBLIC")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let error = plugin_wasm::install_databases(&db.pool)
+        .await
+        .expect_err("refused");
+    assert!(
+        error.contains("REVOKE CREATE ON SCHEMA public FROM PUBLIC"),
+        "{error}"
+    );
+    let roles: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_roles WHERE rolname = $1")
+        .bind(plugin_wasm::role_name("echo", &db.name()))
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(roles, 0, "nothing was created");
+}
+
+/// An app role that is not a superuser, as in production (it owns its
+/// database; here it holds the owner's grants), and creates the plugin
+/// roles with CREATEROLE. Without it, the boot says what to grant.
+#[tokio::test]
+async fn an_app_role_with_createrole_installs_plugin_databases() {
+    install();
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let app = app_role(&db, true).await;
+    plugin_wasm::install_databases(&app).await.unwrap();
+    let st = state(app.clone(), config(RailsEnv::Test, &[])).await;
+    let session = writer(&st).await;
+    let (status, body) = post_form(&st, "/echo/echoes", &session, &[("body", "as the app")]).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert_eq!(echoes(&db.pool, "as the app").await, 1);
+    let title = probe(&st, None, "SELECT title FROM public.topics WHERE id = 1").await;
+    assert!(title["ok"][0]["title"].is_string(), "{title}");
+    denied(
+        &probe(&st, None, "SELECT username FROM public.users LIMIT 1").await,
+        "an ungranted table",
+    );
+
+    let db = TestDb::new().await;
+    let app = app_role(&db, false).await;
+    let error = plugin_wasm::install_databases(&app)
+        .await
+        .expect_err("refused");
+    assert!(error.contains("CREATEROLE"), "{error}");
+}
+
+/// A login role holding what the database's owner would (every schema,
+/// table and sequence, with grant option), with or without CREATEROLE.
+/// Named for scripts/drop-stale-test-dbs' sweep of `dpl_` roles.
+async fn app_role(db: &TestDb, createrole: bool) -> sqlx::PgPool {
+    static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let role = format!(
+        "dpl_testapp_{}_{}",
+        std::process::id(),
+        N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    );
+    let create = if createrole {
+        "CREATEROLE"
+    } else {
+        "NOCREATEROLE"
+    };
+    for sql in [
+        format!("CREATE ROLE \"{role}\" LOGIN NOSUPERUSER {create} PASSWORD 'test'"),
+        format!("GRANT ALL ON DATABASE \"{}\" TO \"{role}\"", db.name()),
+        format!(
+            "DO $$ DECLARE s text; BEGIN \
+               FOR s IN SELECT nspname FROM pg_namespace \
+                 WHERE nspname !~ '^pg_' AND nspname <> 'information_schema' LOOP \
+                 EXECUTE format('GRANT ALL ON SCHEMA %I TO %I', s, '{role}'); \
+                 EXECUTE format('GRANT ALL ON ALL TABLES IN SCHEMA %I TO %I WITH GRANT OPTION', s, '{role}'); \
+                 EXECUTE format('GRANT ALL ON ALL SEQUENCES IN SCHEMA %I TO %I WITH GRANT OPTION', s, '{role}'); \
+               END LOOP; END $$"
+        ),
+    ] {
+        sqlx::query(&sql).execute(&db.pool).await.unwrap();
+    }
+    let options = (*db.pool.connect_options())
+        .clone()
+        .username(&role)
+        .password("test");
+    sqlx::postgres::PgPoolOptions::new()
+        .max_connections(4)
+        .connect_with(options)
+        .await
+        .unwrap()
+}
+
+/// Two sites in one process: the plugin is the process', its database
+/// each site's (a role and schema per database), and one site's rows
+/// stay there.
+#[tokio::test]
+async fn each_site_has_its_own_plugin_database() {
+    install();
+    let one = TestDb::new().await;
+    let two = TestDb::new().await;
+    for db in [&one, &two] {
+        set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    }
+    let st_one = state(one.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let st_two = state(two.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let session = writer(&st_one).await;
+    let (status, _) = post_form(&st_one, "/echo/echoes", &session, &[("body", "site one")]).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(echoes(&one.pool, "site one").await, 1);
+    assert_eq!(json_of(&st_two, "/echo/echoes.json").await, json!([]));
+    assert_ne!(
+        plugin_wasm::role_name("echo", &one.name()),
+        plugin_wasm::role_name("echo", &two.name())
+    );
+}
