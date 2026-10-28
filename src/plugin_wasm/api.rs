@@ -214,6 +214,7 @@ impl plugin_api::Plugin for WasmPlugin {
             i18n: Some(&state.i18n),
             pool: Some(&state.pool),
             config: Some(&state.config),
+            bus: Some(&state.bus),
         };
         self.plugin
             .run(
@@ -242,6 +243,7 @@ impl plugin_api::Plugin for WasmPlugin {
             i18n: Some(ctx.i18n),
             pool: None,
             config: None,
+            bus: None,
         };
         Ok(self
             .keys(&mut ctx, Phase::CurrentUser, Value::Null, &decl.keys)
@@ -264,6 +266,7 @@ impl plugin_api::Plugin for WasmPlugin {
             i18n: Some(ctx.i18n),
             pool: None,
             config: None,
+            bus: None,
         };
         Ok(self
             .keys(
@@ -294,6 +297,7 @@ impl plugin_api::Plugin for WasmPlugin {
             i18n: Some(ctx.i18n),
             pool: None,
             config: None,
+            bus: None,
         };
         let result = self
             .plugin
@@ -312,6 +316,73 @@ impl plugin_api::Plugin for WasmPlugin {
         Ok(result.unwrap_or_else(|e| {
             self.plugin.log_skip(Phase::TopicAbovePosts, &e);
             None
+        }))
+    }
+
+    async fn post_menu_buttons(
+        &self,
+        ctx: &mut plugin_api::Ctx<'_>,
+        guardian: &Guardian,
+        topic_id: i64,
+        posts: &[Value],
+    ) -> Result<HashMap<i64, String>, AppError> {
+        if !self.plugin.outlets.post_menu {
+            return Ok(HashMap::new());
+        }
+        // What a button decides on, not the whole serialized post.
+        let posts: Vec<Value> = posts
+            .iter()
+            .map(|p| {
+                json!({
+                    "id": p["id"],
+                    "post_number": p["post_number"],
+                    "user_id": p["user_id"],
+                    "username": p["username"],
+                    "yours": p["yours"],
+                    "deleted": p["deleted_at"].is_string(),
+                })
+            })
+            .collect();
+        let ids: Vec<i64> = posts.iter().filter_map(|p| p["id"].as_i64()).collect();
+        let base_path = ctx.base_path;
+        let mut ctx = Ctx {
+            conn: &mut *ctx.conn,
+            settings: ctx.settings,
+            guardian,
+            i18n: Some(ctx.i18n),
+            pool: None,
+            config: None,
+            bus: None,
+        };
+        let result = self
+            .plugin
+            .run(
+                &mut ctx,
+                "outlet",
+                Phase::PostMenu,
+                json!({ "topic_id": topic_id, "posts": posts, "base_path": base_path }),
+            )
+            .await
+            .and_then(|v| {
+                let Value::Object(by_id) = v else {
+                    return Err("post_menu returns {post_id: html}".into());
+                };
+                let mut out = HashMap::new();
+                for (id, html) in by_id {
+                    let id: i64 = id.parse().map_err(|_| format!("post id {id}"))?;
+                    let Value::String(html) = html else {
+                        return Err(format!("post {id}: HTML is a string"));
+                    };
+                    // Only the posts it was asked about.
+                    if ids.contains(&id) {
+                        out.insert(id, html);
+                    }
+                }
+                Ok(out)
+            });
+        Ok(result.unwrap_or_else(|e| {
+            self.plugin.log_skip(Phase::PostMenu, &e);
+            HashMap::new()
         }))
     }
 
@@ -335,6 +406,7 @@ impl plugin_api::Plugin for WasmPlugin {
             i18n: None,
             pool: None,
             config: None,
+            bus: None,
         };
         let result = self
             .plugin
@@ -445,6 +517,7 @@ impl Route<'_> {
             i18n: Some(&state.i18n),
             pool: Some(&state.pool),
             config: Some(&state.config),
+            bus: Some(&state.bus),
         };
         let reply: Reply =
             serde_json::from_value(plugin.run(&mut ctx, "route", Phase::Route, payload).await?)

@@ -18,7 +18,9 @@
 //!   [`Plugin::scheduled`], [`Plugin::run_job`];
 //! - `add_to_serializer(:current_user)` and `(:topic_view)`:
 //!   [`Plugin::current_user_fields`], [`Plugin::topic_view_fields`];
-//! - plugin outlets in the server-rendered pages: [`Plugin::outlet_html`];
+//! - plugin outlets in the server-rendered pages: [`Plugin::outlet_html`],
+//!   and a button in each post's menu (`api.addPostMenuButton`):
+//!   [`Plugin::post_menu_buttons`];
 //! - `register_homepage`: [`Plugin::homepage`],
 //!   [`Plugin::homepage_available`];
 //! - a page of its own in core's head: [`PageHead`].
@@ -27,6 +29,7 @@
 //! grass_compiler: Cargo applies patches from the top-level crate only,
 //! and the unpatched compiler fails on core's own stylesheets.
 
+use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
@@ -163,6 +166,19 @@ pub trait Plugin: Send + Sync {
         _outlet: &Outlet<'_>,
     ) -> Result<Option<String>, AppError> {
         Ok(None)
+    }
+
+    /// `api.addPostMenuButton`: HTML for each post's menu, by post id,
+    /// drawn before core's buttons. `posts` are the posts as the topic
+    /// view serializes them for `guardian`; escape what you render.
+    async fn post_menu_buttons(
+        &self,
+        _ctx: &mut Ctx<'_>,
+        _guardian: &Guardian,
+        _topic_id: i64,
+        _posts: &[Value],
+    ) -> Result<HashMap<i64, String>, AppError> {
+        Ok(HashMap::new())
     }
 
     /// `register_homepage`.
@@ -404,6 +420,29 @@ pub async fn outlet_html(ctx: &mut Ctx<'_>, outlet: &Outlet<'_>) -> Result<Strin
         }
     }
     Ok(html)
+}
+
+/// The enabled plugins' `post_menu_buttons`, each post's in registration
+/// order.
+pub async fn post_menu_buttons(
+    ctx: &mut Ctx<'_>,
+    guardian: &Guardian,
+    topic_id: i64,
+    posts: &[Value],
+) -> Result<HashMap<i64, String>, AppError> {
+    let mut out: HashMap<i64, String> = HashMap::new();
+    if posts.is_empty() {
+        return Ok(out);
+    }
+    for plugin in enabled(ctx.settings)? {
+        for (id, html) in plugin
+            .post_menu_buttons(ctx, guardian, topic_id, posts)
+            .await?
+        {
+            out.entry(id).or_default().push_str(&html);
+        }
+    }
+    Ok(out)
 }
 
 /// The enabled plugins' stylesheet links, for a page's head.

@@ -746,6 +746,18 @@ async fn render_post(
     } else {
         Default::default()
     };
+    let plugin_menu = crate::plugin_api::post_menu_buttons(
+        &mut crate::plugin_api::Ctx {
+            conn: &mut conn,
+            settings,
+            i18n: &state.i18n,
+            base_path: state.config.globals.relative_url_root(),
+        },
+        guardian,
+        i64::from(topic_id),
+        std::slice::from_ref(&post),
+    )
+    .await?;
     let topic = crate::post_view::TopicInfo {
         id: i64::from(topic_id),
         slug: post["topic_slug"].as_str().unwrap_or_default().to_string(),
@@ -808,6 +820,7 @@ async fn render_post(
                 &serde_json::json!({ "details": details }),
             )?
         },
+        plugin_menu,
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;
@@ -1119,6 +1132,21 @@ pub async fn gap(
     let post_settings = crate::post_view::PostSettings::load(&settings)?;
     let mut topic = crate::post_view::TopicInfo::from_view(json);
     topic.menus = crate::post_view::StaffMenus::load(&guardian, &settings, json)?;
+    topic.plugin_menu = crate::plugin_api::post_menu_buttons(
+        &mut crate::plugin_api::Ctx {
+            conn: &mut conn,
+            settings: &settings,
+            i18n: &state.i18n,
+            base_path: base,
+        },
+        &guardian,
+        topic_id.into(),
+        json["post_stream"]["posts"]
+            .as_array()
+            .map(Vec::as_slice)
+            .unwrap_or_default(),
+    )
+    .await?;
     if post_settings.poll.is_some() {
         let posts = json["post_stream"]["posts"]
             .as_array()

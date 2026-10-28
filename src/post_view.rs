@@ -9,6 +9,8 @@
 //! the topic admin menu (TopicAdminMenu) are drawn into templates that
 //! static/js/topic-admin-menu.js opens.
 
+use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 
@@ -163,6 +165,9 @@ pub struct TopicInfo {
     pub poll_viewer: Option<crate::plugins::poll::view::PollViewer>,
     /// What the staff menus read beyond `PostContext::staff`.
     pub menus: StaffMenus,
+    /// The plugins' post menu buttons (`api.addPostMenuButton`), by post
+    /// id: plugin_api::post_menu_buttons.
+    pub plugin_menu: HashMap<i64, String>,
 }
 
 /// What the topic admin menu (TopicAdminMenu) and the post admin menu
@@ -276,6 +281,7 @@ impl TopicInfo {
                 can_publish_page: view["details"]["can_publish_page"] == true,
                 ..StaffMenus::default()
             },
+            plugin_menu: HashMap::new(),
         }
     }
 }
@@ -1267,6 +1273,13 @@ fn menu(cx: &PostContext, p: &Value) -> String {
     let collapsed = available > 1 && renderable > 1;
 
     let mut actions = String::new();
+    // The plugins' buttons, first.
+    if let Some(html) = p["id"]
+        .as_i64()
+        .and_then(|id| cx.topic.plugin_menu.get(&id))
+    {
+        actions.push_str(html);
+    }
     for (key, hideable, html) in &buttons {
         if *key == "showMore" {
             if collapsed {
@@ -3817,6 +3830,7 @@ mod tests {
             highest_post_number: None,
             poll_viewer: None,
             menus: StaffMenus::default(),
+            plugin_menu: HashMap::new(),
         };
         let cx = PostContext {
             list: &list,
@@ -4093,6 +4107,7 @@ mod tests {
             highest_post_number: None,
             poll_viewer: None,
             menus: StaffMenus::default(),
+            plugin_menu: HashMap::new(),
         };
         let cx = PostContext {
             list: &list,

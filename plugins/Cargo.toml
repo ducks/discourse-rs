@@ -2,7 +2,7 @@
 # (docs/plugin-wasm.md): `make wasm-plugins`. Not part of the server's
 # workspace: their target is WebAssembly.
 [workspace]
-members = ["sdk", "discourse-solved", "js-solved", "echo"]
+members = ["sdk", "discourse-solved", "js-solved", "echo", "helpful"]
 resolver = "3"
 
 [profile.release]
