@@ -39,6 +39,12 @@ pkgs.mkShell {
 
     # The S3 test server (tests/common/s3.rs, scripts/s3-test-server)
     minio
+
+    # Plugin guests (plugins/, docs/plugin-wasm.md): inspecting modules
+    # and pre-initializing them. The guests build with the toolchain's
+    # wasm32-unknown-unknown target.
+    wasm-tools
+    wizer
   ] ++ postgres.buildInputs;
 
   shellHook = ''

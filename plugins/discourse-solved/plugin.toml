@@ -1,0 +1,34 @@
+# discourse-solved's topic list as a third-party WebAssembly plugin
+# (docs/plugin-wasm.md), on the tables Rails' discourse-solved created and
+# a backup carries. It takes over the bundled port's topic list phases.
+[plugin]
+name = "discourse-solved-wasm"
+api = 1
+enabled_setting = "solved_enabled"
+replaces = "discourse-solved"
+
+[limits]
+memory_mib = 16
+time_ms = 50
+host_calls = 16
+
+# Site settings it reads with setting().
+[settings]
+read = ["allow_solved_on_all_topics", "enable_solved_tags", "allow_solved_in_groups"]
+
+[tables]
+discourse_solved_solved_topics = ["id", "topic_id"]
+discourse_solved_topic_answers = ["id", "solved_topic_id", "answer_post_id"]
+
+# Core columns it reads with core_rows.
+[core_reads]
+posts = ["id", "user_id"]
+category_custom_fields = ["id", "category_id", "name", "value"]
+topic_tags = ["topic_id", "tag_id"]
+tags = ["id", "name"]
+topic_allowed_groups = ["topic_id", "group_id"]
+
+[topic_list]
+phases = ["after_load", "before_serialize", "after_serialize"]
+# The keys after_serialize adds to each topic, in order, with their types.
+keys = [["has_accepted_answer", "bool"], ["can_have_answer", "bool"]]

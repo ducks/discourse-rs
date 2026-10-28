@@ -159,6 +159,7 @@ pub mod parity;
 pub mod penalize_view;
 pub mod permalinks;
 pub mod plugin_api;
+pub mod plugin_wasm;
 pub mod plugins;
 pub mod pm_invite;
 pub mod pm_lists;

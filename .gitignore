@@ -13,3 +13,6 @@ bench/
 /public/
 # The latest scripts/parity-screenshots report.
 /parity/screens/out/
+# Plugin guests' builds (plugins/Cargo.toml)
+/plugins/target/
+/plugins/*/plugin.wasm

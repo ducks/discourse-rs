@@ -1,0 +1,5 @@
+# Guests get no randomness (no WASI, no host call for it): getrandom,
+# which Boa pulls in through rand, fails when asked instead of failing
+# to build.
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="unsupported"']

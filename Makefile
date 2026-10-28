@@ -1,7 +1,7 @@
 .PHONY: help version-bump release release-push build test parity-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv snapshot-clean reset-reference \
 	record-pretty-text \
-	bench bench-startup release-build install emoji-assets rehearsal
+	bench bench-startup release-build install emoji-assets rehearsal wasm-plugins
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -48,6 +48,7 @@ help:
 	@echo "  make db-load [FORCE=1]             - Load schema + seeds into $(DEV_DB)"
 	@echo "  make db-test                       - (Re)load schema + seeds into $(TEST_DB)"
 	@echo "  make emoji-assets [PUBLIC_DIR=path] - Install pinned emoji images (no Rails needed)"
+	@echo "  make wasm-plugins                  - Build the WebAssembly plugin guests in plugins/"
 	@echo "  make snapshot-dv AGENT=name        - Regenerate seed/fresh_install.sql from a dv agent"
 	@echo "  make snapshot-clean AGENT=name     - Regenerate seed/clean_install.sql (migrate + db:seed only)"
 	@echo "  make reset-reference AGENT=name    - Put a dv agent's database back to the seed (before recording)"
@@ -155,6 +156,15 @@ install:
 
 emoji-assets:
 	deploy/install-emoji "$(PUBLIC_DIR)"
+
+# Third-party plugin guests (plugins/, docs/plugin-wasm.md), each built
+# into its directory as plugin.wasm next to plugin.toml; PLUGINS_DIR=plugins
+# then loads them. The JavaScript guest is pre-initialized with wizer.
+wasm-plugins:
+	cd plugins && cargo build --release --target wasm32-unknown-unknown
+	cp plugins/target/wasm32-unknown-unknown/release/discourse_solved_wasm.wasm plugins/discourse-solved/plugin.wasm
+	wizer --init-func wizer.initialize -o plugins/js-solved/plugin.wasm \
+		plugins/target/wasm32-unknown-unknown/release/js_solved_wasm.wasm
 
 vendor-discourse:
 	scripts/vendor-discourse $(DISCOURSE) $(REF)

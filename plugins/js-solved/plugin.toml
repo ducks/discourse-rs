@@ -1,0 +1,20 @@
+# A JavaScript plugin (plugin.js) run by Boa compiled into the module
+# (docs/plugin-wasm.md, "JavaScript in the guest").
+[plugin]
+name = "js-solved"
+api = 1
+enabled_setting = "solved_enabled"
+replaces = "discourse-solved"
+
+[limits]
+memory_mib = 32
+time_ms = 200
+host_calls = 8
+
+[tables]
+discourse_solved_solved_topics = ["id", "topic_id"]
+discourse_solved_topic_answers = ["id", "solved_topic_id", "answer_post_id"]
+
+[topic_list]
+phases = ["after_serialize"]
+keys = [["has_accepted_answer", "bool"]]

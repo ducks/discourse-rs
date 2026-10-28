@@ -9,7 +9,7 @@ default-run = "discourse-rs"
 members = ["crates/markdown"]
 # A patched copy of grass's compiler (crates/grass_compiler/PATCHES.md),
 # built as a dependency and not linted with the workspace.
-exclude = ["crates/grass_compiler"]
+exclude = ["crates/grass_compiler", "plugins"]
 
 [dependencies]
 discourse-markdown = { path = "crates/markdown" }
@@ -44,6 +44,10 @@ reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 serde_yaml_ng = "0.10"
+# Third-party plugins as WebAssembly (docs/plugin-wasm.md): Cranelift and
+# the runtime only; no WASI, no component model, no profiling or cache.
+wasmtime = { version = "50", default-features = false, features = ["cranelift", "runtime", "std", "pooling-allocator", "async", "parallel-compilation"] }
+toml = "0.9"
 sha1 = "0.10"
 sha2 = "0.10"
 similar = "2"
@@ -86,6 +90,7 @@ grass_compiler = { path = "crates/grass_compiler" }
 [dev-dependencies]
 http-body-util = "0.1"
 libtest-mimic = "0.8.2"
+wat = "1"
 
 # Every recorded write case is a test of its own (tests/writes.rs).
 [[test]]

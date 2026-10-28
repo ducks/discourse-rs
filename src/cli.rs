@@ -231,6 +231,11 @@ async fn serve() -> Result<(), Box<dyn Error>> {
     crate::readonly::force_from_globals(&config.globals);
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
+    // Third-party plugins (PLUGINS_DIR); a broken one stops the boot.
+    let wasm_plugins = crate::plugin_wasm::load_from_env()?;
+    if wasm_plugins > 0 {
+        tracing::info!(plugins = wasm_plugins, "loaded wasm plugins");
+    }
     tracing::info!(settings = site_setting_defs.len(), env = ?config.rails_env, "loaded site setting definitions");
 
     // multisite.yml, when DISCOURSE_MULTISITE_CONFIG_PATH names one.
