@@ -171,6 +171,25 @@
     });
   }
 
+  // applyBehaviorTransformer: the plugins' transformers for `name`
+  // (Discourse.behaviorTransformers, registerBehaviorTransformer), each
+  // wrapping the next with `next` and this page's `request`, around
+  // `callback`.
+  function applyBehaviorTransformer(name, callback) {
+    var list = (Discourse.behaviorTransformers || {})[name] || [];
+    var run = list.reduceRight(
+      function (next, transformer) {
+        return function () {
+          return Promise.resolve(transformer({ next: next, request: request }));
+        };
+      },
+      function () {
+        return Promise.resolve(callback());
+      }
+    );
+    return run();
+  }
+
   // extractError: the response's errors, its error, else its text.
   function extractError(result) {
     var b = (result && result.body) || {};
@@ -2073,7 +2092,9 @@
       }
       formSubmitted = true;
       drawSubmit();
-      return request("POST", "/u", data)
+      return applyBehaviorTransformer("create-account", function () {
+        return request("POST", "/u", data);
+      })
         .then(function (r) {
           var result = r.body || {};
           if (!r.ok) {

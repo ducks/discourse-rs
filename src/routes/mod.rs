@@ -43,6 +43,7 @@ mod bookmark_writes;
 mod bookmarks;
 mod bus;
 mod cakeday;
+mod captcha;
 mod change_owner;
 pub(crate) mod composer;
 mod deleted_posts;
@@ -549,6 +550,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/cakeday/birthdays/{filter}",
             get(cakeday::birthdays_filter),
         )
+        // discourse-captcha's HcaptchaController and RecaptchaController.
+        .route("/captcha/hcaptcha/create", post(captcha::hcaptcha))
+        .route("/captcha/hcaptcha/create.json", post(captcha::hcaptcha))
+        .route("/captcha/recaptcha/create", post(captcha::recaptcha))
+        .route("/captcha/recaptcha/create.json", post(captcha::recaptcha))
         // discourse-policy's PolicyController.
         .route("/policy/accept", put(policy::accept))
         .route("/policy/accept.json", put(policy::accept))
@@ -2812,6 +2818,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/poll.js", get(asset))
         .route("/assets/checklist.js", get(asset))
         .route("/assets/cakeday.js", get(asset))
+        .route("/assets/discourse-captcha.js", get(asset))
         .route("/assets/policy.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))

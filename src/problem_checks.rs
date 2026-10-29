@@ -1,7 +1,7 @@
 //! ProblemCheck (app/models/problem_check.rb, app/services/problem_check/),
 //! its trackers (ProblemCheckTracker) and the admin notices they raise
-//! (AdminNotice). The core checks run here in CORE_PROBLEM_CHECKS' order;
-//! no bundled plugin registers one.
+//! (AdminNotice). The core checks run here in CORE_PROBLEM_CHECKS' order,
+//! after the enabled plugins' realtime ones (crate::plugins::problem_checks).
 //!
 //! The checks that read Rails' environment answer about the port itself:
 //! `rails_env` its configured RAILS_ENV, `host_names` the hostname it
@@ -42,7 +42,7 @@ pub struct Check {
 }
 
 impl Check {
-    const fn new(identifier: &'static str, priority: &'static str) -> Check {
+    pub const fn new(identifier: &'static str, priority: &'static str) -> Check {
         Check {
             identifier,
             priority,
@@ -134,6 +134,13 @@ pub const CHECKS: [Check; 35] = [
 /// `ProblemCheck[identifier]`
 pub fn find(identifier: &str) -> Option<&'static Check> {
     CHECKS.iter().find(|c| c.identifier == identifier)
+}
+
+/// `ProblemCheck.checks`: the enabled plugins' checks, then core's.
+pub fn checks(settings: &SiteSettings) -> Result<Vec<&'static Check>, AppError> {
+    let mut out = crate::plugins::problem_checks(settings)?;
+    out.extend(CHECKS.iter());
+    Ok(out)
 }
 
 /// What the checks read.
@@ -515,6 +522,9 @@ pub async fn call(
         "upcoming_change_stable_opted_out" => upcoming_change_opted_out(env, target),
         // InlineProblemCheck#call is no problem; they are never run.
         _ if check.inline => none,
+        id if let Some(found) = crate::plugins::problem_check(env.settings, id)? => {
+            Ok(found.then(Problem::new))
+        }
         _ => Err(Unsupported("an unknown problem check").into()),
     }
 }
@@ -916,7 +926,7 @@ pub async fn run(
 /// `ProblemCheck.realtime.run_all`: every enabled realtime check, for
 /// each of its targets.
 pub async fn run_realtime(conn: &mut PgConnection, env: &Env<'_>) -> Result<(), AppError> {
-    for check in CHECKS.iter().filter(|c| c.realtime()) {
+    for check in checks(env.settings)?.into_iter().filter(|c| c.realtime()) {
         for target in targets(conn, env, check).await? {
             run(conn, env, check, &target, None).await?;
         }
@@ -1202,7 +1212,8 @@ pub async fn all_trackers(conn: &mut PgConnection) -> Result<Vec<Tracker>, AppEr
 /// `ProblemCheck#cleanup_trackers` for every check, then the trackers and
 /// notices of checks that no longer exist (Jobs::CleanupProblemCheckTrackers).
 pub async fn cleanup_trackers(conn: &mut PgConnection, env: &Env<'_>) -> Result<(), AppError> {
-    for check in &CHECKS {
+    let all = checks(env.settings)?;
+    for check in all.iter().copied() {
         let current = targets(conn, env, check).await?;
         if current.is_empty() {
             continue;
@@ -1219,7 +1230,7 @@ pub async fn cleanup_trackers(conn: &mut PgConnection, env: &Env<'_>) -> Result<
             destroy_tracker(conn, &t).await?;
         }
     }
-    let known: Vec<&str> = CHECKS.iter().map(|c| c.identifier).collect();
+    let known: Vec<&str> = all.iter().map(|c| c.identifier).collect();
     let gone: Vec<Tracker> = sqlx::query_as(&format!(
         "SELECT {TRACKER_COLUMNS} FROM problem_check_trackers \
          WHERE NOT (identifier = ANY($1)) ORDER BY id"

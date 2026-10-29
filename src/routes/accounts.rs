@@ -1054,6 +1054,22 @@ pub async fn create_user(
             cookie,
         );
     }
+    // The plugins' before actions (discourse-captcha's check_captcha),
+    // on a connection of their own: what they take out of the server
+    // session stays out whatever the signup does.
+    let refusal = {
+        let mut conn = state.pool.acquire().await?;
+        crate::plugins::users_create_refusal(&mut conn, &state, &settings, &session_id).await?
+    };
+    if let Some(key) = refusal {
+        tx.commit().await?;
+        let message = state.i18n.t(key).unwrap_or(key);
+        let cookie = session.set_cookie(&state, &settings)?;
+        return with_session_cookie(
+            Json(json!({"success": false, "message": message})).into_response(),
+            cookie,
+        );
+    }
     if guardian.is_authenticated() {
         return Ok(super::search::invalid_access(&state));
     }

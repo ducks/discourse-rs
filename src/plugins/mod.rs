@@ -22,6 +22,7 @@ pub mod apple;
 pub mod assign;
 pub mod auth_providers;
 pub mod cakeday;
+pub mod captcha;
 pub mod chat;
 pub mod checklist;
 pub mod footnote;
@@ -363,6 +364,7 @@ pub const STARTED: &[&str] = &[
     "discourse-apple-auth",
     "discourse-assign",
     "discourse-cakeday",
+    "discourse-captcha",
     "discourse-details",
     "discourse-lazy-videos",
     "discourse-local-dates",
@@ -380,6 +382,45 @@ pub const STARTED: &[&str] = &[
     "poll",
     "spoiler-alert",
 ];
+
+/// UsersController#create's plugin before actions, after the honeypot:
+/// discourse-captcha's `check_captcha`. The locale key of the refusal
+/// (`fail_with`), if one refuses.
+pub async fn users_create_refusal(
+    conn: &mut sqlx::PgConnection,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    session_id: &str,
+) -> Result<Option<&'static str>, crate::AppError> {
+    captcha::verification_error(conn, state, settings, session_id).await
+}
+
+/// `DiscoursePluginRegistry.problem_checks`: the enabled plugins' checks,
+/// which ProblemCheck.checks lists before core's.
+pub fn problem_checks(
+    settings: &SiteSettings,
+) -> Result<Vec<&'static crate::problem_checks::Check>, crate::AppError> {
+    let mut out = Vec::new();
+    if captcha::enabled(settings)? {
+        out.extend(captcha::PROBLEM_CHECKS.iter());
+    }
+    Ok(out)
+}
+
+/// A plugin problem check's `call`: whether it finds a problem; none for
+/// an identifier no plugin registers.
+pub fn problem_check(
+    settings: &SiteSettings,
+    identifier: &str,
+) -> Result<Option<bool>, crate::AppError> {
+    if captcha::PROBLEM_CHECKS
+        .iter()
+        .any(|c| c.identifier == identifier)
+    {
+        return Ok(Some(captcha::problem_check(settings, identifier)?));
+    }
+    Ok(None)
+}
 
 /// DiscourseEvent `:site_setting_changed`, after a setting's new value is
 /// saved: the handlers of the plugins the port implements, each while
