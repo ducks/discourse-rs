@@ -4781,14 +4781,22 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     key scope, the four stats, Chat::Seeder, and chat's keys dropped
     from the parity ignore lists (parity/cases:12-15,97-116,163-166,
     247-249,321-327) with cases for them
-227. `feat/chat-pages-rest` S: the small refusals no item names: DMs
-    missing their row or with multi-valued custom fields
-    (plugins/chat/direct_messages.rs:63,319), DM titles without a viewer
-    or with every participant deleted (:132,393;
-    routes/chat_pages.rs:388; plugins/chat/notify.rs:409;
-    plugins/chat/create.rs:568), a web hook whose message is gone
-    (plugins/chat/web_hooks.rs:37), a site without its system user
-    (plugins/chat/dm_groups.rs:323)
+227. ~~`feat/chat-pages-rest`~~ (done) S: the small refusals no item
+    names. A DM participant's repeated custom field is an array of its
+    rows in id order (FieldDescriptor#append_field). A DM whose other
+    participants are all deleted is titled by Chat::NullUser ("deleted"),
+    as Rails maps them before its never-reached "all users deleted"
+    branch, so `dm_title` returns a string and the list, the channel
+    page, bookmarks, notifications, the summary email and channel edits
+    stop refusing it. What Rails raises on is now a plain 500 rather
+    than a refusal: a DM channel without its direct_message_channels row
+    (the nil chatable), a title with no viewer and no other participant
+    (`acting_user.username` on nil), a mention job's membership of a
+    deleted user (`membership.user.id`), the invited-users notice on a
+    site without its system user (`Discourse.system_user.guardian`, the
+    transaction rolled back). A web hook's message and a DM target
+    vanishing mid-request (read in the same request; Rails holds the
+    records) are internal errors. Tests in tests/chat_rest.rs.
 228. `feat/poll-ui` L: poll has no client: nothing in static/js or the
     templates draws a poll, so a post shows its cooked list with a "0
     voters" stub. Split into the slices below. Export results waits for

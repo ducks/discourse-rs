@@ -177,8 +177,7 @@ impl Context<'_> {
             }
             "DirectMessage" => {
                 let dm = self.direct_message(channel.chatable_id).await?;
-                let title = self.dm_title(channel, &dm)?;
-                Ok(title.as_str().unwrap_or_default().to_string())
+                self.dm_title(channel, &dm)
             }
             _ => Err(Unsupported("chat channels of other chatables").into()),
         }

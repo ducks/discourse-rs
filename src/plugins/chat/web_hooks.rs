@@ -7,7 +7,7 @@
 use serde_json::{Map, Value, json};
 
 use super::channels::{ChannelRow, Context, MembershipRow};
-use crate::{AppError, Unsupported};
+use crate::AppError;
 
 impl Context<'_> {
     /// `WebHook.enqueue_chat_message_hooks(event, payload.to_json,
@@ -34,7 +34,12 @@ impl Context<'_> {
             .serialize_messages(&channel, &[message_id])
             .await?
             .pop()
-            .ok_or(Unsupported("a chat message web hook without its message"))?;
+            // Every event's message was just written (trashing is soft) in
+            // the caller's transaction, as Rails serializes the record in
+            // hand; the row is always there.
+            .ok_or(std::io::Error::other(
+                "a chat message web hook for a message never written",
+            ))?;
         // channel.membership_for(user)
         let membership: Option<MembershipRow> = match self.guardian.user_id() {
             Some(user_id) => {
