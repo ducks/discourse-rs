@@ -361,6 +361,10 @@ pub async fn page(
                 view_all_query: &view_all_query,
                 default_priority: &default_priority,
                 revision_reasons: &revision_reasons,
+                user_notes: crate::plugins::user_notes::view::UserNotesUi::load(
+                    &settings,
+                    guardian.is_staff(),
+                )?,
             });
             (main, crate::topic_list_view::t(&cx, "review.title"))
         }

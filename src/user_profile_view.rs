@@ -152,6 +152,8 @@ pub struct ProfileSettings {
     pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
     /// discourse-solved is on: its Solved tab and summary stat.
     pub solved: bool,
+    /// discourse-user-notes, when it is on: its notes button.
+    pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -487,6 +489,12 @@ pub fn render(
             "<li class=\"user-card-below-message-button chat-button\"><button class=\"btn btn-icon-text btn-primary chat-direct-message-btn\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button></li>",
             crate::post_view::d_icon("d-chat", None),
             escape(&t(cx, "chat.title_capitalized"))
+        ));
+    }
+    // discourse-user-notes' user-profile-controls connector.
+    if let Some(ui) = &settings.user_notes {
+        out.push_str(&crate::plugins::user_notes::view::profile_controls(
+            ui, cx.i18n, u,
         ));
     }
     if !hidden && viewing_self {

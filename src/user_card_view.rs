@@ -31,6 +31,8 @@ pub struct CardSettings {
     pub allow_profile_backgrounds: bool,
     pub display_local_time_in_user_card: bool,
     pub tl3_links_no_follow: bool,
+    /// discourse-user-notes, when it is on.
+    pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
 }
 
 /// A site user field shown on cards (`site.user_fields` with
@@ -327,7 +329,15 @@ pub fn render(
             escape(&t(cx, "user.staged"))
         ));
     }
-    out.push_str("<div></div></div><ul class=\"usercard-controls\">");
+    // The user-card-post-names outlet: discourse-user-notes' connector.
+    let post_names = settings
+        .user_notes
+        .as_ref()
+        .map(|ui| crate::plugins::user_notes::view::card(ui, cx.i18n, base, u))
+        .unwrap_or_default();
+    out.push_str(&format!(
+        "<div>{post_names}</div></div><ul class=\"usercard-controls\">"
+    ));
     if u["can_send_private_message_to_user"] == true {
         out.push_str(&format!(
             "<li class=\"compose-pm\">{}</li>",

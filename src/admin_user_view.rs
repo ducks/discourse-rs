@@ -220,6 +220,10 @@ pub fn render(cx: &AdminCx, list: &ListContext, page: &UserPage, u: &Value) -> S
             None,
         ));
     }
+    // The admin-user-controls-after outlet: discourse-user-notes'.
+    out.push_str(&crate::plugins::user_notes::view::admin_user_controls(
+        i18n, u,
+    ));
     out.push_str("</div>");
     out.push_str(&editable(
         cx,

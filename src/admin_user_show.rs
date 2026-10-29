@@ -441,6 +441,10 @@ pub async fn show(
             upcoming_changes_stats(conn, cx, guardian, user_id).await?,
         );
     }
+    // The plugins' attributes, after the serializer's own.
+    if options.detailed {
+        crate::plugins::user_notes::admin_detailed_user_keys(conn, s, user_id, &mut u).await?;
+    }
     u.insert(
         "approved_by".into(),
         basic_user(conn, cx, x.approved_by_id, logo_small_url.as_deref()).await?,

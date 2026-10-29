@@ -286,6 +286,9 @@ pub struct Chrome {
     /// What the cooked decorators read (cooked.js): the site settings
     /// that gate them and their strings, as JSON for a script element.
     pub cooked_config: String,
+    /// discourse-user-notes for a staff viewer (static/js/user-notes.js):
+    /// user_notes_icon_placement, empty while off or for anyone else.
+    pub user_notes_placement: String,
     /// The user card opens (static/js/user-card.js): not for an anonymous
     /// visitor under hide_user_profiles_from_public (CardContentsBase#_show).
     pub user_cards: bool,
@@ -875,6 +878,15 @@ impl Site {
         self.chrome.user_cards =
             guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
         self.chrome.enable_badges = settings.get("enable_badges")?.truthy();
+        self.chrome.user_notes_placement =
+            if guardian.is_staff() && crate::plugins::user_notes::enabled(settings)? {
+                settings
+                    .get("user_notes_icon_placement")?
+                    .to_s()
+                    .to_string()
+            } else {
+                String::new()
+            };
         self.chrome.inline_footnotes = settings.get("enable_markdown_footnotes")?.truthy()
             && settings.get("display_footnotes_inline")?.truthy();
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()

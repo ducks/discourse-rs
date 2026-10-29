@@ -2102,6 +2102,36 @@ impl TopicView<'_> {
         .await?;
         let mut link_counts = self.link_counts(&post_ids).await?;
         let custom_fields = PostFields::load(&mut *self.conn, &post_ids).await?;
+        // @user_custom_fields: User.custom_fields_for_ids over the posts'
+        // users, for the fields User.allowed_user_custom_fields allows.
+        let user_custom_fields = {
+            let allowed =
+                crate::review_list::allowed_user_custom_fields(self.settings, self.guardian)?;
+            let user_ids: Vec<i32> = posts.iter().filter_map(|p| p.user_id).collect();
+            let mut by_user: HashMap<i32, Map<String, Value>> = HashMap::new();
+            if !allowed.is_empty() {
+                let rows: Vec<(i32, String, Option<String>)> = sqlx::query_as(
+                    "SELECT user_id, name, value FROM user_custom_fields \
+                     WHERE user_id = ANY($1) AND name = ANY($2)",
+                )
+                .bind(&user_ids)
+                .bind(&allowed)
+                .fetch_all(&mut *self.conn)
+                .await?;
+                for (user_id, name, value) in rows {
+                    let fields = by_user.entry(user_id).or_default();
+                    // append_custom_field: a repeated name becomes a list.
+                    match fields.get_mut(&name) {
+                        None => {
+                            fields.insert(name, json!(value));
+                        }
+                        Some(Value::Array(list)) => list.push(json!(value)),
+                        Some(first) => *first = json!([first.take(), value]),
+                    }
+                }
+            }
+            by_user
+        };
         let reviewable_counts = if self
             .guardian
             .can_review_topic(self.settings, viewer.can_see)?
@@ -2386,6 +2416,9 @@ impl TopicView<'_> {
                 if let Some(at) = edited {
                     p.insert("last_wiki_edit".into(), json!(time_json(at)));
                 }
+            }
+            if let Some(fields) = post.user_id.and_then(|id| user_custom_fields.get(&id)) {
+                p.insert("user_custom_fields".into(), Value::Object(fields.clone()));
             }
             // The first post of the ToS, guidelines and privacy topics.
             if post.post_number == 1 && viewer.ctx.static_doc {

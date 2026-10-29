@@ -278,6 +278,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            user_notes: None,
             hashtag_tag_icon: None,
         };
         let mut topic = TopicInfo::from_view(&view);

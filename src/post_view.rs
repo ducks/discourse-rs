@@ -58,6 +58,9 @@ pub struct PostSettings {
     pub presence: bool,
     /// discourse-poll's settings, when it is on.
     pub poll: Option<crate::plugins::poll::view::PollUi>,
+    /// discourse-user-notes' settings, when it is on (what it draws is
+    /// for staff viewers, `PostContext::staff`).
+    pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -116,6 +119,7 @@ impl PostSettings {
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
             poll: crate::plugins::poll::view::PollUi::load(settings)?,
+            user_notes: crate::plugins::user_notes::view::UserNotesUi::load(settings, true)?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -878,7 +882,14 @@ fn avatar(cx: &PostContext, p: &Value) -> String {
             )
         )
     };
-    format!("<div class=\"topic-avatar\"><div class=\"post-avatar\">{inner}</div></div>")
+    // discourse-user-notes' icon after the avatar.
+    let notes = match cx.settings.user_notes.as_ref() {
+        Some(ui) if cx.staff && ui.avatar_placement => {
+            crate::plugins::user_notes::view::post_icon(ui, cx.list.base_path, p)
+        }
+        _ => String::new(),
+    };
+    format!("<div class=\"topic-avatar\"><div class=\"post-avatar\">{inner}</div>{notes}</div>")
 }
 
 fn meta_data(cx: &PostContext, p: &Value, reply_tab: &str) -> String {
@@ -1135,6 +1146,23 @@ fn poster_name(cx: &PostContext, p: &Value) -> String {
             _ => escape(title),
         };
         out.push_str(&format!("<span class=\"{class}\">{content}</span>"));
+    }
+    // discourse-user-notes' icon by the name: before it on the mobile
+    // view, after it on the desktop's.
+    if cx.staff
+        && let Some(ui) = cx
+            .settings
+            .user_notes
+            .as_ref()
+            .filter(|ui| !ui.avatar_placement)
+    {
+        let notes = crate::plugins::user_notes::view::post_icon(ui, cx.list.base_path, p);
+        if crate::mobile::mobile_view() {
+            let open = "<div class=\"names trigger-user-card\">";
+            out.insert_str(open.len(), &notes);
+        } else {
+            out.push_str(&notes);
+        }
     }
     out.push_str("</div>");
     out
@@ -1605,6 +1633,29 @@ fn admin_post_menu(cx: &PostContext, p: &Value) -> String {
             &tr("post.controls.rebake"),
             Some(&tr("post.controls.rebake_description")),
             None,
+        ));
+    }
+    // The plugins' buttons (addPostAdminMenuButton): discourse-user-notes'.
+    if let Some(ui) = cx.settings.user_notes.as_ref().filter(|_| staff)
+        && let Some((label, title)) =
+            crate::plugins::user_notes::view::admin_menu_button(ui, l.i18n)
+    {
+        let item = dropdown_item(
+            "",
+            "btn btn-transparent add-user-note",
+            "pen-to-square",
+            &label,
+            Some(&title),
+            None,
+        );
+        // What user-notes.js opens the modal for.
+        items.push_str(&item.replacen(
+            "<button ",
+            &format!(
+                "<button data-user-notes=\"{}\" data-post-id=\"{}\" ",
+                p["user_id"], p["id"]
+            ),
+            1,
         ));
     }
     format!(
@@ -3806,6 +3857,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            user_notes: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4083,6 +4135,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            user_notes: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {

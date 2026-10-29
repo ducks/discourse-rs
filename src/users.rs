@@ -624,7 +624,10 @@ impl Users<'_> {
                 u.insert("user_fields".into(), Value::Object(fields));
             }
         }
-        u.insert("custom_fields".into(), self.custom_fields(user.id).await?);
+        u.insert(
+            "custom_fields".into(),
+            self.custom_fields(g, user.id).await?,
+        );
         u.insert("time_read".into(), json!(user.time_read.unwrap_or(0)));
         u.insert(
             "recent_time_read".into(),
@@ -1120,17 +1123,18 @@ impl Users<'_> {
         Ok(out)
     }
 
-    /// `custom_fields`: only the names in public_user_custom_fields.
-    async fn custom_fields(&mut self, user_id: i32) -> Result<Value, UsersError> {
+    /// `custom_fields`: the names `User.allowed_user_custom_fields(scope)`
+    /// gives (the public ones, and for staff the staff ones and those the
+    /// enabled plugins allow), each with its first value.
+    async fn custom_fields(
+        &mut self,
+        g: &crate::guardian::Guardian,
+        user_id: i32,
+    ) -> Result<Value, UsersError> {
         let mut out = Map::new();
-        let names: Vec<String> = self
-            .settings
-            .get("public_user_custom_fields")?
-            .to_s()
-            .split('|')
-            .filter(|s| !s.is_empty())
-            .map(str::to_string)
-            .collect();
+        let mut names = crate::review_list::allowed_user_custom_fields(self.settings, g)?;
+        let mut seen = std::collections::HashSet::new();
+        names.retain(|n| seen.insert(n.clone()));
         for name in names {
             let value: Option<String> = sqlx::query_scalar(
                 "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = $2 ORDER BY id LIMIT 1",
