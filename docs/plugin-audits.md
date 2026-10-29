@@ -45,6 +45,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-oauth2-basic | started | 13 | cannot be enabled (164), debug logging, timeout and authorize options, redirects, admin tab, signup buttons | 245-247 | 164 plus 3 S |
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
+| discourse-microsoft-auth | started | 2 | cannot be enabled through the admin (164), non-English strings (167) | none | 164 |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
 
 Findings that cross plugins:
@@ -1169,6 +1170,64 @@ New (ROADMAP Phase 11): the aria-label in 247 `feat/auth-login-buttons` S. Earli
   (`options[:client_secret] ||= client_secret` on a possibly shared options hash,
   plugins/discourse-apple-auth/lib/omniauth_apple.rb:98-100); the port makes a fresh one per
   request (src/plugins/apple.rs:66-69). Only observable after 60 seconds; needs Rails to settle.
+
+## discourse-microsoft-auth (`plugins/discourse-microsoft-auth`)
+
+Verdict: started (2 gaps). Ported on `feat/plugin-microsoft-auth` (2026-10-28) against the
+vendored bf55a44c (tmp/rails-bf55a44c): the strategy and authenticator moved out of core's
+src/auth/builtin.rs into src/plugins/microsoft_auth.rs; tests in tests/plugin_microsoft_auth.rs
+port spec/integration/microsoft_auth_spec.rb and spec/lib/microsoft_auth_revoker_spec.rb.
+
+### What the port has
+- Registry entry: `microsoft_office365`, enable `microsoft_auth_enabled`, required settings client
+  id and secret, can_connect and can_revoke true, icon fab-microsoft (src/plugins/auth_providers.rs);
+  in /site.json's auth_providers and the login buttons only while enabled.
+- Settings from the vendored plugin_settings.yml (`microsoft_auth_enabled`, `_client_id`,
+  `_client_secret` secret, `_email_verified`, `_tenant_id` default `common`), area authenticators;
+  "discourse-microsoft-auth" in `plugins::STARTED`; admin plugin entry with fab-microsoft
+  (src/admin_view.rs).
+- OmniAuth::Strategies::MicrosoftOffice365: client on https://login.microsoftonline.com with the
+  tenant's `/{tenant}/oauth2/v2.0/authorize` and `/token` paths, credentials in a Basic header;
+  authorize params `display`, `score`, `auth_type` from the request, then the default scope
+  (src/plugins/microsoft_auth.rs `client`, `authorize_params`); callback url
+  `full_host + script_name + callback_path`.
+- Auth hash from Graph's /me with the bearer token: uid `id`, name `displayName` or
+  `userPrincipalName`, email `mail` or `userPrincipalName`, extra raw_info as the SnakyHash keeps
+  it (snake_case keys) (`auth_hash`).
+- MicrosoftAuthenticator: ManagedAuthenticator with `primary_email_verified?` from
+  `microsoft_auth_email_verified` (matching an account by email only then), connect and revoke
+  (`behaviour`; src/routes/omniauth.rs after_authenticate).
+- MicrosoftAuthRevoker and its rake tasks: `discourse-rs microsoft-auth revoke` (deactivate, log
+  out, revoke user API keys and the API keys they created, delete the associations) and
+  `discourse-rs microsoft-auth log-out-users` (`revoke`, `log_out_users`; src/cli.rs).
+- Migrations: the four 2021 data migrations (office365 settings copied and removed,
+  oauth2_user_infos rows copied into user_associated_accounts and deleted) are recorded as run in
+  the vendored schema; a database from before them goes through Rails' migrations before the port
+  reads it.
+- Parity case parity/writes/external_auth/microsoft_login.case.json.
+
+### Gaps
+**Settings**
+- `microsoft_auth_enabled` cannot be turned on through the admin: AuthProviderCredentialsValidator
+  is not ported, and the update refuses settings with a validator class it lacks. Rails:
+  plugins/discourse-microsoft-auth/config/settings.yml:2-6;
+  lib/validators/auth_provider_credentials_validator.rb. Port: src/site_setting_update.rs
+  ("site settings with a validator class not ported"). [item 164]
+
+**Locales**
+- Every locale but English for `js.login.microsoft_office365.*` and the setting descriptions.
+  [item 167]
+
+### Items
+
+None new: 164 and 167.
+
+### Couldn't determine
+- omniauth-oauth2 and the oauth2 gem are not vendored: the Basic header (oauth2's default
+  `auth_scheme: :basic_auth`), reading a form encoded or JSON token body, and SnakyHash's
+  snake_cased /me keys come from the recorded parity case and the gems' documented behaviour,
+  not their source. Graph's /me fields and the v2.0 endpoint paths follow Microsoft's identity
+  platform documentation.
 
 ## discourse-assign (`plugins/discourse-assign`)
 

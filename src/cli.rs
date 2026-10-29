@@ -1,5 +1,6 @@
-//! The command line (`discourse-rs`, `serve`, `setup`, `admin create`),
-//! in the library so a binary built with plugins runs the same one.
+//! The command line (`discourse-rs`, `serve`, `setup`, `admin create`,
+//! `microsoft-auth`), in the library so a binary built with plugins runs
+//! the same one.
 
 use std::error::Error;
 use std::io::{IsTerminal, Read, Write};
@@ -50,6 +51,22 @@ enum Command {
         #[command(subcommand)]
         command: AdminCommand,
     },
+    /// discourse-microsoft-auth's rake tasks.
+    MicrosoftAuth {
+        #[command(subcommand)]
+        command: MicrosoftAuthCommand,
+    },
+}
+
+#[derive(Subcommand)]
+enum MicrosoftAuthCommand {
+    /// Remove Microsoft as a login provider: log out and deactivate every
+    /// account that used it and revoke their API keys, as
+    /// `rake microsoft_auth:revoke`.
+    Revoke,
+    /// Log out every account that used Microsoft to log in, as
+    /// `rake microsoft_auth:log_out_users`.
+    LogOutUsers,
 }
 
 #[derive(Subcommand)]
@@ -115,6 +132,7 @@ pub async fn run(mut plugins: Vec<Arc<dyn crate::plugin_api::Plugin>>) -> ExitCo
             )
             .await
         }
+        Some(Command::MicrosoftAuth { command }) => microsoft_auth(command).await,
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -144,6 +162,18 @@ async fn setup(owner: Option<&str>) -> Result<(), Box<dyn Error>> {
         report.versions,
         &crate::schema::discourse_commit()[..11],
     );
+    Ok(())
+}
+
+async fn microsoft_auth(command: MicrosoftAuthCommand) -> Result<(), Box<dyn Error>> {
+    let config = Config::from_env()?;
+    let mut conn = sqlx::PgConnection::connect(&config.site.database_url).await?;
+    match command {
+        MicrosoftAuthCommand::Revoke => crate::plugins::microsoft_auth::revoke(&mut conn).await?,
+        MicrosoftAuthCommand::LogOutUsers => {
+            crate::plugins::microsoft_auth::log_out_users(&mut conn).await?
+        }
+    }
     Ok(())
 }
 
