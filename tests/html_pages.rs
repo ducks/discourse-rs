@@ -352,13 +352,19 @@ async fn the_gems_other_fonts_come_from_the_checkout() {
 }
 
 /// Each bundled asset has its route: a page that links one without it
-/// gets a 404 for the script.
+/// gets a 404 for the script. A plugin's vendored file is served at the
+/// path Rails serves it from (`plugins/...`), not under /assets.
 #[tokio::test]
 async fn every_asset_is_served() {
     let db = TestDb::new().await;
     for name in discourse_rs::assets::names() {
-        let (status, _, _) = get(&db.pool, &format!("/assets/{name}")).await;
-        assert_eq!(status, StatusCode::OK, "/assets/{name}");
+        let path = if name.starts_with("plugins/") {
+            format!("/{name}")
+        } else {
+            format!("/assets/{name}")
+        };
+        let (status, _, _) = get(&db.pool, &path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
     }
 }
 
