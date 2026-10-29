@@ -446,7 +446,8 @@ pub async fn serialize(
     // custom_fields: public_user_custom_fields and the fields plugins
     // register (DiscoursePluginRegistry.serialized_current_user_fields),
     // typed as registered. Of the bundled plugins, chat's last channel
-    // (an integer); the others aren't ported.
+    // and discourse-assign's reminder frequency (integers); the others
+    // aren't ported.
     let mut custom = Map::new();
     let mut names: Vec<String> = settings
         .get("public_user_custom_fields")?
@@ -456,6 +457,7 @@ pub async fn serialize(
         .map(str::to_string)
         .collect();
     names.push(crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID.to_string());
+    names.push(crate::plugins::assign::REMINDERS_FREQUENCY.to_string());
     let rows: Vec<(String, Option<String>)> =
         sqlx::query_as("SELECT name, value FROM user_custom_fields WHERE user_id = $1 AND name = ANY($2) ORDER BY id")
             .bind(uid)
@@ -466,7 +468,9 @@ pub async fn serialize(
         if custom.contains_key(&name) {
             return Err(Unsupported("repeated user custom fields (array values)").into());
         }
-        let value = if name == crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID {
+        let value = if name == crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID
+            || name == crate::plugins::assign::REMINDERS_FREQUENCY
+        {
             json!(value.as_deref().map(crate::ruby::to_i))
         } else {
             json!(value)
@@ -862,6 +866,12 @@ pub async fn serialize(
     if crate::plugins::chat::enabled(settings)? {
         let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
         crate::plugins::chat::current_user_keys(&mut *conn, settings, &guardian, &mut out).await?;
+    }
+    // discourse-assign's keys.
+    if crate::plugins::assign::enabled(settings)? {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        crate::plugins::assign::keys::current_user_keys(&mut *conn, settings, &guardian, &mut out)
+            .await?;
     }
     // discourse-policy's, an attribute like chat's (user_option is an
     // association, serialized after every attribute).
@@ -1306,7 +1316,13 @@ async fn user_option(
     if crate::plugins::chat::enabled(settings)?
         && let Value::Object(map) = &mut option
     {
-        crate::plugins::chat::current_user_option_keys(conn, uid, map).await?;
+        crate::plugins::chat::current_user_option_keys(&mut *conn, uid, map).await?;
+    }
+    // discourse-assign's key.
+    if crate::plugins::assign::enabled(settings)?
+        && let Value::Object(map) = &mut option
+    {
+        crate::plugins::assign::keys::user_option_keys(conn, uid, map).await?;
     }
     Ok(option)
 }

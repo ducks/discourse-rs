@@ -38,6 +38,15 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::custom_emoji::REBAKE_JOB => {
             crate::custom_emoji::rebake_posts(state, &job.args).await
         }
+        crate::plugins::assign::jobs::ASSIGN_NOTIFICATION => {
+            crate::plugins::assign::jobs::assign_notification(state, &job.args).await
+        }
+        crate::plugins::assign::jobs::UNASSIGN_NOTIFICATION => {
+            crate::plugins::assign::jobs::unassign_notification(state, &job.args).await
+        }
+        crate::plugins::assign::jobs::REMIND_USER => {
+            crate::plugins::assign::jobs::remind_user(state, &job.args).await
+        }
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,

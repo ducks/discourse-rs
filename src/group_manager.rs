@@ -219,6 +219,13 @@ pub async fn add_many(
         )
         .await?;
         crate::plugins::user_added_to_group(conn, cx.state, cx.promotion.settings, user_id).await?;
+        crate::plugins::assign::lifecycle::user_added_to_group(
+            conn,
+            cx.promotion.settings,
+            user_id,
+            group.id,
+        )
+        .await?;
     }
     Ok(added)
 }
@@ -620,6 +627,14 @@ pub async fn remove_many(
     ordered.sort_unstable();
     for user_id in ordered {
         crate::plugins::user_removed_from_group(conn, cx.promotion.settings, user_id).await?;
+        crate::plugins::assign::lifecycle::user_removed_from_group(
+            conn,
+            &cx.state.bus,
+            cx.promotion.settings,
+            user_id,
+            group.id,
+        )
+        .await?;
     }
     // enqueue_user_removed_webhook_events
     for (group_user_id, payload) in hook_payloads {

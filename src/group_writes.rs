@@ -19,7 +19,7 @@ use crate::{AppError, Unsupported};
 
 /// The columns a request may set, with their ActiveModel types, in the
 /// table's column order (the order `previous_changes` lists them in).
-pub const COLUMNS: [(&str, Kind); 23] = [
+pub const COLUMNS: [(&str, Kind); 24] = [
     ("name", Kind::Str),
     ("automatic_membership_email_domains", Kind::Str),
     ("primary_group", Kind::Bool),
@@ -43,6 +43,8 @@ pub const COLUMNS: [(&str, Kind); 23] = [
     ("members_visibility_level", Kind::Int),
     ("flair_icon", Kind::Str),
     ("flair_upload_id", Kind::Int),
+    // discourse-assign's (register_group_param), permitted while it is on.
+    ("assignable_level", Kind::Int),
 ];
 
 #[derive(Clone, Copy, PartialEq, Debug)]

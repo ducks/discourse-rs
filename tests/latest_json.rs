@@ -158,7 +158,6 @@ async fn list_options_filter_the_topics() {
 async fn unported_list_options_are_refused() {
     let db = TestDb::new().await;
     for path in [
-        "/latest.json?assigned=me",
         "/latest.json?tags=a&tags[]=b",
         "/tag/howto.json?status=closed",
     ] {

@@ -308,6 +308,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::plugins::reactions::like_sync::JOB,
         Duration::from_secs(3600),
     ),
+    (
+        crate::plugins::assign::jobs::ENQUEUE_REMINDERS,
+        Duration::from_secs(24 * 3600),
+    ),
     (moderation::TL3_PROMOTIONS, Duration::from_secs(24 * 3600)),
     (
         group_messages::IGNORED_USERS_SUMMARY,
@@ -607,6 +611,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         }
         crate::plugins::reactions::like_sync::JOB => {
             crate::plugins::reactions::like_sync::run(state).await
+        }
+        crate::plugins::assign::jobs::ENQUEUE_REMINDERS => {
+            crate::plugins::assign::jobs::enqueue_reminders(state).await
         }
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await

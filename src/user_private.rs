@@ -918,6 +918,11 @@ impl Private<'_> {
         if crate::plugins::chat::enabled(s)? {
             crate::plugins::chat::user_option_keys(&mut *self.conn, uid, &mut o_out).await?;
         }
+        // discourse-assign's user option.
+        if crate::plugins::assign::enabled(s)? {
+            crate::plugins::assign::keys::user_option_keys(&mut *self.conn, uid, &mut o_out)
+                .await?;
+        }
         // discourse-policy's user option.
         if crate::plugins::policy::enabled(s)? {
             crate::plugins::policy::user_option_keys(&mut *self.conn, uid, &mut o_out).await?;

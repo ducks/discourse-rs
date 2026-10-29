@@ -98,27 +98,40 @@ async fn toggle(
     .bind(user_id)
     .fetch_all(&mut *tx)
     .await?;
+    let host = crate::pretty_text::Host::from_state(&state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
     let mut archived_for = None;
     for group_id in groups {
         if archive {
-            archived_messages::group_archive(
+            if archived_messages::group_archive(
                 &state.bus,
                 &mut tx,
                 group_id,
                 topic_id,
                 Some(user_id),
             )
-            .await?;
+            .await?
+            {
+                crate::plugins::assign::lifecycle::archive_message(&mut tx, &ctx, topic_id, true)
+                    .await?;
+            }
             archived_for = Some(group_id);
-        } else {
-            archived_messages::group_move_to_inbox(
-                &state.bus,
-                &mut tx,
-                group_id,
-                topic_id,
-                Some(user_id),
-            )
-            .await?;
+        } else if archived_messages::group_move_to_inbox(
+            &state.bus,
+            &mut tx,
+            group_id,
+            topic_id,
+            Some(user_id),
+        )
+        .await?
+        {
+            crate::plugins::assign::lifecycle::move_to_inbox(&mut tx, &ctx, topic_id, true).await?;
         }
     }
     let allowed: bool = sqlx::query_scalar(
@@ -131,8 +144,13 @@ async fn toggle(
     if allowed {
         if archive {
             archived_messages::user_archive(&state.bus, &mut tx, user_id, topic_id).await?;
-        } else {
-            archived_messages::user_move_to_inbox(&state.bus, &mut tx, user_id, topic_id).await?;
+            crate::plugins::assign::lifecycle::archive_message(&mut tx, &ctx, topic_id, false)
+                .await?;
+        } else if archived_messages::user_move_to_inbox(&state.bus, &mut tx, user_id, topic_id)
+            .await?
+        {
+            crate::plugins::assign::lifecycle::move_to_inbox(&mut tx, &ctx, topic_id, false)
+                .await?;
         }
     }
     let name: Option<String> = match archived_for {

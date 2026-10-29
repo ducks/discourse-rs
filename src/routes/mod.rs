@@ -36,6 +36,7 @@ mod admin_watched_words;
 mod admin_web_hooks;
 mod admin_whats_new;
 mod archive_message;
+mod assign;
 mod backups;
 mod badges;
 mod bookmark_writes;
@@ -510,6 +511,24 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/voting/unvote.json", post(topic_voting::unvote))
         .route("/voting/who", get(topic_voting::who))
         .route("/voting/who.json", get(topic_voting::who))
+        // discourse-assign's AssignController.
+        .route("/assign/assign", put(assign::assign_target))
+        .route("/assign/assign.json", put(assign::assign_target))
+        .route("/assign/unassign", put(assign::unassign_target))
+        .route("/assign/unassign.json", put(assign::unassign_target))
+        .route("/assign/suggestions", get(assign::suggestions))
+        .route("/assign/suggestions.json", get(assign::suggestions))
+        .route("/assign/assigned", get(assign::assigned))
+        .route("/assign/assigned.json", get(assign::assigned))
+        .route("/assign/members/{group_name}", get(assign::group_members))
+        .route(
+            "/topics/messages-assigned/{username}",
+            get(assign::messages_assigned),
+        )
+        .route(
+            "/topics/group-topics-assigned/{groupname}",
+            get(assign::group_topics_assigned),
+        )
         // discourse-user-notes' UserNotesController, and its modal.
         .route(
             "/user_notes",
@@ -2789,6 +2808,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-notes.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))
         .route("/assets/discourse-solved.js", get(asset))
+        .route("/assets/discourse-assign.js", get(asset))
         .route("/assets/poll.js", get(asset))
         .route("/assets/checklist.js", get(asset))
         .route("/assets/cakeday.js", get(asset))

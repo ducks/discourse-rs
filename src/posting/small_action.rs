@@ -400,8 +400,12 @@ async fn add_inner(
                 .fetch_all(&mut *conn)
                 .await?;
         for archiver in users {
-            crate::archived_messages::user_move_to_inbox(ctx.bus, &mut *conn, archiver, topic_id)
-                .await?;
+            if crate::archived_messages::user_move_to_inbox(ctx.bus, &mut *conn, archiver, topic_id)
+                .await?
+            {
+                crate::plugins::assign::lifecycle::move_to_inbox(&mut *conn, ctx, topic_id, false)
+                    .await?;
+            }
         }
         let groups: Vec<i32> =
             sqlx::query_scalar("SELECT group_id FROM group_archived_messages WHERE topic_id = $1")
@@ -409,14 +413,18 @@ async fn add_inner(
                 .fetch_all(&mut *conn)
                 .await?;
         for group_id in groups {
-            crate::archived_messages::group_move_to_inbox(
+            if crate::archived_messages::group_move_to_inbox(
                 ctx.bus,
                 &mut *conn,
                 group_id,
                 topic_id,
                 Some(user_id),
             )
-            .await?;
+            .await?
+            {
+                crate::plugins::assign::lifecycle::move_to_inbox(&mut *conn, ctx, topic_id, true)
+                    .await?;
+            }
         }
     }
 

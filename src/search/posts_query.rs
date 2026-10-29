@@ -527,6 +527,9 @@ impl Search<'_> {
                 | Filter::WatchingTracking
                 | Filter::Seen
                 | Filter::Unseen => self.viewer_filter(q, filter, &capture),
+                Filter::InAssigned | Filter::InUnassigned | Filter::Assigned => {
+                    self.assigned_filter(q, filter, &capture).await?
+                }
                 Filter::Polls => {
                     if self.settings.get("poll_enabled")?.truthy() {
                         q.join("INNER JOIN polls ON polls.post_id = posts.id");
@@ -590,6 +593,66 @@ impl Search<'_> {
                 Filter::GroupMessages => self.group_messages_filter(q, &capture).await?,
                 Filter::Tags => self.tags_filter(q, &capture, true).await?,
                 Filter::NotTags => self.tags_filter(q, &capture, false).await?,
+            }
+        }
+        Ok(())
+    }
+
+    /// discourse-assign's `in:assigned`, `in:unassigned` and `assigned:`
+    /// (a username, else a group the viewer may see with its members), for
+    /// those who may assign anywhere; for others they change nothing.
+    async fn assigned_filter(
+        &mut self,
+        q: &mut Query,
+        filter: Filter,
+        capture: &str,
+    ) -> Result<(), SearchError> {
+        use crate::plugins::PluginError;
+        let permissions =
+            match crate::plugins::assign::Permissions::load(&mut *self.conn, self.settings).await {
+                Ok(p) => p,
+                Err(PluginError::Db(e)) => return Err(e.into()),
+                Err(PluginError::Setting(e)) => return Err(e.into()),
+                Err(PluginError::Unsupported(e)) => return Err(e.into()),
+            };
+        if !permissions.can_assign_globally(self.guardian) {
+            return Ok(());
+        }
+        const ACTIVE: &str = "SELECT a.topic_id FROM assignments a WHERE a.active";
+        match filter {
+            Filter::InAssigned => q.and(format!("topics.id IN ({ACTIVE})")),
+            Filter::InUnassigned => q.and(format!("topics.id NOT IN ({ACTIVE})")),
+            _ if capture.is_empty() => {}
+            _ => {
+                let user: Option<i32> =
+                    sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")
+                        .bind(capture.to_lowercase())
+                        .fetch_optional(&mut *self.conn)
+                        .await?;
+                let group: Option<i32> = if user.is_some() {
+                    None
+                } else {
+                    sqlx::query_scalar(&format!(
+                        "SELECT groups.id FROM groups WHERE {} AND {} AND groups.name = $1 \
+                         ORDER BY groups.name LIMIT 1",
+                        crate::user_search::visible_groups_where(self.guardian),
+                        crate::groups::members_visible_groups_where(self.guardian, "groups"),
+                    ))
+                    .bind(capture)
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+                };
+                let assignee = match (user, group) {
+                    (Some(id), _) => Some((id, "User")),
+                    (None, Some(id)) => Some((id, "Group")),
+                    _ => None,
+                };
+                if let Some((id, kind)) = assignee {
+                    q.and(format!(
+                        "topics.id IN (SELECT a.topic_id FROM assignments a WHERE a.assigned_to_id = {id} \
+                         AND a.assigned_to_type = '{kind}' AND a.active)"
+                    ));
+                }
             }
         }
         Ok(())

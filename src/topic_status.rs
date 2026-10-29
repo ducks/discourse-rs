@@ -391,6 +391,14 @@ pub async fn apply(
     if updated && !is_pin {
         crate::plugins::topic_status_updated(&mut *conn, s, topic.id, status.name(), enabled)
             .await?;
+        crate::plugins::assign::lifecycle::topic_status_updated(
+            &mut *conn,
+            ctx,
+            topic.id,
+            status.name(),
+            enabled,
+        )
+        .await?;
     }
 
     // StaffActionLogger
@@ -431,8 +439,14 @@ pub async fn apply(
         .fetch_all(&mut *conn)
         .await?;
         for group_id in groups {
-            crate::archived_messages::group_archive(ctx.bus, &mut *conn, group_id, topic.id, None)
-                .await?;
+            if crate::archived_messages::group_archive(
+                ctx.bus, &mut *conn, group_id, topic.id, None,
+            )
+            .await?
+            {
+                crate::plugins::assign::lifecycle::archive_message(&mut *conn, ctx, topic.id, true)
+                    .await?;
+            }
         }
     }
     Ok(())

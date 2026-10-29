@@ -463,6 +463,8 @@ pub async fn accept(
         t.post.id,
     )
     .await?;
+    // DiscourseEvent :accepted_solution, to discourse-assign.
+    crate::plugins::assign::lifecycle::solution_changed(conn, ctx, topic_id, true).await?;
     Ok(Outcome::Done(topic_id))
 }
 

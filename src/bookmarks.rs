@@ -628,6 +628,23 @@ impl Bookmarks<'_> {
                 json!(b.last_read_post_number),
             );
         }
+        // discourse-assign's keys, the last attributes (before `user`).
+        crate::plugins::assign::keys::bookmark_keys(
+            &mut *self.conn,
+            &crate::plugins::assign::keys::Cx {
+                settings,
+                urls: self.urls,
+                logo: logo_small_url,
+            },
+            self.guardian,
+            is_topic,
+            b.topic_id,
+            b.post_id,
+            b.category_id,
+            &mut out,
+        )
+        .await
+        .map_err(crate::AppError::from)?;
         // BasicUserSerializer of the post's author.
         let user = match (b.post_user_id, b.username.as_deref()) {
             (Some(id), Some(username)) => self.basic_user(

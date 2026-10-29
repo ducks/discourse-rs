@@ -258,6 +258,10 @@ pub async fn create(
     }
     row.remove("bio_cooked");
     row.insert("bio_cooked".into(), Value::Null);
+    // A plugin's group params (dynamic_attributes) only while it is on.
+    if !crate::plugins::assign::enabled(&req.settings)? {
+        row.insert("assignable_level".into(), Value::Null);
+    }
     let int = |c: &str| row[c].as_i64();
     let alias_ok = |c: &str| matches!(int(c), Some(0 | 1 | 2 | 3 | 4 | 99));
     let level_ok = |c: &str| row[c].is_null() || matches!(int(c), Some(0..=4));
@@ -475,6 +479,15 @@ pub async fn destroy(
             .bind(id)
             .fetch_all(&mut *tx)
             .await?;
+    // before_destroy: discourse-assign's allowed groups lose it.
+    crate::plugins::assign::lifecycle::group_saving(
+        &mut tx,
+        &state.bus,
+        &state.site_setting_defs,
+        &req.settings,
+        crate::plugins::assign::lifecycle::GroupChange::Destroyed { id },
+    )
+    .await?;
     // The dependents (each `dependent: :destroy`), then the group.
     for table in [
         "category_groups",
@@ -534,7 +547,7 @@ pub async fn destroy(
         host: &req.host,
         config: &state.config,
     };
-    for user_id in members {
+    for &user_id in &members {
         let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
             .bind(user_id)
             .fetch_one(&mut *tx)
@@ -550,6 +563,14 @@ pub async fn destroy(
         }
     }
     crate::plugins::group_destroyed(&mut tx, &req.settings).await?;
+    crate::plugins::assign::lifecycle::group_destroyed(
+        &mut tx,
+        &state.bus,
+        &req.settings,
+        id,
+        &members,
+    )
+    .await?;
     tx.commit().await?;
     Ok(Json(json!({ "success": "OK" })).into_response())
 }
@@ -1243,6 +1264,10 @@ pub async fn update(
     if !automatic && can_admin {
         permitted.push("automatic_membership_email_domains");
     }
+    // DiscoursePluginRegistry.group_params: discourse-assign's.
+    if crate::plugins::assign::enabled(&req.settings)? {
+        permitted.push("assignable_level");
+    }
     let defaults_allowed = !automatic || admin;
     let mut attrs = Map::new();
     for key in &permitted {
@@ -1394,6 +1419,19 @@ pub async fn update(
     }
     gw::before_save(&req.host, &mut row, Some(&before)).await?;
     let changed = gw::changes(&before, &row);
+    // before_update: discourse-assign's allowed groups follow a rename.
+    if changed.contains(&"name")
+        && let (Some(from), Some(to)) = (before["name"].as_str(), row["name"].as_str())
+    {
+        crate::plugins::assign::lifecycle::group_saving(
+            &mut tx,
+            &state.bus,
+            &state.site_setting_defs,
+            &req.settings,
+            crate::plugins::assign::lifecycle::GroupChange::Renamed { from, to },
+        )
+        .await?;
+    }
     gw::write_changes(&mut tx, group.id, &row, &changed).await?;
     gw::after_save(&mut tx, group.id, &row, Some(&before)).await?;
     tx.commit().await?;

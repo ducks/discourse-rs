@@ -60,6 +60,10 @@ pub enum Filter {
     MinViews,
     MaxViews,
     Locale,
+    /// discourse-assign's `in:assigned`, `in:unassigned` and `assigned:`
+    InAssigned,
+    InUnassigned,
+    Assigned,
     /// poll's `in:polls`
     Polls,
     /// discourse-solved's `status:solved` and `status:unsolved`
@@ -73,6 +77,7 @@ pub enum Filter {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Plugin {
     Core,
+    Assign,
     Poll,
     Solved,
     TopicVoting,
@@ -82,6 +87,7 @@ impl Plugin {
     fn enabled(self, settings: &SiteSettings) -> Result<bool, SettingError> {
         Ok(match self {
             Plugin::Core => true,
+            Plugin::Assign => settings.get("assign_enabled")?.truthy(),
             Plugin::Poll => settings.get("poll_enabled")?.truthy(),
             Plugin::Solved => settings.get("solved_enabled")?.truthy(),
             Plugin::TopicVoting => settings.get("topic_voting_enabled")?.truthy(),
@@ -182,6 +188,9 @@ const FILTERS: &[(Filter, Plugin, &str)] = &[
     (Filter::MinViews, Plugin::Core, r"\Amin_views:([0-9]+)\z"),
     (Filter::MaxViews, Plugin::Core, r"\Amax_views:([0-9]+)\z"),
     (Filter::Locale, Plugin::Core, r"\Alocale:([a-zA-Z0-9_-]+)\z"),
+    (Filter::InAssigned, Plugin::Assign, r"in:assigned"),
+    (Filter::InUnassigned, Plugin::Assign, r"in:unassigned"),
+    (Filter::Assigned, Plugin::Assign, r"assigned:(.+)$"),
     (Filter::Polls, Plugin::Poll, r"in:polls"),
     (Filter::Solved, Plugin::Solved, r"status:solved"),
     (Filter::Unsolved, Plugin::Solved, r"status:unsolved"),

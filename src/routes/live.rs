@@ -836,6 +836,15 @@ async fn render_post(
             )?
         },
         plugin_menu,
+        assign: crate::plugins::assign::view::topic_assign_for(
+            &mut conn,
+            settings,
+            &urls,
+            guardian,
+            topic_id,
+            topic_ctx.category_id,
+        )
+        .await?,
         post_voting: crate::plugins::post_voting::view::TopicState::for_redraw(&post),
     };
     // The post shown above it, for its reply-to tab and time gap.

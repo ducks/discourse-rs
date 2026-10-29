@@ -717,6 +717,11 @@ pub(crate) async fn show_json(
             }
         }
     }
+    // discourse-assign's keys.
+    crate::plugins::assign::keys::group_show_keys(
+        &mut *conn, settings, guardian, group.id, &mut out,
+    )
+    .await?;
     Ok(Value::Object(out))
 }
 

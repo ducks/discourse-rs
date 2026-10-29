@@ -782,6 +782,8 @@ pub async fn revise(
     if category_changed {
         crate::plugins::topic_category_revised(&mut tx, s, post.topic_id).await?;
     }
+    // ... and to discourse-assign: auto assigning by mention.
+    crate::plugins::assign::lifecycle::post_saved(&mut tx, ctx, post.id).await?;
     if editor_user.id != -1 {
         crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
     }

@@ -253,6 +253,7 @@ mod tests {
                     ..Default::default()
                 }),
                 support_mixed_text_direction: false,
+                assign: None,
             },
         };
         let settings = PostSettings {
@@ -278,6 +279,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            assign: None,
             user_notes: None,
             cakeday: None,
             policy: false,

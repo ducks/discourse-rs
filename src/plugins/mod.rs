@@ -18,6 +18,7 @@
 //! functions here, called where Rails triggers them.
 
 pub mod apple;
+pub mod assign;
 pub mod auth_providers;
 pub mod cakeday;
 pub mod chat;
@@ -113,6 +114,7 @@ pub struct PosterInputs {
 pub struct TopicListData {
     pub solved: Option<solved::TopicListData>,
     pub topic_voting: Option<topic_voting::TopicListData>,
+    pub assign: Option<assign::keys::ListData>,
 }
 
 impl TopicListData {
@@ -357,6 +359,7 @@ pub const STARTED: &[&str] = &[
     "chat",
     "checklist",
     "discourse-apple-auth",
+    "discourse-assign",
     "discourse-cakeday",
     "discourse-details",
     "discourse-lazy-videos",
