@@ -44,6 +44,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-lti | started | 3 | cannot be enabled through the port (164), CSP nonce | 214 | 164 plus M |
 | discourse-oauth2-basic | started | 13 | cannot be enabled (164), debug logging, timeout and authorize options, redirects, admin tab, signup buttons | 245-247 | 164 plus 3 S |
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
+| discourse-login-with-amazon | started | 2 | cannot be enabled through the admin (164), non-English strings (167) | none | 164 |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
 
@@ -1122,6 +1123,60 @@ New (ROADMAP Phase 11): 248 `feat/openid-connect-mtls` M, 249 `feat/openid-conne
   `SecureRandom.hex(64)` depends on the gem version, and ref has no Gemfile.lock. The port uses
   hex(64) (src/routes/omniauth.rs:300; src/plugins/openid_connect.rs:658-659). Settle by running
   Rails or reading the vendored gem.
+
+## discourse-login-with-amazon (`plugins/discourse-login-with-amazon`)
+
+Verdict: started (2 gaps). Ported on `feat/plugin-login-with-amazon` (2026-10-28) against the
+vendored bf55a44c (tmp/rails-bf55a44c): the strategy and authenticator moved out of core's
+src/auth/builtin.rs into src/plugins/login_with_amazon.rs; tests in
+tests/plugin_login_with_amazon.rs port spec/system/associated_account_prefs_spec.rb on the
+server drawn preferences and cover the login against Amazon's endpoints stubbed on loopback.
+
+### What the port has
+- Registry entry: `amazon`, enable `enable_login_with_amazon`, required settings client id and
+  secret, can_connect `login_with_amazon_user_can_connect`, can_revoke
+  `login_with_amazon_user_can_revoke`, icon fab-amazon (src/plugins/auth_providers.rs); in
+  /site.json's auth_providers and the login buttons only while enabled.
+- Settings from the vendored plugin_settings.yml (client id and secret, scope `profile`,
+  overrides email, hidden email verified `true`, user can connect and revoke), area
+  authenticators; "discourse-login-with-amazon" in `plugins::STARTED`; admin plugin entry
+  (src/admin_view.rs).
+- OmniAuth::Strategies::Amazon: client on https://www.amazon.com/ with /ap/oa and
+  https://api.amazon.com/auth/o2/token, credentials in a Basic header; the scope setting as the
+  only authorize param (it replaces the strategy's `profile postal_code`); `callback_url` from
+  REDIRECT_URL_ORIGIN when set; `build_access_token` with the callback without its query and the
+  client's id and secret in the form (src/plugins/login_with_amazon.rs).
+- Auth hash from GET /ap/user/profile with the token in the query: uid `Profile.CustomerId`,
+  email `PrimaryEmail`, name `Name`, extra `postal_code` (keys as the SnakyHash reads them).
+- Auth::LoginWithAmazonAuthenticator: email verified, always update user email and can connect
+  from the settings (`behaviour`; src/routes/omniauth.rs after_authenticate).
+- The account preferences' associated accounts list a login only when the user has it or may
+  connect it (authProviders' filter), with the revoke button only while users may revoke
+  (src/preferences_view/mod.rs).
+- Parity case parity/writes/external_auth/amazon_new_user.case.json.
+
+### Gaps
+**Settings**
+- `enable_login_with_amazon` cannot be turned on through the admin: AuthProviderCredentialsValidator
+  is not ported. Rails: plugins/discourse-login-with-amazon/config/settings.yml:2-5. Port:
+  src/site_setting_update.rs ("site settings with a validator class not ported"). [item 164]
+
+**Locales**
+- Every locale but English for `js.login.amazon.*`, the settings category and descriptions.
+  [item 167]
+
+### Items
+
+None new: 164 and 167.
+
+### Couldn't determine
+- omniauth-oauth2 and the oauth2 gem are not vendored: the Basic header besides the form's
+  credentials, the token in the profile request's query (`access_token_options mode: :query`
+  plus the explicit param) and the snake_cased profile keys come from the plugin's code, the
+  recorded parity case and the gems' documented behaviour. The endpoints follow the plugin's
+  constants and Amazon's Login with Amazon documentation.
+- The preferences filter (an account or can_connect) follows the system spec; core's Ember
+  component is not in the extract.
 
 ## discourse-apple-auth (`plugins/discourse-apple-auth`)
 
