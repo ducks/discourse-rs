@@ -46,6 +46,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
+| discourse-gamification | started | 8 | the workflows node (discourse-workflows unported), the seed fixture, plugin columns on the directory page, the minimal leaderboard, native choosers in the edit form | none | S per gap; the directory page with core |
 
 Findings that cross plugins:
 
@@ -1346,3 +1347,116 @@ No new item; the rich editor waits on 196.
 ### Couldn't determine
 - The policy item's place in the composer's options menu (after poll here) and `can_create_policy`'s place among the current user's keys (with chat's, before the `user_option` association) need a Rails response.
 - The policy email's exact HTML and text after Email::Renderer and Styles were not compared with a Rails send.
+
+## discourse-gamification (`plugins/discourse-gamification`)
+
+Verdict: started (8 gaps). Added on `feat/plugin-gamification`, after
+this audit's commit, against the plugin at the vendored bf55a44c. At that
+ref the plugin keeps its daily scores per leaderboard
+(`gamification_leaderboard_scores`, migration 20260402141912); the older
+global `gamification_scores` table is only the migration's backfill
+source and is not read by the reference, nor by the port.
+
+### What the port has
+- Settings: `discourse_gamification_enabled`, `scorable_categories`, the fifteen
+  `<source>_score_value` weights and `score_ranking_strategy`, from the vendored
+  plugin_settings.yml; "discourse-gamification" in `plugins::STARTED`; the admin plugin entry
+  with `trophy` (src/admin_view.rs).
+- Score sources (lib/discourse_gamification/scorables): day visited, flag created, like given
+  and received, post created, post read, solutions, time read, topic created, user invited,
+  reaction given and received (discourse-reactions on), chat reaction given and received and
+  chat message created (chat on), each with its weight (leaderboard `score_overrides`, else the
+  setting), its enabled check (weight above 0 and its plugin on) and the category filter
+  (leaderboard `scorable_category_ids`, else `scorable_categories`); the SQL is the plugin's,
+  `:since` inlined as ActiveRecord quotes it: src/plugins/gamification/scorables.rs.
+- GamificationLeaderboardScore.calculate_scores (one source or all, with the score events, active
+  and unsuspended users, upsert per user and day) and calculate_all (leaderboards not over):
+  src/plugins/gamification/scorables.rs.
+- LeaderboardCachedView: a materialized view per leaderboard and period, the plugin's query text
+  (eligible users: primary email not anonymized, not staged, active, not suspended, not
+  anonymous, included and excluded groups; the date range and period window), the unique user
+  index, the query signature as the view's comment so Rails-built views stay valid, create,
+  refresh concurrently, delete (gone leaderboards too), stale detection and purge, update_all and
+  regenerate_all in transactions, `scores` with NotReady for a missing view (current schema
+  only), the three ranking strategies: src/plugins/gamification/cached_view.rs.
+- Jobs: GenerateLeaderboardPositions, RefreshLeaderboardPositions, DeleteLeaderboardPositions,
+  RegenerateLeaderboardPositions, UpdateStaleLeaderboardPositions, RecalculateLeaderboardScores,
+  RecalculateScores (with the /recalculate_scores message and the remaining count), the
+  scheduled UpdateScoresForToday (hourly) and UpdateScoresForTenDays (daily), both no-ops while
+  the plugin is off: src/plugins/gamification/jobs.rs, src/jobs/mod.rs, src/jobs/handlers.rs.
+- GamificationLeaderboardController#respond (GET /leaderboard(/:id)(.json)): requires_plugin,
+  the first leaderboard by default, can_see_leaderboard?, `period` (`all` as all_time, else the
+  default period, else all_time), `page`, `user_limit`, LeaderboardViewSerializer (personal, the
+  leaderboard, UserScoreSerializer users), 202 with the reason and the generate job while not
+  ready, the minute's anonymous cache: src/routes/gamification.rs, src/plugins/gamification/mod.rs.
+- AdminGamificationLeaderboardController: index (GET /admin/plugins/gamification.json and
+  /admin/plugins/discourse-gamification/leaderboards.json, with the recalculations left and the
+  groups), show, create (name and created_by_id required, the reserved name, the recalculate
+  job), update (every field as the controller casts it, the score overrides' validations, the
+  recalculate job when scoring changed else the refresh job, updated_at only on a change),
+  destroy (scores with it, the delete job), recalculate_scores (5 a day, Date.parse, no future
+  date); the StaffConstraint, ensure_admin and requires_plugin order: src/routes/gamification.rs.
+- AdminGamificationScoreEventController: show (id, user_id, date filters, 100 at most), create
+  (required params, the user must exist), update: src/routes/gamification.rs.
+- Serializer keys: `gamification_score` on UserCardSerializer and UserSerializer (the default
+  leaderboard's all time total, 0 and the generate job while not ready; after cakeday's keys),
+  `default_gamification_leaderboard_id` on SiteSerializer: src/plugins/gamification/mod.rs,
+  src/users.rs, src/site.rs.
+- Events: `site_setting_changed` for score_ranking_strategy enqueues the regenerate job
+  (src/plugins/mod.rs); `merging_users` sums the scores (src/user_merger.rs, already there);
+  the user's scores go with them on destroy (src/plugins/mod.rs `user_destroying`).
+- The directory column `gamification_score` (DirectoryIntegration.query) in the directory
+  refresh: src/directory.rs (already there).
+- UI, server side: the leaderboard page (title, the info button and its modal, the period
+  chooser, disabled by `period_filter_disabled`, the staff settings link, the not ready state
+  with Refresh, the podium, the viewer's row, the ranking paged by an htmx DLoadMore sentinel)
+  in src/plugins/gamification/view.rs and static/js/gamification.js; the user card connector
+  (user-card-metadata) and the profile connector (user-profile-secondary) linking the score to
+  the default leaderboard (src/user_card_view.rs, src/user_profile_view.rs); the admin plugin
+  page's configuration nav (Settings, Leaderboards), the leaderboards list with New, the create
+  form, Recalculate with its modal (ranges, custom date, the result through the message bus),
+  delete with its confirmation, the empty state, and the edit form (name, dates, period filter,
+  default period, groups, scorable categories, the fifteen weights) in
+  src/plugins/gamification/admin_view.rs, src/admin_plugins_view.rs (`config_page`),
+  src/routes/admin_plugins.rs; the stylesheets in static/css/gamification.css.
+- Locales: English client and server strings through the vendored plugin locales.
+- Tests: tests/plugin_gamification.rs.
+
+### Gaps
+**plugin.rb**
+- `register_discourse_workflows_node` (the "Award score" node of discourse-workflows,
+  lib/discourse_workflows/nodes/gamification_score/v1.rb): discourse-workflows is not ported.
+- The leaderboard fixture (db/fixtures/001_gamification_leaderboards.rb, a "Global
+  Leaderboard" seeded when none exists): the port runs no seeds; restored sites have it.
+- `add_directory_column`'s `before_directory_refresh` find_or_create of the column row: the
+  port relies on the row a Rails boot created, and the users directory page refuses plugin
+  columns once an admin enables one (src/routes/directory.rs), so the column shows only in
+  /directory_items.json.
+
+**Jobs**
+- GenerateLeaderboardPositions' DistributedMutex: not taken (view creation is idempotent and
+  the port runs one worker per site).
+
+**UI**
+- MinimalGamificationLeaderboard (used by themes, e.g. right sidebar blocks): not drawn.
+- The period chooser loads the page for its period (`?period=`) where Ember swaps the users
+  without changing the URL; a direct `?page=N` URL shows that page's rows alone.
+- The group and category choosers of the edit form are native multiple selects, not
+  select-kit's GroupChooser and CategorySelector; the default period is a native select, not
+  PeriodInput.
+- The recalculate modal's ranges are computed on the server in UTC, not with moment in the
+  browser; the custom date is a native date input, not DatePickerPast.
+
+### Items
+
+No new item.
+
+### Couldn't determine
+- Plugin outlets' wrappers: the user-profile-secondary connector is drawn as a bare
+  `<div><dt>..</dt><dd>..</dd></div>` inside the secondary list, and the classic connector on
+  the card as its own `div`; a Rails render would settle both.
+- The admin plugin show route for a plugin with a configuration nav: the port draws the
+  settings with the nav as header tabs (Settings first, labelled
+  `admin.plugins.change_settings_short`); Ember's exact tab markup was not available.
+- The directory column's header label (`gamification_score` at the root of the client
+  strings, "directory column workaround") needs the core directory table's code.
