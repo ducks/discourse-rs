@@ -2765,6 +2765,62 @@
     stopPresence();
   }
 
+  // ChatComposerDropdown: the "+" trigger's menu of the composer buttons
+  // registered for the dropdown (registerChatComposerButton, position
+  // "dropdown"), each {id, icon, label, displayed(context), action(context,
+  // textarea)}. Core's own (upload, GIFs, local dates, the mobile emoji)
+  // are not ported, so only the plugins' show; with none the trigger is
+  // left alone, as DMenu renders no trigger without buttons.
+  Discourse.chatComposerButtons = Discourse.chatComposerButtons || [];
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest(".chat-composer-dropdown__trigger-btn");
+    if (!trigger || trigger.disabled || !Discourse.float) {
+      return;
+    }
+    var textarea = trigger.closest(".chat-composer__wrapper");
+    textarea = textarea && textarea.querySelector("textarea.chat-composer__input");
+    var context = textarea ? textarea.dataset.chatComposerContext : null;
+    var buttons = Discourse.chatComposerButtons.filter(function (b) {
+      return !b.displayed || b.displayed(context, textarea);
+    });
+    if (!buttons.length) {
+      return;
+    }
+    var html = '<ul class="chat-composer-dropdown__list">';
+    buttons.forEach(function (b) {
+      html +=
+        '<li class="chat-composer-dropdown__item ' + escapeHtml(b.id) + '">' +
+        '<button class="btn btn-icon-text chat-composer-dropdown__action-btn btn-transparent ' + escapeHtml(b.id) +
+        '" type="button" data-id="' + escapeHtml(b.id) + '">' + iconHtml(b.icon) +
+        '<span class="d-button-label">' + escapeHtml(b.label) + "</span></button></li>";
+    });
+    html += "</ul>";
+    var menu = Discourse.float.menu(trigger, {
+      identifier: "chat-composer-dropdown__menu",
+      arrow: true,
+      modalForMobile: true,
+      placement: "top",
+      fallbackPlacements: ["bottom"],
+      content: html,
+    });
+    var content = menu && menu.content;
+    if (content) {
+      content.addEventListener("click", function (e) {
+        var button = e.target.closest(".chat-composer-dropdown__action-btn");
+        if (!button) {
+          return;
+        }
+        var picked = buttons.filter(function (b) {
+          return b.id === button.dataset.id;
+        })[0];
+        menu.close();
+        if (picked) {
+          picked.action(context, textarea);
+        }
+      });
+    }
+  });
+
   // For chat-drawer.js: the drawer's route drawn, or gone.
   Discourse.chat = {
     mount: function () {

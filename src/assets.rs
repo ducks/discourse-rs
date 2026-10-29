@@ -83,6 +83,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-narrative-bot.css"),
     include_str!("../static/css/discourse-policy.css"),
     include_str!("../static/css/graphviz.css"),
+    include_str!("../static/css/discourse-templates.css"),
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/poll.css"),
     include_str!("../static/css/spoiler-alert.css"),
@@ -530,6 +531,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "plugins/discourse-graphviz/javascripts/viz-3.0.1.js",
         JS,
         include_str!("../static/vendor/viz/viz-3.0.1.js"),
+    ),
+    (
+        "templates.js",
+        JS,
+        include_str!("../static/js/templates.js"),
     ),
     ("chat.js", JS, include_str!("../static/js/chat.js")),
     (

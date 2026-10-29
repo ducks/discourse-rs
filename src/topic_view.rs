@@ -937,6 +937,16 @@ impl TopicView<'_> {
                 crate::plugins::reactions::Reactions::load(self.settings)?.valid_json(),
             );
         }
+        if crate::plugins::templates::enabled(self.settings)? {
+            crate::plugins::templates::topic_view_keys(
+                &mut *self.conn,
+                self.settings,
+                topic.id,
+                self.guardian.user_id(),
+                &mut out,
+            )
+            .await?;
+        }
         if let Some(can_vote) = can_vote {
             crate::plugins::topic_voting::topic_view_keys(
                 &mut *self.conn,

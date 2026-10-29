@@ -50,6 +50,7 @@ mod deleted_posts;
 mod directory;
 mod directory_columns;
 mod discourse_connect;
+mod discourse_templates;
 mod do_not_disturb;
 mod drafts;
 mod email;
@@ -211,6 +212,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/live/poll/{post_id}/{poll_name}", get(live::poll))
         .route("/live/policy/{post_id}", get(policy::footer))
         .route("/live/policy-builder", get(policy::builder))
+        .route("/live/templates", get(discourse_templates::list))
         .route(
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
@@ -619,6 +621,17 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(gamification::score_events)
                 .post(gamification::create_score_event)
                 .put(gamification::update_score_event),
+        )
+        // discourse-templates' TemplatesController.
+        .route("/discourse_templates", get(discourse_templates::index))
+        .route("/discourse_templates.json", get(discourse_templates::index))
+        .route(
+            "/discourse_templates/{id}/use",
+            post(discourse_templates::use_template),
+        )
+        .route(
+            "/discourse_templates/{id}/use.json",
+            post(discourse_templates::use_template),
         )
         // discourse-policy's PolicyController.
         .route("/policy/accept", put(policy::accept))
@@ -2888,6 +2901,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/policy.js", get(asset))
         .route("/assets/graphviz.js", get(asset))
         .route(crate::plugins::graphviz::VIZ_PATH, get(asset))
+        .route("/assets/templates.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))

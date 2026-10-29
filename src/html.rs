@@ -289,6 +289,10 @@ pub struct Chrome {
     /// discourse-user-notes for a staff viewer (static/js/user-notes.js):
     /// user_notes_icon_placement, empty while off or for anyone else.
     pub user_notes_placement: String,
+    /// discourse-templates for a member who can_use_templates
+    /// (static/js/templates.js): its script tag's data attributes, empty
+    /// otherwise.
+    pub templates_attrs: String,
     /// The user card opens (static/js/user-card.js): not for an anonymous
     /// visitor under hide_user_profiles_from_public (CardContentsBase#_show).
     pub user_cards: bool,
@@ -891,6 +895,17 @@ impl Site {
             } else {
                 String::new()
             };
+        self.chrome.templates_attrs = if crate::plugins::templates::enabled(settings)?
+            && crate::plugins::templates::can_use_templates(&mut *conn, settings, guardian).await?
+        {
+            crate::plugins::templates::view::script_attrs(
+                &state.i18n,
+                crate::plugins::chat::enabled(settings)?
+                    && crate::plugins::chat::can_chat(&mut *conn, settings, guardian).await?,
+            )
+        } else {
+            String::new()
+        };
         self.chrome.inline_footnotes = settings.get("enable_markdown_footnotes")?.truthy()
             && settings.get("display_footnotes_inline")?.truthy();
         self.chrome.graphviz_attrs =
@@ -1330,8 +1345,14 @@ impl Site {
             || guardian.in_setting_groups(settings, "poll_create_allowed_groups")?;
         let can_create_policy =
             guardian.in_setting_groups(settings, "create_policy_allowed_groups")?;
-        let popup_options =
+        let mut popup_options =
             crate::composer_view::popup_options(settings, can_create_poll, can_create_policy)?;
+        // discourse-templates' item, for a member who can_use_templates.
+        if crate::plugins::templates::enabled(settings)?
+            && crate::plugins::templates::can_use_templates(&mut *conn, settings, guardian).await?
+        {
+            crate::plugins::templates::view::add_popup_option(&mut popup_options);
+        }
         let unported_popup = crate::composer_view::unported_popup_plugins(settings)?;
         let html = crate::composer_view::render(
             &list,
@@ -3160,6 +3181,22 @@ pub async fn topic_page(
     )
     .await
     .map_err(HtmlError::Plugin)?;
+    // discourse-templates' topic-above-posts connector.
+    if view["is_template"] == true && site.chrome.can_create_topic {
+        let tag_style = settings.get("tag_style")?.to_s().to_string();
+        let cx = crate::plugins::templates::view::Cx {
+            i18n,
+            base_path: &base,
+            tagging: settings.get("tagging_enabled")?.truthy(),
+            tag_style: &tag_style,
+        };
+        above_posts.push_str(
+            &crate::plugins::templates::view::topic_page_controls(
+                conn, settings, &cx, &guardian, id,
+            )
+            .await?,
+        );
+    }
     above_posts.push_str(&post_voting_assets);
     Ok(TopicPage {
         above_posts,

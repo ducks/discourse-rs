@@ -878,6 +878,13 @@ pub async fn serialize(
     if crate::plugins::policy::enabled(settings)? {
         crate::plugins::policy::current_user_keys(conn, settings, uid, &mut out).await?;
     }
+    // discourse-templates' can_use_templates, after chat's (plugins load
+    // in name order).
+    if crate::plugins::templates::enabled(settings)? {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        crate::plugins::templates::current_user_keys(&mut *conn, settings, &guardian, &mut out)
+            .await?;
+    }
     out.insert(
         "user_option".into(),
         user_option(conn, settings, &row.new_since, row.created_at, uid).await?,

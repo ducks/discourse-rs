@@ -98,10 +98,6 @@ fn only_plugin_category_fields(value: &Value) -> bool {
 /// reference (chat, discourse-solved, discourse-calendar).
 const PLUGIN_USER_KEYS: [&str; 1] = ["event_reminder_preference"];
 
-/// Keys the reference's unported plugins add to CurrentUserSerializer
-/// (discourse-templates).
-const PLUGIN_CURRENT_USER_KEYS: [&str; 1] = ["can_use_templates"];
-
 /// User serializer keys that follow what the reference does in the
 /// background between seeding and recording (profile views, other
 /// sessions, badge grants): not compared.
@@ -119,9 +115,7 @@ fn undrift_user(user: &mut Value) {
         return;
     };
     map.retain(|k, _| {
-        !PLUGIN_USER_KEYS.contains(&k.as_str())
-            && !PLUGIN_CURRENT_USER_KEYS.contains(&k.as_str())
-            && !DRIFTING_USER_KEYS.contains(&k.as_str())
+        !PLUGIN_USER_KEYS.contains(&k.as_str()) && !DRIFTING_USER_KEYS.contains(&k.as_str())
     });
     if let Some(Value::Object(options)) = map.get_mut("user_option") {
         options.retain(|k, _| !PLUGIN_USER_KEYS.contains(&k.as_str()));
