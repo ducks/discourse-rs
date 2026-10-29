@@ -119,7 +119,13 @@ async fn run(
             answers::accept(&mut tx, &ctx, &guardian, post_id).await?
         }
         Kind::Unaccept => {
-            answers::unaccept(
+            let was_accepted: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM discourse_solved_topic_answers WHERE answer_post_id = $1)",
+            )
+            .bind(i64::from(post_id))
+            .fetch_one(&mut *tx)
+            .await?;
+            let outcome = answers::unaccept(
                 &mut tx,
                 &state.bus,
                 &crate::web_hooks::Payloads {
@@ -130,7 +136,23 @@ async fn run(
                 &guardian,
                 post_id,
             )
-            .await?
+            .await?;
+            // DiscourseEvent :unaccepted_solution, to discourse-assign.
+            if let Outcome::Done(topic_id) = outcome
+                && was_accepted
+            {
+                let host = crate::pretty_text::Host::from_state(&state);
+                let ctx = crate::posting::Ctx {
+                    host: &host,
+                    settings: &settings,
+                    config: &state.config,
+                    i18n: &state.i18n,
+                    bus: &state.bus,
+                };
+                crate::plugins::assign::lifecycle::solution_changed(&mut tx, &ctx, topic_id, false)
+                    .await?;
+            }
+            outcome
         }
     };
     let topic_id = match outcome {

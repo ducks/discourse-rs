@@ -58,6 +58,8 @@ pub struct PostSettings {
     pub presence: bool,
     /// discourse-poll's settings, when it is on.
     pub poll: Option<crate::plugins::poll::view::PollUi>,
+    /// discourse-assign's settings, when it is on.
+    pub assign: Option<crate::plugins::assign::view::AssignUi>,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -116,6 +118,7 @@ impl PostSettings {
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
             poll: crate::plugins::poll::view::PollUi::load(settings)?,
+            assign: crate::plugins::assign::view::AssignUi::load(settings)?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -168,6 +171,8 @@ pub struct TopicInfo {
     /// The plugins' post menu buttons (`api.addPostMenuButton`), by post
     /// id: plugin_api::post_menu_buttons.
     pub plugin_menu: HashMap<i64, String>,
+    /// discourse-assign's keys of the topic view (view::topic_assign).
+    pub assign: Value,
 }
 
 /// What the topic admin menu (TopicAdminMenu) and the post admin menu
@@ -282,6 +287,7 @@ impl TopicInfo {
                 ..StaffMenus::default()
             },
             plugin_menu: HashMap::new(),
+            assign: crate::plugins::assign::view::topic_assign(view),
         }
     }
 }
@@ -600,7 +606,14 @@ pub fn post(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
 
 /// One post without its time gap: a small action or a regular post.
 pub fn post_body(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
-    if p["post_type"].as_i64() == Some(SMALL_ACTION) || p["action_code"] == "split_topic" {
+    // discourse-assign's post-is-small-action transformer: its codes on
+    // whispers too.
+    let assign_action = cx.settings.assign.is_some()
+        && crate::plugins::assign::view::is_small_action(s(&p["action_code"]));
+    if p["post_type"].as_i64() == Some(SMALL_ACTION)
+        || p["action_code"] == "split_topic"
+        || assign_action
+    {
         small_action(cx, p)
     } else {
         regular(cx, p, prev)
@@ -774,15 +787,24 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         } else {
             decorated_cooked(cx, p)
         },
-        // The post-content-cooked-html outlet: discourse-solved's accepted
-        // answers under the first post.
-        match cx.settings.solved.as_ref() {
-            Some(ui) if p["post_number"] == 1 => {
-                crate::plugins::solved::view::accepted_answers(cx, ui, &cx.topic.accepted_answers)
-                    + &crate::plugins::solved::view::shared_issue_button(cx, ui, p)
-            }
-            _ => String::new(),
-        },
+        // The post-content-cooked-html outlet: discourse-assign's
+        // assignees, then discourse-solved's accepted answers under the
+        // first post.
+        cx.settings
+            .assign
+            .as_ref()
+            .map(|ui| crate::plugins::assign::view::post_assignments(cx, ui, p))
+            .unwrap_or_default()
+            + &match cx.settings.solved.as_ref() {
+                Some(ui) if p["post_number"] == 1 => {
+                    crate::plugins::solved::view::accepted_answers(
+                        cx,
+                        ui,
+                        &cx.topic.accepted_answers,
+                    ) + &crate::plugins::solved::view::shared_issue_button(cx, ui, p)
+                }
+                _ => String::new(),
+            },
         escape(&t(cx.list, "post.controls.menu_label")),
         menu(cx, p),
         actions_summary(cx, p),
@@ -1183,6 +1205,25 @@ fn menu(cx: &PostContext, p: &Value) -> String {
         };
         configured.insert(at, "solved");
     }
+    // discourse-assign's button, placed the same way (first when the post
+    // is assigned to the viewer); its transformer runs before solved's.
+    let assign = cx
+        .settings
+        .assign
+        .as_ref()
+        .and_then(|_| crate::plugins::assign::view::menu_button(cx, p));
+    if let Some((_, collapsed)) = assign.as_ref() {
+        let at = if *collapsed {
+            cx.settings
+                .post_menu_hidden_items
+                .last()
+                .and_then(|last| configured.iter().position(|k| k == last))
+                .unwrap_or(configured.len().saturating_sub(1))
+        } else {
+            0
+        };
+        configured.insert(at, "assign");
+    }
     let bookmarked = !p["bookmark_id"].is_null() || p["bookmarked"] == true;
     let hidden_items: Vec<&str> = cx
         .settings
@@ -1212,6 +1253,8 @@ fn menu(cx: &PostContext, p: &Value) -> String {
     for key in &configured {
         let hideable = if *key == "solved" {
             solved.as_ref().is_some_and(|b| b.collapsed)
+        } else if *key == "assign" {
+            assign.as_ref().is_some_and(|(_, collapsed)| *collapsed)
         } else {
             hidden_items.contains(key)
                 && !(*key == "edit" && (wiki || (can_edit && p["yours"] == true)))
@@ -1257,6 +1300,7 @@ fn menu(cx: &PostContext, p: &Value) -> String {
             "admin" => admin_button(cx, p),
             "reply" => (cx.topic.can_create_post && member).then(|| reply_button(cx, p)),
             "solved" => solved.as_ref().map(|b| b.html.clone()),
+            "assign" => assign.as_ref().map(|(html, _)| html.clone()),
             _ => None,
         };
         buttons.push((key, hideable, html));
@@ -2346,9 +2390,13 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
         ),
         None => String::new(),
     };
+    let assign = cx.settings.assign.as_ref();
+    let group_code = code == "invited_group"
+        || code == "removed_group"
+        || (assign.is_some() && crate::plugins::assign::view::is_group_code(code));
     let who_html = if who.is_empty() {
         String::new()
-    } else if code == "invited_group" || code == "removed_group" {
+    } else if group_code {
         format!(
             "<a class=\"mention-group\" href=\"{}/g/{who}\">@{}</a>",
             cx.list.base_path,
@@ -2363,13 +2411,27 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
     };
     // The description with its placeholders as HTML: translate with
     // markers, escape, then put the markup in.
-    let desc = escape(&t_with(
+    // A link to `path` in the description (discourse-assign's post codes)
+    // is markup of the translation's: put back after the escape.
+    let path = match p["action_code_path"].as_str().filter(|p| !p.is_empty()) {
+        Some(path) => format!("{}{path}", cx.list.base_path),
+        None => format!("{}/t/{}", cx.list.base_path, cx.topic.id),
+    };
+    let mut desc = escape(&t_with(
         cx.list,
         &key,
-        &[("who", "\u{1}"), ("when", "\u{2}"), ("path", "")],
-    ))
-    .replace('\u{1}', &who_html)
-    .replace('\u{2}', &when_html);
+        &[("who", "\u{1}"), ("when", "\u{2}"), ("path", "\u{3}")],
+    ));
+    let path_link = "&lt;a href&#x3D;&#x27;\u{3}&#x27;&gt;";
+    if desc.contains(path_link) {
+        desc = desc
+            .replace(path_link, &format!("<a href='{}'>", escape(&path)))
+            .replace("&lt;/a&gt;", "</a>");
+    }
+    let desc = desc
+        .replace('\u{3}', "")
+        .replace('\u{1}', &who_html)
+        .replace('\u{2}', &when_html);
     let title = display_name(cx, username, p["name"].as_str());
     let title = p["user_title"]
         .as_str()
@@ -2384,8 +2446,12 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
         )
     };
     let buttons = small_action_buttons(cx, p);
+    // addPostSmallActionClassesCallback: discourse-assign's.
+    let assign_class = assign
+        .map(|ui| crate::plugins::assign::view::small_action_class(ui, code))
+        .unwrap_or("");
     format!(
-        "<div data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"small-action onscreen-post{}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\"><div class=\"topic-avatar\">{}</div><div class=\"small-action-desc\"><div class=\"small-action-contents\"><a{}>{}</a><p aria-hidden=\"true\">{desc}</p></div><div class=\"small-action-buttons\">{buttons}</div>{custom}</div></article></div>",
+        "<div data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"small-action onscreen-post{}{assign_class}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\"><div class=\"topic-avatar\">{}</div><div class=\"small-action-desc\"><div class=\"small-action-contents\"><a{}>{}</a><p aria-hidden=\"true\">{desc}</p></div><div class=\"small-action-buttons\">{buttons}</div>{custom}</div></article></div>",
         if p["deleted_at"].is_null() {
             ""
         } else {
@@ -2396,7 +2462,12 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
             .as_i64()
             .map(|i| i.to_string())
             .unwrap_or_default(),
-        d_icon(small_action_icon(code), None),
+        d_icon(
+            assign
+                .and_then(|_| crate::plugins::assign::view::small_action_icon(code))
+                .unwrap_or_else(|| small_action_icon(code)),
+            None
+        ),
         user_link_attrs(cx, username, false),
         avatar_img(
             s(&p["avatar_template"]),
@@ -3174,11 +3245,27 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             1,
         ),
     );
+    // discourse-assign's (priority 250, after defer): the Assign button,
+    // a dropdown one in the mobile view, or the reassign menu.
+    let assign = cx
+        .settings
+        .assign
+        .as_ref()
+        .map(|ui| crate::plugins::assign::view::footer(cx, ui, false))
+        .filter(|html| !html.is_empty());
+    if let Some(html) = &assign
+        && mobile
+    {
+        dropdown.push(html.clone());
+    }
     // showNotificationsButton: PMs only for those who can send them.
     let show_notifications = !private_message || cx.can_send_pms;
     if !mobile {
         for button in &dropdown {
             actions.push_str(button);
+        }
+        if let Some(html) = &assign {
+            actions.push_str(html);
         }
     } else {
         if dropdown.len() == 1 {
@@ -3775,6 +3862,7 @@ mod tests {
                     ..Default::default()
                 }),
                 support_mixed_text_direction: false,
+                assign: None,
             },
         };
         let settings = PostSettings {
@@ -3806,6 +3894,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            assign: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -3831,6 +3920,7 @@ mod tests {
             poll_viewer: None,
             menus: StaffMenus::default(),
             plugin_menu: HashMap::new(),
+            assign: Value::Null,
         };
         let cx = PostContext {
             list: &list,
@@ -4052,6 +4142,7 @@ mod tests {
                     ..Default::default()
                 }),
                 support_mixed_text_direction: false,
+                assign: None,
             },
         };
         let settings = PostSettings {
@@ -4083,6 +4174,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            assign: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4108,6 +4200,7 @@ mod tests {
             poll_viewer: None,
             menus: StaffMenus::default(),
             plugin_menu: HashMap::new(),
+            assign: Value::Null,
         };
         let cx = PostContext {
             list: &list,

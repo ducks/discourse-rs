@@ -136,6 +136,8 @@ pub struct ListSettings {
     /// The emoji settings, custom emoji and deny list `emojiUnescape` reads.
     pub emojis: std::sync::Arc<crate::emojis::Emojis>,
     pub support_mixed_text_direction: bool,
+    /// discourse-assign's settings, when it is on (its tags callback).
+    pub assign: Option<crate::plugins::assign::view::AssignUi>,
 }
 
 impl ListSettings {
@@ -192,6 +194,7 @@ impl ListSettings {
             prioritize_name: flag("enable_names")? && !flag("prioritize_username_in_ux")?,
             emojis: settings.emojis().clone(),
             support_mixed_text_direction: flag("support_mixed_text_direction")?,
+            assign: crate::plugins::assign::view::AssignUi::load(settings)?,
         })
     }
 }
@@ -507,12 +510,21 @@ fn tags_list(cx: &ListContext, tags: &[&Value], custom: &[String]) -> String {
 }
 
 /// The plugins' tags callbacks (addTagsHtmlCallback) for a topic outside
-/// the topic page: discourse-topic-voting's vote count.
+/// the topic page: discourse-assign's assignees and discourse-topic-
+/// voting's vote count.
 pub(crate) fn tags_callbacks(cx: &ListContext, topic: &Value) -> Vec<String> {
     let url = format!("{}/t/{}/{}", cx.base_path, s(&topic["slug"]), topic["id"]);
-    vec![crate::plugins::topic_voting::view::list_vote_count(
+    // discourse-assign's assignees, registered before voting's.
+    let mut out = cx
+        .settings
+        .assign
+        .as_ref()
+        .map(|ui| crate::plugins::assign::view::tags_html(ui, cx.base_path, topic))
+        .unwrap_or_default();
+    out.push(crate::plugins::topic_voting::view::list_vote_count(
         cx.i18n, topic, &url,
-    )]
+    ));
+    out
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -1430,6 +1442,7 @@ mod tests {
             prioritize_name: false,
             emojis: std::sync::Arc::new(emojis(inline)),
             support_mixed_text_direction: false,
+            assign: None,
         }
     }
 

@@ -819,6 +819,14 @@ impl Mover<'_, '_> {
                 return Err(Unsupported("moving a copied post's polls").into());
             }
         }
+        // discourse-assign: the post's assignment follows it.
+        crate::plugins::assign::lifecycle::post_moved(
+            conn,
+            self.ctx.settings,
+            new_id,
+            self.original_id,
+        )
+        .await?;
         Ok(())
     }
 

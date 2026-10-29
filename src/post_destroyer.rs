@@ -489,6 +489,8 @@ async fn finish(
         },
     )
     .await?;
+    // ... and to discourse-assign.
+    crate::plugins::assign::lifecycle::post_destroyed(&mut *tx, ctx, post.id).await?;
     crate::jobs::enqueue(
         &mut *tx,
         "sync_topic_user_bookmarked",
@@ -1451,6 +1453,7 @@ pub async fn staff_recover_in(
         },
     )
     .await?;
+    crate::plugins::assign::lifecycle::post_recovered(&mut *conn, ctx, post.id).await?;
     crate::jobs::enqueue(
         &mut *conn,
         "sync_topic_user_bookmarked",

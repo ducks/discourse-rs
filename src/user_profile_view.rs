@@ -88,6 +88,8 @@ pub enum ActivityFilter {
     Reactions,
     /// discourse-solved's: the user's accepted answers, a post list.
     Solved,
+    /// discourse-assign's: the topics assigned to the user, a topic list.
+    Assigned,
 }
 
 impl ActivityFilter {
@@ -101,6 +103,7 @@ impl ActivityFilter {
             "votes" => ActivityFilter::Votes,
             "reactions" => ActivityFilter::Reactions,
             "solved" => ActivityFilter::Solved,
+            "assigned" => ActivityFilter::Assigned,
             _ => return None,
         })
     }
@@ -115,6 +118,7 @@ impl ActivityFilter {
             ActivityFilter::Votes => "votes",
             ActivityFilter::Reactions => "reactions",
             ActivityFilter::Solved => "solved",
+            ActivityFilter::Assigned => "assigned",
         }
     }
 
@@ -126,7 +130,10 @@ impl ActivityFilter {
             // TYPES.posts: the replies route's own posts.
             ActivityFilter::Replies => &[5],
             ActivityFilter::LikesGiven => &[1],
-            ActivityFilter::Votes | ActivityFilter::Reactions | ActivityFilter::Solved => &[],
+            ActivityFilter::Votes
+            | ActivityFilter::Reactions
+            | ActivityFilter::Solved
+            | ActivityFilter::Assigned => &[],
         }
     }
 
@@ -137,7 +144,10 @@ impl ActivityFilter {
             ActivityFilter::Topics => " filter-4",
             ActivityFilter::Replies => " filter-5",
             ActivityFilter::LikesGiven => " filter-1",
-            ActivityFilter::Votes | ActivityFilter::Reactions | ActivityFilter::Solved => "",
+            ActivityFilter::Votes
+            | ActivityFilter::Reactions
+            | ActivityFilter::Solved
+            | ActivityFilter::Assigned => "",
         }
     }
 }
@@ -152,6 +162,9 @@ pub struct ProfileSettings {
     pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
     /// discourse-solved is on: its Solved tab and summary stat.
     pub solved: bool,
+    /// discourse-assign is on: whether the viewer may assign anywhere
+    /// (its Assigned tab's link).
+    pub assign: Option<bool>,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -815,8 +828,32 @@ pub(crate) fn activity_nav(
             None,
         ));
     }
-    // The user-activity-bottom outlet: discourse-reactions', then
+    // The user-activity-bottom outlet: discourse-assign's (a link for
+    // those who may assign anywhere), discourse-reactions', then
     // discourse-topic-voting's.
+    match settings.assign {
+        Some(true) => {
+            let label = t(cx, "discourse_assign.assigned");
+            out.push_str(
+                &item(
+                    "user-activity-bottom-outlet assigned-list",
+                    "assigned",
+                    "user-plus",
+                    &label,
+                    None,
+                )
+                .replacen(
+                    &format!(" <span>{}</span>", escape(&label)),
+                    &format!(" {}", escape(&label)),
+                    1,
+                ),
+            );
+        }
+        Some(false) => {
+            out.push_str("<li class=\"user-activity-bottom-outlet assigned-list\"></li>")
+        }
+        None => {}
+    }
     if settings.reactions.is_some() {
         out.push_str(&item(
             "user-activity-bottom-outlet discourse-reactions-user-activity-reactions",
@@ -887,6 +924,14 @@ fn activity_content(
         out.push_str("</div></section>");
         return out;
     }
+    if filter == ActivityFilter::Assigned && settings.assign.is_some() {
+        out.push_str("<section class=\"user-content\" id=\"user-content\">");
+        out.push_str(&crate::plugins::assign::view::user_assigned_list(
+            cx, topics,
+        ));
+        out.push_str("</section>");
+        return out;
+    }
     if filter == ActivityFilter::Solved && settings.solved {
         out.push_str("<section class=\"user-content\" id=\"user-content\">");
         out.push_str(&solved_list(cx, viewing_self, user_path, solved));
@@ -910,7 +955,8 @@ fn activity_content(
             | ActivityFilter::Topics
             | ActivityFilter::Votes
             | ActivityFilter::Reactions
-            | ActivityFilter::Solved => (t(cx, "user_activity.no_activity_title"), String::new()),
+            | ActivityFilter::Solved
+            | ActivityFilter::Assigned => (t(cx, "user_activity.no_activity_title"), String::new()),
             ActivityFilter::Replies if viewing_self => (
                 t(cx, "user_activity.no_replies_title"),
                 t_with(

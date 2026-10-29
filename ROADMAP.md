@@ -3943,8 +3943,8 @@ route table has been made, so this list may be short.
     271a. `feat/list-query-filters-rest` S: tag lists take only page,
     per_page, order, ascending, state, subset and the tags (TagsController
     merges the rest raw, blank or not, and match_all_tags=false makes an
-    any tag list; routes/list.rs:113,118,123); discourse-assign's
-    `assigned` (routes/list.rs:256, the plugin is not ported);
+    any tag list; routes/list.rs:113,118,123);
+    (discourse-assign's `assigned` is done, feat/plugin-assign);
     discourse-events' sort by event start date for a category
     (topic_query.rs:455); `search` with search_ignore_accents
     (topic_query.rs:416); a before or bumped_before reaching past year 1

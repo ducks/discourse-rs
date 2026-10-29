@@ -2404,6 +2404,8 @@ pub struct TopicPage {
     /// discourse-solved is on: its script runs the Solved button and the
     /// accepted answers.
     pub solved: bool,
+    /// discourse-assign is on: its script runs the assign controls.
+    pub assign: bool,
     /// `currentUser.ignored_users`, comma separated, whose quotes
     /// quote-controls.js hides.
     pub ignored_users: String,
@@ -3139,6 +3141,7 @@ pub async fn topic_page(
         live: loaded_all,
         reactions: post_settings.reactions.is_some(),
         solved: post_settings.solved.is_some(),
+        assign: post_settings.assign.is_some(),
         ignored_users: ignored_users.join(","),
         quote_config,
         dialog_strings,

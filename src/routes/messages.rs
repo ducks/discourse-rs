@@ -30,6 +30,8 @@ pub async fn personal(
         "private-messages-unread" => PmList::Unread,
         "private-messages-new" => PmList::New,
         "private-messages-warnings" => PmList::Warnings,
+        // discourse-assign's (generate_message_route).
+        "private-messages-assigned" => PmList::Assigned,
         _ => return Ok(super::topics::not_found_response(&state)),
     };
     respond(state, guardian, username, list, &params).await
@@ -121,7 +123,7 @@ pub(crate) async fn list_doc(
     let me = guardian.is_me(owner);
     // The access check per action.
     match &list {
-        PmList::Inbox | PmList::Sent | PmList::Archive => {
+        PmList::Inbox | PmList::Sent | PmList::Archive | PmList::Assigned => {
             // can_see_private_messages?
             if !me && !guardian.is_admin() {
                 return Ok(Err(super::search::invalid_access(&state)));
@@ -199,6 +201,7 @@ pub(crate) async fn list_doc(
             PmList::Unread => "private-messages-unread".to_string(),
             PmList::New => "private-messages-new".to_string(),
             PmList::Warnings => "private-messages-warnings".to_string(),
+            PmList::Assigned => "private-messages-assigned".to_string(),
             PmList::Group { .. } => "private-messages-group".to_string(),
         },
         username,

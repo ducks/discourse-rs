@@ -263,9 +263,6 @@ pub(super) fn build_options_for(
     if tag_route {
         raw.remove("tags");
     }
-    if raw.get("assigned").is_some_and(Param::present) {
-        return Err(Unsupported("discourse-assign's assigned list filter"));
-    }
     for key in PUBLIC_OPTIONS {
         if let Some(value) = raw.get(key).filter(|p| p.present())
             && !valid(key, value, settings)
@@ -363,6 +360,7 @@ fn options_from(
     options.no_tags = flag("no_tags");
     options.exclude_tag = string("exclude_tag");
     options.solved = string("solved");
+    options.assigned = string("assigned");
     // param_to_integer_list(:topic_ids), present or not.
     options.topic_ids = match raw.get("topic_ids") {
         Some(Param::Str(s)) => Some(
@@ -1111,7 +1109,8 @@ mod tests {
         assert_eq!(o.first_tag.as_deref(), Some("guide"));
         assert_eq!(o.topic_ids, Some(vec![]));
         assert!(o.no_definitions);
-        assert!(build_options(&params("assigned=me"), &s).is_err());
+        let o = build_options(&params("assigned=me"), &s).unwrap().unwrap();
+        assert_eq!(o.assigned.as_deref(), Some("me"));
     }
 
     #[test]

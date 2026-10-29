@@ -1120,3 +1120,61 @@ New (ROADMAP Phase 11): the aria-label in 247 `feat/auth-login-buttons` S. Earli
   (`options[:client_secret] ||= client_secret` on a possibly shared options hash,
   plugins/discourse-apple-auth/lib/omniauth_apple.rb:98-100); the port makes a fresh one per
   request (src/plugins/apple.rs:66-69). Only observable after 60 seconds; needs Rails to settle.
+
+## discourse-assign (`plugins/discourse-assign`)
+
+Verdict: started (ported 2026-10-28 on `feat/plugin-assign`, against bf55a44c read from the
+extract at tmp/rails-bf55a44c; the plugin changed a lot after it, among others a `search`
+action and per-user `assign_notification` jobs that bf55a44c does not have).
+
+### What the port has
+- Enabled check, settings, AssignmentPermissions (global groups, category additional groups,
+  `allowed_user_ids_for_target`, `assignable_user_ids_for_user`, `allowed_group_ids_for_target`,
+  `assign_allowed_groups_for_*`), GuardianExtensions `can_assign?` / `can_assign_globally?`,
+  `Group.assignable`: src/plugins/assign/mod.rs.
+- Assigner: assign (every forbidden reason, details changes with their small actions, the 5 per
+  topic limit, max_assigned_topics, silenced assignments, the assignee's tracking level, live
+  updates on /staff/topic-assignment, assigned web hooks), unassign (deactivate, silent), auto
+  assign by mention (assigns_by_staff_mention and the regex settings), failure messages, the
+  resolver: src/plugins/assign/assigner.rs.
+- AssignController: PUT assign, PUT unassign, GET suggestions, GET assigned, GET members/:group;
+  ListController messages_assigned, group_topics_assigned, private_messages_assigned:
+  src/routes/assign.rs, src/routes/messages.rs, src/pm_lists.rs.
+- Jobs: assign_notification (CreateNotification: the alert and the high priority notification),
+  unassign_notification, remind_user (PendingAssignsReminder's system message), the daily
+  enqueue_reminders: src/plugins/assign/jobs.rs, reminder.rs.
+- Events: post_created / post_edited (auto assign), topic_status_updated (unassign_on_close,
+  reassign_on_open), post_destroyed (deactivation, linked small actions destroyed),
+  post_recovered, move_to_inbox / archive_message (unassign_on_group_archive),
+  user_added_to_group, user_removed_from_group, group_destroyed, post_moved, solved's
+  accepted_solution / unaccepted_solution, Group before_update / before_destroy on
+  assign_allowed_on_groups: src/plugins/assign/lifecycle.rs.
+- Serializer keys: current user (can_assign, can_assign_globally, never_auto_track_topics, the
+  reminder frequency custom field), user_option and current_user_option
+  notification_level_when_assigned (and UserUpdater), topic view, post, topic list item,
+  suggested topic, search result, topic list assigned_messages_count, group_show,
+  notification topic_bumped_at, bookmarks: src/plugins/assign/keys.rs.
+- Filters: TopicQuery `assigned=`, search in:assigned, in:unassigned, assigned:, group param
+  assignable_level, bulk operations assign and unassign.
+- UI: the assignees under the first post and under posts, the post menu's assign button, the
+  footer's Assign button and reassign menu, the assign modal, assign small actions on whispers
+  with their icons and private-assign class, the topic list's assignee tags, the user
+  activity Assigned tab, the tracking preference: src/plugins/assign/view.rs,
+  static/js/discourse-assign.js, static/css/discourse-assign.css.
+
+### Gaps
+- invite_on_assign invitations (refused when an assignee would be invited), the assignment
+  email (assign_mailer, refused when it would send), discourse-workflows triggers (refused).
+- API key scope `assign` (the scope table is the recorded one, without the plugin).
+- remind_assigns_frequency preference (editable user custom fields are refused by the update).
+- Reviewable `assigned_to` filter and the above-review-filters connector, FlaggedTopic keys.
+- /filter `assigned:` custom filter and topics/posts_filter_options (no /filter route).
+- discourse-automation random_assign scriptable.
+- UI: group Assigned tab and its member sidebar (group tabs other than members are not
+  ported), user messages Assigned tab page, the user menu's assigns tab, category settings
+  (additional groups, unassigned filter), the group interaction assignable_level field, the
+  bulk assign modal, the topic list's assign column actions, the advanced search
+  "assigned to" field, the unassigned navigation item, keyboard shortcut g a, the
+  never_auto_track_topics notification reason.
+- Rails joins the assignments for `assigned=` lists, repeating a topic with several; the port
+  lists each topic once.

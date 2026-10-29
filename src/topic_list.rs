@@ -335,6 +335,17 @@ impl TopicListSerializer<'_> {
                 topic_list.insert("tags".into(), Value::Array(tags));
             }
         }
+        // discourse-assign's, the last attribute.
+        if let Some(count) = crate::plugins::assign::keys::assigned_messages_count(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            list.assigned.as_deref(),
+        )
+        .await?
+        {
+            topic_list.insert("assigned_messages_count".into(), json!(count));
+        }
         topic_list.insert("topics".into(), Value::Array(topics));
         out.insert("topic_list".into(), Value::Object(topic_list));
         Ok(Value::Object(out))
@@ -400,6 +411,7 @@ impl TopicListSerializer<'_> {
     ) -> Result<(), TopicListError> {
         // A third-party plugin replacing solved puts its keys where
         // solved's go; the others' come last.
+        self.assign_keys(t, mode, out).await?;
         let replaced = crate::plugin_wasm::registry().replaced(self.settings)?;
         let replaces_solved = replaced.iter().any(|p| p == "discourse-solved");
         if replaces_solved {
@@ -427,6 +439,47 @@ impl TopicListSerializer<'_> {
         if !replaces_solved {
             self.wasm_keys(t, out).await?;
         }
+        Ok(())
+    }
+
+    /// discourse-assign's keys on list items, suggested topics and search
+    /// results (ListableTopicSerializer has none).
+    async fn assign_keys(
+        &mut self,
+        t: &TopicRow,
+        mode: Mode,
+        out: &mut Map<String, Value>,
+    ) -> Result<(), TopicListError> {
+        use crate::plugins::assign::keys::{Cx, ListData, ListShape};
+        let shape = match mode {
+            Mode::ListItem => ListShape::ListItem,
+            Mode::Suggested => ListShape::Suggested,
+            Mode::SearchItem { .. } => ListShape::Search,
+            Mode::Listable | Mode::Reviewable => return Ok(()),
+        };
+        if !crate::plugins::assign::enabled(self.settings)? {
+            return Ok(());
+        }
+        let logo = self.logo_small_url().await?;
+        let loaded;
+        let data = match &self.prefetched.plugins.assign {
+            Some(data) if self.prefetched.topic_ids.contains(&t.id) => data,
+            _ => {
+                let Some(data) =
+                    ListData::load(&mut *self.conn, self.settings, self.guardian, &[t.id]).await?
+                else {
+                    return Ok(());
+                };
+                loaded = data;
+                &loaded
+            }
+        };
+        let cx = Cx {
+            settings: self.settings,
+            urls: self.urls,
+            logo: logo.as_deref(),
+        };
+        data.keys(&cx, self.guardian, t.id, t.category_id, shape, out)?;
         Ok(())
     }
 
@@ -951,6 +1004,13 @@ impl TopicListSerializer<'_> {
             &topic_ids,
             self.guardian.user_id(),
             &replaced,
+        )
+        .await?;
+        p.plugins.assign = crate::plugins::assign::keys::ListData::load(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            &topic_ids,
         )
         .await?;
         if wasm.on_topic_list(self.settings)? {

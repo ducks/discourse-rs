@@ -289,8 +289,30 @@ pub fn render(
             .map(|(v, k)| (v.to_string(), t(cx, &format!("{prefix}.{k}"))))
             .collect()
     };
+    // The user-preferences-tracking-topics outlet: discourse-assign's
+    // level when assigned, its enum's names as values.
+    let assign = p.setting("assign_enabled")?;
+    let assign_row = if assign {
+        combo_row(
+            "",
+            "user-notification-level-when-assigned",
+            "user.notification_level_when_assigned.label",
+            "notification_level_when_assigned",
+            ["watch_topic", "track_topic", "do_nothing"]
+                .iter()
+                .map(|k| {
+                    (
+                        k.to_string(),
+                        t(cx, &format!("user.notification_level_when_assigned.{k}")),
+                    )
+                })
+                .collect(),
+        )
+    } else {
+        String::new()
+    };
     let mut out = format!(
-        "<div class=\"user-preferences__tracking-topics-wrapper\"><label class=\"control-label\">{}</label><div class=\"user-preferences_tracking-topics-controls\">{}{}{}</div></div>",
+        "<div class=\"user-preferences__tracking-topics-wrapper\"><label class=\"control-label\">{}</label><div class=\"user-preferences_tracking-topics-controls\">{}{}{}{}</div></div>",
         escape(&t(cx, "user.topics_settings")),
         combo_row(
             "duration",
@@ -339,6 +361,7 @@ pub fn render(
                 &[(3, "watch_topic"), (2, "track_topic"), (1, "do_nothing")]
             )
         ),
+        assign_row,
     );
     out.push_str(&format!(
         "<div class=\"user-preferences__tracking-categories-tags-wrapper\"><div>{}</div><div>{}</div></div>",
@@ -384,7 +407,14 @@ pub fn render(
             "watching_first_post_tags",
         ]);
     }
-    let mut attrs = save_attrs(p.u, &fields, &[], &[]);
+    // addSaveableUserOption("notification_level_when_assigned", tracking).
+    let plugin_options: &[&str] = if assign {
+        &["notification_level_when_assigned"]
+    } else {
+        &[]
+    };
+    fields.extend(plugin_options.iter().copied());
+    let mut attrs = save_attrs(p.u, &fields, plugin_options, &[]);
     if tagging {
         for key in [
             "muted_tags",

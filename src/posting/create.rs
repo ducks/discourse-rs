@@ -1389,6 +1389,8 @@ pub async fn create(
     if !new_polls.is_empty() {
         crate::plugins::poll::publish_created(ctx, &mut conn, guardian, post_id).await?;
     }
+    // ... and to discourse-assign: auto assigning by mention.
+    crate::plugins::assign::lifecycle::post_saved(&mut conn, ctx, post_id).await?;
     let posts_count: i32 = sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
         .bind(topic_id)
         .fetch_one(&mut *conn)
@@ -1516,8 +1518,12 @@ pub(crate) async fn message_posted(
             .fetch_all(&mut *conn)
             .await?;
     for archiver in archivers {
-        crate::archived_messages::user_move_to_inbox(ctx.bus, &mut *conn, archiver, topic_id)
-            .await?;
+        if crate::archived_messages::user_move_to_inbox(ctx.bus, &mut *conn, archiver, topic_id)
+            .await?
+        {
+            crate::plugins::assign::lifecycle::move_to_inbox(&mut *conn, ctx, topic_id, false)
+                .await?;
+        }
     }
     let archiving_groups: Vec<i32> =
         sqlx::query_scalar("SELECT group_id FROM group_archived_messages WHERE topic_id = $1")
@@ -1525,14 +1531,18 @@ pub(crate) async fn message_posted(
             .fetch_all(&mut *conn)
             .await?;
     for group_id in archiving_groups {
-        crate::archived_messages::group_move_to_inbox(
+        if crate::archived_messages::group_move_to_inbox(
             ctx.bus,
             &mut *conn,
             group_id,
             topic_id,
             Some(user_id),
         )
-        .await?;
+        .await?
+        {
+            crate::plugins::assign::lifecycle::move_to_inbox(&mut *conn, ctx, topic_id, true)
+                .await?;
+        }
     }
     Ok(())
 }

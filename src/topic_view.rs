@@ -830,6 +830,24 @@ impl TopicView<'_> {
                 }))
                 .collect::<Vec<_>>()),
         );
+        if let Some(assign) = crate::plugins::assign::keys::TopicView::load(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            topic.id,
+            topic.category_id,
+            &[],
+        )
+        .await?
+        {
+            let logo = self.logo_small_url().await?;
+            let cx = crate::plugins::assign::keys::Cx {
+                settings: self.settings,
+                urls: self.urls,
+                logo: logo.as_deref(),
+            };
+            assign.topic_keys(&cx, self.guardian, &mut out)?;
+        }
         if let Some(solved) = &solved {
             self.solved_topic_keys(solved, &slug, &viewer, &mut out)
                 .await?;
@@ -2089,6 +2107,16 @@ impl TopicView<'_> {
         };
         // The page's per-post rows, each read once for every post.
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+        // discourse-assign's posts' assignments (TopicView.on_preload).
+        let assign = crate::plugins::assign::keys::TopicView::load(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            topic.id,
+            topic.category_id,
+            &post_ids,
+        )
+        .await?;
         // badges_granted: UserBadge.for_post_header_badges.
         let mut badges_granted = crate::badges_view::BadgesView {
             conn: &mut *self.conn,
@@ -2469,6 +2497,15 @@ impl TopicView<'_> {
                     post.post_number
                 )),
             );
+            // discourse-assign's post keys.
+            if let Some(assign) = &assign {
+                let cx = crate::plugins::assign::keys::Cx {
+                    settings: self.settings,
+                    urls: self.urls,
+                    logo: logo_small_url.as_deref(),
+                };
+                assign.post_keys(&cx, g, post.id, &mut p)?;
+            }
             // discourse-reactions' post keys.
             if let Some(reactions) = &reactions {
                 reactions.post_keys(post.id, &mut p);

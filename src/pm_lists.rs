@@ -21,6 +21,10 @@ pub enum PmList {
     Unread,
     New,
     Warnings,
+    /// discourse-assign's `list_private_messages_assigned`: the owner's
+    /// messages (theirs and their message groups') assigned to them or to
+    /// one of their groups.
+    Assigned,
     /// `/group/:name`, optionally its archive, new or unread view.
     Group {
         id: i32,
@@ -130,6 +134,12 @@ impl PmQuery<'_> {
                 wheres.push(personal);
                 wheres.push("(topics.subtype = 'moderator_warning')".to_string());
                 wheres.push(format!("topics.user_id <> {owner}"));
+            }
+            PmList::Assigned => {
+                wheres.push(self.personal_and_groups_clause(owner).await?);
+                wheres.push(crate::plugins::assign::lists::assigned_to_user_or_groups(
+                    owner,
+                ));
             }
             PmList::Group { id, name, view } => {
                 let lowered = name.to_lowercase().replace('\'', "''");
@@ -277,6 +287,48 @@ impl PmQuery<'_> {
         self.fetch(&joins, &wheres, per_page).await
     }
 
+    /// `user_personal_and_groups_private_messages(owner)` without a
+    /// notification level: the owner's messages and their message groups'
+    /// (`group_with_messages_ids`).
+    async fn personal_and_groups_clause(&mut self, owner: i32) -> Result<String, TopicQueryError> {
+        let owner_user = crate::session::current::SessionUser::load(&mut *self.conn, owner)
+            .await?
+            .ok_or(Unsupported("message list owner without a user row"))?;
+        let owner_guardian = Guardian::for_user(&mut *self.conn, &owner_user).await?;
+        let groups: Vec<i32> = sqlx::query_scalar(
+            "SELECT groups.id FROM groups INNER JOIN group_users ON group_users.group_id = groups.id \
+             WHERE group_users.user_id = $1 AND groups.has_messages = TRUE ORDER BY groups.id",
+        )
+        .bind(owner)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let moderators = crate::guardian::auto_groups::MODERATORS as i32;
+        let groups: Vec<i32> = if owner_guardian.is_admin()
+            || owner_guardian.in_setting_groups(self.settings, "personal_message_enabled_groups")?
+        {
+            groups
+        } else if owner_guardian.is_moderator() {
+            groups.into_iter().filter(|id| *id == moderators).collect()
+        } else {
+            Vec::new()
+        };
+        Ok(if groups.is_empty() {
+            format!(
+                "EXISTS (SELECT 1 FROM topic_allowed_users tau WHERE tau.topic_id = topics.id AND tau.user_id = {owner})"
+            )
+        } else {
+            let ids = groups
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            format!(
+                "topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {owner} \
+                 UNION ALL SELECT topic_id FROM topic_allowed_groups WHERE group_id IN ({ids}))"
+            )
+        })
+    }
+
     /// The list's page in the options' order.
     async fn fetch(
         &mut self,
@@ -304,6 +356,7 @@ impl PmQuery<'_> {
             topics,
             per_page,
             tag_ids: Vec::new(),
+            assigned: self.options.assigned.clone(),
         })
     }
 

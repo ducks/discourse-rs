@@ -1926,6 +1926,7 @@ mod tests {
             prioritize_name: false,
             emojis: std::sync::Arc::new(crate::emojis::Emojis::default()),
             support_mixed_text_direction: false,
+            assign: None,
         }
     }
 

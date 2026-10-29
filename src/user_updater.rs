@@ -149,6 +149,11 @@ const DEFAULT_CALENDARS: &[(&str, i64)] = &[
 const PUSH_NOTIFICATION_LEVELS: &[(&str, i64)] = &[("none", 0), ("all", 1), ("chat_only", 2)];
 const SEND_SHORTCUTS: &[(&str, i64)] = &[("enter", 0), ("meta_enter", 1)];
 
+/// discourse-assign's `UserOption.notification_level_when_assigned`
+/// enum (UserOptionExtension).
+pub const NOTIFICATION_LEVELS_WHEN_ASSIGNED: &[(&str, i64)] =
+    &[("do_nothing", 1), ("track_topic", 2), ("watch_topic", 3)];
+
 /// `UserOption.text_sizes`
 const TEXT_SIZES: &[(&str, i64)] = &[
     ("normal", 0),
@@ -214,6 +219,11 @@ const OPTION_ATTR: &[(&str, Kind)] = &[
     ("hidden_composer_toolbar_buttons", Kind::Array),
     // discourse-solved's and chat's, pushed by their plugin.rb.
     ("notify_on_solved", Kind::Bool),
+    // discourse-assign's.
+    (
+        "notification_level_when_assigned",
+        Kind::Enum(NOTIFICATION_LEVELS_WHEN_ASSIGNED),
+    ),
     ("chat_enabled", Kind::Bool),
     (
         "chat_quick_reaction_type",

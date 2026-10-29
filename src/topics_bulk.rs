@@ -52,7 +52,15 @@ pub enum Performed {
     },
     /// `Discourse::InvalidParameters` with its message.
     InvalidParameters(String),
+    /// `Discourse::InvalidAccess` (a plugin operation's guard).
+    InvalidAccess,
+    /// `Discourse::NotFound` (a plugin operation's lookup).
+    NotFound,
 }
+
+/// The plugins' operations (`TopicsBulkAction.register_operation`),
+/// registered whether or not their plugin is on: discourse-assign's.
+pub const PLUGIN_OPERATIONS: [&str; 2] = ["assign", "unassign"];
 
 /// One run of an operation (`TopicsBulkAction.new(user, ids, operation)`).
 pub struct BulkAction<'a, 'b> {
@@ -106,10 +114,42 @@ impl<'a, 'b> BulkAction<'a, 'b> {
     /// `perform!`
     pub async fn perform(mut self) -> Result<Performed, AppError> {
         let kind = self.op("type").unwrap_or_default();
-        if !OPERATIONS.contains(&kind.as_str()) {
+        if !OPERATIONS.contains(&kind.as_str()) && !PLUGIN_OPERATIONS.contains(&kind.as_str()) {
             return Ok(Performed::InvalidParameters("operation".into()));
         }
         let result = match kind.as_str() {
+            "assign" | "unassign" => {
+                let topic_ids = self.topics().await?;
+                let run = crate::plugins::assign::bulk::Bulk {
+                    conn: &mut *self.conn,
+                    ctx: self.ctx,
+                    guardian: self.guardian,
+                    operation: &self.operation,
+                };
+                let outcome = if kind == "assign" {
+                    run.assign(&topic_ids).await?
+                } else {
+                    run.unassign(&topic_ids).await?
+                };
+                use crate::plugins::assign::bulk::Outcome;
+                match outcome {
+                    Outcome::Done { changed, errors } => {
+                        self.changed.extend(changed);
+                        for (message, count) in errors {
+                            match self.errors.iter_mut().find(|(m, _)| *m == message) {
+                                Some((_, c)) => *c += count,
+                                None => self.errors.push((message, count)),
+                            }
+                        }
+                        Ok(Ok(()))
+                    }
+                    Outcome::InvalidParameters(name) => {
+                        return Ok(Performed::InvalidParameters(name));
+                    }
+                    Outcome::InvalidAccess => return Ok(Performed::InvalidAccess),
+                    Outcome::NotFound => return Ok(Performed::NotFound),
+                }
+            }
             "dismiss_posts" => self.dismiss_posts().await,
             "dismiss_topics" => self.dismiss_topics().await,
             "destroy_post_timing" => self.destroy_post_timing().await,
@@ -1003,12 +1043,26 @@ impl BulkAction<'_, '_> {
                     topic_id,
                 )
                 .await?;
-            } else {
-                crate::archived_messages::user_move_to_inbox(
-                    self.ctx.bus,
+                crate::plugins::assign::lifecycle::archive_message(
                     &mut *self.conn,
-                    user_id,
+                    self.ctx,
                     topic_id,
+                    false,
+                )
+                .await?;
+            } else if crate::archived_messages::user_move_to_inbox(
+                self.ctx.bus,
+                &mut *self.conn,
+                user_id,
+                topic_id,
+            )
+            .await?
+            {
+                crate::plugins::assign::lifecycle::move_to_inbox(
+                    &mut *self.conn,
+                    self.ctx,
+                    topic_id,
+                    false,
                 )
                 .await?;
             }

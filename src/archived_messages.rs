@@ -39,13 +39,14 @@ pub async fn user_archive(
 }
 
 /// `UserArchivedMessage.move_to_inbox!(user_id, topic)`: back in the
-/// user's inbox, unless they muted the message.
+/// user's inbox, unless they muted the message. True when it acted
+/// (and `:move_to_inbox` fired).
 pub async fn user_move_to_inbox(
     bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     user_id: i32,
     topic_id: i32,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     let muted: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM topic_users WHERE user_id = $1 AND topic_id = $2 \
            AND notification_level = 0)",
@@ -55,7 +56,7 @@ pub async fn user_move_to_inbox(
     .fetch_one(&mut *conn)
     .await?;
     if muted {
-        return Ok(());
+        return Ok(false);
     }
     sqlx::query("DELETE FROM user_archived_messages WHERE user_id = $1 AND topic_id = $2")
         .bind(user_id)
@@ -69,7 +70,7 @@ pub async fn user_move_to_inbox(
         Some(&[user_tag(user_id)]),
     )
     .await?;
-    Ok(())
+    Ok(true)
 }
 
 /// Whether the group may archive the message: it is a message and the
@@ -118,16 +119,17 @@ async fn group_changed(
     Ok(())
 }
 
-/// `GroupArchivedMessage.archive!(group_id, topic, acting_user_id:)`
+/// `GroupArchivedMessage.archive!(group_id, topic, acting_user_id:)`: true
+/// when it acted (and `:archive_message` fired).
 pub async fn group_archive(
     bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     group_id: i32,
     topic_id: i32,
     acting_user_id: Option<i32>,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     if !group_allowed(conn, group_id, topic_id).await? {
-        return Ok(());
+        return Ok(false);
     }
     sqlx::query("DELETE FROM group_archived_messages WHERE group_id = $1 AND topic_id = $2")
         .bind(group_id)
@@ -142,19 +144,21 @@ pub async fn group_archive(
     .bind(topic_id)
     .execute(&mut *conn)
     .await?;
-    group_changed(bus, conn, group_id, topic_id, "archived", acting_user_id).await
+    group_changed(bus, conn, group_id, topic_id, "archived", acting_user_id).await?;
+    Ok(true)
 }
 
-/// `GroupArchivedMessage.move_to_inbox!(group_id, topic, acting_user_id:)`
+/// `GroupArchivedMessage.move_to_inbox!(group_id, topic, acting_user_id:)`:
+/// true when it acted (and `:move_to_inbox` fired).
 pub async fn group_move_to_inbox(
     bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     group_id: i32,
     topic_id: i32,
     acting_user_id: Option<i32>,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     if !group_allowed(conn, group_id, topic_id).await? {
-        return Ok(());
+        return Ok(false);
     }
     sqlx::query("DELETE FROM group_archived_messages WHERE group_id = $1 AND topic_id = $2")
         .bind(group_id)
@@ -169,5 +173,6 @@ pub async fn group_move_to_inbox(
         "move_to_inbox",
         acting_user_id,
     )
-    .await
+    .await?;
+    Ok(true)
 }

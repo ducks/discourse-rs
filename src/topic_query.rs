@@ -115,6 +115,12 @@ pub struct Options {
     pub search: Option<String>,
     /// discourse-solved's `solved` list param (yes or no).
     pub solved: Option<String>,
+    /// discourse-assign's `assigned` list param: a username, a group's
+    /// name, `me`, `nobody` or `*`.
+    pub assigned: Option<String>,
+    /// `assigned` as a clause, resolved by `list` (it reads users and
+    /// groups).
+    pub assigned_clause: Option<String>,
 }
 
 #[derive(Debug)]
@@ -237,6 +243,11 @@ pub enum Filter {
     /// `list_topics_by(user)`: the topics the user created
     /// (`create_list(:user_topics)`, `filtered_to_user`).
     TopicsBy(i32),
+    /// discourse-assign's `list_messages_assigned(user)` and
+    /// `list_group_topics_assigned(group)` (`create_list(:assigned)`,
+    /// messages included): `direct` leaves out the group's or the user's
+    /// groups' side.
+    Assigned(crate::plugins::assign::lists::AssignedList),
 }
 
 impl Filter {
@@ -254,6 +265,7 @@ impl Filter {
             Filter::Bookmarks => "bookmarks",
             Filter::Votes => "votes",
             Filter::VotedBy(_) | Filter::TopicsBy(_) => "user_topics",
+            Filter::Assigned(_) => "assigned",
         }
     }
 
@@ -314,6 +326,9 @@ pub struct TopicList {
     pub per_page: i64,
     /// `options[:tag_ids]` after filter_by_tags.
     pub tag_ids: Vec<i32>,
+    /// discourse-assign's `assigned` option, for the list's
+    /// `assigned_messages_count`.
+    pub assigned: Option<String>,
 }
 
 impl TopicQuery<'_> {
@@ -338,6 +353,7 @@ impl TopicQuery<'_> {
             return Err(Unsupported("login-only list for anonymous").into());
         }
         self.check_unported_filters()?;
+        self.options.assigned_clause = self.assigned_clause().await?;
         self.filter = filter;
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
@@ -346,7 +362,7 @@ impl TopicQuery<'_> {
         let per_page = self.per_page();
         let offset = self.options.page * per_page;
         let topics = match &self.filter {
-            Filter::Top(_) | Filter::Unseen | Filter::Votes => {
+            Filter::Top(_) | Filter::Unseen | Filter::Votes | Filter::Assigned(_) => {
                 let order = self.order_clause(None)?;
                 self.fetch("TRUE", &order, per_page, offset).await?
             }
@@ -393,7 +409,77 @@ impl TopicQuery<'_> {
             topics,
             per_page,
             tag_ids: self.tags.tag_ids.clone(),
+            assigned: self.options.assigned.clone(),
         })
+    }
+
+    /// discourse-assign's `assigned` custom filter as a clause: nothing for
+    /// a viewer who may neither assign anywhere nor see assignments
+    /// (assigns_public), nor for a name that is no user or visible group.
+    /// Rails joins the assignments, repeating a topic with several; here
+    /// each topic comes once.
+    async fn assigned_clause(&mut self) -> Result<Option<String>, TopicQueryError> {
+        use crate::plugins::PluginError;
+        let Some(name) = self
+            .options
+            .assigned
+            .clone()
+            .filter(|n| !crate::ruby::is_blank(n))
+        else {
+            return Ok(None);
+        };
+        let permissions =
+            match crate::plugins::assign::Permissions::load(&mut *self.conn, self.settings).await {
+                Ok(p) => p,
+                Err(PluginError::Db(e)) => return Err(e.into()),
+                Err(PluginError::Setting(e)) => return Err(e.into()),
+                Err(PluginError::Unsupported(e)) => return Err(e.into()),
+            };
+        if !permissions.can_assign_globally(self.guardian)
+            && !crate::plugins::assign::public(self.settings)?
+        {
+            return Ok(None);
+        }
+        let active = |condition: &str| {
+            format!(
+                "EXISTS (SELECT 1 FROM assignments a WHERE a.topic_id = topics.id AND a.active{condition})"
+            )
+        };
+        match name.as_str() {
+            "nobody" => return Ok(Some(format!("NOT {}", active("")))),
+            "*" => return Ok(Some(active(""))),
+            _ => {}
+        }
+        let user_id = if name == "me" {
+            Some(
+                self.user_id()
+                    .ok_or(Unsupported("assigned=me without a user (a 500)"))?,
+            )
+        } else {
+            sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")
+                .bind(name.to_lowercase())
+                .fetch_optional(&mut *self.conn)
+                .await?
+        };
+        if let Some(id) = user_id {
+            return Ok(Some(active(&format!(
+                " AND a.assigned_to_id = {id} AND a.assigned_to_type = 'User'"
+            ))));
+        }
+        let group_id: Option<i32> = sqlx::query_scalar(&format!(
+            "SELECT groups.id FROM groups WHERE {} AND {} AND groups.name = $1 \
+             ORDER BY groups.name LIMIT 1",
+            crate::user_search::visible_groups_where(self.guardian),
+            crate::groups::members_visible_groups_where(self.guardian, "groups"),
+        ))
+        .bind(name.to_lowercase())
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        Ok(group_id.map(|id| {
+            active(&format!(
+                " AND a.assigned_to_id = {id} AND a.assigned_to_type = 'Group'"
+            ))
+        }))
     }
 
     /// Settings that add filters `default_results` doesn't port yet.
@@ -771,7 +857,10 @@ impl TopicQuery<'_> {
                 self.guardian.allowed_category_ids_sql(self.settings)?
             ));
         }
-        clauses.push("topics.archetype <> 'private_message'".to_string());
+        // default_results(include_pms: true) for discourse-assign's lists.
+        if !matches!(self.filter, Filter::Assigned(_)) {
+            clauses.push("topics.archetype <> 'private_message'".to_string());
+        }
         if self.options.no_definitions {
             clauses.push("COALESCE(categories.topic_id, 0) <> topics.id".to_string());
         }
@@ -802,6 +891,7 @@ impl TopicQuery<'_> {
                 "topics.id IN (SELECT topic_id FROM topic_voting_votes WHERE user_id = {user_id} AND NOT archive)"
             )),
             Filter::TopicsBy(user_id) => clauses.push(format!("topics.user_id = {user_id}")),
+            Filter::Assigned(list) => clauses.push(list.clause()),
             _ => {}
         }
         // discourse-topic-voting's results filter callback: state=my_votes
@@ -909,6 +999,10 @@ impl TopicQuery<'_> {
         }
         if let Some(min) = o.min_posts {
             clauses.push(format!("topics.posts_count >= {min}"));
+        }
+        // discourse-assign's TopicQuery custom filter, enabled or not.
+        if let Some(clause) = &o.assigned_clause {
+            clauses.push(clause.clone());
         }
         // discourse-solved's TopicQuery custom filter, enabled or not.
         match o.solved.as_deref() {

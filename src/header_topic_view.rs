@@ -253,6 +253,7 @@ mod tests {
                     ..Default::default()
                 }),
                 support_mixed_text_direction: false,
+                assign: None,
             },
         };
         let settings = PostSettings {
@@ -278,6 +279,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            assign: None,
             hashtag_tag_icon: None,
         };
         let mut topic = TopicInfo::from_view(&view);

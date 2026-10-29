@@ -730,6 +730,28 @@ async fn respond(
             .cloned()
             .unwrap_or_default();
     }
+    // discourse-assign's assigned tab: ListController#messages_assigned's
+    // first page, refused to those who may not assign anywhere.
+    if filter == Some(ActivityFilter::Assigned) {
+        if !crate::plugins::assign::enabled(&settings)? {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        let Some(doc) = super::assign::messages_assigned_doc(
+            &state,
+            &mut *users.conn,
+            &settings,
+            &guardian,
+            user.id,
+        )
+        .await?
+        else {
+            return Ok(super::search::invalid_access(&state));
+        };
+        voted_topics = doc["topic_list"]["topics"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+    }
     // discourse-reactions' reactions tab: its route's first page of
     // CustomReactionsController#reactions_given, with the same checks.
     let mut reactions = Vec::new();
@@ -805,9 +827,12 @@ async fn respond(
             .unwrap_or_default();
     }
     let stream = match filter {
-        Some(ActivityFilter::Votes | ActivityFilter::Reactions | ActivityFilter::Solved) => {
-            Vec::new()
-        }
+        Some(
+            ActivityFilter::Votes
+            | ActivityFilter::Reactions
+            | ActivityFilter::Solved
+            | ActivityFilter::Assigned,
+        ) => Vec::new(),
         Some(filter) if visible && !settings.get("hide_user_activity_tab")?.truthy() => {
             users
                 .actions(&user, filter.action_types(), 0, 30, None)
@@ -1546,6 +1571,15 @@ pub(crate) async fn profile_page(
             && settings.get("topic_voting_show_votes_on_profile")?.truthy(),
         reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
         solved: crate::plugins::solved::enabled(settings)?,
+        assign: if crate::plugins::assign::enabled(settings)? {
+            Some(
+                crate::plugins::assign::Permissions::load(&mut *conn, settings)
+                    .await?
+                    .can_assign_globally(guardian),
+            )
+        } else {
+            None
+        },
     };
     let mut main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     // The notification level dropdown's ignore opens the ignore duration

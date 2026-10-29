@@ -153,6 +153,8 @@ struct Row {
     fancy_title: Option<String>,
     slug: Option<String>,
     subtype: Option<String>,
+    /// discourse-assign's `topic_bumped_at`.
+    bumped_at: Option<NaiveDateTime>,
     /// The user's DiscourseConnect external id.
     external_id: Option<String>,
     /// `populate_acting_user`: None when it did not run, else the acting
@@ -171,6 +173,7 @@ struct ActingUser {
 const COLUMNS: &str = "notifications.id, notifications.user_id, notifications.notification_type, \
     notifications.read, notifications.high_priority, notifications.created_at, notifications.post_number, \
     notifications.topic_id, notifications.data, topics.fancy_title, topics.slug, topics.subtype, \
+    topics.bumped_at, \
     (SELECT external_id FROM single_sign_on_records s WHERE s.user_id = notifications.user_id) AS external_id";
 
 /// What the request asks for.
@@ -705,6 +708,13 @@ fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, Notificatio
             if enable_names {
                 n.insert("acting_user_name".into(), json!(acting.name));
             }
+        }
+        // discourse-assign's, for an assigned notification with its topic.
+        if r.notification_type == crate::plugins::assign::ASSIGNED
+            && let Some(bumped_at) = r.bumped_at
+            && crate::plugins::assign::enabled(settings)?
+        {
+            n.insert("topic_bumped_at".into(), json!(time_json(bumped_at)));
         }
         out.push(Value::Object(n));
     }

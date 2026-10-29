@@ -174,6 +174,8 @@ pub async fn bulk(
         Performed::InvalidParameters(message) => {
             Ok((StatusCode::BAD_REQUEST, Json(json!({"errors": [message]}))).into_response())
         }
+        Performed::InvalidAccess => Ok(super::search::invalid_access(&state)),
+        Performed::NotFound => Ok(super::topics::not_found_response(&state)),
         Performed::Done {
             topic_ids,
             errors,
@@ -305,7 +307,7 @@ async fn subcategory_ids(
 fn changed_ids(performed: Performed) -> Result<Vec<i32>, AppError> {
     match performed {
         Performed::Done { topic_ids, .. } => Ok(topic_ids),
-        Performed::InvalidParameters(_) => {
+        Performed::InvalidParameters(_) | Performed::InvalidAccess | Performed::NotFound => {
             Err(Unsupported("a dismissal refused its own parameters").into())
         }
     }
