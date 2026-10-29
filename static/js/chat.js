@@ -186,6 +186,12 @@
         Discourse.applyLocalDates(cooked);
       });
     }
+    // discourse-math's decorateChatMessage.
+    if (window.Discourse && Discourse.renderMath) {
+      channel.querySelectorAll(".chat-cooked").forEach(function (cooked) {
+        Discourse.renderMath(cooked);
+      });
+    }
   }
 
   function filterCards(select) {

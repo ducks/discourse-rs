@@ -544,6 +544,13 @@ impl Site<'_> {
         crate::plugins::gamification::site_keys(&mut *self.conn, self.settings, &mut out)
             .await
             .map_err(crate::AppError::from)?;
+        // discourse-math's, while it is on.
+        if crate::plugins::math::enabled(self.settings)? {
+            out.insert(
+                "discourse_math_bundle_url".into(),
+                json!(crate::plugins::math::public_url_base()),
+            );
+        }
         // styleguide's, while it is on (plugin load order puts it last).
         if crate::plugins::styleguide::enabled(self.settings)? {
             out.insert(

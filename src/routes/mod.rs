@@ -2759,6 +2759,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(stylesheets::scheme),
         )
         .route("/fonts/{file}", get(stylesheets::font))
+        .route(
+            "/plugins/discourse-math/1.0.1/{*path}",
+            get(crate::plugins::math::serve),
+        )
         .route("/stylesheets/{file}", get(stylesheets::theme))
         .route(
             "/color-scheme-stylesheet/{id}",
@@ -2907,6 +2911,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/graphviz.js", get(asset))
         .route(crate::plugins::graphviz::VIZ_PATH, get(asset))
         .route("/assets/templates.js", get(asset))
+        .route("/assets/discourse-math.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))

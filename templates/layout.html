@@ -137,6 +137,9 @@
     {%- if !chrome.graphviz_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "graphviz.js") }}" defer{{ chrome.graphviz_attrs|safe }}></script>
     {%- endif %}
+    {%- if !chrome.math_attrs.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "discourse-math.js") }}" defer{{ chrome.math_attrs|safe }}></script>
+    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "hashtags.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "oneboxes.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "presence.js") }}"></script>

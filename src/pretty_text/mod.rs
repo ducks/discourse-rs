@@ -595,6 +595,12 @@ pub fn render_settings(
         spoiler: settings.get("spoiler_enabled")?.truthy(),
         policy: settings.get("policy_enabled")?.truthy(),
         graphviz: settings.get("discourse_graphviz_enabled")?.truthy(),
+        math: settings.get("discourse_math_enabled")?.truthy(),
+        math_asciimath: settings.get("discourse_math_enable_asciimath")?.truthy()
+            && settings.get("discourse_math_provider")?.to_s() == "mathjax",
+        math_latex_delimiters: settings
+            .get("discourse_math_enable_latex_delimiters")?
+            .truthy(),
         avatar_sizes,
         base_path: base_path.to_string(),
         secure_uploads: settings.get("secure_uploads")?.truthy(),

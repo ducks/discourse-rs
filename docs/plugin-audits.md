@@ -55,6 +55,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-narrative-bot | started | 8 | the flag step (core refuses flags in messages), the recover step (core refuses authors recovering their own posts), locales other than English and French, image URLs counted only once oneboxed | none | 2 core M (flags in messages, user_recovered) plus S |
 | discourse-templates | started | 8 | the chat thread composer (no threads, 160), the chat dropdown's core items, the keyboard shortcuts help entry, the canned-replies rake tasks | none | S, with 160 for threads |
 | styleguide | started | 7 | 43 of 50 sections showcase Ember components the port does not have; the sidebar panel, the color mode toggle, code samples | none | L (follows the port's own components) |
+| discourse-math | started | 5 | the rich editor node and edit modal (196) | none | S plus 196 |
 
 Findings that cross plugins:
 
@@ -1936,3 +1937,58 @@ equivalent.
   404 route; the server-rendered port answers the 404 page directly.
 - Button markup is the port's own DButton rendering; its exact classes for the link
   display were not checked against a running Ember.
+## discourse-math (`plugins/discourse-math`)
+
+Verdict: started (5 gaps). Ported on `feat/plugin-math` (2026-10-28), against bf55a44c read
+from the extract at tmp/rails-bf55a44c; tests in tests/pretty_text.rs
+(`math_cooks_as_rails_when_enabled`, every case of spec/pretty_text_spec.rb) and
+tests/plugin_math.rs.
+
+### What the port has
+- Markdown: `$...$` with its boundary rules (whitespace, ASCII and Unicode punctuation and
+  symbols, the CJK, full-width, Arabic and Thai marks), `\(...\)` ahead of the escape rule,
+  `%...%` asciimath (with `discourse_math_enable_asciimath` and the MathJax provider only),
+  single and multi-line `$$` and `\[` blocks interrupting paragraphs, `span.math`,
+  `span.asciimath`, `div.math` on the allow list, gated by `discourse_math_enabled` and
+  `discourse_math_enable_latex_delimiters`; the chat engine takes the same rules
+  (plugin.rb's `enable_markdown_feature`): crates/markdown/src/render/math.rs;
+  src/pretty_text/mod.rs.
+- Client: lib/math-renderer.js as static/js/discourse-math.js: the MathJax config
+  (`ui/safe`, html or svg output, menu, accessibility `enrich`, zoom 175% on click,
+  `input/asciimath`), the hidden wrappers, the preview's 200ms delay, KaTeX with mhchem and
+  copy-tex, its `trust` and `\eqref`/`\ref`/`\label` macros; run on cooked posts (and what
+  htmx swaps in, through cooked.js), the composer preview and chat messages. The settings
+  ride on the script tag: src/plugins/math.rs, templates/layout.html.
+- The composer's Insert Math (`square-root-variable`, Shift+M), block mode at a line's start,
+  the modal with its block toggle and required field: src/composer_view.rs,
+  static/js/composer.js, static/js/discourse-math.js. The options menu no longer refuses
+  to open while the plugin is on.
+- Stylesheets (common and chat): static/css/discourse-math.css.
+- Admin plugin entry with its icon: src/admin_view.rs (already there).
+- The renderers: the discourse_math_bundle gem 1.0.1 (MathJax 4.1.0, KaTeX 0.16.27)
+  vendored verbatim in static/vendor/discourse-math-bundle, embedded by build.rs and served
+  at BundlePaths' /plugins/discourse-math/1.0.1/{mathjax,katex}/... with nginx.sample.conf's
+  `^/plugins/` caching (a year, public, immutable, any origin), plugin on or off;
+  `chtml.fontURL` at the bundle's woff-v2. `add_to_serializer(:site,
+  :discourse_math_bundle_url)` while the plugin is on, after core's keys (plugin load order
+  puts it after discourse-gamification's and before styleguide's on main). The client takes
+  the same url, under the base path, from the script tag. Rails:
+  lib/discourse_math/bundle_paths.rb, lib/math-bundle-paths.js, lib/math-renderer.js. Port:
+  src/plugins/math.rs, src/site.rs, tests/plugin_math.rs.
+
+### Gaps
+- MathJax's `loader.paths.fonts` is pinned to the bundle; Rails leaves MathJax's default, a
+  third-party CDN, where the browser fetches the font's dynamic glyph ranges the gem does not ship.
+  Here those ranges 404 instead.
+- The rich editor extension and its math node, the edit modal (modal/math-edit.gjs).
+  [item 196]
+- The insert modal's form is drawn by hand, not FormKit; "Required" is its only
+  validation message.
+- The options menu item's place among the plugins' items is not known (after local dates
+  here).
+- Non-English client strings. [item 167]
+
+### Couldn't determine
+- The exact cooked bytes: the spec compares with match_html and the reference has the
+  plugin off, so no recorded corpus entry has math. The port's sanitizer writes the rule's
+  single-quoted class double quoted, as it does every attribute.

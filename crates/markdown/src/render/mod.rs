@@ -22,6 +22,7 @@ mod html_img;
 mod link_pipes;
 pub mod linkify;
 pub mod local_dates;
+mod math;
 mod md_utils;
 mod newline;
 mod onebox;
@@ -106,6 +107,15 @@ pub struct RenderSettings {
     /// discourse-graphviz's `[graphviz]` (`discourse_graphviz_enabled`).
     #[serde(default)]
     pub graphviz: bool,
+    /// discourse-math (`discourse_math_enabled`), its `%` asciimath
+    /// (`discourse_math_enable_asciimath` with the MathJax provider) and
+    /// `\(`, `\[` delimiters (`discourse_math_enable_latex_delimiters`).
+    #[serde(default)]
+    pub math: bool,
+    #[serde(default)]
+    pub math_asciimath: bool,
+    #[serde(default)]
+    pub math_latex_delimiters: bool,
     /// `avatar_sizes`, ascending.
     pub avatar_sizes: Vec<i64>,
     /// `paths.baseUri`
@@ -183,6 +193,9 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
     if settings.local_dates {
         local_dates::allow(&mut list);
     }
+    if settings.math {
+        math::allow(&mut list);
+    }
     list
 }
 
@@ -202,6 +215,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     bbcode::add(&mut md);
     checklist::add(&mut md);
     footnotes::add(&mut md);
+    math::add(&mut md);
     anchor::add(&mut md);
     link_pipes::add(&mut md);
     blocks::add(&mut md);
@@ -307,6 +321,8 @@ fn chat_engine(mut md: MarkdownIt) -> MarkdownIt {
     tight::add(&mut md);
     linkify::add(&mut md);
     chat_html::add(&mut md);
+    // Chat enables the math features (plugin.rb, enable_markdown_feature).
+    math::add(&mut md);
     md
 }
 

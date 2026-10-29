@@ -284,6 +284,19 @@ pub fn popup_options(
             ..option("graphviz", "diagram-project", "graphviz.composer_title")
         });
     }
+    // discourse-math's Insert Math; its place among the plugins' items is
+    // not known.
+    if crate::plugins::math::enabled(settings)? {
+        out.push(PopupOption {
+            shortcut: Some("Shift+M"),
+            ported: true,
+            ..option(
+                "insert-math",
+                "square-root-variable",
+                "discourse_math.composer.insert_math",
+            )
+        });
+    }
     if on("spoiler_enabled")? {
         out.push(PopupOption {
             show_active_icon: true,
@@ -328,13 +341,8 @@ pub fn unported_popup_plugins(
     settings: &crate::site_settings::SiteSettings,
 ) -> Result<Vec<&'static str>, crate::site_settings::SettingError> {
     let mut out = Vec::new();
-    for (setting, plugin) in [
-        ("discourse_math_enabled", "discourse-math"),
-        ("discourse_post_event_enabled", "discourse-events"),
-    ] {
-        if settings.get(setting)?.truthy() {
-            out.push(plugin);
-        }
+    if settings.get("discourse_post_event_enabled")?.truthy() {
+        out.push("discourse-events");
     }
     Ok(out)
 }

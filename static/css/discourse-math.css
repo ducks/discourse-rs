@@ -1,0 +1,135 @@
+/* discourse-math's common/discourse-math.scss and ext/discourse-chat.scss,
+   as Rails compiles them. */
+
+/* discourse-math.scss:2 */
+[hidden].math-hidden {
+  display: none;
+}
+/* discourse-math.scss:7 */
+.math-container.block-math {
+  display: block;
+}
+/* discourse-math.scss:13 */
+.math-container.block-math > div,
+.math-container.block-math > span {
+  display: block;
+  max-width: 100%;
+  margin-bottom: 1em;
+}
+/* discourse-math.scss:20 */
+.math-container.block-math > div .katex-html,
+.math-container.block-math > span .katex-html {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.25em 0.5em;
+  box-sizing: border-box;
+}
+/* discourse-math.scss:30 */
+.math-container.block-math > mjx-container {
+  display: block;
+  max-width: 100%;
+  margin-bottom: 1em;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25em 0.5em;
+  box-sizing: border-box;
+}
+/* discourse-math.scss:45 */
+.mobile-view .cooked .math-container.block-math {
+  position: relative;
+}
+/* discourse-math.scss:48 */
+.mobile-view .cooked .math-container.block-math::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 1em;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgb(var(--secondary-rgb), 1) 0%,
+    rgb(var(--secondary-rgb), 0) 100%
+  );
+}
+/* discourse-math.scss:63 */
+.mobile-view .cooked .math-container.block-math::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  top: 0;
+  width: 1em;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgb(var(--secondary-rgb), 0) 0%,
+    rgb(var(--secondary-rgb), 1) 100%
+  );
+}
+/* discourse-math.scss:83 */
+.ProseMirror .composer-math-node {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-half);
+  padding: 0 var(--space-1);
+  border: 1px dashed var(--primary-low-mid);
+  border-radius: var(--d-border-radius);
+  background: var(--primary-very-low);
+  font-family: var(--d-font-family--monospace);
+}
+/* discourse-math.scss:94 */
+.ProseMirror .composer-math-node.ProseMirror-selectednode {
+  outline-offset: -2px;
+  border-color: var(--tertiary);
+}
+/* discourse-math.scss:99 */
+.ProseMirror .composer-math-node .math-node-edit-button {
+  color: var(--primary-medium);
+  padding: 0;
+}
+/* discourse-math.scss:103 */
+.ProseMirror .composer-math-node .math-node-edit-button:hover {
+  color: var(--primary);
+}
+/* discourse-math.scss:108 */
+.ProseMirror .composer-math-node .math-node-content {
+  font-size: var(--font-down-1);
+}
+/* discourse-math.scss:113 */
+.ProseMirror div.composer-math-node {
+  display: block;
+  padding: var(--space-2);
+  margin: var(--space-2) 0;
+}
+/* discourse-math.scss:118 */
+.ProseMirror div.composer-math-node .math-node-content {
+  display: block;
+  white-space: pre-wrap;
+}
+/* discourse-math.scss:127 */
+.math-insert-modal__toggle,
+.math-edit-modal__toggle {
+  margin-bottom: var(--space-3);
+}
+/* discourse-math.scss:131 */
+.math-insert-modal__textarea,
+.math-edit-modal__textarea {
+  min-height: 100px;
+  font-family: var(--d-font-family--monospace);
+}
+/* discourse-math.scss:139 */
+.mjx-dialog {
+  position: fixed !important;
+}
+/* discourse-chat.scss:6 */
+.chat-message-text mjx-container[display="true"],
+.chat-message-text .katex-display {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}

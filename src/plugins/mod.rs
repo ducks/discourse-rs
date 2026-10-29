@@ -32,6 +32,7 @@ pub mod lazy_videos;
 pub mod local_dates;
 pub mod login_with_amazon;
 pub mod lti;
+pub mod math;
 pub mod microsoft_auth;
 pub mod narrative_bot;
 pub mod oauth2_basic;
@@ -376,6 +377,7 @@ pub const STARTED: &[&str] = &[
     "discourse-login-with-amazon",
     "discourse-narrative-bot",
     "discourse-lti",
+    "discourse-math",
     "discourse-microsoft-auth",
     "discourse-oauth2-basic",
     "discourse-openid-connect",

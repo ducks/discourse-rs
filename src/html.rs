@@ -307,6 +307,9 @@ pub struct Chrome {
     /// static/js/graphviz.js's script tag attributes
     /// (crate::plugins::graphviz), empty while discourse_graphviz_enabled is off.
     pub graphviz_attrs: String,
+    /// static/js/discourse-math.js's script tag attributes
+    /// (crate::plugins::math), empty while discourse_math_enabled is off.
+    pub math_attrs: String,
     /// What static/js/dates.js reads, as data attributes for its script
     /// tag: the dates.* strings and relative_date_duration.
     pub dates_attrs: String,
@@ -910,6 +913,8 @@ impl Site {
             && settings.get("display_footnotes_inline")?.truthy();
         self.chrome.graphviz_attrs =
             crate::plugins::graphviz::script_attrs(settings, &state.i18n, &self.base_path)?;
+        self.chrome.math_attrs =
+            crate::plugins::math::script_attrs(settings, &state.i18n, &self.base_path)?;
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();

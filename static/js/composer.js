@@ -1115,6 +1115,9 @@
           if (window.Discourse && Discourse.renderGraphviz) {
             Discourse.renderGraphviz(preview);
           }
+          if (window.Discourse && Discourse.renderMath) {
+            Discourse.renderMath(preview);
+          }
         } catch (e) {
           preview.textContent = e.message;
         }
@@ -2543,6 +2546,13 @@
     graphviz: function () {
       if (Discourse.graphvizComposer) {
         Discourse.graphvizComposer(applySurround);
+      }
+    },
+    // discourse-math's Insert Math (static/js/discourse-math.js), in
+    // block mode when the cursor is at a line's start.
+    "insert-math": function () {
+      if (Discourse.mathInsert) {
+        Discourse.mathInsert.show(textarea.value.slice(0, textarea.selectionStart), addText);
       }
     },
     // discourse-policy's builder (static/js/policy.js).
