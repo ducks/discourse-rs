@@ -68,6 +68,8 @@ pub async fn log_on_user(
         user_id,
     )
     .await?;
+    // ... and user_first_logged_in, to discourse-narrative-bot.
+    crate::plugins::narrative_bot::user_logged_in(&mut *conn, settings, user_id).await?;
     let user = crate::session::current::SessionUser::load(&mut *conn, user_id)
         .await?
         .ok_or(Unsupported("logging on a user that vanished"))?;

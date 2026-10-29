@@ -243,6 +243,10 @@ pub async fn change_topic_user(
             Some(reason).filter(|r| *r != 0),
         )
         .await?;
+        // DiscourseEvent :topic_notification_level_changed, to
+        // discourse-narrative-bot.
+        crate::plugins::narrative_bot::topic_notification_level_changed(conn, user_id, topic_id)
+            .await?;
     }
     Ok(())
 }

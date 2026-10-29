@@ -570,6 +570,15 @@ pub async fn update(
             &mut *conn, defs, settings, name, &previous, &new_value,
         )
         .await?;
+        if name == "default_locale" {
+            crate::plugins::narrative_bot::default_locale_changed(
+                &mut *conn,
+                settings,
+                i18n,
+                &new_value.to_s(),
+            )
+            .await?;
+        }
     }
     // SiteIconManager.ensure_optimized! for the icons' settings, with the
     // settings as they are now.

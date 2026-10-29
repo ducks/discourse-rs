@@ -677,6 +677,8 @@ pub async fn insert_user(
     .await?;
     // after_commit: user_created's web hooks.
     crate::web_hooks::enqueue_user_hooks(&mut *conn, payloads, "user_created", user_id).await?;
+    // ... and to discourse-narrative-bot: the welcome post.
+    crate::plugins::narrative_bot::user_created(&mut *conn, settings, user_id, u.staged).await?;
     // discourse-patreon's user_created: a patron's reward groups.
     if settings.get("patreon_enabled")?.truthy() {
         let store = |key: &'static str| {

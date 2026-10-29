@@ -877,6 +877,7 @@ async fn log_on_user(
         user_id,
     )
     .await?;
+    crate::plugins::narrative_bot::user_logged_in(&mut *conn, s, user_id).await?;
     crate::session::current::auth_cookie(&state.keys, s, &user, &unhashed)
 }
 

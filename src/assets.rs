@@ -79,6 +79,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/cakeday.css"),
     include_str!("../static/css/discourse-details.css"),
     include_str!("../static/css/discourse-local-dates.css"),
+    include_str!("../static/css/discourse-narrative-bot.css"),
     include_str!("../static/css/discourse-policy.css"),
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/poll.css"),

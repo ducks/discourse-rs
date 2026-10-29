@@ -277,6 +277,9 @@ pub async fn create(
     if let Some(topic_id) = topic_id {
         sync_topic_user(ctx.bus, &mut *conn, user_id, topic_id).await?;
     }
+    // after_commit on create: discourse-narrative-bot's bookmark input.
+    crate::plugins::narrative_bot::bookmark_created(&mut *conn, s, user_id, stored_type, id)
+        .await?;
     Ok(Outcome::Created(bookmark_id))
 }
 

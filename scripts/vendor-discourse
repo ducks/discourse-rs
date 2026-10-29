@@ -70,6 +70,28 @@ FILES=(
   themes/foundation/screenshots/dark.png
   themes/horizon/screenshots/light.png
   themes/horizon/screenshots/dark.png
+  # discourse-narrative-bot's certificates (crate::plugins::narrative_bot::
+  # certificate), its public files (the images its messages show, the
+  # certificates' font) and the French messages core's French carries.
+  plugins/discourse-narrative-bot/lib/discourse_narrative_bot/templates/new_user.svg.erb
+  plugins/discourse-narrative-bot/lib/discourse_narrative_bot/templates/advanced_user.svg.erb
+  plugins/discourse-narrative-bot/config/locales/server.fr.yml
+  plugins/discourse-narrative-bot/public/fonts/GreatVibes-Regular.ttf
+  plugins/discourse-narrative-bot/public/fonts/OFL.txt
+  plugins/discourse-narrative-bot/public/images/capybara-eating.gif
+  plugins/discourse-narrative-bot/public/images/dog-walk.gif
+  plugins/discourse-narrative-bot/public/images/font-awesome-bookmark.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-ellipsis.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-flag.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-gear.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-link.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-pencil.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-plus.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-rotate-left.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-search.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-smile.png
+  plugins/discourse-narrative-bot/public/images/font-awesome-trash.png
+  plugins/discourse-narrative-bot/public/images/unicorn.png
 )
 
 if [ $# -lt 1 ]; then

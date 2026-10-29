@@ -76,6 +76,9 @@ pub struct NewPost {
     /// approving a queued post (`opts[:guardian]`), whom TopicCreator tags
     /// the topic as.
     pub creator_guardian: Option<Guardian>,
+    /// `skip_bot:` discourse-narrative-bot's post_created handler leaves
+    /// the post alone (the posts its advanced tutorial makes as the user).
+    pub skip_bot: bool,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -1439,6 +1442,8 @@ pub async fn create(
     }
     // ... and to discourse-assign: auto assigning by mention.
     crate::plugins::assign::lifecycle::post_saved(&mut conn, ctx, post_id).await?;
+    // ... and to discourse-narrative-bot: the author's reply.
+    crate::plugins::narrative_bot::post_created(&mut conn, s, post_id, args.skip_bot).await?;
     let posts_count: i32 = sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
         .bind(topic_id)
         .fetch_one(&mut *conn)

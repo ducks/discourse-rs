@@ -27,6 +27,7 @@ pub mod footnote;
 pub mod lazy_videos;
 pub mod local_dates;
 pub mod lti;
+pub mod narrative_bot;
 pub mod oauth2_basic;
 pub mod openid_connect;
 pub mod policy;
@@ -364,6 +365,7 @@ pub const STARTED: &[&str] = &[
     "discourse-details",
     "discourse-lazy-videos",
     "discourse-local-dates",
+    "discourse-narrative-bot",
     "discourse-lti",
     "discourse-oauth2-basic",
     "discourse-openid-connect",

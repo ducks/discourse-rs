@@ -113,11 +113,6 @@ async fn options_match_rails_apart_from_plugin_contributions() {
     for name in COMPUTED_CLIENT_SETTINGS {
         assert!(settings.remove(*name).is_some(), "{name}");
     }
-    // discourse-narrative-bot's pretty_text_allowed_iframes modifier.
-    let iframes = rails["allowedIframes"].as_array_mut().unwrap();
-    let before = iframes.len();
-    iframes.retain(|url| !url.as_str().unwrap().ends_with("/discobot/certificate.svg"));
-    assert_eq!(iframes.len(), before - 1);
     // Chat's markdown options.
     assert!(
         rails["additionalOptions"]

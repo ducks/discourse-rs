@@ -959,6 +959,8 @@ pub async fn finish(
     if revised.diff.iter().any(|(k, _)| *k == "category_id") {
         crate::plugins::topic_category_revised(&mut *conn, s, topic_id).await?;
     }
+    // ... and to discourse-narrative-bot: the first post's author's edit.
+    crate::plugins::narrative_bot::post_edited(&mut *conn, s, post.id).await?;
     if p.editor_id != -1 {
         crate::jobs::enqueue(&mut *conn, "post_alert", json!({"post_id": post.id})).await?;
     }

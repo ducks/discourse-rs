@@ -307,6 +307,10 @@ async fn update_last_read(
                 bus, &mut *conn, user_id, topic_id, after, None,
             )
             .await?;
+            crate::plugins::narrative_bot::topic_notification_level_changed(
+                &mut *conn, user_id, topic_id,
+            )
+            .await?;
         }
         return Ok(());
     }
@@ -370,6 +374,8 @@ async fn update_last_read(
         bus, &mut *conn, user_id, topic_id, new_status, None,
     )
     .await?;
+    crate::plugins::narrative_bot::topic_notification_level_changed(&mut *conn, user_id, topic_id)
+        .await?;
     Ok(())
 }
 

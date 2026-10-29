@@ -477,10 +477,21 @@ pub async fn extract_from(
                 if target.as_ref().is_some_and(|t| t.id == post.topic_id) {
                     continue;
                 }
+            } else if path.starts_with("/plugins/") {
+                // A plugin's public files are static, not routes:
+                // recognize_path raises unless a permalink claims the path.
+                let permalink: bool =
+                    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM permalinks WHERE url = $1)")
+                        .bind(path.trim_start_matches('/'))
+                        .fetch_one(&mut *conn)
+                        .await?;
+                if permalink {
+                    return Err(Unsupported("links to permalinks").into());
+                }
             } else if !RECOGNIZED.iter().any(|p| path.starts_with(p)) {
                 return Err(Unsupported("links to site paths the router is not ported for").into());
             }
-            internal = true;
+            internal = !path.starts_with("/plugins/");
         }
         if parsed.host.is_some_and(|h| h.len() > MAX_DOMAIN_LENGTH) {
             continue;
