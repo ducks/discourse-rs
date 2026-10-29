@@ -64,6 +64,8 @@ pub struct PostSettings {
     /// discourse-cakeday's, when it is on, with today in UTC unless the
     /// page sets the viewer's.
     pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
+    /// discourse-policy is on: its decorator draws the policies.
+    pub policy: bool,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -127,6 +129,7 @@ impl PostSettings {
                 settings,
                 crate::clock::now().date_naive(),
             )?,
+            policy: crate::plugins::policy::enabled(settings)?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -754,6 +757,21 @@ fn decorated_cooked(cx: &PostContext, p: &Value) -> String {
             cooked,
         ),
         None => cooked.to_string(),
+    };
+    let with_polls = if cx.settings.policy {
+        crate::plugins::policy::view::decorate(
+            cx.list,
+            &crate::plugins::policy::view::Viewer {
+                can_manage: cx.staff || p["yours"] == true,
+                show_not_accepted: false,
+                // getRawAvatarSize(20), which avatar_sizes rounds up.
+                tiny_avatar_size: cx.settings.avatar_size_24,
+            },
+            p,
+            &with_polls,
+        )
+    } else {
+        with_polls
     };
     crate::hashtag_decorator::decorate(
         &with_polls,
@@ -3878,6 +3896,7 @@ mod tests {
             poll: None,
             user_notes: None,
             cakeday: None,
+            policy: false,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4157,6 +4176,7 @@ mod tests {
             poll: None,
             user_notes: None,
             cakeday: None,
+            policy: false,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {

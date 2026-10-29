@@ -28,6 +28,7 @@ pub mod local_dates;
 pub mod lti;
 pub mod oauth2_basic;
 pub mod openid_connect;
+pub mod policy;
 pub mod poll;
 pub mod presence;
 pub mod reactions;
@@ -317,6 +318,7 @@ pub const STARTED: &[&str] = &[
     "discourse-lti",
     "discourse-oauth2-basic",
     "discourse-openid-connect",
+    "discourse-policy",
     "discourse-presence",
     "discourse-reactions",
     "discourse-solved",

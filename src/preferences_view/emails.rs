@@ -13,6 +13,9 @@ const ONLY_WHEN_AWAY: i64 = 1;
 pub struct Emails {
     /// chat_enabled: chat's connector and its saveable option.
     pub chat_enabled: bool,
+    /// policy_enabled: discourse-policy's preferences-policy-emails
+    /// connector and its saveable option.
+    pub policy_enabled: bool,
 }
 
 /// `data-show-pref`: the element is there while the control `key` is
@@ -150,6 +153,48 @@ pub fn render(p: &Prefs, e: &Emails) -> Result<(String, Map<String, Value>), App
             escape(&t(cx, "chat.email_frequency.description")),
         ));
     }
+    if e.policy_enabled {
+        let frequency = p.option("policy_email_frequency").as_str().unwrap_or("");
+        let key = "discourse_policy.preferences.policy_emails";
+        out.push_str(&format!(
+            "<h3>{}</h3><div class=\"control-group policy-setting controls-dropdown\"><label for=\"user_policy_email_frequency\">{}</label>{}<div class=\"control-instructions\"{}>{}</div><div class=\"control-instructions\"{}>{}</div></div>",
+            escape(&t(cx, "discourse_policy.preferences.title")),
+            escape(&t(cx, &format!("{key}.label"))),
+            combo(
+                cx,
+                &Combo {
+                    id: Some("user_policy_email_frequency"),
+                    component_class: "",
+                    class: "",
+                    rows: crate::plugins::policy::EMAIL_FREQUENCIES
+                        .iter()
+                        .map(|v| {
+                            (
+                                v.to_string(),
+                                t(cx, &format!("{key}.email_frequency_options.{v}")),
+                            )
+                        })
+                        .collect(),
+                    value: value_string(p.option("policy_email_frequency")),
+                    none: None,
+                    key: Some("policy_email_frequency"),
+                    filterable: false,
+                }
+            ),
+            shown_by(
+                "policy_email_frequency",
+                Some("always"),
+                frequency == "always"
+            ),
+            escape(&t(cx, &format!("{key}.always_description"))),
+            shown_by(
+                "policy_email_frequency",
+                Some("when_away"),
+                frequency == "when_away"
+            ),
+            escape(&t(cx, &format!("{key}.away_description"))),
+        ));
+    }
     out.push_str("</span></div>");
 
     if !p.setting("disable_digest_emails")? {
@@ -265,11 +310,15 @@ pub fn render(p: &Prefs, e: &Emails) -> Result<(String, Map<String, Value>), App
     out.push_str("<span></span><br><span></span>");
     out.push_str(&save_controls(cx));
 
-    let plugin_options: Vec<&str> = if e.chat_enabled {
+    let mut plugin_options: Vec<&str> = if e.chat_enabled {
         vec!["chat_email_frequency"]
     } else {
         Vec::new()
     };
+    // policy-user-options.js: addSaveableUserOptionField.
+    if e.policy_enabled {
+        plugin_options.push("policy_email_frequency");
+    }
     let mut fields = vec![
         "email_level",
         "email_messages_level",

@@ -95,6 +95,7 @@ mod invite_redeem;
 pub(crate) use invite_redeem::create_staged_user;
 mod invites;
 mod onebox;
+mod policy;
 mod polls;
 mod reactions;
 mod required_fields;
@@ -203,6 +204,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/live/posts/{topic_id}", get(live::posts))
         .route("/live/chat/drawer", get(chat_pages::drawer))
         .route("/live/poll/{post_id}/{poll_name}", get(live::poll))
+        .route("/live/policy/{post_id}", get(policy::footer))
+        .route("/live/policy-builder", get(policy::builder))
         .route(
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
@@ -526,6 +529,15 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/cakeday/birthdays/{filter}",
             get(cakeday::birthdays_filter),
         )
+        // discourse-policy's PolicyController.
+        .route("/policy/accept", put(policy::accept))
+        .route("/policy/accept.json", put(policy::accept))
+        .route("/policy/unaccept", put(policy::unaccept))
+        .route("/policy/unaccept.json", put(policy::unaccept))
+        .route("/policy/accepted", get(policy::accepted))
+        .route("/policy/accepted.json", get(policy::accepted))
+        .route("/policy/not-accepted", get(policy::not_accepted))
+        .route("/policy/not-accepted.json", get(policy::not_accepted))
         .route(
             "/topics/voted-by/{username}",
             cached!(get(topic_voting::voted_by)),
@@ -2740,6 +2752,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/poll.js", get(asset))
         .route("/assets/checklist.js", get(asset))
         .route("/assets/cakeday.js", get(asset))
+        .route("/assets/policy.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))

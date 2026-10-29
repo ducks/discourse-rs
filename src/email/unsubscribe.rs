@@ -96,6 +96,8 @@ pub enum Strategy {
     Base,
     Digest,
     Topic,
+    /// discourse-policy's PolicyEmailUnsubscriber.
+    Policy,
 }
 
 pub fn strategy_for(key: &Key) -> Result<Strategy, AppError> {
@@ -103,8 +105,9 @@ pub fn strategy_for(key: &Key) -> Result<Strategy, AppError> {
         Some(DIGEST_TYPE) => Ok(Strategy::Digest),
         Some(TOPIC_TYPE) => Ok(Strategy::Topic),
         Some(ALL_TYPE) => Ok(Strategy::Base),
-        // chat_summary and policy_email (plugins' strategies), or a type
-        // nothing handles (Rails then fails rendering the page).
+        Some(crate::plugins::policy::email::EMAIL_TYPE) => Ok(Strategy::Policy),
+        // chat_summary (chat's strategy), or a type nothing handles (Rails
+        // then fails rendering the page).
         _ => Err(Unsupported("unsubscribe keys of plugins' email types").into()),
     }
 }
@@ -178,6 +181,9 @@ pub struct Options {
     pub topic: Option<KeyTopic>,
     pub watching_topic: bool,
     pub watched_category: bool,
+    /// discourse-policy's PolicyEmailUnsubscriber: the frequencies
+    /// (label, name) and the owner's.
+    pub policy_email_frequencies: Option<(Vec<(String, String)>, String)>,
 }
 
 /// The digest frequencies the page offers: the user's, the choices
@@ -272,9 +278,32 @@ pub async fn prepare(
         topic: None,
         watching_topic: false,
         watched_category: false,
+        policy_email_frequencies: None,
     };
     match strategy {
         Strategy::Base => {}
+        Strategy::Policy => {
+            let current: i32 = sqlx::query_scalar(
+                "SELECT policy_email_frequency FROM user_options WHERE user_id = $1",
+            )
+            .bind(owner.id)
+            .fetch_one(&mut *conn)
+            .await?;
+            let names = crate::plugins::policy::EMAIL_FREQUENCIES;
+            let mut frequencies = Vec::new();
+            for name in names {
+                frequencies.push((
+                    translated(i18n, &format!("unsubscribe.policy_emails.{name}"))?,
+                    name.to_string(),
+                ));
+            }
+            let current = names
+                .get(usize::try_from(current).unwrap_or(usize::MAX))
+                .copied()
+                .unwrap_or_default()
+                .to_string();
+            options.policy_email_frequencies = Some((frequencies, current));
+        }
         Strategy::Digest => {
             options.digest_unsubscribe = !settings.get("disable_digest_emails")?.truthy();
             options.digest_frequencies = Some(digest_frequencies(i18n, owner)?);
@@ -523,9 +552,32 @@ pub fn render_unsubscribe(
         ));
         out.push_str("          </p>\n");
     }
-    // server_plugin_outlet "unsubscribe_options": chat's and
-    // discourse-policy's connectors show nothing for core keys.
-    out.push_str("\n      \n\n");
+    // server_plugin_outlet "unsubscribe_options": chat's connector shows
+    // nothing for these keys, discourse-policy's its frequencies for its own.
+    let mut outlet = String::new();
+    if let Some((frequencies, current)) = &o.policy_email_frequencies {
+        let options: Vec<String> = frequencies
+            .iter()
+            .map(|(label, value)| {
+                format!(
+                    "<option {}value=\"{}\">{}</option>",
+                    if value == current {
+                        "selected=\"selected\" "
+                    } else {
+                        ""
+                    },
+                    html_escape(value),
+                    html_escape(label)
+                )
+            })
+            .collect();
+        outlet = format!(
+            "  <p>\n    <label>{}</label>\n    <select name=\"policy_email_frequency\" id=\"policy_email_frequency\" class=\"combobox\">{}</select>\n  </p>\n",
+            html_escape(&translated(i18n, "unsubscribe.policy_emails.select_title")?),
+            options.join("\n")
+        );
+    }
+    out.push_str(&format!("\n      {outlet}\n\n"));
     if !o.unsubscribed_from_all {
         out.push_str("        <p>\n        <label>\n");
         out.push_str(&format!(
@@ -639,6 +691,29 @@ pub async fn unsubscribe(
     }
     match strategy {
         Strategy::Base => {}
+        Strategy::Policy => {
+            if given(params, "policy_email_frequency") {
+                let value = params
+                    .get("policy_email_frequency")
+                    .and_then(crate::params::scalar)
+                    .unwrap_or_default();
+                // The enum refuses anything else (ArgumentError).
+                let Some(frequency) = crate::plugins::policy::EMAIL_FREQUENCIES
+                    .iter()
+                    .position(|f| *f == value)
+                else {
+                    return Err(Unsupported("a policy email frequency that is not one").into());
+                };
+                sqlx::query(
+                    "UPDATE user_options SET policy_email_frequency = $2 WHERE user_id = $1",
+                )
+                .bind(owner_id)
+                .bind(frequency as i32)
+                .execute(&mut *conn)
+                .await?;
+                updated = true;
+            }
+        }
         Strategy::Digest => {
             if given(params, "digest_after_minutes") {
                 let minutes = crate::params::integer(params, "digest_after_minutes").unwrap_or(0);

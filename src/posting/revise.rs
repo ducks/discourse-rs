@@ -460,6 +460,26 @@ pub async fn revise(
         )
         .await?
     };
+    // discourse-policy's validate_policy on a changed raw, before poll's.
+    if raw_changed
+        && !changes.skip_validations
+        && let Some(error) = crate::plugins::policy::lifecycle::validate_post(
+            &mut conn,
+            ctx.host,
+            ctx.settings,
+            ctx.i18n,
+            &crate::plugins::policy::lifecycle::Saving {
+                old_cooked: Some(&post.cooked),
+                new_raw: &new_raw,
+                wiki: post.wiki,
+                acting_user_id: Some(editor_user.id),
+                user_id: post.user_id,
+            },
+        )
+        .await?
+    {
+        errors.push(error);
+    }
     errors.extend(poll_errors);
     // validates :edit_reason, length: { maximum: MAX_EDIT_REASON_LENGTH },
     // after PostValidator; with validations skipped, before_save's

@@ -623,6 +623,7 @@ const COOKED_SETTINGS: &[&str] = &[
     "show_copy_button_on_codeblocks",
     "display_footnotes_inline",
     "checklist_enabled",
+    "policy_enabled",
 ];
 
 /// The client strings the cooked decorators show, by their js.* key.
@@ -1322,7 +1323,10 @@ impl Site {
         // staff or poll_create_allowed_groups.
         let can_create_poll = guardian.is_staff()
             || guardian.in_setting_groups(settings, "poll_create_allowed_groups")?;
-        let popup_options = crate::composer_view::popup_options(settings, can_create_poll)?;
+        let can_create_policy =
+            guardian.in_setting_groups(settings, "create_policy_allowed_groups")?;
+        let popup_options =
+            crate::composer_view::popup_options(settings, can_create_poll, can_create_policy)?;
         let unported_popup = crate::composer_view::unported_popup_plugins(settings)?;
         let html = crate::composer_view::render(
             &list,

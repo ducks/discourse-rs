@@ -863,6 +863,11 @@ pub async fn serialize(
         let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
         crate::plugins::chat::current_user_keys(&mut *conn, settings, &guardian, &mut out).await?;
     }
+    // discourse-policy's, an attribute like chat's (user_option is an
+    // association, serialized after every attribute).
+    if crate::plugins::policy::enabled(settings)? {
+        crate::plugins::policy::current_user_keys(conn, settings, uid, &mut out).await?;
+    }
     out.insert(
         "user_option".into(),
         user_option(conn, settings, &row.new_since, row.created_at, uid).await?,

@@ -88,7 +88,14 @@ async fn send_user_email(
     let chat_summary = email_type == "chat_summary";
     let digest = email_type == "digest";
     let penalty = crate::email::account::penalty_template(email_type).is_some();
-    if !NOTIFICATION_TYPES.contains(&email_type) && !account && !chat_summary && !digest && !penalty
+    // discourse-policy's UserNotifications#policy_email.
+    let policy = email_type == crate::plugins::policy::email::EMAIL_TYPE;
+    if !NOTIFICATION_TYPES.contains(&email_type)
+        && !account
+        && !chat_summary
+        && !digest
+        && !penalty
+        && !policy
     {
         return Err(Unsupported("this email type").into());
     }
@@ -249,6 +256,12 @@ async fn send_user_email(
     }
     if chat_summary {
         return chat_summary_email(conn, ctx, email_type, user_id, &to_address, &user).await;
+    }
+    if policy && !has_notification {
+        let Some(post_id) = post_id else {
+            return Err(Unsupported("a policy email without its post").into());
+        };
+        return policy_email(conn, ctx, email_type, user_id, &to_address, &user, post_id).await;
     }
     let Some(notification_type) = notification_type else {
         return Err(Unsupported("notification emails without a notification type").into());
@@ -602,6 +615,103 @@ async fn penalty_email(
             *value = to_address.to_string();
         }
     }
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
+    let erode = s.get("bounce_score_erode_on_send")?.to_f();
+    if bounce_score > erode {
+        sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")
+            .bind(user_id)
+            .bind(erode)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// The rest of message_for_email for discourse-policy's email (a post, no
+/// notification): skip_email_for_post, the daily and bounce limits, then
+/// the mailer, once per post and user (EmailLog.unique_email_per_post).
+async fn policy_email(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    email_type: &str,
+    user_id: i32,
+    to_address: &str,
+    user: &Recipient,
+    post_id: i32,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let (topic_present, author_present, user_deleted): (bool, bool, bool) = sqlx::query_as(
+        "SELECT t.id IS NOT NULL, u.id IS NOT NULL, p.user_deleted FROM posts p \
+         LEFT JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
+         LEFT JOIN users u ON u.id = p.user_id WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let skipped = if !topic_present {
+        Some(r::USER_EMAIL_TOPIC_NIL)
+    } else if !author_present {
+        Some(r::USER_EMAIL_POST_USER_DELETED)
+    } else if user_deleted {
+        Some(r::USER_EMAIL_POST_DELETED)
+    } else {
+        None
+    };
+    if let Some(reason) = skipped {
+        return skip(
+            conn,
+            email_type,
+            to_address,
+            Some(user_id),
+            Some(post_id),
+            reason,
+        )
+        .await;
+    }
+    let max = s.get("max_emails_per_day_per_user")?.to_i();
+    if max > 0 {
+        let sent: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM email_logs WHERE created_at > now() - interval '1 day' AND user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if sent >= max {
+            return skip(
+                conn,
+                email_type,
+                to_address,
+                Some(user_id),
+                Some(post_id),
+                r::EXCEEDED_EMAILS_LIMIT,
+            )
+            .await;
+        }
+    }
+    let bounce_score = user.bounce_score.unwrap_or(0.0);
+    if bounce_score >= s.get("bounce_score_threshold")?.to_f() {
+        return skip(
+            conn,
+            email_type,
+            to_address,
+            Some(user_id),
+            Some(post_id),
+            r::EXCEEDED_BOUNCES_LIMIT,
+        )
+        .await;
+    }
+    let already: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM email_logs WHERE post_id = $1 AND user_id = $2)",
+    )
+    .bind(post_id)
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if already {
+        return Ok(());
+    }
+    let built =
+        crate::plugins::policy::email::build(&mut *conn, ctx, user_id, to_address, post_id).await?;
     sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {

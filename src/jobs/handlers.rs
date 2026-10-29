@@ -1107,6 +1107,16 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         Some(post_id),
     )
     .await?;
+    // DiscourseEvent :post_process_cooked, as post_process ends.
+    crate::plugins::policy::lifecycle::post_process_cooked(
+        state,
+        &mut conn,
+        &s,
+        post_id,
+        post.user_id,
+        &html,
+    )
+    .await?;
     // update_post_image: the post's (and a first post's topic's) image.
     let hostname = Urls {
         config: &state.config,

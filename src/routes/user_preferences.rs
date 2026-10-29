@@ -814,7 +814,13 @@ pub async fn page(
                 },
             )?
         }
-        PrefTab::Emails => view::emails::render(&p, &view::emails::Emails { chat_enabled })?,
+        PrefTab::Emails => view::emails::render(
+            &p,
+            &view::emails::Emails {
+                chat_enabled,
+                policy_enabled: crate::plugins::policy::enabled(&settings)?,
+            },
+        )?,
         PrefTab::Email => {
             let new = crate::params::parse_query(uri.query().unwrap_or_default())
                 .get("new")

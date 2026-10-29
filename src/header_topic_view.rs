@@ -280,6 +280,7 @@ mod tests {
             poll: None,
             user_notes: None,
             cakeday: None,
+            policy: false,
             hashtag_tag_icon: None,
         };
         let mut topic = TopicInfo::from_view(&view);

@@ -996,7 +996,7 @@ struct ContextPost {
 /// `render partial: 'email/post', locals: { post:, use_excerpt: }` for a
 /// post by id: its author's small avatar, and its cooked HTML (or
 /// Post#excerpt) through format_for_email.
-async fn post_partial(
+pub(crate) async fn post_partial(
     conn: &mut PgConnection,
     ctx: &super::sender::Ctx<'_>,
     urls: &Urls<'_>,

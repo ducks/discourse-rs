@@ -657,6 +657,26 @@ pub async fn create(
         &analysis,
     )
     .await?;
+    // discourse-policy's validate_policy, before poll's (load order).
+    if let Some(error) = crate::plugins::policy::lifecycle::validate_post(
+        &mut conn,
+        ctx.host,
+        s,
+        ctx.i18n,
+        &crate::plugins::policy::lifecycle::Saving {
+            old_cooked: None,
+            new_raw: &args.raw,
+            // create_topic makes a post in an all_topics_wiki category a wiki
+            // before the save validates it.
+            wiki: plan.as_ref().is_some_and(|p| p.all_topics_wiki),
+            acting_user_id: Some(user.id),
+            user_id: Some(user.id),
+        },
+    )
+    .await?
+    {
+        errors.push(error);
+    }
     // discourse-poll's validate_polls: PostValidator, who may create them.
     if !polls.is_empty()
         && let Some(error) =
