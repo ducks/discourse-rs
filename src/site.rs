@@ -539,6 +539,15 @@ impl Site<'_> {
         out.insert("archetypes".into(), self.archetypes());
         out.insert("user_fields".into(), self.user_fields().await?);
         out.insert("auth_providers".into(), self.auth_providers()?);
+        // The plugins' add_to_serializer(:site) keys, after core's, in
+        // plugin load order (plugins/*/plugin.rb sorted): discourse-math's
+        // while it is on.
+        if crate::plugins::math::enabled(self.settings)? {
+            out.insert(
+                "discourse_math_bundle_url".into(),
+                json!(crate::plugins::math::public_url_base()),
+            );
+        }
 
         Ok(Value::Object(out))
     }

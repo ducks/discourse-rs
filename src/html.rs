@@ -893,7 +893,8 @@ impl Site {
             };
         self.chrome.inline_footnotes = settings.get("enable_markdown_footnotes")?.truthy()
             && settings.get("display_footnotes_inline")?.truthy();
-        self.chrome.math_attrs = crate::plugins::math::script_attrs(settings, &state.i18n)?;
+        self.chrome.math_attrs =
+            crate::plugins::math::script_attrs(settings, &state.i18n, &self.base_path)?;
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();

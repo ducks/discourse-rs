@@ -114,8 +114,7 @@ async fn the_renderer_loads_while_the_plugin_is_on() {
         "data-enable-asciimath=\"false\"",
         "data-enable-accessibility=\"false\"",
         "data-zoom-on-click=\"false\"",
-        "data-mathjax-url=\"https://cdn.jsdelivr.net/npm/mathjax@4.1.0\"",
-        "data-katex-url=\"https://cdn.jsdelivr.net/npm/katex@0.16.22/dist\"",
+        "data-bundle-url=\"/plugins/discourse-math/1.0.1\"",
         "Insert Block Math",
     ] {
         assert!(script.contains(attr), "{attr} in {script}");
@@ -157,4 +156,98 @@ async fn the_composer_offers_insert_math() {
     assert!(page.contains("insert-math"), "the menu item");
     assert!(page.contains("square-root-variable"), "its icon");
     assert!(page.contains("&quot;unported&quot;:[]"), "not refused");
+}
+
+/// GET `path` with no session: status, headers and the body's bytes.
+async fn fetch(state: AppState, path: &str) -> (StatusCode, axum::http::HeaderMap, Vec<u8>) {
+    let request = Request::builder()
+        .uri(path)
+        .header(header::HOST, "test.localhost")
+        .body(Body::empty())
+        .unwrap();
+    let response = discourse_rs::app(state).oneshot(request).await.unwrap();
+    let status = response.status();
+    let headers = response.headers().clone();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    (status, headers, bytes.to_vec())
+}
+
+/// The gem's files at Rails' public paths (BundlePaths.public_url_base),
+/// byte for byte the vendored copies, with nginx.sample.conf's
+/// `^/plugins/` caching; linked at boot, so served with the plugin off.
+#[tokio::test]
+async fn the_bundle_is_served_at_the_rails_paths() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let vendored = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/static/vendor/discourse-math-bundle"
+    );
+    for (file, content_type) in [
+        ("mathjax/tex-mml-chtml.js", "text/javascript; charset=utf-8"),
+        ("mathjax/woff-v2/mjx-ncm-br.woff2", "font/woff2"),
+        ("katex/fonts/KaTeX_AMS-Regular.woff", "font/woff"),
+        ("katex/katex.min.css", "text/css; charset=utf-8"),
+        (
+            "katex/contrib/mhchem.min.js",
+            "text/javascript; charset=utf-8",
+        ),
+        ("mathjax/sre/mathmaps/en.json", "application/json"),
+    ] {
+        let (status, headers, body) =
+            fetch(st.clone(), &format!("/plugins/discourse-math/1.0.1/{file}")).await;
+        assert_eq!(status, StatusCode::OK, "{file}");
+        assert_eq!(headers[header::CONTENT_TYPE], content_type, "{file}");
+        assert_eq!(
+            headers[header::CACHE_CONTROL],
+            "max-age=31556952, public, immutable",
+            "{file}"
+        );
+        assert_eq!(headers[header::ACCESS_CONTROL_ALLOW_ORIGIN], "*", "{file}");
+        let expected = std::fs::read(format!("{vendored}/{file}")).unwrap();
+        assert!(body == expected, "{file}: the vendored bytes");
+    }
+
+    for missing in [
+        "/plugins/discourse-math/1.0.1/mathjax/nope.js",
+        "/plugins/discourse-math/1.0.1/../Cargo.toml",
+        "/plugins/discourse-math/1.0.0/katex/katex.min.css",
+    ] {
+        assert_eq!(
+            fetch(st.clone(), missing).await.0,
+            StatusCode::NOT_FOUND,
+            "{missing}"
+        );
+    }
+}
+
+/// add_to_serializer(:site, :discourse_math_bundle_url), only while the
+/// plugin is on (the serializer respects enabled_site_setting), after
+/// core's keys.
+#[tokio::test]
+async fn the_site_names_the_bundle_url_while_enabled() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (status, site) = Client::anonymous(st)
+        .request(Method::GET, "/site.json", "")
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    let site: Value = serde_json::from_str(&site).unwrap();
+    assert!(site.get("discourse_math_bundle_url").is_none(), "off");
+
+    set_setting(&db.pool, "discourse_math_enabled", 5, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (_, site) = Client::anonymous(st)
+        .request(Method::GET, "/site.json", "")
+        .await;
+    let site: Value = serde_json::from_str(&site).unwrap();
+    assert_eq!(
+        site["discourse_math_bundle_url"],
+        "/plugins/discourse-math/1.0.1"
+    );
+    let keys: Vec<&String> = site.as_object().unwrap().keys().collect();
+    assert_eq!(
+        keys.last().map(|k| k.as_str()),
+        Some("discourse_math_bundle_url")
+    );
 }

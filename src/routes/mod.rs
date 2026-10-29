@@ -2670,6 +2670,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(stylesheets::scheme),
         )
         .route("/fonts/{file}", get(stylesheets::font))
+        .route(
+            "/plugins/discourse-math/1.0.1/{*path}",
+            get(crate::plugins::math::serve),
+        )
         .route("/stylesheets/{file}", get(stylesheets::theme))
         .route(
             "/color-scheme-stylesheet/{id}",

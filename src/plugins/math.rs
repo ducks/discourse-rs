@@ -4,22 +4,71 @@
 //! browser by static/js/discourse-math.js with MathJax or KaTeX
 //! (`discourse_math_provider`), and the composer's Insert Math item.
 //!
-//! Rails serves the renderers from the discourse_math_bundle gem under
-//! /plugins/discourse-math/<version>; the port does not vendor them (the
-//! MathJax bundle loads its components and fonts by path, a directory
-//! tree, not a file), so the browser takes them from a CDN at the
-//! versions below.
+//! The renderers are the discourse_math_bundle gem's (1.0.1: MathJax
+//! 4.1.0, KaTeX 0.16.27), vendored verbatim under
+//! static/vendor/discourse-math-bundle and embedded by build.rs. Rails
+//! symlinks them into the plugin's public/<version> and serves them as
+//! /plugins/discourse-math/<version>/{mathjax,katex}/...; `serve` answers
+//! those paths.
 
+use axum::extract::Path;
+use axum::http::{StatusCode, header};
+use axum::response::{IntoResponse, Response};
 use serde_json::Value;
 
 use crate::i18n::I18n;
 use crate::site_settings::{SettingError, SiteSettings};
 
-/// Where MathJax's components load from (its `loader.paths.mathjax`):
-/// MathJax 4.1, which the plugin names.
-pub const MATHJAX_URL: &str = "https://cdn.jsdelivr.net/npm/mathjax@4.1.0";
-/// KaTeX's dist directory (katex.min.js, katex.min.css, contrib/).
-pub const KATEX_URL: &str = "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist";
+include!(concat!(env!("OUT_DIR"), "/math_bundle.rs"));
+
+/// `DiscourseMathBundle::VERSION`, the gem the files come from.
+pub const BUNDLE_VERSION: &str = "1.0.1";
+
+/// `DiscourseMath::BundlePaths.public_url_base`, the site serializer's
+/// `discourse_math_bundle_url` (no base path, as Rails gives it).
+pub fn public_url_base() -> String {
+    format!("/plugins/discourse-math/{BUNDLE_VERSION}")
+}
+
+/// A vendored bundle file by its path under the version
+/// (`mathjax/tex-mml-chtml.js`, `katex/katex.min.css`).
+pub fn bundle_file(path: &str) -> Option<&'static [u8]> {
+    MATH_BUNDLE
+        .binary_search_by(|(name, _)| (*name).cmp(path))
+        .ok()
+        .map(|i| MATH_BUNDLE[i].1)
+}
+
+/// The content type for a bundle file, as nginx's mime.types gives it.
+fn content_type(path: &str) -> &'static str {
+    match path.rsplit_once('.').map(|(_, ext)| ext) {
+        Some("js" | "mjs") => "text/javascript; charset=utf-8",
+        Some("css") => "text/css; charset=utf-8",
+        Some("json") => "application/json",
+        Some("woff2") => "font/woff2",
+        Some("woff") => "font/woff",
+        _ => "application/octet-stream",
+    }
+}
+
+/// GET /plugins/discourse-math/<version>/<path>: the plugin's public
+/// files, served whether or not the plugin is on, as Rails links them at
+/// boot. nginx.sample.conf's `^/plugins/` location caches them for a year
+/// (public, immutable) with `Access-Control-Allow-Origin: *`.
+pub async fn serve(Path(path): Path<String>) -> Response {
+    let Some(body) = bundle_file(&path) else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    (
+        [
+            (header::CONTENT_TYPE, content_type(&path)),
+            (header::CACHE_CONTROL, "max-age=31556952, public, immutable"),
+            (header::ACCESS_CONTROL_ALLOW_ORIGIN, "*"),
+        ],
+        body,
+    )
+        .into_response()
+}
 
 /// The client strings the insert modal shows, by their js.* key.
 const STRINGS: &[&str] = &[
@@ -39,10 +88,15 @@ pub fn enabled(settings: &SiteSettings) -> Result<bool, SettingError> {
 }
 
 /// discourse-math.js's script tag attributes: the siteSettings
-/// buildDiscourseMathOptions reads, where the renderers load from and the
-/// modal's strings. Empty while the plugin is off, which leaves the
-/// script out.
-pub fn script_attrs(settings: &SiteSettings, i18n: &I18n) -> Result<String, SettingError> {
+/// buildDiscourseMathOptions reads, the bundle's url (the site's
+/// `discourse_math_bundle_url` under the base path, as getURLWithCDN
+/// gives it) and the modal's strings. Empty while the plugin is off,
+/// which leaves the script out.
+pub fn script_attrs(
+    settings: &SiteSettings,
+    i18n: &I18n,
+    base_path: &str,
+) -> Result<String, SettingError> {
     if !enabled(settings)? {
         return Ok(String::new());
     }
@@ -64,14 +118,14 @@ pub fn script_attrs(settings: &SiteSettings, i18n: &I18n) -> Result<String, Sett
     Ok(format!(
         " data-provider=\"{}\" data-mathjax-output=\"{}\" data-enable-menu=\"{}\" \
          data-enable-asciimath=\"{}\" data-enable-accessibility=\"{}\" \
-         data-zoom-on-click=\"{}\" data-mathjax-url=\"{MATHJAX_URL}\" \
-         data-katex-url=\"{KATEX_URL}\" data-strings=\"{}\"",
+         data-zoom-on-click=\"{}\" data-bundle-url=\"{}\" data-strings=\"{}\"",
         esc(&settings.get("discourse_math_provider")?.to_s()),
         esc(&settings.get("discourse_math_mathjax_output")?.to_s()),
         flag("discourse_math_enable_menu")?,
         flag("discourse_math_enable_asciimath")?,
         flag("discourse_math_enable_accessibility")?,
         flag("discourse_math_zoom_on_click")?,
+        esc(&format!("{base_path}{}", public_url_base())),
         esc(&Value::Object(strings).to_string()),
     ))
 }

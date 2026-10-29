@@ -10,9 +10,9 @@
 //       200ms of quiet, as Rails delays a `.d-editor-preview`) and chat
 //       messages.
 //
-// The renderers are not vendored: the script tag names where MathJax
-// and KaTeX load from (crate::plugins::math), where Rails serves the
-// discourse_math_bundle gem's copies.
+// The renderers are the discourse_math_bundle gem's, served under the
+// script tag's data-bundle-url (lib/math-bundle-paths.js: the site's
+// discourse_math_bundle_url under the base path; crate::plugins::math).
 (function () {
   "use strict";
 
@@ -32,8 +32,10 @@
     mathjax_output: data.mathjaxOutput,
     zoom_on_click: data.zoomOnClick === "true",
   };
-  var mathjaxBase = data.mathjaxUrl;
-  var katexBase = data.katexUrl;
+  // getMathJaxBasePath and getKaTeXBasePath.
+  var bundleBase = data.bundleUrl || "/plugins/discourse-math";
+  var mathjaxBase = bundleBase + "/mathjax";
+  var katexBase = bundleBase + "/katex";
 
   var CSS_CLASSES = {
     HIDDEN: "math-hidden",
@@ -74,8 +76,7 @@
 
   // ---- MathJax ----
 
-  // buildMathJaxConfig. The fonts come with the bundle the CDN serves, so
-  // chtml.fontURL is left to MathJax.
+  // buildMathJaxConfig
   function buildMathJaxConfig() {
     var config = {
       startup: {
@@ -86,7 +87,14 @@
       },
       chtml: {},
       svg: {},
-      loader: { load: ["ui/safe"], paths: { mathjax: mathjaxBase } },
+      // Rails sets only `mathjax`. MathJax's default `fonts` path is a
+      // third-party CDN, where it fetches the font's dynamic glyph ranges, which
+      // the gem does not ship; pinned to the bundle so no request leaves
+      // the site (those ranges 404 instead).
+      loader: {
+        load: ["ui/safe"],
+        paths: { mathjax: mathjaxBase, fonts: mathjaxBase },
+      },
       options: { menuOptions: { settings: {} } },
       tex: {
         inlineMath: [["\\(", "\\)"]],
@@ -94,7 +102,9 @@
       },
       asciimath: { delimiters: [["%", "%"]] },
     };
-    if (opts.mathjax_output === "svg") {
+    if (opts.mathjax_output === "html") {
+      config.chtml.fontURL = mathjaxBase + "/woff-v2";
+    } else if (opts.mathjax_output === "svg") {
       config.svg.fontCache = "global";
     }
     config.options.enableMenu = !!opts.enable_menu;

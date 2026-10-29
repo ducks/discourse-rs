@@ -4,8 +4,9 @@
 //! reruns when the markdown crate or the data it embeds changes.
 //!
 //! Also lists the vendored highlight.js languages for src/highlight_js.rs
-//! and the moment locales for src/moment_locale.rs, and the core and
-//! plugin stylesheets theme SCSS compiles against for src/stylesheet.
+//! and the moment locales for src/moment_locale.rs, the core and plugin
+//! stylesheets theme SCSS compiles against for src/stylesheet, and the
+//! discourse_math_bundle files for src/plugins/math.rs.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -19,6 +20,7 @@ fn main() {
         "static/vendor/highlightjs/languages",
         "static/vendor/moment/locale",
         "static/vendor/moment-timezone-names",
+        "static/vendor/discourse-math-bundle",
         "vendor/discourse/app/assets/stylesheets",
         "vendor/discourse/config/plugin_color_definitions",
     ] {
@@ -66,6 +68,42 @@ fn main() {
     highlight_js_languages(&out);
     moment_locales(&out);
     core_stylesheets(&out);
+    math_bundle(&out);
+}
+
+/// `MATH_BUNDLE`: every file under static/vendor/discourse-math-bundle
+/// (the discourse_math_bundle gem's vendor/assets, mathjax/ and katex/) as
+/// (path under it, bytes), sorted by path for a binary search.
+fn math_bundle(out: &Path) {
+    let base = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"))
+        .join("static/vendor/discourse-math-bundle");
+    let mut files = Vec::new();
+    let mut dirs = vec![base.clone()];
+    while let Some(dir) = dirs.pop() {
+        for entry in std::fs::read_dir(&dir).expect("the math bundle is vendored") {
+            let path = entry.expect("a directory entry").path();
+            if path.is_dir() {
+                dirs.push(path);
+            } else {
+                let relative = path
+                    .strip_prefix(&base)
+                    .expect("under the bundle")
+                    .to_string_lossy()
+                    .into_owned();
+                files.push((relative, path));
+            }
+        }
+    }
+    files.sort();
+    let mut table = String::from("pub const MATH_BUNDLE: &[(&str, &[u8])] = &[\n");
+    for (relative, path) in files {
+        table.push_str(&format!(
+            "    ({relative:?}, include_bytes!({:?})),\n",
+            path.display().to_string()
+        ));
+    }
+    table.push_str("];\n");
+    std::fs::write(out.join("math_bundle.rs"), table).expect("OUT_DIR is writable");
 }
 
 /// `HIGHLIGHT_JS_LANGUAGES`: each `<name>.min.js` in

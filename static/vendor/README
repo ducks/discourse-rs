@@ -118,3 +118,17 @@ the reference's node_modules), the files its ace-editor-bundle
 (static/ace-editor-bundle.js) imports, in the minified noconflict build;
 checked against the tarball's npm integrity (sha512), ace.js
 byte-identical to the reference's node_modules.
+
+  discourse-math-bundle/{mathjax,katex}/
+                discourse_math_bundle gem 1.0.1 (the version the
+                reference's bundle installs for plugins/discourse-math),
+                vendor/assets/mathjax (MathJax 4.1.0) and
+                vendor/assets/katex (KaTeX 0.16.27), all 247 files
+                verbatim (embedded by build.rs, served at
+                /plugins/discourse-math/1.0.1/{mathjax,katex}/...,
+                src/plugins/math.rs)
+
+The gem ships no license files; MathJax is Apache-2.0 and KaTeX MIT.
+Copied from an installed gem and compared with `diff -r`. To update,
+install the new gem version, replace both trees and bump
+BUNDLE_VERSION and the route in src/routes/mod.rs.

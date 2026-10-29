@@ -46,7 +46,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
-| discourse-math | started | 6 | renderers from a CDN rather than the gem (no `discourse_math_bundle_url` on /site.json), the rich editor node and edit modal (196) | none | S plus 196 |
+| discourse-math | started | 5 | the rich editor node and edit modal (196) | none | S plus 196 |
 
 Findings that cross plugins:
 
@@ -1350,7 +1350,7 @@ No new item; the rich editor waits on 196.
 
 ## discourse-math (`plugins/discourse-math`)
 
-Verdict: started (6 gaps). Ported on `feat/plugin-math` (2026-10-28), against bf55a44c read
+Verdict: started (5 gaps). Ported on `feat/plugin-math` (2026-10-28), against bf55a44c read
 from the extract at tmp/rails-bf55a44c; tests in tests/pretty_text.rs
 (`math_cooks_as_rails_when_enabled`, every case of spec/pretty_text_spec.rb) and
 tests/plugin_math.rs.
@@ -1376,14 +1376,21 @@ tests/plugin_math.rs.
   to open while the plugin is on.
 - Stylesheets (common and chat): static/css/discourse-math.css.
 - Admin plugin entry with its icon: src/admin_view.rs (already there).
+- The renderers: the discourse_math_bundle gem 1.0.1 (MathJax 4.1.0, KaTeX 0.16.27)
+  vendored verbatim in static/vendor/discourse-math-bundle, embedded by build.rs and served
+  at BundlePaths' /plugins/discourse-math/1.0.1/{mathjax,katex}/... with nginx.sample.conf's
+  `^/plugins/` caching (a year, public, immutable, any origin), plugin on or off;
+  `chtml.fontURL` at the bundle's woff-v2. `add_to_serializer(:site,
+  :discourse_math_bundle_url)` while the plugin is on, after core's keys (plugin load order
+  puts it after discourse-gamification's and before styleguide's on main). The client takes
+  the same url, under the base path, from the script tag. Rails:
+  lib/discourse_math/bundle_paths.rb, lib/math-bundle-paths.js, lib/math-renderer.js. Port:
+  src/plugins/math.rs, src/site.rs, tests/plugin_math.rs.
 
 ### Gaps
-- The renderers load from jsdelivr (MathJax 4.1.0, KaTeX 0.16.22) instead of the
-  discourse_math_bundle gem's copies under /plugins/discourse-math/<version>, and
-  `chtml.fontURL` is left to MathJax's own fonts. Rails: lib/discourse_math/bundle_paths.rb;
-  assets/javascripts/lib/math-renderer.js (buildMathJaxConfig). Port: src/plugins/math.rs.
-- `add_to_serializer(:site, :discourse_math_bundle_url)`: absent (the gem's version, which
-  the path carries, is not in the extract).
+- MathJax's `loader.paths.fonts` is pinned to the bundle; Rails leaves MathJax's default, a
+  third-party CDN, where the browser fetches the font's dynamic glyph ranges the gem does not ship.
+  Here those ranges 404 instead.
 - The rich editor extension and its math node, the edit modal (modal/math-edit.gjs).
   [item 196]
 - The insert modal's form is drawn by hand, not FormKit; "Required" is its only
@@ -1396,4 +1403,3 @@ tests/plugin_math.rs.
 - The exact cooked bytes: the spec compares with match_html and the reference has the
   plugin off, so no recorded corpus entry has math. The port's sanitizer writes the rule's
   single-quoted class double quoted, as it does every attribute.
-- Which MathJax and KaTeX versions the gem pins.
