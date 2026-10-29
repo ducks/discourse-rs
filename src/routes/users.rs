@@ -1550,6 +1550,12 @@ pub(crate) async fn profile_page(
             settings,
             guardian.is_staff(),
         )?,
+        cakeday: crate::plugins::cakeday::view::CakedayUi::for_viewer(
+            &mut *conn,
+            settings,
+            guardian.user_id(),
+        )
+        .await?,
     };
     let mut main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     // The notification level dropdown's ignore opens the ignore duration

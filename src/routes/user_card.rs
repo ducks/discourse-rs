@@ -70,6 +70,12 @@ pub async fn show(
             &settings,
             guardian.is_staff(),
         )?,
+        cakeday: crate::plugins::cakeday::view::CakedayUi::for_viewer(
+            &mut conn,
+            &settings,
+            guardian.user_id(),
+        )
+        .await?,
     };
     let categories = std::collections::HashMap::new();
     let cx = crate::topic_list_view::ListContext {

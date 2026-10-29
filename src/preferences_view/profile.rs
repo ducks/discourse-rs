@@ -375,6 +375,8 @@ pub fn render(p: &Prefs, pr: &Profile) -> Result<(String, Map<String, Value>), A
                 escape(&t(cx, "download_calendar.default_calendar_instruction"))
             ));
         }
+        // The user-custom-preferences outlet: discourse-cakeday's date of birth.
+        out.push_str(&crate::plugins::cakeday::view::date_of_birth_input(p)?);
     }
     out.push_str(&save_controls(cx));
 

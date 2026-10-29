@@ -1,15 +1,15 @@
 //! `UserUpdater#update` as UsersController#update calls it: the user's
 //! options (discourse-solved's and chat's included), profile (bio,
 //! location, website, the profile and card backgrounds), name, locale,
-//! title, primary and flair groups, category and tag tracking, sidebar
-//! links, muted users and
+//! date of birth, title, primary and flair groups, category and tag
+//! tracking, sidebar links, muted users and
 //! allowed PM senders, the notification schedule, with the model
 //! callbacks that follow (the bio cooked, the search index, the name
 //! change logged, the display name job, the title's badge, the profile's
 //! upload references and the schedule's do not disturb timings).
 //!
 //! Refused: what failing validations would answer (the errors JSON),
-//! external ids, date of birth, user status and uploads in the bio.
+//! external ids, user status and uploads in the bio.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -36,6 +36,7 @@ pub struct Target {
     pub title: Option<String>,
     pub primary_group_id: Option<i32>,
     pub flair_group_id: Option<i32>,
+    pub date_of_birth: Option<chrono::NaiveDate>,
 }
 
 impl Target {
@@ -58,7 +59,7 @@ pub async fn find_target(
         .unwrap_or(&username_lower);
     sqlx::query_as(
         "SELECT id, username, username_lower, name, locale, admin, moderator, staged, active, \
-                trust_level, title, primary_group_id, flair_group_id \
+                trust_level, title, primary_group_id, flair_group_id, date_of_birth \
          FROM users WHERE username_lower = $1 AND (active OR id = $2 OR $3) LIMIT 1",
     )
     .bind(username_lower)
@@ -272,10 +273,6 @@ const CHAT_SIDEBAR_MODES: &[(&str, i64)] = &[
 /// What the update refuses outright, by param.
 const REFUSED: &[(&str, &str)] = &[
     ("custom_fields", "updating custom fields"),
-    (
-        "date_of_birth",
-        "updating the date of birth (discourse-cakeday, 202)",
-    ),
     ("status", "updating the user status (130)"),
 ];
 
@@ -711,6 +708,13 @@ pub async fn update(
     } else {
         user.locale.clone()
     };
+    // `user.date_of_birth = attributes.fetch(:date_of_birth)`, cast as
+    // ActiveModel casts a date (discourse-cakeday's preference, core's
+    // column).
+    let date_of_birth = match attrs.get("date_of_birth") {
+        Some(v) => crate::plugins::cakeday::cast_date(v)?,
+        None => user.date_of_birth,
+    };
     let name_changed = name != user.name;
     if name_changed {
         validate_name(&mut *conn, s, user.id, name.as_deref()).await?;
@@ -730,10 +734,12 @@ pub async fn update(
         || title_changed
         || groups.primary_group_id != user.primary_group_id
         || groups.flair_group_id != user.flair_group_id
+        || date_of_birth != user.date_of_birth
     {
         sqlx::query(
             "UPDATE users SET name = $2, locale = $3, title = $4, primary_group_id = $5, \
-                              flair_group_id = $6, updated_at = now() WHERE id = $1",
+                              flair_group_id = $6, date_of_birth = $7, updated_at = now() \
+             WHERE id = $1",
         )
         .bind(user.id)
         .bind(&name)
@@ -741,6 +747,7 @@ pub async fn update(
         .bind(&groups.title)
         .bind(groups.primary_group_id)
         .bind(groups.flair_group_id)
+        .bind(date_of_birth)
         .execute(&mut *conn)
         .await?;
     }

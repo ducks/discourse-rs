@@ -41,6 +41,7 @@ mod badges;
 mod bookmark_writes;
 mod bookmarks;
 mod bus;
+mod cakeday;
 mod change_owner;
 pub(crate) mod composer;
 mod deleted_posts;
@@ -512,6 +513,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/user_notes/{id}", delete(user_notes::destroy))
         .route("/user-notes/{user_id}", get(user_notes::modal))
+        // discourse-cakeday's AnniversariesController and BirthdaysController.
+        .route("/cakeday/anniversaries", get(cakeday::anniversaries))
+        .route("/cakeday/anniversaries.json", get(cakeday::anniversaries))
+        .route(
+            "/cakeday/anniversaries/{filter}",
+            get(cakeday::anniversaries_filter),
+        )
+        .route("/cakeday/birthdays", get(cakeday::birthdays))
+        .route("/cakeday/birthdays.json", get(cakeday::birthdays))
+        .route(
+            "/cakeday/birthdays/{filter}",
+            get(cakeday::birthdays_filter),
+        )
         .route(
             "/topics/voted-by/{username}",
             cached!(get(topic_voting::voted_by)),
@@ -2725,6 +2739,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/discourse-solved.js", get(asset))
         .route("/assets/poll.js", get(asset))
         .route("/assets/checklist.js", get(asset))
+        .route("/assets/cakeday.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))

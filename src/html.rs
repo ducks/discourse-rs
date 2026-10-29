@@ -2883,7 +2883,7 @@ pub async fn topic_page(
         }
         _ => None,
     };
-    let post_settings = crate::post_view::PostSettings::load(settings)?;
+    let mut post_settings = crate::post_view::PostSettings::load(settings)?;
     let viewer = site.viewer.as_ref().map(|v| v.username.as_str());
     let staff = site.viewer.as_ref().is_some_and(|v| v.staff);
     let can_send_pms = site
@@ -2946,6 +2946,10 @@ pub async fn topic_page(
     )
     .await
     .map_err(HtmlError::Plugin)?;
+    // discourse-cakeday's today, in the viewer's timezone.
+    post_settings.cakeday =
+        crate::plugins::cakeday::view::CakedayUi::for_viewer(conn, settings, guardian.user_id())
+            .await?;
     // Mark unread's destination: the message's inbox, else home.
     topic.defer_to = topic.pm_path.clone().unwrap_or_else(|| format!("{base}/"));
     if post_settings.poll.is_some()

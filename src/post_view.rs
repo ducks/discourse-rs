@@ -61,6 +61,9 @@ pub struct PostSettings {
     /// discourse-user-notes' settings, when it is on (what it draws is
     /// for staff viewers, `PostContext::staff`).
     pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
+    /// discourse-cakeday's, when it is on, with today in UTC unless the
+    /// page sets the viewer's.
+    pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -120,6 +123,10 @@ impl PostSettings {
             presence: flag("presence_enabled")?,
             poll: crate::plugins::poll::view::PollUi::load(settings)?,
             user_notes: crate::plugins::user_notes::view::UserNotesUi::load(settings, true)?,
+            cakeday: crate::plugins::cakeday::view::CakedayUi::load(
+                settings,
+                crate::clock::now().date_naive(),
+            )?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -1147,8 +1154,20 @@ fn poster_name(cx: &PostContext, p: &Value) -> String {
         };
         out.push_str(&format!("<span class=\"{class}\">{content}</span>"));
     }
+    // The plugins' poster icons (addPosterIcon): before the names in the
+    // mobile view, after them on a desktop.
+    if let Some(ui) = &cx.settings.cakeday {
+        let icons = crate::plugins::cakeday::view::poster_icons(ui, cx.list, p, cx.viewer);
+        if crate::mobile::mobile_view() {
+            let opening = "<div class=\"names trigger-user-card\">";
+            out.insert_str(opening.len(), &icons);
+        } else {
+            out.push_str(&icons);
+        }
+    }
     // discourse-user-notes' icon by the name: before it on the mobile
-    // view, after it on the desktop's.
+    // view, after it on the desktop's. Its connector wraps the poster
+    // name outlet, so it lands outside the poster icons on either side.
     if cx.staff
         && let Some(ui) = cx
             .settings
@@ -3858,6 +3877,7 @@ mod tests {
             presence: false,
             poll: None,
             user_notes: None,
+            cakeday: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4136,6 +4156,7 @@ mod tests {
             presence: false,
             poll: None,
             user_notes: None,
+            cakeday: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {

@@ -19,6 +19,7 @@
 
 pub mod apple;
 pub mod auth_providers;
+pub mod cakeday;
 pub mod chat;
 pub mod checklist;
 pub mod footnote;
@@ -309,6 +310,7 @@ pub const STARTED: &[&str] = &[
     "chat",
     "checklist",
     "discourse-apple-auth",
+    "discourse-cakeday",
     "discourse-details",
     "discourse-lazy-videos",
     "discourse-local-dates",

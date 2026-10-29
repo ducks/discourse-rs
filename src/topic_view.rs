@@ -2087,6 +2087,14 @@ impl TopicView<'_> {
         } else {
             None
         };
+        // discourse-cakeday's posters' join dates and birthdays.
+        let cakeday = crate::plugins::cakeday::PostsData::load(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            &posts.iter().filter_map(|p| p.user_id).collect::<Vec<_>>(),
+        )
+        .await?;
         // The page's per-post rows, each read once for every post.
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
         // badges_granted: UserBadge.for_post_header_badges.
@@ -2502,6 +2510,10 @@ impl TopicView<'_> {
                     post.post_number
                 )),
             );
+            // discourse-cakeday's post keys.
+            if let Some(cakeday) = &cakeday {
+                cakeday.post_keys(g, post.user_id, &mut p);
+            }
             // discourse-reactions' post keys.
             if let Some(reactions) = &reactions {
                 reactions.post_keys(post.id, &mut p);

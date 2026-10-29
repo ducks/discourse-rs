@@ -1,6 +1,7 @@
 //! The user card as the Ember app renders it once loaded
 //! (components/user-card-contents.gjs, with UserBadge, DBadgeButton,
-//! DUserAvatarFlair and the chat and discourse-solved connectors), from
+//! DUserAvatarFlair and the chat, discourse-cakeday and discourse-solved
+//! connectors), from
 //! the users#show_card document. static/js/user-card.js floats it by the
 //! avatar or mention that opened it.
 //!
@@ -33,6 +34,8 @@ pub struct CardSettings {
     pub tl3_links_no_follow: bool,
     /// discourse-user-notes, when it is on.
     pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
+    /// discourse-cakeday's, when it is on.
+    pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
 }
 
 /// A site user field shown on cards (`site.user_fields` with
@@ -329,15 +332,20 @@ pub fn render(
             escape(&t(cx, "user.staged"))
         ));
     }
-    // The user-card-post-names outlet: discourse-user-notes' connector.
-    let post_names = settings
-        .user_notes
-        .as_ref()
-        .map(|ui| crate::plugins::user_notes::view::card(ui, cx.i18n, base, u))
-        .unwrap_or_default();
-    out.push_str(&format!(
-        "<div>{post_names}</div></div><ul class=\"usercard-controls\">"
-    ));
+    // The user-card-post-names outlet: the connectors in plugin load
+    // order, discourse-cakeday's then discourse-user-notes'.
+    out.push_str("<div>");
+    if let Some(ui) = &settings.cakeday {
+        out.push_str(&crate::plugins::cakeday::view::user_card(
+            ui, cx, u, viewer.id,
+        ));
+    }
+    if let Some(ui) = &settings.user_notes {
+        out.push_str(&crate::plugins::user_notes::view::card(
+            ui, cx.i18n, base, u,
+        ));
+    }
+    out.push_str("</div></div><ul class=\"usercard-controls\">");
     if u["can_send_private_message_to_user"] == true {
         out.push_str(&format!(
             "<li class=\"compose-pm\">{}</li>",
