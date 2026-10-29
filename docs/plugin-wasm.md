@@ -523,8 +523,9 @@ Open, for this part:
 `database = true`) writes SQL of its own, and Postgres, not the host,
 keeps it in bounds.
 
-Per site, at the first hook call that needs it (before that call's time
-budget starts):
+Per site, at boot (`install_databases`, for every site before the server
+listens; a site that can't stops the boot), or else at the first hook
+call that needs it, before that call's time budget starts:
 
 - a login role `dpl_<name>_<8 hex of md5(database)>` (roles are the
   cluster's; sites and test databases share one), `NOINHERIT`, with a
@@ -560,9 +561,10 @@ Per hook call, one transaction, begun at the first statement:
 - a statement's own error (a constraint, a denied table) goes back to
   the guest as an error it can handle; the time limit fails the hook.
 
-Connections go back to the pool through `RESET ALL`, so a session
-setting doesn't outlive its hook. Statements are unnamed (no prepared
-statement cache shared between guest SQL texts). Parameters bind by JSON
+Connections go back to the pool through `DISCARD ALL`, so nothing of a
+guest's session outlives its hook: settings, advisory locks, LISTEN,
+temporary tables, prepared statements. Statements are unnamed, and the
+role's connections keep no statement cache. Parameters bind by JSON
 type: integers as bigint, other numbers as double, strings as text,
 booleans, null untyped (Postgres types it from where it goes), arrays and
 objects as JSON text; anything else is cast in the statement
@@ -585,13 +587,86 @@ role); doesn't keep a `SET search_path`; and a `pg_sleep(5)` stops at the
 500 ms budget either way. `scripts/drop-stale-test-dbs` sweeps the roles
 of dropped test databases.
 
+### Hardening (fix/wasm-hardening)
+
+The app's role: a superuser, or `CREATEROLE` on PostgreSQL 16 or later,
+plus what the database's owner holds (`discourse-rs setup --owner` makes
+it the owner). Before 16, `CREATEROLE` lets a role grant itself
+`pg_read_server_files` and the like, so the host doesn't ask for it
+there and refuses to install a plugin database unless the app is a
+superuser. Without superuser it also needs `GRANT SET ON PARAMETER
+temp_file_limit` (below). Each refusal names the fix (`ALTER ROLE ...
+CREATEROLE`, the GRANT, or the PostgreSQL version).
+
+What `PUBLIC` reaches, checked on the vendored schema (PostgreSQL 16):
+
+- No table, view or sequence in `public` is granted to `PUBLIC`, and the
+  install revokes everything there from the role before its own grants.
+  `discourse_functions` and `discourse_rs` give `PUBLIC` no `USAGE`.
+- No `SECURITY DEFINER` function outside the system schemas. The 213
+  functions in `public` (Discourse's, hstore, pg_trgm, unaccent, vector)
+  run as the caller, so the role gets nothing from executing them.
+- `CREATE` on `public`: revoked from `PUBLIC` by default since 15, but a
+  database upgraded from 14 or older keeps it. There a plugin could put a
+  function or operator in `public` that the app's SQL resolves to, and
+  run it as the app. The install refuses, naming `REVOKE CREATE ON SCHEMA
+  public FROM PUBLIC`.
+- `pg_catalog` stays readable, as for every role: table, column, role
+  and function names and definitions (all in Discourse's source), and
+  row estimates (`pg_class.reltuples`, `pg_stat_user_tables`). Revoking
+  catalog access per role isn't possible (privileges add up, and
+  `PUBLIC` holds them), and revoking it from `PUBLIC` takes a superuser
+  and breaks clients. Accepted: metadata, not rows.
+- `NOTIFY` on any channel: pg-bus sends empty notifications as a wake-up
+  and keeps its messages in its tables, so a plugin's NOTIFY is a
+  spurious wake-up, not a message. The listener answers a burst of them
+  with one read of its backlog.
+
+The transaction: a guest's `execute("COMMIT")` or `ROLLBACK` would end
+the hook's transaction, so its next statement would commit on its own,
+writable under GET and kept when the hook fails. After every successful
+`execute` the host compares `now()` with the transaction's start and
+fails the hook when they differ, before anything else runs. `query`
+can't, as its statement sits in a CTE. What a COMMIT commits before the
+check is the hook's own writes so far, in a write hook.
+
+What a role may set on itself: any role can change its own password and
+its session defaults (`ALTER ROLE CURRENT_USER SET ...`), and that can't
+be revoked. The install runs at every boot and puts both back: the
+stored password, `RESET ALL` on the role and on the role in the
+database, then its own settings. A guest's change lasts until the next
+boot. The password matters only where the role can log in from outside
+the app's host: keep `pg_hba.conf` to the app's address for `dpl_` roles
+(PostgreSQL 16 matches `/^dpl_`).
+
+Resources: the role holds `temp_file_limit = 1GB`, a superuser-only
+setting, so a guest's SET, `set_config` or `ALTER ROLE ... RESET` can't
+lift it and no statement fills the disk with a sort or hash. An app role
+that isn't a superuser sets it through `GRANT SET ON PARAMETER
+temp_file_limit` (PostgreSQL 15+). Memory can't be capped per role:
+`work_mem` and `hash_mem_multiplier` are anyone's to raise. Cap
+PostgreSQL as a whole (systemd `MemoryMax=` on its unit); CPU and I/O
+end with the hook's time budget. No `CONNECTION LIMIT` on the role: a
+guest can't open connections, the host's pool is the cap, and a limit
+shared by every app process would break with more than one.
+
+Multisite needs nothing more: the plugins are the process's, as Rails'
+are, enabled per site by their settings, and each site's database gets
+its own role, schema and pool.
+
+Tested in `tests/plugin_wasm_api.rs`: COMMIT and ROLLBACK under POST
+and GET fail the hook with nothing written after; a session advisory
+lock is gone once the connection is back; an app role that isn't a
+superuser installs with `CREATEROLE` and is refused without it; a
+database where `PUBLIC` creates in `public` gets no role; two sites keep
+their rows apart; a guest can't lift its temp_file_limit, and its own
+password and role defaults are gone after the next boot's install (an
+app role without the GRANT is refused). The transaction, lock and boot
+checks were confirmed by breaking the code on purpose (the check
+disabled, `RESET ALL` restored, the password and role resets dropped).
+
 Open:
 
-- The app's database user needs `CREATEROLE` (and `CREATE` on the
-  database) to install, or a separate install step that has them.
-- What a login role can still see: `pg_catalog` (table and role names),
-  functions `PUBLIC` may execute, temporary tables, large objects. Worth
-  a pass with `REVOKE ... FROM PUBLIC` where it matters.
 - Writes to core data (a post, a notification, a pg-bus message) are
   host calls through core's own code, not built.
 - Uninstall (revoke, drop the schema and role) is not built.

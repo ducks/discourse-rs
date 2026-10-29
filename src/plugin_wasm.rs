@@ -510,6 +510,18 @@ pub fn install(registry: Registry) {
     }
 }
 
+/// Each installed plugin's database on the site of `app` (its role,
+/// schema and migrations), at boot: a site that can't give a plugin its
+/// database stops the boot rather than failing the plugin's every hook.
+pub async fn install_databases(app: &sqlx::PgPool) -> Result<(), String> {
+    for plugin in &registry().plugins {
+        if plugin.database {
+            plugin.db_pool(app).await?;
+        }
+    }
+    Ok(())
+}
+
 /// Loads `PLUGINS_DIR` when set, installs it for the topic list's phases,
 /// and hands back the plugins for plugin_api's registry (every other
 /// hook). A broken plugin stops the boot.

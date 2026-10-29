@@ -31,6 +31,9 @@ DECLARE r text; n int := 0;
 BEGIN
   FOR r IN SELECT rolname FROM pg_roles WHERE rolname LIKE 'dpl\_%' LOOP
     BEGIN
+      -- Test app roles hold this (tests/plugin_wasm_api.rs app_role); it
+      -- comes back with the rollback if the role stays.
+      EXECUTE format('REVOKE SET ON PARAMETER temp_file_limit FROM %I', r);
       EXECUTE format('DROP ROLE %I', r);
       n := n + 1;
     EXCEPTION WHEN dependent_objects_still_exist THEN NULL;
