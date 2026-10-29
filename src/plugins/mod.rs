@@ -35,6 +35,7 @@ pub mod post_voting;
 pub mod presence;
 pub mod reactions;
 pub mod solved;
+pub mod styleguide;
 pub mod topic_voting;
 pub mod user_notes;
 
@@ -377,6 +378,7 @@ pub const STARTED: &[&str] = &[
     "footnote",
     "poll",
     "spoiler-alert",
+    "styleguide",
 ];
 
 /// DiscourseEvent `:site_setting_changed`, after a setting's new value is

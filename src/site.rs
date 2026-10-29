@@ -539,6 +539,17 @@ impl Site<'_> {
         out.insert("archetypes".into(), self.archetypes());
         out.insert("user_fields".into(), self.user_fields().await?);
         out.insert("auth_providers".into(), self.auth_providers()?);
+        // The plugins' add_to_serializer(:site) keys, after core's, each
+        // while its plugin is on: styleguide's.
+        if crate::plugins::styleguide::enabled(self.settings)? {
+            out.insert(
+                "can_see_styleguide".into(),
+                json!(crate::plugins::styleguide::can_see(
+                    &self.guardian,
+                    self.settings
+                )?),
+            );
+        }
 
         Ok(Value::Object(out))
     }

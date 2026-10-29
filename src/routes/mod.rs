@@ -81,6 +81,7 @@ mod review_claims;
 mod robots;
 mod search;
 mod search_menu;
+mod styleguide;
 mod uploads;
 pub(crate) use search::{invalid_access, invalid_access_at};
 pub(crate) use session::{csrf_ok, viewer_state};
@@ -536,6 +537,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/user_notes/{id}", delete(user_notes::destroy))
         .route("/user-notes/{user_id}", get(user_notes::modal))
+        // The styleguide plugin's StyleguideController.
+        .route("/styleguide", get(styleguide::index))
+        .route("/styleguide/{category}/{section}", get(styleguide::show))
         // discourse-cakeday's AnniversariesController and BirthdaysController.
         .route("/cakeday/anniversaries", get(cakeday::anniversaries))
         .route("/cakeday/anniversaries.json", get(cakeday::anniversaries))
@@ -2659,6 +2663,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/about/live_post_counts.json", get(about::live_post_counts))
         .route("/assets/site.css", get(asset))
         .route("/assets/discourse.css", get(asset))
+        .route("/assets/styleguide.css", get(asset))
         .route(
             "/assets/color_definitions_light.css",
             get(stylesheets::light),

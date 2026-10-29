@@ -46,6 +46,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
+| styleguide | started | 7 | 43 of 50 sections showcase Ember components the port does not have; the sidebar panel, the color mode toggle, code samples | none | L (follows the port's own components) |
 
 Findings that cross plugins:
 
@@ -1346,3 +1347,70 @@ No new item; the rich editor waits on 196.
 ### Couldn't determine
 - The policy item's place in the composer's options menu (after poll here) and `can_create_policy`'s place among the current user's keys (with chat's, before the `user_option` association) need a Rails response.
 - The policy email's exact HTML and text after Email::Renderer and Styles were not compared with a Rails send.
+
+## styleguide (`plugins/styleguide`)
+
+Verdict: started (7 gaps). Ported on `feat/plugin-styleguide` (2026-10-29), against
+bf55a44c read from the extract at tmp/rails-bf55a44c; tests in tests/plugin_styleguide.rs
+(spec/requests/styleguide/styleguide_controller_spec.rb, spec/integration/access_spec.rb,
+spec/integration/assets_spec.rb's page checks) and the section order's unit test in
+src/plugins/styleguide/mod.rs.
+
+The plugin is Ember all the way down: Rails renders an empty page at /styleguide and the
+client draws ~50 sections of live Ember components. The port keeps the routes, the guard
+and the section structure, and shows its own server-rendered markup where it has an
+equivalent.
+
+### What the port has
+- Routes `/styleguide` and `/styleguide/:category/:section` (StyleguideController#index):
+  404 while `styleguide_enabled` is off (requires_plugin) and for whoever
+  `can_see_styleguide?` refuses (`in_any_groups?` over `styleguide_allowed_groups`,
+  admins by default, with the anonymous and everyone group rules): src/routes/styleguide.rs,
+  src/plugins/styleguide/mod.rs.
+- `add_to_serializer(:site, :can_see_styleguide)`, present only while the plugin is on:
+  src/site.rs.
+- lib/styleguide.js's categories and sections in its order (priority, then id),
+  `sectionById` by id whatever the category, an unknown section's 404, the page header
+  with its breadcrumbs (Styleguide, then the section) and title, the index's welcome, the
+  navigation by category: src/plugins/styleguide/view.rs.
+- Sections drawn with the port's markup: Typography (h1 to h6, p), Font scale (its text,
+  the SCSS samples and the 13 steps), Buttons (every DButton size and state card and
+  DToggleSwitch, with the port's button markup), Colors (every swatch card), Icons (the
+  site sprite's symbols), Forms (Input, Toggle, Textarea, Select, CheckboxGroup, Alert with
+  the port's FormKit markup, src/admin_form_kit.rs), Spinners.
+- The plugin's stylesheet, on its pages only (the asset filter's effect, with
+  `data-target="styleguide"`): static/css/styleguide.css.
+- Setting `styleguide_admin_only` (hidden) and the migration to
+  `styleguide_allowed_groups` are data the vendored settings and a restored database carry.
+
+### Gaps
+- What can't map: the other 43 sections showcase Ember components and services the
+  server-rendered pages do not have, or have only as page-specific markup: BEM (syntax),
+  OTP, Date/time inputs, Dropdowns (select-kit's combo boxes, choosers, notifications
+  dropdowns), Topic link status, Shortcut, Segmented control, Bread crumbs, Categories,
+  Char counter, Combo button, Empty state, Navigation bar, Navigation stacked, Post menu,
+  Roving focus, Tooltips, Menus, Context menu, Multi select, Toasts, Dialog, Drag and drop,
+  Signup CTA, Topic list item, Topic notifications, Topic timer info, Virtual list, Tabs,
+  Overflow controls, Post, Post list, Post oneboxes, Topic map, Topic footer buttons, Topic
+  list, Basic topic list, Categories list, Docked composer, Modal, Navigation, Site header,
+  More topics. Each shows a note instead; the faker-backed dummy data (lib/dummy-data.js)
+  they render from is not ported.
+- The Forms section's FormKit examples beyond the six above (Question, Composer, Code,
+  Image, Icon, TagChooser, Menu, RadioGroup, the Color variants, Section, InputGroup,
+  Collection, Row/Col, Multiline, validation) and the inputs' before/after affixes.
+- The styleguide sidebar panel taking over the main sidebar (styleguide-sidebar service,
+  its filter): the port draws the same categories and links beside the contents.
+- ToggleColorMode in the breadcrumb row, the groups and `?group=` sub-navigation
+  (styleguide-groups, styleguide-subnav), the example cards' code toggle with the Ember
+  source, `@description`, `@tryThis`, `@note` and `@kind`.
+- The Icons section lists the sprite's symbols without the icon library's REPLACEMENTS
+  aliases.
+- `addSection` and the `styleguide` plugin API (pre-initializers/styleguide-plugin-api.js)
+  for other plugins' sections.
+- The keyboard shortcut and the "Open styleguide" admin link.
+
+### Couldn't determine
+- An unknown section: Rails answers 200 with the empty page and the client then shows the
+  404 route; the server-rendered port answers the 404 page directly.
+- Button markup is the port's own DButton rendering; its exact classes for the link
+  display were not checked against a running Ember.
