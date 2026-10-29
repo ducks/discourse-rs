@@ -203,7 +203,7 @@ async fn create_as(
     };
     let guardian = Guardian::for_user(&mut conn, &sender).await?;
     drop(conn);
-    let outcome = create::create(
+    let outcome = Box::pin(create::create(
         pool,
         ctx,
         &guardian,
@@ -216,7 +216,7 @@ async fn create_as(
             post_alert_options,
             ..Default::default()
         },
-    )
+    ))
     .await?;
     let post_id = match outcome {
         Outcome::Created { post_id } => post_id,

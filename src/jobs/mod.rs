@@ -575,176 +575,301 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         }
         state.i18n.refresh_overrides(&mut conn).await?;
     }
+    scheduled_job(state, name).await
+}
+
+/// A job's work as one boxed future, not an arm of one async fn: in a
+/// debug build that fn's poll frame holds every arm's future side by side,
+/// hundreds of KB under the job that runs, and a system message posted
+/// from a job overflowed the 2 MiB of a worker thread.
+pub(crate) type JobFuture<'a, E> =
+    std::pin::Pin<Box<dyn Future<Output = Result<(), E>> + Send + 'a>>;
+
+fn scheduled_job<'a>(state: &'a AppState, name: &'a str) -> JobFuture<'a, AppError> {
     match name {
-        "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
-        "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
-        bookmark_reminders::JOB => bookmark_reminders::run(state).await,
-        crate::new_features::CHECK_JOB => crate::new_features::check(state).await,
-        topic_timers::ENQUEUER => topic_timers::enqueue_pending(state).await,
-        crate::badge_granter::PROCESS_BADGE_BACKLOG => {
-            crate::badge_granter::process_badge_backlog(state).await
+        "regenerate_sitemaps" => {
+            Box::pin(async move { crate::routes::regenerate_sitemaps(state).await })
         }
-        badges::BADGE_GRANT => badges::badge_grant(state).await,
-        badges::ENSURE_BADGES_CONSISTENCY => badges::ensure_badges_consistency(state).await,
-        badges::GRANT_ANNIVERSARY_BADGES => badges::grant_anniversary_badges(state).await,
+        "presence_channel_auto_leave" => {
+            Box::pin(async move { crate::presence::auto_leave_all(state).await })
+        }
+        bookmark_reminders::JOB => Box::pin(async move { bookmark_reminders::run(state).await }),
+        crate::new_features::CHECK_JOB => {
+            Box::pin(async move { crate::new_features::check(state).await })
+        }
+        topic_timers::ENQUEUER => {
+            Box::pin(async move { topic_timers::enqueue_pending(state).await })
+        }
+        crate::badge_granter::PROCESS_BADGE_BACKLOG => {
+            Box::pin(async move { crate::badge_granter::process_badge_backlog(state).await })
+        }
+        badges::BADGE_GRANT => Box::pin(async move { badges::badge_grant(state).await }),
+        badges::ENSURE_BADGES_CONSISTENCY => {
+            Box::pin(async move { badges::ensure_badges_consistency(state).await })
+        }
+        badges::GRANT_ANNIVERSARY_BADGES => {
+            Box::pin(async move { badges::grant_anniversary_badges(state).await })
+        }
         badges::GRANT_NEW_USER_OF_THE_MONTH_BADGES => {
-            badges::grant_new_user_of_the_month_badges(state).await
+            Box::pin(async move { badges::grant_new_user_of_the_month_badges(state).await })
         }
         crate::do_not_disturb::PROCESS_SHELVED_NOTIFICATIONS => {
-            crate::do_not_disturb::process_shelved_notifications(state).await
+            Box::pin(
+                async move { crate::do_not_disturb::process_shelved_notifications(state).await },
+            )
         }
-        crate::notification_schedule::PROCESS_USER_NOTIFICATION_SCHEDULES => {
+        crate::notification_schedule::PROCESS_USER_NOTIFICATION_SCHEDULES => Box::pin(async move {
             crate::notification_schedule::process_user_notification_schedules(state).await
+        }),
+        housekeeping::UNSILENCE_USERS => {
+            Box::pin(async move { housekeeping::unsilence_users(state).await })
         }
-        housekeeping::UNSILENCE_USERS => housekeeping::unsilence_users(state).await,
         housekeeping::PURGE_EXPIRED_IGNORED_USERS => {
-            housekeeping::purge_expired_ignored_users(state).await
+            Box::pin(async move { housekeeping::purge_expired_ignored_users(state).await })
         }
-        housekeeping::PURGE_OLD_NOTIFICATIONS => housekeeping::purge_old_notifications(state).await,
-        list_stats::TOP_REFRESH_TODAY => list_stats::top_refresh_today(state).await,
-        list_stats::TOP_REFRESH_OLDER => list_stats::top_refresh_older(state).await,
-        list_stats::UPDATE_TOPIC_HOT_SCORES => list_stats::update_topic_hot_scores(state).await,
-        list_stats::CATEGORY_STATS => list_stats::category_stats(state).await,
-        crate::about::JOB => crate::about::refresh(state).await,
-        crate::directory::JOB => crate::directory::refresh_job(state).await,
+        housekeeping::PURGE_OLD_NOTIFICATIONS => {
+            Box::pin(async move { housekeeping::purge_old_notifications(state).await })
+        }
+        list_stats::TOP_REFRESH_TODAY => {
+            Box::pin(async move { list_stats::top_refresh_today(state).await })
+        }
+        list_stats::TOP_REFRESH_OLDER => {
+            Box::pin(async move { list_stats::top_refresh_older(state).await })
+        }
+        list_stats::UPDATE_TOPIC_HOT_SCORES => {
+            Box::pin(async move { list_stats::update_topic_hot_scores(state).await })
+        }
+        list_stats::CATEGORY_STATS => {
+            Box::pin(async move { list_stats::category_stats(state).await })
+        }
+        crate::about::JOB => Box::pin(async move { crate::about::refresh(state).await }),
+        crate::directory::JOB => {
+            Box::pin(async move { crate::directory::refresh_job(state).await })
+        }
         crate::plugins::chat::scheduled::PERIODICAL_UPDATES => {
-            crate::plugins::chat::scheduled::periodical_updates(state).await
+            Box::pin(
+                async move { crate::plugins::chat::scheduled::periodical_updates(state).await },
+            )
         }
-        crate::plugins::policy::check::JOB => crate::plugins::policy::check::run(state).await,
+        crate::plugins::policy::check::JOB => {
+            Box::pin(async move { crate::plugins::policy::check::run(state).await })
+        }
         crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TODAY
         | crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TEN_DAYS => {
-            crate::plugins::gamification::jobs::run_scheduled(state, name).await
+            Box::pin(
+                async move { crate::plugins::gamification::jobs::run_scheduled(state, name).await },
+            )
         }
-        crate::plugins::chat::scheduled::AUTO_JOIN_USERS => {
+        crate::plugins::chat::scheduled::AUTO_JOIN_USERS => Box::pin(async move {
             crate::plugins::chat::scheduled::auto_join_users(state, &serde_json::Value::Null).await
-        }
+        }),
         crate::plugins::chat::scheduled::DELETE_OLD_MESSAGES => {
-            crate::plugins::chat::scheduled::delete_old_messages(state).await
+            Box::pin(
+                async move { crate::plugins::chat::scheduled::delete_old_messages(state).await },
+            )
         }
         crate::plugins::reactions::like_sync::JOB => {
-            crate::plugins::reactions::like_sync::run(state).await
+            Box::pin(async move { crate::plugins::reactions::like_sync::run(state).await })
         }
         crate::plugins::assign::jobs::ENQUEUE_REMINDERS => {
-            crate::plugins::assign::jobs::enqueue_reminders(state).await
+            Box::pin(async move { crate::plugins::assign::jobs::enqueue_reminders(state).await })
         }
-        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
+        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => Box::pin(async move {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
+        }),
+        moderation::TL3_PROMOTIONS => {
+            Box::pin(async move { moderation::tl3_promotions(state).await })
         }
-        moderation::TL3_PROMOTIONS => moderation::tl3_promotions(state).await,
-        user_cleanup::PURGE_UNACTIVATED => user_cleanup::purge_unactivated(state).await,
-        user_cleanup::CLEAN_UP_INACTIVE_USERS => user_cleanup::clean_up_inactive_users(state).await,
+        user_cleanup::PURGE_UNACTIVATED => {
+            Box::pin(async move { user_cleanup::purge_unactivated(state).await })
+        }
+        user_cleanup::CLEAN_UP_INACTIVE_USERS => {
+            Box::pin(async move { user_cleanup::clean_up_inactive_users(state).await })
+        }
         user_cleanup::CLEAN_UP_UNUSED_STAGED_USERS => {
-            user_cleanup::clean_up_unused_staged_users(state).await
+            Box::pin(async move { user_cleanup::clean_up_unused_staged_users(state).await })
         }
-        group_messages::IGNORED_USERS_SUMMARY => group_messages::ignored_users_summary(state).await,
+        group_messages::IGNORED_USERS_SUMMARY => {
+            Box::pin(async move { group_messages::ignored_users_summary(state).await })
+        }
         group_messages::PENDING_REVIEWABLES_REMINDER => {
-            group_messages::pending_reviewables_reminder(state).await
+            Box::pin(async move { group_messages::pending_reviewables_reminder(state).await })
         }
-        moderation::REVIEWABLE_PRIORITIES => moderation::reviewable_priorities(state).await,
-        moderation::AUTO_QUEUE_HANDLER => moderation::auto_queue_handler(state).await,
+        moderation::REVIEWABLE_PRIORITIES => {
+            Box::pin(async move { moderation::reviewable_priorities(state).await })
+        }
+        moderation::AUTO_QUEUE_HANDLER => {
+            Box::pin(async move { moderation::auto_queue_handler(state).await })
+        }
         moderation::DESTROY_OLD_DELETION_STUBS => {
-            moderation::destroy_old_deletion_stubs(state).await
+            Box::pin(async move { moderation::destroy_old_deletion_stubs(state).await })
         }
-        moderation::DESTROY_OLD_HIDDEN_POSTS => moderation::destroy_old_hidden_posts(state).await,
-        accounts::ACTIVATION_REMINDER_EMAILS => accounts::activation_reminder_emails(state).await,
-        accounts::INVALIDATE_INACTIVE_ADMINS => accounts::invalidate_inactive_admins(state).await,
-        accounts::CLEAN_UP_API_KEYS_MAX_LIFE => accounts::clean_up_api_keys_max_life(state).await,
-        accounts::CLEAN_UP_UNUSED_API_KEYS => accounts::clean_up_unused_api_keys(state).await,
+        moderation::DESTROY_OLD_HIDDEN_POSTS => {
+            Box::pin(async move { moderation::destroy_old_hidden_posts(state).await })
+        }
+        accounts::ACTIVATION_REMINDER_EMAILS => {
+            Box::pin(async move { accounts::activation_reminder_emails(state).await })
+        }
+        accounts::INVALIDATE_INACTIVE_ADMINS => {
+            Box::pin(async move { accounts::invalidate_inactive_admins(state).await })
+        }
+        accounts::CLEAN_UP_API_KEYS_MAX_LIFE => {
+            Box::pin(async move { accounts::clean_up_api_keys_max_life(state).await })
+        }
+        accounts::CLEAN_UP_UNUSED_API_KEYS => {
+            Box::pin(async move { accounts::clean_up_unused_api_keys(state).await })
+        }
         accounts::CLEAN_UP_UNUSED_USER_API_KEYS => {
-            accounts::clean_up_unused_user_api_keys(state).await
+            Box::pin(async move { accounts::clean_up_unused_user_api_keys(state).await })
         }
         accounts::CLEAN_UP_USER_API_KEYS_MAX_LIFE => {
-            accounts::clean_up_user_api_keys_max_life(state).await
+            Box::pin(async move { accounts::clean_up_user_api_keys_max_life(state).await })
         }
-        accounts::CLEAN_UP_UNUSED_REGISTERED_USER_API_KEY_CLIENTS => {
+        accounts::CLEAN_UP_UNUSED_REGISTERED_USER_API_KEY_CLIENTS => Box::pin(async move {
             accounts::clean_up_unused_registered_user_api_key_clients(state).await
+        }),
+        accounts::CLEAN_UP_EMAIL_TOKENS => {
+            Box::pin(async move { accounts::clean_up_email_tokens(state).await })
         }
-        accounts::CLEAN_UP_EMAIL_TOKENS => accounts::clean_up_email_tokens(state).await,
-        accounts::CLEAN_UP_EMAIL_LOGIN_CODES => accounts::clean_up_email_login_codes(state).await,
+        accounts::CLEAN_UP_EMAIL_LOGIN_CODES => {
+            Box::pin(async move { accounts::clean_up_email_login_codes(state).await })
+        }
         accounts::CLEAN_UP_EMAIL_CHANGE_REQUESTS => {
-            accounts::clean_up_email_change_requests(state).await
+            Box::pin(async move { accounts::clean_up_email_change_requests(state).await })
         }
-        accounts::CLEAN_UP_UNSUBSCRIBE_KEYS => accounts::clean_up_unsubscribe_keys(state).await,
-        accounts::ENQUEUE_DIGEST_EMAILS => accounts::enqueue_digest_emails(state).await,
-        accounts::CLEAN_UP_POST_REPLY_KEYS => accounts::clean_up_post_reply_keys(state).await,
-        accounts::CLEAN_UP_EMAIL_LOGS => accounts::clean_up_email_logs(state).await,
-        accounts::DELETE_REJECTED_EMAILS => accounts::delete_rejected_emails(state).await,
-        cleanup::CLEAN_DISMISSED_TOPIC_USERS => cleanup::clean_dismissed_topic_users(state).await,
-        cleanup::CLEAN_UP_DRAFTS => cleanup::clean_up_drafts(state).await,
-        cleanup::CLEAN_UP_BOOKMARKS => cleanup::clean_up_bookmarks(state).await,
-        cleanup::CLEAN_UP_USER_AUTH_TOKENS => cleanup::clean_up_user_auth_tokens(state).await,
-        cleanup::CLEAN_UP_SEARCH_LOGS => cleanup::clean_up_search_logs(state).await,
-        cleanup::CLEAN_UP_TAGS => cleanup::clean_up_tags(state).await,
-        cleanup::CLEAN_UP_UNMATCHED_EMAILS => cleanup::clean_up_unmatched_emails(state).await,
-        cleanup::CLEAN_UP_UNMATCHED_IPS => cleanup::clean_up_unmatched_ips(state).await,
-        heat::UPDATE_HEAT_SETTINGS => heat::update_heat_settings(state).await,
-        search_jobs::REINDEX_SEARCH => search_jobs::reindex_search(state).await,
+        accounts::CLEAN_UP_UNSUBSCRIBE_KEYS => {
+            Box::pin(async move { accounts::clean_up_unsubscribe_keys(state).await })
+        }
+        accounts::ENQUEUE_DIGEST_EMAILS => {
+            Box::pin(async move { accounts::enqueue_digest_emails(state).await })
+        }
+        accounts::CLEAN_UP_POST_REPLY_KEYS => {
+            Box::pin(async move { accounts::clean_up_post_reply_keys(state).await })
+        }
+        accounts::CLEAN_UP_EMAIL_LOGS => {
+            Box::pin(async move { accounts::clean_up_email_logs(state).await })
+        }
+        accounts::DELETE_REJECTED_EMAILS => {
+            Box::pin(async move { accounts::delete_rejected_emails(state).await })
+        }
+        cleanup::CLEAN_DISMISSED_TOPIC_USERS => {
+            Box::pin(async move { cleanup::clean_dismissed_topic_users(state).await })
+        }
+        cleanup::CLEAN_UP_DRAFTS => Box::pin(async move { cleanup::clean_up_drafts(state).await }),
+        cleanup::CLEAN_UP_BOOKMARKS => {
+            Box::pin(async move { cleanup::clean_up_bookmarks(state).await })
+        }
+        cleanup::CLEAN_UP_USER_AUTH_TOKENS => {
+            Box::pin(async move { cleanup::clean_up_user_auth_tokens(state).await })
+        }
+        cleanup::CLEAN_UP_SEARCH_LOGS => {
+            Box::pin(async move { cleanup::clean_up_search_logs(state).await })
+        }
+        cleanup::CLEAN_UP_TAGS => Box::pin(async move { cleanup::clean_up_tags(state).await }),
+        cleanup::CLEAN_UP_UNMATCHED_EMAILS => {
+            Box::pin(async move { cleanup::clean_up_unmatched_emails(state).await })
+        }
+        cleanup::CLEAN_UP_UNMATCHED_IPS => {
+            Box::pin(async move { cleanup::clean_up_unmatched_ips(state).await })
+        }
+        heat::UPDATE_HEAT_SETTINGS => {
+            Box::pin(async move { heat::update_heat_settings(state).await })
+        }
+        search_jobs::REINDEX_SEARCH => {
+            Box::pin(async move { search_jobs::reindex_search(state).await })
+        }
         search_jobs::CREATE_RECENT_POST_SEARCH_INDEXES => {
-            search_jobs::create_recent_post_search_indexes(state).await
+            Box::pin(async move { search_jobs::create_recent_post_search_indexes(state).await })
         }
-        scores::CALCULATE_SCORES => scores::calculate_scores(state).await,
-        periodical::PERIODICAL_UPDATES => periodical::periodical_updates(state).await,
-        consistency::ENSURE_DB_CONSISTENCY => consistency::ensure_db_consistency(state).await,
-        upload_jobs::UPDATE_ANIMATED_UPLOADS => upload_jobs::update_animated_uploads(state).await,
-        upload_jobs::BACKFILL_DOMINANT_COLORS => upload_jobs::backfill_dominant_colors(state).await,
-        upload_cleanup::CLEAN_UP_UPLOADS => upload_cleanup::clean_up_uploads(state).await,
-        upload_cleanup::PURGE_DELETED_UPLOADS => upload_cleanup::purge_deleted_uploads(state).await,
-        crate::username_changer::FIX_CLASH => crate::username_changer::fix_clash(state).await,
+        scores::CALCULATE_SCORES => Box::pin(async move { scores::calculate_scores(state).await }),
+        periodical::PERIODICAL_UPDATES => {
+            Box::pin(async move { periodical::periodical_updates(state).await })
+        }
+        consistency::ENSURE_DB_CONSISTENCY => {
+            Box::pin(async move { consistency::ensure_db_consistency(state).await })
+        }
+        upload_jobs::UPDATE_ANIMATED_UPLOADS => {
+            Box::pin(async move { upload_jobs::update_animated_uploads(state).await })
+        }
+        upload_jobs::BACKFILL_DOMINANT_COLORS => {
+            Box::pin(async move { upload_jobs::backfill_dominant_colors(state).await })
+        }
+        upload_cleanup::CLEAN_UP_UPLOADS => {
+            Box::pin(async move { upload_cleanup::clean_up_uploads(state).await })
+        }
+        upload_cleanup::PURGE_DELETED_UPLOADS => {
+            Box::pin(async move { upload_cleanup::purge_deleted_uploads(state).await })
+        }
+        crate::username_changer::FIX_CLASH => {
+            Box::pin(async move { crate::username_changer::fix_clash(state).await })
+        }
         crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS => {
-            crate::web_hooks::jobs::purge_old_web_hook_events(state).await
+            Box::pin(async move { crate::web_hooks::jobs::purge_old_web_hook_events(state).await })
         }
-        crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS_DAILY_AGGREGATE => {
+        crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS_DAILY_AGGREGATE => Box::pin(async move {
             crate::web_hooks::jobs::purge_old_web_hook_events_daily_aggregate(state).await
-        }
-        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS => {
+        }),
+        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS => Box::pin(async move {
             crate::web_hooks::jobs::aggregate_web_hooks_events(state, &serde_json::Value::Null)
                 .await
-        }
-        crate::web_hooks::jobs::CLEANUP_REDELIVERING_WEB_HOOK_EVENTS => {
+        }),
+        crate::web_hooks::jobs::CLEANUP_REDELIVERING_WEB_HOOK_EVENTS => Box::pin(async move {
             crate::web_hooks::jobs::cleanup_redelivering_web_hook_events(state).await
-        }
+        }),
         crate::web_hooks::jobs::REDELIVER_WEB_HOOK_EVENTS => {
-            crate::web_hooks::jobs::redeliver_web_hook_events(state).await
+            Box::pin(async move { crate::web_hooks::jobs::redeliver_web_hook_events(state).await })
         }
-        problem_checks::RUN_PROBLEM_CHECKS => problem_checks::run_problem_checks(state).await,
-        dashboard::WARM_DASHBOARD_REPORTS => dashboard::warm_dashboard_reports(state).await,
+        problem_checks::RUN_PROBLEM_CHECKS => {
+            Box::pin(async move { problem_checks::run_problem_checks(state).await })
+        }
+        dashboard::WARM_DASHBOARD_REPORTS => {
+            Box::pin(async move { dashboard::warm_dashboard_reports(state).await })
+        }
         rollups::MAINTAIN_USER_VISIT_DAILY_ROLLUPS => {
-            rollups::maintain_user_visit_daily_rollups(state).await
+            Box::pin(async move { rollups::maintain_user_visit_daily_rollups(state).await })
         }
         rollups::MAINTAIN_CATEGORY_ACTIVITY_DAILY_ROLLUPS => {
-            rollups::maintain_category_activity_daily_rollups(state).await
+            Box::pin(async move { rollups::maintain_category_activity_daily_rollups(state).await })
         }
         rollups::REBUILD_CATEGORY_ACTIVITY_DAILY_ROLLUPS => {
-            rollups::rebuild_category_activity_daily_rollups(state).await
+            Box::pin(async move { rollups::rebuild_category_activity_daily_rollups(state).await })
         }
         rollups::MAINTAIN_BROWSER_PAGEVIEW_ROLLUPS => {
-            rollups::maintain_browser_pageview_rollups(state).await
+            Box::pin(async move { rollups::maintain_browser_pageview_rollups(state).await })
         }
         rollups::CLEAN_UP_BROWSER_PAGEVIEW_EVENTS => {
-            rollups::clean_up_browser_pageview_events(state).await
+            Box::pin(async move { rollups::clean_up_browser_pageview_events(state).await })
         }
-        rollups::CLEAN_UP_CRAWLER_STATS => rollups::clean_up_crawler_stats(state).await,
-        rollups::DETECT_CRAWLER_PAGEVIEWS => rollups::detect_crawler_pageviews(state).await,
+        rollups::CLEAN_UP_CRAWLER_STATS => {
+            Box::pin(async move { rollups::clean_up_crawler_stats(state).await })
+        }
+        rollups::DETECT_CRAWLER_PAGEVIEWS => {
+            Box::pin(async move { rollups::detect_crawler_pageviews(state).await })
+        }
         rollups::FLUSH_BROWSER_PAGEVIEW_EVENTS => {
-            rollups::flush_browser_pageview_events(state).await
+            Box::pin(async move { rollups::flush_browser_pageview_events(state).await })
         }
         problem_checks::NOTIFY_ADMINS_OF_PROBLEMS => {
-            problem_checks::notify_admins_of_problems(state).await
+            Box::pin(async move { problem_checks::notify_admins_of_problems(state).await })
         }
         problem_checks::CLEANUP_PROBLEM_CHECK_TRACKERS => {
-            problem_checks::cleanup_problem_check_trackers(state).await
+            Box::pin(async move { problem_checks::cleanup_problem_check_trackers(state).await })
         }
-        "rate_limits_cleanup" => Ok(crate::rate_limiter::cleanup(&state.pool).await?),
+        "rate_limits_cleanup" => {
+            Box::pin(async move { Ok(crate::rate_limiter::cleanup(&state.pool).await?) })
+        }
         crate::backup_restore::jobs::SCHEDULE_BACKUP => {
-            crate::backup_restore::jobs::schedule_backup(state).await
+            Box::pin(async move { crate::backup_restore::jobs::schedule_backup(state).await })
         }
         crate::backup_restore::jobs::DROP_BACKUP_SCHEMA => {
-            crate::backup_restore::restorer::drop_backup_schema(state).await
+            Box::pin(
+                async move { crate::backup_restore::restorer::drop_backup_schema(state).await },
+            )
         }
         crate::theme_import::CHECK_OUT_OF_DATE_THEMES => {
-            crate::theme_import::check_out_of_date_themes(state).await
+            Box::pin(async move { crate::theme_import::check_out_of_date_themes(state).await })
         }
-        _ => unreachable!("every SCHEDULED job has a handler"),
+        _ => Box::pin(async move { unreachable!("every SCHEDULED job has a handler") }),
     }
 }
 

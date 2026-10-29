@@ -12,195 +12,268 @@ use crate::{AppError, AppState, Unsupported};
 
 /// Runs a job by its Sidekiq name.
 pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
-    let result = match job.name.as_str() {
+    Ok(handler(state, job)?.await?)
+}
+
+/// The job's work, boxed as [`super::JobFuture`] says why.
+fn handler<'a>(
+    state: &'a AppState,
+    job: &'a Job,
+) -> Result<super::JobFuture<'a, AppError>, JobError> {
+    Ok(match job.name.as_str() {
         "post_update_topic_tracking_state" => {
-            post_update_topic_tracking_state(state, &job.args).await
+            Box::pin(async move { post_update_topic_tracking_state(state, &job.args).await })
         }
-        "notify_reviewable" => reviewable_counts_job(state, &job.args, false).await,
-        "refresh_users_reviewable_counts" => reviewable_counts_job(state, &job.args, true).await,
-        "cleanup_acls_for_deleted" => cleanup_acls_for_deleted(state, &job.args).await,
-        "bulk_grant_trust_level" => bulk_grant_trust_level(state, &job.args).await,
-        "notify_users_added_to_group" => notify_users_added_to_group(state, &job.args).await,
-        "automatic_group_membership" => automatic_group_membership(state, &job.args).await,
-        "update_group_mentions" => update_group_mentions(state, &job.args).await,
+        "notify_reviewable" => {
+            Box::pin(async move { reviewable_counts_job(state, &job.args, false).await })
+        }
+        "refresh_users_reviewable_counts" => {
+            Box::pin(async move { reviewable_counts_job(state, &job.args, true).await })
+        }
+        "cleanup_acls_for_deleted" => {
+            Box::pin(async move { cleanup_acls_for_deleted(state, &job.args).await })
+        }
+        "bulk_grant_trust_level" => {
+            Box::pin(async move { bulk_grant_trust_level(state, &job.args).await })
+        }
+        "notify_users_added_to_group" => {
+            Box::pin(async move { notify_users_added_to_group(state, &job.args).await })
+        }
+        "automatic_group_membership" => {
+            Box::pin(async move { automatic_group_membership(state, &job.args).await })
+        }
+        "update_group_mentions" => {
+            Box::pin(async move { update_group_mentions(state, &job.args).await })
+        }
         crate::plugins::chat::membership::DELETE_USER_MESSAGES_JOB => {
-            chat_delete_user_messages(state, &job.args).await
+            Box::pin(async move { chat_delete_user_messages(state, &job.args).await })
         }
         crate::user_merger::MERGE_USER => {
-            crate::user_merger::merge_user_job(state, &job.args).await
+            Box::pin(async move { crate::user_merger::merge_user_job(state, &job.args).await })
         }
         crate::user_anonymizer::ANONYMIZE_USER => {
-            crate::user_anonymizer::anonymize_user_job(state, &job.args).await
+            Box::pin(
+                async move { crate::user_anonymizer::anonymize_user_job(state, &job.args).await },
+            )
         }
         crate::username_changer::UPDATE_USERNAME => {
-            crate::username_changer::run_update_username(state, &job.args).await
+            Box::pin(
+                async move { crate::username_changer::run_update_username(state, &job.args).await },
+            )
         }
         crate::custom_emoji::REBAKE_JOB => {
-            crate::custom_emoji::rebake_posts(state, &job.args).await
+            Box::pin(async move { crate::custom_emoji::rebake_posts(state, &job.args).await })
         }
-        crate::plugins::assign::jobs::ASSIGN_NOTIFICATION => {
+        crate::plugins::assign::jobs::ASSIGN_NOTIFICATION => Box::pin(async move {
             crate::plugins::assign::jobs::assign_notification(state, &job.args).await
-        }
-        crate::plugins::assign::jobs::UNASSIGN_NOTIFICATION => {
+        }),
+        crate::plugins::assign::jobs::UNASSIGN_NOTIFICATION => Box::pin(async move {
             crate::plugins::assign::jobs::unassign_notification(state, &job.args).await
-        }
+        }),
         crate::plugins::assign::jobs::REMIND_USER => {
-            crate::plugins::assign::jobs::remind_user(state, &job.args).await
+            Box::pin(
+                async move { crate::plugins::assign::jobs::remind_user(state, &job.args).await },
+            )
         }
-        "feature_topic_users" => feature_topic_users(state, &job.args).await,
-        "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
-        "process_post" => process_post(state, &job.args).await,
-        "generate_topic_thumbnails" => generate_topic_thumbnails(state, &job.args).await,
+        "feature_topic_users" => {
+            Box::pin(async move { feature_topic_users(state, &job.args).await })
+        }
+        "sync_topic_user_bookmarked" => {
+            Box::pin(async move { sync_topic_user_bookmarked(state, &job.args).await })
+        }
+        "process_post" => Box::pin(async move { process_post(state, &job.args).await }),
+        "generate_topic_thumbnails" => {
+            Box::pin(async move { generate_topic_thumbnails(state, &job.args).await })
+        }
         super::crawl_topic_link::CRAWL_TOPIC_LINK => {
-            super::crawl_topic_link::crawl_topic_link(state, &job.args).await
+            Box::pin(
+                async move { super::crawl_topic_link::crawl_topic_link(state, &job.args).await },
+            )
         }
-        super::hotlinked_images::PULL_HOTLINKED_IMAGES => {
+        super::hotlinked_images::PULL_HOTLINKED_IMAGES => Box::pin(async move {
             super::hotlinked_images::pull_hotlinked_images(state, &job.args).await
+        }),
+        "rebake_quoted_posts_for_user" => {
+            Box::pin(async move { rebake_quoted_posts_for_user(state, &job.args).await })
         }
-        "rebake_quoted_posts_for_user" => rebake_quoted_posts_for_user(state, &job.args).await,
-        super::badges::BACKFILL_BADGE => super::badges::backfill_badge(state, &job.args).await,
+        super::badges::BACKFILL_BADGE => {
+            Box::pin(async move { super::badges::backfill_badge(state, &job.args).await })
+        }
         crate::admin_badges::MASS_AWARD_BADGE => {
-            crate::admin_badges::mass_award_badge(state, &job.args).await
+            Box::pin(async move { crate::admin_badges::mass_award_badge(state, &job.args).await })
         }
         crate::admin_badges::BULK_USER_TITLE_UPDATE => {
-            crate::admin_badges::bulk_user_title_update(state, &job.args).await
+            Box::pin(
+                async move { crate::admin_badges::bulk_user_title_update(state, &job.args).await },
+            )
         }
-        crate::sidebar_backfill::JOB => crate::sidebar_backfill::run(state, &job.args).await,
-        "post_alert" => post_alert(state, &job.args).await,
-        "notify_tag_change" => notify_job(state, &job.args, NotifyJob::TagChange).await,
-        "notify_category_change" => notify_job(state, &job.args, NotifyJob::CategoryChange).await,
-        "notify_post_revision" => notify_job(state, &job.args, NotifyJob::PostRevision).await,
+        crate::sidebar_backfill::JOB => {
+            Box::pin(async move { crate::sidebar_backfill::run(state, &job.args).await })
+        }
+        "post_alert" => Box::pin(async move { post_alert(state, &job.args).await }),
+        "notify_tag_change" => {
+            Box::pin(async move { notify_job(state, &job.args, NotifyJob::TagChange).await })
+        }
+        "notify_category_change" => {
+            Box::pin(async move { notify_job(state, &job.args, NotifyJob::CategoryChange).await })
+        }
+        "notify_post_revision" => {
+            Box::pin(async move { notify_job(state, &job.args, NotifyJob::PostRevision).await })
+        }
         super::problem_checks::RUN_PROBLEM_CHECK => {
-            super::problem_checks::run_problem_check(state, &job.args).await
+            Box::pin(
+                async move { super::problem_checks::run_problem_check(state, &job.args).await },
+            )
         }
-        "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
-        "group_pm_alert" => group_pm_alert(state, &job.args).await,
-        "close_poll" => close_poll(state, &job.args).await,
+        "group_pm_update_summary" => {
+            Box::pin(async move { group_pm_update_summary(state, &job.args).await })
+        }
+        "group_pm_alert" => Box::pin(async move { group_pm_alert(state, &job.args).await }),
+        "close_poll" => Box::pin(async move { close_poll(state, &job.args).await }),
         "delete_inaccessible_notifications" => {
-            delete_inaccessible_notifications(state, &job.args).await
+            Box::pin(async move { delete_inaccessible_notifications(state, &job.args).await })
         }
-        "user_email" => user_email(state, &job.args, false).await,
+        "user_email" => Box::pin(async move { user_email(state, &job.args, false).await }),
         // UserSuspender enqueues it by class.
         "critical_user_email" | "Jobs::CriticalUserEmail" => {
-            user_email(state, &job.args, true).await
+            Box::pin(async move { user_email(state, &job.args, true).await })
         }
-        "send_system_message" => send_system_message(state, &job.args).await,
-        "send_email_login_code" => send_email_login_code(state, &job.args).await,
-        crate::bulk_invite::BULK_INVITE => crate::bulk_invite::bulk_invite(state, &job.args).await,
+        "send_system_message" => {
+            Box::pin(async move { send_system_message(state, &job.args).await })
+        }
+        "send_email_login_code" => {
+            Box::pin(async move { send_email_login_code(state, &job.args).await })
+        }
+        crate::bulk_invite::BULK_INVITE => {
+            Box::pin(async move { crate::bulk_invite::bulk_invite(state, &job.args).await })
+        }
         crate::bulk_invite::PROCESS_BULK_INVITE_EMAILS => {
-            crate::bulk_invite::process_bulk_invite_emails(state).await
+            Box::pin(async move { crate::bulk_invite::process_bulk_invite_emails(state).await })
         }
-        crate::invite_mailer::INVITE_PASSWORD_INSTRUCTIONS_EMAIL => {
+        crate::invite_mailer::INVITE_PASSWORD_INSTRUCTIONS_EMAIL => Box::pin(async move {
             crate::invite_mailer::invite_password_instructions_email(state, &job.args).await
-        }
+        }),
         crate::invite_mailer::INVITE_EMAIL => {
-            crate::invite_mailer::invite_email(state, &job.args).await
+            Box::pin(async move { crate::invite_mailer::invite_email(state, &job.args).await })
         }
-        "admin_confirmation_email" => admin_confirmation_email(state, &job.args).await,
-        crate::backup_restore::jobs::DOWNLOAD_BACKUP_EMAIL => {
+        "admin_confirmation_email" => {
+            Box::pin(async move { admin_confirmation_email(state, &job.args).await })
+        }
+        crate::backup_restore::jobs::DOWNLOAD_BACKUP_EMAIL => Box::pin(async move {
             crate::backup_restore::jobs::download_backup_email(state, &job.args).await
-        }
-        crate::backup_restore::jobs::BACKUP_CHUNKS_MERGER => {
+        }),
+        crate::backup_restore::jobs::BACKUP_CHUNKS_MERGER => Box::pin(async move {
             crate::backup_restore::jobs::backup_chunks_merger(state, &job.args).await
-        }
-        crate::backup_restore::jobs::SPAWN_BACKUP_RESTORE => {
+        }),
+        crate::backup_restore::jobs::SPAWN_BACKUP_RESTORE => Box::pin(async move {
             crate::backup_restore::jobs::spawn_backup_restore(state, &job.args).await
-        }
+        }),
         crate::backup_restore::jobs::CREATE_BACKUP => {
-            crate::backup_restore::jobs::create_backup(state).await
+            Box::pin(async move { crate::backup_restore::jobs::create_backup(state).await })
         }
         // Fires user_added_to_group / user_removed_from_group, which core
         // only hands to web hooks (user_added_to_group's: the removal's
         // come from GroupManager alone).
         "publish_group_membership_updates" => {
-            publish_group_membership_updates(state, &job.args).await
+            Box::pin(async move { publish_group_membership_updates(state, &job.args).await })
         }
         // UserAuthToken.is_suspicious compares the login's location with the
         // user's earlier ones, through MaxMind's databases; without them
         // (no license key to download them) no login is suspicious.
-        "suspicious_login" => {
+        "suspicious_login" => Box::pin(async move {
             if std::env::var("DISCOURSE_MAXMIND_LICENSE_KEY").is_ok_and(|k| !k.is_empty()) {
                 Err(Unsupported("suspicious logins by location (MaxMind)").into())
             } else {
                 Ok(())
             }
+        }),
+        "process_email" => Box::pin(async move { process_email(state, &job.args).await }),
+        crate::new_features::REFRESH_JOB => {
+            Box::pin(async move { refresh_latest_new_feature(state).await })
         }
-        "process_email" => process_email(state, &job.args).await,
-        crate::new_features::REFRESH_JOB => refresh_latest_new_feature(state).await,
-        "index_user_fields_for_search" => index_user_fields_for_search(state, &job.args).await,
-        "create_avatar_thumbnails" => create_avatar_thumbnails(state, &job.args).await,
-        "update_gravatar" => update_gravatar(state, &job.args).await,
+        "index_user_fields_for_search" => {
+            Box::pin(async move { index_user_fields_for_search(state, &job.args).await })
+        }
+        "create_avatar_thumbnails" => {
+            Box::pin(async move { create_avatar_thumbnails(state, &job.args).await })
+        }
+        "update_gravatar" => Box::pin(async move { update_gravatar(state, &job.args).await }),
         name if crate::plugins::gamification::jobs::REGULAR.contains(&name) => {
-            crate::plugins::gamification::jobs::run(state, name, &job.args).await
+            Box::pin(async move {
+                crate::plugins::gamification::jobs::run(state, name, &job.args).await
+            })
         }
-        name if crate::plugins::narrative_bot::jobs::JOBS.contains(&name) => {
+        name if crate::plugins::narrative_bot::jobs::JOBS.contains(&name) => Box::pin(async move {
             crate::plugins::narrative_bot::jobs::run_boxed(state, name, &job.args).await
-        }
+        }),
         crate::plugins::cakeday::jobs::FIX_INVALID_DATE_OF_BIRTH
-        | crate::plugins::cakeday::jobs::MIGRATE_DATE_OF_BIRTH => {
+        | crate::plugins::cakeday::jobs::MIGRATE_DATE_OF_BIRTH => Box::pin(async move {
             crate::plugins::cakeday::jobs::run(state, &job.name, &job.args).await
-        }
+        }),
         "Jobs::DiscourseTopicVoting::BackfillBadges" => {
-            topic_voting_backfill_badges(state, &job.args).await
+            Box::pin(async move { topic_voting_backfill_badges(state, &job.args).await })
         }
         "Jobs::DiscourseTopicVoting::VoteRelease" => {
-            topic_voting_vote_release(state, &job.args).await
+            Box::pin(async move { topic_voting_vote_release(state, &job.args).await })
         }
         crate::plugins::chat::auto_join::UPDATE_USER_COUNT_JOB => {
-            chat_update_channel_user_count(state, &job.args).await
+            Box::pin(async move { chat_update_channel_user_count(state, &job.args).await })
         }
         crate::plugins::chat::create::PROCESS_MESSAGE_JOB => {
-            chat_process_message(state, &job.args).await
+            Box::pin(async move { chat_process_message(state, &job.args).await })
         }
         crate::plugins::chat::create::UPDATE_THREAD_REPLY_COUNT_JOB => {
-            chat_update_thread_reply_count(state, &job.args).await
+            Box::pin(async move { chat_update_thread_reply_count(state, &job.args).await })
         }
         crate::plugins::chat::notify::NOTIFY_MENTIONED_JOB => {
-            chat_notify_mentioned(state, &job.args).await
+            Box::pin(async move { chat_notify_mentioned(state, &job.args).await })
         }
         crate::plugins::chat::notify::NOTIFY_WATCHING_JOB => {
-            chat_notify_watching(state, &job.args).await
+            Box::pin(async move { chat_notify_watching(state, &job.args).await })
         }
-        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
+        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => Box::pin(async move {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
-        }
-        crate::plugins::chat::scheduled::AUTO_JOIN_USERS => {
+        }),
+        crate::plugins::chat::scheduled::AUTO_JOIN_USERS => Box::pin(async move {
             crate::plugins::chat::scheduled::auto_join_users(state, &job.args).await
-        }
-        crate::plugins::chat::scheduled::KICK_USERS_FROM_CHANNEL => {
+        }),
+        crate::plugins::chat::scheduled::KICK_USERS_FROM_CHANNEL => Box::pin(async move {
             crate::plugins::chat::scheduled::kick_users_from_channel(state, &job.args).await
-        }
+        }),
         name if super::topic_timers::JOBS.contains(&name) => {
-            super::topic_timers::run(state, name, &job.args).await
+            Box::pin(async move { super::topic_timers::run(state, name, &job.args).await })
         }
         crate::web_hooks::emit::EMIT_WEB_HOOK_EVENT => {
-            crate::web_hooks::emit::emit_web_hook_event(state, &job.args).await
+            Box::pin(
+                async move { crate::web_hooks::emit::emit_web_hook_event(state, &job.args).await },
+            )
         }
         // Scheduled, but it takes a date.
-        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS => {
+        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS => Box::pin(async move {
             crate::web_hooks::jobs::aggregate_web_hooks_events(state, &job.args).await
+        }),
+        name if super::is_scheduled(name) => {
+            Box::pin(async move { super::run_scheduled(state, name).await })
         }
-        name if super::is_scheduled(name) => super::run_scheduled(state, name).await,
-        "Jobs::DiscourseTopicVoting::VoteReclaim" => {
+        "Jobs::DiscourseTopicVoting::VoteReclaim" => Box::pin(async move {
             let mut tx = match state.pool.begin().await {
                 Ok(tx) => tx,
-                Err(e) => return Err(AppError::from(e).into()),
+                Err(e) => return Err(AppError::from(e)),
             };
             match crate::plugins::topic_voting::lifecycle::vote_reclaim(&mut tx, &job.args).await {
                 Ok(()) => tx.commit().await.map_err(AppError::from),
                 Err(e) => Err(e),
             }
-        }
+        }),
         other => match crate::plugin_api::job_owner(other) {
-            Some(plugin) => plugin.run_job(state, other, &job.args).await,
+            Some(plugin) => Box::pin(async move { plugin.run_job(state, other, &job.args).await }),
             None => {
                 return Err(JobError::Unported(format!(
                     "not ported yet: the {other} job"
                 )));
             }
         },
-    };
-    Ok(result?)
+    })
 }
 
 /// `Jobs::RefreshLatestNewFeature`
