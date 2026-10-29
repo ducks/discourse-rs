@@ -1,0 +1,5 @@
+en:
+  site_settings:
+    echo_enabled: "Enable the echo plugin"
+  echo:
+    hello: "Hello from echo"

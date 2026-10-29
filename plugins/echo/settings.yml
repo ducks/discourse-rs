@@ -1,0 +1,9 @@
+plugin: echo
+enabled_site_setting: echo_enabled
+settings:
+  plugins:
+    echo_enabled:
+      default: false
+      client: true
+    echo_greeting:
+      default: hi

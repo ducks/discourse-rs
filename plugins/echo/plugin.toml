@@ -1,0 +1,73 @@
+# tests/plugin_api.rs' echo plugin as a WebAssembly guest
+# (docs/plugin-wasm.md): every plugin_api hook, from a directory.
+jobs = ["echo_job"]
+
+[plugin]
+name = "echo"
+api = 1
+enabled_setting = "echo_enabled"
+svg_icons = ["record-vinyl"]
+stylesheet = "echo.css"
+
+[limits]
+time_ms = 500
+
+[core_reads]
+topics = ["id", "title"]
+
+[[routes]]
+method = "get"
+path = "/echo.json"
+
+[[routes]]
+method = "post"
+path = "/echo/write"
+
+[[routes]]
+method = "get"
+path = "/echo/token"
+form = true
+
+[[routes]]
+method = "get"
+path = "/echo"
+
+# Its own table (migrations/): a write, and the list.
+[[routes]]
+method = "post"
+path = "/echo/echoes"
+
+[[routes]]
+method = "get"
+path = "/echo/echoes.json"
+
+# The tests' probes of the sandbox: each `sql` parameter run in order,
+# `!` first for execute, else query. GET's transaction is read only.
+[[routes]]
+method = "get"
+path = "/echo/probe"
+
+[[routes]]
+method = "post"
+path = "/echo/probe"
+
+[[scheduled]]
+name = "echo_scheduled"
+every_secs = 3600
+
+[current_user]
+keys = [["echo_user", "int"]]
+
+[topic_view]
+keys = [["echo_topic", "object"]]
+
+[outlets]
+topic_above_posts = true
+
+[homepage]
+id = "echo"
+name = "echo.homepage_option"
+path = "/echo"
+anonymous = true
+server_side = true
+available = true

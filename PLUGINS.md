@@ -290,7 +290,12 @@ it.
    matching Rails, about 0.4 ms a list), with hosted plugins over HTTP
    for those that need the network. Still open for that runtime: Luau
    or Lua 5.4, and whether an API call runs as the triggering user or a
-   scoped system identity.
+   scoped system identity. Luau (mlua) and QuickJS are C or C++ on
+   the host, which is ruled out; a WebAssembly runtime in wasmtime
+   (Rust and Cranelift, but for a 30-line C shim) was tried end to end
+   on `spike/plugin-wasm`, with the same solved port matching the
+   bundled one, and a JavaScript guest (Boa compiled into the module):
+   docs/plugin-wasm.md.
 
 ## Rewriting core values: lifecycle phases (2026-10-08)
 

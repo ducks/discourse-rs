@@ -21,3 +21,21 @@ while read -r db; do
   fi
 done < <(psql "$admin" -Atc "SELECT datname FROM pg_database WHERE datname LIKE '${template}\_%'")
 echo "dropped $dropped stale copies of $template"
+
+# WebAssembly plugins' roles (src/plugin_wasm/db.rs) are the cluster's, one
+# per test database. A role whose database is gone owns nothing and drops;
+# one still owning a schema somewhere (a live test's) refuses, and stays.
+psql "$admin" -qAt <<'SQL'
+DO $$
+DECLARE r text; n int := 0;
+BEGIN
+  FOR r IN SELECT rolname FROM pg_roles WHERE rolname LIKE 'dpl\_%' LOOP
+    BEGIN
+      EXECUTE format('DROP ROLE %I', r);
+      n := n + 1;
+    EXCEPTION WHEN dependent_objects_still_exist THEN NULL;
+    END;
+  END LOOP;
+  RAISE NOTICE 'dropped % stale plugin roles', n;
+END $$;
+SQL

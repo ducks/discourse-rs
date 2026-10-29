@@ -159,6 +159,7 @@ pub mod parity;
 pub mod penalize_view;
 pub mod permalinks;
 pub mod plugin_api;
+pub mod plugin_wasm;
 pub mod plugins;
 pub mod pm_invite;
 pub mod pm_lists;
@@ -318,6 +319,8 @@ pub struct AppState {
 }
 
 pub fn app(state: AppState) -> Router {
+    // WebAssembly plugins with a database find their site by it.
+    plugin_wasm::register_site(&state.pool);
     // The method override and the request format must run before routing
     // (a POST becomes a DELETE, an Accept-led JSON request its `.json`
     // route), and the session is resolved before anything else, so they

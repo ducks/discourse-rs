@@ -1,0 +1,15 @@
+[package]
+name = "js-solved-wasm"
+version = "20261021.0.0"
+license = "GPL-3.0-or-later"
+edition = "2024"
+description = "A JavaScript plugin run by Boa inside the WebAssembly guest"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+discourse-plugin = { path = "../sdk" }
+serde_json = "1"
+# No Intl, Temporal or getrandom: nothing that needs the platform.
+boa_engine = { version = "0.22", default-features = false }

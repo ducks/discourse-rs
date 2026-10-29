@@ -182,6 +182,8 @@ pub struct Prefetched {
     participants: HashMap<i32, Vec<Poster>>,
     /// The bundled plugins' after-load data for the page.
     plugins: crate::plugins::TopicListData,
+    /// The third-party plugins' (src/plugin_wasm.rs) for the page.
+    wasm: crate::plugin_wasm::TopicListPage,
     /// `logo_small`'s url once read: each serialized topic asks for it.
     logo_small_url: Option<Option<String>>,
 }
@@ -366,12 +368,17 @@ impl TopicListSerializer<'_> {
         }
         // topic_list_preload_user_ids
         ids.extend(self.prefetched.plugins.user_ids());
+        ids.extend(self.prefetched.wasm.user_ids.iter().copied());
         self.user_lookup_for(&ids).await
     }
 
     /// TopicPostersSummary for a topic of the prefetched page: core's
     /// inputs, rewritten by the plugins (before serialize), then built.
     pub(crate) fn posters(&self, t: &TopicRow, lookup: &HashMap<i32, LookupUser>) -> Vec<Poster> {
+        // Rewritten by the third-party plugins too, in prefetch.
+        if let Some(inputs) = self.prefetched.wasm.posters.get(&t.id) {
+            return posters_from(t, lookup, inputs, self.i18n);
+        }
         let mut inputs = poster_inputs(t, self.i18n);
         crate::plugins::topic_list_before_serialize(
             &self.prefetched.plugins,
@@ -383,7 +390,7 @@ impl TopicListSerializer<'_> {
         posters_from(t, lookup, &inputs, self.i18n)
     }
 
-    /// The bundled plugins' keys on a topic (after serialize), where Rails
+    /// The plugins' keys on a topic (after serialize), where Rails
     /// puts them: after the serializer's own attributes.
     async fn plugin_keys(
         &mut self,
@@ -391,7 +398,15 @@ impl TopicListSerializer<'_> {
         mode: Mode,
         out: &mut Map<String, Value>,
     ) -> Result<(), TopicListError> {
-        self.solved_keys(t, out).await?;
+        // A third-party plugin replacing solved puts its keys where
+        // solved's go; the others' come last.
+        let replaced = crate::plugin_wasm::registry().replaced(self.settings)?;
+        let replaces_solved = replaced.iter().any(|p| p == "discourse-solved");
+        if replaces_solved {
+            self.wasm_keys(t, out).await?;
+        } else {
+            self.solved_keys(t, out).await?;
+        }
         // topic-voting's keys are TopicListItemSerializer's only.
         if mode == Mode::ListItem && crate::plugins::topic_voting::enabled(self.settings)? {
             let loaded;
@@ -408,6 +423,9 @@ impl TopicListSerializer<'_> {
                 }
             };
             data.list_item_keys(self.guardian, t.id, &t.archetype, t.category_id, out);
+        }
+        if !replaces_solved {
+            self.wasm_keys(t, out).await?;
         }
         Ok(())
     }
@@ -922,16 +940,103 @@ impl TopicListSerializer<'_> {
                 .treat_as_new_topic_start_date(&mut *self.conn, self.settings)
                 .await?;
         }
-        // The plugins' after load (TopicList#load_topics' preloads).
+        // The plugins' after load (TopicList#load_topics' preloads), the
+        // bundled ones' then the third-party ones', whose before serialize
+        // runs here too: its inputs don't depend on the users loaded next.
+        let wasm = crate::plugin_wasm::registry();
+        let replaced = wasm.replaced(self.settings)?;
         p.plugins = crate::plugins::topic_list_after_load(
             &mut *self.conn,
             self.settings,
             &topic_ids,
             self.guardian.user_id(),
+            &replaced,
         )
         .await?;
+        if wasm.on_topic_list(self.settings)? {
+            let posters = topics
+                .iter()
+                .map(|t| (t.id, self.native_poster_inputs(&p.plugins, t)))
+                .collect();
+            p.wasm = self.wasm_load(&wasm, topics, posters).await?;
+        }
         self.prefetched = p;
         Ok(())
+    }
+
+    /// Core's poster inputs after the bundled plugins' before serialize.
+    fn native_poster_inputs(
+        &self,
+        plugins: &crate::plugins::TopicListData,
+        t: &TopicRow,
+    ) -> crate::plugins::PosterInputs {
+        let mut inputs = poster_inputs(t, self.i18n);
+        crate::plugins::topic_list_before_serialize(
+            plugins,
+            self.i18n,
+            t.id,
+            t.last_post_user_id,
+            &mut inputs,
+        );
+        inputs
+    }
+
+    /// The third-party plugins' after load and before serialize.
+    async fn wasm_load(
+        &mut self,
+        wasm: &crate::plugin_wasm::Registry,
+        topics: &[TopicRow],
+        posters: HashMap<i32, crate::plugins::PosterInputs>,
+    ) -> Result<crate::plugin_wasm::TopicListPage, TopicListError> {
+        let facts = topics.iter().map(crate::plugin_wasm::topic_facts).collect();
+        let last_posters = topics.iter().map(|t| (t.id, t.last_post_user_id)).collect();
+        let mut ctx = crate::plugin_wasm::Ctx {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            guardian: self.guardian,
+            i18n: Some(self.i18n),
+            pool: None,
+            config: None,
+        };
+        Ok(wasm
+            .topic_list_load(&mut ctx, facts, posters, &last_posters)
+            .await?)
+    }
+
+    /// The third-party plugins' keys on a topic (after serialize), run
+    /// once for the prefetched page, or for the topic alone outside it.
+    async fn wasm_keys(
+        &mut self,
+        t: &TopicRow,
+        out: &mut Map<String, Value>,
+    ) -> Result<(), TopicListError> {
+        let wasm = crate::plugin_wasm::registry();
+        if !wasm.on_topic_list(self.settings)? {
+            return Ok(());
+        }
+        let mut page = if self.prefetched.wasm.has(t.id) {
+            std::mem::take(&mut self.prefetched.wasm)
+        } else {
+            let posters = HashMap::from([(t.id, poster_inputs(t, self.i18n))]);
+            self.wasm_load(&wasm, std::slice::from_ref(t), posters)
+                .await?
+        };
+        let mut ctx = crate::plugin_wasm::Ctx {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            guardian: self.guardian,
+            i18n: Some(self.i18n),
+            pool: None,
+            config: None,
+        };
+        let ran = wasm.topic_list_keys(&mut ctx, &mut page).await;
+        for (key, value) in page.keys(t.id) {
+            out.insert(key.clone(), value.clone());
+        }
+        if page.has(t.id) && self.prefetched.topic_ids.contains(&t.id) {
+            self.prefetched.wasm = page;
+        }
+        Ok(ran?)
     }
 
     /// `user_data` for a topic: its topic_users row for the current user.

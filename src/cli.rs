@@ -80,7 +80,16 @@ enum AdminCommand {
 
 /// The `discourse-rs` command line, with the plugins this binary is built
 /// with (plugin_api): what a plugin's own binary calls from its main.
-pub async fn run(plugins: Vec<Arc<dyn crate::plugin_api::Plugin>>) -> ExitCode {
+pub async fn run(mut plugins: Vec<Arc<dyn crate::plugin_api::Plugin>>) -> ExitCode {
+    // Third-party plugins (PLUGINS_DIR) beside the compiled-in ones; a
+    // broken one stops the boot.
+    match crate::plugin_wasm::load_from_env() {
+        Ok(wasm) => plugins.extend(wasm),
+        Err(e) => {
+            eprintln!("discourse-rs: {e}");
+            return ExitCode::FAILURE;
+        }
+    }
     if let Err(e) = crate::plugin_api::install(plugins) {
         eprintln!("discourse-rs: {e}");
         return ExitCode::FAILURE;
