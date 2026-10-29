@@ -1,0 +1,100 @@
+/* discourse-graphviz's common/graphviz.scss, as Rails compiles it. */
+
+/* graphviz.scss:3 */
+div.graphviz.is-loading,
+.graphviz-wrapper {
+  margin: 1em 0;
+  aspect-ratio: 16 / 9;
+  background-color: var(--primary-50);
+}
+/* graphviz.scss:9 */
+div.graphviz.is-loading:first-child,
+.graphviz-wrapper:first-child {
+  margin-top: 0;
+}
+/* graphviz.scss:16 */
+.composer-graphviz-node {
+  --composer-preview-node-source-max-height: 100%;
+  aspect-ratio: 16 / 9;
+}
+/* graphviz.scss:22 */
+div.graphviz.is-loading {
+  font-size: 0;
+}
+/* graphviz.scss:26 */
+.graphviz-wrapper {
+  position: relative;
+}
+/* graphviz.scss:29 */
+.graphviz-wrapper .graphviz-diagram-controls {
+  position: absolute;
+  display: flex;
+  top: 0;
+  right: 0;
+  user-select: none;
+  z-index: 1;
+}
+/* graphviz.scss:38 */
+html.no-touch .graphviz-wrapper .graphviz-diagram-controls {
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+/* graphviz.scss:43 */
+html.no-touch .graphviz-wrapper:hover .graphviz-diagram-controls {
+  opacity: 1;
+}
+/* graphviz.scss:48 */
+.graphviz-diagram {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 1em;
+  display: flex;
+  align-items: safe center;
+  justify-content: safe center;
+}
+/* graphviz.scss:60 */
+.graphviz-diagram > * {
+  flex: 0 0 auto;
+}
+/* graphviz.scss:64 */
+.graphviz-diagram > svg {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+/* graphviz.scss:72 */
+.graph-error {
+  padding: 2em;
+  background-color: var(--danger-low);
+  margin: 0;
+  color: var(--danger);
+  text-align: center;
+}
+/* graphviz.scss:80 */
+.d-modal.graphviz-fullscreen .d-modal__container {
+  width: 100%;
+  height: 100%;
+  --modal-max-width: 95vw;
+}
+/* graphviz.scss:86 */
+.d-modal.graphviz-fullscreen .d-modal__container .d-modal__body {
+  height: 100%;
+}
+/* graphviz.scss:91 */
+.d-modal.graphviz-fullscreen .d-modal__container .graphviz-diagram.zoomable {
+  cursor: zoom-in;
+}
+/* graphviz.scss:95 */
+.d-modal.graphviz-fullscreen .d-modal__container .graphviz-diagram.zoomed {
+  cursor: zoom-out;
+}
+/* graphviz.scss:98 */
+.d-modal.graphviz-fullscreen .d-modal__container .graphviz-diagram.zoomed > svg {
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+}

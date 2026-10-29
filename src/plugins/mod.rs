@@ -27,6 +27,7 @@ pub mod chat;
 pub mod checklist;
 pub mod footnote;
 pub mod gamification;
+pub mod graphviz;
 pub mod lazy_videos;
 pub mod local_dates;
 pub mod lti;
@@ -364,6 +365,7 @@ pub const STARTED: &[&str] = &[
     "discourse-captcha",
     "discourse-details",
     "discourse-gamification",
+    "discourse-graphviz",
     "discourse-lazy-videos",
     "discourse-local-dates",
     "discourse-lti",

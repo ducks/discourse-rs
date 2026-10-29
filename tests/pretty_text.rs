@@ -296,6 +296,47 @@ async fn policy_cooks_as_rails_when_enabled() {
     assert!(matches!(error, CookError::Unsupported(_)), "{error}");
 }
 
+/// discourse-graphviz's spec/integration/graphviz_cooking_spec.rb: the
+/// placeholder with the engine and the escaped source, `dot` for an
+/// engine it does not know, text while the plugin is off.
+#[tokio::test]
+async fn graphviz_cooks_as_rails_when_enabled() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    let opts = MarkdownOptions::default();
+    // Off (the default), the tag is not registered and stays text.
+    let off = cook(&host, "[graphviz]\ndigraph { a }\n[/graphviz]", &opts)
+        .await
+        .unwrap();
+    assert!(!off.contains("class=\"graphviz"), "{off}");
+    assert_eq!(off, "<p>[graphviz]<br>\ndigraph { a }<br>\n[/graphviz]</p>");
+
+    common::set_setting(&db.pool, "discourse_graphviz_enabled", 5, "t").await;
+    let cases = [
+        (
+            "[graphviz engine=neato]\ndigraph G { a -> b }\n[/graphviz]\n",
+            "<div class=\"graphviz is-loading\" data-engine=\"neato\">\ndigraph G { a -&gt; b }\n</div>",
+        ),
+        (
+            "[graphviz engine=bogus]\ndigraph { a }\n[/graphviz]",
+            "<div class=\"graphviz is-loading\" data-engine=\"dot\">\ndigraph { a }\n</div>",
+        ),
+        // escapeHtml's &quot; leaves the sanitizer as a plain quote in text.
+        (
+            "[graphviz]\ndigraph {\n  a [label=\"<b>\"];\n}\n[/graphviz]",
+            "<div class=\"graphviz is-loading\" data-engine=\"dot\">\ndigraph {\n  a [label=\"&lt;b&gt;\"];\n}\n</div>",
+        ),
+        (
+            "before\n\n[graphviz engine=circo]\ngraph { a -- b }\n[/graphviz]\n\nafter",
+            "<p>before</p>\n<div class=\"graphviz is-loading\" data-engine=\"circo\">\ngraph { a -- b }\n</div>\n<p>after</p>",
+        ),
+    ];
+    for (raw, rails) in cases {
+        let ours = cook(&host, raw, &opts).await.unwrap();
+        assert_eq!(ours, rails, "{raw}");
+    }
+}
+
 /// Where two strings part ways, with some of what surrounds it.
 fn first_difference(rails: &str, ours: &str) -> String {
     let rails: Vec<char> = rails.chars().collect();

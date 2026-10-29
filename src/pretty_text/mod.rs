@@ -585,6 +585,7 @@ pub fn render_settings(
             .to_string(),
         spoiler: settings.get("spoiler_enabled")?.truthy(),
         policy: settings.get("policy_enabled")?.truthy(),
+        graphviz: settings.get("discourse_graphviz_enabled")?.truthy(),
         avatar_sizes,
         base_path: base_path.to_string(),
         secure_uploads: settings.get("secure_uploads")?.truthy(),

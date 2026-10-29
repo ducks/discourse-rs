@@ -118,3 +118,11 @@ the reference's node_modules), the files its ace-editor-bundle
 (static/ace-editor-bundle.js) imports, in the minified noconflict build;
 checked against the tarball's npm integrity (sha512), ace.js
 byte-identical to the reference's node_modules.
+
+  viz/viz-3.0.1.js
+                discourse-graphviz's public/javascripts/viz-3.0.1.js at the
+                reference (Viz.js 3.0.1 with Graphviz 2.44.0, wrapped by its
+                upgrade-viz-js.rb to define vizRenderStringSync; MIT, its
+                bundled licenses in the file's header), byte-identical,
+                served where Rails serves it,
+                /plugins/discourse-graphviz/javascripts/viz-3.0.1.js.

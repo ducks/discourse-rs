@@ -300,6 +300,9 @@ pub struct Chrome {
     /// What static/js/local-dates.js reads, as data attributes for its
     /// script tag; empty while discourse_local_dates_enabled is off.
     pub local_dates_attrs: String,
+    /// static/js/graphviz.js's script tag attributes
+    /// (crate::plugins::graphviz), empty while discourse_graphviz_enabled is off.
+    pub graphviz_attrs: String,
     /// What static/js/dates.js reads, as data attributes for its script
     /// tag: the dates.* strings and relative_date_duration.
     pub dates_attrs: String,
@@ -890,6 +893,8 @@ impl Site {
             };
         self.chrome.inline_footnotes = settings.get("enable_markdown_footnotes")?.truthy()
             && settings.get("display_footnotes_inline")?.truthy();
+        self.chrome.graphviz_attrs =
+            crate::plugins::graphviz::script_attrs(settings, &state.i18n, &self.base_path)?;
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();

@@ -1112,6 +1112,9 @@
           if (window.Discourse && Discourse.policyPreview) {
             Discourse.policyPreview(preview);
           }
+          if (window.Discourse && Discourse.renderGraphviz) {
+            Discourse.renderGraphviz(preview);
+          }
         } catch (e) {
           preview.textContent = e.message;
         }
@@ -2534,6 +2537,12 @@
     "local-dates": function () {
       if (Discourse.localDatesCreate) {
         Discourse.localDatesCreate.show(addText);
+      }
+    },
+    // discourse-graphviz's sample graph (static/js/graphviz.js).
+    graphviz: function () {
+      if (Discourse.graphvizComposer) {
+        Discourse.graphvizComposer(applySurround);
       }
     },
     // discourse-policy's builder (static/js/policy.js).

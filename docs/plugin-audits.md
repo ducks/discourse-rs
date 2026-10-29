@@ -49,6 +49,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
 | discourse-affiliate | started | 2 | localized posts (no content localization), the enable-if-installed migration | none | S, with content localization |
 | discourse-gamification | started | 8 | the workflows node (discourse-workflows unported), the seed fixture, plugin columns on the directory page, the minimal leaderboard, native choosers in the edit form | none | S per gap; the directory page with core |
+| discourse-graphviz | started | 3 | the rich editor node and its preview (196), DAsyncContent's loading state, the menu item's place | none | 196 plus S |
 
 Findings that cross plugins:
 
@@ -1575,3 +1576,41 @@ No new item.
   `admin.plugins.change_settings_short`); Ember's exact tab markup was not available.
 - The directory column's header label (`gamification_score` at the root of the client
   strings, "directory column workaround") needs the core directory table's code.
+## discourse-graphviz (`plugins/discourse-graphviz`)
+
+Verdict: started (3 gaps). Ported on `feat/plugin-graphviz` (2026-10-29), against bf55a44c
+read from the extract at tmp/rails-bf55a44c (the frontend-only plugin: the server no
+longer renders SVG, migration 20260610075829); tests in tests/pretty_text.rs
+(`graphviz_cooks_as_rails_when_enabled`, spec/integration/graphviz_cooking_spec.rb) and
+tests/plugin_graphviz.rs.
+
+### What the port has
+- Markdown: the `[graphviz]` block bbcode's `replace`, a `div.graphviz.is-loading` with
+  `data-engine` (dot, neato, circo, fdp, osage or twopi, else dot) and the escaped source,
+  on the allow list, gated by `discourse_graphviz_enabled` and left out of chat; off, the
+  tag is text again instead of a refusal: crates/markdown/src/render/bbcode.rs.
+- Client: the cooked decorator replacing each placeholder with a `.graphviz-wrapper`
+  (GraphvizInline: the fullscreen button with `discourse-expand`, GraphvizDiagram),
+  viz.js loaded once from Rails' path, sanitizeGraphvizSvg (scripts, foreignObject, `on*`
+  and `javascript:` attributes, links other than http(s) and relative unwrapped), the
+  graph error, GraphvizFullscreen as a modal with click to zoom; on cooked posts (and what
+  htmx swaps in) and the composer preview: static/js/graphviz.js.
+- viz-3.0.1.js, byte-identical, at /plugins/discourse-graphviz/javascripts/viz-3.0.1.js:
+  static/vendor/viz, src/assets.rs.
+- The composer's Insert Graphviz graph (`diagram-project`, the sample graph around the
+  selection); the options menu no longer refuses to open while the plugin is on:
+  src/composer_view.rs, static/js/composer.js.
+- Stylesheet: static/css/graphviz.css. Admin plugin entry and icon: src/admin_view.rs
+  (already there).
+
+### Gaps
+- The rich editor extension (the graphviz node with its live preview, GraphvizPreview).
+  [item 196]
+- DAsyncContent's loading state is a small spinner here; its exact markup was not ported.
+- The options menu item's place among the plugins' items is not known (after local dates
+  here).
+
+### Couldn't determine
+- Whether Rails' block bbcode `replace` hands the content over exactly as the port's
+  `[code]` does (applyBBCode is core JS, not in the extract); the graphviz block takes the
+  same path, and the spec checks only substrings.

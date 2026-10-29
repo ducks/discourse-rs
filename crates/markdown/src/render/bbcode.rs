@@ -238,17 +238,17 @@ enum BlockTag {
     Spoiler,
     Poll,
     Policy,
+    Graphviz,
 }
 
 /// Tags the bundled plugins register and this port does not render.
-const UNPORTED_BLOCK_TAGS: [&str; 7] = [
+const UNPORTED_BLOCK_TAGS: [&str; 6] = [
     "chat",
     "calendar",
     "timezones",
     "event",
     "preview",
     "hidden",
-    "graphviz",
 ];
 
 fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<BlockTag> {
@@ -262,11 +262,10 @@ fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<Bloc
         "spoiler" if settings.spoiler => BlockTag::Spoiler,
         "poll" if settings.poll => BlockTag::Poll,
         "policy" if settings.policy => BlockTag::Policy,
+        "graphviz" if settings.graphviz && !settings.chat => BlockTag::Graphviz,
         _ => {
             if UNPORTED_BLOCK_TAGS.contains(&tag) {
-                ctx.refuse(
-                    "a bbcode block of a plugin that is not ported (chat, events, graphviz)",
-                );
+                ctx.refuse("a bbcode block of a plugin that is not ported (chat, events)");
             }
             return None;
         }
@@ -431,6 +430,26 @@ impl BlockRule for BlockBbcode {
             return Some((node, lines));
         }
 
+        // discourse-graphviz's `replace`: the source between the tags, for
+        // the client to draw, with an engine it knows or `dot`.
+        if let BlockTag::Graphviz = kind {
+            const ENGINES: [&str; 6] = ["dot", "neato", "circo", "fdp", "osage", "twopi"];
+            let content = if close.line.is_none() {
+                src[start + info.length..close.start].to_string()
+            } else {
+                state.get_lines(start_line + 1, next_line, 0, false).0
+            };
+            let engine = info
+                .attr("engine")
+                .filter(|e| ENGINES.contains(e))
+                .unwrap_or("dot");
+            let html = format!(
+                "<div class=\"graphviz is-loading\" data-engine=\"{engine}\">\n{}\n</div>\n",
+                markdown_it::common::utils::escape_html(&content)
+            );
+            return Some((Node::new(RawHtml(html)), lines));
+        }
+
         // The content: the lines between the tags as blocks, or what sits
         // between them on the one line as a paragraph.
         // A poll inside a poll stays plain content.
@@ -477,7 +496,7 @@ impl BlockRule for BlockBbcode {
         };
         let class = |name: &str| vec![("class".to_string(), name.to_string())];
         let node = match kind {
-            BlockTag::Code => unreachable!("handled above"),
+            BlockTag::Code | BlockTag::Graphviz => unreachable!("handled above"),
             BlockTag::Excerpt => wrap("div", class("excerpt"), children),
             BlockTag::Spoiler => wrap("div", class("spoiler"), children),
             BlockTag::Policy => policy(&info, children),
@@ -851,6 +870,13 @@ pub fn allow(list: &mut crate::sanitizer::AllowList, settings: &RenderSettings) 
     }
     if settings.policy {
         list.allow(&["div.policy"]);
+    }
+    if settings.graphviz {
+        list.allow(&[
+            "div.graphviz",
+            "div[class=graphviz is-loading]",
+            "div[data-engine]",
+        ]);
     }
 }
 
