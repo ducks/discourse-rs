@@ -49,6 +49,9 @@ pub struct Page<'a> {
     pub default_priority: &'a str,
     /// reviewable_revision_reasons, the revise modal's reasons.
     pub revision_reasons: &'a str,
+    /// discourse-user-notes, when it is on: the author's notes button and
+    /// the note form's copy option.
+    pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
 }
 
 fn s(v: &Value) -> &str {
@@ -806,12 +809,31 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
         out.push_str(&tiny_date(cx, at));
     }
     out.push_str("</span></div>");
-    out.push_str(&match kind {
-        "ReviewableFlaggedPost" => {
-            post_body(cx, r, store, target_created_by, "review.flagged_user")
+    // The after-reviewable-post-user outlet: discourse-user-notes'.
+    let after_user = match (&p.user_notes, target_created_by) {
+        (Some(ui), Some(user)) => {
+            crate::plugins::user_notes::view::flags(ui, cx.i18n, cx.base_path, user)
         }
-        "ReviewablePost" => post_body(cx, r, store, target_created_by, "review.review_user"),
-        "ReviewableQueuedPost" => queued_post_body(cx, r, store, target_created_by),
+        _ => String::new(),
+    };
+    out.push_str(&match kind {
+        "ReviewableFlaggedPost" => post_body(
+            cx,
+            r,
+            store,
+            target_created_by,
+            "review.flagged_user",
+            &after_user,
+        ),
+        "ReviewablePost" => post_body(
+            cx,
+            r,
+            store,
+            target_created_by,
+            "review.review_user",
+            &after_user,
+        ),
+        "ReviewableQueuedPost" => queued_post_body(cx, r, store, target_created_by, &after_user),
         // review_list refuses the others before they get here.
         _ => format!(
             "<div class=\"alert alert-error review-item__no-component\">{}</div>",
@@ -1272,7 +1294,12 @@ fn penalty_effect_description(
 }
 
 /// reviewable/created-by.gjs for the author.
-fn created_by(cx: &ListContext, author: Option<&Value>, penalties: &Value) -> String {
+fn created_by(
+    cx: &ListContext,
+    author: Option<&Value>,
+    penalties: &Value,
+    after_user: &str,
+) -> String {
     let mut out = String::from("<div class=\"created-by\">");
     match author {
         Some(user) => {
@@ -1302,7 +1329,7 @@ fn created_by(cx: &ListContext, author: Option<&Value>, penalties: &Value) -> St
                 ));
             }
             out.push_str(&format!(
-                "<div class=\"names\"><span class=\"username\">{}{icons}</span></div>",
+                "<div class=\"names\"><span class=\"username\">{}{icons}</span>{after_user}</div>",
                 user_link(cx, user, &escape(s(&user["username"])))
             ));
         }
@@ -1323,6 +1350,7 @@ fn post_body(
     store: &Store,
     author: Option<&Value>,
     user_label_key: &str,
+    after_user: &str,
 ) -> String {
     let mut out = format!(
         "<div class=\"review-item__meta-content\"><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-topic-title\">",
@@ -1334,7 +1362,7 @@ fn post_body(
         "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
         escape(&t(cx, user_label_key))
     ));
-    out.push_str(&created_by(cx, author, &r["author_penalties"]));
+    out.push_str(&created_by(cx, author, &r["author_penalties"], after_user));
     out.push_str("</div></div>");
     out.push_str(
         "<div class=\"review-item__post\"><div class=\"review-item__post-content-wrapper\">",
@@ -1356,7 +1384,13 @@ fn post_body(
 
 /// reviewable/queued-post.gjs: the topic (or the new topic's title,
 /// category and tags), the author, and the raw cooked as a preview.
-fn queued_post_body(cx: &ListContext, r: &Value, store: &Store, author: Option<&Value>) -> String {
+fn queued_post_body(
+    cx: &ListContext,
+    r: &Value,
+    store: &Store,
+    author: Option<&Value>,
+    after_user: &str,
+) -> String {
     let mut fallback = format!("<div class=\"title-text\">{}</div>", s(&r["fancy_title"]));
     if let Some(category) = r["category_id"]
         .as_i64()
@@ -1392,7 +1426,7 @@ fn queued_post_body(cx: &ListContext, r: &Value, store: &Store, author: Option<&
         "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
         escape(&t(cx, "review.review_user"))
     ));
-    out.push_str(&created_by(cx, author, &r["author_penalties"]));
+    out.push_str(&created_by(cx, author, &r["author_penalties"], after_user));
     out.push_str("</div></div>");
     out.push_str(&format!(
         "<div class=\"review-item__post\"><div class=\"review-item__post-content\"><div class=\"post-body\">{}</div><span></span></div></div>",
@@ -1622,7 +1656,7 @@ fn timeline(
         }
         out.push_str("</div>");
     }
-    out.push_str(&note_form(cx, r));
+    out.push_str(&note_form(p, r, author));
     out.push_str("</div>");
     out
 }
@@ -1664,10 +1698,17 @@ fn interpolated(cx: &ListContext, e: &Event) -> String {
 }
 
 /// ReviewableNoteForm: FormKit's textarea field and its submit.
-fn note_form(cx: &ListContext, r: &Value) -> String {
+fn note_form(p: &Page, r: &Value, author: Option<&Value>) -> String {
+    let cx = p.cx;
+    // The reviewable-note-form-after-note outlet: discourse-user-notes'.
+    let after_note = p
+        .user_notes
+        .as_ref()
+        .map(|ui| crate::plugins::user_notes::view::copy_note_option(ui, cx.i18n, r, author))
+        .unwrap_or_default();
     let id = format!("reviewable-note-{}", r["id"]);
     format!(
-        "<div class=\"reviewable-note-form\"><form class=\"form-kit reviewable-note-form__form\" novalidate=\"\"><div class=\"form-kit__container form-kit__field form-kit__field-textarea --full\" data-name=\"content\" id=\"control-content\" data-control-type=\"textarea\"><label for=\"{id}\" class=\"form-kit__container-title\"><span>{}</span></label><div class=\"form-kit__container-content\"><div class=\"reviewable-note-form__textarea-wrapper\"><textarea id=\"{id}\" class=\"form-kit__control-textarea reviewable-note-form__textarea\" name=\"content\" style=\"height: 80px\" placeholder=\"{}\"></textarea></div><div class=\"form-kit__meta\"><span class=\"form-kit__char-counter --insufficient\">0/2000</span></div></div></div><div class=\"form-kit__section form-kit__actions\"><button class=\"btn btn-primary form-kit__button btn-small btn-primary\" type=\"submit\"><span class=\"d-button-label\">{}</span></button></div></form></div>",
+        "<div class=\"reviewable-note-form\"><form class=\"form-kit reviewable-note-form__form\" novalidate=\"\"><div class=\"form-kit__container form-kit__field form-kit__field-textarea --full\" data-name=\"content\" id=\"control-content\" data-control-type=\"textarea\"><label for=\"{id}\" class=\"form-kit__container-title\"><span>{}</span></label><div class=\"form-kit__container-content\"><div class=\"reviewable-note-form__textarea-wrapper\"><textarea id=\"{id}\" class=\"form-kit__control-textarea reviewable-note-form__textarea\" name=\"content\" style=\"height: 80px\" placeholder=\"{}\"></textarea>{after_note}</div><div class=\"form-kit__meta\"><span class=\"form-kit__char-counter --insufficient\">0/2000</span></div></div></div><div class=\"form-kit__section form-kit__actions\"><button class=\"btn btn-primary form-kit__button btn-small btn-primary\" type=\"submit\"><span class=\"d-button-label\">{}</span></button></div></form></div>",
         escape(&t(cx, "review.notes.add_note_description")),
         escape(&t(cx, "review.notes.placeholder")),
         escape(&t(cx, "review.notes.add_note_button"))

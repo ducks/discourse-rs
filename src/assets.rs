@@ -79,6 +79,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/poll.css"),
     include_str!("../static/css/spoiler-alert.css"),
+    include_str!("../static/css/user-notes.css"),
     include_str!("../static/css/invites.css"),
     // The mobile view's rules, last as each follows its base rule.
     include_str!("../static/css/mobile.css"),
@@ -529,6 +530,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "topic-voting.js",
         JS,
         include_str!("../static/js/topic-voting.js"),
+    ),
+    (
+        "user-notes.js",
+        JS,
+        include_str!("../static/js/user-notes.js"),
     ),
     (
         "tracking-menu.js",

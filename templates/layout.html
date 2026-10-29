@@ -115,6 +115,10 @@
     {%- if chrome.user_cards %}
     <script src="{{ crate::assets::url(base_path, "user-card.js") }}" data-show-badges="{{ chrome.enable_badges }}" data-label="{{ chrome.t("user.card") }}" defer></script>
     {%- endif %}
+    {%- if !chrome.user_notes_placement.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "dialog.js") }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "user-notes.js") }}" data-placement="{{ chrome.user_notes_placement }}" defer></script>
+    {%- endif %}
     {%- if chrome.inline_footnotes %}
     <script src="{{ crate::assets::url(base_path, "inline-footnotes.js") }}" defer></script>
     {%- endif %}

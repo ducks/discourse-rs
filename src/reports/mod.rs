@@ -205,7 +205,7 @@ pub const PLUGIN_REPORTS: [PluginReports; 7] = [
         enabled_setting: "user_notes_enabled",
         display_name: "User Notes",
         types: &["user_notes"],
-        ported: false,
+        ported: true,
     },
     PluginReports {
         plugin: "discourse-policy",
@@ -985,6 +985,7 @@ async fn fill(
         }
         "activity_by_category" => tables::activity_by_category(conn, cx, viewer, r).await,
         "reactions" => tables::reactions(conn, cx, r).await,
+        "user_notes" => crate::plugins::user_notes::report::fill(conn, cx, r).await,
         _ if kind.ends_with("_reqs") => {
             let filter = kind.trim_end_matches("_reqs").to_string();
             pageviews::req_report(conn, cx, r, &filter).await

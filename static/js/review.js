@@ -868,6 +868,12 @@
     ui()
       .ajax("POST", "/review/" + item.dataset.reviewableId + "/notes", { reviewable_note: { content: content } })
       .then(function () {
+        // appEvents' reviewablenote:created, for the plugins listening.
+        document.dispatchEvent(
+          new CustomEvent("reviewablenote:created", {
+            detail: { form: form, content: content, reviewableId: item.dataset.reviewableId },
+          })
+        );
         return redraw(item, [item.dataset.reviewableId]);
       })
       .catch(function (error) {

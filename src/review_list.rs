@@ -53,8 +53,12 @@ const SILENCE_USER: i32 = 30;
 const REJECTED: i32 = 2;
 
 /// Staff user custom fields plugins on the reference allow
-/// (`allow_staff_user_custom_field`: discourse-events, discourse-user-notes).
-const PLUGIN_STAFF_USER_CUSTOM_FIELDS: [&str; 2] = ["on_holiday", "user_notes_count"];
+/// (`allow_staff_user_custom_field`: discourse-events, discourse-user-notes),
+/// each with its plugin's enabled setting: the register is filtered.
+const PLUGIN_STAFF_USER_CUSTOM_FIELDS: [(&str, &str); 2] = [
+    ("on_holiday", "discourse_events_enabled"),
+    ("user_notes_count", "user_notes_enabled"),
+];
 
 /// The filters the controller echoes in `meta`, in its order.
 const ECHOED: [&str; 10] = [
@@ -2305,11 +2309,11 @@ pub(crate) fn allowed_user_custom_fields(
     fields.extend(split(s.get("public_user_custom_fields")?.to_s()));
     if guardian.is_staff() {
         fields.extend(split(s.get("staff_user_custom_fields")?.to_s()));
-        fields.extend(
-            PLUGIN_STAFF_USER_CUSTOM_FIELDS
-                .iter()
-                .map(|f| f.to_string()),
-        );
+        for (field, enabled) in PLUGIN_STAFF_USER_CUSTOM_FIELDS {
+            if s.get(enabled)?.truthy() {
+                fields.push(field.to_string());
+            }
+        }
     }
     Ok(fields)
 }

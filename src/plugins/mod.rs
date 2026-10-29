@@ -32,6 +32,7 @@ pub mod presence;
 pub mod reactions;
 pub mod solved;
 pub mod topic_voting;
+pub mod user_notes;
 
 use std::collections::HashMap;
 
@@ -200,6 +201,20 @@ pub async fn topic_trashed(
     Ok(())
 }
 
+/// UserWarning's after_commit on create (the plugins' model callbacks):
+/// discourse-user-notes' note of the warning. Nothing in the port creates
+/// official warnings yet (src/flags.rs refuses them); this is where that
+/// write calls once it does.
+pub async fn user_warning_created(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    urls: &crate::url::Urls<'_>,
+    i18n: &crate::i18n::I18n,
+    warning: &user_notes::UserWarning,
+) -> Result<(), crate::AppError> {
+    user_notes::user_warning_created(conn, settings, urls, i18n, warning).await
+}
+
 /// UserDestroyer, before the user row goes: the rows the plugins'
 /// associations on User take with it (`has_many ..., dependent:`). Rails
 /// declares those when a plugin loads, so they apply whether or not the
@@ -304,6 +319,7 @@ pub const STARTED: &[&str] = &[
     "discourse-reactions",
     "discourse-solved",
     "discourse-topic-voting",
+    "discourse-user-notes",
     "footnote",
     "poll",
     "spoiler-alert",

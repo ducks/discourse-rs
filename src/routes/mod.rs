@@ -135,6 +135,7 @@ mod user_avatars;
 mod user_badges;
 pub(crate) mod user_card;
 pub(crate) mod user_menu;
+mod user_notes;
 mod user_notifications;
 mod user_preferences;
 mod user_search;
@@ -504,6 +505,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/voting/unvote.json", post(topic_voting::unvote))
         .route("/voting/who", get(topic_voting::who))
         .route("/voting/who.json", get(topic_voting::who))
+        // discourse-user-notes' UserNotesController, and its modal.
+        .route(
+            "/user_notes",
+            get(user_notes::index).post(user_notes::create),
+        )
+        .route("/user_notes/{id}", delete(user_notes::destroy))
+        .route("/user-notes/{user_id}", get(user_notes::modal))
         .route(
             "/topics/voted-by/{username}",
             cached!(get(topic_voting::voted_by)),
@@ -2712,6 +2720,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))
+        .route("/assets/user-notes.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))
         .route("/assets/discourse-solved.js", get(asset))
         .route("/assets/poll.js", get(asset))
