@@ -1112,6 +1112,9 @@
           if (window.Discourse && Discourse.policyPreview) {
             Discourse.policyPreview(preview);
           }
+          if (window.Discourse && Discourse.renderMath) {
+            Discourse.renderMath(preview);
+          }
         } catch (e) {
           preview.textContent = e.message;
         }
@@ -2534,6 +2537,13 @@
     "local-dates": function () {
       if (Discourse.localDatesCreate) {
         Discourse.localDatesCreate.show(addText);
+      }
+    },
+    // discourse-math's Insert Math (static/js/discourse-math.js), in
+    // block mode when the cursor is at a line's start.
+    "insert-math": function () {
+      if (Discourse.mathInsert) {
+        Discourse.mathInsert.show(textarea.value.slice(0, textarea.selectionStart), addText);
       }
     },
     // discourse-policy's builder (static/js/policy.js).

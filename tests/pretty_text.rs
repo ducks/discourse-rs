@@ -296,6 +296,125 @@ async fn policy_cooks_as_rails_when_enabled() {
     assert!(matches!(error, CookError::Unsupported(_)), "{error}");
 }
 
+/// Each raw cooks to the html Rails gives it.
+async fn cooks_as(host: &Host, cases: &[(&str, &str)]) {
+    for (raw, rails) in cases {
+        let ours = cook(host, raw, &MarkdownOptions::default()).await.unwrap();
+        assert_eq!(&ours, rails, "{raw}");
+    }
+}
+
+/// discourse-math's spec/pretty_text_spec.rb, case by case (match_html
+/// there; the port's sanitizer writes the attributes double quoted).
+#[tokio::test]
+async fn math_cooks_as_rails_when_enabled() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    common::set_setting(&db.pool, "discourse_math_enabled", 5, "t").await;
+    cooks_as(
+        &host,
+        &[
+            // inline math with $...$
+            (
+                "I like $x^2$ etc",
+                r#"<p>I like <span class="math">x^2</span> etc</p>"#,
+            ),
+            (
+                r"I like $\{a,b\}\$<a>$ etc",
+                r#"<p>I like <span class="math">\{a,b\}\$&lt;a&gt;</span> etc</p>"#,
+            ),
+            ("word$a$", "<p>word$a$</p>"),
+            ("y$+500$", "<p>y$+500$</p>"),
+            ("$a$word", "<p>$a$word</p>"),
+            ("$+500$x", "<p>$+500$x</p>"),
+            ("$a$ word", r#"<p><span class="math">a</span> word</p>"#),
+            ("word $a$", r#"<p>word <span class="math">a</span></p>"#),
+            ("$+500$", r#"<p><span class="math">+500</span></p>"#),
+            (",$a$,", r#"<p>,<span class="math">a</span>,</p>"#),
+            ("($a$)", r#"<p>(<span class="math">a</span>)</p>"#),
+            (
+                "测试，$a^2$，测试",
+                r#"<p>测试，<span class="math">a^2</span>，测试</p>"#,
+            ),
+            (
+                "テスト、$a^2$、テスト",
+                r#"<p>テスト、<span class="math">a^2</span>、テスト</p>"#,
+            ),
+            (r",$+500\$", "<p>,$+500$</p>"),
+            ("200$ + 500$", "<p>200$ + 500$</p>"),
+            ("costs $50 to $100", "<p>costs $50 to $100</p>"),
+            ("test $a\nb$ test", "<p>test $a<br>\nb$ test</p>"),
+            // block math with $$...$$
+            ("$$x^2 + y^2$$", "<div class=\"math\">\nx^2 + y^2\n</div>"),
+            (
+                "$$\nx^2 + y^2\n$$",
+                "<div class=\"math\">\nx^2 + y^2\n</div>",
+            ),
+            (
+                "$$\n<script>alert('xss')</script>\n$$",
+                "<div class=\"math\">\n&lt;script&gt;alert('xss')&lt;/script&gt;\n</div>",
+            ),
+            (
+                "Before\n$$\na^2\n$$\nAfter",
+                "<p>Before</p>\n<div class=\"math\">\na^2\n</div>\n<p>After</p>",
+            ),
+            ("$$a\na\n$$\"", "<p>$$a<br>\na<br>\n$$\"</p>"),
+            ("test $$a^2$$ test", "<p>test $$a^2$$ test</p>"),
+            // LaTeX delimiters, on by default
+            (
+                r"test \(a^2\) test",
+                r#"<p>test <span class="math">a^2</span> test</p>"#,
+            ),
+            ("test \\(a\nb\\) test", "<p>test (a<br>\nb) test</p>"),
+            ("\\[x^2 + y^2\\]", "<div class=\"math\">\nx^2 + y^2\n</div>"),
+            ("\\[\nx^2\n\\]", "<div class=\"math\">\nx^2\n</div>"),
+            (r"test \[a^2\] test", "<p>test [a^2] test</p>"),
+            // asciimath is off: % is text
+            ("test %x^2% test", "<p>test %x^2% test</p>"),
+        ],
+    )
+    .await;
+
+    common::set_setting(&db.pool, "discourse_math_enable_latex_delimiters", 5, "f").await;
+    cooks_as(
+        &host,
+        &[
+            (r"test \(a^2\) test", "<p>test (a^2) test</p>"),
+            ("\\[\nx^2\n\\]", "<p>[<br>\nx^2<br>\n]</p>"),
+        ],
+    )
+    .await;
+
+    common::set_setting(&db.pool, "discourse_math_enable_asciimath", 5, "t").await;
+    cooks_as(
+        &host,
+        &[
+            (
+                "test %x^2% test",
+                r#"<p>test <span class="asciimath">x^2</span> test</p>"#,
+            ),
+            ("word%a%", "<p>word%a%</p>"),
+            ("%a%word", "<p>%a%word</p>"),
+            (",%a%,", r#"<p>,<span class="asciimath">a</span>,</p>"#),
+        ],
+    )
+    .await;
+    // Asciimath is MathJax's only (opts.features.asciimath).
+    common::set_setting(&db.pool, "discourse_math_provider", 7, "katex").await;
+    cooks_as(&host, &[("test %x^2% test", "<p>test %x^2% test</p>")]).await;
+
+    // Off, the delimiters are text.
+    common::set_setting(&db.pool, "discourse_math_enabled", 5, "f").await;
+    cooks_as(
+        &host,
+        &[
+            ("I like $x^2$ etc", "<p>I like $x^2$ etc</p>"),
+            ("$$\nx\n$$", "<p>$$<br>\nx<br>\n$$</p>"),
+        ],
+    )
+    .await;
+}
+
 /// Where two strings part ways, with some of what surrounds it.
 fn first_difference(rails: &str, ours: &str) -> String {
     let rails: Vec<char> = rails.chars().collect();

@@ -46,6 +46,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
+| discourse-math | started | 6 | renderers from a CDN rather than the gem (no `discourse_math_bundle_url` on /site.json), the rich editor node and edit modal (196) | none | S plus 196 |
 
 Findings that cross plugins:
 
@@ -1346,3 +1347,53 @@ No new item; the rich editor waits on 196.
 ### Couldn't determine
 - The policy item's place in the composer's options menu (after poll here) and `can_create_policy`'s place among the current user's keys (with chat's, before the `user_option` association) need a Rails response.
 - The policy email's exact HTML and text after Email::Renderer and Styles were not compared with a Rails send.
+
+## discourse-math (`plugins/discourse-math`)
+
+Verdict: started (6 gaps). Ported on `feat/plugin-math` (2026-10-28), against bf55a44c read
+from the extract at tmp/rails-bf55a44c; tests in tests/pretty_text.rs
+(`math_cooks_as_rails_when_enabled`, every case of spec/pretty_text_spec.rb) and
+tests/plugin_math.rs.
+
+### What the port has
+- Markdown: `$...$` with its boundary rules (whitespace, ASCII and Unicode punctuation and
+  symbols, the CJK, full-width, Arabic and Thai marks), `\(...\)` ahead of the escape rule,
+  `%...%` asciimath (with `discourse_math_enable_asciimath` and the MathJax provider only),
+  single and multi-line `$$` and `\[` blocks interrupting paragraphs, `span.math`,
+  `span.asciimath`, `div.math` on the allow list, gated by `discourse_math_enabled` and
+  `discourse_math_enable_latex_delimiters`; the chat engine takes the same rules
+  (plugin.rb's `enable_markdown_feature`): crates/markdown/src/render/math.rs;
+  src/pretty_text/mod.rs.
+- Client: lib/math-renderer.js as static/js/discourse-math.js: the MathJax config
+  (`ui/safe`, html or svg output, menu, accessibility `enrich`, zoom 175% on click,
+  `input/asciimath`), the hidden wrappers, the preview's 200ms delay, KaTeX with mhchem and
+  copy-tex, its `trust` and `\eqref`/`\ref`/`\label` macros; run on cooked posts (and what
+  htmx swaps in, through cooked.js), the composer preview and chat messages. The settings
+  ride on the script tag: src/plugins/math.rs, templates/layout.html.
+- The composer's Insert Math (`square-root-variable`, Shift+M), block mode at a line's start,
+  the modal with its block toggle and required field: src/composer_view.rs,
+  static/js/composer.js, static/js/discourse-math.js. The options menu no longer refuses
+  to open while the plugin is on.
+- Stylesheets (common and chat): static/css/discourse-math.css.
+- Admin plugin entry with its icon: src/admin_view.rs (already there).
+
+### Gaps
+- The renderers load from jsdelivr (MathJax 4.1.0, KaTeX 0.16.22) instead of the
+  discourse_math_bundle gem's copies under /plugins/discourse-math/<version>, and
+  `chtml.fontURL` is left to MathJax's own fonts. Rails: lib/discourse_math/bundle_paths.rb;
+  assets/javascripts/lib/math-renderer.js (buildMathJaxConfig). Port: src/plugins/math.rs.
+- `add_to_serializer(:site, :discourse_math_bundle_url)`: absent (the gem's version, which
+  the path carries, is not in the extract).
+- The rich editor extension and its math node, the edit modal (modal/math-edit.gjs).
+  [item 196]
+- The insert modal's form is drawn by hand, not FormKit; "Required" is its only
+  validation message.
+- The options menu item's place among the plugins' items is not known (after local dates
+  here).
+- Non-English client strings. [item 167]
+
+### Couldn't determine
+- The exact cooked bytes: the spec compares with match_html and the reference has the
+  plugin off, so no recorded corpus entry has math. The port's sanitizer writes the rule's
+  single-quoted class double quoted, as it does every attribute.
+- Which MathJax and KaTeX versions the gem pins.

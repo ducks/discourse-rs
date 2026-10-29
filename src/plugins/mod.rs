@@ -27,6 +27,7 @@ pub mod footnote;
 pub mod lazy_videos;
 pub mod local_dates;
 pub mod lti;
+pub mod math;
 pub mod oauth2_basic;
 pub mod openid_connect;
 pub mod policy;
@@ -365,6 +366,7 @@ pub const STARTED: &[&str] = &[
     "discourse-lazy-videos",
     "discourse-local-dates",
     "discourse-lti",
+    "discourse-math",
     "discourse-oauth2-basic",
     "discourse-openid-connect",
     "discourse-policy",
