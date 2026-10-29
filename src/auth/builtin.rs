@@ -1,7 +1,7 @@
 //! The OAuth2 logins Discourse ships: core's GitHub (omniauth-github),
 //! Google (omniauth-google-oauth2), Facebook (omniauth-facebook), Discord,
 //! LinkedIn and Discourse ID authenticators, and the bundled
-//! discourse-microsoft-auth and discourse-patreon plugins. Each
+//! discourse-patreon plugin. Each
 //! is an OmniAuth OAuth2 strategy (the request and callback phases are
 //! routes/omniauth.rs's) with its client options, authorize params, the
 //! requests that build its auth hash, and its authenticator's
@@ -55,7 +55,6 @@ pub fn is_builtin(name: &str) -> bool {
             | "discord"
             | "linkedin_oidc"
             | "discourse_id"
-            | "microsoft_office365"
             | "patreon"
     )
 }
@@ -157,18 +156,6 @@ pub fn client(s: &SiteSettings, name: &str) -> Result<Client, AppError> {
                 BasicAuth,
             )?
         }
-        "microsoft_office365" => {
-            let tenant = setting(s, "microsoft_auth_tenant_id")?;
-            client_of(
-                s,
-                "microsoft_auth_client_id",
-                "microsoft_auth_client_secret",
-                "https://login.microsoftonline.com",
-                &format!("/{tenant}/oauth2/v2.0/authorize"),
-                &format!("/{tenant}/oauth2/v2.0/token"),
-                BasicAuth,
-            )?
-        }
         "patreon" => client_of(
             s,
             "patreon_client_id",
@@ -261,19 +248,6 @@ pub fn authorize_params(
                 }
             }
         }
-        "microsoft_office365" => {
-            for k in ["display", "score", "auth_type"] {
-                if let Some(v) = param(k) {
-                    put(&mut out, k, v);
-                }
-            }
-            if !out.iter().any(|(k, _)| k == "scope") {
-                out.push((
-                    "scope".into(),
-                    "openid email profile https://graph.microsoft.com/User.Read".into(),
-                ));
-            }
-        }
         "patreon" => {
             // The API version's authorize params replace the strategy's.
             out.push(("response_type".into(), "code".into()));
@@ -320,8 +294,8 @@ fn google_scope(raw: &str) -> String {
         .join(" ")
 }
 
-/// The strategy's `callback_url`. Discord, LinkedIn, Microsoft and Patreon
-/// add `script_name` to a callback path that has it already;
+/// The strategy's `callback_url`. Discord, LinkedIn and Patreon add
+/// `script_name` to a callback path that has it already;
 /// OmniauthBypassMiddleware's compat patch takes the doubled one out, so
 /// every one is the origin, the subfolder and the callback path.
 pub fn callback_url(
@@ -779,26 +753,6 @@ pub async fn auth_hash(
                 extra: Map::new(),
             }
         }
-        "microsoft_office365" => {
-            let raw_info = fetch!(bearer("https://graph.microsoft.com/v1.0/me").await?);
-            let or = |a: &str, b: &str| match at(&raw_info, a) {
-                Value::Null | Value::Bool(false) => at(&raw_info, b).clone(),
-                other => other.clone(),
-            };
-            let mut info = Map::new();
-            // SnakyHash: displayName reads as display_name.
-            info.insert("name".into(), or("display_name", "user_principal_name"));
-            info.insert("email".into(), or("mail", "user_principal_name"));
-            let mut extra = Map::new();
-            extra.insert("raw_info".into(), raw_info.clone());
-            AuthHash {
-                provider: name.into(),
-                uid: uid_string(at(&raw_info, "id")),
-                info,
-                credentials: credentials(token),
-                extra,
-            }
-        }
         "patreon" => {
             // client.request(:get, identity_url, parse: :json): JSON
             // whatever the content type, an error status raising.
@@ -1121,7 +1075,6 @@ pub async fn after_authenticate(
                 .get("raw_info")
                 .and_then(|r| r.get("email_verified")),
         ),
-        "microsoft_office365" => s.get("microsoft_auth_email_verified")?.truthy(),
         "patreon" => truthy(auth.info.get("email_verified")),
         _ => true,
     };

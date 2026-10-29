@@ -36,7 +36,7 @@ use crate::{AppError, AppState, Unsupported};
 fn ported(name: &str) -> bool {
     matches!(
         name,
-        "oauth2_basic" | "oidc" | "twitter" | "lti" | "apple" | "amazon"
+        "oauth2_basic" | "oidc" | "twitter" | "lti" | "apple" | "amazon" | "microsoft_office365"
     ) || crate::auth::builtin::is_builtin(name)
 }
 
@@ -291,6 +291,11 @@ pub async fn request(
         "amazon" => (
             crate::plugins::login_with_amazon::client(&settings)?,
             crate::plugins::login_with_amazon::authorize_params(&settings)?,
+            false,
+        ),
+        "microsoft_office365" => (
+            crate::plugins::microsoft_auth::client(&settings)?,
+            crate::plugins::microsoft_auth::authorize_params(&params),
             false,
         ),
         n => (
@@ -1022,6 +1027,7 @@ async fn callback_phase(
         }
         "apple" => (crate::plugins::apple::client(settings)?, false),
         "amazon" => (crate::plugins::login_with_amazon::client(settings)?, false),
+        "microsoft_office365" => (crate::plugins::microsoft_auth::client(settings)?, false),
         n => {
             let client = crate::auth::builtin::client(settings, n)?;
             if let Some(f) = crate::auth::builtin::before_callback(n, params, &client, headers)? {
@@ -1184,6 +1190,12 @@ async fn callback_phase(
                 Err(f) => return Ok(Callback::Failed(f)),
             }
         }
+        "microsoft_office365" => {
+            match crate::plugins::microsoft_auth::auth_hash(&http, &client, &token).await? {
+                Ok(a) => a,
+                Err(f) => return Ok(Callback::Failed(f)),
+            }
+        }
         n => match crate::auth::builtin::auth_hash(&http, n, &client, &token).await? {
             Ok(a) => a,
             Err(f) => return Ok(Callback::Failed(f)),
@@ -1273,6 +1285,20 @@ pub(super) async fn after_authenticate(
         "amazon" => {
             let behaviour = crate::plugins::login_with_amazon::behaviour(settings)?;
             crate::plugins::login_with_amazon::check_uid(&auth)?;
+            let result = crate::auth::managed::after_authenticate(
+                conn,
+                settings,
+                &host,
+                &auth,
+                &behaviour,
+                existing_account,
+            )
+            .await?;
+            Ok((result, auth))
+        }
+        "microsoft_office365" => {
+            let behaviour = crate::plugins::microsoft_auth::behaviour(settings)?;
+            crate::plugins::microsoft_auth::check_uid(&auth)?;
             let result = crate::auth::managed::after_authenticate(
                 conn,
                 settings,
