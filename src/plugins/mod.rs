@@ -17,6 +17,7 @@
 //! Core's events (DiscourseEvent) reach the plugins listening through the
 //! functions here, called where Rails triggers them.
 
+pub mod affiliate;
 pub mod apple;
 pub mod assign;
 pub mod auth_providers;
@@ -358,6 +359,7 @@ pub async fn user_content_deleting(
 pub const STARTED: &[&str] = &[
     "chat",
     "checklist",
+    "discourse-affiliate",
     "discourse-apple-auth",
     "discourse-assign",
     "discourse-cakeday",

@@ -1023,6 +1023,9 @@ pub(crate) async fn post_process(
             }
         }
         add_rel_attributes(dom, add_nofollow, &site_host, &allowlist);
+        // DiscourseEvent :post_process_cooked's handlers that rewrite the
+        // document, as post_process ends.
+        crate::plugins::affiliate::post_process_cooked(dom, settings)?;
         Ok(to_html(dom))
     };
 
