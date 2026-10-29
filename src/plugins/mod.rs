@@ -24,6 +24,7 @@ pub mod cakeday;
 pub mod chat;
 pub mod checklist;
 pub mod footnote;
+pub mod graphviz;
 pub mod lazy_videos;
 pub mod local_dates;
 pub mod lti;
@@ -362,6 +363,7 @@ pub const STARTED: &[&str] = &[
     "discourse-assign",
     "discourse-cakeday",
     "discourse-details",
+    "discourse-graphviz",
     "discourse-lazy-videos",
     "discourse-local-dates",
     "discourse-lti",

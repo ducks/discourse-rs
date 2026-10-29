@@ -103,6 +103,9 @@ pub struct RenderSettings {
     pub spoiler: bool,
     /// The policy plugin's `[policy]` (`policy_enabled`).
     pub policy: bool,
+    /// discourse-graphviz's `[graphviz]` (`discourse_graphviz_enabled`).
+    #[serde(default)]
+    pub graphviz: bool,
     /// `avatar_sizes`, ascending.
     pub avatar_sizes: Vec<i64>,
     /// `paths.baseUri`

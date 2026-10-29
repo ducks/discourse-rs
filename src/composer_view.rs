@@ -275,6 +275,15 @@ pub fn popup_options(
             ..option("local-dates", "far-clock", "discourse_local_dates.title")
         });
     }
+    // discourse-graphviz's Insert Graphviz graph, which has no name; its
+    // place among the plugins' items is not known.
+    if crate::plugins::graphviz::enabled(settings)? {
+        out.push(PopupOption {
+            ported: true,
+            named: false,
+            ..option("graphviz", "diagram-project", "graphviz.composer_title")
+        });
+    }
     if on("spoiler_enabled")? {
         out.push(PopupOption {
             show_active_icon: true,
@@ -322,7 +331,6 @@ pub fn unported_popup_plugins(
     for (setting, plugin) in [
         ("discourse_math_enabled", "discourse-math"),
         ("discourse_post_event_enabled", "discourse-events"),
-        ("discourse_graphviz_enabled", "discourse-graphviz"),
     ] {
         if settings.get(setting)?.truthy() {
             out.push(plugin);

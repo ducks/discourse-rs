@@ -2813,6 +2813,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/checklist.js", get(asset))
         .route("/assets/cakeday.js", get(asset))
         .route("/assets/policy.js", get(asset))
+        .route("/assets/graphviz.js", get(asset))
+        .route(crate::plugins::graphviz::VIZ_PATH, get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))
