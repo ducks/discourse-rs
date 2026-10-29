@@ -476,10 +476,15 @@ impl HookTx {
                 .await
                 .map_err(s)?;
         }
+        // Ends a fifth early: at the deadline itself the host's cancel can
+        // win the race on a loaded machine, failing a hook whose guest
+        // would have seen the timeout as an error it can handle.
         let left = deadline
             .saturating_duration_since(Instant::now())
             .as_millis()
-            .max(1);
+            * 4
+            / 5;
+        let left = left.max(1);
         run_sql(
             &mut tx,
             format!("SET LOCAL statement_timeout = {left}").as_str(),
