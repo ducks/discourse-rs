@@ -1164,3 +1164,52 @@ pub async fn chatables(
         .await?;
     Ok(Json(body).into_response())
 }
+
+/// GET /chat/api/search: Chat::Api::SearchController#index
+/// (Chat::SearchMessage), 404 while chat_search_enabled is off.
+pub async fn search(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::search::{SearchParams, Searched};
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    if !settings.get("chat_search_enabled")?.truthy() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = params::parse(uri.query(), &headers, &body);
+    let get = |key: &str| p.get(key).and_then(params::scalar);
+    // Attributes with a default take it when absent; a value given casts.
+    let integer = |key: &str, default: i64| match get(key) {
+        None => Some(default),
+        Some(v) => cast_integer(Some(&v)),
+    };
+    let search = SearchParams {
+        query: get("query"),
+        channel_id: cast_integer(get("channel_id").as_deref()),
+        limit: integer("limit", 20),
+        offset: integer("offset", 0),
+        exclude_threads: cast_boolean(get("exclude_threads").as_deref()) == Some(true),
+        sort: Some(get("sort").unwrap_or_else(|| "relevance".into())),
+    };
+    Ok(
+        match context(&state, &mut conn, &settings, &guardian)
+            .search_messages(search)
+            .await?
+        {
+            Searched::Found(body) => Json(body).into_response(),
+            Searched::NotFound => super::topics::not_found_response(&state),
+            Searched::Invalid(errors) => (
+                axum::http::StatusCode::BAD_REQUEST,
+                Json(json!({"failed": "FAILED", "errors": errors})),
+            )
+                .into_response(),
+        },
+    )
+}

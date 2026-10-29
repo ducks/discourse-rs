@@ -8,7 +8,7 @@ pub mod blurb;
 mod dates;
 mod filters;
 mod posts_query;
-mod uri;
+pub(crate) mod uri;
 
 use std::collections::HashMap;
 use std::sync::Mutex;
