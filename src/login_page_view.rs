@@ -440,6 +440,8 @@ pub struct SignupView<'a> {
     /// create_account.disclaimer, when the site has both a ToS and a
     /// privacy policy.
     pub disclaimer: Option<String>,
+    /// The create-account-after-user-fields plugin outlet's connectors.
+    pub after_user_fields: String,
 }
 
 /// SignupProgressBar at `step`.
@@ -549,6 +551,7 @@ pub fn create_account_form(v: &SignupView) -> String {
     if v.full_name_visible && !v.full_name_required {
         out.push_str(&fullname_input(v, false));
     }
+    out.push_str(&v.after_user_fields);
     out.push_str("</form>");
     // SignupPageCta
     out.push_str("<div class=\"signup-page-cta\">");
@@ -923,6 +926,7 @@ mod tests {
             show_full_name_instructions: false,
             min_password_length: 10,
             disclaimer: None,
+            after_user_fields: String::new(),
         };
         let html = signup_page(&v, "");
         assert!(html.contains("<div class=\"signup-body has-user-fields passwordless-signup\"><div class=\"login-left-side\"><div class=\"code-login-form\"><div class=\"login-welcome-header\" id=\"create-account-title\">"), "{html}");

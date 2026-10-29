@@ -509,6 +509,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/checklist.js"),
     ),
     ("cakeday.js", JS, include_str!("../static/js/cakeday.js")),
+    (
+        "discourse-captcha.js",
+        JS,
+        include_str!("../static/js/discourse-captcha.js"),
+    ),
     ("policy.js", JS, include_str!("../static/js/policy.js")),
     ("chat.js", JS, include_str!("../static/js/chat.js")),
     (

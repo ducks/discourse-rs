@@ -51,6 +51,14 @@ fn exempt(path: &str) -> bool {
         || path.starts_with("/auth/")
         // Plugins' public files, served statically.
         || path.starts_with("/plugins/")
+        // discourse-captcha's CaptchaController
+        || matches!(
+            path,
+            "/captcha/hcaptcha/create"
+                | "/captcha/hcaptcha/create.json"
+                | "/captcha/recaptcha/create"
+                | "/captcha/recaptcha/create.json"
+        )
         // UserApiKeysController#new, #otp, #activate and the device
         // request and poll (create_otp needs a login of its own).
         || matches!(
@@ -953,6 +961,7 @@ pub async fn show_signup(
                 .truthy(),
             min_password_length: settings.get("min_password_length")?.to_i(),
             disclaimer,
+            after_user_fields: crate::plugins::captcha::signup_connector(&settings, &t)?,
         },
         &site.base_path,
     );
@@ -982,6 +991,7 @@ pub async fn show_signup(
         .collect();
     extra.insert("provider_names".into(), json!(pretty));
     let data = login_data(&state, &settings, "signup", &csrf_token, extra)?;
+    let head = crate::plugins::captcha::signup_script(&settings, &site.base_path)?;
     if let Some(cookie) = email_cookie(&uri) {
         set_cookie = Some(match set_cookie {
             // auth_response sets one cookie; the session's goes first.
@@ -999,7 +1009,7 @@ pub async fn show_signup(
                         body,
                         data,
                         dialog_strings: dialog_strings(&state),
-                        head: String::new(),
+                        head,
                     },
                     Some(session),
                 )?;
@@ -1023,7 +1033,7 @@ pub async fn show_signup(
         body,
         data,
         dialog_strings: dialog_strings(&state),
-        head: String::new(),
+        head,
     };
     auth_response(page, set_cookie)
 }

@@ -32,6 +32,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-reactions | started | 23 | deleted users' reactions kept, the regular like sync, logged-out reacting, op_reactions_data on lists, picker and paging UI | 231-232, 211, 212 | 2 M |
 | discourse-solved | started | 30 | unaccepting on post deletion, revisions and moves, auto bump, category custom fields on site and categories JSON, composer education message | 233-235, 213, 212 | 2 M, 2 S plus 163 |
 | discourse-topic-voting | started | 16 | voting after login, the docked header vote box, Most Votes search order | 236-237, 235, 211, 212 | M plus S, with 197 and 195 |
+| discourse-captcha | started | 5 | the login code signup gate and its code-login connector (core's code signup unported), widget placement without user fields, non-English strings (167), CSP (214) | none | M with core's code signup |
 | discourse-cakeday | started | 5 | onceoffs never enqueued (core has no EnqueueOnceoffs), non-English strings (167), "today" read from the user's timezone not the browser's | none | S |
 | discourse-post-voting | started | 11 | flagging comments (plugin reviewables in the queue), the composer's post voting toggle and category defaults, voting after login | none yet | M (reviewables, shared with chat) plus S |
 | discourse-presence | started | 3 | the translate composer state, whisper state | 238 | S |
@@ -1227,6 +1228,86 @@ action and per-user `assign_notification` jobs that bf55a44c does not have).
   never_auto_track_topics notification reason.
 - Rails joins the assignments for `assigned=` lists, repeating a topic with several; the port
   lists each topic once.
+
+## discourse-captcha (`plugins/discourse-captcha`)
+
+Verdict: started (5 gaps). Ported on `feat/plugin-captcha` (2026-10-28) against the vendored
+bf55a44c (tmp/rails-bf55a44c); tests in tests/plugin_captcha.rs port
+spec/lib/discourse_captcha/create_users_controller_patch_spec.rb, the hCaptcha and reCAPTCHA
+controller and provider specs, the two problem check specs and the server side of
+spec/system/signup_with_captcha_spec.rb, against the providers' siteverify endpoints stubbed on
+loopback.
+
+### What the port has
+- Settings from the vendored plugin_settings.yml (`discourse_captcha_enabled`, the
+  `discourse_captcha_provider` enum hcaptcha/recaptcha/none, both providers' site and secret
+  keys); "discourse-captcha" in `plugins::STARTED` (it has no enable validator, so admins can
+  turn it on); admin plugin entry with the hand icon (src/admin_view.rs).
+- CaptchaController, HcaptchaController, RecaptchaController: POST /captcha/hcaptcha/create and
+  /captcha/recaptcha/create (with `.json`): the CSRF check, requires_plugin and another provider
+  selected as 404s, a blank token as InvalidParameters (400), the token kept in the server session
+  under `hcaptcha_token` / `recaptcha_token` for two minutes, `{"success":"OK"}`; open on login
+  required sites (src/plugins/captcha.rs `create`, src/routes/captcha.rs,
+  src/routes/login_required.rs).
+- CaptchaVerification and CreateUsersControllerPatch: users#create, after the honeypot, refuses
+  with `fail_with` (`{"success":false,"message":...}`): `captcha_not_configured` for a selected
+  provider without both keys, `captcha_verification_failed` for a missing token, a provider
+  answer of 500 or more, a body that is not JSON, or `success` nil or false, and any request
+  failure (logged, as Rails rescues it). The token is taken out of the server session whatever
+  the outcome. The secret and the token are posted as a form through FinalDestination's SSRF
+  check (src/plugins/captcha.rs `verification_error`; hook `plugins::users_create_refusal`
+  called from src/routes/accounts.rs).
+- ProblemCheck::HcaptchaConfiguration and RecaptchaConfiguration, high priority, registered
+  while the plugin is enabled and listed before core's checks (`plugins::problem_checks`,
+  src/problem_checks.rs `checks`).
+- UI: the create-account-after-user-fields connector at the end of the create-account form
+  (also in the form an external login's signup draws), loading until the provider's script
+  (render=explicit) is in, then the `#h-captcha-field` / `#g-recaptcha` container rendered with
+  the site key; the token and expiry/error callbacks; the "create-account" behavior transformer
+  that refuses with `missing_token` before a solved challenge, posts the token, refuses with
+  `verification_failed` when that fails, and resets the widget after the attempt; the input tip
+  under the widget; the error alert when the script cannot load (static/js/discourse-captcha.js;
+  `applyBehaviorTransformer` in static/js/login.js; src/plugins/captcha.rs `signup_connector`).
+- Migration 20260422000000 (discourse_hcaptcha_enabled to the provider settings): recorded as
+  run in the vendored schema.
+
+### Gaps
+**SessionControllerPatch**
+- The CAPTCHA gate on login code signups (process_verified_login_code with a username,
+  complete_verified_login_code_signup and the signup proof's `captcha_verified`): the port's
+  login codes only redeem invites, which the plugin never gates, and refuses the rest ("logging
+  in with an emailed code", "completing a login code signup"). Rails:
+  plugins/discourse-captcha/lib/discourse_captcha/session_controller_patch.rb. Port:
+  src/routes/invite_redeem.rs (verify_login_code). Lands with the code signup in core.
+
+**UI**
+- The code-login-after-code connector and the `code-login-auto-create-account` value
+  transformer (no account created straight from a verified code while a captcha is on): the
+  code signup's later steps are not ported. Rails:
+  assets/javascripts/discourse/connectors/code-login-after-code/captcha-fields-connector.gjs;
+  pre-initializers/h-captcha.js:22.
+- The widget is not under user fields: the port's signup page refuses sites with signup user
+  fields, so the connector follows the form's last field.
+
+**Locales**
+- Every locale but English for `js.discourse_captcha.*`, the dashboard problems and the setting
+  descriptions. [item 167]
+
+**Content security policy**
+- Rails' CSP would need the providers' script hosts; the port sends no CSP yet. [item 214]
+
+### Items
+
+None new: the login code signup is core's; 167 and 214.
+
+### Couldn't determine
+- The providers' siteverify protocol (a form POST of `secret` and `response`, a JSON answer with
+  `success`) and their explicit-render JavaScript APIs (`render`, `reset`, the `callback`,
+  `expired-callback` and `error-callback` options, the onload callback) come from the plugin's
+  code and hCaptcha's and Google's documentation; no provider was called.
+- Whether Rails sends the session cookie with a captcha refusal from users#create; the port sets
+  it, as for the honeypot's answer.
+
 ## discourse-cakeday (`plugins/discourse-cakeday`)
 
 Verdict: started (5 gaps). Ported on `feat/plugin-cakeday` (2026-10-28), after the
