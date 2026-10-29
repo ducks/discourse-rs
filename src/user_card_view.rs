@@ -36,6 +36,8 @@ pub struct CardSettings {
     pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
     /// discourse-cakeday's, when it is on.
     pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
+    /// discourse-gamification's, when it is on.
+    pub gamification: Option<crate::plugins::gamification::view::GamificationUi>,
 }
 
 /// A site user field shown on cards (`site.user_fields` with
@@ -510,6 +512,10 @@ pub fn render(
                 ));
             }
             out.push_str("</div>");
+        }
+        // discourse-gamification's user-card-metadata connector.
+        if let Some(ui) = &settings.gamification {
+            out.push_str(&crate::plugins::gamification::view::user_card(cx, ui, u));
         }
         // discourse-solved's user-card-metadata connector.
         if let Some(solved) = u.get("accepted_answers") {

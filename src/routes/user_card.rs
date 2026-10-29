@@ -76,6 +76,10 @@ pub async fn show(
             guardian.user_id(),
         )
         .await?,
+        gamification: crate::plugins::gamification::view::GamificationUi::load(
+            &mut conn, &settings,
+        )
+        .await?,
     };
     let categories = std::collections::HashMap::new();
     let cx = crate::topic_list_view::ListContext {

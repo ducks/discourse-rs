@@ -126,7 +126,8 @@ const MAX_BADGES: i64 = 6;
 
 /// UserCardSerializer's attributes in order: BasicUserSerializer's, the
 /// card's own, its untrusted and staff attributes, then the plugins'
-/// (chat, discourse-cakeday, discourse-solved) and the featured badges' ids.
+/// (chat, discourse-cakeday, discourse-gamification,
+/// discourse-solved) and the featured badges' ids.
 const USER_CARD_KEYS: &[&str] = &[
     "id",
     "username",
@@ -178,6 +179,7 @@ const USER_CARD_KEYS: &[&str] = &[
     "can_chat_user",
     "cakedate",
     "birthdate",
+    "gamification_score",
     "vote_count",
     "accepted_answers",
     "featured_user_badge_ids",
@@ -899,6 +901,9 @@ impl Users<'_> {
         }
         // discourse-cakeday's user and user card keys.
         crate::plugins::cakeday::user_keys(&mut *self.conn, self.settings, g, user.id, &mut u)
+            .await?;
+        // discourse-gamification's user card key.
+        crate::plugins::gamification::user_keys(&mut *self.conn, self.settings, user.id, &mut u)
             .await?;
         // discourse-post-voting's user card key.
         if crate::plugins::post_voting::enabled(self.settings)? {

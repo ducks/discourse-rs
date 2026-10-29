@@ -106,10 +106,13 @@ pub async fn show(
         ),
     )
     .await?;
-    if crate::admin_plugins::has_config_nav(&plugin_id) {
+    let cx = shell.cx(&state);
+    // A configuration nav's tabs, for the plugins whose pages the port
+    // draws.
+    let tabs = crate::plugins::admin_config_nav(&cx, &plugin_id);
+    if crate::admin_plugins::has_config_nav(&plugin_id) && tabs.is_none() {
         return Err(Unsupported("a plugin's own admin pages (its configuration nav)").into());
     }
-    let cx = shell.cx(&state);
     let area = super::admin_advanced::area_settings(
         &mut conn,
         &state,
@@ -121,8 +124,8 @@ pub async fn show(
     let main = format!(
         "{}{}",
         crate::admin_plugins_view::strings(&cx),
-        crate::admin_plugins_view::render(&crate::admin_plugins_view::settings(
-            &cx, &plugin, &area
+        crate::admin_plugins_view::render(&crate::admin_plugins_view::settings_with_tabs(
+            &cx, &plugin, &area, tabs
         ))
     );
     let main = format!(

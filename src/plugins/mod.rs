@@ -26,6 +26,7 @@ pub mod captcha;
 pub mod chat;
 pub mod checklist;
 pub mod footnote;
+pub mod gamification;
 pub mod lazy_videos;
 pub mod local_dates;
 pub mod lti;
@@ -278,14 +279,9 @@ pub async fn user_destroying(
     user_id: i32,
 ) -> Result<(), PluginError> {
     // (table, column, plugin)
-    const UNPORTED: [(&str, &str, &str); 9] = [
+    const UNPORTED: [(&str, &str, &str); 8] = [
         ("ai_api_audit_logs", "user_id", "discourse-ai"),
         ("ai_agents", "user_id", "discourse-ai"),
-        (
-            "gamification_leaderboard_scores",
-            "user_id",
-            "discourse-gamification",
-        ),
         (
             "discourse_post_event_invitees",
             "user_id",
@@ -306,7 +302,7 @@ pub async fn user_destroying(
         .await?;
         if any {
             return Err(PluginError::Unsupported(crate::Unsupported(
-                "deleting a user with data of unported plugins (discourse-ai, gamification, events, voice)",
+                "deleting a user with data of unported plugins (discourse-ai, events, voice)",
             )));
         }
     }
@@ -314,6 +310,7 @@ pub async fn user_destroying(
     topic_voting::lifecycle::user_destroying(conn, user_id).await?;
     poll::user_destroying(conn, user_id).await?;
     solved::shared_issue::user_destroying(conn, user_id).await?;
+    gamification::user_destroying(conn, user_id).await?;
     Ok(())
 }
 
@@ -366,6 +363,7 @@ pub const STARTED: &[&str] = &[
     "discourse-cakeday",
     "discourse-captcha",
     "discourse-details",
+    "discourse-gamification",
     "discourse-lazy-videos",
     "discourse-local-dates",
     "discourse-lti",
@@ -454,6 +452,15 @@ pub async fn site_setting_changed(
             .execute(&mut *conn)
             .await?;
         }
+    }
+    // discourse-gamification: positions ranked anew.
+    if name == "score_ranking_strategy" && gamification::enabled(settings)? {
+        crate::jobs::enqueue(
+            conn,
+            gamification::jobs::REGENERATE_LEADERBOARD_POSITIONS,
+            serde_json::json!({}),
+        )
+        .await?;
     }
     Ok(())
 }
@@ -576,6 +583,16 @@ pub fn admin_dashboard_section_html(
         return Ok(None);
     }
     solved::dashboard_view::section(dashboard, data, error).map(Some)
+}
+
+/// A plugin's configuration nav (`addAdminPluginConfigurationNav`) as its
+/// settings page's tabs; None for a plugin whose own admin pages the port
+/// doesn't draw.
+pub fn admin_config_nav(cx: &crate::admin_view::AdminCx, plugin_id: &str) -> Option<String> {
+    match plugin_id {
+        "discourse-gamification" => Some(gamification::admin_view::config_nav(cx, false)),
+        _ => None,
+    }
 }
 
 /// The related items component of a report's plugin renderer

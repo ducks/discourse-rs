@@ -169,6 +169,9 @@ pub struct ProfileSettings {
     pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
     /// discourse-cakeday's, when it is on: its user-post-names connector.
     pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
+    /// discourse-gamification's, when it is on: its user-profile-secondary
+    /// connector.
+    pub gamification: Option<crate::plugins::gamification::view::GamificationUi>,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -528,7 +531,7 @@ pub fn render(
     }
     out.push_str("</ul></section></div>");
     if !collapsed {
-        out.push_str(&collapsed_info(cx, u, viewer));
+        out.push_str(&collapsed_info(cx, settings, u, viewer));
     }
     out.push_str("</div></section>");
 
@@ -1498,7 +1501,12 @@ pub(crate) fn reactions_list(
 }
 
 /// CollapsedInfo's secondary panel.
-fn collapsed_info(cx: &ListContext, u: &Value, viewer: &Viewer) -> String {
+fn collapsed_info(
+    cx: &ListContext,
+    settings: &ProfileSettings,
+    u: &Value,
+    viewer: &Viewer,
+) -> String {
     let mut out = String::from("<div class=\"secondary\" id=\"collapsed-info-panel\"><dl>");
     for (key, class, label) in [
         ("created_at", "created-at", "user.created"),
@@ -1541,6 +1549,10 @@ fn collapsed_info(cx: &ListContext, u: &Value, viewer: &Viewer) -> String {
         ));
     }
     let _ = viewer;
+    // The user-profile-secondary outlet: discourse-gamification's connector.
+    if let Some(ui) = &settings.gamification {
+        out.push_str(&crate::plugins::gamification::view::profile(cx, ui, u));
+    }
     out.push_str("</dl></div>");
     out
 }

@@ -130,6 +130,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "index_user_fields_for_search" => index_user_fields_for_search(state, &job.args).await,
         "create_avatar_thumbnails" => create_avatar_thumbnails(state, &job.args).await,
         "update_gravatar" => update_gravatar(state, &job.args).await,
+        name if crate::plugins::gamification::jobs::REGULAR.contains(&name) => {
+            crate::plugins::gamification::jobs::run(state, name, &job.args).await
+        }
         crate::plugins::cakeday::jobs::FIX_INVALID_DATE_OF_BIRTH
         | crate::plugins::cakeday::jobs::MIGRATE_DATE_OF_BIRTH => {
             crate::plugins::cakeday::jobs::run(state, &job.name, &job.args).await

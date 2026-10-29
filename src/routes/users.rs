@@ -1590,6 +1590,10 @@ pub(crate) async fn profile_page(
             guardian.user_id(),
         )
         .await?,
+        gamification: crate::plugins::gamification::view::GamificationUi::load(
+            &mut *conn, settings,
+        )
+        .await?,
     };
     let mut main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     // The notification level dropdown's ignore opens the ignore duration
