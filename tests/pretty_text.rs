@@ -485,3 +485,35 @@ async fn cooked_column_matches_rails() {
     assert!(checked > 20, "{checked} posts");
     assert!(details.is_empty(), "{}", details.join("\n"));
 }
+
+/// discourse-affiliate's "can apply codes to post in post processor"
+/// (spec/lib/affiliate_processor_spec.rb): a post's link to amazon.com
+/// carries the code once the post processor is through, and only while
+/// the plugin is on.
+#[tokio::test]
+async fn affiliate_codes_reach_the_cooked_column() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    let id: i32 =
+        sqlx::query_scalar("SELECT id FROM posts WHERE post_number = 1 ORDER BY id LIMIT 1")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    sqlx::query("UPDATE posts SET raw = $2, cook_method = 1 WHERE id = $1")
+        .bind(id)
+        .bind("this is an www.amazon.com/link?testing yay")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    common::set_setting(&db.pool, "affiliate_amazon_com", 1, "sams-shop").await;
+    let off = cooked_column(&host, i64::from(id)).await.unwrap();
+    assert!(!off.contains("sams-shop"), "{off}");
+
+    common::set_setting(&db.pool, "affiliate_enabled", 5, "t").await;
+    let on = cooked_column(&host, i64::from(id)).await.unwrap();
+    assert_eq!(on.matches("sams-shop").count(), 1, "{on}");
+    assert!(
+        on.contains("href=\"http://www.amazon.com/link?tag=sams-shop\""),
+        "{on}"
+    );
+}

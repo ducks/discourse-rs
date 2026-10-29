@@ -46,6 +46,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
+| discourse-affiliate | started | 2 | localized posts (no content localization), the enable-if-installed migration | none | S, with content localization |
 
 Findings that cross plugins:
 
@@ -1346,3 +1347,37 @@ No new item; the rich editor waits on 196.
 ### Couldn't determine
 - The policy item's place in the composer's options menu (after poll here) and `can_create_policy`'s place among the current user's keys (with chat's, before the `user_option` association) need a Rails response.
 - The policy email's exact HTML and text after Email::Renderer and Styles were not compared with a Rails send.
+
+## discourse-affiliate (`plugins/discourse-affiliate`)
+
+Verdict: started (2 gaps). Ported on `feat/plugin-affiliate` (2026-10-29), against bf55a44c
+read from the extract at tmp/rails-bf55a44c; tests: the unit tests in
+src/plugins/affiliate.rs (every case of spec/lib/affiliate_processor_spec.rb, plus Ruby's
+URI and query quirks) and tests/pretty_text.rs
+`affiliate_codes_reach_the_cooked_column` (its post processor case).
+
+### What the port has
+- `on(:post_process_cooked)`: AffiliateProcessor.apply_to_doc on every `a[href]`, at the end
+  of the post processor (after the nofollow pass, as Rails triggers the event), while
+  `affiliate_enabled` is on: src/plugins/affiliate.rs, called from
+  src/pretty_text/cooked_post_processor.rs.
+- The rules: amazon.<postfix>, www. and smile. for every postfix of the list, amzn.com,
+  amzn.to and a.co on the .com code, amzn.eu on the .eu code, ldlc.com and www.ldlc.com with
+  the code as the fragment; a blank code or a setting that does not exist (amazon.to,
+  amazon.co, which raise in Rails) keeps the url. The query is replaced by `tag` plus `k`,
+  `ref` (with `k` only) and `node`, written with URI.encode_www_form; the url is parsed and
+  rebuilt as Ruby's URI does (host case kept, scheme downcased, default port dropped,
+  unparsable urls and bad percent escapes kept as they are).
+- Settings and the admin plugin entry with `handshake`: vendored plugin_settings.yml,
+  src/admin_view.rs (already there).
+
+### Gaps
+- `on(:post_process_localized_cooked)`: localized posts are not ported (no
+  PostLocalization or LocalizedCookedPostProcessor), so
+  spec/integration/content_localization_spec.rb has nothing to run against.
+- Migration 20250722101702_enable_affiliate_if_already_installed: data-only, for
+  databases that had codes before the plugin was off by default; a restored database
+  already carries its result.
+
+### Couldn't determine
+- Nothing beyond the above; the processor was compared line by line.
