@@ -34,8 +34,10 @@ use crate::{AppError, AppState, Unsupported};
 
 /// The strategies ported.
 fn ported(name: &str) -> bool {
-    matches!(name, "oauth2_basic" | "oidc" | "twitter" | "lti" | "apple")
-        || crate::auth::builtin::is_builtin(name)
+    matches!(
+        name,
+        "oauth2_basic" | "oidc" | "twitter" | "lti" | "apple" | "amazon"
+    ) || crate::auth::builtin::is_builtin(name)
 }
 
 fn host(headers: &HeaderMap) -> &str {
@@ -148,6 +150,12 @@ fn callback_url(state: &AppState, settings: &SiteSettings, name: &str) -> Result
             &urls.base_url_no_prefix()?,
             state.config.globals.relative_url_root(),
         );
+    }
+    if name == "amazon" {
+        return Ok(crate::plugins::login_with_amazon::callback_url(
+            &urls.base_url_no_prefix()?,
+            state.config.globals.relative_url_root(),
+        ));
     }
     Ok(format!("{}/auth/{name}/callback", urls.base_url()?))
 }
@@ -278,6 +286,11 @@ pub async fn request(
         "apple" => (
             crate::plugins::apple::client(&settings)?,
             crate::plugins::apple::authorize_params(),
+            false,
+        ),
+        "amazon" => (
+            crate::plugins::login_with_amazon::client(&settings)?,
+            crate::plugins::login_with_amazon::authorize_params(&settings)?,
             false,
         ),
         n => (
@@ -1008,6 +1021,7 @@ async fn callback_phase(
             (client, false)
         }
         "apple" => (crate::plugins::apple::client(settings)?, false),
+        "amazon" => (crate::plugins::login_with_amazon::client(settings)?, false),
         n => {
             let client = crate::auth::builtin::client(settings, n)?;
             if let Some(f) = crate::auth::builtin::before_callback(n, params, &client, headers)? {
@@ -1097,6 +1111,10 @@ async fn callback_phase(
             )
             .await?
         }
+        _ if name == "amazon" => {
+            crate::plugins::login_with_amazon::build_access_token(&http, &client, params, &callback)
+                .await?
+        }
         Some(d) if d.userinfo_endpoint.is_none() => {
             crate::plugins::openid_connect::token_without_userinfo(
                 &http, &client, &code, &callback, &extra,
@@ -1156,6 +1174,12 @@ async fn callback_phase(
         }
         "apple" => {
             match crate::plugins::apple::auth_hash(conn, &http, &client, &token, params).await? {
+                Ok(a) => a,
+                Err(f) => return Ok(Callback::Failed(f)),
+            }
+        }
+        "amazon" => {
+            match crate::plugins::login_with_amazon::auth_hash(&http, &client, &token).await? {
                 Ok(a) => a,
                 Err(f) => return Ok(Callback::Failed(f)),
             }
@@ -1235,6 +1259,20 @@ pub(super) async fn after_authenticate(
                 )
                 .into());
             }
+            let result = crate::auth::managed::after_authenticate(
+                conn,
+                settings,
+                &host,
+                &auth,
+                &behaviour,
+                existing_account,
+            )
+            .await?;
+            Ok((result, auth))
+        }
+        "amazon" => {
+            let behaviour = crate::plugins::login_with_amazon::behaviour(settings)?;
+            crate::plugins::login_with_amazon::check_uid(&auth)?;
             let result = crate::auth::managed::after_authenticate(
                 conn,
                 settings,

@@ -411,6 +411,10 @@ fn associated_accounts(p: &Prefs<'_>) -> Result<String, AppError> {
     out.push_str("<table class=\"associated-accounts\"><tbody>");
     for method in crate::auth::enabled(p.s)? {
         let account = accounts.iter().find(|a| a["name"] == method.name);
+        // authProviders: a login the user has, or may connect.
+        if account.is_none() && !(method.can_connect)(p.s)? {
+            continue;
+        }
         let dashed = method.name.replace('_', "-");
         // prettyName: no provider here overrides it.
         let pretty = cx

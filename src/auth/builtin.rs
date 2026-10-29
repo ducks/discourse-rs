@@ -1,7 +1,7 @@
 //! The OAuth2 logins Discourse ships: core's GitHub (omniauth-github),
 //! Google (omniauth-google-oauth2), Facebook (omniauth-facebook), Discord,
 //! LinkedIn and Discourse ID authenticators, and the bundled
-//! discourse-microsoft-auth and discourse-login-with-amazon plugins. Each
+//! discourse-microsoft-auth and discourse-patreon plugins. Each
 //! is an OmniAuth OAuth2 strategy (the request and callback phases are
 //! routes/omniauth.rs's) with its client options, authorize params, the
 //! requests that build its auth hash, and its authenticator's
@@ -56,7 +56,6 @@ pub fn is_builtin(name: &str) -> bool {
             | "linkedin_oidc"
             | "discourse_id"
             | "microsoft_office365"
-            | "amazon"
             | "patreon"
     )
 }
@@ -170,15 +169,6 @@ pub fn client(s: &SiteSettings, name: &str) -> Result<Client, AppError> {
                 BasicAuth,
             )?
         }
-        "amazon" => client_of(
-            s,
-            "login_with_amazon_client_id",
-            "login_with_amazon_client_secret",
-            "https://www.amazon.com/",
-            "https://www.amazon.com/ap/oa",
-            "https://api.amazon.com/auth/o2/token",
-            BasicAuth,
-        )?,
         "patreon" => client_of(
             s,
             "patreon_client_id",
@@ -284,10 +274,6 @@ pub fn authorize_params(
                 ));
             }
         }
-        "amazon" => {
-            // The scope setting replaces the strategy's own.
-            out.push(("scope".into(), setting(s, "login_with_amazon_scope")?));
-        }
         "patreon" => {
             // The API version's authorize params replace the strategy's.
             out.push(("response_type".into(), "code".into()));
@@ -334,23 +320,18 @@ fn google_scope(raw: &str) -> String {
         .join(" ")
 }
 
-/// The strategy's `callback_url`. Discord, LinkedIn, Microsoft, Amazon
-/// and Patreon add `script_name` to a callback path that has it already;
+/// The strategy's `callback_url`. Discord, LinkedIn, Microsoft and Patreon
+/// add `script_name` to a callback path that has it already;
 /// OmniauthBypassMiddleware's compat patch takes the doubled one out, so
-/// every one is the origin, the subfolder and the callback path. Amazon's
-/// origin is REDIRECT_URL_ORIGIN when set.
+/// every one is the origin, the subfolder and the callback path.
 pub fn callback_url(
     name: &str,
     base_url_no_prefix: &str,
     script_name: &str,
 ) -> Result<String, AppError> {
-    let origin = match name {
-        "amazon" => {
-            std::env::var("REDIRECT_URL_ORIGIN").unwrap_or_else(|_| base_url_no_prefix.to_string())
-        }
-        _ => base_url_no_prefix.to_string(),
-    };
-    Ok(format!("{origin}{script_name}/auth/{name}/callback"))
+    Ok(format!(
+        "{base_url_no_prefix}{script_name}/auth/{name}/callback"
+    ))
 }
 
 /// What the callback phase needs before the state check: Facebook's
@@ -439,14 +420,6 @@ pub async fn build_access_token(
                 }
             }
             Ok(Ok(token))
-        }
-        "amazon" => {
-            let redirect = callback.split('?').next().unwrap_or_default();
-            let extra = [
-                ("client_id".to_string(), client.client_id.clone()),
-                ("client_secret".to_string(), client.client_secret.clone()),
-            ];
-            http.get_token(client, &code, redirect, &extra).await
         }
         "patreon" => {
             // options.redirect_uri: Discourse.base_url's callback.
@@ -826,38 +799,6 @@ pub async fn auth_hash(
                 extra,
             }
         }
-        "amazon" => {
-            // A plain client request with the token in the query.
-            let raw_info = fetch!(
-                http.resource(
-                    client,
-                    reqwest::Method::GET,
-                    "/ap/user/profile",
-                    &[("access_token".into(), token.token.clone())],
-                    &[],
-                    None,
-                )
-                .await?
-            );
-            let profile = at(&raw_info, "profile");
-            if !profile.is_object() {
-                return Err(
-                    Unsupported("an Amazon profile without its Profile (NoMethodError)").into(),
-                );
-            }
-            let mut extra = Map::new();
-            extra.insert("postal_code".into(), at(profile, "postal_code").clone());
-            let mut info = Map::new();
-            info.insert("email".into(), at(profile, "primary_email").clone());
-            info.insert("name".into(), at(profile, "name").clone());
-            AuthHash {
-                provider: name.into(),
-                uid: uid_string(at(profile, "customer_id")),
-                info,
-                credentials: credentials(token),
-                extra,
-            }
-        }
         "patreon" => {
             // client.request(:get, identity_url, parse: :json): JSON
             // whatever the content type, an error status raising.
@@ -1181,7 +1122,6 @@ pub async fn after_authenticate(
                 .and_then(|r| r.get("email_verified")),
         ),
         "microsoft_office365" => s.get("microsoft_auth_email_verified")?.truthy(),
-        "amazon" => s.get("login_with_amazon_email_verified")?.truthy(),
         "patreon" => truthy(auth.info.get("email_verified")),
         _ => true,
     };
@@ -1207,8 +1147,8 @@ pub async fn after_authenticate(
     let behaviour = Behaviour {
         email_verified,
         match_by_email: true,
-        overrides_email: name == "amazon" && s.get("login_with_amazon_overrides_email")?.truthy(),
-        can_connect: name != "amazon" || s.get("login_with_amazon_user_can_connect")?.truthy(),
+        overrides_email: false,
+        can_connect: true,
         user_by_email,
     };
     let mut result = crate::auth::managed::after_authenticate(
