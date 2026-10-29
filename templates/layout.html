@@ -113,6 +113,9 @@
     <script src="{{ crate::assets::url(base_path, "quote-controls.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "checklist.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "policy.js") }}" data-title="{{ chrome.t("discourse_policy.title") }}" defer></script>
+    {%- if !chrome.templates_attrs.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "templates.js") }}"{{ chrome.templates_attrs|safe }} defer></script>
+    {%- endif %}
     {%- if chrome.user_cards %}
     <script src="{{ crate::assets::url(base_path, "user-card.js") }}" data-show-badges="{{ chrome.enable_badges }}" data-label="{{ chrome.t("user.card") }}" defer></script>
     {%- endif %}

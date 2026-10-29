@@ -2542,6 +2542,12 @@
         Discourse.policyBuilder.show(addText);
       }
     },
+    // discourse-templates' insert template (static/js/templates.js).
+    "discourse-templates": function () {
+      if (Discourse.templates) {
+        Discourse.templates.showComposerUI();
+      }
+    },
   };
 
   // The options' shortcuts in the editor (mod+Shift+D, mod+Shift+.):
@@ -2627,6 +2633,42 @@
   // full-page search's "start a new topic").
   Discourse.composerOpen = function (opts) {
     open(opts);
+  };
+
+  // What discourse-templates (static/js/templates.js) reads and writes of
+  // the composer: whether it has the focus, its topic and the post it
+  // replies to or edits, the preview, and the insert (the title when
+  // blank, the content as a block).
+  Discourse.composerTemplates = {
+    focused: function () {
+      var editor = control.querySelector(".d-editor");
+      return Boolean(state) && Boolean(editor) && editor.contains(document.activeElement);
+    },
+    context: function () {
+      if (!state) {
+        return null;
+      }
+      return {
+        topicId: state.topicId || null,
+        postNumber: (state.mode === "edit" ? state.postNumber : state.replyTo) || null,
+      };
+    },
+    previewVisible: function () {
+      return Boolean(previewToggle) && previewShown();
+    },
+    previewWrapper: function () {
+      return control.querySelector(".d-editor-preview-wrapper");
+    },
+    textarea: textarea,
+    insert: function (templateTitle, content) {
+      if (!state) {
+        return;
+      }
+      if (!title.value && !title.disabled) {
+        title.value = templateTitle;
+      }
+      insertBlock(content);
+    },
   };
 
   Discourse.composerCook = function (raw) {

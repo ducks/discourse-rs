@@ -80,6 +80,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-details.css"),
     include_str!("../static/css/discourse-local-dates.css"),
     include_str!("../static/css/discourse-policy.css"),
+    include_str!("../static/css/discourse-templates.css"),
     include_str!("../static/css/footnote.css"),
     include_str!("../static/css/poll.css"),
     include_str!("../static/css/spoiler-alert.css"),
@@ -510,6 +511,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("cakeday.js", JS, include_str!("../static/js/cakeday.js")),
     ("policy.js", JS, include_str!("../static/js/policy.js")),
+    (
+        "templates.js",
+        JS,
+        include_str!("../static/js/templates.js"),
+    ),
     ("chat.js", JS, include_str!("../static/js/chat.js")),
     (
         "chat-drawer.js",

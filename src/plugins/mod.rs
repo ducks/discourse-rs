@@ -35,6 +35,7 @@ pub mod post_voting;
 pub mod presence;
 pub mod reactions;
 pub mod solved;
+pub mod templates;
 pub mod topic_voting;
 pub mod user_notes;
 
@@ -372,6 +373,7 @@ pub const STARTED: &[&str] = &[
     "discourse-presence",
     "discourse-reactions",
     "discourse-solved",
+    "discourse-templates",
     "discourse-topic-voting",
     "discourse-user-notes",
     "footnote",

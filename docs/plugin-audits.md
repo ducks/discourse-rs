@@ -46,6 +46,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
 | discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
+| discourse-templates | started | 8 | the chat thread composer (no threads, 160), the chat dropdown's core items, the keyboard shortcuts help entry, the canned-replies rake tasks | none | S, with 160 for threads |
 
 Findings that cross plugins:
 
@@ -1346,3 +1347,41 @@ No new item; the rich editor waits on 196.
 ### Couldn't determine
 - The policy item's place in the composer's options menu (after poll here) and `can_create_policy`'s place among the current user's keys (with chat's, before the `user_option` association) need a Rails response.
 - The policy email's exact HTML and text after Email::Renderer and Styles were not compared with a Rails send.
+
+## discourse-templates (`plugins/discourse-templates`)
+
+Verdict: started (8 gaps). Added on `feat/plugin-templates`, against the
+plugin at the vendored bf55a44c.
+
+### What the port has
+- Settings (`discourse_templates_enabled`, `_categories`, `_max_replies_fetched`, `_enable_private_templates`, `_groups_allowed_private_templates`, `_private_templates_tags`) from the vendored plugin yml; enabling allowed (`STARTED`): src/plugins/mod.rs.
+- GuardianExtension and UserExtension (`can_use_templates?`, `can_use_category_templates?` with its first-0-or-missing refusal, `can_use_private_templates?` with staff and everyone): src/plugins/templates/mod.rs.
+- TopicExtension: `template?(user)` (templates categories and their subcategories, or the author's own message tagged with a private templates tag while tagging and private templates are on), `template_item_usage_count`, `increment_template_item_usage_count!` on `discourse_templates_usage_count`: src/plugins/templates/mod.rs.
+- TopicQueryExtension (`list_category_templates`: allowed categories, no definitions, visible and not archived, by title; `list_private_templates`: the member's own messages, not archived, joined to the tags; both with `prioritize_pinned_topics` and the per_page limit) and TemplatesSerializer (id, title, slug, content, visible tags sorted while tagging is on, usages): src/plugins/templates/mod.rs.
+- TemplatesController (`GET /discourse_templates`, `POST /discourse_templates/:id/use` with its 422s, 403s and the rows-written body; requires_plugin, ensure_logged_in, CSRF): src/routes/discourse_templates.rs; src/routes/mod.rs.
+- `add_to_serializer(:current_user, :can_use_templates)` and `(:topic_view, :is_template)`: src/current_user.rs; src/topic_view.rs.
+- Replacement variables (replace-variables.js with JS replacement-string semantics, the composer and chat channel extractors, `my_name` as Ember's displayName), computed on the server from the insert's context (GET /live/templates): src/plugins/templates/variables.rs.
+- UI: the composer options menu item; the insert template modal (its own container beside other modals) and the composer preview panel on desktop with the preview shown; the filterable list (keyword filter scoring title over content, the TagDrop with no-tags and remove-filter, relevance, usage and title ordering, the selected tag kept in the keyValueStore and dropped when gone) refreshed through htmx; the items (apply, source link, cooked preview); the `mod+shift+i` shortcut (composer, chat composer, any textarea); the chat composer dropdown button (through a generic `Discourse.chatComposerButtons` registry in chat.js); the topic's Copy and New topic from template controls (the options header's category and tags read on the server); the stylesheet: src/plugins/templates/view.rs; static/js/templates.js; static/css/discourse-templates.css; static/js/composer.js; static/js/chat.js; src/html.rs; templates/layout.html.
+- Tests: tests/plugin_templates.rs; unit tests in src/plugins/templates/.
+
+### Gaps
+**plugin.rb and models**
+- `has_one :template_item_usage, dependent: :destroy`: the port never destroys topics, so nothing to do yet.
+- `lib/tasks/discourse-templates.rake` (migrate from and purge discourse-canned-replies) and the `RenameCategorySetting` data migration: absent; the port has no rake tasks.
+
+**UI**
+- The chat thread composer and its variables (extractVariablesFromChatThread, `#thread-composer`): the port has no threads. [item 160]
+- The chat composer dropdown shows only the plugins' buttons: core's upload, GIFs, local dates and mobile emoji items are not ported (Chat, UI).
+- The keyboard shortcuts help modal's "Templates (within a textarea)" entry: the help modal is not ported.
+- The editor-preview connector's empty `div.d-templates` is created when the panel first opens, not drawn with the composer.
+- The modal does not close on page change (`page:changed`).
+- The tag drop's filter is matched in the browser over the rows the server drew, without select-kit's keyboard navigation.
+
+### Items
+
+None new; the thread composer waits on 160.
+
+### Couldn't determine
+- The core Ember sources are not in the extracted reference: select-kit TagDrop's shortcut rows order and its header label for no-tags, DCookText's wrapper markup, `User#displayName` and whether `composer.openNewTopic` falls back to the default category were written from memory.
+- `last_poster_username` comes from the topic's last poster here; Ember reads it off the client's topic model, which a topic loaded directly (not from a list) may not carry.
+- The template item's place in the composer options menu (before core's wrap toggle here) needs a Rails response.

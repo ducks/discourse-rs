@@ -328,23 +328,6 @@ pub fn unported_popup_plugins(
             out.push(plugin);
         }
     }
-    // discourse-templates adds its item for a member who can_use_templates,
-    // which takes its categories or its private templates' tags.
-    if settings.get("discourse_templates_enabled")?.truthy()
-        && (!settings
-            .get("discourse_templates_categories")?
-            .to_s()
-            .is_empty()
-            || (settings
-                .get("discourse_templates_enable_private_templates")?
-                .truthy()
-                && !settings
-                    .get("discourse_templates_private_templates_tags")?
-                    .to_s()
-                    .is_empty()))
-    {
-        out.push("discourse-templates");
-    }
     Ok(out)
 }
 
