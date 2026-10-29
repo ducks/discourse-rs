@@ -393,16 +393,19 @@ pub(crate) async fn create(
     }
     // notify_subscribers: the like count after this like.
     publish_like_change(ctx, &mut *tx, post.id, "liked", user.id).await?;
-    // after_commit on create: discourse-narrative-bot's like input.
-    crate::plugins::narrative_bot::post_action_created(
-        &mut *tx,
-        ctx.settings,
-        user.id,
-        post.id,
-        crate::post_actions::LIKE as i32,
-        false,
-    )
-    .await?;
+    // after_commit on create (not for a revived like): discourse-
+    // narrative-bot's like input.
+    if revived.is_none() {
+        crate::plugins::narrative_bot::post_action_created(
+            &mut *tx,
+            ctx.settings,
+            user.id,
+            post.id,
+            crate::post_actions::LIKE as i32,
+            false,
+        )
+        .await?;
+    }
     Ok(Outcome::Done)
 }
 

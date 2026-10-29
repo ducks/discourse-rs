@@ -20,5 +20,8 @@
   ],
   "run_jobs": [
     "post_update_topic_tracking_state"
+  ],
+  "ignore": [
+    "/plugin_jobs"
   ]
 }

@@ -144,7 +144,11 @@ fn plugin_jobs(jobs: &[Value]) -> Vec<Value> {
         .filter(|j| PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
         .cloned()
         .collect();
-    out.sort_by_key(|j| j.to_string());
+    // By their arguments, whatever order their keys are in.
+    out.sort_by_key(|j| {
+        let args = &j[1];
+        ["user_id", "post_id", "topic_id", "input"].map(|k| args[k].to_string())
+    });
     out
 }
 

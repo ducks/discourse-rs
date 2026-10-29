@@ -37,6 +37,12 @@ fn int_arg(args: &Value, key: &str) -> Option<i64> {
     }
 }
 
+/// `run`, boxed in a frame of its own, for the job runner's dispatch
+/// (whose frame would otherwise hold the whole job's future).
+pub fn run_boxed<'a>(state: &'a AppState, name: &'a str, args: &'a Value) -> super::Event<'a> {
+    Box::pin(run(state, name, args))
+}
+
 /// Runs one of the plugin's jobs by name.
 pub async fn run(state: &AppState, name: &str, args: &Value) -> Result<(), AppError> {
     let mut conn = state.pool.acquire().await?;

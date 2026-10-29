@@ -124,7 +124,7 @@ async fn enqueue_bot_input(
 
 /// `on(:post_created)`: the author's reply, unless the creator was told
 /// to `skip_bot` (the advanced tutorial's own posts).
-pub async fn post_created(
+async fn post_created_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     post_id: i32,
@@ -145,7 +145,7 @@ pub async fn post_created(
 }
 
 /// `on(:post_edited)`: the author's edit.
-pub async fn post_edited(
+async fn post_edited_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     post_id: i32,
@@ -165,7 +165,7 @@ pub async fn post_edited(
 }
 
 /// `on(:post_destroyed)`: a deletion by `user_id`, the destroyer.
-pub async fn post_destroyed(
+async fn post_destroyed_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -183,7 +183,7 @@ pub async fn post_destroyed(
 }
 
 /// `on(:post_recovered)`: a recovery by `user_id`.
-pub async fn post_recovered(
+async fn post_recovered_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -201,7 +201,7 @@ pub async fn post_recovered(
 
 /// PostAction's after_commit on create: a like, or a flag (the
 /// inappropriate flag the tutorial asks for, any other flag as a reply).
-pub async fn post_action_created(
+async fn post_action_created_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -230,7 +230,7 @@ pub async fn post_action_created(
 
 /// Bookmark's after_commit on create: a post's bookmark, or a topic's as
 /// its first post's.
-pub async fn bookmark_created(
+async fn bookmark_created_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -260,7 +260,7 @@ pub async fn bookmark_created(
 /// `on(:topic_notification_level_changed)`, from TopicUser.change, which
 /// has no site settings at hand: the two this reads come from the table,
 /// with the defaults plugin settings.yml gives them.
-pub async fn topic_notification_level_changed(
+async fn topic_notification_level_changed_impl(
     conn: &mut PgConnection,
     user_id: i32,
     topic_id: i32,
@@ -372,7 +372,7 @@ pub async fn enqueue_bot_welcome_post(
 
 /// `on(:user_created)`: the welcome post right away when there is no
 /// delay, for users who are not staged.
-pub async fn user_created(
+async fn user_created_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -393,7 +393,7 @@ pub async fn user_created(
 
 /// `on(:user_first_logged_in)` (User#logged_in for a user never seen
 /// before): the delayed welcome post.
-pub async fn user_logged_in(
+async fn user_logged_in_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -419,7 +419,7 @@ pub async fn user_logged_in(
 }
 
 /// `on(:user_unstaged)`: the welcome post.
-pub async fn user_unstaged(
+async fn user_unstaged_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -431,7 +431,7 @@ pub async fn user_unstaged(
 }
 
 /// User's after_destroy: the user's tutorial state goes with them.
-pub async fn user_destroyed(
+async fn user_destroyed_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,
@@ -444,7 +444,7 @@ pub async fn user_destroyed(
 
 /// `on(:site_setting_changed)` for default_locale: discobot's bio in the
 /// new locale (English is the only one the port carries it in).
-pub async fn default_locale_changed(
+async fn default_locale_changed_impl(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     i18n: &crate::i18n::I18n,
@@ -484,7 +484,7 @@ pub async fn default_locale_changed(
 /// `on(:system_message_sent)`: after the trust level 2 promotion message,
 /// discobot invites the user to the advanced tutorial in a message of its
 /// own, in the user's locale.
-pub async fn system_message_sent(
+async fn system_message_sent_impl(
     pool: &sqlx::PgPool,
     ctx: &crate::posting::Ctx<'_>,
     message_type: &str,
@@ -551,4 +551,167 @@ pub fn can_reply_to_system_message(
     Ok(enabled(settings)?
         && subtype == Some("system_message")
         && topic_user_id == Some(BOT_USER_ID))
+}
+
+/// What the event functions core calls return: the plugin's work, boxed.
+pub type Event<'a> =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), AppError>> + Send + 'a>>;
+
+// The event functions core awaits deep inside its own pipelines
+// (PostCreator, PostRevisor, TopicUser.change...) are plain functions
+// handing back the work boxed: built in their own frame and kept on the
+// heap, it adds nothing to those pipelines' frames and futures (debug
+// builds run the job pipelines close to a thread's stack).
+
+/// See `post_created_impl`.
+pub fn post_created<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    post_id: i32,
+    skip_bot: bool,
+) -> Event<'a> {
+    Box::pin(post_created_impl(conn, settings, post_id, skip_bot))
+}
+
+/// See `post_edited_impl`.
+pub fn post_edited<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    post_id: i32,
+) -> Event<'a> {
+    Box::pin(post_edited_impl(conn, settings, post_id))
+}
+
+/// See `post_destroyed_impl`.
+pub fn post_destroyed<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+    post_id: i32,
+    topic_id: i32,
+) -> Event<'a> {
+    Box::pin(post_destroyed_impl(
+        conn, settings, user_id, post_id, topic_id,
+    ))
+}
+
+/// See `post_recovered_impl`.
+pub fn post_recovered<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+    post_id: i32,
+) -> Event<'a> {
+    Box::pin(post_recovered_impl(conn, settings, user_id, post_id))
+}
+
+/// See `post_action_created_impl`.
+pub fn post_action_created<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+    post_id: i32,
+    post_action_type_id: i32,
+    is_flag: bool,
+) -> Event<'a> {
+    Box::pin(post_action_created_impl(
+        conn,
+        settings,
+        user_id,
+        post_id,
+        post_action_type_id,
+        is_flag,
+    ))
+}
+
+/// See `bookmark_created_impl`.
+pub fn bookmark_created<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+    bookmarkable_type: &'a str,
+    bookmarkable_id: i32,
+) -> Event<'a> {
+    Box::pin(bookmark_created_impl(
+        conn,
+        settings,
+        user_id,
+        bookmarkable_type,
+        bookmarkable_id,
+    ))
+}
+
+/// See `topic_notification_level_changed_impl`.
+pub fn topic_notification_level_changed(
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+) -> Event<'_> {
+    Box::pin(topic_notification_level_changed_impl(
+        conn, user_id, topic_id,
+    ))
+}
+
+/// See `user_created_impl`.
+pub fn user_created<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+    staged: bool,
+) -> Event<'a> {
+    Box::pin(user_created_impl(conn, settings, user_id, staged))
+}
+
+/// See `user_logged_in_impl`.
+pub fn user_logged_in<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+) -> Event<'a> {
+    Box::pin(user_logged_in_impl(conn, settings, user_id))
+}
+
+/// See `user_unstaged_impl`.
+pub fn user_unstaged<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+) -> Event<'a> {
+    Box::pin(user_unstaged_impl(conn, settings, user_id))
+}
+
+/// See `user_destroyed_impl`.
+pub fn user_destroyed<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    user_id: i32,
+) -> Event<'a> {
+    Box::pin(user_destroyed_impl(conn, settings, user_id))
+}
+
+/// See `default_locale_changed_impl`.
+pub fn default_locale_changed<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    i18n: &'a crate::i18n::I18n,
+    new_locale: &'a str,
+) -> Event<'a> {
+    Box::pin(default_locale_changed_impl(
+        conn, settings, i18n, new_locale,
+    ))
+}
+
+/// See `system_message_sent_impl`.
+pub fn system_message_sent<'a>(
+    pool: &'a sqlx::PgPool,
+    ctx: &'a crate::posting::Ctx<'a>,
+    message_type: &'a str,
+    recipient_id: i32,
+) -> Event<'a> {
+    Box::pin(system_message_sent_impl(
+        pool,
+        ctx,
+        message_type,
+        recipient_id,
+    ))
 }

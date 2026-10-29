@@ -1439,7 +1439,10 @@ locales on 167.
 ### Couldn't determine
 - The order of `bot_input` among a request's jobs: the recorder lists the event handlers' jobs
   before the transaction's after-commit ones; tests/writes.rs compares them apart
-  (`plugin_jobs`, sorted).
+  (`plugin_jobs`, sorted). Rails' Sidekiq enqueue is outside the database transaction, so a
+  message PostCreator then refuses (writes case posts/pm_group_too_large) still leaves the
+  creator's topic_notification_level_changed input; the port's queue rolls back with the
+  refusal, and that case ignores `plugin_jobs`.
 - The body Rails answers a logged-out or disabled /discobot/certificate.svg with (the spec only
   checks the 404); the port sends its JSON not-found.
 - The Cache-Control of the plugin's public files (nginx serves them in production); the port

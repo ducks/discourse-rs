@@ -131,10 +131,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "create_avatar_thumbnails" => create_avatar_thumbnails(state, &job.args).await,
         "update_gravatar" => update_gravatar(state, &job.args).await,
         name if crate::plugins::narrative_bot::jobs::JOBS.contains(&name) => {
-            Box::pin(crate::plugins::narrative_bot::jobs::run(
-                state, name, &job.args,
-            ))
-            .await
+            crate::plugins::narrative_bot::jobs::run_boxed(state, name, &job.args).await
         }
         crate::plugins::cakeday::jobs::FIX_INVALID_DATE_OF_BIRTH
         | crate::plugins::cakeday::jobs::MIGRATE_DATE_OF_BIRTH => {

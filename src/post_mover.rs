@@ -1401,6 +1401,8 @@ impl Mover<'_, '_> {
             crate::topic_view::Held::default(),
         )
         .await?;
+        // ... and to discourse-narrative-bot.
+        crate::plugins::narrative_bot::post_created(&mut *conn, s, new_id, false).await?;
         crate::badge_granter::queue(
             &mut *conn,
             s,

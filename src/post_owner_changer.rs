@@ -847,6 +847,9 @@ async fn revise_owner(
         &[post.id],
     )
     .await?;
+    // The revision's post_edited, to discourse-narrative-bot (the new
+    // owner's edit).
+    crate::plugins::narrative_bot::post_edited(&mut *conn, s, post.id).await?;
     // ReviewablePost.queue_for_review_if_possible, for editors it reviews.
     if s.get("review_every_post")?.truthy()
         && !change.skip_revision
