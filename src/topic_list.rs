@@ -402,6 +402,20 @@ impl TopicListSerializer<'_> {
         // solved's go; the others' come last.
         let replaced = crate::plugin_wasm::registry().replaced(self.settings)?;
         let replaces_solved = replaced.iter().any(|p| p == "discourse-solved");
+        // discourse-post-voting's `is_post_voting`, TopicListItemSerializer's
+        // and only when true.
+        if mode == Mode::ListItem
+            && crate::plugins::post_voting::is_post_voting(
+                &mut *self.conn,
+                self.settings,
+                t.id,
+                &t.archetype,
+                t.subtype.as_deref(),
+            )
+            .await?
+        {
+            out.insert("is_post_voting".into(), Value::Bool(true));
+        }
         if replaces_solved {
             self.wasm_keys(t, out).await?;
         } else {

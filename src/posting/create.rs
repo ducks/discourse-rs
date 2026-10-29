@@ -521,6 +521,8 @@ pub async fn create(
         } else {
             let mut regular = regular_topic_plan(&mut conn, s, title, category_id).await?;
             regular.custom_fields = args.topic_custom_fields.clone();
+            // A plugin handler's (discourse-post-voting's question_answer).
+            regular.subtype = args.subtype.clone();
             plan = Some(regular);
         }
         if let Some(plan) = plan.as_mut() {
@@ -657,6 +659,18 @@ pub async fn create(
         &analysis,
     )
     .await?;
+    // discourse-post-voting's ensure_only_replies.
+    if let Some(topic) = &reply_topic
+        && let Some(key) = crate::plugins::post_voting::lifecycle::reply_error(
+            &mut conn,
+            s,
+            topic.id,
+            reply_to_post_number,
+        )
+        .await?
+    {
+        errors.push(ctx.t(key));
+    }
     // discourse-poll's validate_polls: PostValidator, who may create them.
     if !polls.is_empty()
         && let Some(error) =
@@ -965,6 +979,20 @@ pub async fn create(
     if s.get("generate_topic_og_image")?.truthy() {
         return Err(Unsupported("generate_topic_og_image").into());
     }
+    // discourse-post-voting's before_create, after core's: an emailed reply
+    // to the question is an answer (its reply_to_user_id and the topic's
+    // reply count stay).
+    let reply_to_post_number = if args.email.is_some() {
+        crate::plugins::post_voting::lifecycle::email_reply_to(
+            &mut tx,
+            s,
+            topic_id,
+            reply_to_post_number,
+        )
+        .await?
+    } else {
+        reply_to_post_number
+    };
     // setup_post's extract_quoted_post_numbers: the quote_count.
     let quoted = super::quotes::quoted_post_numbers(&raw, topic_id, post_number);
     let (post_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
@@ -1803,7 +1831,11 @@ async fn create_topic(
     .bind(plan.category_id)
     .bind(plan.slow_mode_seconds)
     .bind(if pm { "private_message" } else { "regular" })
-    .bind(pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")))
+    .bind(if pm {
+        Some(plan.subtype.as_deref().unwrap_or("user_to_user"))
+    } else {
+        plan.subtype.as_deref()
+    })
     .fetch_one(&mut *conn)
     .await?;
     // HasCustomFields: the topic's custom fields, saved with it.

@@ -867,6 +867,15 @@ pub async fn serialize(
         "user_option".into(),
         user_option(conn, settings, &row.new_since, row.created_at, uid).await?,
     );
+    if crate::plugins::post_voting::enabled(settings)? {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        out.insert(
+            "can_flag_post_voting_comments".into(),
+            serde_json::json!(crate::plugins::post_voting::can_flag_comments(
+                settings, &guardian
+            )?),
+        );
+    }
     if crate::plugins::topic_voting::enabled(settings)? {
         crate::plugins::topic_voting::current_user_keys(
             conn,

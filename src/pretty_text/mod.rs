@@ -387,6 +387,30 @@ pub async fn cook_without_onebox(host: &Host, raw: &str) -> Result<String, CookE
     cook_with(host, raw, &MarkdownOptions::default(), false).await
 }
 
+/// `PrettyText.cook(raw, features_override: %w[censored emoji],
+/// markdown_it_rules: %w[emphasis backticks linkify link])`:
+/// PostVotingComment.cook, which also has no user.
+pub async fn cook_post_voting_comment(host: &Host, raw: &str) -> Result<String, CookError> {
+    let mut conn = host.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals).await?;
+    // What `options` refuses the renderer does not handle either.
+    options(host, &mut conn, &settings).await?;
+    let mut render_settings = render_settings(&settings, &host.i18n, &host.config)?;
+    render_settings.censored = watched_words(&mut conn, &settings).await?.censored;
+    let html = render::render_post_voting_comment(raw, &render_settings)?;
+    cleanup::cleanup(
+        &mut conn,
+        &settings,
+        &host.config,
+        &host.i18n,
+        &html,
+        None,
+        false,
+    )
+    .await
+}
+
 async fn cook_with(
     host: &Host,
     raw: &str,

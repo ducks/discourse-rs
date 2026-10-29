@@ -176,6 +176,7 @@ const USER_CARD_KEYS: &[&str] = &[
     "card_background_upload_url",
     "staged",
     "can_chat_user",
+    "vote_count",
     "accepted_answers",
     "featured_user_badge_ids",
 ];
@@ -889,6 +890,15 @@ impl Users<'_> {
             u.insert(
                 "group_users".into(),
                 self.private().group_users(user.id).await?,
+            );
+        }
+        // discourse-post-voting's user card key.
+        if crate::plugins::post_voting::enabled(self.settings)? {
+            u.insert(
+                "vote_count".into(),
+                json!(
+                    crate::plugins::post_voting::user_vote_count(&mut *self.conn, user.id).await?
+                ),
             );
         }
         // discourse-solved's user card key.

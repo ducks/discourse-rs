@@ -608,6 +608,8 @@ async fn approve(
             // are extracted (validate_polls(true)), refused below when
             // there are any.
             "is_poll" => {}
+            // discourse-post-voting's: the new topic's subtype.
+            "subtype" if value.is_string() => {}
             // create_options: a tag object by its name.
             "tags" if value.is_null() || value.is_array() => {}
             _ if value.is_null() => {}
@@ -661,6 +663,10 @@ async fn approve(
             } else {
                 None
             },
+            subtype: payload
+                .get("subtype")
+                .and_then(Value::as_str)
+                .map(str::to_string),
             skip_validations: true,
             reviewed_queued_post: true,
             ..Default::default()

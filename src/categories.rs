@@ -211,6 +211,12 @@ impl Categories<'_> {
             Vec::new()
         };
         let uploads = self.uploads_for(&visible).await?;
+        // discourse-post-voting's two category fields, likewise.
+        let post_voting = if crate::plugins::post_voting::enabled(self.settings)? {
+            Some(crate::plugins::post_voting::category_fields(&mut *self.conn, &visible_ids).await?)
+        } else {
+            None
+        };
 
         let mut out = Vec::with_capacity(visible.len());
         for category in visible {
@@ -225,6 +231,7 @@ impl Categories<'_> {
                 tagging,
                 &form_templates,
                 &tag_groups,
+                post_voting.as_ref(),
                 voting.contains(&category.id),
                 &uploads,
             )?;
@@ -295,16 +302,21 @@ impl Categories<'_> {
     /// SiteCategorySerializer as cached by Site.all_categories_cache (no
     /// scope), in attribute order. notification_level, has_children and
     /// can_edit are filled in by for_site.
+    #[allow(clippy::too_many_arguments)]
     fn serialize(
         &self,
         c: &CategoryRow,
         tagging: bool,
         form_templates: &[(i32, i32)],
         tag_groups: &[(i32, i32)],
+        post_voting: Option<&HashMap<(i32, String), Option<String>>>,
         can_vote: bool,
         uploads: &HashMap<i32, Value>,
     ) -> Result<Map<String, Value>, CategoriesError> {
         let mut out = self.basic_fields_without_votes(c)?;
+        if let Some(fields) = post_voting {
+            crate::plugins::post_voting::category_keys_from(fields, c.id, &mut out);
+        }
         if can_vote {
             out.insert("can_vote".into(), json!(true));
         }
@@ -396,6 +408,10 @@ impl Categories<'_> {
         c: &CategoryRow,
     ) -> Result<Map<String, Value>, CategoriesError> {
         let mut out = self.basic_fields_without_votes(c)?;
+        // discourse-post-voting's keys.
+        if crate::plugins::post_voting::enabled(self.settings)? {
+            crate::plugins::post_voting::category_keys(&mut *self.conn, c.id, &mut out).await?;
+        }
         // discourse-topic-voting: `can_vote` on a voting category.
         if crate::plugins::topic_voting::enabled(self.settings)?
             && crate::plugins::topic_voting::category_votes(&mut *self.conn, c.id).await?

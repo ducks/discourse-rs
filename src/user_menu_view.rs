@@ -1040,6 +1040,17 @@ fn notification(cx: &MenuContext, n: &Value) -> Item {
                 )));
             }
         }
+        // discourse-post-voting: to the comment on the post.
+        "question_answer_user_commented" => {
+            if let Some(id) = topic_id {
+                item.href = Some(format!(
+                    "{}#post-voting-comment-{}",
+                    post_url(cx.base_path, s(&n["slug"]), id, n["post_number"].as_i64()),
+                    data["post_voting_comment_id"]
+                ));
+            }
+            item.icon = "comment".into();
+        }
         // discourse-topic-voting
         "votes_released" => {
             let label = if cx.vote_limits {

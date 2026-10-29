@@ -141,6 +141,18 @@ pub async fn create(
         },
         first_post_checks: !api,
         from_composer: true,
+        // discourse-post-voting's NewPostManager handler, on its permitted
+        // create_as_post_voting param.
+        subtype: if crate::plugins::post_voting::enabled(&settings)? {
+            crate::plugins::post_voting::lifecycle::new_topic_subtype(
+                integer("topic_id").map(|v| v as i32),
+                params::string(&p, "create_as_post_voting").as_deref(),
+                params::string(&p, "archetype").as_deref(),
+            )
+            .map(str::to_string)
+        } else {
+            None
+        },
         ..Default::default()
     };
     let cook_host = Host::from_state(&state);

@@ -156,7 +156,7 @@ pub async fn destroy(
     }
 
     if opts.delete_posts {
-        crate::plugins::user_content_deleting(conn, user_id).await?;
+        crate::plugins::user_content_deleting(conn, ctx.settings, user_id).await?;
         if opts.delete_as_spammer {
             agree_with_flags(conn, ctx, &actor_user, user_id).await?;
             let deferred = crate::post_destroyer::Deferred::default();

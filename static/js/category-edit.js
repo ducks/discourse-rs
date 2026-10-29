@@ -82,9 +82,25 @@
     return out;
   }
 
+  // The plugins' custom field controls (`custom_fields.<name>`) over the
+  // category's custom fields, sent whole as Category#save does; none
+  // when no plugin draws any.
+  function customFields(form, d) {
+    var controls = form.querySelectorAll('[name^="custom_fields."]');
+    if (!controls.length) {
+      return undefined;
+    }
+    var out = Object.assign({}, d.custom_fields || {});
+    controls.forEach(function (el) {
+      out[el.name.slice("custom_fields.".length)] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    return out;
+  }
+
   function payload(form, d) {
     var parent = value(form, "parent_category_id");
     return {
+      custom_fields: customFields(form, d),
       name: value(form, "name"),
       slug: value(form, "slug"),
       color: value(form, "color"),

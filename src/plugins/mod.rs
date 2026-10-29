@@ -28,6 +28,7 @@ pub mod lti;
 pub mod oauth2_basic;
 pub mod openid_connect;
 pub mod poll;
+pub mod post_voting;
 pub mod presence;
 pub mod reactions;
 pub mod solved;
@@ -157,6 +158,52 @@ pub fn topic_list_before_serialize(
     }
 }
 
+/// A plugin's scope on the posts a topic view streams
+/// (`TopicView.apply_custom_default_scope`): a condition over `posts`,
+/// and an order replacing `sort_order`.
+#[derive(Debug, Clone)]
+pub struct PostScope {
+    pub condition: &'static str,
+    pub order: Option<PostOrder>,
+}
+
+/// A topic view's post order and its reverse (ActiveRecord's
+/// `reverse_order`).
+#[derive(Debug, Clone)]
+pub struct PostOrder {
+    pub asc: &'static str,
+    pub desc: &'static str,
+}
+
+/// The topic view's before query phase: the scope a plugin puts on the
+/// topic's posts, given the view's `filter`. None when the view loads
+/// posts by id, which the plugins' scopes leave alone.
+pub async fn topic_view_post_scope(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    topic: &crate::topic_guardian::TopicCtx,
+    filter: Option<&str>,
+    by_post_ids: bool,
+) -> Result<Option<PostScope>, PluginError> {
+    if by_post_ids {
+        return Ok(None);
+    }
+    if post_voting::is_post_voting(
+        conn,
+        settings,
+        topic.id,
+        &topic.archetype,
+        topic.subtype.as_deref(),
+    )
+    .await?
+    {
+        return Ok(Some(post_voting::topic_view_scope(
+            filter == Some(post_voting::ACTIVITY_FILTER),
+        )));
+    }
+    Ok(None)
+}
+
 /// DiscourseEvent `:topic_status_updated` (TopicStatusUpdater, when the
 /// status changed), to the enabled plugins listening.
 pub async fn topic_status_updated(
@@ -249,19 +296,15 @@ pub async fn user_destroying(
     Ok(())
 }
 
-/// UserDestroyer with `delete_posts`: the plugins'
+/// UserDestroyer with `delete_posts`: the enabled plugins'
 /// `user_destroyer_on_content_deletion_callbacks`. Chat's deletes the
-/// user's messages in a job; post-voting's and discourse-ai's are refused
-/// when they would act.
+/// user's messages in a job, post-voting's their comments and votes;
+/// discourse-ai's is refused when it would act.
 pub async fn user_content_deleting(
     conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
     user_id: i32,
 ) -> Result<(), PluginError> {
-    let comments: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM post_voting_comments WHERE user_id = $1)")
-            .bind(user_id)
-            .fetch_one(&mut *conn)
-            .await?;
     let ai_logs: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM ai_api_audit_logs l WHERE \
            l.post_id IN (SELECT id FROM posts WHERE user_id = $1) OR \
@@ -270,9 +313,9 @@ pub async fn user_content_deleting(
     .bind(user_id)
     .fetch_one(&mut *conn)
     .await?;
-    if comments || ai_logs {
+    if ai_logs {
         return Err(PluginError::Unsupported(crate::Unsupported(
-            "deleting a user's post-voting comments or discourse-ai logs",
+            "deleting a user's discourse-ai logs",
         )));
     }
     crate::jobs::enqueue(
@@ -281,6 +324,9 @@ pub async fn user_content_deleting(
         serde_json::json!({ "user_id": user_id }),
     )
     .await?;
+    if post_voting::enabled(settings)? {
+        post_voting::lifecycle::user_content_deleting(conn, user_id).await?;
+    }
     Ok(())
 }
 
@@ -300,6 +346,7 @@ pub const STARTED: &[&str] = &[
     "discourse-lti",
     "discourse-oauth2-basic",
     "discourse-openid-connect",
+    "discourse-post-voting",
     "discourse-presence",
     "discourse-reactions",
     "discourse-solved",

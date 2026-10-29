@@ -25,6 +25,8 @@ pub struct ShowParams {
     post_number: Option<String>,
     /// `?slug=`: params[:slug] when the path has none (path params win).
     slug: Option<String>,
+    /// `params[:filter]`: the plugins' (discourse-post-voting's `activity`).
+    filter: Option<String>,
 }
 
 /// `/t/:id` and `/t/:slug` (the id route also catches a bare slug).
@@ -577,6 +579,7 @@ async fn show(
             page,
             post_number,
             show_deleted: params.show_deleted.is_some(),
+            filter: params.filter.clone(),
             ..Default::default()
         },
         post_types: Vec::new(),
@@ -737,6 +740,7 @@ async fn show(
         &rendered.json,
         page,
         pm_counts,
+        params.filter.as_deref(),
     )
     .await?;
     page.crawler = topic_crawler(

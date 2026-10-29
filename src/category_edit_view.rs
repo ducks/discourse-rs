@@ -341,6 +341,34 @@ impl Editor<'_> {
                 &checkbox(name, c[name] == json!(true), &t(i18n, key), false),
             ));
         }
+        // The category-custom-settings outlet: discourse-post-voting's
+        // section, while it is on (its keys on the category say so).
+        if c.get(crate::plugins::post_voting::CREATE_AS_POST_VOTING_DEFAULT)
+            .is_some()
+        {
+            let mut fields = String::new();
+            for key in [
+                crate::plugins::post_voting::CREATE_AS_POST_VOTING_DEFAULT,
+                crate::plugins::post_voting::ONLY_POST_VOTING_IN_THIS_CATEGORY,
+            ] {
+                let name = format!("custom_fields.{key}");
+                fields.push_str(&field(
+                    &name,
+                    "checkbox",
+                    &t(i18n, &format!("category.{key}")),
+                    &checkbox(
+                        &name,
+                        c["custom_fields"][key] == json!(true),
+                        &t(i18n, &format!("category.{key}")),
+                        false,
+                    ),
+                ));
+            }
+            out.push_str(&format!(
+                "<div class=\"form-kit__section category-custom-settings-outlet post-voting-category-settings\"><div class=\"form-kit__section-header\"><div class=\"form-kit__section-heading\"><h2 class=\"form-kit__section-title\">{}</h2></div></div>{fields}</div>",
+                t(i18n, "category.post_voting_settings_heading")
+            ));
+        }
         out
     }
 

@@ -310,3 +310,40 @@ fn chat_engine(mut md: MarkdownIt) -> MarkdownIt {
 fn onebox_default() -> bool {
     true
 }
+
+/// PostVotingComment.cook's markdown: markdown-it's "zero" preset
+/// (paragraphs and text) enabling only emphasis, backticks, linkify and
+/// link, with only the emoji and censored features. Nothing is looked up.
+pub fn render_post_voting_comment(
+    raw: &str,
+    settings: &RenderSettings,
+) -> Result<String, Unsupported> {
+    use markdown_it::plugins::cmark::{block, inline};
+    let mut md = MarkdownIt::new();
+    md.ext.insert(settings.clone());
+    md.ext.insert(Context::with(Lookups::default()));
+    inline::backticks::add(&mut md);
+    inline::emphasis::add(&mut md);
+    inline::link::add(&mut md);
+    block::paragraph::add(&mut md);
+    linkify::add(&mut md);
+    let ctx = md.ext.get::<Context>().expect("context");
+    let mut root: Node = md.parse(raw);
+    untrimmed::restore(&mut root);
+    element::seal_inline_code(&mut root);
+    if let Some(linkify) = &settings.linkify
+        && let Some(what) = linkify::run(&mut root, linkify, &md)
+    {
+        return Err(Unsupported(what));
+    }
+    text_join::apply(&mut root);
+    emoji::run(&mut root, settings).map_err(Unsupported)?;
+    watched_words::censor(&mut root, settings).map_err(Unsupported)?;
+    let html = sanitize(&root.render(), &allow_list(settings))
+        .trim()
+        .to_string();
+    if let Some(what) = ctx.unsupported() {
+        return Err(Unsupported(what));
+    }
+    Ok(html)
+}
