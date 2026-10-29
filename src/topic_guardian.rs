@@ -319,6 +319,15 @@ impl Guardian {
         topic: &TopicCtx,
         can_post_anywhere: bool,
     ) -> Result<bool, GuardianError> {
+        // discourse-narrative-bot allows replies to the system messages
+        // discobot starts.
+        if crate::plugins::narrative_bot::can_reply_to_system_message(
+            settings,
+            topic.subtype.as_deref(),
+            topic.user_id,
+        )? {
+            return Ok(true);
+        }
         if !settings.get("enable_system_message_replies")?.truthy()
             && topic.subtype.as_deref() == Some("system_message")
         {

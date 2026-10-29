@@ -52,6 +52,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-affiliate | started | 2 | localized posts (no content localization), the enable-if-installed migration | none | S, with content localization |
 | discourse-gamification | started | 8 | the workflows node (discourse-workflows unported), the seed fixture, plugin columns on the directory page, the minimal leaderboard, native choosers in the edit form | none | S per gap; the directory page with core |
 | discourse-graphviz | started | 3 | the rich editor node and its preview (196), DAsyncContent's loading state, the menu item's place | none | 196 plus S |
+| discourse-narrative-bot | started | 8 | the flag step (core refuses flags in messages), the recover step (core refuses authors recovering their own posts), locales other than English and French, image URLs counted only once oneboxed | none | 2 core M (flags in messages, user_recovered) plus S |
 
 Findings that cross plugins:
 
@@ -1728,3 +1729,105 @@ tests/plugin_graphviz.rs.
 - Whether Rails' block bbcode `replace` hands the content over exactly as the port's
   `[code]` does (applyBBCode is core JS, not in the extract); the graphviz block takes the
   same path, and the spec checks only substrings.
+## discourse-narrative-bot (`plugins/discourse-narrative-bot`)
+
+Verdict: started (8 gaps). Ported on `feat/plugin-narrative-bot` (2026-10-29) against
+bf55a44c (tmp/rails-bf55a44c); tests in tests/narrative_bot.rs port new_user_narrative_spec,
+advanced_user_narrative_spec, track_selector_spec, user_spec, jobs/bot_input_spec,
+jobs/send_default_welcome_message_spec, requests/discobot_certificate_spec,
+requests/discobot_welcome_post_spec and lib/certificate_generator_spec (the last as unit tests
+in src/plugins/narrative_bot/certificate.rs).
+
+### What the port has
+- Settings from the vendored plugin_settings.yml (`discourse_narrative_bot_enabled` and the six
+  others, `send_welcome_message` taken over), "discourse-narrative-bot" in `plugins::STARTED`,
+  the admin plugin entry with its `robot` icon (src/admin_view.rs), discobot (user -2, its email,
+  options, profile and bio) and the Certified and Licensed badges from the clean seed, the
+  stylesheet (static/css/discourse-narrative-bot.css).
+- The Store (PluginStore rows under the plugin's name, keyed by user id):
+  src/plugins/narrative_bot/store.rs.
+- Base#input: the transition tables of both narratives with prerequisites, the skip setting,
+  `skip`, state data, clean up and init hooks, the end (end reply, timeout cancelled, badge, final
+  state), the DistributedMutex per user and track (an advisory lock), the state rolled back on an
+  error; every action of NewUserNarrative (hello, bookmark, onebox, emoji, mention, formatting,
+  quote, images with its like, likes, flag, search with the hidden answer revised into the first
+  post and reverted after) and AdvancedUserNarrative (start, edit with the user's post, delete,
+  recover with the user's deleted post, category hashtag, notification level, poll, details);
+  `reset_bot`, `notify_timeout`, the certificate iframe: src/plugins/narrative_bot/narrative.rs.
+- Actions: discobot's replies (`reply_to` without validations, emails skipped unless asked),
+  `reset_rate_limits` (the create limiters given back twice per topic and state), the timeout job
+  enqueued and cancelled, `bot_mentioned?`, `reply_to_bot_post?`, `pm_to_bot?`, `fake_delay` in
+  production: src/plugins/narrative_bot/bot.rs.
+- TrackSelector: resets (the exact match under 200 characters, the cooked trigger otherwise),
+  skip, thanks ending the track with a like, generic replies (two, then silence for 15 minutes),
+  `@discobot` commands (roll with its limits, quote, fortune, display help, the hint rationed in
+  public topics), `discourse_narrative_bot_disable_public_replies`, the disabled-tips answer,
+  topic actions (delete, notification level): src/plugins/narrative_bot/track_selector.rs.
+- Jobs BotInput, NarrativeInit, NarrativeTimeout, SendDefaultWelcomeMessage (closed,
+  welcome_user or welcome_invite), in the user's effective locale:
+  src/plugins/narrative_bot/jobs.rs, src/jobs/handlers.rs.
+- plugin.rb's events and callbacks, each guarded by the enabled setting: post_created (with
+  `skip_bot`, small actions included), post_edited (revisions and topic revisions),
+  post_destroyed, post_recovered, PostAction created (like, inappropriate flag, other flags as
+  replies), Bookmark created (posts and topics), topic_notification_level_changed (TopicUser.change
+  and update_last_read), user_created, user_first_logged_in (the login paths that log on a user),
+  user_unstaged (the password login's unstage), User after_destroy, system_message_sent (the TL2
+  invitation, moved here from src/system_message.rs), site_setting_changed for default_locale
+  (the bio), `enqueue_bot_welcome_post` and `enqueue_narrative_bot_job?`:
+  src/plugins/narrative_bot/mod.rs.
+- The `pretty_text_allowed_iframes` modifier (the certificate in opt_input and in cooking) and
+  PostGuardianExtension's `can_create_post?` (replies to discobot's system messages):
+  src/pretty_text/mod.rs, src/topic_guardian.rs.
+- CertificatesController#generate (GET /discobot/certificate(.svg)): requires_plugin, login,
+  params, the two rate limits, the SVG templates (vendored) with the avatar, logo, font, date,
+  name and titles, cached for a day; the plugin's public images and font under
+  /plugins/discourse-narrative-bot: src/routes/narrative_bot.rs,
+  src/plugins/narrative_bot/certificate.rs.
+- Locales: English through the vendored plugin locales, French (the plugin's server.fr.yml,
+  vendored beside core's French).
+
+### Gaps
+**Tutorials**
+- The flag step cannot be done: core refuses flags in messages (src/flags.rs), so a user can
+  only skip it. The bot's side (reply_to_flag, missing_flag removing wrong flags) is ported.
+- The recover step cannot be done: core refuses authors recovering their own posts
+  (`user_recovered`, src/post_destroyer.rs `recover_post`), so a user can only skip it.
+- init_tutorial_recover with `delete_removed_posts_after` below 1 is refused (discobot's
+  notify_moderators flag in the message and the reviewable's ignore_and_do_nothing).
+- `post_analyzer.cook` in the images step cooks the raw without Oneboxer.apply of cached
+  oneboxes: an image URL on its own line counts in Rails once its onebox is cached, not here.
+  Rails: plugins/discourse-narrative-bot/lib/discourse_narrative_bot/new_user_narrative.rb:358.
+
+**Events**
+- user_unstaged from DiscourseConnect, invite redemption, signup of a staged email and email
+  verification: those paths refuse unstaging in core. user_first_logged_in from the user API key
+  login (core sends no user_logged_in there either).
+
+**Certificate**
+- `Date.parse` reads the forms the plugin's links carry and ISO dates; anything else Ruby reads
+  (it is lenient) falls back to today here.
+
+**Locales**
+- Every locale but English and French for the plugin's server strings (the port carries core in
+  those two only). [item 167]
+- The bio after a default_locale change is written as a plain paragraph, refused when the
+  translation has markup (the settings update has no cooker at hand).
+
+### Items
+
+None new: the flag and recover steps wait on core (flags in messages, user_recovered), the
+locales on 167.
+
+### Couldn't determine
+- The order of `bot_input` among a request's jobs: the recorder lists the event handlers' jobs
+  before the transaction's after-commit ones; tests/writes.rs compares them apart
+  (`plugin_jobs`, sorted). Rails' Sidekiq enqueue is outside the database transaction, so a
+  message PostCreator then refuses (writes case posts/pm_group_too_large) still leaves the
+  creator's topic_notification_level_changed input; the port's queue rolls back with the
+  refusal, and that case ignores `plugin_jobs`.
+- The body Rails answers a logged-out or disabled /discobot/certificate.svg with (the spec only
+  checks the 404); the port sends its JSON not-found.
+- The Cache-Control of the plugin's public files (nginx serves them in production); the port
+  sends a year, public, immutable.
+- Rails url helpers under a subfolder (`user_url`, `guidelines_url`, `certificate_path`): the
+  port puts `Discourse.base_url` (which has the subfolder) in front of the plain paths.

@@ -784,6 +784,8 @@ pub async fn revise(
     }
     // ... and to discourse-assign: auto assigning by mention.
     crate::plugins::assign::lifecycle::post_saved(&mut tx, ctx, post.id).await?;
+    // ... and to discourse-narrative-bot: the author's edit.
+    crate::plugins::narrative_bot::post_edited(&mut tx, s, post.id).await?;
     if editor_user.id != -1 {
         crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
     }

@@ -80,6 +80,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/gamification.css"),
     include_str!("../static/css/discourse-details.css"),
     include_str!("../static/css/discourse-local-dates.css"),
+    include_str!("../static/css/discourse-narrative-bot.css"),
     include_str!("../static/css/discourse-policy.css"),
     include_str!("../static/css/graphviz.css"),
     include_str!("../static/css/footnote.css"),

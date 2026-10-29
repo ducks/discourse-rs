@@ -357,6 +357,19 @@ pub async fn flag(
         crate::review::agree_with_flags(&mut tx, ctx, user.id, &user.username, post.id).await?;
         update_counters(&mut tx, &types, post.id, req.type_id).await?;
     }
+    // A new row's after_commit on create: discourse-narrative-bot's flag
+    // input.
+    if revived == 0 {
+        crate::plugins::narrative_bot::post_action_created(
+            &mut tx,
+            ctx.settings,
+            user.id,
+            post.id,
+            req.type_id as i32,
+            true,
+        )
+        .await?;
+    }
     tx.commit().await?;
     Ok(Outcome::Done)
 }

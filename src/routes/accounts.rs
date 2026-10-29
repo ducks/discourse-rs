@@ -811,6 +811,7 @@ pub async fn password_reset_update(
             user_id,
         )
         .await?;
+        crate::plugins::narrative_bot::user_logged_in(&mut tx, &settings, user_id).await?;
         let session_user = crate::session::current::SessionUser::load(&mut tx, user_id)
             .await?
             .ok_or(crate::Unsupported("a user that vanished"))?;
@@ -1353,6 +1354,7 @@ pub async fn perform_account_activation(
         user_id,
     )
     .await?;
+    crate::plugins::narrative_bot::user_logged_in(&mut tx, &settings, user_id).await?;
     let auth =
         crate::session::current::auth_cookie(&state.keys, &settings, &session_user, &unhashed)?;
     // Wizard.user_requires_completion?: the first admin goes to the wizard.

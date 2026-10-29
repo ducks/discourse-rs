@@ -958,6 +958,8 @@ async fn destroy_user_row(
         json!({ "user_id": user_id }),
     )
     .await?;
+    // ... and discourse-narrative-bot's: the user's tutorial state.
+    crate::plugins::narrative_bot::user_destroyed(&mut *conn, ctx.settings, user_id).await?;
     Ok(())
 }
 

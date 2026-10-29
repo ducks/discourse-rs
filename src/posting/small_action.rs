@@ -445,6 +445,8 @@ async fn add_inner(
         },
     )
     .await?;
+    // ... and post_created's discourse-narrative-bot handler.
+    crate::plugins::narrative_bot::post_created(&mut *conn, ctx.settings, post_id, false).await?;
     // PostJobsEnqueuer: no after-create jobs for a small action.
     crate::jobs::enqueue(
         &mut *conn,

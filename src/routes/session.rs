@@ -542,6 +542,8 @@ pub(super) async fn complete_login(
             .bind(user.id)
             .execute(&mut *conn)
             .await?;
+        // unstage!'s user_unstaged, to discourse-narrative-bot.
+        crate::plugins::narrative_bot::user_unstaged(&mut conn, settings, user.id).await?;
     }
     let grants =
         crate::roles::bootstrap_first_admin(&mut conn, &state.i18n, &state.config.globals, user.id)
@@ -566,6 +568,8 @@ pub(super) async fn complete_login(
         user.id,
     )
     .await?;
+    // ... and user_first_logged_in, to discourse-narrative-bot.
+    crate::plugins::narrative_bot::user_logged_in(&mut conn, settings, user.id).await?;
     let cookie = current::auth_cookie(&state.keys, settings, &user, &unhashed)?;
 
     // `if payload = cookies.delete(:sso_payload)`: the DiscourseConnect

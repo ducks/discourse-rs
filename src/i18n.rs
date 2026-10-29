@@ -40,6 +40,13 @@ const OTHER_LOCALE_YMLS: &[(&str, &str)] = &[
         "client.fr.yml",
         include_str!("../vendor/discourse/config/locales/client.fr.yml"),
     ),
+    // discobot's messages (crate::plugins::narrative_bot).
+    (
+        "discourse-narrative-bot server.fr.yml",
+        include_str!(
+            "../vendor/discourse/plugins/discourse-narrative-bot/config/locales/server.fr.yml"
+        ),
+    ),
 ];
 
 /// The locale whose overrides apply: the port serves English only (the

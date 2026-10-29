@@ -98,6 +98,7 @@ mod impersonate;
 mod invite_redeem;
 pub(crate) use invite_redeem::create_staged_user;
 mod invites;
+mod narrative_bot;
 mod onebox;
 mod policy;
 mod polls;
@@ -538,6 +539,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/user_notes/{id}", delete(user_notes::destroy))
         .route("/user-notes/{user_id}", get(user_notes::modal))
+        // discourse-narrative-bot's CertificatesController and public files.
+        .route("/discobot/certificate", get(narrative_bot::certificate))
+        .route("/discobot/certificate.svg", get(narrative_bot::certificate))
+        .route(
+            "/plugins/discourse-narrative-bot/{*file}",
+            get(narrative_bot::public_file),
+        )
         // discourse-cakeday's AnniversariesController and BirthdaysController.
         .route("/cakeday/anniversaries", get(cakeday::anniversaries))
         .route("/cakeday/anniversaries.json", get(cakeday::anniversaries))

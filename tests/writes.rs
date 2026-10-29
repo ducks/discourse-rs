@@ -131,8 +131,26 @@ fn undrift_user(user: &mut Value) {
     }
 }
 
-/// Jobs plugins enqueue on the reference (discourse-narrative-bot).
+/// Jobs plugins enqueue on the reference (discourse-narrative-bot's), from
+/// event handlers whose place among core's jobs depends on the recorder's
+/// transaction: compared on their own (`plugin_jobs`), out of `jobs`.
 const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
+
+/// A job list's plugin jobs, sorted: the recorder's transaction puts the
+/// handlers' jobs in an order of its own.
+fn plugin_jobs(jobs: &[Value]) -> Vec<Value> {
+    let mut out: Vec<Value> = jobs
+        .iter()
+        .filter(|j| PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+        .cloned()
+        .collect();
+    // By their arguments, whatever order their keys are in.
+    out.sort_by_key(|j| {
+        let args = &j[1];
+        ["user_id", "post_id", "topic_id", "input"].map(|k| args[k].to_string())
+    });
+    out
+}
 
 /// Jobs queued at most once a minute through a Redis lock the recorder's
 /// cases share, so whether a recording shows one depends on the case
@@ -2142,13 +2160,19 @@ async fn replay(case: &Value, run_jobs: &[String], comparison: &Comparison) -> V
     if job_clock.is_some() {
         db.pin_clock(None).await;
     }
+    let request_jobs: Vec<Value> = from_requests
+        .into_iter()
+        .map(|(_, _, j)| j)
+        .filter(|j| !THROTTLED_JOBS.contains(&j[0].as_str().unwrap_or("")))
+        .collect();
     let mut ours = serde_json::json!({
         "responses": responses,
-        "jobs": from_requests
-            .into_iter()
-            .map(|(_, _, j)| j)
-            .filter(|j| !THROTTLED_JOBS.contains(&j[0].as_str().unwrap_or("")))
+        "jobs": request_jobs
+            .iter()
+            .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+            .cloned()
             .collect::<Vec<_>>(),
+        "plugin_jobs": plugin_jobs(&request_jobs),
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
     let mail_json = |messages: &[discourse_rs::email::Message]| -> Value {
@@ -2167,7 +2191,12 @@ async fn replay(case: &Value, run_jobs: &[String], comparison: &Comparison) -> V
     };
     let sent = client.state.mailer.sent();
     if !run_jobs.is_empty() {
-        ours["jobs_from_jobs"] = Value::Array(from_jobs);
+        ours["jobs_from_jobs"] = Value::Array(
+            from_jobs
+                .into_iter()
+                .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+                .collect(),
+        );
         ours["emails"] = mail_json(&sent[mail_after_requests..]);
     }
     // Recordings made since the recorder keeps the requests' own mail.
@@ -2198,7 +2227,8 @@ async fn replay(case: &Value, run_jobs: &[String], comparison: &Comparison) -> V
             .collect()
     };
     let rails_jobs = without_plugin_jobs(&case["jobs"]);
-    let mut rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
+    let rails_plugin_jobs = plugin_jobs(case["jobs"].as_array().map_or(&[][..], Vec::as_slice));
+    let mut rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs, "plugin_jobs": rails_plugin_jobs });
     if let Some(from_jobs) = case.get("jobs_from_jobs") {
         rails["jobs_from_jobs"] = Value::Array(without_plugin_jobs(from_jobs));
         rails["emails"] = case

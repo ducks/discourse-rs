@@ -172,10 +172,10 @@ pub struct MarkdownOptions {
 
 /// `opt_input` of `PrettyText.markdown`, without the per-call ids.
 ///
-/// What plugins contribute on a Rails site is not produced: chat's
-/// `additionalOptions` and its `channel` hashtag type, and discobot's
-/// certificate among the allowed iframes. Settings whose values would
-/// need more than is ported are refused.
+/// Chat's contribution on a Rails site (its `additionalOptions`) is not
+/// produced; its `channel` hashtag type and discobot's certificate among
+/// the allowed iframes are. Settings whose values would need more than is
+/// ported are refused.
 pub async fn options(
     host: &Host,
     conn: &mut PgConnection,
@@ -199,13 +199,16 @@ pub async fn options(
                 .await?,
         ),
     );
-    let iframes: Vec<String> = settings
+    let mut iframes: Vec<String> = settings
         .get("allowed_iframes")?
         .to_s()
         .split('|')
         .filter(|s| !s.is_empty())
         .map(str::to_string)
         .collect();
+    // The pretty_text_allowed_iframes modifier: discobot's certificate.
+    crate::plugins::narrative_bot::allowed_iframes(settings, &urls, &mut iframes)
+        .map_err(CookError::App)?;
     out.insert("allowedIframes".into(), json!(iframes));
     out.insert(
         "paths".into(),
@@ -537,6 +540,16 @@ pub fn render_settings(
     } else {
         None
     };
+    // buildOptions keeps the iframe prefixes with a host and a path;
+    // discobot's certificate is among them (pretty_text_allowed_iframes).
+    let mut allowed_iframes: Vec<String> = split("allowed_iframes")?;
+    crate::plugins::narrative_bot::allowed_iframes(
+        settings,
+        &Urls { config, settings },
+        &mut allowed_iframes,
+    )
+    .map_err(CookError::App)?;
+    allowed_iframes.retain(|s| s.matches('/').count() >= 3);
     let mut avatar_sizes: Vec<i64> = split("avatar_sizes")?
         .iter()
         .map(|s| crate::ruby::to_i(s))
@@ -560,11 +573,7 @@ pub fn render_settings(
             .t("js.post.heading_anchor")
             .unwrap_or("Heading link")
             .to_string(),
-        // buildOptions keeps the iframe prefixes with a host and a path.
-        allowed_iframes: split("allowed_iframes")?
-            .into_iter()
-            .filter(|s| s.matches('/').count() >= 3)
-            .collect(),
+        allowed_iframes,
         allowed_href_schemes: split("allowed_href_schemes")?,
         checklist: settings.get("checklist_enabled")?.truthy(),
         footnotes: settings.get("enable_markdown_footnotes")?.truthy(),
