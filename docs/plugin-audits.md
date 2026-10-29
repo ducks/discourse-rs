@@ -43,6 +43,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-oauth2-basic | started | 13 | cannot be enabled (164), debug logging, timeout and authorize options, redirects, admin tab, signup buttons | 245-247 | 164 plus 3 S |
 | discourse-openid-connect | started | 10 | cannot be enabled (164), mTLS, verbose logging, admin tab | 248-249, 245-246 | 164 plus M and S |
 | discourse-apple-auth | started | 2 | cannot be enabled (164), aria-label | 247 | 164 plus S |
+| discourse-policy | started | 7 | the rich editor node (196), the wiki toggle check (no wiki route), select-kit group chooser in the builder | none | 196 plus S |
 
 Findings that cross plugins:
 
@@ -1120,3 +1121,44 @@ New (ROADMAP Phase 11): the aria-label in 247 `feat/auth-login-buttons` S. Earli
   (`options[:client_secret] ||= client_secret` on a possibly shared options hash,
   plugins/discourse-apple-auth/lib/omniauth_apple.rb:98-100); the port makes a fresh one per
   request (src/plugins/apple.rs:66-69). Only observable after 60 seconds; needs Rails to settle.
+
+## discourse-policy (`plugins/discourse-policy`)
+
+Verdict: started (7 gaps). Added on `feat/plugin-policy`, after this
+audit's commit, against the plugin at the vendored bf55a44c (it differs
+from the checkout's HEAD 167479b1 only in JavaScript import paths and
+tooling files).
+
+### What the port has
+- Markdown: `[policy]` as `div.policy` with sorted `data-*` attributes and version 1 by default, allow list, gated by `policy_enabled`: crates/markdown/src/render/bbcode.rs (`policy`); tests/pretty_text.rs.
+- `on(:post_process_cooked)`: the first `.policy` outside a blockquote, for an author in `create_policy_allowed_groups`, synced to `post_policies` and `post_policy_groups` (groups, renew days or interval, renew start and next renewal, version with the add-to group's accepters removed on a bump, reminder, private, the add-to group when the author may edit it, `last_bumped_at`), the `HasPolicy` custom field, and the policy dropped when no group exists: src/plugins/policy/lifecycle.rs, called from src/jobs/handlers.rs (process_post).
+- `validate(:post, :validate_policy)` (PostValidator): wiki posts refused, policy changes refused unless editor and author are allowed and the editor may manage a new add-to group; on create (all_topics_wiki included) and revise: src/plugins/policy/lifecycle.rs; src/posting/create.rs; src/posting/revise.rs.
+- PolicyController (`PUT /policy/accept`, `/policy/unaccept`, `GET /policy/accepted`, `/policy/not-accepted` with offset paging), its errors and the `policy_change` post message, the add-to group's membership: src/routes/policy.rs.
+- PostSerializer keys (`policy_can_accept` ... `policy_stats`, private and members visibility, easy revoke, inactive and suspended users left out), CurrentUser `can_create_policy`, UserOption `policy_email_frequency` and its UserUpdater attribute: src/plugins/policy/mod.rs; src/topic_view.rs; src/current_user.rs; src/user_private.rs; src/user_updater.rs.
+- CheckPolicy every 6 hours (reminder notifications, the policy email for those who asked, renewals by days and intervals, expiry): src/plugins/policy/check.rs; src/jobs/mod.rs.
+- UserNotifications#policy_email with its views and unsubscribe key, user_email's path for it, PolicyEmailUnsubscriber and the unsubscribe_options connector: src/plugins/policy/email.rs; src/jobs/user_email.rs; src/email/unsubscribe.rs.
+- Report `unaccepted-policies`: src/plugins/policy/mod.rs (`report`); src/reports/mod.rs.
+- UI: the PostPolicy component in the post (accept and revoke, the user lists and their toggle, load more, settings button), the composer preview's header, the builder modal (insert from the options menu, edit from the settings button), the email preferences connector, the stylesheets: src/plugins/policy/view.rs; static/js/policy.js; static/css/discourse-policy.css; src/composer_view.rs; src/preferences_view/emails.rs. Locales are the vendored plugin yml.
+- Tests: tests/policy.rs.
+
+### Gaps
+**plugin.rb**
+- `deprecate_setting("policy_restrict_to_staff_posts", ...)`: the deprecation warning when the old setting is read. Port: absent (nothing reads it).
+- `has_one :post_policy, dependent: :destroy`: the port never destroys posts (permanent deletion is refused), so nothing to do yet; to add with permanent deletion.
+
+**Models and validation**
+- The wiki check runs on revisions of wiki posts only: `PUT /posts/:id/wiki` is not routed, so making a policy post a wiki (policy_controller_spec "wiki policy posts") cannot be exercised.
+- `Date.parse` of `renew-start` completes partial dates from today; the port refuses anything but a full date (src/plugins/policy/lifecycle.rs `parse_date`).
+
+**UI**
+- The builder's group fields are native multiple selects, not select-kit's GroupChooser; the FormKit tooltips need admin-ui.js to open.
+- Accept and revoke redraw the component from the server after the request instead of Ember's optimistic update first.
+- The rich editor extension (the ProseMirror policy node and its edit button). Rails: assets/javascripts/discourse/initializers/rich-editor-extension.js. [item 196]
+
+### Items
+
+No new item; the rich editor waits on 196.
+
+### Couldn't determine
+- The policy item's place in the composer's options menu (after poll here) and `can_create_policy`'s place among the current user's keys (with chat's, before the `user_option` association) need a Rails response.
+- The policy email's exact HTML and text after Email::Renderer and Styles were not compared with a Rails send.
