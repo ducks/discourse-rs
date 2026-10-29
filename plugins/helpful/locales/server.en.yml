@@ -1,0 +1,7 @@
+en:
+  site_settings:
+    helpful_enabled: "Enable the helpful plugin"
+  helpful:
+    mark: "Mark this post helpful"
+    unmark: "Undo marking this post helpful"
+    count: "Members who found this post helpful"

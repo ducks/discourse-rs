@@ -1,0 +1,24 @@
+# A post menu button over htmx (docs/plugin-wasm.md): the button is the
+# guest's HTML in each post's menu, a click posts to the guest's route,
+# which answers with the button redrawn, and publish_post_change has
+# every other page showing the post redraw it for its viewer.
+[plugin]
+name = "helpful"
+api = 1
+enabled_setting = "helpful_enabled"
+svg_icons = ["thumbs-up"]
+stylesheet = "helpful.css"
+
+[limits]
+time_ms = 500
+
+# The post a click marks: whether it stands, and whose it is.
+[core_reads]
+posts = ["id", "user_id", "deleted_at"]
+
+[[routes]]
+method = "post"
+path = "/helpful/posts/{post_id}"
+
+[outlets]
+post_menu = true

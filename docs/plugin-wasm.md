@@ -88,6 +88,7 @@ with the answer written into memory from `dp_alloc`:
 | `core_rows` | the same | rows of a core table on a fixed list, the manifest's columns | `[core_reads]` |
 | `setting` | a setting's name | its value as JSON | `[settings] read` |
 | `t` | a translation key | the server translation (the key when missing) | always |
+| `publish_post_change` | a post id | `true`; the post is published as `:acted` once the hook commits (routes and jobs) | always |
 
 A call the manifest does not grant is not defined, so a module importing
 it does not load. Per phase: `before_serialize` may call `t` and
@@ -467,6 +468,7 @@ plugins/echo/
 | current user keys | `[current_user] keys` | `serializer.current_user` | null | an object of the declared keys |
 | topic view keys | `[topic_view] keys` | `serializer.topic_view` | topic_id | an object of the declared keys |
 | outlet | `[outlets] topic_above_posts` | `outlet.topic_above_posts` | the topic view | HTML or null |
+| post menu | `[outlets] post_menu` | `outlet.post_menu` | topic_id, base_path, posts (id, post_number, user_id, username, yours, deleted) | `{post_id: html}`, drawn first in each post's menu |
 | homepage | `[homepage] id, name, path, anonymous, server_side, available` | `homepage.available` (with `available`) | null | bool |
 | icons, stylesheet | `[plugin] svg_icons, stylesheet` | none | | |
 
@@ -653,6 +655,40 @@ What did not fit, or was left out:
   passes cookies (it passes none), or a `reader_locale` in the input.
 - `invalid_parameters`' `Cache-Control: no-cache, no-store`: a guest
   sets no headers but the content type.
+
+## Plugin UI as htmx (spike/wasm-htmx)
+
+Rails plugins draw their UI in Ember (45 of the 46 in core ship client
+JS). discourse-rs renders on the server and updates pages with htmx, so a
+guest draws HTML instead, and the page's own machinery does the rest:
+
+- `outlet.post_menu` returns each post's button(s) for the viewer, as
+  `api.addPostMenuButton` adds one. The topic page, a page loaded further
+  down the stream (`/t/:id/posts`) and every `/live` redraw of a post
+  call it, once per batch of posts.
+- The button carries `hx-post` to the guest's own route. The body's
+  `hx-headers` gives htmx the session's token, which the host checks
+  before the guest runs. The route answers with the button redrawn, and
+  htmx swaps it in place.
+- `publish_post_change(post_id)` is `publish_change_to_clients!(:acted)`.
+  It is queued and published after the hook's transaction commits, so
+  every other page showing the post redraws it through `/live`, for that
+  page's viewer, with the guest's `post_menu` run again. Routes and jobs
+  only.
+
+`plugins/helpful` is the loop end to end: a mark on another member's post
+(its own table), the count alone for its author and for anonymous
+readers. `tests/plugin_wasm_htmx.rs` checks the button per viewer, the
+click's fragment, an anonymous reader's `/live` redraw, the refusals
+(own post, no post, no token) and the plugin turned off. The guest is
+about 150 lines and 96 KiB.
+
+The same pattern gives the rest of the outlets (below a post, user card,
+header icons, sidebar, composer fields, admin pages) and modals into
+`modal.js`'s container. Not done: those outlets; `publish_post_change`
+only as `:acted` (no other kinds or options); a `can_see_post` call, so
+the guest checks only that the post stands; client state beyond a
+fragment (a guest ships its own JS from `public/` for that).
 
 ## Productionizing estimate
 

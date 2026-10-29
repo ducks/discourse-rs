@@ -1,0 +1,7 @@
+plugin: helpful
+enabled_site_setting: helpful_enabled
+settings:
+  plugins:
+    helpful_enabled:
+      default: false
+      client: true

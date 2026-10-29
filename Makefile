@@ -164,6 +164,7 @@ wasm-plugins:
 	cd plugins && cargo build --release --target wasm32-unknown-unknown
 	cp plugins/target/wasm32-unknown-unknown/release/discourse_solved_wasm.wasm plugins/discourse-solved/plugin.wasm
 	cp plugins/target/wasm32-unknown-unknown/release/echo_wasm.wasm plugins/echo/plugin.wasm
+	cp plugins/target/wasm32-unknown-unknown/release/helpful_wasm.wasm plugins/helpful/plugin.wasm
 	wizer --init-func wizer.initialize -o plugins/js-solved/plugin.wasm \
 		plugins/target/wasm32-unknown-unknown/release/js_solved_wasm.wasm
 

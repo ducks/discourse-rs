@@ -47,6 +47,8 @@ unsafe extern "C" {
     fn host_users(ptr: *const u8, len: usize) -> u64;
     #[link_name = "can_see_category"]
     fn host_can_see_category(ptr: *const u8, len: usize) -> u64;
+    #[link_name = "publish_post_change"]
+    fn host_publish_post_change(ptr: *const u8, len: usize) -> u64;
 }
 
 /// Memory for `len` bytes the host writes into: a phase's input or a host
@@ -236,7 +238,8 @@ pub fn t_with(key: &str, locale: Option<&str>, args: &[(&str, &str)]) -> String 
         .map(|(k, v)| (k.to_string(), Value::from(*v)))
         .collect();
     let request = json!({ "key": key, "locale": locale, "args": args });
-    String::from_utf8(call(host_t, request.to_string().as_bytes())).unwrap_or_else(|_| key.to_string())
+    String::from_utf8(call(host_t, request.to_string().as_bytes()))
+        .unwrap_or_else(|_| key.to_string())
 }
 
 /// Users' public cards (id, username, name, avatar_template), by id.
@@ -252,6 +255,13 @@ pub fn users(ids: &[i64]) -> Vec<Value> {
 pub fn can_see_category(id: i64) -> bool {
     let answer = call(host_can_see_category, id.to_string().as_bytes());
     serde_json::from_slice(&answer).unwrap_or(false)
+}
+
+/// `post.publish_change_to_clients!(:acted)`: once the hook commits, every
+/// page showing the post redraws it for its viewer, this plugin's
+/// `outlet.post_menu` included. Routes and jobs only.
+pub fn publish_post_change(post_id: i64) {
+    call(host_publish_post_change, post_id.to_string().as_bytes());
 }
 
 /// Rails' params from a route's input: the query and a form body, with

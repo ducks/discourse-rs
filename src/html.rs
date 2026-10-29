@@ -2901,7 +2901,9 @@ pub async fn topic_page(
     };
     let mut topic = crate::post_view::TopicInfo::from_view(view);
     topic.pm_path = pm_path(conn, view, &base, viewer).await?;
-    // What the staff menus read of the viewer.
+    // What the staff menus and the plugins' post menu buttons read of the
+    // viewer.
+    let mut guardian = crate::guardian::Guardian::anonymous();
     if let Some(username) = viewer {
         let user_id: Option<i32> =
             sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")
@@ -2912,10 +2914,26 @@ pub async fn topic_page(
             Some(id) => crate::session::current::SessionUser::load(&mut *conn, id).await?,
             None => None,
         } {
-            let guardian = crate::guardian::Guardian::for_user(&mut *conn, &user).await?;
+            guardian = crate::guardian::Guardian::for_user(&mut *conn, &user).await?;
             topic.menus = crate::post_view::StaffMenus::load(&guardian, settings, view)?;
         }
     }
+    topic.plugin_menu = crate::plugin_api::post_menu_buttons(
+        &mut crate::plugin_api::Ctx {
+            conn: &mut *conn,
+            settings,
+            i18n,
+            base_path: &base,
+        },
+        &guardian,
+        id,
+        view["post_stream"]["posts"]
+            .as_array()
+            .map(Vec::as_slice)
+            .unwrap_or_default(),
+    )
+    .await
+    .map_err(HtmlError::Plugin)?;
     // Mark unread's destination: the message's inbox, else home.
     topic.defer_to = topic.pm_path.clone().unwrap_or_else(|| format!("{base}/"));
     if post_settings.poll.is_some()

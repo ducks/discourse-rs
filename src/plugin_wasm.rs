@@ -171,6 +171,8 @@ pub enum Phase {
     TopicView,
     /// `outlet.topic_above_posts`.
     TopicAbovePosts,
+    /// `outlet.post_menu`.
+    PostMenu,
     /// `homepage.available`.
     HomepageAvailable,
 }
@@ -186,6 +188,7 @@ impl Phase {
             Phase::CurrentUser => "current_user",
             Phase::TopicView => "topic_view",
             Phase::TopicAbovePosts => "topic_above_posts",
+            Phase::PostMenu => "post_menu",
             Phase::HomepageAvailable => "available",
         }
     }
@@ -199,7 +202,9 @@ impl Phase {
             Phase::BeforeSerialize | Phase::HomepageAvailable => matches!(call, "t" | "setting"),
             // Writes only where a write is the point: routes (the
             // transaction is read only under GET and HEAD) and jobs.
-            _ if call == "execute" => matches!(self, Phase::Route | Phase::Job),
+            _ if call == "execute" || call == "publish_post_change" => {
+                matches!(self, Phase::Route | Phase::Job)
+            }
             _ => true,
         }
     }
@@ -304,6 +309,9 @@ struct Keys {
 struct Outlets {
     #[serde(default)]
     topic_above_posts: bool,
+    /// Buttons in each post's menu (`api.addPostMenuButton`).
+    #[serde(default)]
+    post_menu: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -768,6 +776,9 @@ pub struct Ctx<'a> {
     pub pool: Option<&'a sqlx::PgPool>,
     /// For URLs (a user's avatar_template), where the caller has it.
     pub config: Option<&'a crate::config::Config>,
+    /// For `publish_post_change`, where the hook may publish (routes and
+    /// jobs).
+    pub bus: Option<&'a pg_bus::Bus>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -812,6 +823,9 @@ enum HostCall {
     Users(Vec<i64>),
     /// `guardian.can_see_category?` for the hook's viewer.
     CanSeeCategory(i64),
+    /// `post.publish_change_to_clients!(:acted)`, once the hook has
+    /// committed: each viewer's page redraws the post as they see it.
+    PublishPostChange(i32),
     /// SQL on the plugin's own connection (db.rs): rows, or rows affected.
     Sql {
         execute: bool,
@@ -846,7 +860,7 @@ struct RowsArgs {
 }
 
 /// The import module's functions, each granted by the manifest.
-const HOST_CALLS: [&str; 8] = [
+const HOST_CALLS: [&str; 9] = [
     "rows",
     "core_rows",
     "setting",
@@ -855,6 +869,7 @@ const HOST_CALLS: [&str; 8] = [
     "execute",
     "users",
     "can_see_category",
+    "publish_post_change",
 ];
 
 impl Plugin {
@@ -956,6 +971,7 @@ impl Plugin {
                 manifest.outlets.topic_above_posts,
                 "outlet.topic_above_posts",
             ),
+            (manifest.outlets.post_menu, "outlet.post_menu"),
             (
                 manifest.homepage.as_ref().is_some_and(|h| h.available),
                 "homepage.available",
@@ -1063,6 +1079,7 @@ impl Plugin {
         // transaction on the plugin's pool at its first statement.
         let serve = async {
             let mut tx: Option<db::HookTx> = None;
+            let mut published: Vec<i32> = Vec::new();
             while let Some(request) = incoming.recv().await {
                 let answer = match request.call {
                     HostCall::Sql {
@@ -1081,13 +1098,19 @@ impl Plugin {
                         )
                         .await
                     }
+                    HostCall::PublishPostChange(post_id) => {
+                        if !published.contains(&post_id) {
+                            published.push(post_id);
+                        }
+                        Ok(b"true".to_vec())
+                    }
                     call => answer(ctx, &self.grants, call).await,
                 };
                 let _ = request.reply.send(answer);
             }
-            tx
+            (tx, published)
         };
-        let (output, tx) = tokio::join!(guest, serve);
+        let (output, (tx, published)) = tokio::join!(guest, serve);
         tracing::debug!(plugin = %self.name, phase = phase.name(), us = started.elapsed().as_micros() as u64, "plugin phase");
         let result = output.map_err(|e| format!("{e:#}")).and_then(|output| {
             let mut envelope: Value =
@@ -1104,6 +1127,24 @@ impl Plugin {
         // transaction rolls it back.
         if let (Ok(_), Some(tx)) = (&result, tx) {
             tx.commit().await?;
+        }
+        // Its changes are published after they are committed, so a page
+        // redrawing the post reads them.
+        if result.is_ok() && !published.is_empty() {
+            let bus = ctx
+                .bus
+                .ok_or("publish_post_change: no bus where this hook runs")?;
+            for post_id in published {
+                crate::bus::publish_post_change_message(
+                    bus,
+                    &mut *ctx.conn,
+                    post_id,
+                    "acted",
+                    Map::new(),
+                )
+                .await
+                .map_err(|e| e.to_string())?;
+            }
         }
         result
     }
@@ -1236,6 +1277,9 @@ fn parse(call: &str, request: &[u8]) -> Result<HostCall, String> {
         "can_see_category" => HostCall::CanSeeCategory(
             serde_json::from_slice(request).map_err(|e| format!("can_see_category: {e}"))?,
         ),
+        "publish_post_change" => HostCall::PublishPostChange(
+            serde_json::from_slice(request).map_err(|e| format!("publish_post_change: {e}"))?,
+        ),
         "query" | "execute" => {
             let args: SqlArgs =
                 serde_json::from_slice(request).map_err(|e| format!("{call}: {e}"))?;
@@ -1349,7 +1393,9 @@ async fn answer(ctx: &mut Ctx<'_>, grants: &Grants, call: HostCall) -> Result<Ve
             serde_json::to_vec(&visible).map_err(|e| e.to_string())
         }
         // Plugin::run answers SQL itself, on the plugin's connection.
-        HostCall::Sql { .. } => Err("SQL is not answered here".into()),
+        HostCall::Sql { .. } | HostCall::PublishPostChange(_) => {
+            Err("answered by the hook, not here".into())
+        }
     }
 }
 
