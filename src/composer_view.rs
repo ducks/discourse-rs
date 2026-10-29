@@ -213,11 +213,14 @@ pub struct PopupOption {
 
 /// The options menu's items for the site's settings, in Ember's order:
 /// core's quote, format code and insert table, change reply-to, the
-/// plugins' (details, footnote, local dates, spoiler, poll), then wrap.
-/// `can_create_poll` is the viewer's (staff or poll_create_allowed_groups).
+/// plugins' (details, footnote, local dates, spoiler, poll, policy), then
+/// wrap. `can_create_poll` is the viewer's (staff or
+/// poll_create_allowed_groups), `can_create_policy` their
+/// `can_create_policy`.
 pub fn popup_options(
     settings: &crate::site_settings::SiteSettings,
     can_create_poll: bool,
+    can_create_policy: bool,
 ) -> Result<Vec<PopupOption>, crate::site_settings::SettingError> {
     let on = |name: &str| settings.get(name).map(|v| v.truthy());
     let option = |name, icon, label| PopupOption {
@@ -286,6 +289,19 @@ pub fn popup_options(
             ..option("poll", "chart-bar", "poll.ui_builder.title")
         });
     }
+    // discourse-policy's builder; its place among the plugins' items is
+    // not known.
+    if crate::plugins::policy::enabled(settings)? && can_create_policy {
+        out.push(PopupOption {
+            ported: true,
+            named: false,
+            ..option(
+                "policy",
+                "file-signature",
+                "discourse_policy.builder.attach",
+            )
+        });
+    }
     out.push(PopupOption {
         show_active_icon: true,
         ..option(
@@ -306,7 +322,6 @@ pub fn unported_popup_plugins(
     for (setting, plugin) in [
         ("discourse_math_enabled", "discourse-math"),
         ("discourse_post_event_enabled", "discourse-events"),
-        ("policy_enabled", "discourse-policy"),
         ("discourse_graphviz_enabled", "discourse-graphviz"),
     ] {
         if settings.get(setting)?.truthy() {

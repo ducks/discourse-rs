@@ -58,6 +58,8 @@ pub struct PostSettings {
     pub presence: bool,
     /// discourse-poll's settings, when it is on.
     pub poll: Option<crate::plugins::poll::view::PollUi>,
+    /// discourse-policy is on: its decorator draws the policies.
+    pub policy: bool,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -116,6 +118,7 @@ impl PostSettings {
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
             poll: crate::plugins::poll::view::PollUi::load(settings)?,
+            policy: crate::plugins::policy::enabled(settings)?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -743,6 +746,21 @@ fn decorated_cooked(cx: &PostContext, p: &Value) -> String {
             cooked,
         ),
         None => cooked.to_string(),
+    };
+    let with_polls = if cx.settings.policy {
+        crate::plugins::policy::view::decorate(
+            cx.list,
+            &crate::plugins::policy::view::Viewer {
+                can_manage: cx.staff || p["yours"] == true,
+                show_not_accepted: false,
+                // getRawAvatarSize(20), which avatar_sizes rounds up.
+                tiny_avatar_size: cx.settings.avatar_size_24,
+            },
+            p,
+            &with_polls,
+        )
+    } else {
+        with_polls
     };
     crate::hashtag_decorator::decorate(
         &with_polls,
@@ -3806,6 +3824,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            policy: false,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4083,6 +4102,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            policy: false,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {

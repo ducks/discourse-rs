@@ -918,6 +918,10 @@ impl Private<'_> {
         if crate::plugins::chat::enabled(s)? {
             crate::plugins::chat::user_option_keys(&mut *self.conn, uid, &mut o_out).await?;
         }
+        // discourse-policy's user option.
+        if crate::plugins::policy::enabled(s)? {
+            crate::plugins::policy::user_option_keys(&mut *self.conn, uid, &mut o_out).await?;
+        }
         // discourse-solved's user option.
         if crate::plugins::solved::enabled(s)? {
             let notify: Option<bool> =

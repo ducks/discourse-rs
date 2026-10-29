@@ -1109,6 +1109,9 @@
           if (window.Discourse && Discourse.applyLocalDates) {
             Discourse.applyLocalDates(preview, { title: true });
           }
+          if (window.Discourse && Discourse.policyPreview) {
+            Discourse.policyPreview(preview);
+          }
         } catch (e) {
           preview.textContent = e.message;
         }
@@ -2531,6 +2534,12 @@
     "local-dates": function () {
       if (Discourse.localDatesCreate) {
         Discourse.localDatesCreate.show(addText);
+      }
+    },
+    // discourse-policy's builder (static/js/policy.js).
+    policy: function () {
+      if (Discourse.policyBuilder) {
+        Discourse.policyBuilder.show(addText);
       }
     },
   };

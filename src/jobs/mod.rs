@@ -295,6 +295,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::plugins::chat::scheduled::AUTO_JOIN_USERS,
         Duration::from_secs(3600),
     ),
+    (
+        crate::plugins::policy::check::JOB,
+        Duration::from_secs(6 * 3600),
+    ),
     // Rails runs it daily at midnight; here, daily from the worker's start.
     (
         crate::plugins::chat::scheduled::DELETE_OLD_MESSAGES,
@@ -594,6 +598,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         crate::plugins::chat::scheduled::PERIODICAL_UPDATES => {
             crate::plugins::chat::scheduled::periodical_updates(state).await
         }
+        crate::plugins::policy::check::JOB => crate::plugins::policy::check::run(state).await,
         crate::plugins::chat::scheduled::AUTO_JOIN_USERS => {
             crate::plugins::chat::scheduled::auto_join_users(state, &serde_json::Value::Null).await
         }

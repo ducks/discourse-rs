@@ -212,7 +212,7 @@ pub const PLUGIN_REPORTS: [PluginReports; 7] = [
         enabled_setting: "policy_enabled",
         display_name: "Policy",
         types: &["unaccepted-policies"],
-        ported: false,
+        ported: true,
     },
     PluginReports {
         plugin: "discourse-ai",
@@ -985,6 +985,7 @@ async fn fill(
         }
         "activity_by_category" => tables::activity_by_category(conn, cx, viewer, r).await,
         "reactions" => tables::reactions(conn, cx, r).await,
+        "unaccepted-policies" => crate::plugins::policy::report(conn, cx, r).await,
         _ if kind.ends_with("_reqs") => {
             let filter = kind.trim_end_matches("_reqs").to_string();
             pageviews::req_report(conn, cx, r, &filter).await

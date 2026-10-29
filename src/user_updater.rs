@@ -247,7 +247,15 @@ const OPTION_ATTR: &[(&str, Kind)] = &[
     ),
     ("chat_separate_sidebar_mode", Kind::Enum(CHAT_SIDEBAR_MODES)),
     ("chat_send_shortcut", Kind::Enum(SEND_SHORTCUTS)),
+    // discourse-policy's.
+    (
+        "policy_email_frequency",
+        Kind::Enum(POLICY_EMAIL_FREQUENCIES),
+    ),
 ];
+
+/// DiscoursePolicy::UserOptionExtension's enum.
+const POLICY_EMAIL_FREQUENCIES: &[(&str, i64)] = &[("never", 0), ("when_away", 1), ("always", 2)];
 
 /// Chat::UserOptionExtension's enums.
 const CHAT_QUICK_REACTION_TYPES: &[(&str, i64)] = &[("frequent", 0), ("custom", 1)];

@@ -2089,6 +2089,21 @@ impl TopicView<'_> {
         };
         // The page's per-post rows, each read once for every post.
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+        // discourse-policy's keys for the page.
+        let policies = if crate::plugins::policy::enabled(self.settings)? {
+            Some(
+                crate::plugins::policy::PostsData::load(
+                    &mut *self.conn,
+                    self.settings,
+                    self.urls,
+                    self.guardian,
+                    &post_ids,
+                )
+                .await?,
+            )
+        } else {
+            None
+        };
         // badges_granted: UserBadge.for_post_header_badges.
         let mut badges_granted = crate::badges_view::BadgesView {
             conn: &mut *self.conn,
@@ -2469,6 +2484,10 @@ impl TopicView<'_> {
                     post.post_number
                 )),
             );
+            // discourse-policy's post keys.
+            if let Some(policies) = &policies {
+                policies.post_keys(post.id, &mut p);
+            }
             // discourse-reactions' post keys.
             if let Some(reactions) = &reactions {
                 reactions.post_keys(post.id, &mut p);
