@@ -102,6 +102,12 @@ const JS: &str = "text/javascript; charset=utf-8";
 /// Every embedded asset: its name under /assets, type and content.
 const ASSETS: &[(&str, &str, &str)] = &[
     ("discourse.css", CSS, DISCOURSE_CSS),
+    // The styleguide plugin's stylesheet, on its pages only.
+    (
+        "styleguide.css",
+        CSS,
+        include_str!("../static/css/styleguide.css"),
+    ),
     ("site.css", CSS, include_str!("../static/site.css")),
     // htmx and its SSE extension, vendored from npm (static/vendor/README).
     (

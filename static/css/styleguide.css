@@ -1,0 +1,222 @@
+/* The styleguide plugin's styleguide.scss (with colors.scss and
+   typography.scss), as Rails compiles it, for the rules the port's pages
+   use; served only on /styleguide pages, as the plugin's asset filter
+   keeps it off the others. */
+
+/* colors.scss */
+.color-row .primary-50 { background-color: var(--primary-50); }
+.color-row .primary-100 { background-color: var(--primary-100); }
+.color-row .primary-200 { background-color: var(--primary-200); }
+.color-row .primary-300 { background-color: var(--primary-300); }
+.color-row .primary-400 { background-color: var(--primary-400); }
+.color-row .primary-500 { background-color: var(--primary-500); }
+.color-row .primary-600 { background-color: var(--primary-600); }
+.color-row .primary-700 { background-color: var(--primary-700); }
+.color-row .primary-800 { background-color: var(--primary-800); }
+.color-row .primary-900 { background-color: var(--primary-900); }
+.color-row .primary-very-low { background-color: var(--primary-very-low); }
+.color-row .primary-low { background-color: var(--primary-low); }
+.color-row .primary-low-mid { background-color: var(--primary-low-mid); }
+.color-row .primary-medium { background-color: var(--primary-medium); }
+.color-row .primary-high { background-color: var(--primary-high); }
+.color-row .primary { background-color: var(--primary); }
+.color-row .secondary-low { background-color: var(--secondary-low); }
+.color-row .secondary-medium { background-color: var(--secondary-medium); }
+.color-row .secondary-high { background-color: var(--secondary-high); }
+.color-row .secondary { background-color: var(--secondary); }
+.color-row .tertiary-low { background-color: var(--tertiary-low); }
+.color-row .tertiary-medium { background-color: var(--tertiary-medium); }
+.color-row .tertiary-high { background-color: var(--tertiary-high); }
+.color-row .tertiary { background-color: var(--tertiary); }
+.color-row .tertiary-25 { background-color: var(--tertiary-25); }
+.color-row .tertiary-50 { background-color: var(--tertiary-50); }
+.color-row .tertiary-100 { background-color: var(--tertiary-100); }
+.color-row .tertiary-200 { background-color: var(--tertiary-200); }
+.color-row .tertiary-300 { background-color: var(--tertiary-300); }
+.color-row .tertiary-400 { background-color: var(--tertiary-400); }
+.color-row .tertiary-500 { background-color: var(--tertiary-500); }
+.color-row .tertiary-600 { background-color: var(--tertiary-600); }
+.color-row .tertiary-700 { background-color: var(--tertiary-700); }
+.color-row .tertiary-800 { background-color: var(--tertiary-800); }
+.color-row .tertiary-900 { background-color: var(--tertiary-900); }
+.color-row .quaternary-low { background-color: var(--quaternary-low); }
+.color-row .quaternary { background-color: var(--quaternary); }
+.color-row .highlight-bg { background-color: var(--highlight-bg); }
+.color-row .highlight { background-color: var(--highlight); }
+.color-row .danger-low { background-color: var(--danger-low); }
+.color-row .danger-low-mid { background-color: var(--danger-low-mid); }
+.color-row .danger-medium { background-color: var(--danger-medium); }
+.color-row .danger { background-color: var(--danger); }
+.color-row .success-low { background-color: var(--success-low); }
+.color-row .success-medium { background-color: var(--success-medium); }
+.color-row .success { background-color: var(--success); }
+.color-row .love-low { background-color: var(--love-low); }
+.color-row .love { background-color: var(--love); }
+.color-row .header_primary { background-color: var(--header_primary); }
+.color-row .header_background { background-color: var(--header_background); }
+.color-row .header_primary-low { background-color: var(--header_primary-low); }
+.color-row .header_primary-low-mid { background-color: var(--header_primary-low-mid); }
+.color-row .header_primary-medium { background-color: var(--header_primary-medium); }
+.color-row .header_primary-high { background-color: var(--header_primary-high); }
+.color-row .header_primary-very-high { background-color: var(--header_primary-very-high); }
+
+/* typography.scss */
+p[class*="font-"] { margin-top: 0; }
+.font-up-6 { font-size: var(--font-up-6); }
+.font-up-5 { font-size: var(--font-up-5); }
+.font-up-4 { font-size: var(--font-up-4); }
+.font-up-3 { font-size: var(--font-up-3); }
+.font-up-2 { font-size: var(--font-up-2); }
+.font-up-1 { font-size: var(--font-up-1); }
+.font-0 { font-size: var(--font-0); }
+.font-down-1 { font-size: var(--font-down-1); }
+.font-down-2 { font-size: var(--font-down-2); }
+.font-down-3 { font-size: var(--font-down-3); }
+.font-down-4 { font-size: var(--font-down-4); }
+.font-down-5 { font-size: var(--font-down-5); }
+.font-down-6 { font-size: var(--font-down-6); }
+
+/* styleguide.scss:4 */
+.styleguide {
+  --styleguide-measure: 70ch;
+  position: relative;
+  padding: 0 1rem 1rem;
+}
+.styleguide .styleguide-note {
+  padding: 1em;
+  background-color: var(--tertiary);
+  margin-bottom: 1em;
+}
+.styleguide .d-page-header__breadcrumbs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  margin: var(--space-2) 0 var(--space-4);
+}
+.styleguide .d-page-header__breadcrumbs .d-breadcrumbs {
+  margin: 0;
+}
+.styleguide .styleguide-section .section-description {
+  max-width: var(--styleguide-measure);
+  margin-bottom: 2em;
+}
+.styleguide .styleguide-section .description {
+  margin: 1em 0;
+}
+.styleguide .styleguide-section.colors-examples .styleguide-example .color-row {
+  display: flex;
+}
+.styleguide .styleguide-section.colors-examples .styleguide-example .color-row .color-example {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 120px;
+  margin: 0.5em 0.5em 0.5em 0;
+  border: 1px solid var(--primary-300);
+}
+.styleguide .styleguide-section.colors-examples .styleguide-example .color-row .color-example .color-bg {
+  flex: 4;
+  border-bottom: 1px solid var(--primary-300);
+}
+.styleguide .styleguide-section.colors-examples .styleguide-example .color-row .color-example .color-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0.25em 0.5em;
+  font-weight: 700;
+  font-size: var(--font-down-1);
+}
+.styleguide pre {
+  background: var(--primary-very-low);
+  white-space: pre-wrap;
+}
+.styleguide pre.pre-inline {
+  display: inline-block;
+  margin: 0;
+  vertical-align: bottom;
+}
+
+/* styleguide.scss:133 */
+.styleguide-example {
+  border: 1px solid var(--content-border-color);
+  border-radius: var(--d-border-radius);
+  background-color: var(--secondary);
+  padding: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+.styleguide-example__header {
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--space-8);
+  margin-bottom: var(--space-2);
+}
+.styleguide-example__title {
+  color: var(--primary);
+  font-size: var(--font-0);
+  font-weight: 600;
+  margin: 0;
+}
+.styleguide-example__body {
+  grid-row: 4;
+  width: 100%;
+  position: relative;
+  min-width: 0;
+}
+
+/* styleguide.scss:363 */
+.buttons-examples .styleguide-example__body button {
+  margin-right: 0.5em;
+  margin-bottom: 0.5em;
+}
+.buttons-examples .styleguide-example__body .d-toggle-switch {
+  display: inline-block;
+}
+.icons-examples {
+  margin-right: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+/* styleguide.scss:386 */
+.styleguide-icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--space-2);
+}
+.styleguide-icons .styleguide-icon {
+  background-color: var(--primary-low);
+  margin: var(--space-1);
+  text-align: center;
+  padding: var(--space-2);
+  overflow: hidden;
+}
+.styleguide-icons .styleguide-icon svg {
+  display: block;
+  font-size: 3em;
+  margin: 5px auto;
+}
+.styleguide-icons .styleguide-icon span {
+  font-size: var(--font-down-1);
+  overflow-wrap: break-word;
+}
+
+/* The port's own: the sidebar panel's sections beside the contents. */
+.styleguide {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) 1fr;
+  gap: var(--space-4);
+}
+.styleguide-nav .sidebar-section-header-text {
+  font-weight: 600;
+}
+.styleguide-nav .sidebar-section-content {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+}
+.styleguide-nav .sidebar-section-link.active {
+  font-weight: 600;
+}

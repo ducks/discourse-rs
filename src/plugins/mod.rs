@@ -42,6 +42,7 @@ pub mod post_voting;
 pub mod presence;
 pub mod reactions;
 pub mod solved;
+pub mod styleguide;
 pub mod templates;
 pub mod topic_voting;
 pub mod user_notes;
@@ -389,6 +390,7 @@ pub const STARTED: &[&str] = &[
     "footnote",
     "poll",
     "spoiler-alert",
+    "styleguide",
 ];
 
 /// UsersController#create's plugin before actions, after the honeypot:

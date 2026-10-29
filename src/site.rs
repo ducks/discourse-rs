@@ -539,10 +539,21 @@ impl Site<'_> {
         out.insert("archetypes".into(), self.archetypes());
         out.insert("user_fields".into(), self.user_fields().await?);
         out.insert("auth_providers".into(), self.auth_providers()?);
-        // The plugins' keys, after core's.
+        // The plugins' add_to_serializer(:site) keys, after core's, in
+        // plugin load order: discourse-gamification's.
         crate::plugins::gamification::site_keys(&mut *self.conn, self.settings, &mut out)
             .await
             .map_err(crate::AppError::from)?;
+        // styleguide's, while it is on (plugin load order puts it last).
+        if crate::plugins::styleguide::enabled(self.settings)? {
+            out.insert(
+                "can_see_styleguide".into(),
+                json!(crate::plugins::styleguide::can_see(
+                    &self.guardian,
+                    self.settings
+                )?),
+            );
+        }
 
         Ok(Value::Object(out))
     }
