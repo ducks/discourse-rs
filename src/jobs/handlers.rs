@@ -237,6 +237,9 @@ fn handler<'a>(
         crate::plugins::chat::scheduled::AUTO_JOIN_USERS => Box::pin(async move {
             crate::plugins::chat::scheduled::auto_join_users(state, &job.args).await
         }),
+        crate::plugins::chat::channel_settings::CHANNEL_DELETE_JOB => Box::pin(async move {
+            crate::plugins::chat::channel_settings::channel_delete(state, &job.args).await
+        }),
         crate::plugins::chat::scheduled::KICK_USERS_FROM_CHANNEL => Box::pin(async move {
             crate::plugins::chat::scheduled::kick_users_from_channel(state, &job.args).await
         }),

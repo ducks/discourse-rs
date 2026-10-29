@@ -54,6 +54,25 @@ const MAX_LIFETIME: Duration = Duration::from_secs(600);
 /// TopicTrackingState's channels; a member's own `/unread/<id>` too.
 const TRACKING_CHANNELS: [&str; 5] = ["/latest", "/new", "/unread", "/delete", "/recover"];
 
+/// ChatSubscriptionsManager's global channels: a channel the member was
+/// added to, and status, edit and member count changes to theirs.
+const CHAT_GLOBAL_CHANNELS: [&str; 4] = [
+    "/chat/new-channel",
+    "/chat/channel-status",
+    "/chat/channel-edits",
+    "/chat/channel-metadata",
+];
+
+/// What a followed chat channel is heard on: its new messages, the
+/// member's mentions in it, and being kicked from it.
+fn followed_chat_channels(channel_id: i64) -> [String; 3] {
+    [
+        format!("/chat/{channel_id}/new-messages"),
+        format!("/chat/{channel_id}/new-mentions"),
+        format!("/chat/{channel_id}/kick"),
+    ]
+}
+
 #[derive(Deserialize, Default)]
 pub struct Params {
     position: Option<String>,
@@ -165,18 +184,21 @@ pub async fn page(
         .fetch_all(&mut *conn)
         .await?;
         for channel in followed {
-            chat_channels.push(format!("/chat/{channel}/new-messages"));
-            chat_channels.push(format!("/chat/{channel}/new-mentions"));
+            chat_channels.extend(followed_chat_channels(channel));
         }
         chat_channels.push(format!("/chat/user-tracking-state/{id}"));
+        // ChatSubscriptionsManager's global subscriptions.
+        chat_channels.extend(CHAT_GLOBAL_CHANNELS.iter().map(|c| c.to_string()));
         channels.extend(chat_channels.iter().cloned());
     }
-    let subscription = state.bus.subscribe(from, Filter { channels, tags });
+    let filter = Filter { channels, tags };
+    let subscription = state.bus.subscribe(from, filter.clone());
     let live = Live {
         state,
         guardian,
         settings,
         subscription,
+        filter,
         topic_channel: topic_id.map(crate::bus::topic_channel),
         polls_channel: topic_id.map(|id| format!("/polls/{id}")),
         tail: params.tail.as_deref() == Some("1"),
@@ -238,6 +260,9 @@ struct Live {
     guardian: Guardian,
     settings: SiteSettings,
     subscription: Subscription,
+    /// What the subscription hears, changed as chat channels are joined
+    /// (/chat/new-channel) or left (a kick).
+    filter: Filter,
     topic_channel: Option<String>,
     /// `/polls/<topic_id>`: a post's polls changed (PollsUpdater, votes,
     /// toggle_status), for static/js/poll.js to draw them again.
@@ -312,6 +337,7 @@ async fn handle_batch(
     let do_not_disturb = live.user_id.map(|id| format!("/do-not-disturb/{id}"));
     let mut tracking: Option<Position> = None;
     let mut chat = false;
+    let mut resubscribe = false;
     let mut last: Option<Position> = None;
     for item in batch {
         let message = match item? {
@@ -363,6 +389,9 @@ async fn handle_batch(
             );
         } else if live.chat_channels.contains(&message.channel) {
             chat = true;
+            if follow_chat_changes(live, &message) {
+                resubscribe = true;
+            }
         } else {
             tracking = Some(message.position);
         }
@@ -371,10 +400,43 @@ async fn handle_batch(
         // Carries the batch's last position, so the ids stay in bus order.
         recount_lists(live, last).await?;
     }
+    if resubscribe && let Some(position) = last {
+        live.subscription = live.state.bus.subscribe(position, live.filter.clone());
+    }
     if chat {
         chat_chrome(live, last).await?;
     }
     Ok(())
+}
+
+/// A channel the member now follows is heard from on (onNewChannel), one
+/// they were kicked from no more (onKickFromChannel); whether the filter
+/// changed.
+fn follow_chat_changes(live: &mut Live, message: &pg_bus::Message) -> bool {
+    let (add, channel_id) = if message.channel == "/chat/new-channel" {
+        (true, message.data["channel"]["id"].as_i64())
+    } else if message.channel.ends_with("/kick") {
+        (false, message.data["channel_id"].as_i64())
+    } else {
+        return false;
+    };
+    let Some(channel_id) = channel_id else {
+        return false;
+    };
+    let names = followed_chat_channels(channel_id);
+    let before = live.filter.channels.len();
+    for name in names {
+        if add {
+            if !live.chat_channels.contains(&name) {
+                live.chat_channels.push(name.clone());
+                live.filter.channels.push(name);
+            }
+        } else {
+            live.chat_channels.retain(|c| *c != name);
+            live.filter.channels.retain(|c| *c != name);
+        }
+    }
+    live.filter.channels.len() != before
 }
 
 /// The lists counted again; queued only when they changed.

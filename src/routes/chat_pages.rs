@@ -757,3 +757,148 @@ pub async fn live_message(
         None => StatusCode::NOT_FOUND.into_response(),
     })
 }
+
+/// The channel an info route names, or where the route goes instead:
+/// withChatChannel's /chat for one the member can't open, and the info
+/// route on the channel's own slug.
+async fn info_channel(
+    state: &AppState,
+    cx: &mut Context<'_>,
+    slug: &str,
+    id: &str,
+    tail: &str,
+) -> Result<Result<(crate::plugins::chat::channels::ChannelRow, String), Response>, AppError> {
+    let base_path = state.config.globals.relative_url_root();
+    let channel = match cx.find_joinable(id).await? {
+        Found::Channel(channel) => channel,
+        Found::NotFound | Found::Forbidden => {
+            return Ok(Err(redirect(format!("{base_path}/chat"))));
+        }
+    };
+    let (own_slug, dm_title) = slugified_title(cx, &channel).await?;
+    if slug != own_slug {
+        return Ok(Err(redirect(format!(
+            "{base_path}/chat/c/{own_slug}/{}/info{tail}",
+            channel.id
+        ))));
+    }
+    let title = match dm_title {
+        Some(dm) => format!(
+            "{} - {} - ",
+            cx.settings.emojis().gsub_to_unicode(&dm),
+            chat_title(state)
+        ),
+        None => {
+            let name = cx.channel_title(&channel).await?;
+            format!("#{name} - {} - ", chat_title(state))
+        }
+    };
+    Ok(Ok((channel, title)))
+}
+
+/// GET /chat/c/:slug/:id/info: ChatChannelInfoIndexRoute replaces itself
+/// with the settings.
+pub async fn channel_info_index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((slug, id)): Path<(String, String)>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    Ok(match info_channel(&state, &mut cx, &slug, &id, "").await? {
+        Ok((channel, _)) => redirect(format!(
+            "{base_path}/chat/c/{slug}/{}/info/settings",
+            channel.id
+        )),
+        Err(response) => response,
+    })
+}
+
+/// GET /chat/c/:slug/:id/info/:tab: the channel's settings or members
+/// (ChatChannelInfoMembersRoute sends a channel that isn't open to the
+/// settings).
+pub async fn channel_info(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    Path((slug, id, tab)): Path<(String, String, String)>,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::info::Tab;
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let tab = match tab.as_str() {
+        "settings" => Tab::Settings,
+        "members" => Tab::Members,
+        _ => return Ok(super::topics::not_found_response(&state)),
+    };
+    let tail = match tab {
+        Tab::Settings => "/settings",
+        Tab::Members => "/members",
+    };
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let (channel, title) = match info_channel(&state, &mut cx, &slug, &id, tail).await? {
+        Ok(found) => found,
+        Err(response) => return Ok(response),
+    };
+    if tab == Tab::Members && channel.status != 0 {
+        return Ok(redirect(format!(
+            "{base_path}/chat/c/{slug}/{}/info/settings",
+            channel.id
+        )));
+    }
+    let content = cx.channel_info_page(&channel, tab).await?;
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::ChatChannel(channel.id),
+        title,
+        &content,
+        false,
+    )
+    .await
+}
+
+/// GET /chat/c/:slug/:id/info/members/page: the members list's next
+/// items, or those a filter finds, for chat-channel-info.js
+/// (listChannelMemberships with limit 20).
+pub async fn channel_info_members_page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((_slug, id)): Path<(String, String)>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let query = uri
+        .query()
+        .map(crate::params::parse_query)
+        .unwrap_or_default();
+    let get = |k: &str| query.get(k).and_then(crate::params::scalar);
+    let offset = get("offset").map_or(0, |o| crate::ruby::to_i(&o).max(0));
+    let username = get("username").filter(|u| !u.is_empty());
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let channel = match cx.find_joinable(&id).await? {
+        Found::Channel(channel) => channel,
+        Found::NotFound => return Ok(super::topics::not_found_response(&state)),
+        Found::Forbidden => return Ok(super::search::invalid_access(&state)),
+    };
+    let items = cx
+        .channel_info_members_items(&channel, offset, username.as_deref())
+        .await?;
+    Ok(Html(items).into_response())
+}

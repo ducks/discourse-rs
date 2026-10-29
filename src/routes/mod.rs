@@ -330,6 +330,18 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/browse/{tab}/page", get(chat_pages::browse_more))
         .route("/chat/c/{slug}/{id}", get(chat_pages::channel))
         .route("/chat/c/{slug}/{id}/{message_id}", get(chat_pages::channel))
+        .route(
+            "/chat/c/{slug}/{id}/info",
+            get(chat_pages::channel_info_index),
+        )
+        .route(
+            "/chat/c/{slug}/{id}/info/members/page",
+            get(chat_pages::channel_info_members_page),
+        )
+        .route(
+            "/chat/c/{slug}/{id}/info/{tab}",
+            get(chat_pages::channel_info),
+        )
         .route("/chat/direct_messages", get(chat::direct_messages))
         .route("/chat/direct_messages.json", get(chat::direct_messages))
         .route(
@@ -358,7 +370,31 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/chat/api/channels/{id}",
-            get(chat::show).put(chat::update_channel),
+            get(chat::show)
+                .put(chat::update_channel)
+                .delete(chat::trash_channel),
+        )
+        .route("/chat/api/channels/{id}/status", put(chat::update_status))
+        .route(
+            "/chat/api/channels/{id}/status.json",
+            put(chat::update_status),
+        )
+        .route("/chat/api/channels/{id}/invites", post(chat::invite_users))
+        .route(
+            "/chat/api/channels/{id}/invites.json",
+            post(chat::invite_users),
+        )
+        .route(
+            "/chat/api/channels/{id}/notifications-settings/me",
+            put(chat::notifications_settings),
+        )
+        .route(
+            "/chat/api/channels/{id}/notifications-settings/me.json",
+            put(chat::notifications_settings),
+        )
+        .route(
+            "/chat/user_chat_enabled/{user_id}",
+            put(chat::user_chat_enabled),
         )
         .route(
             "/chat/api/channels/{id}/memberships",
@@ -2915,6 +2951,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))
+        .route("/assets/chat-channel-info.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))
         .route("/assets/autocomplete.js", get(asset))
         .route("/assets/presence.js", get(asset))

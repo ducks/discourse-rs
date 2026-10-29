@@ -73,7 +73,10 @@ impl Context<'_> {
     }
 
     /// The viewer's membership of a channel (`find_for_user`).
-    async fn own_membership(&mut self, channel_id: i64) -> Result<Option<MembershipRow>, AppError> {
+    pub(crate) async fn own_membership(
+        &mut self,
+        channel_id: i64,
+    ) -> Result<Option<MembershipRow>, AppError> {
         let Some(user_id) = self.guardian.user_id() else {
             return Ok(None);
         };
@@ -90,7 +93,7 @@ impl Context<'_> {
 
     /// Chat::UserChannelMembershipSerializer: the base membership and the
     /// member, through Chat::BasicUserSerializer with the viewer's scope.
-    async fn membership_json(
+    pub(crate) async fn membership_json(
         &mut self,
         channel: &ChannelRow,
         m: &MembershipRow,

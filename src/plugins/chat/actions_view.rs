@@ -173,7 +173,7 @@ pub(crate) fn picker_template(
 
 /// The success toast (DToasts with DDefaultToast) chat.js shows for a
 /// copied link.
-fn toast_template() -> String {
+pub(crate) fn toast_template() -> String {
     format!(
         "<template class=\"chat-toast-template\"><output class=\"fk-d-toast\" data-test-duration=\"3000\" role=\"status\"><div class=\"fk-d-default-toast -success\"><div class=\"fk-d-default-toast__icon-container\">{}</div><div class=\"fk-d-default-toast__main-container\"><div class=\"fk-d-default-toast__texts\"><div class=\"fk-d-default-toast__message\"></div></div></div><div class=\"fk-d-default-toast__close-container\"><button class=\"btn no-text btn-icon btn-transparent\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></div></div></output></template>",
         d_icon("check", None),

@@ -158,12 +158,12 @@ pub async fn has_children(conn: &mut PgConnection, id: i32) -> Result<bool, sqlx
         .await
 }
 
-/// Chat's `category_channel`: the category's channel row, deleted ones
-/// included (Chat::Channel has no default scope).
+/// Chat's `category_channel`: the category's live channel row
+/// (Trashable's default scope).
 async fn category_channel(conn: &mut PgConnection, id: i32) -> Result<Option<i64>, sqlx::Error> {
     sqlx::query_scalar(
         "SELECT id::bigint FROM chat_channels WHERE chatable_type = 'Category' AND chatable_id = $1 \
-         ORDER BY id LIMIT 1",
+         AND deleted_at IS NULL ORDER BY id LIMIT 1",
     )
     .bind(id)
     .fetch_optional(conn)
@@ -189,7 +189,7 @@ pub async fn can_delete(
         return Ok(true);
     };
     let has_messages: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1)",
+        "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND deleted_at IS NULL)",
     )
     .bind(channel)
     .fetch_one(&mut *conn)

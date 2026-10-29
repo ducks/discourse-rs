@@ -86,8 +86,8 @@ pub(crate) async fn latest_not_deleted_message_id(
 }
 
 impl Context<'_> {
-    /// The live channel a message is in; a deleted one is refused, as
-    /// Rails fails on it.
+    /// The live channel a message is in; a deleted one fails as Rails
+    /// does.
     async fn message_channel(&mut self, channel_id: i64) -> Result<Option<ChannelRow>, AppError> {
         let sql = format!(
             "SELECT {} FROM chat_channels WHERE id = $1",
@@ -103,8 +103,13 @@ impl Context<'_> {
         .bind(channel_id)
         .fetch_one(&mut *self.conn)
         .await?;
+        // The message's chat_channel is nil through Trashable's default
+        // scope, and the service calls a method on it: a 500.
         if deleted {
-            return Err(Unsupported("messages of deleted chat channels").into());
+            return Err(std::io::Error::other(
+                "NoMethodError: undefined method for nil (a message of a trashed chat channel)",
+            )
+            .into());
         }
         Ok(channel)
     }

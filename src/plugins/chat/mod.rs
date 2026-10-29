@@ -10,6 +10,7 @@
 pub mod actions_view;
 pub mod auto_join;
 pub mod bookmarks;
+pub mod channel_settings;
 pub mod channels;
 pub mod chatables;
 pub mod cook;
@@ -18,6 +19,7 @@ pub mod direct_messages;
 pub mod dm_create;
 pub mod dm_groups;
 pub mod drawer;
+pub mod info;
 pub mod membership;
 pub mod mentions;
 pub mod messages;
