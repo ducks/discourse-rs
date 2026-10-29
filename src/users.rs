@@ -178,6 +178,7 @@ const USER_CARD_KEYS: &[&str] = &[
     "can_chat_user",
     "cakedate",
     "birthdate",
+    "vote_count",
     "accepted_answers",
     "featured_user_badge_ids",
 ];
@@ -899,6 +900,15 @@ impl Users<'_> {
         // discourse-cakeday's user and user card keys.
         crate::plugins::cakeday::user_keys(&mut *self.conn, self.settings, g, user.id, &mut u)
             .await?;
+        // discourse-post-voting's user card key.
+        if crate::plugins::post_voting::enabled(self.settings)? {
+            u.insert(
+                "vote_count".into(),
+                json!(
+                    crate::plugins::post_voting::user_vote_count(&mut *self.conn, user.id).await?
+                ),
+            );
+        }
         // discourse-solved's user card key.
         if crate::plugins::solved::enabled(self.settings)? {
             u.insert(

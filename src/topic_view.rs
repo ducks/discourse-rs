@@ -195,6 +195,8 @@ struct PostRow {
     illegal_count: i32,
     notify_moderators_count: i32,
     via_email: bool,
+    /// discourse-post-voting's vote count.
+    qa_vote_count: Option<i32>,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -233,6 +235,9 @@ pub struct Viewer {
     /// ignores, which come off its like count.
     pub ignored_like_counts: HashMap<i32, i64>,
     filter: PostFilter,
+    /// discourse-post-voting's preload for the page, in a post voting
+    /// topic.
+    pub post_voting: Option<crate::plugins::post_voting::Posts>,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -277,6 +282,9 @@ pub struct Options {
     /// NotFound while detailed_404 is off (topics#show's rescue alone does
     /// that).
     pub raise_access_errors: bool,
+    /// `params[:filter]`: the plugins' (discourse-post-voting's
+    /// `activity`).
+    pub filter: Option<String>,
 }
 
 /// `setup_filtered_posts`: which of the topic's posts the view streams.
@@ -292,6 +300,9 @@ struct PostFilter {
     /// Deleted replies leave the stream too (a staff member without
     /// show_deleted, when there are some).
     hide_deleted: bool,
+    /// A plugin's custom default scope (the before query phase), applied
+    /// to the filtered posts and the page's.
+    scope: Option<crate::plugins::PostScope>,
 }
 
 impl PostFilter {
@@ -321,7 +332,37 @@ impl PostFilter {
         if self.hide_deleted {
             sql.push_str(" AND (posts.deleted_at IS NULL OR posts.post_number = 1)");
         }
+        sql.push_str(&self.scope_condition());
         sql
+    }
+
+    /// `apply_default_scope`'s condition, to append.
+    fn scope_condition(&self) -> String {
+        match &self.scope {
+            Some(scope) => format!(" AND ({})", scope.condition),
+            None => String::new(),
+        }
+    }
+
+    /// `apply_default_scope`'s order: sort_order unless a plugin's.
+    fn order(&self) -> &'static str {
+        match self.scope.as_ref().and_then(|s| s.order.as_ref()) {
+            Some(order) => order.asc,
+            None => "sort_order",
+        }
+    }
+
+    /// [`Self::order`] reversed.
+    fn reverse_order(&self) -> &'static str {
+        match self.scope.as_ref().and_then(|s| s.order.as_ref()) {
+            Some(order) => order.desc,
+            None => "sort_order DESC",
+        }
+    }
+
+    /// A plugin orders the posts other than by sort_order.
+    fn custom_order(&self) -> bool {
+        self.scope.as_ref().is_some_and(|s| s.order.is_some())
     }
 
     /// `@contains_gaps`
@@ -427,7 +468,13 @@ impl TopicView<'_> {
 
         let filter = viewer.filter.clone();
         let stream = self.filtered_post_stream(topic.id, &filter).await?;
-        let highest_post_number = self.highest_post_number(topic.id, &filter).await?;
+        // discourse-post-voting's next_page, which topics#show calls first,
+        // takes the last post of its order as the highest post number.
+        let highest_post_number = if filter.custom_order() {
+            self.last_filtered_post_number(topic.id, &filter).await?
+        } else {
+            self.highest_post_number(topic.id, &filter).await?
+        };
         let post_number = self.options.post_number.unwrap_or(1).max(1);
         let page = if self.options.page > 1 {
             self.options.page
@@ -457,8 +504,10 @@ impl TopicView<'_> {
         // TopicView#gaps: the filtered stream against the unfiltered one.
         let gaps = if filter.contains_gaps() {
             let sql = format!(
-                "SELECT id FROM posts WHERE {} ORDER BY sort_order",
-                filter.unfiltered()
+                "SELECT id FROM posts WHERE {}{} ORDER BY {}",
+                filter.unfiltered(),
+                filter.scope_condition(),
+                filter.order()
             );
             let unfiltered: Vec<i32> = sqlx::query_scalar(&sql)
                 .bind(topic.id)
@@ -488,12 +537,39 @@ impl TopicView<'_> {
         )
         .await?;
         let next_page = match (posts.last(), highest_post_number) {
+            (Some(last), Some(highest)) if filter.custom_order() && highest != last.post_number => {
+                Some(page + 1)
+            }
             (Some(last), Some(highest)) if highest > last.post_number => Some(page + 1),
             _ => None,
         };
 
         let mut out = Map::new();
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+        crate::plugins::post_voting::refuse_trashed_topic(
+            self.settings,
+            extra.deleted_at.is_some(),
+        )?;
+        // TopicView.on_preload: discourse-post-voting's comments and votes.
+        if crate::plugins::post_voting::is_post_voting(
+            &mut *self.conn,
+            self.settings,
+            topic.id,
+            &topic.archetype,
+            topic.subtype.as_deref(),
+        )
+        .await?
+        {
+            viewer.post_voting = Some(
+                crate::plugins::post_voting::Posts::load(
+                    &mut *self.conn,
+                    self.settings,
+                    self.guardian,
+                    &post_ids,
+                )
+                .await?,
+            );
+        }
         let solved = self.solved_view(&topic, extra.deleted_at.is_some()).await?;
         let can_vote = self.topic_can_vote(&topic).await?;
         let serialized_posts = self
@@ -830,6 +906,9 @@ impl TopicView<'_> {
                 }))
                 .collect::<Vec<_>>()),
         );
+        if viewer.post_voting.is_some() {
+            self.post_voting_topic_keys(topic.id, &mut out).await?;
+        }
         if let Some(solved) = &solved {
             self.solved_topic_keys(solved, &slug, &viewer, &mut out)
                 .await?;
@@ -896,8 +975,19 @@ impl TopicView<'_> {
             has_deleted: None,
             ignored_like_counts: HashMap::new(),
             filter: PostFilter::default(),
+            post_voting: None,
             ctx,
         };
+        if can_see {
+            viewer.filter.scope = crate::plugins::topic_view_post_scope(
+                &mut *self.conn,
+                self.settings,
+                &viewer.ctx,
+                self.options.filter.as_deref(),
+                self.options.post_ids.is_some(),
+            )
+            .await?;
+        }
         let Some(uid) = self.guardian.user_id() else {
             return Ok(viewer);
         };
@@ -1004,6 +1094,21 @@ impl TopicView<'_> {
             .ok_or(TopicViewError::NotFound)?;
         let (topic, topic_extra) = self.find_topic(post.topic_id).await?;
         let mut viewer = self.load_viewer(topic.id).await?;
+        crate::plugins::post_voting::refuse_trashed_topic(
+            self.settings,
+            topic_extra.deleted_at.is_some(),
+        )?;
+        if crate::plugins::post_voting::is_post_voting(
+            &mut *self.conn,
+            self.settings,
+            topic.id,
+            &topic.archetype,
+            topic.subtype.as_deref(),
+        )
+        .await?
+        {
+            viewer.post_voting = Some(crate::plugins::post_voting::Posts::outside_topic_view());
+        }
         viewer.ignored_like_counts = self
             .ignored_like_counts(std::slice::from_ref(&post))
             .await?;
@@ -1288,14 +1393,34 @@ impl TopicView<'_> {
     ) -> Result<Vec<(i32, i32)>, TopicViewError> {
         let sql = format!(
             "SELECT id, (EXTRACT(EPOCH FROM now() - posts.created_at) / 86400)::INT AS days_ago \
-             FROM posts WHERE {} ORDER BY sort_order",
-            filter.filtered()
+             FROM posts WHERE {} ORDER BY {}",
+            filter.filtered(),
+            filter.order()
         );
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
             .bind(&self.post_types)
             .bind(&filter.ignored)
             .fetch_all(&mut *self.conn)
+            .await?)
+    }
+
+    /// `@filtered_posts.last.post_number`: the last post of the order.
+    async fn last_filtered_post_number(
+        &mut self,
+        topic_id: i32,
+        filter: &PostFilter,
+    ) -> Result<Option<i32>, TopicViewError> {
+        let sql = format!(
+            "SELECT post_number FROM posts WHERE {} ORDER BY {} LIMIT 1",
+            filter.filtered(),
+            filter.reverse_order()
+        );
+        Ok(sqlx::query_scalar(&sql)
+            .bind(topic_id)
+            .bind(&self.post_types)
+            .bind(&filter.ignored)
+            .fetch_optional(&mut *self.conn)
             .await?)
     }
 
@@ -1343,7 +1468,7 @@ impl TopicView<'_> {
         hidden, hidden_reason_id, user_deleted, reply_to_user_id, edit_reason, wiki, reply_quoted, \
         public_version, action_code, like_count, hidden_at, locked_by_id, deleted_at, deleted_by_id, version, \
         notify_user_count, off_topic_count, inappropriate_count, spam_count, illegal_count, \
-        notify_moderators_count, via_email FROM posts";
+        notify_moderators_count, via_email, qa_vote_count FROM posts";
 
     /// `filter_posts_paged`: chunk `page` of the filtered posts.
     async fn filter_posts_paged(
@@ -1353,8 +1478,9 @@ impl TopicView<'_> {
         filter: &PostFilter,
     ) -> Result<Vec<PostRow>, TopicViewError> {
         let sql = format!(
-            "SELECT id FROM posts WHERE {} ORDER BY sort_order OFFSET $4 LIMIT $5",
-            filter.filtered()
+            "SELECT id FROM posts WHERE {} ORDER BY {} OFFSET $4 LIMIT $5",
+            filter.filtered(),
+            filter.order()
         );
         let ids: Vec<i32> = sqlx::query_scalar(&sql)
             .bind(topic_id)
@@ -1403,6 +1529,11 @@ impl TopicView<'_> {
         post_number: i64,
         filter: &PostFilter,
     ) -> Result<Vec<PostRow>, TopicViewError> {
+        if filter.custom_order() {
+            return self
+                .filter_posts_near_in_order(topic_id, post_number, filter)
+                .await;
+        }
         let before = (CHUNK_SIZE / 4).max(1);
         let Some(sort_order) = self.get_sort_order(topic_id, post_number).await? else {
             return Ok(Vec::new());
@@ -1450,6 +1581,37 @@ impl TopicView<'_> {
         self.filter_posts_by_ids(topic_id, &ids, filter).await
     }
 
+    /// discourse-post-voting's `filter_posts_near` for a plugin's order:
+    /// the chunk around the post's row in that order (5 rows before it,
+    /// 14 after), shifted to fit at either end; the first rows when the
+    /// post isn't in the stream.
+    async fn filter_posts_near_in_order(
+        &mut self,
+        topic_id: i32,
+        post_number: i64,
+        filter: &PostFilter,
+    ) -> Result<Vec<PostRow>, TopicViewError> {
+        let sql = format!(
+            "SELECT id, post_number FROM posts WHERE {} ORDER BY {}",
+            filter.filtered(),
+            filter.order()
+        );
+        let rows: Vec<(i32, i32)> = sqlx::query_as(&sql)
+            .bind(topic_id)
+            .bind(&self.post_types)
+            .bind(&filter.ignored)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        let window = near_window(&rows, post_number.max(1), CHUNK_SIZE);
+        let ids: Vec<i32> = rows
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| window.contains(&(*i as i64 + 1)))
+            .map(|(_, (id, _))| *id)
+            .collect();
+        self.filter_posts_by_ids(topic_id, &ids, filter).await
+    }
+
     /// `filter_posts_by_post_number`: up to a chunk of the filtered posts
     /// after the post's sort order (`asc`), else before it, nearest last.
     async fn filter_posts_by_post_number(
@@ -1462,10 +1624,14 @@ impl TopicView<'_> {
         let Some(sort_order) = self.get_sort_order(topic_id, post_number).await? else {
             return Ok(Vec::new());
         };
-        let (cmp, order) = if asc { (">", "ASC") } else { ("<", "DESC") };
+        let (cmp, order) = if asc {
+            (">", filter.order())
+        } else {
+            ("<", filter.reverse_order())
+        };
         let sql = format!(
             "SELECT id FROM posts WHERE {} AND posts.sort_order {cmp} $4 \
-             ORDER BY sort_order {order} LIMIT $5",
+             ORDER BY {order} LIMIT $5",
             filter.filtered()
         );
         let ids: Vec<i32> = sqlx::query_scalar(&sql)
@@ -1492,9 +1658,11 @@ impl TopicView<'_> {
         filter: &PostFilter,
     ) -> Result<Vec<PostRow>, TopicViewError> {
         let sql = format!(
-            "{} WHERE {} AND posts.id = ANY($3) ORDER BY sort_order",
+            "{} WHERE {}{} AND posts.id = ANY($3) ORDER BY {}",
             Self::POST_SQL,
-            filter.unfiltered()
+            filter.unfiltered(),
+            filter.scope_condition(),
+            filter.order()
         );
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
@@ -2533,6 +2701,10 @@ impl TopicView<'_> {
             if let Some(policies) = &policies {
                 policies.post_keys(post.id, &mut p);
             }
+            // discourse-post-voting's.
+            if let Some(post_voting) = &viewer.post_voting {
+                post_voting.post_keys(post.id, post.qa_vote_count, &mut p);
+            }
             // discourse-reactions' post keys.
             if let Some(reactions) = &reactions {
                 reactions.post_keys(post.id, &mut p);
@@ -2581,6 +2753,31 @@ impl TopicView<'_> {
     /// discourse-solved's state for the topic, when it's on.
     /// discourse-topic-voting's `Topic#can_vote?`, None with the plugin
     /// off.
+    async fn post_voting_topic_keys(
+        &mut self,
+        topic_id: i32,
+        out: &mut Map<String, Value>,
+    ) -> Result<(), TopicViewError> {
+        let facts =
+            crate::plugins::post_voting::TopicFacts::load(&mut *self.conn, topic_id).await?;
+        facts.topic_view_keys(out);
+        // BasicUserSerializer of the last answerer (`User.find`, which a
+        // deleted author makes a RecordNotFound).
+        let last_answerer = match facts.last_answerer_id {
+            Some(Some(id)) => {
+                let logo_small_url = self.logo_small_url().await?;
+                match self.basic_user(id, logo_small_url.as_deref()).await? {
+                    Value::Null => return Err(TopicViewError::NotFound),
+                    user => user,
+                }
+            }
+            Some(None) => return Err(TopicViewError::NotFound),
+            None => Value::Null,
+        };
+        out.insert("last_answerer".into(), last_answerer);
+        Ok(())
+    }
+
     async fn topic_can_vote(&mut self, topic: &TopicRow) -> Result<Option<bool>, TopicViewError> {
         if !crate::plugins::topic_voting::enabled(self.settings)? {
             return Ok(None);
@@ -3205,6 +3402,29 @@ impl TopicView<'_> {
 
 /// `TimelineLookup.build`: sampled `[post index, days ago]` pairs, at most
 /// `max_values` of them, one per distinct day.
+/// The rows (1-based) discourse-post-voting's `filter_posts_near` loads
+/// around `post_number` in `rows` (id, post_number) of the view's order.
+pub fn near_window(
+    rows: &[(i32, i32)],
+    post_number: i64,
+    limit: i64,
+) -> std::ops::RangeInclusive<i64> {
+    let row_number = rows
+        .iter()
+        .position(|(_, n)| i64::from(*n) == post_number)
+        .map_or(1, |i| i as i64 + 1);
+    let max_row_number = rows.len() as i64;
+    let before = (limit / 4).max(1);
+    let after = limit - before - 1;
+    if row_number - before <= 0 {
+        1..=(limit - (row_number - 1))
+    } else if max_row_number - row_number < after {
+        (max_row_number - limit + 1)..=max_row_number
+    } else {
+        (row_number - before)..=(row_number + after)
+    }
+}
+
 pub fn timeline_lookup(stream: &[(i32, i32)], max_values: usize) -> Vec<[i64; 2]> {
     let len = stream.len();
     if len == 0 {
@@ -3451,5 +3671,23 @@ mod tests {
         assert_eq!(lookup.len(), 301);
         assert_eq!(lookup[0], [1, 600]);
         assert_eq!(lookup.last().unwrap(), &[600, 1]);
+    }
+
+    #[test]
+    fn the_window_near_a_post_fits_the_order() {
+        // 30 posts in vote order, post numbers reversed after the first.
+        let rows: Vec<(i32, i32)> = std::iter::once((1, 1))
+            .chain((2..=30).map(|i| (i, 32 - i)))
+            .collect();
+        // Near the start: the first 20 rows.
+        assert_eq!(near_window(&rows, 1, 20), 1..=20);
+        // A post that isn't there: from the first row.
+        assert_eq!(near_window(&rows, 99, 20), 1..=20);
+        // Row 12 (post 20): 5 before, 14 after.
+        assert_eq!(near_window(&rows, 20, 20), 7..=26);
+        // Row 28 (post 4): the last 20 rows.
+        assert_eq!(near_window(&rows, 4, 20), 11..=30);
+        // Row 3: still the lower boundary, 20 - 2 rows.
+        assert_eq!(near_window(&rows, 29, 20), 1..=18);
     }
 }

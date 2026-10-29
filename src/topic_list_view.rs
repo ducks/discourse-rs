@@ -614,6 +614,24 @@ fn topic_url(cx: &ListContext, topic: &Value, post_number: Option<i64>) -> Strin
 /// Topic#lastUnreadUrl, where TopicLink goes: the first unread post.
 pub(crate) fn last_unread_url(cx: &ListContext, topic: &Value) -> String {
     let highest = topic["highest_post_number"].as_i64().unwrap_or(0);
+    // discourse-post-voting's custom last unread url: the question when
+    // nothing is unread, the one unread post, else the first unread post
+    // sorted by activity.
+    if topic["is_post_voting"] == true
+        && let Some(last_read) = topic["last_read_post_number"].as_i64().filter(|n| *n != 0)
+    {
+        return if highest <= last_read {
+            topic_url(cx, topic, Some(1))
+        } else if last_read == highest - 1 {
+            topic_url(cx, topic, Some(last_read + 1))
+        } else {
+            format!(
+                "{}?filter={}",
+                topic_url(cx, topic, Some(last_read + 1)),
+                crate::plugins::post_voting::ACTIVITY_FILTER
+            )
+        };
+    }
     let category = topic["category_id"]
         .as_i64()
         .and_then(|id| cx.categories.get(&id));

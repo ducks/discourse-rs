@@ -23,6 +23,8 @@ pub struct PostsParams {
     /// `post_number` with `asc` (filter_post_number).
     pub filter_post_number: Option<(i64, bool)>,
     pub include_suggested: bool,
+    /// `filter`: discourse-post-voting's `activity`, the one ported.
+    pub filter: Option<String>,
 }
 
 /// `ActiveRecord::Type::Boolean.new.deserialize`: blank is nil, the false
@@ -38,8 +40,12 @@ impl PostsParams {
     /// From the query string; `Err` names a param that is not ported.
     pub fn parse(query: &str) -> Result<Self, &'static str> {
         let p = crate::params::parse_query(query);
+        if p.get("filter").is_some_and(|v| {
+            v != &Value::String(String::new()) && v != &Value::String("activity".into())
+        }) {
+            return Err("topics#posts with a filter");
+        }
         for (key, what) in [
-            ("filter", "topics#posts with a filter"),
             ("username_filters", "topics#posts with username filters"),
             ("include_raw", "topics#posts with include_raw"),
         ] {
@@ -73,6 +79,7 @@ impl PostsParams {
             filter_post_number,
             include_suggested: crate::params::string(&p, "include_suggested").as_deref()
                 == Some("true"),
+            filter: crate::params::string(&p, "filter").filter(|f| !f.is_empty()),
         })
     }
 }
@@ -110,6 +117,7 @@ pub async fn posts(
             filter_post_number: params.filter_post_number,
             include_suggested: Some(params.include_suggested),
             raise_access_errors: true,
+            filter: params.filter,
             ..Default::default()
         },
         post_types: Vec::new(),

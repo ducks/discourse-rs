@@ -115,6 +115,7 @@ impl TopicView<'_> {
             has_deleted: None,
             ignored_like_counts: Default::default(),
             filter: Default::default(),
+            post_voting: None,
         })
     }
 
@@ -138,6 +139,18 @@ impl TopicView<'_> {
         let (topic, extra) = self.find_topic(post.topic_id).await?;
         let topic_present = held.topic_loaded || extra.deleted_at.is_none();
         let mut viewer = self.bare_viewer(topic.id).await?;
+        crate::plugins::post_voting::refuse_trashed_topic(self.settings, !topic_present)?;
+        if crate::plugins::post_voting::is_post_voting(
+            &mut *self.conn,
+            self.settings,
+            topic.id,
+            &topic.archetype,
+            topic.subtype.as_deref(),
+        )
+        .await?
+        {
+            viewer.post_voting = Some(crate::plugins::post_voting::Posts::outside_topic_view());
+        }
         // post_bookmark: Bookmark.find_by(user: scope.user, bookmarkable: post)
         if let Some(uid) = self.guardian.user_id() {
             viewer.bookmarks = sqlx::query_as(

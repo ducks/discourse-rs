@@ -2852,6 +2852,8 @@ async fn quote_button_config(
 
 /// The topic page from the /t/:id.json document; `pm_counts` for a
 /// message's browse more line (pm_tracking_state::browse_more_counts).
+/// `filter` is the request's (discourse-post-voting's sort by activity).
+#[allow(clippy::too_many_arguments)]
 pub async fn topic_page(
     conn: &mut PgConnection,
     i18n: &I18n,
@@ -2860,6 +2862,7 @@ pub async fn topic_page(
     view: &Value,
     page: i64,
     pm_counts: Option<crate::post_view::PmCounts>,
+    filter: Option<&str>,
 ) -> Result<TopicPage, HtmlError> {
     let base = site.base_path.clone();
     let slug = s(&view["slug"]);
@@ -2916,6 +2919,9 @@ pub async fn topic_page(
         None => Vec::new(),
     };
     let mut topic = crate::post_view::TopicInfo::from_view(view);
+    if let Some(state) = topic.post_voting.as_mut() {
+        state.by_activity = filter == Some(crate::plugins::post_voting::ACTIVITY_FILTER);
+    }
     topic.pm_path = pm_path(conn, view, &base, viewer).await?;
     // What the staff menus and the plugins' post menu buttons read of the
     // viewer.
@@ -3003,6 +3009,17 @@ pub async fn topic_page(
         String::new()
     };
     let timeline = crate::post_view::timeline(&cx, view);
+    // discourse-post-voting's labels and script, where its topic-above-posts
+    // connector renders.
+    let post_voting_assets = if topic.post_voting.is_some() {
+        format!(
+            "{}<script defer src=\"{}\"></script>",
+            crate::plugins::post_voting::view::client_labels(&cx),
+            crate::assets::url(&base, "post-voting.js")
+        )
+    } else {
+        String::new()
+    };
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
     // The flag modal for members; for staff the penalty modal its take
@@ -3121,7 +3138,11 @@ pub async fn topic_page(
     site.chrome
         .body_classes
         .push_str(&topic_body_classes(&list, view, &archetype));
-    let above_posts = crate::plugin_api::outlet_html(
+    // discourse-post-voting's topic-above-posts connector.
+    if let Some(state) = &topic.post_voting {
+        site.chrome.body_classes.push_str(state.body_classes());
+    }
+    let mut above_posts = crate::plugin_api::outlet_html(
         &mut crate::plugin_api::Ctx {
             conn: &mut *conn,
             settings,
@@ -3132,6 +3153,7 @@ pub async fn topic_page(
     )
     .await
     .map_err(HtmlError::Plugin)?;
+    above_posts.push_str(&post_voting_assets);
     Ok(TopicPage {
         above_posts,
         site_title: site.site_title,
@@ -3666,6 +3688,8 @@ pub fn notification_verb(notification_type: i64) -> &'static str {
         24 => "Reminder:",
         // discourse-reactions' reaction.
         25 => "reacted to your post in",
+        // discourse-post-voting's question_answer_user_commented.
+        35 => "commented in",
         _ => "in",
     }
 }

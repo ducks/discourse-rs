@@ -281,6 +281,7 @@ mod tests {
             user_notes: None,
             cakeday: None,
             policy: false,
+            post_voting: None,
             hashtag_tag_icon: None,
         };
         let mut topic = TopicInfo::from_view(&view);

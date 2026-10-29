@@ -33,6 +33,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-solved | started | 30 | unaccepting on post deletion, revisions and moves, auto bump, category custom fields on site and categories JSON, composer education message | 233-235, 213, 212 | 2 M, 2 S plus 163 |
 | discourse-topic-voting | started | 16 | voting after login, the docked header vote box, Most Votes search order | 236-237, 235, 211, 212 | M plus S, with 197 and 195 |
 | discourse-cakeday | started | 5 | onceoffs never enqueued (core has no EnqueueOnceoffs), non-English strings (167), "today" read from the user's timezone not the browser's | none | S |
+| discourse-post-voting | started | 11 | flagging comments (plugin reviewables in the queue), the composer's post voting toggle and category defaults, voting after login | none yet | M (reviewables, shared with chat) plus S |
 | discourse-presence | started | 3 | the translate composer state, whisper state | 238 | S |
 | discourse-local-dates | started | 5 | refused date forms Rails cooks | 239, 244 | S |
 | discourse-lazy-videos | started | 5 | no client player, no email links, no crawler JSON-LD | 240-241 | 2 S |
@@ -597,6 +598,52 @@ New (ROADMAP Phase 11): 236 `feat/topic-voting-ui-rest` M, 237 `feat/topic-votin
 - The voting_closed icon: the port's far-envelope may come from an older vendored Discourse; vendor/discourse/DISCOURSE_REF vs the reference checkout would settle it.
 - Whether Rails emails votes_released notifications (no plugin code does; core's per-type email rules would need a run).
 - prev_topics_url on voted_by: Rails sets it on the list (list_controller_extension.rb:15); whether TopicListSerializer emits it for this list needs a Rails response to compare.
+
+## discourse-post-voting (`plugins/discourse-post-voting`)
+
+Verdict: started (11 gaps). Ported 2026-10-28 on `feat/plugin-post-voting`.
+
+### What the port has
+- Enabled check, `Topic#is_post_voting?` (the `question_answer` subtype, not in a nested view), `Post#is_post_voting_topic?` (refused for a trashed topic, as below): src/plugins/post_voting/mod.rs.
+- The topic view: the custom default scope (answers only; without `filter=activity` no whispers or small actions, ordered by votes after the question), applied to the stream, the pages, the gaps and the posts by number; `filter_posts_near` by row in the vote order; `next_page` and `highest_post_number` from the last post of the order; `filter=activity` on topics#show and topics#posts; posts by id left alone. The before query phase is `plugins::topic_view_post_scope` (src/plugins/mod.rs), applied by src/topic_view.rs (PostFilter's scope).
+- `TopicView.on_preload` (each post's first five comments, comment counts, the viewer's votes on posts and comments, the posts voted on) and PostSerializerExtension's keys (`post_voting_vote_count`, `post_voting_user_voted_direction`, `post_voting_has_votes`, `comments`, `comments_count`; outside a topic view and on web hook posts the bare keys; a trashed topic's posts refused while the plugin is on, as `topic.is_post_voting?` on its nil topic raises at the reference); TopicViewSerializerExtension's keys (`is_post_voting`, `last_answered_at`, `last_commented_on`, `answer_count`, `last_answer_post_number`, `last_answerer`, a deleted last answerer a 404 as `User.find` raises); TopicListItemSerializer's `is_post_voting`; the user card's `vote_count`; the current user's `can_flag_post_voting_comments`; BasicCategorySerializer's `create_as_post_voting_default` and `only_post_voting_in_this_category`.
+- VoteManager and VotesController: POST and DELETE /post_voting/vote, GET /post_voting/voters, POST and DELETE /post_voting/vote/comment, with ensure_can_vote's messages, the undo window, PostVotingVote's validations (422 record_invalid), `post_voting_post_voted` on the topic's channel, the destroy's any-vote-in-the-topic check and a second comment upvote failing the unique index: src/plugins/post_voting/votes.rs, src/routes/post_voting.rs.
+- PostVotingComment and CommentsController: GET, POST, PUT and DELETE /post_voting/comments (load more, create through CommentCreator, edit, trash), the model's validations in order (presence, ensure_can_comment, stripped length, TextSentinel, watched words), cooking with only emphasis, backticks, linkify and link plus emoji and censored (render_post_voting_comment in crates/markdown, pretty_text::cook_post_voting_comment), the raw's newlines run together, `post_voting_post_commented`, `_comment_edited` and `_comment_trashed`, the question_answer_user_commented notification with its live alert and push check: src/plugins/post_voting/comments.rs.
+- Posting: `create_as_post_voting` (the NewPostManager handler) on posts#create, `subtype` in a queued post's payload and on its approval, PostExtension's `ensure_only_replies` on create, the emailed reply to the question made an answer: src/routes/posts.rs, src/posting/create.rs, src/posting/enqueue.rs, src/review_posts.rs, src/plugins/post_voting/lifecycle.rs.
+- The user destroyer's content deletion callback (comments, their reviewables, `bulk_remove_votes_by`), while the plugin is on: src/plugins/mod.rs user_content_deleting.
+- PUT /post_voting/comments/flag up to the reviewable: login, the 4 a minute rate limit, the comment, `flag_type_id`, `can_flag_post_voting_comment?` and `_as?`.
+- UI: PostVotingVoteControls after the avatar (optimistic votes, the voters menu split up and down), PostVotingAnswerHeader before the stream's first answer (answer count, Votes and Activity), PostVotingComments after the post menu (each comment's upvote, edit, delete, the comments menu's Add a comment with its composer and Show more), the Answer button in Reply's place and no likes on answers unless post_voting_enable_likes_on_answers, the `post-voting-topic` and `--sort-by-activity` body classes, the notification's renderer (comment icon, the comment's anchor) and alert verb, the category editor's Post Voting section (src/category_edit_view.rs, static/js/category-edit.js sending the custom fields whole), the last unread link into a post voting topic (src/topic_list_view.rs), the stylesheets: src/plugins/post_voting/view.rs, src/post_view.rs, src/html.rs, src/user_menu_view.rs, static/js/post-voting.js, static/css/post-voting.css. A live redraw of a post keeps the comments loaded in the page and the answers header.
+- Settings and locales: the vendored plugin settings and locale files (already loaded).
+
+### Gaps
+
+**Server**
+- Flagging a comment: CommentReviewQueue#flag_comment (ReviewablePostVotingComment.needs_review!, add_score with the queued-by-staff reason and force_review, the companion message for notify_user and notify_moderators, take_action's agree_and_delete, the auto silence on chat_auto_silence_from_flags_duration). Rails: plugins/discourse-post-voting/lib/post_voting/comment_review_queue.rb:4. Port: src/plugins/post_voting/comments.rs flag (refusal "flagging post voting comments (plugin reviewables in the review queue)").
+- ReviewablePostVotingComment in the review queue: its serializer, its action bundles and every perform (agree_and_keep_comment, agree_and_restore, agree_and_delete, disagree, disagree_and_restore, ignore, delete_and_ignore, and the aliases: agree_and_keep_hidden, agree_and_silence, agree_and_suspend and delete_and_agree to agree_and_delete, so silencing or suspending from it only deletes the comment at the reference). Rails: plugins/discourse-post-voting/app/models/reviewable_post_voting_comment.rb. Port: src/review_list.rs (refusal "plugin reviewables in the queue"), src/review.rs (refusal "reviewable types other than flagged posts"); chat's ReviewableChatMessage waits on the same core piece.
+- `register_anonymous_action "vote_post"`: a vote cast after login. Rails: plugins/discourse-post-voting/plugin.rb:275. Port: core has no anonymous actions (src/session/login.rs, item 211); static/js/post-voting.js sends a visitor to log in.
+- `topic_embed_import_create_args` modifier (an embedded topic in a post voting category). Rails: plugin.rb:229. Port: TopicEmbed import isn't ported.
+- TopicExtension's `ensure_regular_topic` and `ensure_no_post_voting_subtype`: unreachable in the port, which takes no `subtype` param (only the handler sets it, while the plugin is on) and changes no topic's subtype. Rails: plugins/discourse-post-voting/extensions/topic_extension.rb:79-96.
+- Post `has_many :post_voting_comments, dependent: :destroy` and the votes' `delete_all` on a post's destroy: the port has no permanent post deletion yet (src/post_destroyer.rs).
+
+**UI**
+- The composer: CREATE_TOPIC's "Toggle post voting" composer action, `createAsPostVoting` defaulting from the category (create_as_post_voting_default, only_post_voting_in_this_category) and serialized on create, the action title and save label ("Create post voting topic", "Answer"). Rails: plugins/discourse-post-voting/assets/javascripts/discourse/initializers/extend-composer-actions.js. Port: static/js/composer.js has no composer actions menu yet.
+- The flag modal on a comment (PostVotingFlag). Rails: lib/post-voting-flag.js, components/post-voting-comment-actions.gjs. Port: the button is drawn, static/js/post-voting.js sends nothing.
+- The reviewable's component (components/reviewable/post-voting-comment.gjs, `post-voting-reviewables` initializer): waits on the queue above.
+- A post redrawn live while the page is sorted by activity: the redraw cannot know the page's sort (the header is kept as drawn).
+
+**Settings, Locales, Markdown, Emails**
+- No gap found: the settings are read (post_voting_comment_max_raw_length and min_post_length by the composer), the locales load, the comment cooking is ported, and the plugin sends no email of its own (the notification's email is core's).
+
+**Crawler**
+- `server:topic-show-crawler-post-end` (crawler_post.html.erb: comments with schema.org Comment markup, the answer count): the port serves crawlers the server-rendered topic page, which draws the comments, without that markup.
+
+### Items
+
+None yet: the reviewables (with chat's ReviewableChatMessage) and the composer actions are core pieces to name in ROADMAP.
+
+### Couldn't determine
+- Read at the vendored bf55a44c (the extract in tmp/rails-bf55a44c), after a first pass on the reference checkout's HEAD (167479b1). The plugin differs there in its reviewable (no penalty args or DSA attributes, silence and suspend aliased to delete) and in `Post#is_post_voting_topic?` (`topic.is_post_voting?` without the safe navigation, so a trashed topic's posts raise). Rails raises for those whether or not the plugin is on; the port refuses them only while it is on, so a site without post voting keeps showing staff its trashed topics.
+- Whether `highest_post_number` (the last post of the vote order, from post voting's `next_page`) is what Rails serializes when topics#show is cut short by `replies_to_post_number` and its kin, which the port doesn't take.
 
 ## The small plugins: shared context
 

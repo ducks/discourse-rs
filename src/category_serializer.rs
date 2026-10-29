@@ -502,8 +502,15 @@ pub async fn serialize(
         Some(Value::Object(m)) => m,
         _ => Map::new(),
     };
-    // basic_fields put topic voting's can_vote last; it goes after
-    // custom_fields here.
+    // basic_fields put the plugins' keys (post voting's, then topic
+    // voting's can_vote) last; they go after custom_fields here.
+    let plugin_keys: Vec<(String, Value)> = [
+        crate::plugins::post_voting::CREATE_AS_POST_VOTING_DEFAULT,
+        crate::plugins::post_voting::ONLY_POST_VOTING_IN_THIS_CATEGORY,
+    ]
+    .into_iter()
+    .filter_map(|k| basic.shift_remove(k).map(|v| (k.to_string(), v)))
+    .collect();
     let can_vote = basic.remove("can_vote");
 
     let mut out = Map::new();
@@ -553,6 +560,7 @@ pub async fn serialize(
         "custom_fields".into(),
         Value::Object(custom_fields(conn, id).await?),
     );
+    out.extend(plugin_keys);
     if let Some(v) = can_vote {
         out.insert("can_vote".into(), v);
     }

@@ -697,9 +697,24 @@ async fn render_post(
         post_types: Vec::new(),
         logo_small_url: None,
     };
-    let post = view
+    let mut post = view
         .serialize_single_post(post_id, false, false, true)
         .await?;
+    // discourse-post-voting's comments and votes, as the topic view loads
+    // them for the page the post is redrawn on.
+    if let Value::Object(keys) = &mut post
+        && keys.contains_key("post_voting_has_votes")
+    {
+        let loaded = crate::plugins::post_voting::Posts::load(
+            &mut *view.conn,
+            settings,
+            guardian,
+            &[post_id],
+        )
+        .await?;
+        let count = keys["post_voting_vote_count"].as_i64().map(|n| n as i32);
+        loaded.post_keys(post_id, count, keys);
+    }
     let base = state.config.globals.relative_url_root();
     let topic_id = post["topic_id"].as_i64().unwrap_or(0) as i32;
     // discourse-solved's accepted answers, which the first post shows.
@@ -821,6 +836,7 @@ async fn render_post(
             )?
         },
         plugin_menu,
+        post_voting: crate::plugins::post_voting::view::TopicState::for_redraw(&post),
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;
@@ -1280,8 +1296,17 @@ pub async fn posts(
     } else {
         None
     };
-    let page = crate::html::topic_page(&mut conn, &state.i18n, &settings, site, json, 1, pm_counts)
-        .await?;
+    let page = crate::html::topic_page(
+        &mut conn,
+        &state.i18n,
+        &settings,
+        site,
+        json,
+        1,
+        pm_counts,
+        None,
+    )
+    .await?;
     let mut html = page.posts.concat();
     if params.include_suggested {
         html.push_str(&format!(

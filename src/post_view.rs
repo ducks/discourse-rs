@@ -66,6 +66,8 @@ pub struct PostSettings {
     pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
     /// discourse-policy is on: its decorator draws the policies.
     pub policy: bool,
+    /// discourse-post-voting's settings, when it is on.
+    pub post_voting: Option<crate::plugins::post_voting::view::PostVotingUi>,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -130,6 +132,7 @@ impl PostSettings {
                 crate::clock::now().date_naive(),
             )?,
             policy: crate::plugins::policy::enabled(settings)?,
+            post_voting: crate::plugins::post_voting::view::PostVotingUi::load(settings)?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -182,6 +185,8 @@ pub struct TopicInfo {
     /// The plugins' post menu buttons (`api.addPostMenuButton`), by post
     /// id: plugin_api::post_menu_buttons.
     pub plugin_menu: HashMap<i64, String>,
+    /// discourse-post-voting's state of a post voting topic.
+    pub post_voting: Option<crate::plugins::post_voting::view::TopicState>,
 }
 
 /// What the topic admin menu (TopicAdminMenu) and the post admin menu
@@ -296,6 +301,7 @@ impl TopicInfo {
                 ..StaffMenus::default()
             },
             plugin_menu: HashMap::new(),
+            post_voting: crate::plugins::post_voting::view::TopicState::from_view(view),
         }
     }
 }
@@ -734,8 +740,10 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         ""
     };
     format!(
-        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}{}{map}</article></div>",
+        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2>{}<article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}{}{map}</article></div>",
         classes.join(" "),
+        // Before the post-article wrapper: discourse-post-voting's header.
+        crate::plugins::post_voting::view::answer_header(cx, p),
         p["id"],
         user_id.map(|id| id.to_string()).unwrap_or_default(),
         notice(cx, p),
@@ -907,14 +915,18 @@ fn avatar(cx: &PostContext, p: &Value) -> String {
             )
         )
     };
-    // discourse-user-notes' icon after the avatar.
+    // After the post-avatar wrapper, in plugin load order:
+    // discourse-post-voting's votes, then discourse-user-notes' icon.
+    let votes = crate::plugins::post_voting::view::vote_controls(cx, p);
     let notes = match cx.settings.user_notes.as_ref() {
         Some(ui) if cx.staff && ui.avatar_placement => {
             crate::plugins::user_notes::view::post_icon(ui, cx.list.base_path, p)
         }
         _ => String::new(),
     };
-    format!("<div class=\"topic-avatar\"><div class=\"post-avatar\">{inner}</div>{notes}</div>")
+    format!(
+        "<div class=\"topic-avatar\"><div class=\"post-avatar\">{inner}</div>{votes}{notes}</div>"
+    )
 }
 
 fn meta_data(cx: &PostContext, p: &Value, reply_tab: &str) -> String {
@@ -1248,6 +1260,9 @@ fn menu(cx: &PostContext, p: &Value) -> String {
         };
         configured.insert(at, "solved");
     }
+    if let Some(ui) = cx.settings.post_voting.as_ref() {
+        crate::plugins::post_voting::view::menu_keys(ui, p, &mut configured);
+    }
     let bookmarked = !p["bookmark_id"].is_null() || p["bookmarked"] == true;
     let hidden_items: Vec<&str> = cx
         .settings
@@ -1322,6 +1337,7 @@ fn menu(cx: &PostContext, p: &Value) -> String {
             "admin" => admin_button(cx, p),
             "reply" => (cx.topic.can_create_post && member).then(|| reply_button(cx, p)),
             "solved" => solved.as_ref().map(|b| b.html.clone()),
+            "post-voting-answer" => crate::plugins::post_voting::view::answer_button(cx, p),
             _ => None,
         };
         buttons.push((key, hideable, html));
@@ -1382,8 +1398,15 @@ fn menu(cx: &PostContext, p: &Value) -> String {
     } else {
         String::new()
     };
+    // The post-menu__after outlet: discourse-post-voting's comments.
+    let after = cx
+        .settings
+        .post_voting
+        .as_ref()
+        .map(|ui| crate::plugins::post_voting::view::comments(cx, ui, p))
+        .unwrap_or_default();
     format!(
-        "<nav class=\"post-controls {}\" role=\"none\">{extra}<div class=\"actions\">{actions}</div>{admin_menu}</nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
+        "<nav class=\"post-controls {}\" role=\"none\">{extra}<div class=\"actions\">{actions}</div>{admin_menu}</nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>{after}",
         if collapsed { "collapsed" } else { "expanded" }
     )
 }
@@ -3897,6 +3920,7 @@ mod tests {
             user_notes: None,
             cakeday: None,
             policy: false,
+            post_voting: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -3922,6 +3946,7 @@ mod tests {
             poll_viewer: None,
             menus: StaffMenus::default(),
             plugin_menu: HashMap::new(),
+            post_voting: None,
         };
         let cx = PostContext {
             list: &list,
@@ -4177,6 +4202,7 @@ mod tests {
             user_notes: None,
             cakeday: None,
             policy: false,
+            post_voting: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4202,6 +4228,7 @@ mod tests {
             poll_viewer: None,
             menus: StaffMenus::default(),
             plugin_menu: HashMap::new(),
+            post_voting: None,
         };
         let cx = PostContext {
             list: &list,

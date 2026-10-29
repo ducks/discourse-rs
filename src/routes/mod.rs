@@ -70,6 +70,7 @@ mod permalinks;
 mod pm_invite;
 mod post_actions;
 mod post_destroy;
+mod post_voting;
 mod posts;
 mod presence;
 mod read_tracking;
@@ -538,6 +539,44 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/policy/accepted.json", get(policy::accepted))
         .route("/policy/not-accepted", get(policy::not_accepted))
         .route("/policy/not-accepted.json", get(policy::not_accepted))
+        // discourse-post-voting's engine.
+        .route(
+            "/post_voting/vote",
+            post(post_voting::create_vote).delete(post_voting::destroy_vote),
+        )
+        .route(
+            "/post_voting/vote.json",
+            post(post_voting::create_vote).delete(post_voting::destroy_vote),
+        )
+        .route(
+            "/post_voting/vote/comment",
+            post(post_voting::create_comment_vote).delete(post_voting::destroy_comment_vote),
+        )
+        .route(
+            "/post_voting/vote/comment.json",
+            post(post_voting::create_comment_vote).delete(post_voting::destroy_comment_vote),
+        )
+        .route("/post_voting/voters", get(post_voting::voters))
+        .route("/post_voting/voters.json", get(post_voting::voters))
+        .route("/post_voting/comments/flag", put(post_voting::flag_comment))
+        .route(
+            "/post_voting/comments/flag.json",
+            put(post_voting::flag_comment),
+        )
+        .route(
+            "/post_voting/comments",
+            get(post_voting::comments)
+                .post(post_voting::comments)
+                .put(post_voting::comments)
+                .delete(post_voting::comments),
+        )
+        .route(
+            "/post_voting/comments.json",
+            get(post_voting::comments)
+                .post(post_voting::comments)
+                .put(post_voting::comments)
+                .delete(post_voting::comments),
+        )
         .route(
             "/topics/voted-by/{username}",
             cached!(get(topic_voting::voted_by)),
@@ -2745,6 +2784,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/topic-admin-menu.js", get(asset))
         .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))
+        .route("/assets/post-voting.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))
         .route("/assets/user-notes.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))

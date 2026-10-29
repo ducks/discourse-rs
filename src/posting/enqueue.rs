@@ -241,6 +241,11 @@ pub(super) async fn enqueue(
     if let Some(n) = args.reply_to_post_number {
         payload.insert("reply_to_post_number".into(), json!(n));
     }
+    // NewPostManager.plugin_payload_attributes in plugin order:
+    // discourse-post-voting's subtype, then discourse-poll's is_poll.
+    if let Some(subtype) = args.subtype.as_deref().filter(|s| !s.is_empty()) {
+        payload.insert("subtype".into(), json!(subtype));
+    }
     payload.insert("is_poll".into(), json!(true));
     if let Some(title) = args.title.as_deref().filter(|t| !t.trim().is_empty()) {
         payload.insert("title".into(), json!(title));
