@@ -851,7 +851,13 @@ async fn render_post(
         Some(u) => crate::html::ignored_usernames(&mut conn, &u.username).await?,
         None => Vec::new(),
     };
-    let post_settings = crate::post_view::PostSettings::load(settings)?;
+    let mut post_settings = crate::post_view::PostSettings::load(settings)?;
+    post_settings.cakeday = crate::plugins::cakeday::view::CakedayUi::for_viewer(
+        &mut conn,
+        settings,
+        guardian.user_id(),
+    )
+    .await?;
     let cx = crate::post_view::PostContext {
         list: &list,
         settings: &post_settings,
@@ -1129,7 +1135,13 @@ pub async fn gap(
         Some(u) => crate::html::ignored_usernames(&mut conn, &u.username).await?,
         None => Vec::new(),
     };
-    let post_settings = crate::post_view::PostSettings::load(&settings)?;
+    let mut post_settings = crate::post_view::PostSettings::load(&settings)?;
+    post_settings.cakeday = crate::plugins::cakeday::view::CakedayUi::for_viewer(
+        &mut conn,
+        &settings,
+        guardian.user_id(),
+    )
+    .await?;
     let mut topic = crate::post_view::TopicInfo::from_view(json);
     topic.menus = crate::post_view::StaffMenus::load(&guardian, &settings, json)?;
     topic.plugin_menu = crate::plugin_api::post_menu_buttons(

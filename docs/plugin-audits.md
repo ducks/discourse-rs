@@ -32,6 +32,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-reactions | started | 23 | deleted users' reactions kept, the regular like sync, logged-out reacting, op_reactions_data on lists, picker and paging UI | 231-232, 211, 212 | 2 M |
 | discourse-solved | started | 30 | unaccepting on post deletion, revisions and moves, auto bump, category custom fields on site and categories JSON, composer education message | 233-235, 213, 212 | 2 M, 2 S plus 163 |
 | discourse-topic-voting | started | 16 | voting after login, the docked header vote box, Most Votes search order | 236-237, 235, 211, 212 | M plus S, with 197 and 195 |
+| discourse-cakeday | started | 5 | onceoffs never enqueued (core has no EnqueueOnceoffs), non-English strings (167), "today" read from the user's timezone not the browser's | none | S |
 | discourse-presence | started | 3 | the translate composer state, whisper state | 238 | S |
 | discourse-local-dates | started | 5 | refused date forms Rails cooks | 239, 244 | S |
 | discourse-lazy-videos | started | 5 | no client player, no email links, no crawler JSON-LD | 240-241 | 2 S |
@@ -1120,3 +1121,83 @@ New (ROADMAP Phase 11): the aria-label in 247 `feat/auth-login-buttons` S. Earli
   (`options[:client_secret] ||= client_secret` on a possibly shared options hash,
   plugins/discourse-apple-auth/lib/omniauth_apple.rb:98-100); the port makes a fresh one per
   request (src/plugins/apple.rs:66-69). Only observable after 60 seconds; needs Rails to settle.
+
+## discourse-cakeday (`plugins/discourse-cakeday`)
+
+Verdict: started (5 gaps). Ported on `feat/plugin-cakeday` (2026-10-28), after the
+audit above; tests in tests/plugin_cakeday.rs port spec/integration/cakeday_spec.rb,
+spec/serializers/{post,user}_serializer_spec.rb, spec/jobs/migrate_date_of_birth_to_users_table_spec.rb
+and spec/system/cakeday_user_summary_spec.rb.
+
+### What the port has
+- Settings `cakeday_enabled` (the enabled setting), `cakeday_emoji`, `cakeday_birthday_enabled`,
+  `cakeday_birthday_emoji`, from the vendored plugin_settings.yml; "discourse-cakeday" in
+  `plugins::STARTED`; admin plugin entry with `cake-candles` (src/admin_view.rs); the icon is in
+  the recorded sprite's plugin icons.
+- Serializer keys: `cakedate` and `birthdate` on UserSerializer and UserCardSerializer (after
+  chat's, before discourse-solved's), `user_cakedate` and `user_birthdate` on PostSerializer
+  (before discourse-reactions'), each with plugin.rb's include conditions (a viewer; hide_profile
+  unless it is the viewer's own; birthdays on; a date of birth for the post key), the cakedate in
+  the viewer's `user_option.timezone`: src/plugins/cakeday/mod.rs (`user_keys`, `PostsData`),
+  called from src/users.rs (show) and src/topic_view.rs (serialize_posts).
+- AnniversariesController#index and BirthdaysController#index, GET /cakeday/anniversaries(/:filter)
+  and /cakeday/birthdays(/:filter) as JSON: requires_plugin, ensure_logged_in, the birthday
+  setting, `setup_params`, `cakedays_by` (today, tomorrow, upcoming, month; leap day as March
+  1st; the viewer's zone with Rails' zone names mapped, Nuku'alofa included; unknown zones as
+  UTC; at least a year old for anniversaries; the prioritize_username_in_ux tie breaker; pages
+  of 48), CakedayUserSerializer, `total_rows_*` and `load_more_*`: src/plugins/cakeday/lists.rs,
+  src/routes/cakeday.rs.
+- The date of birth: UsersController#update's `date_of_birth` cast as ActiveModel casts a date
+  (src/user_updater.rs, `cakeday::cast_date`), and UserDateOfBirthInput on the profile
+  preferences (user-custom-preferences outlet) with static/js/cakeday.js composing "1904-M-D".
+- Jobs FixInvalidDateOfBirth and MigrateDateOfBirthToUsersTable with Jobs::Onceoff's
+  onceoff_logs gate and `force`: src/plugins/cakeday/jobs.rs, src/jobs/handlers.rs.
+- UI, server side: the poster icons (`addPosterIcon`, anniversary then birthday, emoji or the
+  cake icon, own or other's title, before the names in the mobile view) in src/post_view.rs
+  (poster_name), live post renders included; UserCardCakeday (user-card-post-names) in
+  src/user_card_view.rs; UserCakeday (user-post-names) on the profile in
+  src/user_profile_view.rs; the community section's secondary Anniversaries and Birthdays links
+  (`addCommunitySectionLink`) in src/sidebar.rs; the cakeday, anniversaries and birthdays
+  templates (nav pills, today/tomorrow/upcoming titles, the All page's month chooser,
+  UserInfoList with each date, empty messages, DLoadMore as an htmx sentinel) in
+  src/plugins/cakeday/view.rs; the index routes redirect to today; stylesheets
+  static/css/cakeday.css.
+- Locales: English client and server strings through the vendored plugin locales.
+
+### Gaps
+**Jobs**
+- The onceoffs are never enqueued: Rails' Jobs::EnqueueOnceoffs (every 10 minutes,
+  app/jobs/scheduled/enqueue_onceoffs.rb) is not in the port's SCHEDULED list, so the two jobs
+  only run when queued by hand. Sites restored from Rails already ran them (onceoff_logs).
+  Rails: app/jobs/onceoff/onceoff.rb:43. Port: src/jobs/mod.rs (SCHEDULED) | absent.
+- Date.parse of a custom field naming only part of a date (Ruby completes it from today) is
+  refused, as is a two digit year in the profile's date cast (comp false). Port:
+  src/plugins/cakeday/jobs.rs (date_parse), src/plugins/cakeday/mod.rs (cast_date).
+
+**UI**
+- "Today" for the icons and the list titles is the viewer's date in their `user_option.timezone`
+  (UTC without one), where the client reads the browser's clock. Rails:
+  plugins/discourse-cakeday/assets/javascripts/discourse/lib/cakeday.js:612-623.
+- The date of birth combo boxes have a none row rather than select-kit's clear button
+  (`clearable`, `autoInsertNoneItem: false`). Rails:
+  plugins/discourse-cakeday/assets/javascripts/discourse/connectors/user-custom-preferences/user-date-of-birth-input.gjs:186-204.
+
+**Locales**
+- Every locale but English for `js.cakeday.*`, `js.anniversaries.*`, `js.birthdays.*`,
+  `js.user.date_of_birth.*` and the site setting descriptions. [item 167]
+
+### Items
+
+None new: 167 covers the locales; the onceoff scheduler is core's (Jobs::EnqueueOnceoffs).
+
+### Couldn't determine
+- The UserSerializer key order around plugin keys: the port puts cakedate and birthdate after
+  core's and chat's attributes and before accepted_answers, by plugin load order (directory
+  names sorted); a Rails response would settle it.
+- Serializing the cakedate for a viewer whose stored timezone Rails can't read: Rails'
+  `in_time_zone` raises (a 500); the port formats it in UTC.
+- The anniversaries' `cakedate` is the shifted local time serialized as UTC ("Z"), as Rails' select
+  gives it; the page shows its date part, where moment would shift it again into the browser's
+  zone.
+- GET /cakeday on its own: the engine has no root route; whether Rails answers the Ember shell
+  (the cakeday route with an empty outlet) or a 404 needs a Rails run. The port has no route.

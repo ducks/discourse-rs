@@ -51,6 +51,9 @@ pub enum Active {
     /// The static pages by route (faq, guidelines, rules, conduct, tos,
     /// privacy): the FAQ link names the faq or guidelines route.
     Static(String),
+    /// A bundled plugin's page, by its Ember route name, for the links
+    /// plugins add (`addCommunitySectionLink`).
+    Route(String),
 }
 
 impl Active {
@@ -73,6 +76,7 @@ impl Active {
             Active::Badges => "badges".into(),
             Active::Review(query) => format!("review:{query}"),
             Active::Static(route) => format!("static:{route}"),
+            Active::Route(route) => format!("route:{route}"),
         }
     }
 
@@ -82,6 +86,7 @@ impl Active {
             Some(("tag", name)) => Active::Tag(name.to_string()),
             Some(("review", query)) => Active::Review(query.to_string()),
             Some(("static", route)) => Active::Static(route.to_string()),
+            Some(("route", route)) => Active::Route(route.to_string()),
             Some(("chat-channel", id)) => {
                 id.parse().map(Active::ChatChannel).unwrap_or(Active::None)
             }
@@ -698,6 +703,8 @@ fn custom_section(section: &Value, cx: &Context) -> Result<String, SettingError>
             more.push(generated);
         }
     }
+    // The plugins' secondary links, after the section's own.
+    more.extend(crate::plugins::cakeday::view::community_more_links(cx)?);
     let mut html = String::new();
     for link in &primary {
         html.push_str(&link_html(link, cx));

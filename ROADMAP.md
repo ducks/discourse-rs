@@ -2240,9 +2240,9 @@ have handlers now.
 156. `feat/user-profile-rest` M (rewritten 2026-10-20: the title,
     primary group, flair group, backgrounds and array options landed
     with 193a, external ids with 191a): featured topics (users.rs:678;
-    current_user.rs:722), PUT /u's custom fields and date of birth
-    (user_updater.rs's REFUSED; the date of birth is
-    discourse-cakeday's, 202), user custom fields with several values
+    current_user.rs:722), PUT /u's custom fields
+    (user_updater.rs's REFUSED; the date of birth landed with
+    discourse-cakeday, feat/plugin-cakeday), user custom fields with several values
     (current_user.rs:467; routes/groups.rs:1122; review_list.rs:1411),
     the profile page's
     public user fields (87b), user tips and redirected_to_top

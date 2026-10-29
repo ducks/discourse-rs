@@ -1,6 +1,7 @@
 //! The user card as the Ember app renders it once loaded
 //! (components/user-card-contents.gjs, with UserBadge, DBadgeButton,
-//! DUserAvatarFlair and the chat and discourse-solved connectors), from
+//! DUserAvatarFlair and the chat, discourse-cakeday and discourse-solved
+//! connectors), from
 //! the users#show_card document. static/js/user-card.js floats it by the
 //! avatar or mention that opened it.
 //!
@@ -31,6 +32,8 @@ pub struct CardSettings {
     pub allow_profile_backgrounds: bool,
     pub display_local_time_in_user_card: bool,
     pub tl3_links_no_follow: bool,
+    /// discourse-cakeday's, when it is on.
+    pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
 }
 
 /// A site user field shown on cards (`site.user_fields` with
@@ -327,7 +330,14 @@ pub fn render(
             escape(&t(cx, "user.staged"))
         ));
     }
-    out.push_str("<div></div></div><ul class=\"usercard-controls\">");
+    // The user-card-post-names outlet, with discourse-cakeday's connector.
+    out.push_str("<div>");
+    if let Some(ui) = &settings.cakeday {
+        out.push_str(&crate::plugins::cakeday::view::user_card(
+            ui, cx, u, viewer.id,
+        ));
+    }
+    out.push_str("</div></div><ul class=\"usercard-controls\">");
     if u["can_send_private_message_to_user"] == true {
         out.push_str(&format!(
             "<li class=\"compose-pm\">{}</li>",

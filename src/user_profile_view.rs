@@ -152,6 +152,8 @@ pub struct ProfileSettings {
     pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
     /// discourse-solved is on: its Solved tab and summary stat.
     pub solved: bool,
+    /// discourse-cakeday's, when it is on: its user-post-names connector.
+    pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -373,6 +375,12 @@ pub fn render(
         out.push_str(&format!(
             "<div class=\"user-profile-names__title\">{}</div>",
             escape(title)
+        ));
+    }
+    // The user-post-names outlet, with discourse-cakeday's connector.
+    if let Some(ui) = &settings.cakeday {
+        out.push_str(&crate::plugins::cakeday::view::profile(
+            ui, cx, u, viewer.id,
         ));
     }
     out.push_str("</div><div class=\"location-and-website user-profile__location-and-website\">");

@@ -58,6 +58,9 @@ pub struct PostSettings {
     pub presence: bool,
     /// discourse-poll's settings, when it is on.
     pub poll: Option<crate::plugins::poll::view::PollUi>,
+    /// discourse-cakeday's, when it is on, with today in UTC unless the
+    /// page sets the viewer's.
+    pub cakeday: Option<crate::plugins::cakeday::view::CakedayUi>,
     /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
     /// decorator.
     pub hashtag_tag_icon: Option<String>,
@@ -116,6 +119,10 @@ impl PostSettings {
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
             poll: crate::plugins::poll::view::PollUi::load(settings)?,
+            cakeday: crate::plugins::cakeday::view::CakedayUi::load(
+                settings,
+                crate::clock::now().date_naive(),
+            )?,
             hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
         })
     }
@@ -1135,6 +1142,17 @@ fn poster_name(cx: &PostContext, p: &Value) -> String {
             _ => escape(title),
         };
         out.push_str(&format!("<span class=\"{class}\">{content}</span>"));
+    }
+    // The plugins' poster icons (addPosterIcon): before the names in the
+    // mobile view, after them on a desktop.
+    if let Some(ui) = &cx.settings.cakeday {
+        let icons = crate::plugins::cakeday::view::poster_icons(ui, cx.list, p, cx.viewer);
+        if crate::mobile::mobile_view() {
+            let opening = "<div class=\"names trigger-user-card\">";
+            out.insert_str(opening.len(), &icons);
+        } else {
+            out.push_str(&icons);
+        }
     }
     out.push_str("</div>");
     out
@@ -3806,6 +3824,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            cakeday: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {
@@ -4083,6 +4102,7 @@ mod tests {
             solved: None,
             presence: false,
             poll: None,
+            cakeday: None,
             hashtag_tag_icon: None,
         };
         let topic = TopicInfo {

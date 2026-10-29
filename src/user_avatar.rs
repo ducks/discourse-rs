@@ -28,7 +28,7 @@ pub async fn load_target(
 ) -> Result<Option<Target>, sqlx::Error> {
     sqlx::query_as(
         "SELECT id, username, username_lower, name, locale, admin, moderator, staged, active, \
-                trust_level, title, primary_group_id, flair_group_id \
+                trust_level, title, primary_group_id, flair_group_id, date_of_birth \
          FROM users WHERE id = $1",
     )
     .bind(user_id)

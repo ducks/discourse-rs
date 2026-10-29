@@ -1546,6 +1546,12 @@ pub(crate) async fn profile_page(
             && settings.get("topic_voting_show_votes_on_profile")?.truthy(),
         reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
         solved: crate::plugins::solved::enabled(settings)?,
+        cakeday: crate::plugins::cakeday::view::CakedayUi::for_viewer(
+            &mut *conn,
+            settings,
+            guardian.user_id(),
+        )
+        .await?,
     };
     let mut main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     // The notification level dropdown's ignore opens the ignore duration

@@ -126,7 +126,7 @@ const MAX_BADGES: i64 = 6;
 
 /// UserCardSerializer's attributes in order: BasicUserSerializer's, the
 /// card's own, its untrusted and staff attributes, then the plugins'
-/// (chat, discourse-solved) and the featured badges' ids.
+/// (chat, discourse-cakeday, discourse-solved) and the featured badges' ids.
 const USER_CARD_KEYS: &[&str] = &[
     "id",
     "username",
@@ -176,6 +176,8 @@ const USER_CARD_KEYS: &[&str] = &[
     "card_background_upload_url",
     "staged",
     "can_chat_user",
+    "cakedate",
+    "birthdate",
     "accepted_answers",
     "featured_user_badge_ids",
 ];
@@ -891,6 +893,9 @@ impl Users<'_> {
                 self.private().group_users(user.id).await?,
             );
         }
+        // discourse-cakeday's user and user card keys.
+        crate::plugins::cakeday::user_keys(&mut *self.conn, self.settings, g, user.id, &mut u)
+            .await?;
         // discourse-solved's user card key.
         if crate::plugins::solved::enabled(self.settings)? {
             u.insert(

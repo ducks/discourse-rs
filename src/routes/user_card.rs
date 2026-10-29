@@ -66,6 +66,12 @@ pub async fn show(
         allow_profile_backgrounds: settings.get("allow_profile_backgrounds")?.truthy(),
         display_local_time_in_user_card: settings.get("display_local_time_in_user_card")?.truthy(),
         tl3_links_no_follow: settings.get("tl3_links_no_follow")?.truthy(),
+        cakeday: crate::plugins::cakeday::view::CakedayUi::for_viewer(
+            &mut conn,
+            &settings,
+            guardian.user_id(),
+        )
+        .await?,
     };
     let categories = std::collections::HashMap::new();
     let cx = crate::topic_list_view::ListContext {
