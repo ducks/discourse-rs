@@ -539,6 +539,10 @@ impl Site<'_> {
         out.insert("archetypes".into(), self.archetypes());
         out.insert("user_fields".into(), self.user_fields().await?);
         out.insert("auth_providers".into(), self.auth_providers()?);
+        // The plugins' keys, after core's.
+        crate::plugins::gamification::site_keys(&mut *self.conn, self.settings, &mut out)
+            .await
+            .map_err(crate::AppError::from)?;
 
         Ok(Value::Object(out))
     }

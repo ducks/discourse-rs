@@ -309,6 +309,14 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(3600),
     ),
     (
+        crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TODAY,
+        Duration::from_secs(3600),
+    ),
+    (
+        crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TEN_DAYS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
         crate::plugins::assign::jobs::ENQUEUE_REMINDERS,
         Duration::from_secs(24 * 3600),
     ),
@@ -603,6 +611,10 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             crate::plugins::chat::scheduled::periodical_updates(state).await
         }
         crate::plugins::policy::check::JOB => crate::plugins::policy::check::run(state).await,
+        crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TODAY
+        | crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TEN_DAYS => {
+            crate::plugins::gamification::jobs::run_scheduled(state, name).await
+        }
         crate::plugins::chat::scheduled::AUTO_JOIN_USERS => {
             crate::plugins::chat::scheduled::auto_join_users(state, &serde_json::Value::Null).await
         }

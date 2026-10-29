@@ -55,6 +55,7 @@ mod email;
 mod emojis;
 mod external_uploads;
 mod finish_installation;
+mod gamification;
 mod group_membership;
 mod groups;
 mod hashtags;
@@ -548,6 +549,62 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/cakeday/birthdays/{filter}",
             get(cakeday::birthdays_filter),
+        )
+        // discourse-gamification's engine and admin controllers.
+        .route("/leaderboard", get(gamification::default_leaderboard))
+        .route("/leaderboard.json", get(gamification::default_leaderboard))
+        .route("/leaderboard/{id}", get(gamification::leaderboard))
+        .route(
+            "/admin/plugins/discourse-gamification/leaderboards",
+            get(gamification::admin_leaderboards),
+        )
+        .route(
+            "/admin/plugins/discourse-gamification/leaderboards.json",
+            get(gamification::admin_leaderboards),
+        )
+        .route(
+            "/admin/plugins/discourse-gamification/leaderboards/{id}",
+            get(gamification::admin_leaderboard),
+        )
+        .route(
+            "/admin/plugins/gamification",
+            get(gamification::admin_index),
+        )
+        .route(
+            "/admin/plugins/gamification.json",
+            get(gamification::admin_index),
+        )
+        .route(
+            "/admin/plugins/gamification/leaderboard",
+            post(gamification::create),
+        )
+        .route(
+            "/admin/plugins/gamification/leaderboard.json",
+            post(gamification::create),
+        )
+        .route(
+            "/admin/plugins/gamification/leaderboard/{id}",
+            put(gamification::update).delete(gamification::destroy),
+        )
+        .route(
+            "/admin/plugins/gamification/recalculate-scores",
+            put(gamification::recalculate_scores),
+        )
+        .route(
+            "/admin/plugins/gamification/recalculate-scores.json",
+            put(gamification::recalculate_scores),
+        )
+        .route(
+            "/admin/plugins/gamification/score_events",
+            get(gamification::score_events)
+                .post(gamification::create_score_event)
+                .put(gamification::update_score_event),
+        )
+        .route(
+            "/admin/plugins/gamification/score_events.json",
+            get(gamification::score_events)
+                .post(gamification::create_score_event)
+                .put(gamification::update_score_event),
         )
         // discourse-policy's PolicyController.
         .route("/policy/accept", put(policy::accept))
@@ -2812,6 +2869,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/poll.js", get(asset))
         .route("/assets/checklist.js", get(asset))
         .route("/assets/cakeday.js", get(asset))
+        .route("/assets/gamification.js", get(asset))
         .route("/assets/policy.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))

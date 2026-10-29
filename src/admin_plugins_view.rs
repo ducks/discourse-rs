@@ -299,10 +299,41 @@ pub fn index(cx: &AdminCx, plugins: &[Value], admin: bool, filter: &str) -> Stri
 /// plugin, drawn by the caller). A plugin with only its settings has no
 /// tabs.
 pub fn settings(cx: &AdminCx, plugin: &Value, area_settings: &str) -> String {
+    settings_with_tabs(cx, plugin, area_settings, None)
+}
+
+/// `settings` with the plugin's configuration nav as the header's tabs.
+pub fn settings_with_tabs(
+    cx: &AdminCx,
+    plugin: &Value,
+    area_settings: &str,
+    tabs: Option<String>,
+) -> String {
+    let name = s(&plugin["name"]);
+    let settings_path = format!("/admin/plugins/{name}/settings");
+    // AdminAreaSettings' own crumb.
+    config_page(
+        cx,
+        plugin,
+        (t(cx.i18n, "settings"), &settings_path),
+        tabs,
+        area_settings,
+    )
+}
+
+/// AdminPluginConfigPage around one of the plugin's pages: the header with
+/// the page's crumb last and the configuration nav's tabs, if any, then
+/// the page in the config area.
+pub fn config_page(
+    cx: &AdminCx,
+    plugin: &Value,
+    crumb: (String, &str),
+    tabs: Option<String>,
+    content: &str,
+) -> String {
     let titleized = name_titleized(cx, plugin);
     let name = s(&plugin["name"]);
     let show = format!("/admin/plugins/{name}");
-    let settings_path = format!("/admin/plugins/{name}/settings");
     let link = link_url(plugin);
     let header = PageHeader {
         crumbs: vec![
@@ -318,21 +349,20 @@ pub fn settings(cx: &AdminCx, plugin: &Value, area_settings: &str) -> String {
                 label: titleized.clone(),
                 path: &show,
             },
-            // AdminAreaSettings' own crumb.
             Crumb {
-                label: t(cx.i18n, "settings"),
-                path: &settings_path,
+                label: crumb.0,
+                path: crumb.1,
             },
         ],
         title: titleized.clone(),
         actions: String::new(),
         description: Some(escape(s(&plugin["about"]))),
         learn_more_url: (!link.is_empty()).then(|| link.to_string()),
-        tabs: None,
+        tabs,
     }
     .render(cx);
     format!(
-        "<div class=\"admin-plugin-config-page\">{header}<div class=\"admin-plugin-config-page__content\"><div class=\"admin-plugin-config-page__main-area -without-inner-sidebar\"><section class=\"admin-plugin-config-area\">{area_settings}</section></div></div></div>"
+        "<div class=\"admin-plugin-config-page\">{header}<div class=\"admin-plugin-config-page__content\"><div class=\"admin-plugin-config-page__main-area -without-inner-sidebar\"><section class=\"admin-plugin-config-area\">{content}</section></div></div></div>"
     )
 }
 
