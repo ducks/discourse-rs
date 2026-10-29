@@ -815,16 +815,33 @@
     }
   }
 
+  // The appEvents a resize fires (composer:resize-started, div-resizing
+  // and resize-ended), for what sits beside the composer (the chat
+  // drawer), as events bubbling from #reply-control.
+  var resizeStarted = false;
+  function resizeEvent(name) {
+    control.dispatchEvent(new CustomEvent("composer:" + name, { bubbles: true }));
+  }
+
   function onResizeDrag(size) {
     control.classList.add("clear-transitions");
     composerHeight = size + "px";
     root.style.setProperty("--composer-height", size ? composerHeight : "");
+    if (!resizeStarted) {
+      resizeStarted = true;
+      resizeEvent("resize-started");
+    }
+    resizeEvent("div-resizing");
   }
 
   function onResizeEnd(size) {
     control.classList.remove("clear-transitions");
     setItem("composerHeight", size + "px");
     refreshSeparator(size);
+    if (resizeStarted) {
+      resizeStarted = false;
+      resizeEvent("resize-ended");
+    }
   }
 
   // d-pointer-drag and d-resize-edge: the primary button's press, a size
