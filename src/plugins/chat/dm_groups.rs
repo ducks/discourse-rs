@@ -622,7 +622,7 @@ impl Context<'_> {
         let def = state
             .site_setting_defs
             .get("chat_threads_enabled")
-            .ok_or(Unsupported("the chat_threads_enabled setting"))?;
+            .ok_or_else(|| std::io::Error::other("chat_threads_enabled has no definition"))?;
         let previous = self.settings.get("chat_threads_enabled")?.clone();
         crate::site_setting_update::save_setting(
             &mut *self.conn,

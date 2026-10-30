@@ -200,12 +200,12 @@ pub async fn index(
     let public = settings.get("enable_public_channels")?.truthy();
     if !uri.path().ends_with("/chat/channels") {
         let mut cx = context(&state, &mut conn, &settings, &guardian);
-        // hasThreads: the member has threads, which aren't ported.
+        // hasThreads: the member has threads to list.
         if preferred == "my_threads"
             && settings.get("chat_threads_enabled")?.truthy()
             && cx.has_viewable_threads().await?
         {
-            return Err(crate::Unsupported("chat threads (the threads index)").into());
+            return Ok(redirect(format!("{base_path}/chat/threads")));
         }
         // chat.userCanAccessDirectMessages
         let dms =
@@ -579,6 +579,132 @@ pub async fn channel(
     .await
 }
 
+/// GET /chat/c/:slug/:id/t, /chat/c/:slug/:id/t/:thread_id and
+/// .../t/:thread_id/:message_id: the channel route with the channel's
+/// threads (ChatChannelThreads) or a thread (ChatChannelThread, around the
+/// message) in its side panel. A channel without threading goes to the
+/// channel, as does a thread that isn't the channel's or doesn't show.
+pub async fn channel_thread(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    Path(params): Path<std::collections::HashMap<String, String>>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    let get = |name: &str| params.get(name).cloned();
+    let slug = get("slug").unwrap_or_default();
+    let id = get("id").unwrap_or_default();
+    let thread_id = get("thread_id");
+    let message_id = get("message_id");
+    let channel_message_id = get("channel_message_id");
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let channel = match cx.find_joinable(&id).await? {
+        Found::Channel(channel) => channel,
+        Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
+    };
+    let (own_slug, dm_title) = slugified_title(&mut cx, &channel).await?;
+    let channel_url = format!("{base_path}/chat/c/{own_slug}/{}", channel.id);
+    let parse = |v: &Option<String>| -> Result<Option<i64>, ()> {
+        match v {
+            None => Ok(None),
+            Some(v) => v.parse::<i64>().map(Some).map_err(|_| ()),
+        }
+    };
+    let (Ok(thread_id), Ok(target), Ok(channel_target)) = (
+        parse(&thread_id),
+        parse(&message_id),
+        parse(&channel_message_id),
+    ) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if slug != own_slug {
+        let tail = match (thread_id, target, channel_target) {
+            (Some(t), _, Some(c)) => format!("/{c}/t/{t}"),
+            (Some(t), Some(m), None) => format!("/t/{t}/{m}"),
+            (Some(t), None, None) => format!("/t/{t}"),
+            _ => "/t".to_string(),
+        };
+        return Ok(redirect(format!("{channel_url}{tail}")));
+    }
+    // ChatChannelThreads: members only; a channel without threading goes
+    // back to the channel.
+    // ChatChannelNearMessageWithThread: the channel around its message,
+    // and the thread beside it on desktop only.
+    let mobile = crate::mobile::mobile_view();
+    let panel = match thread_id {
+        Some(_) if channel_target.is_some() && mobile => String::new(),
+        None => {
+            if guardian.is_anonymous() {
+                return Ok(redirect(format!("{base_path}/chat/channels")));
+            }
+            if !channel.threading_enabled {
+                return Ok(redirect(channel_url));
+            }
+            cx.channel_threads_page(&channel).await?
+        }
+        Some(thread_id) => match cx.shown_thread(&channel, thread_id).await? {
+            Some(thread) => cx.thread_page(&channel, &thread, target).await?,
+            None => return Ok(redirect(channel_url)),
+        },
+    };
+    let mut content = cx
+        .channel_page_beside(&channel, channel_target, None, !panel.is_empty())
+        .await?;
+    // ChatSidePanel, with its resizer on desktop.
+    if !panel.is_empty() {
+        content.push_str(&format!(
+            "<div class=\"chat-side-panel\">{panel}{}</div>",
+            if mobile {
+                ""
+            } else {
+                "<div class=\"chat-side-panel-resizer\"></div>"
+            }
+        ));
+    }
+    let channel_title = channel.name.clone().filter(|n| !n.is_empty());
+    let title = match (dm_title, channel_title) {
+        (Some(dm), _) => format!(
+            "{} - {} - ",
+            settings.emojis().gsub_to_unicode(&dm),
+            chat_title(&state)
+        ),
+        (None, Some(name)) => format!("#{name} - {} - ", chat_title(&state)),
+        (None, None) => format!("{} - ", chat_title(&state)),
+    };
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::ChatChannel(channel.id),
+        title,
+        &content,
+        true,
+    )
+    .await
+}
+
+/// GET /chat/c/:slug/:id/:message_id/t/:thread_id
+/// (ChatChannelNearMessageWithThread): channel_thread with the channel's
+/// target message.
+pub async fn channel_message_thread(
+    state: State<AppState>,
+    guardian: AuthGuardian,
+    headers: HeaderMap,
+    Path(mut params): Path<std::collections::HashMap<String, String>>,
+) -> Result<Response, AppError> {
+    if let Some(message_id) = params.remove("message_id") {
+        params.insert("channel_message_id".into(), message_id);
+    }
+    channel_thread(state, guardian, headers, Path(params)).await
+}
+
 /// GET /chat/direct-messages: ChatDirectMessagesRoute. Its beforeModel
 /// sends a desktop member with DMs on to their last channel, but on a page
 /// load the reference stays on the list: directMessageChannels is still
@@ -771,6 +897,8 @@ pub async fn drawer(
 #[derive(serde::Deserialize, Default)]
 pub struct LiveMessageParams {
     previous: Option<String>,
+    /// `thread`: as a thread's pane draws it.
+    context: Option<String>,
 }
 
 /// GET /live/chat/:channel_id/:message_id: a message as the viewer's
@@ -795,7 +923,13 @@ pub async fn live_message(
     let staged = params.previous.as_deref() == Some("staged");
     let previous = params.previous.and_then(|p| p.parse::<i64>().ok());
     let html = context(&state, &mut conn, &settings, &guardian)
-        .message_fragment(channel_id, message_id, previous, staged)
+        .message_fragment_in(
+            channel_id,
+            message_id,
+            previous,
+            staged,
+            params.context.as_deref() == Some("thread"),
+        )
         .await?;
     Ok(match html {
         Some(html) => (

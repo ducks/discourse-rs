@@ -364,6 +364,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/channel/{channel_id}/{channel_title}/info/search",
             get(chat_pages::channel_legacy_info),
         )
+        .route("/chat/c/{slug}/{id}/t", get(chat_pages::channel_thread))
+        .route(
+            "/chat/c/{slug}/{id}/t/{thread_id}",
+            get(chat_pages::channel_thread),
+        )
+        .route(
+            "/chat/c/{slug}/{id}/t/{thread_id}/{message_id}",
+            get(chat_pages::channel_thread),
+        )
+        .route(
+            "/chat/c/{slug}/{id}/{message_id}/t/{thread_id}",
+            get(chat_pages::channel_message_thread),
+        )
         .route("/chat/direct_messages", get(chat::direct_messages))
         .route("/chat/direct_messages.json", get(chat::direct_messages))
         .route(
@@ -445,6 +458,59 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/chat/api/channels/{id}/messages/{message_id}/restore.json",
             put(chat::restore_message),
+        )
+        // Chat::Api::ChannelThreadsController and its siblings.
+        .route(
+            "/chat/api/channels/{id}/threads",
+            get(chat::channel_threads).post(chat::create_thread),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads.json",
+            get(chat::channel_threads).post(chat::create_thread),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}",
+            get(chat::show_thread).put(chat::update_thread),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/messages",
+            get(chat::thread_messages),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/messages.json",
+            get(chat::thread_messages),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/read",
+            put(chat::thread_read),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/read.json",
+            put(chat::thread_read),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/drafts",
+            post(chat::thread_draft),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/drafts.json",
+            post(chat::thread_draft),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/notifications-settings/me",
+            put(chat::thread_notification_level),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/notifications-settings/me.json",
+            put(chat::thread_notification_level),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/mark-thread-title-prompt-seen/me",
+            post(chat::thread_title_prompt_seen),
+        )
+        .route(
+            "/chat/api/channels/{id}/threads/{thread_id}/mark-thread-title-prompt-seen/me.json",
+            post(chat::thread_title_prompt_seen),
         )
         .route("/chat/{id}/react/{message_id}", put(chat::react))
         .route("/chat/{id}/{message_id}/rebake", put(chat::rebake_message))

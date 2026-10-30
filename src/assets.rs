@@ -551,6 +551,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("chat.js", JS, include_str!("../static/js/chat.js")),
     (
+        "chat-thread.js",
+        JS,
+        include_str!("../static/js/chat-thread.js"),
+    ),
+    (
         "chat-drawer.js",
         JS,
         include_str!("../static/js/chat-drawer.js"),

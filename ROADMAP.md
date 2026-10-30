@@ -1604,7 +1604,7 @@ with the viewport, guessing from the user agent without it
     channel navbar's back button with the other channels' unread count,
     the mobile composer's layout, /chat as the channels list with the
     chat footer. Left: the footer's ~~DMs~~ (done, 280), search, ~~starred~~
-    (done, 162) and ~~threads~~ (done, 280; its threads refused with 160)
+    (done, 162) and ~~threads~~ (done, 280; its threads with 160)
     routes, the channel list options menu (desktop's too), swipe and long
     press on a row, the list's filtered empty states (the unfiltered one done, 162)
 101. ~~`feat/header-search-menu`~~ (done) M: the desktop header's search
@@ -2296,12 +2296,90 @@ have handlers now.
     tag and hashtag search over localized tags (hashtags.rs:571;
     tagging.rs:569; routes/tag_search.rs:161; routes/search_menu.rs:380;
     routes/tag_admin.rs:1157, with 168)
-160. `feat/chat-threads` L: chat threads (plugins/chat/notify.rs:102,482;
-    plugins/chat/create.rs:213,216,226; plugins/chat/modify.rs:243;
-    plugins/chat/channels.rs:348; plugins/chat/page.rs:589;
-    plugins/chat/summary_email.rs:223; plugins/chat/publisher.rs:367;
-    plugins/chat/dm_groups.rs:540; plugins/chat/membership.rs:542), the
-    threads list (280a)
+160. ~~`feat/chat-threads`~~ (done) L: chat threads end to end
+    (plugins/chat/threads.rs, thread_view.rs). The model: a reply in a
+    channel with threading (or into a forced thread, or with a
+    thread_id) is the thread's (Chat::CreateMessage's thread policies,
+    thread_invalid_for_channel and thread_does_not_match_parent; the
+    channel's last message and the sender's last read stay; the
+    original message's author and the sender join, Chat::Thread#add
+    with publish_user_has_threads for a first thread; the reply that
+    starts one publishes thread_created), hidden threads as before;
+    the mentioned join a shown thread at normal (upsert_user_mentions).
+    The API: GET /chat/api/channels/:id/threads (LookupChannelThreads,
+    FetchThreads' order, Chat::ThreadListSerializer), GET and PUT
+    .../threads/:thread_id (LookupThread, UpdateThread), POST .../threads
+    (CreateThread), GET .../threads/:thread_id/messages
+    (ListChannelThreadMessages, Thread::Policy::MessageExistence), PUT
+    .../read (UpdateUserThreadLastRead with MarkMentionsRead), POST
+    .../drafts (UpsertDraft's check_thread_exists, also on the channel's
+    drafts route), PUT .../notifications-settings/me, POST
+    .../mark-thread-title-prompt-seen/me, GET /chat/api/me/threads
+    (LookupUserThreads); Chat::ThreadSerializer with its preview,
+    original message and participants (ThreadParticipantQuery),
+    BaseThreadMembershipSerializer; the message serializer's thread_id
+    for forced threads, thread and thread_title; MessagesQuery's thread
+    clauses (a forced thread's replies out of an unthreaded channel, a
+    thread reply target left out); ThreadUnreadsQuery for the messages'
+    and lists' tracking; me/channels' unread_thread_overview and
+    has_threads. The publisher: calculate_publish_targets for sent,
+    processed, edit, refresh, restore, reaction and delete (a thread's
+    latest message for a reply's delete), new-messages "thread" with the
+    preview after, publish_thread_original_message_metadata with the
+    NullMessage, user tracking state with unread_thread_overview and
+    thread_tracking. Notifications: chat_thread_id and the thread url in
+    mention notifications and alerts, NotifyWatching's thread watchers
+    with chat_watched_thread notifications consolidated as
+    watched_thread_message_plan does, action_data's thread_id. The
+    summary email counts watched threads (unread_threads, its emailed
+    marker) and names them in the subject (watched_thread(s)); the
+    joinable filter drops a whole channel as Rails does.
+    Jobs::Chat::MarkAllChannelThreadsRead. The pages: the thread
+    indicator (ChatMessageThreadIndicator, participants) under an
+    original message, no reply line in a thread, the threads list button
+    with its unread count, /chat/c/:slug/:id/t (ChatThreadListHeader,
+    ChatThreadList items), /t/:thread_id, /t/:thread_id/:message_id and
+    /:message_id/t/:thread_id (the channel route with ChatSidePanel and
+    ChatRoutesChannelThread: ThreadHeader's back link, title, tracking
+    dropdown, settings button and close button, ChatThread with
+    ChatThreadHeading and ChatComposerThread), /chat/threads with the
+    member's threads (UserThreads, ThreadPreview on a phone; 280a's
+    threads part), /chat redirecting to it for my_threads.
+    static/js/chat-thread.js runs the thread pane (its composer and
+    staged messages, its draft, its live messages from
+    /chat/:id/thread/:id drawn by GET /live/chat/:id/:message_id
+    ?context=thread, its read state, the near-message urls replaced),
+    chat.js redraws an original message on thread_created and
+    update_thread_original_message. Thirty-six write cases recorded on
+    rs-ref-a (parity/writes/chat/thread_*, threads_index*,
+    create_in_thread*, create_threaded_reply, create_thread_mismatch,
+    create_in_forced_thread, channel_messages_threaded,
+    channel_messages_forced, me_channels_threads, me_threads_unread,
+    edit_in_thread, trash_in_thread, restore_in_thread, react_in_thread,
+    watched_thread_reply, mark_all_read_threads, channel_read_threaded,
+    summary_email_watched_thread), the reply counts ignored (Rails keeps
+    them in Redis, which a recording's rollback leaves behind; the port
+    counts live replies, what the warm count holds); me_threads_listed
+    matches now; tests in tests/chat_threads.rs. The page markup is
+    ported from the components, not compared against the reference.
+    Left, split into 160a.
+    160a. `feat/chat-threads-rest` M: the thread pane's message actions
+    (react, reply, edit, the secondary menu; chat.js skips the thread's
+    messages), the thread settings modal and the title's click
+    (ChatModalThreadSettings, PUT .../threads/:id), the thread title
+    prompt (ChatThreadTitlePrompt with mark-thread-title-prompt-seen),
+    the side panel resizer (discourse_chat_side_panel_size_width), the
+    thread pane's paging and jump to a message, the channel threads
+    list's and the member's threads' load more and live updates (the
+    list subscriptions), the thread composer's emoji, autocomplete and
+    replying indicator (/chat-reply/:id/thread/:id), uploads in a
+    thread (161), ChatHistory's back link to the threads list or my
+    threads, do not disturb on the channel navbar's thread indicator,
+    the sidebar's and header's unread thread indicators
+    (hasUnreadThreads), and threads in the drawer (223c); threads of
+    deleted users' messages stay refused (plugins/chat/threads.rs
+    thread_original_message, plugins/chat/create.rs, with 162), as do
+    threads of deleted channels (threads.rs thread_channel).
 161. `feat/chat-uploads` M: ~~chat message uploads~~ (done,
     feat/chat-uploads: Chat::CreateMessage and Chat::UpdateMessage take
     upload_ids, the sender's own uploads (user_uploads) while
@@ -4430,10 +4508,9 @@ route table has been made, so this list may be short.
     data-href hooks, the channel page's messages too (the line on the
     last message on both). Write cases parity/writes/chat/me_threads*;
     tests in tests/plugin_pages.rs. Left, split into 280a.
-    280a. `fix/chat-dm-thread-pages-rest` S: the threads list with
-    threads (UserThreads' rows, ThreadPreview, the load more; refused at
-    plugins/chat/view.rs threads_route and routes/chat.rs me_threads,
-    with 160's threads), the DM list's filtered empty state
+    280a. `fix/chat-dm-thread-pages-rest` S: ~~the threads list with
+    threads~~ (done with 160: UserThreads' rows and ThreadPreview; its
+    load more is 160a's), the DM list's filtered empty state
     (ChatSidebarChannelListFilterEmptyState, refused), long press and
     swipe on a row (99), the filter toggle's and list options' menus
     (99). On rs-ref-a's headless Chromium `(hover: none)` matches on

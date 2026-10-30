@@ -1080,7 +1080,7 @@ async fn the_threads_page_has_none_to_list() {
     assert!(html.contains("<nav class=\"c-footer\">"));
     assert!(!html.contains("c-footer__item --active"));
 
-    // A thread the member follows in a channel with threading: refused.
+    // A thread the member follows in a channel with threading: listed.
     chat_messages(&db).await;
     for sql in [
         "UPDATE chat_channels SET threading_enabled = true WHERE id = 2",
@@ -1091,7 +1091,11 @@ async fn the_threads_page_has_none_to_list() {
         sqlx::query(sql).execute(&db.pool).await.unwrap();
     }
     let mut desktop = Client::logged_in(st, "user1").await;
-    assert_eq!(desktop.head("/chat/threads").await.0, 500);
+    let html = desktop.page("/chat/threads").await;
+    assert!(
+        html.contains("<div class=\"c-user-thread\" data-id=\"1\">"),
+        "{html}"
+    );
 }
 
 impl Client {

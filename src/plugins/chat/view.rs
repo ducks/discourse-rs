@@ -947,23 +947,16 @@ impl Context<'_> {
 
     /// The threads route (ChatRoutesThreads, drawing UserThreads): the
     /// navbar and the member's threads once GET /chat/api/me/threads
-    /// answers, with none the list's empty state; in the mobile view the
-    /// chat footer. Threads are refused until their slice (160).
+    /// answers (UserThreads), with none the list's empty state; in the
+    /// mobile view the chat footer.
     pub async fn threads_route(&mut self) -> Result<String, AppError> {
-        if self.has_viewable_threads().await? {
-            return Err(Unsupported("chat threads (the threads list)").into());
-        }
         let Preloaded { channels, dms, .. } = self.preloaded().await?;
         let mut out = format!(
             "<div class=\"c-routes --threads\">{}",
             self.route_navbar(&self.t("chat.my_threads.title"), &self.open_drawer_button())
         );
-        // List with its collection loaded and empty: the empty state, the
-        // load more sentinel and the idle loading container.
-        out.push_str(&format!(
-            "<div class=\"c-list\"><div class=\"--loaded c-user-threads\"><div class=\"c-list-empty-state\"><div class=\"empty-state-threads\">{}</div></div></div><div><br></div><div class=\"loading-container\"></div></div></div>",
-            escape(&self.t("chat.empty_state.my_threads"))
-        ));
+        out.push_str(&self.user_threads_list().await?);
+        out.push_str("</div>");
         if crate::mobile::mobile_view() {
             out.push_str(&self.footer("threads", &channels, &dms).await?);
         }

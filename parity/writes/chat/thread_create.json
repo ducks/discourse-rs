@@ -1,0 +1,238 @@
+{
+  "name": "thread_create",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/threads.json",
+      "params": {
+        "original_message_id": 4,
+        "title": "On chatter"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/threads.json",
+      "params": {
+        "original_message_id": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/threads.json",
+      "params": {
+        "original_message_id": 99
+      }
+    }
+  ],
+  "started_at": "2026-10-29T22:18:56.215811",
+  "transaction_started_at": "2026-10-29T22:18:54.973134",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 2,
+        "title": "On chatter",
+        "status": "open",
+        "channel_id": 2,
+        "meta": {
+          "message_bus_last_ids": {
+            "thread_message_bus_last_id": 0
+          }
+        },
+        "reply_count": 1,
+        "last_message_id": 4,
+        "force": false,
+        "original_message": {
+          "id": 4,
+          "message": "channel chatter",
+          "cooked": "<p>channel chatter</p>",
+          "created_at": "2026-10-29T21:48:54.973Z",
+          "excerpt": "channel chatter",
+          "chat_channel_id": 2,
+          "deleted_at": null,
+          "mentioned_users": [],
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_chat": null,
+            "has_chat_enabled": null
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "title": null,
+        "status": "open",
+        "channel_id": 2,
+        "meta": {
+          "message_bus_last_ids": {
+            "thread_message_bus_last_id": 0
+          }
+        },
+        "reply_count": 5,
+        "last_message_id": 3,
+        "force": false,
+        "original_message": {
+          "id": 1,
+          "message": "Hello **world**",
+          "cooked": "<p>Hello <strong>world</strong></p>",
+          "created_at": "2026-10-29T21:28:54.973Z",
+          "excerpt": "Hello world",
+          "chat_channel_id": 2,
+          "deleted_at": null,
+          "mentioned_users": [],
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_chat": null,
+            "has_chat_enabled": null
+          }
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "chat_messages": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "blocks": null,
+            "cooked": "<p>channel chatter</p>",
+            "excerpt": null,
+            "message": "channel chatter",
+            "user_id": 2,
+            "streaming": false,
+            "thread_id": null,
+            "created_at": "2026-10-29T21:48:54.973134",
+            "deleted_at": null,
+            "updated_at": "2026-10-29T21:48:54.973134",
+            "deleted_by_id": null,
+            "cooked_version": 1,
+            "created_by_sdk": false,
+            "in_reply_to_id": null,
+            "last_editor_id": 2,
+            "chat_channel_id": 2
+          },
+          "after": {
+            "id": 4,
+            "blocks": null,
+            "cooked": "<p>channel chatter</p>",
+            "excerpt": null,
+            "message": "channel chatter",
+            "user_id": 2,
+            "streaming": false,
+            "thread_id": 2,
+            "created_at": "2026-10-29T21:48:54.973134",
+            "deleted_at": null,
+            "updated_at": "2026-10-29T22:18:56.27846",
+            "deleted_by_id": null,
+            "cooked_version": 1,
+            "created_by_sdk": false,
+            "in_reply_to_id": null,
+            "last_editor_id": 2,
+            "chat_channel_id": 2
+          }
+        }
+      ]
+    },
+    "chat_threads": {
+      "inserted": [
+        {
+          "id": 2,
+          "force": false,
+          "title": "On chatter",
+          "status": 0,
+          "channel_id": 2,
+          "created_at": "2026-10-29T22:18:56.272036",
+          "updated_at": "2026-10-29T22:18:56.272036",
+          "replies_count": 0,
+          "last_message_id": 4,
+          "original_message_id": 4,
+          "original_message_user_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Cfmw+TVwGEgvNe9I82kB7keBKbA=",
+            "created_at": "2026-10-29T22:18:55.482373",
+            "rotated_at": "2026-10-29T22:18:55.481434",
+            "updated_at": "2026-10-29T22:18:55.482373",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Cfmw+TVwGEgvNe9I82kB7keBKbA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-10-29T22:18:56.253345",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Cfmw+TVwGEgvNe9I82kB7keBKbA=",
+            "created_at": "2026-10-29T22:18:55.482373",
+            "rotated_at": "2026-10-29T22:18:55.481434",
+            "updated_at": "2026-10-29T22:18:55.482373",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Cfmw+TVwGEgvNe9I82kB7keBKbA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "chat_threads": 2
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, in_reply_to_id) VALUES (2, 2, 3, now() - interval '40 minutes', now() - interval '40 minutes', '@user0 hi back', '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>', 1, 3, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (3, 2, 1, now() - interval '35 minutes', now() - interval '35 minutes', 'thread reply two', '<p>thread reply two</p>', 1, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (4, 2, 2, now() - interval '30 minutes', now() - interval '30 minutes', 'channel chatter', '<p>channel chatter</p>', 1, 2)",
+    "SELECT setval('chat_messages_id_seq', 4)",
+    "UPDATE chat_channels SET last_message_id = 4, messages_count = 4, threading_enabled = true WHERE id = 2",
+    "INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 'Chat::UserMention', 2, now() - interval '40 minutes', now() - interval '40 minutes')",
+    "INSERT INTO chat_threads (id, channel_id, original_message_id, original_message_user_id, status, replies_count, force, last_message_id, created_at, updated_at) VALUES (1, 2, 1, 2, 0, 2, false, 3, now() - interval '40 minutes', now() - interval '35 minutes')",
+    "SELECT setval('chat_threads_id_seq', 1)",
+    "UPDATE chat_messages SET thread_id = 1 WHERE id IN (1, 2, 3)",
+    "INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, last_read_message_id, created_at, updated_at) VALUES (2, 1, 2, NULL, now() - interval '40 minutes', now() - interval '40 minutes'), (3, 1, 2, 2, now() - interval '40 minutes', now() - interval '40 minutes'), (1, 1, 2, 3, now() - interval '35 minutes', now() - interval '35 minutes')",
+    "UPDATE user_chat_channel_memberships SET last_read_message_id = 4 WHERE chat_channel_id = 2"
+  ],
+  "recorded_from": {
+    "case": "25489734038dc1bf5c309a4d0c628d6262ccaa69892e86f587fbf481749797ac",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

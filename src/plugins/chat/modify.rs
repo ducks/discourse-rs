@@ -3,9 +3,10 @@
 //! (DELETE there), Chat::RestoreMessage (PUT .../restore) and
 //! Chat::MessageReactor (PUT /chat/:chat_channel_id/react/:message_id).
 //!
-//! Not ported yet, and refused: direct message channels, threads
-//! proper (threading on, forced threads), and messages of deleted
-//! users or channels.
+//! A message in a thread goes to the thread's message bus channel (its
+//! original message to the channel's too), and the thread's preview follows
+//! each change. Not ported yet, and refused: direct message channels, and
+//! messages of deleted users or channels.
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -220,26 +221,6 @@ impl Context<'_> {
         Ok(())
     }
 
-    /// A thread that is neither on nor forced: hidden, as a reply in a
-    /// channel without threading makes. Proper threads are refused.
-    async fn hidden_thread(
-        &mut self,
-        channel: &ChannelRow,
-        thread_id: Option<i64>,
-    ) -> Result<Option<i64>, AppError> {
-        let Some(thread_id) = thread_id else {
-            return Ok(None);
-        };
-        let force: bool = sqlx::query_scalar("SELECT force FROM chat_threads WHERE id = $1")
-            .bind(thread_id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-        if channel.threading_enabled || force {
-            return Err(Unsupported("chat threads").into());
-        }
-        Ok(Some(thread_id))
-    }
-
     /// Chat::UpdateMessage, the message edited by the guardian's user.
     pub async fn update_message(
         &mut self,
@@ -328,7 +309,7 @@ impl Context<'_> {
                 ),
             )));
         }
-        let thread_id = self.hidden_thread(&channel, old.thread_id).await?;
+        let thread_id = old.thread_id;
 
         // modify_message: cooked as the editor, under the author's name.
         let author_id = old
@@ -581,7 +562,7 @@ impl Context<'_> {
         if !allowed {
             return Ok(Outcome::Forbidden(None));
         }
-        let thread_id = self.hidden_thread(&channel, message.thread_id).await?;
+        let thread_id = message.thread_id;
         let now = crate::clock::now_naive();
 
         // trash_message
@@ -711,7 +692,7 @@ impl Context<'_> {
         if !allowed {
             return Ok(Outcome::Forbidden(None));
         }
-        let thread_id = self.hidden_thread(&channel, message.thread_id).await?;
+        let thread_id = message.thread_id;
         let now = crate::clock::now_naive();
         sqlx::query(
             "UPDATE chat_messages SET deleted_at = NULL, deleted_by_id = NULL WHERE id = $1",

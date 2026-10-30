@@ -28,12 +28,12 @@ pub const BACK_INDICATOR: &str = "<!--chat-back-indicator-->";
 /// The empty state's facepile (MAX_AVATARS).
 const MAX_AVATARS: i64 = 5;
 
-fn s(v: &Value) -> &str {
+pub(super) fn s(v: &Value) -> &str {
     v.as_str().unwrap_or_default()
 }
 
 /// `renderAvatar(user, { imageSize })`
-fn avatar(user: &Value, size: u32) -> String {
+pub(super) fn avatar(user: &Value, size: u32) -> String {
     format!(
         "<img alt=\"\" width=\"{size}\" height=\"{size}\" src=\"{}\" class=\"avatar\" title=\"{}\">",
         escape(&s(&user["avatar_template"]).replace("{size}", &size.to_string())),
@@ -42,7 +42,7 @@ fn avatar(user: &Value, size: u32) -> String {
 }
 
 /// A client string (`js.` keys).
-fn js(i18n: &crate::i18n::I18n, key: &str) -> String {
+pub(super) fn js(i18n: &crate::i18n::I18n, key: &str) -> String {
     i18n.t(&format!("js.{key}")).unwrap_or(key).to_string()
 }
 
@@ -56,21 +56,27 @@ pub struct MessagesPage {
 }
 
 /// What every message in the page reads.
-struct View<'a> {
-    base_path: &'a str,
-    channel: &'a Value,
-    viewer_id: i64,
+pub(super) struct View<'a> {
+    pub(super) base_path: &'a str,
+    pub(super) channel: &'a Value,
+    pub(super) viewer_id: i64,
     /// Who is in /chat/online, drawn online (chat.js follows it after).
-    online: Vec<i64>,
-    emojis: std::sync::Arc<crate::emojis::Emojis>,
+    pub(super) online: Vec<i64>,
+    pub(super) emojis: std::sync::Arc<crate::emojis::Emojis>,
     /// max_image_width and max_image_height, which ChatUpload shrinks to.
-    max_image: (f64, f64),
+    pub(super) max_image: (f64, f64),
     /// The site's base url, which an element's href and src resolve
     /// against in the browser.
-    base_url: String,
+    pub(super) base_url: String,
     /// `userCanInteractWithChat`: not silenced.
-    can_interact: bool,
-    t: &'a (dyn Fn(&str) -> String + Sync),
+    pub(super) can_interact: bool,
+    pub(super) t: &'a (dyn Fn(&str) -> String + Sync),
+    pub(super) i18n: &'a crate::i18n::I18n,
+    /// The relative_date_duration site setting, for dFormatDate.
+    pub(super) relative_date_duration: i64,
+    /// The message context: a thread's pane draws no thread indicators
+    /// or reply lines (`MESSAGE_CONTEXT_THREAD`).
+    pub(super) thread_context: bool,
 }
 
 impl Context<'_> {
@@ -96,10 +102,17 @@ impl Context<'_> {
         hide_presence: bool,
     ) -> String {
         format!(
-            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"{}><div class=\"main-chat-outlet{}\" id=\"main-chat-outlet\">{content}</div></div>",
+            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"{}><div class=\"main-chat-outlet{}{}\" id=\"main-chat-outlet\">{content}</div></div>",
             escape(base_path),
             if hide_presence {
                 " data-hide-presence=\"true\""
+            } else {
+                ""
+            },
+            // mainOutletModifierClasses: has-side-panel-expanded while the
+            // side panel shows (a thread, a channel's threads).
+            if content.contains("<div class=\"chat-side-panel\">") {
+                " has-side-panel-expanded"
             } else {
                 ""
             },
@@ -117,6 +130,19 @@ impl Context<'_> {
         target: Option<i64>,
         drawer: Option<&super::drawer::Nav<'_>>,
     ) -> Result<String, AppError> {
+        self.channel_page_beside(channel, target, drawer, false)
+            .await
+    }
+
+    /// The channel route, `beside_thread` while a thread or the threads
+    /// list shows in the side panel (the threads list button hides).
+    pub async fn channel_page_beside(
+        &mut self,
+        channel: &ChannelRow,
+        target: Option<i64>,
+        drawer: Option<&super::drawer::Nav<'_>>,
+        beside_thread: bool,
+    ) -> Result<String, AppError> {
         let membership = self
             .memberships()
             .await?
@@ -131,7 +157,7 @@ impl Context<'_> {
             let online = self.online_ids().await?;
             return Ok(format!(
                 "<div class=\"c-drawer-routes --channel\">{}</div>",
-                self.navbar(&channel_json, following, &online, Some(nav))?
+                self.navbar(&channel_json, following, &online, Some(nav), None)?
             ));
         }
 
@@ -174,6 +200,9 @@ impl Context<'_> {
             .base_url()?,
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
+            i18n: self.i18n,
+            relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
+            thread_context: false,
         };
 
         let mut out = String::from(if drawer.is_some() {
@@ -181,7 +210,19 @@ impl Context<'_> {
         } else {
             "<div class=\"c-routes --channel\">"
         });
-        out.push_str(&self.navbar(&channel_json, following, &view.online, drawer)?);
+        // The channel's unread threads (threadsManager.unreadThreadCount).
+        let threads_button = if beside_thread {
+            None
+        } else {
+            Some(self.unread_thread_count(channel).await?)
+        };
+        out.push_str(&self.navbar(
+            &channel_json,
+            following,
+            &view.online,
+            drawer,
+            threads_button,
+        )?);
         if drawer.is_some() {
             out.push_str("<div class=\"chat-drawer-content\">");
         }
@@ -391,6 +432,20 @@ impl Context<'_> {
         previous: Option<i64>,
         staged_previous: bool,
     ) -> Result<Option<String>, AppError> {
+        self.message_fragment_in(channel_id, message_id, previous, staged_previous, false)
+            .await
+    }
+
+    /// message_fragment in a thread's pane (`thread_context`): without
+    /// thread indicators or reply lines.
+    pub async fn message_fragment_in(
+        &mut self,
+        channel_id: i64,
+        message_id: i64,
+        previous: Option<i64>,
+        staged_previous: bool,
+        thread_context: bool,
+    ) -> Result<Option<String>, AppError> {
         let sql = format!(
             "SELECT {} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL",
             super::channels::CHANNEL_COLUMNS
@@ -445,7 +500,7 @@ impl Context<'_> {
             .await?;
         let last_read = membership.as_ref().and_then(|m| m.last_read_message_id);
         let ids: Vec<i64> = previous.into_iter().chain([message_id]).collect();
-        let serialized = self.serialize_messages(&channel, &ids).await?;
+        let serialized = self.serialize_page_messages(&channel, &ids).await?;
         // In the page's order: the previous one first.
         let mut messages: Vec<Value> = ids
             .iter()
@@ -494,6 +549,9 @@ impl Context<'_> {
             .base_url()?,
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
+            i18n: self.i18n,
+            relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
+            thread_context,
         };
         Ok(Some(message_html(
             &view, &messages, index, None, last_read, deleted,
@@ -603,8 +661,20 @@ impl Context<'_> {
             viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
+            max_image: (
+                self.settings.get("max_image_width")?.to_f(),
+                self.settings.get("max_image_height")?.to_f(),
+            ),
+            base_url: crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            }
+            .base_url()?,
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
+            i18n: self.i18n,
+            relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
+            thread_context: false,
         };
         let mut html = messages_html(&view, &messages, range, newest, last_read)?;
         if let Some(index) = redraw {
@@ -690,6 +760,7 @@ impl Context<'_> {
         following: bool,
         online: &[i64],
         drawer: Option<&super::drawer::Nav<'_>>,
+        threads_button: Option<usize>,
     ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -773,8 +844,20 @@ impl Context<'_> {
                 d_icon("thumbtack", None)
             ));
         }
-        if c["threading_enabled"] == true && !collapsed {
-            return Err(Unsupported("chat threads (the threads list button)").into());
+        // ChatNavbarThreadsListButton, with ThreadHeaderUnreadIndicator:
+        // not on the threads or a thread route (`threads_button` None).
+        if let Some(unread) =
+            threads_button.filter(|_| c["threading_enabled"] == true && !collapsed)
+        {
+            out.push_str(&format!(
+                "<a class=\"c-navbar__threads-list-button btn no-text btn-transparent{}\" title=\"{}\" href=\"{}/chat/c/{}/{id}/t\">{}{}</a>",
+                if unread > 0 { " has-unreads" } else { "" },
+                escape(&t("chat.threads.list")),
+                self.base_path,
+                escape(slug),
+                d_icon("discourse-threads", None),
+                thread_header_unread_indicator(self.i18n, unread)
+            ));
         }
         if let Some(nav) = drawer {
             out.push_str(&nav.buttons());
@@ -900,6 +983,17 @@ impl Context<'_> {
     /// ChatComposerChannel: the draft's text, the toolbar trigger, the
     /// emoji and send buttons, the upload field and the replying line.
     async fn composer(&mut self, channel: &ChannelRow, c: &Value) -> Result<String, AppError> {
+        self.composer_for(channel, c, None).await
+    }
+
+    /// The channel's composer (ChatComposerChannel), or a thread's
+    /// (ChatComposerThread: its placeholder, draft and ids).
+    pub(super) async fn composer_for(
+        &mut self,
+        channel: &ChannelRow,
+        c: &Value,
+        thread: Option<i64>,
+    ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
         let status = s(&c["status"]);
@@ -912,6 +1006,8 @@ impl Context<'_> {
             t(&format!("chat.placeholder_new_message_disallowed.{status}"))
         } else if !can_interact {
             t("chat.placeholder_silenced")
+        } else if thread.is_some() {
+            t("chat.placeholder_thread")
         } else if c["chatable_type"] == "DirectMessage" {
             // #messageRecipients for a DM: a group's, the viewer alone, or
             // the others by name (else @username).
@@ -939,7 +1035,12 @@ impl Context<'_> {
         } else {
             t("chat.placeholder_channel").replace("%{channelName}", &format!("#{}", s(&c["title"])))
         };
-        let draft = self.draft_message(channel.id).await?;
+        let draft = self.draft_message(channel.id, thread).await?;
+        let context = if thread.is_some() {
+            "thread"
+        } else {
+            "channel"
+        };
         let disabled_attr = if disabled { " disabled=\"\"" } else { "" };
         // What chat.js sends with: the minimum length (hasContent) and the
         // member's send shortcut.
@@ -1011,7 +1112,7 @@ impl Context<'_> {
             out.push_str(&trigger);
         }
         out.push_str(&format!(
-            "<div class=\"chat-composer__input-container\"><textarea placeholder=\"{}\" autocorrect=\"on\" autocapitalize=\"sentences\" rows=\"1\" id=\"channel-composer\" class=\"chat-composer__input\" data-chat-composer-context=\"channel\" type=\"text\"{disabled_attr}>{}</textarea></div>",
+            "<div class=\"chat-composer__input-container\"><textarea placeholder=\"{}\" autocorrect=\"on\" autocapitalize=\"sentences\" rows=\"1\" id=\"{context}-composer\" class=\"chat-composer__input\" data-chat-composer-context=\"{context}\" type=\"text\"{disabled_attr}>{}</textarea></div>",
             escape(&placeholder),
             escape(&draft.message)
         ));
@@ -1049,7 +1150,7 @@ impl Context<'_> {
                 )
             };
             out.push_str(&format!(
-                "<div class=\"chat-composer-uploads\" data-uploads=\"{}\" data-label-upload=\"{}\" data-label-uploading=\"{}\" data-label-processing=\"{}\" data-label-remove=\"{}\" data-label-uploaded-files=\"{}\" data-max-image=\"{}x{}\">{uploads}<div class=\"pick-files-button\"><input accept=\"{}\" class=\"hidden-upload-field\" id=\"channel-file-uploader\" multiple=\"\" type=\"file\"></div></div>",
+                "<div class=\"chat-composer-uploads\" data-uploads=\"{}\" data-label-upload=\"{}\" data-label-uploading=\"{}\" data-label-processing=\"{}\" data-label-remove=\"{}\" data-label-uploaded-files=\"{}\" data-max-image=\"{}x{}\">{uploads}<div class=\"pick-files-button\"><input accept=\"{}\" class=\"hidden-upload-field\" id=\"{context}-file-uploader\" multiple=\"\" type=\"file\"></div></div>",
                 escape(&Value::Array(draft.uploads.clone()).to_string()),
                 escape(&t("chat.upload")),
                 escape(&t("uploading")),
@@ -1065,18 +1166,23 @@ impl Context<'_> {
         Ok(out)
     }
 
-    /// The member's draft for the channel (chat_drafts): its text, its
-    /// uploads, and the message it edits or replies to.
-    async fn draft_message(&mut self, channel_id: i64) -> Result<Draft, AppError> {
+    /// The member's draft for the channel or thread (chat_drafts): its
+    /// text, its uploads, and the message it edits or replies to.
+    async fn draft_message(
+        &mut self,
+        channel_id: i64,
+        thread: Option<i64>,
+    ) -> Result<Draft, AppError> {
         let Some(user_id) = self.guardian.user_id() else {
             return Ok(Draft::default());
         };
         let data: Option<Option<String>> = sqlx::query_scalar(
-            "SELECT data FROM chat_drafts WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NULL \
+            "SELECT data FROM chat_drafts WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NOT DISTINCT FROM $3 \
              ORDER BY updated_at DESC LIMIT 1",
         )
         .bind(user_id)
         .bind(channel_id)
+        .bind(thread)
         .fetch_optional(&mut *self.conn)
         .await?;
         let Some(Some(data)) = data else {
@@ -1152,6 +1258,9 @@ impl Context<'_> {
             .base_url()?,
             can_interact: true,
             t: &t,
+            i18n: self.i18n,
+            relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
+            thread_context: false,
         };
         let text = format!(
             "<span class=\"chat-reply__username\">{}</span><span class=\"chat-reply__excerpt\">{}</span>",
@@ -1201,7 +1310,7 @@ pub(crate) fn slugified_title(c: &Value) -> String {
 
 /// ChatUserAvatar, not interactive: the avatar in a span, marked online
 /// when the user is on /chat/online.
-fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
+pub(super) fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
     let is_online = user["id"].as_i64().is_some_and(|id| online.contains(&id));
     format!(
         "<div class=\"chat-user-avatar{}\" data-username=\"{}\"><span class=\"chat-user-avatar__container\">{}</span></div>",
@@ -1212,7 +1321,7 @@ fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
 }
 
 /// ChatChannelTitle: the channel's icon (ChannelIcon) and its name.
-fn channel_title(
+pub(super) fn channel_title(
     c: &Value,
     emojis: &crate::emojis::Emojis,
     base_path: &str,
@@ -1309,7 +1418,12 @@ fn emoji_img(emojis: &crate::emojis::Emojis, base_path: &str, name: &str) -> Str
 
 /// ChatChannelStatus, long: a closed, read only or archived channel says
 /// so above its messages, with ChatChannelArchiveStatus for an admin.
-fn channel_status(c: &Value, t: &dyn Fn(&str) -> String, admin: bool, base_path: &str) -> String {
+pub(super) fn channel_status(
+    c: &Value,
+    t: &dyn Fn(&str) -> String,
+    admin: bool,
+    base_path: &str,
+) -> String {
     let status = s(&c["status"]);
     let icon = match status {
         "closed" => "lock",
@@ -1364,7 +1478,7 @@ fn archive_status(c: &Value, t: &dyn Fn(&str) -> String, base_path: &str) -> Str
 }
 
 /// ChatChannelPreviewCard for a member who doesn't follow the channel.
-fn preview_card(c: &Value, t: &dyn Fn(&str) -> String) -> String {
+pub(super) fn preview_card(c: &Value, t: &dyn Fn(&str) -> String) -> String {
     let channel_name = format!("#{}", s(&c["title"]));
     if c["status"] == "open" && c["meta"]["can_join_chat_channel"] == true {
         format!(
@@ -1513,7 +1627,7 @@ fn hide_user_info(m: &Value, previous: Option<&Value>, first_of_results: bool) -
 }
 
 /// The Message component for one message of the channel.
-fn message_html(
+pub(super) fn message_html(
     v: &View,
     messages: &[Value],
     index: usize,
@@ -1531,8 +1645,17 @@ fn message_html(
     let user = &m["user"];
     let hide_info = hide_user_info(m, previous, first_of_results);
     // hideReplyToInfo: a reply to the message right above says nothing.
-    let has_reply_line =
-        !m["in_reply_to"].is_null() && previous.is_none_or(|p| m["in_reply_to"]["id"] != p["id"]);
+    // threadingEnabled: the message is in a thread that shows (its
+    // thread_id is serialized then), where replies say nothing either.
+    let in_thread = m["thread_id"].is_i64();
+    let has_reply_line = !m["in_reply_to"].is_null()
+        && !v.thread_context
+        && !in_thread
+        && previous.is_none_or(|p| m["in_reply_to"]["id"] != p["id"]);
+    // showThreadIndicator: an original message whose thread has replies.
+    let thread_indicator = !v.thread_context
+        && in_thread
+        && m["thread"]["preview"]["reply_count"].as_i64().unwrap_or(0) > 0;
     let deleted = !m["deleted_at"].is_null();
 
     let mut classes = vec!["chat-message-container"];
@@ -1552,6 +1675,9 @@ fn message_html(
     }
     if deleted {
         classes.push("-deleted");
+    }
+    if thread_indicator {
+        classes.push("has-thread-indicator");
     }
     if hide_info {
         classes.push("-user-info-hidden");
@@ -1595,8 +1721,12 @@ fn message_html(
         ));
     }
     let mut out = format!(
-        "<div class=\"{}\" data-id=\"{id}\" data-created-at=\"{}\"{data}{}{}>",
+        "<div class=\"{}\" data-id=\"{id}\"{} data-created-at=\"{}\"{data}{}{}>",
         classes.join(" "),
+        match m["thread_id"].as_i64() {
+            Some(thread_id) => format!(" data-thread-id=\"{thread_id}\""),
+            None => String::new(),
+        },
         escape(s(&m["created_at"])),
         if Some(id) == newest {
             " data-newest=\"\""
@@ -1712,13 +1842,181 @@ fn message_html(
     }
     out.push_str("</div>");
     out.push_str(&blocks_html(m, v)?);
-    out.push_str("</div></div></div>");
+    out.push_str("</div>");
+    if thread_indicator {
+        out.push_str(&thread_indicator_html(v, m));
+    }
+    out.push_str("</div></div>");
     Ok(out)
+}
+
+/// ThreadHeaderUnreadIndicator: the channel's unread threads, capped at
+/// 99, none without.
+pub(crate) fn thread_header_unread_indicator(i18n: &crate::i18n::I18n, unread: usize) -> String {
+    if unread == 0 {
+        return String::new();
+    }
+    let capped = if unread > 99 {
+        "99+".to_string()
+    } else {
+        unread.to_string()
+    };
+    format!(
+        "<div class=\"chat-thread-header-unread-indicator\" title=\"{}\"><div class=\"chat-thread-header-unread-indicator__number\">{capped}</div></div>",
+        escape(
+            &i18n
+                .t_count(
+                    "js.chat.unread_threads_count",
+                    unread as i64,
+                    &[("count", &capped)]
+                )
+                .unwrap_or_default()
+        )
+    )
+}
+
+/// ChatUserAvatar linking to the profile, without presence
+/// (`@showPresence={{false}}`).
+pub(super) fn user_avatar_link(user: &Value, size: u32, base_path: &str) -> String {
+    let username = escape(s(&user["username"]));
+    format!(
+        "<div class=\"chat-user-avatar\" data-username=\"{username}\"><a class=\"chat-user-avatar__container\" data-user-card=\"{username}\" href=\"{base_path}/u/{username}\">{}</a></div>",
+        avatar(user, size)
+    )
+}
+
+/// What dFormatDate reads: the strings and relative_date_duration.
+struct ChatDates<'a> {
+    i18n: &'a crate::i18n::I18n,
+    relative_date_duration: i64,
+}
+
+impl crate::viewer_dates::DateContext for ChatDates<'_> {
+    fn i18n(&self) -> &crate::i18n::I18n {
+        self.i18n
+    }
+    fn now(&self) -> chrono::DateTime<chrono::Utc> {
+        crate::clock::now()
+    }
+    fn relative_date_duration(&self) -> i64 {
+        self.relative_date_duration
+    }
+}
+
+/// `dFormatDate(date, { leaveAgo: true })`: autoUpdatingRelativeAge in the
+/// medium-with-ago format with its title, drawn in the viewer's zone.
+pub(crate) fn format_date_ago(
+    i18n: &crate::i18n::I18n,
+    relative_date_duration: i64,
+    at: &str,
+) -> String {
+    let Ok(at) = chrono::DateTime::parse_from_rfc3339(at).map(|d| d.with_timezone(&chrono::Utc))
+    else {
+        return String::new();
+    };
+    let cx = ChatDates {
+        i18n,
+        relative_date_duration,
+    };
+    format!(
+        "<span class='relative-date date'{} data-time='{}' data-format='medium-with-ago'>{}</span>",
+        crate::viewer_dates::long_title(&cx, at),
+        at.timestamp_millis(),
+        escape(&crate::viewer_dates::relative_age(
+            &cx,
+            at,
+            "medium-with-ago"
+        ))
+    )
+}
+
+/// ChatThreadParticipants: with the original message's author counted,
+/// shown for more than one; the first two and the last of more than
+/// three, and how many others.
+pub(crate) fn thread_participants_html(
+    preview: &Value,
+    t_count: &dyn Fn(&str, i64) -> String,
+    avatar_html: &dyn Fn(&Value) -> String,
+) -> String {
+    let users = preview["participant_users"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    if users.len() <= 1 {
+        return String::new();
+    }
+    let shown: Vec<&Value> = if users.len() > 3 {
+        users[..2].iter().chain(users.last()).collect()
+    } else {
+        users.iter().collect()
+    };
+    let mut out = String::from(
+        "<div class=\"chat-thread-participants\"><div class=\"chat-thread-participants__avatar-group\">",
+    );
+    for user in &shown {
+        out.push_str(&avatar_html(user));
+    }
+    out.push_str("</div>");
+    // otherParticipantCount: participant_count less the users shown by
+    // the preview (all of them, not the three drawn).
+    let others = preview["participant_count"].as_i64().unwrap_or(0) - users.len() as i64;
+    if others != 0 {
+        out.push_str(&format!(
+            "<div class=\"chat-thread-participants__other-count\">{}</div>",
+            escape(&t_count("chat.thread.participants_other_count", others))
+        ));
+    }
+    out.push_str("</div>");
+    out
+}
+
+/// ChatMessageThreadIndicator: the thread's last reply (its author, when,
+/// the excerpt), the reply count and the participants, linking to the
+/// last reply in the thread.
+fn thread_indicator_html(v: &View, m: &Value) -> String {
+    let preview = &m["thread"]["preview"];
+    let last_user = &preview["last_reply_user"];
+    let i18n = v.i18n;
+    let t_count = move |key: &str, count: i64| {
+        i18n.t_count(
+            &format!("js.{key}"),
+            count,
+            &[("count", &count.to_string())],
+        )
+        .unwrap_or_default()
+    };
+    let participants =
+        thread_participants_html(preview, &t_count, &|u| static_user_avatar(u, 24, &[]));
+    format!(
+        "<a class=\"chat-message-thread-indicator\" tabindex=\"0\" title=\"{}\" href=\"{}/chat/c/{}/{}/t/{}/{}\"><div class=\"chat-message-thread-indicator__last-reply-avatar\">{}</div><div class=\"chat-message-thread-indicator__last-reply-info\"><span class=\"chat-message-thread-indicator__last-reply-username\">{}</span><span class=\"chat-message-thread-indicator__last-reply-timestamp\">{}</span></div><div class=\"chat-message-thread-indicator__replies-count\">{}</div>{participants}<div class=\"chat-message-thread-indicator__last-reply-excerpt\">{}</div></a>",
+        escape(&(v.t)("chat.threads.open")),
+        v.base_path,
+        escape(&slugified_title(v.channel)),
+        v.channel["id"],
+        m["thread"]["id"],
+        preview["last_reply_id"],
+        user_avatar(last_user, 24, false, v),
+        escape(s(&last_user["username"])),
+        format_date_ago(
+            v.i18n,
+            v.relative_date_duration,
+            s(&preview["last_reply_created_at"])
+        ),
+        escape(&t_count(
+            "chat.thread.replies",
+            preview["reply_count"].as_i64().unwrap_or(0)
+        )),
+        crate::topic_list_view::emoji_unescape(
+            s(&preview["last_reply_excerpt"]),
+            &v.emojis,
+            v.base_path
+        )
+    )
 }
 
 /// ChatUserAvatar: the avatar linking to the profile, marked online when
 /// its user is in /chat/online.
-fn user_avatar(user: &Value, size: u32, aria_hidden: bool, v: &View) -> String {
+pub(super) fn user_avatar(user: &Value, size: u32, aria_hidden: bool, v: &View) -> String {
     let username = s(&user["username"]);
     let online = user["id"].as_i64().is_some_and(|id| v.online.contains(&id));
     let img = avatar(user, size);

@@ -97,80 +97,59 @@ async fn message_payload(
     Ok((json!({ "chat_message": message, "type": kind }), message))
 }
 
-/// `Chat::Publisher.publish_new!` for a channel message (no threads):
-/// the message on /chat/:id with its staged id, and on
-/// /chat/:id/new-messages for the channel lists.
-pub async fn publish_new(
-    cx: &mut Context<'_>,
-    bus: &pg_bus::Bus,
-    channel: &ChannelRow,
-    message_id: i64,
-    staged_id: Option<&str>,
-) -> Result<(), AppError> {
-    let tags = audience(
-        &mut *cx.conn,
-        cx.settings,
-        &channel.chatable_type,
-        channel.chatable_id,
-    )
-    .await?;
-    let (mut payload, message) = message_payload(cx, channel, message_id, "sent").await?;
-    payload["staged_id"] = json!(staged_id);
-    bus.publish(
-        &mut *cx.conn,
-        &format!("/chat/{}", channel.id),
-        &payload,
-        Some(&tags),
-    )
-    .await?;
-    let thread_id = message["thread_id"].clone();
-    bus.publish(
-        &mut *cx.conn,
-        &format!("/chat/{}/new-messages", channel.id),
-        &json!({
-            "type": "channel",
-            "channel_id": channel.id,
-            "thread_id": thread_id,
-            "message": message,
-        }),
-        Some(&tags),
-    )
-    .await?;
-    Ok(())
+/// Where a message's changes go (`calculate_publish_targets`): its
+/// thread's original message to the channel and the thread, a reply to
+/// the thread, anything else (or a hidden thread's) to the channel.
+pub(crate) struct Targets {
+    pub channels: Vec<String>,
+    pub thread: Option<super::threads::ThreadRow>,
+    /// `thread_reply?` in a thread that shows (allow_publish_to_thread?).
+    pub thread_reply: bool,
 }
 
-/// `Chat::Publisher.publish_processed!`, `publish_edit!` and the like: the
-/// message again on /chat/:id with the given type.
-pub async fn publish_message(
+pub(crate) async fn targets(
     cx: &mut Context<'_>,
-    bus: &pg_bus::Bus,
     channel: &ChannelRow,
     message_id: i64,
-    kind: &str,
-) -> Result<(), AppError> {
-    let tags = audience(
-        &mut *cx.conn,
-        cx.settings,
-        &channel.chatable_type,
-        channel.chatable_id,
-    )
-    .await?;
-    let (payload, _) = message_payload(cx, channel, message_id, kind).await?;
-    bus.publish(
-        &mut *cx.conn,
-        &format!("/chat/{}", channel.id),
-        &payload,
-        Some(&tags),
-    )
-    .await?;
-    Ok(())
+) -> Result<Targets, AppError> {
+    let root = format!("/chat/{}", channel.id);
+    let thread_id: Option<i64> =
+        sqlx::query_scalar("SELECT thread_id FROM chat_messages WHERE id = $1")
+            .bind(message_id)
+            .fetch_optional(&mut *cx.conn)
+            .await?
+            .flatten();
+    let thread = match thread_id {
+        Some(id) => cx.find_thread(id, None).await?,
+        None => None,
+    };
+    let Some(thread) = thread.filter(|t| super::threads::shows(channel, t)) else {
+        return Ok(Targets {
+            channels: vec![root],
+            thread: None,
+            thread_reply: false,
+        });
+    };
+    let thread_channel = format!("/chat/{}/thread/{}", channel.id, thread.id);
+    let om = thread.original_message_id == message_id;
+    Ok(Targets {
+        channels: if om {
+            vec![root, thread_channel]
+        } else {
+            vec![thread_channel]
+        },
+        thread_reply: !om,
+        thread: Some(thread),
+    })
 }
 
-/// `Chat::Publisher.publish_to_channel!`: a payload on /chat/:id.
-pub async fn publish_to_channel(
+/// `publish_to_targets!`: a payload on each target, to the channel's
+/// audience.
+async fn publish_to_targets(
     cx: &mut Context<'_>,
     bus: &pg_bus::Bus,
     channel: &ChannelRow,
+    targets: &[String],
     payload: &Value,
 ) -> Result<(), AppError> {
     let tags = audience(
@@ -180,37 +159,168 @@ pub async fn publish_to_channel(
         channel.chatable_id,
     )
     .await?;
-    bus.publish(
-        &mut *cx.conn,
-        &format!("/chat/{}", channel.id),
-        payload,
-        Some(&tags),
-    )
-    .await?;
+    for target in targets {
+        bus.publish(&mut *cx.conn, target, payload, Some(&tags))
+            .await?;
+    }
     Ok(())
 }
 
-/// `Chat::Publisher.publish_user_tracking_state!` for a channel message.
+/// `Chat::Publisher.publish_new!`: the message on its targets with its
+/// staged id, and on /chat/:id/new-messages for the channel lists (as a
+/// thread's when it is a reply in a thread that shows, with the thread's
+/// preview after).
+pub async fn publish_new(
+    cx: &mut Context<'_>,
+    bus: &pg_bus::Bus,
+    channel: &ChannelRow,
+    message_id: i64,
+    staged_id: Option<&str>,
+) -> Result<(), AppError> {
+    let targets = targets(cx, channel, message_id).await?;
+    let (mut payload, message) = message_payload(cx, channel, message_id, "sent").await?;
+    payload["staged_id"] = json!(staged_id);
+    publish_to_targets(cx, bus, channel, &targets.channels, &payload).await?;
+    let tags = audience(
+        &mut *cx.conn,
+        cx.settings,
+        &channel.chatable_type,
+        channel.chatable_id,
+    )
+    .await?;
+    let thread_id = message["thread_id"].clone();
+    match (&targets.thread, targets.thread_reply) {
+        (Some(thread), true) => {
+            bus.publish(
+                &mut *cx.conn,
+                &format!("/chat/{}/new-messages", channel.id),
+                &json!({
+                    "type": "thread",
+                    "channel_id": channel.id,
+                    "thread_id": thread.id,
+                    "force_thread": thread.force,
+                    "message": message,
+                }),
+                Some(&tags),
+            )
+            .await?;
+            publish_thread_metadata(cx, bus, channel, thread.id).await?;
+        }
+        _ => {
+            bus.publish(
+                &mut *cx.conn,
+                &format!("/chat/{}/new-messages", channel.id),
+                &json!({
+                    "type": "channel",
+                    "channel_id": channel.id,
+                    "thread_id": thread_id,
+                    "message": message,
+                }),
+                Some(&tags),
+            )
+            .await?;
+        }
+    }
+    Ok(())
+}
+
+/// `Chat::Publisher.publish_processed!`, `publish_edit!` and the like: the
+/// message again on its targets with the given type.
+pub async fn publish_message(
+    cx: &mut Context<'_>,
+    bus: &pg_bus::Bus,
+    channel: &ChannelRow,
+    message_id: i64,
+    kind: &str,
+) -> Result<(), AppError> {
+    let targets = targets(cx, channel, message_id).await?;
+    let (payload, _) = message_payload(cx, channel, message_id, kind).await?;
+    publish_to_targets(cx, bus, channel, &targets.channels, &payload).await
+}
+
+/// `Chat::Publisher.publish_thread_created!`: the original message that
+/// started a thread, to the channel.
+pub async fn publish_thread_created(
+    cx: &mut Context<'_>,
+    bus: &pg_bus::Bus,
+    channel: &ChannelRow,
+    message_id: i64,
+    thread_id: i64,
+) -> Result<(), AppError> {
+    let (mut payload, _) = message_payload(cx, channel, message_id, "thread_created").await?;
+    payload["thread_id"] = json!(thread_id);
+    publish_to_channel(cx, bus, channel, &payload).await
+}
+
+/// `Chat::Publisher.publish_to_channel!`: a payload on /chat/:id.
+pub async fn publish_to_channel(
+    cx: &mut Context<'_>,
+    bus: &pg_bus::Bus,
+    channel: &ChannelRow,
+    payload: &Value,
+) -> Result<(), AppError> {
+    let root = [format!("/chat/{}", channel.id)];
+    publish_to_targets(cx, bus, channel, &root, payload).await
+}
+
+/// `Chat::Publisher.publish_user_tracking_state!`: the member's last read
+/// message in the channel with its tracking, and, for a reply in a
+/// thread of a channel with threading, the unread threads' overview and
+/// the thread's tracking.
 pub async fn publish_user_tracking_state(
     cx: &mut Context<'_>,
     bus: &pg_bus::Bus,
-    channel_id: i64,
+    channel: &ChannelRow,
     message_id: i64,
-    thread_id: Option<i64>,
 ) -> Result<(), AppError> {
     let user_id = cx.guardian.user_id().unwrap_or(0);
-    let tracking = cx.channel_tracking(&[channel_id]).await?;
+    let thread_id: Option<i64> =
+        sqlx::query_scalar("SELECT thread_id FROM chat_messages WHERE id = $1")
+            .bind(message_id)
+            .fetch_optional(&mut *cx.conn)
+            .await?
+            .flatten();
+    let tracking = cx.channel_tracking(&[channel.id]).await?;
     let mut data = json!({
-        "channel_id": channel_id,
+        "channel_id": channel.id,
         "last_read_message_id": message_id,
         "thread_id": thread_id,
     });
     if let (Some(d), Some(Value::Object(t))) =
-        (data.as_object_mut(), tracking.get(&channel_id.to_string()))
+        (data.as_object_mut(), tracking.get(&channel.id.to_string()))
     {
         for (k, v) in t {
             d.insert(k.clone(), v.clone());
         }
+    }
+    let targets = targets(cx, channel, message_id).await?;
+    if channel.threading_enabled
+        && targets.thread_reply
+        && let Some(thread) = &targets.thread
+    {
+        let overview = cx.unread_thread_overview(&[channel.id]).await?;
+        data["unread_thread_overview"] = overview
+            .get(&channel.id.to_string())
+            .cloned()
+            .unwrap_or_else(|| json!({}));
+        let thread_tracking = cx.thread_tracking_for(&[thread.id], true).await?;
+        // TrackingStateInfo#to_h: zeros without a row.
+        let mut info = json!({
+            "unread_count": 0,
+            "mention_count": 0,
+            "watched_threads_unread_count": 0,
+            "last_reply_created_at": null,
+        });
+        if let Some(Value::Object(t)) = thread_tracking.get(&thread.id.to_string()) {
+            for key in [
+                "unread_count",
+                "mention_count",
+                "watched_threads_unread_count",
+            ] {
+                info[key] = t.get(key).cloned().unwrap_or(json!(0));
+            }
+        }
+        data["thread_tracking"] = info;
     }
     bus.publish(
         &mut *cx.conn,
@@ -280,11 +390,13 @@ pub async fn publish_reaction(
         "type": "reaction",
         "chat_message_id": message_id,
     });
-    publish_to_channel(cx, bus, channel, &payload).await
+    let targets = targets(cx, channel, message_id).await?;
+    publish_to_targets(cx, bus, channel, &targets.channels, &payload).await
 }
 
-/// `Chat::Publisher.publish_delete!` for a channel message: the latest
-/// live message before it goes along for the channel lists.
+/// `Chat::Publisher.publish_delete!`: the latest live message before it
+/// (in its thread, for a reply in a channel with threading) goes along
+/// for the channel lists.
 pub async fn publish_delete(
     cx: &mut Context<'_>,
     bus: &pg_bus::Bus,
@@ -296,9 +408,28 @@ pub async fn publish_delete(
             .bind(message_id)
             .fetch_one(&mut *cx.conn)
             .await?;
-    let latest =
-        super::modify::latest_not_deleted_message_id(&mut *cx.conn, channel.id, Some(message_id))
-            .await?;
+    let targets = targets(cx, channel, message_id).await?;
+    let latest = match &targets.thread {
+        Some(thread) if targets.thread_reply && channel.threading_enabled => {
+            sqlx::query_scalar(
+                "SELECT id FROM chat_messages WHERE chat_channel_id = $1 AND thread_id = $2 \
+                   AND deleted_at IS NULL AND id < $3 ORDER BY created_at DESC, id DESC LIMIT 1",
+            )
+            .bind(channel.id)
+            .bind(thread.id)
+            .bind(message_id)
+            .fetch_optional(&mut *cx.conn)
+            .await?
+        }
+        _ => {
+            super::modify::latest_not_deleted_message_id(
+                &mut *cx.conn,
+                channel.id,
+                Some(message_id),
+            )
+            .await?
+        }
+    };
     let payload = json!({
         "type": "delete",
         "deleted_id": message_id,
@@ -306,7 +437,7 @@ pub async fn publish_delete(
         "deleted_by_id": deleted_by_id,
         "latest_not_deleted_message_id": latest,
     });
-    publish_to_channel(cx, bus, channel, &payload).await
+    publish_to_targets(cx, bus, channel, &targets.channels, &payload).await
 }
 
 /// `Chat::Publisher.publish_unpin!`
@@ -333,105 +464,24 @@ pub async fn publish_unpin(
 
 /// `Chat::Publisher.publish_thread_original_message_metadata!`: the
 /// thread's preview (Chat::ThreadPreviewSerializer, its participants from
-/// Chat::ThreadParticipantQuery) on the channel. The reply count is the
-/// thread's live replies, what Rails' Redis count tracks.
+/// Chat::ThreadParticipantQuery) on the channel.
 pub async fn publish_thread_metadata(
     cx: &mut Context<'_>,
     bus: &pg_bus::Bus,
     channel: &ChannelRow,
     thread_id: i64,
 ) -> Result<(), AppError> {
-    let (original_message_id, last_message_id): (i64, Option<i64>) = sqlx::query_as(
-        "SELECT original_message_id, last_message_id FROM chat_threads WHERE id = $1",
-    )
-    .bind(thread_id)
-    .fetch_one(&mut *cx.conn)
-    .await?;
-    #[derive(sqlx::FromRow)]
-    struct Last {
-        id: i64,
-        created_at: chrono::NaiveDateTime,
-        user_id: Option<i32>,
-        excerpt: Option<String>,
-        message: Option<String>,
-        cooked: Option<String>,
-    }
-    let last: Option<Last> = sqlx::query_as(
-        "SELECT id, created_at, user_id, excerpt, message, cooked FROM chat_messages \
-         WHERE id = $1 AND deleted_at IS NULL",
-    )
-    .bind(last_message_id)
-    .fetch_optional(&mut *cx.conn)
-    .await?;
-    let Some(last) = last else {
-        return Err(Unsupported("chat threads without a live last message").into());
+    let Some(thread) = cx.find_thread(thread_id, None).await? else {
+        return Ok(());
     };
-    let reply_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM chat_messages WHERE thread_id = $1 AND deleted_at IS NULL AND id <> $2",
-    )
-    .bind(thread_id)
-    .bind(original_message_id)
-    .fetch_one(&mut *cx.conn)
-    .await?;
-    let excerpt = match last.excerpt {
-        Some(e) => e,
-        None => super::messages::build_excerpt_for(
-            last.message.as_deref().unwrap_or_default(),
-            last.cooked.as_deref().unwrap_or_default(),
-            crate::excerpt::Plugins::from_settings(cx.settings)?,
-        )?,
-    };
-    let last_user = match last.user_id {
-        Some(id) => basic_user(cx, id).await?,
-        None => Value::Null,
-    };
-    // Chat::ThreadParticipantQuery: the members who wrote in it, the most
-    // prolific first, the most recent last, ten at most.
-    let stats: Vec<(i32,)> = sqlx::query_as(
-        "SELECT chat_messages.user_id FROM chat_messages \
-         INNER JOIN user_chat_thread_memberships m ON m.thread_id = chat_messages.thread_id \
-           AND m.user_id = chat_messages.user_id \
-         WHERE chat_messages.thread_id = $1 AND chat_messages.deleted_at IS NULL \
-         GROUP BY chat_messages.user_id ORDER BY COUNT(*) DESC, chat_messages.user_id ASC",
-    )
-    .bind(thread_id)
-    .fetch_all(&mut *cx.conn)
-    .await?;
-    let recent: Option<i32> = sqlx::query_scalar(
-        "SELECT chat_messages.user_id FROM chat_messages \
-         INNER JOIN user_chat_thread_memberships m ON m.thread_id = chat_messages.thread_id \
-           AND m.user_id = chat_messages.user_id \
-         WHERE chat_messages.thread_id = $1 AND chat_messages.deleted_at IS NULL \
-         ORDER BY chat_messages.created_at DESC LIMIT 1",
-    )
-    .bind(thread_id)
-    .fetch_optional(&mut *cx.conn)
-    .await?
-    .flatten();
-    let mut preview = json!({
-        "last_reply_created_at": last.created_at.format("%Y-%m-%dT%H:%M:%SZ").to_string(),
-        "last_reply_excerpt": excerpt,
-        "last_reply_id": last.id,
-        "reply_count": reply_count,
-        "last_reply_user": last_user,
-    });
-    if !stats.is_empty() {
-        let mut users = Vec::new();
-        for (id,) in &stats {
-            if users.len() < 9 && Some(*id) != recent {
-                users.push(basic_user(cx, *id).await?);
-            }
-        }
-        if let Some(id) = recent {
-            users.push(basic_user(cx, id).await?);
-        }
-        preview["participant_count"] = json!(stats.len());
-        preview["participant_users"] = json!(users);
-    }
+    let participants = cx.thread_participants(&[thread.id]).await?;
+    let preview = cx
+        .thread_preview(&thread, participants.get(&thread.id))
+        .await?;
     let payload = json!({
         "type": "update_thread_original_message",
-        "original_message_id": original_message_id,
-        "thread_id": thread_id,
+        "original_message_id": thread.original_message_id,
+        "thread_id": thread.id,
         "channel_id": channel.id,
         "preview": preview,
     });

@@ -225,6 +225,10 @@ fn handler<'a>(
         crate::plugins::chat::create::UPDATE_THREAD_REPLY_COUNT_JOB => {
             Box::pin(async move { chat_update_thread_reply_count(state, &job.args).await })
         }
+        crate::plugins::chat::threads::MARK_ALL_CHANNEL_THREADS_READ_JOB => Box::pin(async move {
+            crate::plugins::chat::threads::mark_all_channel_threads_read(&state.pool, &job.args)
+                .await
+        }),
         crate::plugins::chat::notify::NOTIFY_MENTIONED_JOB => {
             Box::pin(async move { chat_notify_mentioned(state, &job.args).await })
         }

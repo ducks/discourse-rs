@@ -477,7 +477,9 @@
   // emptied edit deletes the message) or replies, per the message details
   // bar (ChatComposerMessageDetails).
   function composerParts() {
-    var wrapper = document.querySelector(".chat-composer__wrapper");
+    // The channel's composer, not a thread's (chat-thread.js).
+    var channelInput = document.getElementById("channel-composer");
+    var wrapper = channelInput && channelInput.closest(".chat-composer__wrapper");
     if (!wrapper) {
       return null;
     }
@@ -1068,7 +1070,7 @@
   });
 
   document.addEventListener("click", function (event) {
-    if (event.target.closest(".chat-composer-button.-send")) {
+    if (event.target.closest(".chat-composer-button.-send") && !event.target.closest(".chat-thread")) {
       var parts = composerParts();
       if (parts) {
         sendMessage(parts);
@@ -1389,7 +1391,8 @@
 
   document.addEventListener("mouseover", function (event) {
     var message = event.target.closest(".chat-messages-container > .chat-message-container[data-id]");
-    if (!message || message.classList.contains("-active") || menuOpen()) {
+    // A thread's messages have no toolbar here (chat-thread.js).
+    if (!message || message.closest(".chat-thread") || message.classList.contains("-active") || menuOpen()) {
       return;
     }
     clearTimeout(hoverTimer);
@@ -1939,6 +1942,12 @@
         return onChanged(channel, list, data.chat_message_id, data.type);
       case "delete":
         return onDelete(channel, list, data);
+      // A thread's original message drawn again: its new thread, or its
+      // preview (the thread indicator).
+      case "thread_created":
+        return onChanged(channel, list, data.chat_message.id, data.type);
+      case "update_thread_original_message":
+        return onChanged(channel, list, data.original_message_id, data.type);
       case "bulk_delete":
         return data.deleted_ids.reduce(function (done, id) {
           return done.then(function () {
@@ -3792,6 +3801,10 @@
       mount(true);
     },
     unmount: unmount,
+    // For chat-thread.js: a pane's times and separators, and the
+    // browser's cook of a staged message.
+    redraw: redraw,
+    cook: cookStaged,
   };
 
   Discourse.onPage(function () {

@@ -1,0 +1,145 @@
+{
+  "name": "thread_read_message",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2/threads/1/read.json",
+      "params": {
+        "message_id": 2
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2/threads/1/read.json",
+      "params": {
+        "message_id": 1
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2/threads/1/read.json",
+      "params": {
+        "message_id": 4
+      }
+    }
+  ],
+  "started_at": "2026-10-29T22:19:07.477479",
+  "transaction_started_at": "2026-10-29T22:19:06.367348",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y7Jrer7l3xL00+KwvMsWPD3rc14=",
+            "created_at": "2026-10-29T22:19:06.730003",
+            "rotated_at": "2026-10-29T22:19:06.729002",
+            "updated_at": "2026-10-29T22:19:06.730003",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Y7Jrer7l3xL00+KwvMsWPD3rc14=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-10-29T22:19:07.483821",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Y7Jrer7l3xL00+KwvMsWPD3rc14=",
+            "created_at": "2026-10-29T22:19:06.730003",
+            "rotated_at": "2026-10-29T22:19:06.729002",
+            "updated_at": "2026-10-29T22:19:06.730003",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Y7Jrer7l3xL00+KwvMsWPD3rc14=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_chat_thread_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "user_id": 2,
+            "thread_id": 1,
+            "created_at": "2026-10-29T21:39:06.367348",
+            "updated_at": "2026-10-29T21:39:06.367348",
+            "notification_level": 2,
+            "last_read_message_id": null,
+            "thread_title_prompt_seen": false,
+            "last_unread_message_when_emailed_id": null
+          },
+          "after": {
+            "id": 1,
+            "user_id": 2,
+            "thread_id": 1,
+            "created_at": "2026-10-29T21:39:06.367348",
+            "updated_at": "2026-10-29T22:19:07.507071",
+            "notification_level": 2,
+            "last_read_message_id": 2,
+            "thread_title_prompt_seen": false,
+            "last_unread_message_when_emailed_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, in_reply_to_id) VALUES (2, 2, 3, now() - interval '40 minutes', now() - interval '40 minutes', '@user0 hi back', '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>', 1, 3, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (3, 2, 1, now() - interval '35 minutes', now() - interval '35 minutes', 'thread reply two', '<p>thread reply two</p>', 1, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (4, 2, 2, now() - interval '30 minutes', now() - interval '30 minutes', 'channel chatter', '<p>channel chatter</p>', 1, 2)",
+    "SELECT setval('chat_messages_id_seq', 4)",
+    "UPDATE chat_channels SET last_message_id = 4, messages_count = 4, threading_enabled = true WHERE id = 2",
+    "INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 'Chat::UserMention', 2, now() - interval '40 minutes', now() - interval '40 minutes')",
+    "INSERT INTO chat_threads (id, channel_id, original_message_id, original_message_user_id, status, replies_count, force, last_message_id, created_at, updated_at) VALUES (1, 2, 1, 2, 0, 2, false, 3, now() - interval '40 minutes', now() - interval '35 minutes')",
+    "SELECT setval('chat_threads_id_seq', 1)",
+    "UPDATE chat_messages SET thread_id = 1 WHERE id IN (1, 2, 3)",
+    "INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, last_read_message_id, created_at, updated_at) VALUES (2, 1, 2, NULL, now() - interval '40 minutes', now() - interval '40 minutes'), (3, 1, 2, 2, now() - interval '40 minutes', now() - interval '40 minutes'), (1, 1, 2, 3, now() - interval '35 minutes', now() - interval '35 minutes')",
+    "UPDATE user_chat_channel_memberships SET last_read_message_id = 4 WHERE chat_channel_id = 2"
+  ],
+  "recorded_from": {
+    "case": "f1d0e13b80d39e7aa81451f966962f8c852fb077a2bf055c48926c5d21db9c9d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
