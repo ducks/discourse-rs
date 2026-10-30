@@ -92,6 +92,7 @@ impl Client {
         client
     }
 
+    #[allow(dead_code)]
     pub async fn get(&mut self, path: &str) -> (u16, Value) {
         self.request("GET", path, "").await
     }
