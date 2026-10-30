@@ -2096,8 +2096,14 @@ fn post_swap(post_number: i32) -> String {
 /// /raw serves a post's markdown to edit, only to who can see it.
 #[tokio::test]
 async fn members_get_the_composer_and_raw_posts() {
-    let db = TestDb::new().await;
+    let db = TestDb::with_clock().await;
     let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    // Inside user1's tl2_post_edit_time_limit (30 days) for the fixture's
+    // replies, seeded 2026-09-30, so the edit button below renders.
+    db.pin_clock(Some(
+        chrono::TimeZone::with_ymd_and_hms(&chrono::Utc, 2026, 10, 1, 12, 0, 0).unwrap(),
+    ))
+    .await;
 
     let mut anon = Client::new(app_state.clone());
     let page = anon.get("/latest").await.body;
