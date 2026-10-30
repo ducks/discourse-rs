@@ -17,8 +17,9 @@
 //   - the header icon's active state and target, the navbar's toggle,
 //     full page and close buttons and its click to toggle, full-page
 //     chat's open drawer button, the "-" and Esc shortcuts
-//   - the drawer's size (discourse_chat_drawer_size_*) and its offset
-//     beside an open composer (_checkSize)
+//   - the drawer's size (discourse_chat_drawer_size_*), its resizer
+//     (chatResizableNode) and its offset beside an open composer
+//     (_checkSize), following the composer as it is dragged
 //   - chat-sidebar.js's active link for the drawer's channel, and
 //     ChatHeader's back to the forum link (the last forum page)
 //
@@ -54,6 +55,8 @@
     // header's back to the forum link.
     forumURL: null,
     request: 0,
+    // computeDrawerStyle on the next route drawn (after a toggle).
+    restyle: false,
   };
 
   // The current page's chat-drawer.js tag: its attributes follow the page.
@@ -390,6 +393,7 @@
     }
     unmountChat();
     var drawer = outlet.querySelector(".chat-drawer");
+    var created = !drawer;
     if (!drawer) {
       drawer = document.createElement("div");
       drawer.innerHTML = '<div class="chat-drawer-container"><div class="chat-drawer-resizer"></div></div>';
@@ -402,8 +406,13 @@
     } else {
       drawer.removeAttribute("data-chat-channel-id");
     }
-    var s = size();
-    drawer.setAttribute("style", "width: " + s.width + "px;height: " + s.height + "px;");
+    // computeDrawerStyle: when the drawer is inserted and toggled, not on
+    // each route (what the resizer set stays until then).
+    if (created || state.restyle) {
+      state.restyle = false;
+      var s = size();
+      drawer.setAttribute("style", "width: " + s.width + "px;height: " + s.height + "px;");
+    }
     var inner = drawer.querySelector(".chat-drawer-container");
     var old = inner.querySelector(".c-drawer-routes");
     if (old) {
@@ -464,6 +473,7 @@
   function toggle() {
     state.expanded = !state.expanded;
     state.active = true;
+    state.restyle = true;
     applyClasses();
     markSidebar();
     load();
@@ -526,6 +536,112 @@
       window.requestAnimationFrame(checkSize);
     }
   });
+
+  // _dynamicCheckSize while the composer is dragged (once a frame), with
+  // the outlet's transitions off from resize-started to resize-ended.
+  var sizeFrame = null;
+  document.addEventListener("composer:div-resizing", function () {
+    if (!state.active || sizeFrame) {
+      return;
+    }
+    sizeFrame = window.requestAnimationFrame(function () {
+      sizeFrame = null;
+      checkSize();
+    });
+  });
+  document.addEventListener("composer:resize-started", function () {
+    var outlet = container();
+    if (state.active && outlet) {
+      outlet.classList.add("clear-transitions");
+    }
+  });
+  document.addEventListener("composer:resize-ended", function () {
+    var outlet = container();
+    if (!state.active) {
+      return;
+    }
+    if (outlet) {
+      outlet.classList.remove("clear-transitions");
+    }
+    checkSize();
+  });
+
+  // chatResizableNode on the drawer: dragging .chat-drawer-resizer (its
+  // top left corner, top right in RTL) sets the drawer's width and height
+  // (and left and top, which its static position ignores) while each
+  // stays over the drawer's min-width and min-height, and didResize keeps
+  // the size (ChatDrawerSize: at least 250 by 300) for next time.
+  var MIN_WIDTH = 250;
+  var MIN_HEIGHT = 300;
+  var MINIMUM_SIZE = 20;
+  var resize = null;
+
+  function pagePoint(event, property) {
+    return event.changedTouches ? event.changedTouches[0][property] : event[property];
+  }
+
+  function cssPixels(node, property) {
+    return parseFloat(getComputedStyle(node, null).getPropertyValue(property).replace("px", ""));
+  }
+
+  function startResize(event) {
+    var handle = event.target.closest && event.target.closest(".chat-drawer-resizer");
+    var drawer = handle && handle.closest(".chat-drawer");
+    if (!drawer) {
+      return;
+    }
+    event.preventDefault();
+    var box = drawer.getBoundingClientRect();
+    resize = {
+      drawer: drawer,
+      minWidth: cssPixels(drawer, "min-width") || MINIMUM_SIZE,
+      minHeight: cssPixels(drawer, "min-height") || MINIMUM_SIZE,
+      width: cssPixels(drawer, "width"),
+      height: cssPixels(drawer, "height"),
+      x: box.left,
+      y: box.top,
+      pageX: pagePoint(event, "pageX"),
+      pageY: pagePoint(event, "pageY"),
+    };
+    window.addEventListener("touchmove", moveResize);
+    window.addEventListener("touchend", stopResize);
+    window.addEventListener("mousemove", moveResize);
+    window.addEventListener("mouseup", stopResize);
+  }
+
+  function moveResize(event) {
+    var r = resize;
+    if (!r) {
+      return;
+    }
+    var dx = pagePoint(event, "pageX") - r.pageX;
+    var dy = pagePoint(event, "pageY") - r.pageY;
+    var rtl = document.documentElement.classList.contains("rtl");
+    var width = Math.ceil(rtl ? r.width + dx : r.width - dx);
+    var height = Math.ceil(r.height - dy);
+    if (width >= r.minWidth) {
+      r.drawer.style.width = width + "px";
+      r.drawer.style.left = Math.ceil(r.x + dx) + "px";
+    }
+    if (height >= r.minHeight) {
+      r.drawer.style.height = height + "px";
+      r.drawer.style.top = Math.ceil(r.y + dy) + "px";
+    }
+    write(SIZE + "width", Math.max(width >= r.minWidth ? width : r.minWidth, MIN_WIDTH));
+    write(SIZE + "height", Math.max(height >= r.minHeight ? height : r.minHeight, MIN_HEIGHT));
+    checkSize();
+  }
+
+  function stopResize() {
+    resize = null;
+    window.removeEventListener("touchmove", moveResize);
+    window.removeEventListener("touchend", stopResize);
+    window.removeEventListener("mousemove", moveResize);
+    window.removeEventListener("mouseup", stopResize);
+  }
+
+  document.addEventListener("mousedown", startResize);
+  document.addEventListener("touchstart", startResize, { passive: false });
 
   // A boosted navigation to a chat URL: the chat route's beforeModel, and
   // its activate (the forum URL left) and deactivate (the chat URL left).

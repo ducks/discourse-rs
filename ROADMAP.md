@@ -4730,13 +4730,23 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     route), the threads index ROUTES.chat redirects to for my_threads,
     and the lists' filtered empty states and the threads list button as
     full-page chat refuses them. Left, split into 223b-d.
-    223b. `feat/chat-drawer-resize` S: the resizer (chatResizableNode on
-    `.chat-drawer-resizer`: dragging the drawer's top left corner,
-    ChatDrawerSize's 250 by 300 minimums written to
-    discourse_chat_drawer_size_*), and the composer's live resize
-    (composer:div-resizing, resize-started and resize-ended with
-    clear-transitions); chat-drawer.js reads the stored size and follows
-    the composer's open and closed states already.
+    223b. ~~`feat/chat-drawer-resize`~~ (done) S: chat-drawer.js's
+    resizer, chatResizableNode on `.chat-drawer-resizer`: a mouse or
+    touch drag of the drawer's top left corner (top right in RTL) sets
+    its width and height (and the left and top its static position
+    ignores) while each stays over the drawer's computed min-width and
+    min-height, and didResize writes the size to
+    discourse_chat_drawer_size_* with ChatDrawerSize's 250 by 300
+    minimums, then checks the composer offset; the drawer's style is
+    computed when it is inserted and toggled (computeDrawerStyle), not
+    on every route, so a drag lasts until then. The composer's live
+    resize: composer.js fires composer:resize-started, div-resizing and
+    resize-ended (bubbling from #reply-control) around its grippie's
+    drag and arrow keys, and the open drawer turns the outlet's
+    transitions off (clear-transitions) between start and end and
+    checks its offset once a frame while it is dragged. Driven in
+    headless Chromium over a fixture page (the drag, the minimums, the
+    toggle's restyle, the composer events). Nothing refused.
     223c. `feat/chat-drawer-routes` M: the drawer's other routes, each
     with its full-page counterpart: a channel's settings and members
     (channel info, with the channel title's and the browse cards' member
