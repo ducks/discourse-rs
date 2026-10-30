@@ -1778,11 +1778,23 @@
         return;
       }
       var added = fragment(html);
+      var scroller = channel.querySelector(".chat-messages-scroller");
+      var before = { top: scroller.scrollTop, height: scroller.scrollHeight };
       list.appendChild(added);
       lastReadOnly(list, added);
       redraw(channel);
       if (bottom) {
-        channel.querySelector(".chat-messages-scroller").scrollTop = 0;
+        scroller.scrollTop = 0;
+      } else {
+        // handleIncomingMessage away from the live edge: the view stays
+        // where it was (maintainScrollPosition) and the message is
+        // pending, for the scroll to bottom arrow.
+        var grown = scroller.scrollHeight - before.height;
+        if (grown >= 1) {
+          scroller.scrollTop = before.top - grown;
+        }
+        pane.pending += 1;
+        updateArrow(channel);
       }
     });
   }
@@ -2657,6 +2669,459 @@
     });
   }
 
+  // ChatChannel's pane over the server's page of messages: older and newer
+  // pages as the member scrolls (ChatMessagesLoader#loadMore, onScroll's
+  // PAST under 40% from the top and FUTURE at the bottom, fillPaneAttempt
+  // while the first message shows), the message a near-message url
+  // targets scrolled to and highlighted, else the last read one
+  // (fetchMessages), jumps to a message (highlightOrFetchMessage: in place
+  // when loaded, else the page around it), and the scroll to bottom arrow
+  // (ChatPaneState#hasPendingContentBelow; scrollToLatestMessage). Pages
+  // come drawn by the server for this viewer (GET
+  // /live/chat/:channel_id/messages), with whether more load either way.
+  var PAST = "past";
+  var FUTURE = "future";
+  var pane = { loading: false, ignoreNextScroll: false, pending: 0, fillTimer: null };
+
+  function scrollerOf(channel) {
+    return channel.querySelector(".chat-messages-scroller");
+  }
+
+  // true, false, or null: unknown after a page the other way, which
+  // loadMore still tries (it stops on false only).
+  function canLoadMore(channel, direction) {
+    var value = channel.dataset[direction === PAST ? "canLoadMorePast" : "canLoadMoreFuture"];
+    return value === "true" ? true : value === "false" ? false : null;
+  }
+
+  function persistedItems(list) {
+    return listItems(list).filter(function (node) {
+      return !node.classList.contains("-staged") && Number(node.dataset.id) > 0;
+    });
+  }
+
+  function popupError(channel) {
+    var text = channel.dataset.labelNotFound;
+    if (text && Discourse.dialog) {
+      Discourse.dialog.popupAjaxError(text);
+    }
+  }
+
+  function fetchPage(channel, params) {
+    var query = new URLSearchParams();
+    Object.keys(params).forEach(function (key) {
+      if (params[key] !== null && params[key] !== undefined) {
+        query.set(key, params[key]);
+      }
+    });
+    var url = basePath() + "/live/chat/" + channel.dataset.id + "/messages?" + query.toString();
+    return fetch(url, { credentials: "same-origin" }).then(function (r) {
+      if (!r.ok) {
+        return null;
+      }
+      return r.text().then(function (html) {
+        return {
+          html: html,
+          past: r.headers.get("x-chat-can-load-more-past"),
+          future: r.headers.get("x-chat-can-load-more-future"),
+        };
+      });
+    });
+  }
+
+  // The "all loaded" line, at the scroller's end once the first message is.
+  function drawAllLoaded(channel) {
+    var scroller = scrollerOf(channel);
+    var list = channel.querySelector(".chat-messages-container");
+    var line = scroller.querySelector(".all-loaded-message");
+    var show = canLoadMore(channel, PAST) === false && persistedItems(list).length > 0;
+    if (show && !line) {
+      line = el("div", "all-loaded-message", channel.dataset.labelAllLoaded);
+      scroller.appendChild(line);
+    } else if (!show && line) {
+      line.remove();
+    }
+  }
+
+  // ChatMessage#highlight: two seconds.
+  function highlight(node) {
+    node.classList.add("-highlighted");
+    setTimeout(function () {
+      node.classList.remove("-highlighted");
+    }, 2000);
+  }
+
+  // scrollListToMessage: a collapsed deleted message is expanded first
+  // (autoExpand), then highlighted and scrolled into view.
+  function scrollToMessage(channel, id, opts) {
+    opts = opts || {};
+    var list = channel.querySelector(".chat-messages-container");
+    var node = list && findMessage(list, id);
+    if (!node) {
+      return;
+    }
+    if (node.matches("template") || node.querySelector(":scope > .chat-message-text.-deleted")) {
+      if (!opts.autoExpand) {
+        return;
+      }
+      var collapsed = node.matches("template") ? null : node;
+      if (!collapsed) {
+        var next = node.nextElementSibling;
+        while (next && next.matches("template.chat-message-expanded")) {
+          next = next.nextElementSibling;
+        }
+        collapsed = next && next.querySelector(":scope > .chat-message-text.-deleted") ? next : null;
+      }
+      if (collapsed) {
+        expand(collapsed);
+      }
+      node = findMessage(list, id);
+      if (!node || node.matches("template")) {
+        return;
+      }
+    }
+    if (opts.highlight) {
+      highlight(node);
+    }
+    pane.ignoreNextScroll = true;
+    node.scrollIntoView({ behavior: "auto", block: opts.position || "center" });
+  }
+
+  function scrollToBottom(channel) {
+    pane.ignoreNextScroll = true;
+    scrollerOf(channel).scrollTo({ top: 0, behavior: "auto" });
+    pane.pending = 0;
+    updateArrow(channel);
+  }
+
+  // hasPendingContentBelow: the pane can scroll, and messages came while
+  // scrolled away, or newer ones are still to load, or it is over 250px
+  // from the bottom.
+  function updateArrow(channel) {
+    var button = channel.querySelector(".chat-scroll-to-bottom__button");
+    var scroller = scrollerOf(channel);
+    if (!button || !scroller) {
+      return;
+    }
+    var canScroll = scroller.scrollHeight - scroller.clientHeight > 1;
+    var away = canLoadMore(channel, FUTURE) || -scroller.scrollTop > 250;
+    button.classList.toggle("visible", canScroll && (pane.pending > 0 || away));
+  }
+
+  function settle(channel, list) {
+    collapseRuns(channel, list);
+    list.querySelectorAll(":scope > .chat-message-container.-last-read").forEach(function (node, index, all) {
+      if (index < all.length - 1) {
+        node.classList.remove("-last-read");
+      }
+    });
+    redraw(channel);
+    drawAllLoaded(channel);
+    channel.classList.toggle("is-empty", persistedItems(list).length === 0 && !list.querySelector(".chat-message-container.-staged"));
+  }
+
+  // fetchMessages: the page around a message (or the latest), in place of
+  // the one shown.
+  function loadMessages(channel, target, position) {
+    if (pane.loading) {
+      return Promise.resolve();
+    }
+    pane.loading = true;
+    channel.classList.add("loading");
+    return fetchPage(channel, { target_message_id: target, newest: "true" })
+      .then(function (page) {
+        var list = channel.querySelector(".chat-messages-container");
+        if (!page) {
+          popupError(channel);
+          return;
+        }
+        if (!list || !channel.isConnected) {
+          return;
+        }
+        clearActive();
+        channel.dataset.canLoadMorePast = String(page.past);
+        channel.dataset.canLoadMoreFuture = String(page.future);
+        list.innerHTML = page.html;
+        settle(channel, list);
+        if (target) {
+          scrollToMessage(channel, target, { highlight: true, position: position });
+        } else {
+          scrollToBottom(channel);
+        }
+        scheduleFill(channel);
+      })
+      .catch(function () {})
+      .finally(function () {
+        pane.loading = false;
+        channel.classList.remove("loading");
+        updateArrow(channel);
+      });
+  }
+
+  // fetchMoreMessages: the next page before the first message or after
+  // the last, the first drawn again after the older ones; after newer
+  // ones the last message shown stays at the bottom.
+  function loadMore(channel, direction, opts) {
+    if (pane.loading || canLoadMore(channel, direction) === false) {
+      return Promise.resolve();
+    }
+    var list = channel.querySelector(".chat-messages-container");
+    var items = list ? persistedItems(list) : [];
+    if (!items.length) {
+      return Promise.resolve();
+    }
+    var anchor = direction === PAST ? items[0] : items[items.length - 1];
+    var anchorId = anchor.dataset.id;
+    pane.loading = true;
+    channel.classList.add("loading");
+    return fetchPage(channel, {
+      target_message_id: anchorId,
+      direction: direction,
+      newest: list.querySelector("[data-newest]") ? null : "true",
+    })
+      .then(function (page) {
+        if (!page || !list.isConnected) {
+          return;
+        }
+        // Both from the page, as the loader takes them: a page one way
+        // says nothing (null) of the other.
+        channel.dataset.canLoadMorePast = String(page.past);
+        channel.dataset.canLoadMoreFuture = String(page.future);
+        var template = document.createElement("template");
+        template.innerHTML = page.html;
+        var redrawn = template.content.querySelector("template.chat-message-anchor");
+        if (redrawn) {
+          redrawn.remove();
+        }
+        var added = template.content.querySelectorAll(":scope > .chat-message-container, :scope > template").length;
+        if (direction === PAST) {
+          var shown = findMessage(list, anchorId);
+          if (redrawn && shown && !shown.matches("template") && !shown.querySelector(":scope > .chat-message-text.-deleted")) {
+            if (shown.classList.contains("-active")) {
+              clearActive();
+            }
+            var next = redrawn.content.firstElementChild;
+            next.className = shown.className;
+            shown.replaceWith(next);
+          }
+          list.insertBefore(template.content, list.firstChild);
+        } else {
+          var staged = list.querySelector(":scope > .chat-message-container.-staged");
+          list.insertBefore(template.content, staged);
+        }
+        settle(channel, list);
+        if (added && direction === FUTURE && !(opts && opts.noScroll)) {
+          scrollToMessage(channel, anchorId, { position: "end" });
+        }
+        if (added) {
+          scheduleFill(channel);
+        }
+      })
+      .catch(function () {})
+      .finally(function () {
+        pane.loading = false;
+        channel.classList.remove("loading");
+        updateArrow(channel);
+      });
+  }
+
+  // fillPaneAttempt: while the first message's top shows (and under 200
+  // messages), the older page.
+  function scheduleFill(channel) {
+    clearTimeout(pane.fillTimer);
+    pane.fillTimer = setTimeout(function () {
+      var list = channel.querySelector(".chat-messages-container");
+      var scroller = scrollerOf(channel);
+      if (!list || !scroller || !channel.isConnected || !canLoadMore(channel, PAST)) {
+        return;
+      }
+      var items = persistedItems(list);
+      if (!items.length || items.length > 200) {
+        return;
+      }
+      var first = items[0].matches("template") ? null : items[0];
+      if (!first) {
+        return;
+      }
+      var top = window.pageYOffset + scroller.getBoundingClientRect().top;
+      if (first.getBoundingClientRect().top - top >= -1) {
+        loadMore(channel, PAST);
+      }
+    }, 500);
+  }
+
+  // highlightOrFetchMessage
+  function jumpToMessage(channel, id) {
+    var list = channel.querySelector(".chat-messages-container");
+    var node = list && findMessage(list, id);
+    if (node) {
+      scrollToMessage(channel, id, { highlight: true, position: "start", autoExpand: true });
+      return Promise.resolve();
+    }
+    return loadMessages(channel, id, "end");
+  }
+
+  // scrollToLatestMessage
+  function scrollToLatest(channel) {
+    if (canLoadMore(channel, FUTURE)) {
+      return loadMessages(channel, null);
+    }
+    var list = channel.querySelector(".chat-messages-container");
+    if (list && persistedItems(list).length) {
+      scrollToBottom(channel);
+    }
+    return Promise.resolve();
+  }
+
+  // ChatScrollableList (reverse): the scroll's direction and distances,
+  // reported at most every 50ms and once it has rested for 250ms.
+  function setupPane(channel) {
+    var scroller = scrollerOf(channel);
+    if (!scroller) {
+      return function () {};
+    }
+    pane.pending = 0;
+    var last = scroller.scrollHeight - scroller.clientHeight;
+    var throttled = null;
+    var endTimer = null;
+    var state = function () {
+      var top = scroller.scrollTop;
+      var height = scroller.scrollHeight - scroller.clientHeight;
+      var toTop = height - Math.abs(top);
+      var toBottom = -top;
+      return {
+        up: top === last ? false : top < last,
+        atTop: toTop <= 1,
+        atBottom: toBottom <= 1,
+        toTopPercentage: Math.round((toTop / height) * 100),
+      };
+    };
+    var onScroll = function (s) {
+      if (pane.ignoreNextScroll) {
+        pane.ignoreNextScroll = false;
+        return;
+      }
+      positionSeparators(channel);
+      updateArrow(channel);
+      var ios = document.documentElement.classList.contains("ios-device");
+      if (s.atTop || (!ios && s.up && s.toTopPercentage < 40)) {
+        loadMore(channel, PAST);
+      } else if (s.atBottom) {
+        loadMore(channel, FUTURE);
+      }
+    };
+    var onScrollEnd = function (s) {
+      if (s.atBottom) {
+        pane.pending = 0;
+        loadMore(channel, FUTURE);
+      }
+      updateArrow(channel);
+    };
+    var compute = function () {
+      if (!throttled) {
+        var s = state();
+        last = scroller.scrollTop;
+        // next(): after the run loop, as Ember defers onScroll.
+        setTimeout(function () {
+          onScroll(s);
+        }, 0);
+        throttled = setTimeout(function () {
+          throttled = null;
+        }, 50);
+      }
+      clearTimeout(endTimer);
+      endTimer = setTimeout(function () {
+        onScrollEnd(state());
+      }, 250);
+    };
+    scroller.addEventListener("scroll", compute, { passive: true });
+    scroller.addEventListener("wheel", compute, { passive: true });
+    var arrow = channel.querySelector(".chat-scroll-to-bottom__button");
+    var onArrow = function () {
+      scrollToLatest(channel);
+    };
+    if (arrow) {
+      arrow.addEventListener("click", onArrow);
+    }
+    // loadMessages: the near-message url's target, else the last read
+    // message.
+    if (!channel.classList.contains("--loaded")) {
+      popupError(channel);
+    } else if (channel.dataset.target) {
+      scrollToMessage(channel, channel.dataset.target, { highlight: true });
+    } else if (Number(channel.dataset.lastRead) > 0) {
+      scrollToMessage(channel, channel.dataset.lastRead, {});
+    }
+    // ChatChannelNearMessage: the url becomes the channel's own.
+    if (channel.dataset.target && channel.closest(".full-page-chat") && window.history.replaceState) {
+      var path = location.pathname.replace(/\/\d+\/?$/, "");
+      if (path !== location.pathname) {
+        window.history.replaceState(window.history.state, "", path + location.search);
+      }
+    }
+    scheduleFill(channel);
+    updateArrow(channel);
+    return function () {
+      clearTimeout(throttled);
+      clearTimeout(endTimer);
+      clearTimeout(pane.fillTimer);
+      scroller.removeEventListener("scroll", compute);
+      scroller.removeEventListener("wheel", compute);
+      if (arrow) {
+        arrow.removeEventListener("click", onArrow);
+      }
+    };
+  }
+
+  // ChatRetentionReminder#dismiss: the reminder for the channel's type
+  // dismissed (POST /chat/dismiss-retention-reminder) and gone; an error
+  // as popupAjaxError shows it.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".chat-retention-reminder .dismiss-btn");
+    var channel = button && button.closest(".chat-channel[data-id]");
+    if (!channel) {
+      return;
+    }
+    var type = channel.dataset.directMessage === "true" ? "DirectMessage" : "Category";
+    fetch(basePath() + "/chat/dismiss-retention-reminder", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: csrfHeaders(),
+      body: new URLSearchParams({ chatable_type: type }).toString(),
+    }).then(function (r) {
+      if (!r.ok) {
+        return failed(r);
+      }
+      var reminder = button.closest(".chat-retention-reminder");
+      if (reminder) {
+        reminder.remove();
+      }
+    });
+  });
+
+  // The in-reply-to line and any link to a message of the channel shown
+  // (chat.channel.near-message): a transition the channel takes in place,
+  // jumping to the message.
+  document.addEventListener("click", function (event) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    var link = event.target.closest("a[href]");
+    var channel = document.querySelector(".full-page-chat .chat-channel[data-id]");
+    if (!link || !channel || link.target || link.origin !== location.origin) {
+      return;
+    }
+    var base = basePath();
+    var path = link.pathname.indexOf(base) === 0 ? link.pathname.slice(base.length) : link.pathname;
+    var match = /^\/chat\/c\/[^/]+\/(\d+)\/(\d+)\/?$/.exec(path);
+    if (!match || match[1] !== channel.dataset.id) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    jumpToMessage(channel, match[2]);
+  }, true);
+
   // `focus`: the composer takes the focus, as ChatComposer does when the
   // channel is drawn (not when a page swaps in beside the drawer's).
   function setup(focus) {
@@ -2686,6 +3151,9 @@
       }, 1000);
     };
     var onResize = function () {
+      // didResizePane
+      scheduleFill(channel);
+      updateArrow(channel);
       positionSeparators(channel);
       scheduleRead();
     };
@@ -2696,6 +3164,7 @@
       scroller.addEventListener("scroll", scheduleRead, { passive: true });
     }
     scheduleRead();
+    var paneCleanup = setupPane(channel);
     var parts = composerParts();
     if (parts) {
       updateSendState(parts);
@@ -2713,6 +3182,7 @@
       clearTimeout(timer);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", scheduleRead);
+      paneCleanup();
       if (scroller) {
         scroller.removeEventListener("scroll", scheduleRead);
       }

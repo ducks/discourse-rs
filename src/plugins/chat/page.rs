@@ -13,7 +13,7 @@
 
 use serde_json::Value;
 
-use super::channels::{ChannelRow, Context};
+use super::channels::{ChannelRow, Context, Found};
 use super::messages::{ListParams, Listed};
 use crate::post_view::d_icon;
 use crate::topic_list_view::escape;
@@ -44,6 +44,15 @@ fn avatar(user: &Value, size: u32) -> String {
 /// A client string (`js.` keys).
 fn js(i18n: &crate::i18n::I18n, key: &str) -> String {
     i18n.t(&format!("js.{key}")).unwrap_or(key).to_string()
+}
+
+/// A page of messages for chat.js (Context::messages_page), with the
+/// meta's can_load_more_past and _future as the API answers them (null
+/// for the direction a page wasn't loaded in).
+pub struct MessagesPage {
+    pub html: String,
+    pub can_load_more_past: Value,
+    pub can_load_more_future: Value,
 }
 
 /// What every message in the page reads.
@@ -130,12 +139,14 @@ impl Context<'_> {
             fetch_from_last_read: target.is_none(),
             target_date: None,
         };
+        // A target that can't load (the request's 404) leaves the channel
+        // unloaded: fetchedOnce stays false.
         let listed = match self.list_messages(channel.id, &params).await? {
-            Listed::Messages(v) => v,
-            Listed::NotFound | Listed::Forbidden => {
-                return Err(Unsupported("a chat page for a message it can't load").into());
-            }
+            Listed::Messages(v) => Some(v),
+            Listed::NotFound | Listed::Forbidden => None,
         };
+        let loaded = listed.is_some();
+        let listed = listed.unwrap_or_default();
         let messages = listed["messages"].as_array().cloned().unwrap_or_default();
 
         let i18n = self.i18n;
@@ -161,12 +172,17 @@ impl Context<'_> {
             out.push_str("<div class=\"chat-drawer-content\">");
         }
 
-        let mut classes = String::from("chat-channel --loaded");
-        if messages.is_empty() {
+        let mut classes = String::from(if loaded {
+            "chat-channel --loaded"
+        } else {
+            "chat-channel"
+        });
+        if loaded && messages.is_empty() {
             classes.push_str(" is-empty");
         }
+        let pane = self.pane_attrs(&listed, target, loaded);
         out.push_str(&format!(
-            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-moderate=\"{}\" data-label-deleted-one=\"{}\" data-label-deleted-other=\"{}\" data-direct-message=\"{}\">",
+            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-moderate=\"{}\" data-label-deleted-one=\"{}\" data-label-deleted-other=\"{}\" data-direct-message=\"{}\"{pane}>",
             channel.id,
             escape(&t("chat.chat_message_separator.today")),
             escape(&t("chat.chat_message_separator.yesterday")),
@@ -193,51 +209,21 @@ impl Context<'_> {
         out.push_str(
             "<div class=\"chat-messages-scroller\"><div class=\"chat-messages-container\">",
         );
-        if messages.is_empty() {
+        if !loaded {
+            // ChatSkeleton, as fetchedOnce stays false; chat.js pops the
+            // request's error over it (popupAjaxError).
+            out.push_str(&skeleton());
+        } else if messages.is_empty() {
             out.push_str(&self.empty_state(channel, &channel_json, following).await?);
         } else {
-            // processMessages: the first message past the membership's last
-            // read one is the newest (the "last visit" line). Ember skips it
-            // when that message `!==` the channel's lastMessage, but the
-            // message it just created is never that object, so the last
-            // message gets the line too. Without a membership the last read
-            // id is undefined and no message is past it; a null one is.
-            let membership_json = &channel_json["current_user_membership"];
-            let newest = if membership_json.is_object() {
-                let read = membership_json["last_read_message_id"]
-                    .as_i64()
-                    .unwrap_or(0);
-                messages
-                    .iter()
-                    .find(|m| m["id"].as_i64().unwrap_or(0) > read)
-                    .and_then(|m| m["id"].as_i64())
-            } else {
-                None
-            };
-            for index in 0..messages.len() {
-                // shouldRender: of a run of deleted messages only the last
-                // is drawn, collapsed; expanding it (chat.js) draws the run
-                // from each one's expanded form.
-                if messages[index]["deleted_at"].is_null() {
-                    out.push_str(&message_html(
-                        &view, &messages, index, newest, last_read, false,
-                    )?);
-                    continue;
-                }
-                let next_deleted = messages
-                    .get(index + 1)
-                    .is_some_and(|n| !n["deleted_at"].is_null());
-                if !next_deleted {
-                    out.push_str(&message_html(
-                        &view, &messages, index, newest, last_read, false,
-                    )?);
-                }
-                out.push_str(&format!(
-                    "<template class=\"chat-message-expanded\" data-id=\"{}\">{}</template>",
-                    messages[index]["id"],
-                    message_html(&view, &messages, index, newest, last_read, true)?
-                ));
-            }
+            let newest = newest_id(&channel_json, &messages);
+            out.push_str(&messages_html(
+                &view,
+                &messages,
+                0..messages.len(),
+                newest,
+                last_read,
+            )?);
         }
         out.push_str("</div>");
         if !messages.is_empty() && listed["meta"]["can_load_more_past"] == false {
@@ -484,6 +470,127 @@ impl Context<'_> {
         Ok(Some(message_html(
             &view, &messages, index, None, last_read, deleted,
         )?))
+    }
+
+    /// What chat.js pages and jumps with: whether more messages load
+    /// either way (ChatMessagesLoader's canLoadMorePast and
+    /// canLoadMoreFuture), the message a near-message url targets (scrolled
+    /// to and highlighted), the "all loaded" line and the error a page
+    /// that can't load pops (its 404's: popupAjaxError).
+    fn pane_attrs(&self, listed: &Value, target: Option<i64>, loaded: bool) -> String {
+        let mut out = format!(
+            " data-can-load-more-past=\"{}\" data-can-load-more-future=\"{}\" data-label-all-loaded=\"{}\" data-label-not-found=\"{}\"",
+            listed["meta"]["can_load_more_past"],
+            listed["meta"]["can_load_more_future"],
+            escape(&js(self.i18n, "chat.all_loaded")),
+            escape(
+                self.i18n
+                    .t("not_found")
+                    .unwrap_or("The requested URL or resource could not be found.")
+            ),
+        );
+        if let Some(id) = target.filter(|_| loaded) {
+            out.push_str(&format!(" data-target=\"{id}\""));
+        }
+        out
+    }
+
+    /// A page of the channel's messages as chat.js asks for one:
+    /// ChatMessagesLoader#loadMore's, `direction` past or future from
+    /// `target` (the first or last message the viewer has), drawn as if
+    /// before or after it, the target drawn again after the past ones (its
+    /// reply line follows the message now above it); else #load's, the
+    /// page around `target` or the latest, drawn alone. `newest`: the
+    /// viewer's page has no "last visit" line, so this one may carry it
+    /// (processMessages' hasNewest). None when the viewer can't see the
+    /// channel or the target is gone (the request's 404).
+    pub async fn messages_page(
+        &mut self,
+        channel_id: i64,
+        target: Option<i64>,
+        direction: Option<&str>,
+        newest: bool,
+    ) -> Result<Option<MessagesPage>, AppError> {
+        let channel = match self.find_joinable(&channel_id.to_string()).await? {
+            Found::Channel(channel) => channel,
+            Found::NotFound | Found::Forbidden => return Ok(None),
+        };
+        let direction = direction.filter(|d| *d == "past" || *d == "future");
+        let params = ListParams {
+            page_size: PAGE_SIZE,
+            target_message_id: target,
+            direction: direction.map(str::to_string),
+            fetch_from_last_read: false,
+            target_date: None,
+        };
+        let listed = match self.list_messages(channel.id, &params).await? {
+            Listed::Messages(v) => v,
+            Listed::NotFound | Listed::Forbidden => return Ok(None),
+        };
+        let mut messages = listed["messages"].as_array().cloned().unwrap_or_default();
+        let membership = self
+            .memberships()
+            .await?
+            .into_iter()
+            .find(|m| m.chat_channel_id == channel.id);
+        let channel_json = self
+            .channel(&channel, membership.as_ref(), None, None)
+            .await?;
+        let last_read = membership.as_ref().and_then(|m| m.last_read_message_id);
+        let newest = if newest {
+            newest_id(&channel_json, &messages)
+        } else {
+            None
+        };
+        let anchor = match (direction, target) {
+            (Some(_), Some(id)) => self
+                .serialize_messages(&channel, &[id])
+                .await?
+                .into_iter()
+                .next(),
+            _ => None,
+        };
+        let count = messages.len();
+        let (range, redraw) = match (direction, anchor) {
+            (Some("past"), Some(mut anchor)) => {
+                anchor["first_of_results"] = Value::Bool(true);
+                let redraw = anchor["deleted_at"].is_null();
+                messages.push(anchor);
+                (0..count, redraw.then_some(count))
+            }
+            (Some(_), Some(anchor)) => {
+                if let Some(first) = messages.first_mut() {
+                    first["first_of_results"] = Value::Bool(true);
+                }
+                messages.insert(0, anchor);
+                (1..count + 1, None)
+            }
+            _ => (0..count, None),
+        };
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let view = View {
+            base_path: self.base_path,
+            channel: &channel_json,
+            viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
+            online: self.online_ids().await?,
+            emojis: self.settings.emojis().clone(),
+            can_interact: channel_json["meta"]["user_silenced"] != true,
+            t: &t,
+        };
+        let mut html = messages_html(&view, &messages, range, newest, last_read)?;
+        if let Some(index) = redraw {
+            html.push_str(&format!(
+                "<template class=\"chat-message-anchor\" data-id=\"{}\">{}</template>",
+                messages[index]["id"],
+                message_html(&view, &messages, index, newest, last_read, false)?
+            ));
+        }
+        Ok(Some(MessagesPage {
+            html,
+            can_load_more_past: listed["meta"]["can_load_more_past"].clone(),
+            can_load_more_future: listed["meta"]["can_load_more_future"].clone(),
+        }))
     }
 
     /// ChatRetentionReminder on a category channel, for staff who haven't
@@ -1189,6 +1296,95 @@ fn preview_card(c: &Value, t: &dyn Fn(&str) -> String) -> String {
     }
 }
 
+/// processMessages: the first message past the membership's last read one
+/// is the newest (the "last visit" line). Ember skips it when that message
+/// `!==` the channel's lastMessage, but the message it just created is
+/// never that object, so the last message gets the line too. Without a
+/// membership the last read id is undefined and no message is past it; a
+/// null one is.
+fn newest_id(channel_json: &Value, messages: &[Value]) -> Option<i64> {
+    let membership_json = &channel_json["current_user_membership"];
+    if !membership_json.is_object() {
+        return None;
+    }
+    let read = membership_json["last_read_message_id"]
+        .as_i64()
+        .unwrap_or(0);
+    messages
+        .iter()
+        .find(|m| m["id"].as_i64().unwrap_or(0) > read)
+        .and_then(|m| m["id"].as_i64())
+}
+
+/// The messages at `range` of `messages` (the others are their
+/// neighbours): of a run of deleted messages only the last is drawn,
+/// collapsed (shouldRender); expanding it (chat.js) draws the run from
+/// each one's expanded form.
+fn messages_html(
+    view: &View,
+    messages: &[Value],
+    range: std::ops::Range<usize>,
+    newest: Option<i64>,
+    last_read: Option<i64>,
+) -> Result<String, AppError> {
+    let mut out = String::new();
+    for index in range {
+        if messages[index]["deleted_at"].is_null() {
+            out.push_str(&message_html(
+                view, messages, index, newest, last_read, false,
+            )?);
+            continue;
+        }
+        let next_deleted = messages
+            .get(index + 1)
+            .is_some_and(|n| !n["deleted_at"].is_null());
+        if !next_deleted {
+            out.push_str(&message_html(
+                view, messages, index, newest, last_read, false,
+            )?);
+        }
+        out.push_str(&format!(
+            "<template class=\"chat-message-expanded\" data-id=\"{}\">{}</template>",
+            messages[index]["id"],
+            message_html(view, messages, index, newest, last_read, true)?
+        ));
+    }
+    Ok(out)
+}
+
+/// ChatSkeleton: fifteen placeholder messages, each with an image one
+/// time in ten, one to five lines of 20 to 95% and up to three reactions.
+fn skeleton() -> String {
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
+    let mut out = String::from("<div class=\"chat-skeleton --animation\">");
+    for _ in 0..15 {
+        out.push_str("<div class=\"chat-skeleton__body\"><div class=\"chat-skeleton__message\"><div class=\"chat-skeleton__message-avatar\"></div><div class=\"chat-skeleton__message-poster\"></div><div class=\"chat-skeleton__message-content\">");
+        if rng.gen_range(1..=10) == 5 {
+            out.push_str("<div class=\"chat-skeleton__message-img\"></div>");
+        }
+        out.push_str("<div class=\"chat-skeleton__message-text\">");
+        for _ in 0..rng.gen_range(1..=5) {
+            out.push_str(&format!(
+                "<div class=\"chat-skeleton__message-msg\" style=\"width: {}%\"></div>",
+                rng.gen_range(20..=95)
+            ));
+        }
+        out.push_str("</div>");
+        let reactions = rng.gen_range(0..=3);
+        if reactions > 0 {
+            out.push_str("<div class=\"chat-skeleton__message-reactions\">");
+            for _ in 0..reactions {
+                out.push_str("<div class=\"chat-skeleton__message-reaction\"></div>");
+            }
+            out.push_str("</div>");
+        }
+        out.push_str("</div></div></div>");
+    }
+    out.push_str("</div>");
+    out
+}
+
 /// ChatMessage#hideUserInfo
 fn hide_user_info(m: &Value, previous: Option<&Value>, first_of_results: bool) -> bool {
     if m["is_action"] == true {
@@ -1233,7 +1429,9 @@ fn message_html(
     let t = v.t;
     let m = &messages[index];
     let previous = index.checked_sub(1).map(|i| &messages[i]);
-    let first_of_results = index == 0;
+    // firstOfResults: the first of the request that loaded it (a page
+    // loaded later marks its own).
+    let first_of_results = index == 0 || m["first_of_results"] == true;
     let id = m["id"].as_i64().unwrap_or(0);
     let user = &m["user"];
     let hide_info = hide_user_info(m, previous, first_of_results);
@@ -1526,12 +1724,15 @@ fn reaction_html(v: &View, message_id: i64, index: usize, r: &Value) -> Result<S
     let emoji = s(&r["emoji"]);
     let count = r["count"].as_i64().unwrap_or(0);
     let reacted = r["reacted"] == true;
-    // emojiUrlFor: a custom emoji's upload, else the standard image.
-    let url = v
+    // emojiUrlFor: a custom emoji's upload, else the standard image; a
+    // reaction without one draws nothing.
+    let Some(url) = v
         .emojis
         .url(emoji, v.base_path)
         .filter(|_| v.emojis.enabled)
-        .ok_or(Unsupported("chat reactions without an emoji image"))?;
+    else {
+        return Ok(String::new());
+    };
     let description_id = format!("chat-message-reaction-description-{message_id}-{index}");
     let label = if count > 0 {
         let key = if count == 1 {

@@ -218,6 +218,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/live/chat/{channel_id}/{message_id}",
             get(chat_pages::live_message),
         )
+        .route(
+            "/live/chat/{channel_id}/messages",
+            get(chat_pages::live_messages),
+        )
         .route("/", cached!(get(list::root)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))
@@ -330,6 +334,35 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/browse/{tab}/page", get(chat_pages::browse_more))
         .route("/chat/c/{slug}/{id}", get(chat_pages::channel))
         .route("/chat/c/{slug}/{id}/{message_id}", get(chat_pages::channel))
+        // The engine's `/channel -> /c` redirects.
+        .route(
+            "/chat/channel/{channel_id}",
+            get(chat_pages::channel_legacy),
+        )
+        .route(
+            "/chat/channel/{channel_id}/{channel_title}",
+            get(chat_pages::channel_legacy),
+        )
+        .route(
+            "/chat/channel/{channel_id}/{channel_title}/info",
+            get(chat_pages::channel_legacy_info),
+        )
+        .route(
+            "/chat/channel/{channel_id}/{channel_title}/info/about",
+            get(chat_pages::channel_legacy_info),
+        )
+        .route(
+            "/chat/channel/{channel_id}/{channel_title}/info/members",
+            get(chat_pages::channel_legacy_info),
+        )
+        .route(
+            "/chat/channel/{channel_id}/{channel_title}/info/settings",
+            get(chat_pages::channel_legacy_info),
+        )
+        .route(
+            "/chat/channel/{channel_id}/{channel_title}/info/search",
+            get(chat_pages::channel_legacy_info),
+        )
         .route("/chat/direct_messages", get(chat::direct_messages))
         .route("/chat/direct_messages.json", get(chat::direct_messages))
         .route(
