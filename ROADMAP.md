@@ -4766,7 +4766,40 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     message sound (ChatAudioManager), the title counter,
     ChatNewMessageAnnouncer under chat_announce_new_messages, the chat
     keyboard shortcuts (channel switching, composer formatting, Shift+Esc
-    to mark all read) and their section in the shortcuts help
+    to mark all read) and their section in the shortcuts help. Split
+    into the slices below.
+    225a. ~~`feat/chat-notify-client`~~ (done) S: the keyboard shortcuts
+    chat-keyboard-shortcuts.js adds that 222 and 223a didn't, in
+    static/js/chat-drawer.js (on every page with chat): Alt+Up and
+    Alt+Down switch to the previous or next channel in the sidebar's
+    order, starred then channels then DMs, wrapping around
+    (switchChannelUpOrDown), and with Shift among those with unread
+    activity, the active one kept in its place
+    (#getOrderedChannelsWithActivity), through the drawer's
+    transitionTo; Ctrl/Cmd+B, I and E surround the chat composer's
+    selection with `**`, `_` and a backtick, or insert composer.*_text
+    selected (modifySelection's applySurround, each line of a
+    multi-line selection on its own; the example texts on the
+    composer's data-surround); Shift+Esc marks every channel read while
+    full-page chat or the drawer is open (PUT /chat/api/channels/read).
+    The channel order is read off the sidebar's chat links (their
+    `channel-<id>` class and unread badge), so without the sidebar in
+    the page (the mobile view) the switch does nothing. Tests in
+    tests/chat_client.rs; the keys themselves are browser behavior,
+    not compared against the reference.
+    225b. `feat/chat-notify-client-rest` M: what waits on core's client:
+    chat's desktop notifications and their sound (chat-audio's
+    registerDesktopNotificationHandler over /chat/notification-alert,
+    ChatNotificationManager, chat-alert-dedup; core's desktop
+    notifications aren't ported), the title counter
+    (addDocumentTitleCounter, getDocumentTitleCount; core's document
+    title service isn't ported), the help modal's chat section (the
+    keyboard shortcuts help is refused, static/js/sidebar.js:144), and
+    Ctrl/Cmd+L's insert link modal; and in chat.js the new message
+    sound (ChatAudioManager's oscillator sequences,
+    ChatNewMessageAnnouncer under chat_new_message_sound for an active
+    reader) and the announcement of new messages under
+    chat_announce_new_messages (a11y.announce's live region)
 226. `feat/chat-site-integration` M: chat's keys on core: /site.json's
     markdown_additional_options.chat (emitted as `{}`),
     hashtag_configurations (chat-composer, the channel type in

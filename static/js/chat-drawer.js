@@ -661,6 +661,185 @@
     }
   });
 
+  // chat-keyboard-shortcuts, the ones not above or in the composer:
+  // Alt+Up and Alt+Down switch to the previous or next channel in the
+  // sidebar's order (starred, channels, DMs; switchChannelUpOrDown),
+  // with Shift only among those with unread activity; Ctrl/Cmd+B, I and
+  // E surround the chat composer's selection (modifySelection); and
+  // Shift+Esc marks every channel read while chat is open. All are
+  // global, so they work from the composer too.
+  function sidebarChannels() {
+    var out = [];
+    ["chat-starred-channels", "chat-channels", "chat-dms"].forEach(function (name) {
+      document
+        .querySelectorAll('.sidebar-section[data-section-name="' + name + '"] a.sidebar-section-link')
+        .forEach(function (link) {
+          var match = /(?:^|\s)channel-(\d+)(?:\s|$)/.exec(link.className);
+          if (match) {
+            out.push({
+              id: match[1],
+              url: withoutPrefix(link.pathname),
+              hasUnread: !!link.querySelector(
+                ".sidebar-section-link-content-badge.unread, .sidebar-section-link-content-badge.urgent"
+              ),
+            });
+          }
+        });
+    });
+    return out;
+  }
+
+  // #getOrderedChannelsWithActivity: those with unread activity, the
+  // active one (without any) after the last of them above it.
+  function channelsWithActivity(ordered, activeId) {
+    var withActivity = ordered.filter(function (c) {
+      return c.hasUnread;
+    });
+    var activeIndex = -1;
+    ordered.forEach(function (c, i) {
+      if (c.id === activeId) {
+        activeIndex = i;
+      }
+    });
+    if (activeIndex !== -1 && !ordered[activeIndex].hasUnread) {
+      var insertAfter = -1;
+      for (var i = activeIndex - 1; i >= 0; i--) {
+        var at = withActivity.indexOf(ordered[i]);
+        if (at !== -1) {
+          insertAfter = at;
+          break;
+        }
+      }
+      withActivity.splice(insertAfter + 1, 0, ordered[activeIndex]);
+    }
+    return withActivity;
+  }
+
+  function switchChannel(up, unreadOnly) {
+    var active = document.querySelector(".chat-channel[data-id]");
+    if (!active) {
+      return;
+    }
+    var activeId = active.dataset.id;
+    var ordered = sidebarChannels();
+    var channels = unreadOnly ? channelsWithActivity(ordered, activeId) : ordered;
+    if (channels.length === 0) {
+      return;
+    }
+    var current = -1;
+    channels.forEach(function (c, i) {
+      if (c.id === activeId) {
+        current = i;
+      }
+    });
+    var next;
+    if (current === -1) {
+      next = up ? channels.length - 1 : 0;
+    } else {
+      next = current + (up ? -1 : 1);
+      if (next < 0) {
+        next = channels.length - 1;
+      } else if (next >= channels.length) {
+        next = 0;
+      }
+    }
+    if (channels[next] && channels[next].id !== activeId) {
+      transitionTo(channels[next].url);
+    }
+  }
+
+  // applySurround on the selection, or the example text selected: each
+  // line of a selection over several lines wrapped by itself.
+  function surround(input, head, tail, example) {
+    var start = input.selectionStart;
+    var end = input.selectionEnd;
+    var selected = input.value.slice(start, end);
+    var text;
+    var selectFrom;
+    var selectTo;
+    if (selected === "") {
+      text = head + example + tail;
+      selectFrom = start + head.length;
+      selectTo = selectFrom + example.length;
+    } else if (selected.indexOf("\n") !== -1) {
+      text = selected
+        .split("\n")
+        .map(function (line) {
+          return line.length ? head + line + tail : line;
+        })
+        .join("\n");
+      selectFrom = start;
+      selectTo = start + text.length;
+    } else {
+      text = head + selected + tail;
+      selectFrom = start + head.length;
+      selectTo = selectFrom + selected.length;
+    }
+    input.focus();
+    input.setSelectionRange(start, end);
+    if (!document.execCommand("insertText", false, text)) {
+      input.setRangeText(text, start, end, "end");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    input.setSelectionRange(selectFrom, selectTo);
+  }
+
+  // chatChannelsManager.markAllChannelsRead: PUT /chat/api/channels/read;
+  // the tracking state comes back over the live stream.
+  function markAllChannelsRead() {
+    var headers = {};
+    try {
+      headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
+    } catch (e) {
+      // No token: the server refuses the request.
+    }
+    headers["X-Requested-With"] = "XMLHttpRequest";
+    fetch(basePath() + "/chat/api/channels/read", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: headers,
+    }).catch(function () {});
+  }
+
+  var SURROUNDS = { b: ["**", "bold"], i: ["_", "italic"], e: ["`", "code"] };
+
+  window.addEventListener("keydown", function (event) {
+    if (event.altKey && !event.ctrlKey && !event.metaKey && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+      event.preventDefault();
+      event.stopPropagation();
+      switchChannel(event.key === "ArrowUp", event.shiftKey);
+      return;
+    }
+    var modifier = /Mac|iPhone|iPad/.test(navigator.platform) ? event.metaKey : event.ctrlKey;
+    var key = event.key && event.key.toLowerCase();
+    if (modifier && !event.altKey && !event.shiftKey && SURROUNDS[key]) {
+      var input = event.target;
+      if (!input || !input.classList || !input.classList.contains("chat-composer__input")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      var wrapper = input.closest("[data-surround]");
+      var examples = {};
+      try {
+        examples = JSON.parse((wrapper && wrapper.dataset.surround) || "{}");
+      } catch (e) {
+        // No examples: an empty selection is wrapped as it is.
+      }
+      var mark = SURROUNDS[key][0];
+      surround(input, mark, mark, examples[SURROUNDS[key][1]] || "");
+      return;
+    }
+    if (event.key === "Escape" && event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      // chatStateManager.isActive: full-page chat or the open drawer.
+      if (isFullPageActive() || state.active) {
+        markAllChannelsRead();
+      }
+    }
+  });
+
   Discourse.chatDrawer = {
     fetchRoute: fetchRoute,
     // router.transitionTo for chat-new-message.js: a channel opens in the
