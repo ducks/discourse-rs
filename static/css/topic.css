@@ -2772,8 +2772,10 @@ html.anon #topic-footer-buttons {
 }
 
 /* Ember leaves the post menu's collapsed buttons out of the DOM until
-   show more; here they are hidden. */
-.post-controls .actions > [hidden] {
+   show more; here they are hidden. As specific as topic-post.scss:441's
+   .double-button rule and after it, so a hidden flag button's wrapper
+   stays hidden too. */
+nav.post-controls .actions > [hidden] {
   display: none;
 }
 

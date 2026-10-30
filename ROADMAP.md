@@ -348,7 +348,7 @@ Admin:
 - [x] Silencing a member: the system message notifies them and the
   account_silenced email is sent (a_silenced_member_is_told): 146
 
-284. `feat/browser-tests` M: nothing runs the client. static/js is about
+284. ~~`feat/browser-tests`~~ (done) M: nothing runs the client. static/js is about
     67k lines in 112 files and no test executes a line of it:
     demo_smoke.rs drives the endpoints the scripts call, not the scripts,
     and every browser check so far (the playwright comparisons against
@@ -371,6 +371,32 @@ Admin:
       spec; agent briefs say so.
     Comparing against a running Rails reference stays a manual step
     (parity/ does the HTTP side).
+    Done: nixpkgs' @playwright/test and playwright-driver's Chromium
+    (nix/playwright.nix, in shell.nix and the flake's browser-test
+    shell, one Playwright version from one nixpkgs); scripts/browser-test
+    builds the server, clones the test database as TestDb does (swept by
+    drop-stale-test-dbs if killed), applies tests/browser/setup.sql,
+    boots it with the job worker on a free port, runs the specs and
+    stops that server and drops that copy on any exit; `make
+    browser-test` and CI's browser job. 25 specs in about 45 seconds:
+    the login modal and its flash; the composer's reply with the
+    preview, the post arriving without a reload and the mention's count
+    arriving live in the mentioned member's header, a new topic, the
+    discard question; the post menu's show more, copy link, bookmark,
+    flag modal and its plugin buttons (reactions' like and picker,
+    solved's accept and unaccept with the title status, assign's modal
+    and unassign), each checked in the database; chat sent from the
+    drawer arriving live in another member's full-page chat, a
+    reaction, the drawer kept across a page swap, collapsed and
+    expanded, full page and back, closed, "-" and Esc, its resizer and
+    the size kept; dark mode from the sidebar's color selector, kept by
+    the next page, and auto; a flag, a note and agreeing in /review, a
+    watched word's held post approved. 223b's, 223d's and 224's
+    harnesses kept as fixture specs over page.route. Found and fixed:
+    the collapsed post menu drew the flag button (its double-button
+    wrapper's display beat [hidden]), and a refused read marker
+    (another session read further) popped an alert and an unhandled
+    rejection in chat.js, where Ember shows nothing.
 
 ## Now: the parity queue (2026-10-13)
 
@@ -388,7 +414,10 @@ already has, timestamps near a window's edge); start the next branch's
 reading while the gate runs. The seed's rows date from 2026-07-25 to
 2026-10-01: a case whose feature looks back over a window (digests'
 month, "recent", days visited) inserts or updates its rows with
-`now() - interval ...` in setup rather than relying on seed dates.
+`now() - interval ...` in setup rather than relying on seed dates. A
+branch that changes static/js adds or changes a spec in tests/browser
+and runs `make browser-test` (README: Browser tests); a brief for one
+says so.
 
 ### Phase 0: fix first
 

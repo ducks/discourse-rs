@@ -41,6 +41,20 @@
         default = discourse-rs;
       });
 
+      # `nix develop .#browser-test`: Playwright and its browsers for
+      # `make browser-test` (nix/playwright.nix, as shell.nix carries
+      # them), for CI's browser job, which builds with rustup.
+      devShells = forAllSystems (pkgs: {
+        browser-test =
+          let
+            playwright = import ./nix/playwright.nix { inherit pkgs; };
+          in
+          pkgs.mkShell {
+            buildInputs = playwright.buildInputs;
+            shellHook = playwright.shellHook;
+          };
+      });
+
       # services.discourse-rs, with this flake's builds as its packages.
       nixosModules.default =
         { pkgs, ... }:

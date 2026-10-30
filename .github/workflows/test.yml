@@ -6,7 +6,8 @@ on:
   pull_request:
     branches: [main]
 
-# Two jobs side by side: `make lint` locally is the two of them in a row.
+# lint and test side by side: `make lint` locally is the two of them in a
+# row. browser is `make browser-test`, which lint leaves out.
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -106,3 +107,66 @@ jobs:
           monitor_pid=$!
           trap 'kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true' EXIT
           cargo nextest run --workspace --profile ci -E '${{ matrix.shard.filter }}' ${{ matrix.shard.partition }}
+
+  # The Playwright suite (make browser-test, tests/browser): the server
+  # built with rustup as above, booted on a throwaway copy of the loaded
+  # schema; Playwright and its Chromium from the flake's browser-test
+  # shell (nix/playwright.nix), so the runner and the browsers are the
+  # versions nixpkgs pins together and nothing comes from npm.
+  browser:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      CARGO_BUILD_JOBS: "1"
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      LETTER_AVATAR_FONT: /usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/discourse_rs_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Install avatar font
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y fonts-urw-base35
+          test -r "$LETTER_AVATAR_FONT"
+
+      - name: Load vendored Discourse schema
+        run: scripts/db-load --force discourse_rs_test
+
+      - name: Browser tests
+        run: nix develop .#browser-test --command make browser-test
+
+      - name: Keep the failures' traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results
+          path: tmp/browser-test-results
+          if-no-files-found: ignore

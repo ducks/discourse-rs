@@ -15,6 +15,8 @@ let
     inherit pkgs;
     port = 5442;
   };
+  # `make browser-test`: Playwright and its browsers.
+  playwright = import ./nix/playwright.nix { inherit pkgs; };
   # The font Rails draws letter avatars with (Debian's fonts-urw-base35,
   # as on the reference), for LETTER_AVATAR_FONT.
   letterAvatarFont = pkgs.fetchurl {
@@ -45,15 +47,17 @@ pkgs.mkShell {
     # wasm32-unknown-unknown target.
     wasm-tools
     wizer
-  ] ++ postgres.buildInputs;
+  ] ++ postgres.buildInputs ++ playwright.buildInputs;
 
   shellHook = ''
     ${postgres.shellHook}
+    ${playwright.shellHook}
     export LETTER_AVATAR_FONT="${letterAvatarFont}"
 
     echo "discourse-rs: $(rustc --version), $(postgres --version)"
     echo "  db_start / db_stop / db_status   local PostgreSQL"
     echo "  make db-load / make db-test      load vendored schema + seeds"
+    echo "  make browser-test                the Playwright suite (tests/browser)"
     echo "  make parity RAILS_URL=...        diff against a running Discourse"
   '';
 }
