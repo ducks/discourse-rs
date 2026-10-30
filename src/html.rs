@@ -364,6 +364,9 @@ pub struct Chrome {
     /// chat-new-message.js's attributes (the new message modal), empty when
     /// the viewer can't chat.
     pub chat_new_message: String,
+    /// chat-channel-menus.js's attributes (the channel list menus and the
+    /// create channel modal), empty when the viewer can't chat.
+    pub chat_channel_menus: String,
     /// dialog.js.s #dialog-strings, for the new message modal's errors
     /// (popupAjaxError); empty when the viewer can't chat.
     pub chat_dialog_strings: String,
@@ -1205,6 +1208,13 @@ impl Site {
                 &state.i18n,
                 &self.base_path,
             )?;
+            self.chrome.chat_channel_menus = crate::plugins::chat::channel_menus::script_attrs(
+                &mut *conn,
+                settings,
+                guardian,
+                &state.i18n,
+            )
+            .await?;
             self.chrome.chat_dialog_strings = dialog_strings(&state.i18n);
         }
         self.chrome.chat_drawer_outlet = crate::plugins::chat::enabled(settings)?;

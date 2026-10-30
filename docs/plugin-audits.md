@@ -102,13 +102,13 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 ### Gaps
 
 **Routes and controllers**
-- POST /chat/api/channels (create a category channel, Chat::CreateCategoryChannel, auto_join limiter). Rails: plugins/chat/config/routes.rb:9; plugins/chat/app/controllers/chat/api/channels_controller.rb:63. Port: absent (src/routes/mod.rs:308 GET only).
+- POST /chat/api/channels (Chat::CreateCategoryChannel). Port: done (src/plugins/chat/channel_create.rs). [item 216]
 - DELETE /chat/api/channels/:channel_id (Chat::TrashChannel, Jobs::Chat::ChannelDelete). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
 - PUT /chat/api/channels/:channel_id/status (Chat::UpdateChannelStatus, the staff log and /chat/channel-status). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
-- POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: absent.
+- POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: routed, Unsupported (needs TranscriptService). [item 216a]
 - POST /chat/api/channels/:channel_id/invites (InviteUsersToChannel, chat_invitation notifications). Port: done (src/plugins/chat/channel_settings.rs); nothing in the UI sends one yet (the mention warnings, 218). [item 215]
 - PUT /chat/api/channels/:channel_id/notifications-settings/me (muted, notification_level). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
-- GET /chat/api/category-chatables/:id/permissions (staff). Rails: routes.rb:45; category_chatables_controller.rb:6. Port: absent.
+- GET /chat/api/category-chatables/:id/permissions (staff). Port: done (src/plugins/chat/channel_create.rs). [item 216]
 - PUT /chat/user_chat_enabled/:user_id (set_user_chat_status). Port: done (src/routes/chat.rs). [item 215]
 - POST /chat/admin/export/messages (ExportCsvFile entity chat_message via Chat::MessagesExporter, log_entity_export). Rails: routes.rb:71; app/controllers/chat/admin/export_controller.rb:8; lib/chat/messages_exporter.rb. Port: absent. [item 200]
 - Incoming webhooks: POST /chat/hooks/:key and /chat/hooks/:key/slack (SlackCompatibility, rate limit, chat_debug_webhook_payloads). Rails: routes.rb:78,87; app/controllers/chat/incoming_webhooks_controller.rb:15,25,90,118; lib/chat/slack_compatibility.rb:19. Port: absent (incoming_chat_webhooks is never read).
