@@ -362,7 +362,11 @@ impl Context<'_> {
             model_errors.push(blocked);
         }
         let message_changed = old.message.as_deref() != Some(new_message.as_str());
-        if message_changed {
+        // Chat::DuplicateMessageValidator skips bots, DMs of two or fewer
+        // members and upload-only messages (uploads are refused above).
+        let duplicate_exempt =
+            author_id <= 0 || (channel.chatable_type == "DirectMessage" && channel.user_count <= 2);
+        if message_changed && !duplicate_exempt {
             // Chat::DuplicateMessageValidator, the author's.
             let duplicate: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND user_id = $2 \
@@ -431,8 +435,8 @@ impl Context<'_> {
                     .get("chat_editing_grace_period_max_diff_low_trust")?
                     .to_i()
             };
-            let edited = crate::discourse_diff::diff_size(&prev, &new_message)
-                .ok_or(Unsupported("chat edits too large to diff"))?;
+            // ONPDiff::DiffLimitExceeded escapes the service, a 500.
+            let edited = crate::discourse_diff::diff_size_checked(&prev, &new_message)?;
             edited as i64 > max_edited
         };
         let edit_timestamp = if revise {

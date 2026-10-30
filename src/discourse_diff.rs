@@ -13,6 +13,15 @@ use crate::pretty_text::cleanup::{fragment_root, parse};
 #[derive(Debug, PartialEq)]
 pub struct DiffLimitExceeded;
 
+impl std::fmt::Display for DiffLimitExceeded {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("ONPDiff::DiffLimitExceeded")
+    }
+}
+
+/// Raised where Rails lets it out, a 500.
+impl std::error::Error for DiffLimitExceeded {}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Op {
     Common,
@@ -224,15 +233,19 @@ impl<'a> OnpDiff<'a> {
 /// The size of what differs between two strings, by character
 /// (PostRevisor#diff_size); `None` when the diff is too large to compute.
 pub fn diff_size(before: &str, after: &str) -> Option<usize> {
+    diff_size_checked(before, after).ok()
+}
+
+/// `diff_size` with ONPDiff's error when the diff is too large.
+pub fn diff_size_checked(before: &str, after: &str) -> Result<usize, DiffLimitExceeded> {
     let a: Vec<String> = before.chars().map(String::from).collect();
     let b: Vec<String> = after.chars().map(String::from).collect();
-    let ses = OnpDiff::new(&a, &b).short_diff().ok()?;
-    Some(
-        ses.iter()
-            .filter(|(_, op)| *op != Op::Common)
-            .map(|(s, _)| s.chars().count())
-            .sum(),
-    )
+    let ses = OnpDiff::new(&a, &b).short_diff()?;
+    Ok(ses
+        .iter()
+        .filter(|(_, op)| *op != Op::Common)
+        .map(|(s, _)| s.chars().count())
+        .sum())
 }
 
 /// What `body_changes` holds.

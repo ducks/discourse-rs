@@ -19,6 +19,7 @@ pub mod dm_create;
 pub mod dm_groups;
 pub mod drawer;
 pub mod flags;
+pub mod interact;
 pub mod membership;
 pub mod mentions;
 pub mod messages;
@@ -32,6 +33,7 @@ pub mod publisher;
 pub mod review;
 pub mod scheduled;
 pub mod summary_email;
+pub mod transcript;
 pub mod view;
 pub mod web_hooks;
 

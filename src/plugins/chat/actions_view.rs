@@ -108,6 +108,7 @@ pub fn template(tb: &Toolbar, c: &Value, following: bool) -> String {
     ));
     for (value, key, icon) in [
         ("copyLink", "chat.copy_link", "link"),
+        ("copyText", "chat.copy_text", "clipboard"),
         ("edit", "chat.edit", "pencil"),
         ("select", "chat.select", "list-check"),
         ("pin", "chat.pin_message", "thumbtack"),
@@ -143,7 +144,7 @@ fn selection_template(tb: &Toolbar, c: &Value) -> String {
     };
     let enable_move = c["chatable_type"] != "DirectMessage" && c["meta"]["can_moderate"] == true;
     let mut out = format!(
-        "<template class=\"chat-selection-template\" data-label-delete=\"{}\" data-label-confirm-one=\"{}\" data-label-confirm-other=\"{}\" data-label-delete-button=\"{}\" data-label-cancel=\"{}\" data-label-move-title=\"{}\" data-label-move-one=\"{}\" data-label-move-other=\"{}\" data-label-move-confirm=\"{}\" data-channel-title=\"{}\"><div class=\"chat-selection-management\"><div class=\"chat-selection-management__buttons\">",
+        "<template class=\"chat-selection-template\" data-label-delete=\"{}\" data-label-confirm-one=\"{}\" data-label-confirm-other=\"{}\" data-label-delete-button=\"{}\" data-label-cancel=\"{}\" data-label-move-title=\"{}\" data-label-move-one=\"{}\" data-label-move-other=\"{}\" data-label-move-confirm=\"{}\" data-channel-title=\"{}\" data-label-copied=\"{}\" data-label-text-copied=\"{}\" data-label-reactions-one=\"{}\" data-label-reactions-other=\"{}\" data-category-id=\"{}\"><div class=\"chat-selection-management\"><div class=\"chat-selection-management__buttons\">",
         escape(&t("chat.selection.delete")),
         escape(&t("chat.delete_messages.confirm.one")),
         escape(&t("chat.delete_messages.confirm.other")),
@@ -154,6 +155,16 @@ fn selection_template(tb: &Toolbar, c: &Value) -> String {
         escape(&t("chat.move_to_channel.instructions.other")),
         escape(&t("chat.move_to_channel.confirm_move")),
         escape(c["title"].as_str().unwrap_or_default()),
+        escape(&t("chat.quote.copy_success")),
+        escape(&t("chat.text_copied")),
+        escape(&t("chat.reactions.users_popup.title.one")),
+        escape(&t("chat.reactions.users_popup.title.other")),
+        // quoteMessages opens the composer in a category channel's category.
+        if c["chatable_type"] == "Category" {
+            c["chatable_id"].to_string()
+        } else {
+            String::new()
+        },
     );
     out.push_str(&button(
         "chat-quote-btn",

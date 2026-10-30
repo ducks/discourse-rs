@@ -56,6 +56,11 @@ struct View<'a> {
     emojis: std::sync::Arc<crate::emojis::Emojis>,
     /// `userCanInteractWithChat`: not silenced.
     can_interact: bool,
+    /// ChatMessageInfo#prioritizeName: display_name_on_posts with names
+    /// shown first (enable_names, not prioritize_username_in_ux).
+    prioritize_name: bool,
+    /// The viewer is an admin (the stop streaming button).
+    admin: bool,
     t: &'a (dyn Fn(&str) -> String + Sync),
 }
 
@@ -148,6 +153,8 @@ impl Context<'_> {
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
             can_interact: channel_json["meta"]["user_silenced"] != true,
+            prioritize_name: prioritize_name(self.settings)?,
+            admin: self.guardian.is_admin(),
             t: &t,
         };
 
@@ -296,6 +303,7 @@ impl Context<'_> {
                     .await?,
                 );
             }
+            out.push_str(&self.mention_warnings_template(&channel_json)?);
         }
         out.push_str(&format!(
             "<div class=\"chat-scroll-to-bottom\"><button class=\"btn no-text btn-flat chat-scroll-to-bottom__button\" type=\"button\"><span class=\"chat-scroll-to-bottom__arrow\">{}</span></button></div>",
@@ -497,6 +505,8 @@ impl Context<'_> {
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
             can_interact: channel_json["meta"]["user_silenced"] != true,
+            prioritize_name: prioritize_name(self.settings)?,
+            admin: self.guardian.is_admin(),
             t: &t,
         };
         Ok(Some(message_html(
@@ -1006,6 +1016,8 @@ impl Context<'_> {
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
             can_interact: true,
+            prioritize_name: prioritize_name(self.settings)?,
+            admin: self.guardian.is_admin(),
             t: &t,
         };
         let text = format!(
@@ -1261,6 +1273,10 @@ fn message_html(
     let deleted = !m["deleted_at"].is_null();
 
     let mut classes = vec!["chat-message-container"];
+    let streaming = m["streaming"] == true;
+    if streaming {
+        classes.push("-streaming");
+    }
     if user["id"].as_i64().is_some_and(|id| id < 0) {
         classes.push("is-bot");
     }
@@ -1389,8 +1405,9 @@ fn message_html(
         out.push_str(&message_info(m, &date, v));
     } else if m["is_action"] != true && user["username"].is_string() {
         out.push_str(&format!(
-            "<div class=\"chat-message-info -author-only sr-only\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{u}</button></div>",
-            u = escape(s(&user["username"]))
+            "<div class=\"chat-message-info -author-only sr-only\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{n}</button></div>",
+            u = escape(s(&user["username"])),
+            n = escape(author_name(user, v))
         ));
     }
     if m["uploads"].as_array().is_some_and(|u| !u.is_empty()) {
@@ -1419,7 +1436,20 @@ fn message_html(
         }
         out.push_str("</div>");
     }
-    out.push_str("</div></div></div></div>");
+    out.push_str("</div>");
+    // shouldRenderStopMessageStreamingButton: a streaming message, for an
+    // admin or the author of the message it replies to.
+    if streaming
+        && (v.admin
+            || (v.viewer_id > 0 && m["in_reply_to"]["user"]["id"].as_i64() == Some(v.viewer_id)))
+    {
+        out.push_str(&format!(
+            "<div class=\"stop-streaming-btn-container\"><button class=\"btn btn-icon-text stop-streaming-btn\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button></div>",
+            d_icon("circle-stop", None),
+            escape(&t("cancel"))
+        ));
+    }
+    out.push_str("</div></div></div>");
     Ok(out)
 }
 
@@ -1504,6 +1534,121 @@ fn bookmark_icon(m: &Value, t: &dyn Fn(&str) -> String, class: &str) -> String {
     )
 }
 
+impl Context<'_> {
+    /// What ChatMentionWarnings draws with (chat.js tracks the composer's
+    /// mentions as ChatComposerWarningsTracker does): the limits, whether
+    /// the channel allows @here and @all, and its strings, the
+    /// too_many_members_MF message rendered for one, two and more groups
+    /// with the group names (and count) left for chat.js.
+    fn mention_warnings_template(&self, c: &Value) -> Result<String, AppError> {
+        let settings = self.settings;
+        let i18n = self.i18n;
+        let t = |key: &str| js(i18n, key);
+        let admin = self.guardian.is_admin();
+        let max_mentions = settings.get("max_mentions_per_chat_message")?.to_i();
+        let limit = settings.get("max_users_notified_per_group_mention")?.to_i();
+        let base = self.base_path;
+        let mf = t("chat.mention_warning.groups.too_many_members_MF");
+        // A count no message has, swapped for chat.js's placeholder.
+        const SENTINEL: i64 = 987_654_321;
+        let render = |count: i64| -> Result<String, AppError> {
+            let url = format!(
+                "{base}/admin/site_settings/category/plugins?filter=max_users_notified_per_group_mention"
+            );
+            let out = crate::message_format::format(
+                &mf,
+                &[
+                    ("groupCount", crate::message_format::Arg::Num(count)),
+                    ("isAdmin", crate::message_format::Arg::Bool(admin)),
+                    ("siteSettingUrl", crate::message_format::Arg::Str(&url)),
+                    ("notificationLimit", crate::message_format::Arg::Num(limit)),
+                    ("group1", crate::message_format::Arg::Str("{group1}")),
+                    ("group2", crate::message_format::Arg::Str("{group2}")),
+                ],
+            )?;
+            Ok(out.replace(&SENTINEL.to_string(), "{groupCount}"))
+        };
+        let too_many_key = if admin {
+            "chat.mention_warning.too_many_mentions_admin"
+        } else {
+            "chat.mention_warning.too_many_mentions"
+        };
+        let too_many = t(&format!(
+            "{too_many_key}.{}",
+            if max_mentions == 1 { "one" } else { "other" }
+        ))
+        .replace("%{count}", &max_mentions.to_string())
+        .replace(
+            "%{siteSettingUrl}",
+            &format!(
+                "{base}/admin/site_settings/category/plugins?filter=max_mentions_per_chat_message"
+            ),
+        );
+        let attrs = [
+            (
+                "enabled",
+                settings.get("enable_mentions")?.truthy().to_string(),
+            ),
+            ("max-mentions", max_mentions.to_string()),
+            (
+                "channel-wide",
+                (c["allow_channel_wide_mentions"] == true).to_string(),
+            ),
+            ("header-all", t("chat.mention_warning.groups.header.all")),
+            ("header-some", t("chat.mention_warning.groups.header.some")),
+            ("too-many", too_many),
+            (
+                "channel-wide-disallowed",
+                t("chat.mention_warning.channel_wide_mentions_disallowed"),
+            ),
+            (
+                "unreachable-1",
+                t("chat.mention_warning.groups.unreachable_1"),
+            ),
+            (
+                "unreachable-2",
+                t("chat.mention_warning.groups.unreachable_2"),
+            ),
+            (
+                "unreachable-multiple-one",
+                t("chat.mention_warning.groups.unreachable_multiple.one"),
+            ),
+            (
+                "unreachable-multiple-other",
+                t("chat.mention_warning.groups.unreachable_multiple.other"),
+            ),
+            ("over-1", render(1)?),
+            ("over-2", render(2)?),
+            ("over-other", render(SENTINEL)?),
+        ];
+        let mut out = String::from("<template class=\"chat-mention-warnings-template\"");
+        for (name, value) in attrs {
+            out.push_str(&format!(" data-{name}=\"{}\"", escape(&value)));
+        }
+        out.push_str(&format!(
+            "><div class=\"chat-mention-warnings\"><div class=\"chat-mention-warning__icon\">{}</div><div class=\"chat-mention-warning__text\"><div class=\"chat-mention-warning__header\"></div><ul></ul></div></div></template>",
+            d_icon("triangle-exclamation", None)
+        ));
+        Ok(out)
+    }
+}
+
+/// The settings behind ChatMessageInfo#prioritizeName.
+fn prioritize_name(settings: &crate::site_settings::SiteSettings) -> Result<bool, AppError> {
+    Ok(settings.get("display_name_on_posts")?.truthy()
+        && settings.get("enable_names")?.truthy()
+        && !settings.get("prioritize_username_in_ux")?.truthy())
+}
+
+/// ChatMessageInfo#name: the author's name when it goes first and they
+/// have one, else their username.
+fn author_name<'a>(user: &'a Value, v: &View) -> &'a str {
+    match user["name"].as_str() {
+        Some(name) if v.prioritize_name && !name.trim().is_empty() => name,
+        _ => s(&user["username"]),
+    }
+}
+
 /// ChatMessageInfo: the author (with their roles as classes), the time,
 /// the bookmark and the pin.
 fn message_info(m: &Value, date: &str, v: &View) -> String {
@@ -1529,9 +1674,10 @@ fn message_info(m: &Value, date: &str, v: &View) -> String {
     }
     classes.push("clickable".into());
     let mut out = format!(
-        "<div class=\"chat-message-info\"><span class=\"{}\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{u}</button></span><span class=\"chat-message-info__date\">{date}</span>",
+        "<div class=\"chat-message-info\"><span class=\"{}\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{n}</button></span><span class=\"chat-message-info__date\">{date}</span>",
         escape(&classes.join(" ")),
-        u = escape(s(&user["username"]))
+        u = escape(s(&user["username"])),
+        n = escape(author_name(user, v))
     );
     out.push_str(&bookmark_icon(m, v.t, "chat-message-info__bookmark"));
     if m["pinned"] == true {
