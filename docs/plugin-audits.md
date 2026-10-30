@@ -27,7 +27,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 
 | Plugin | Verdict | Gaps | Biggest gaps | New items | Rough size to done |
 |---|---|---|---|---|---|
-| chat | started | 78 server, 63 UI (overlapping where a UI action needs an endpoint) | threads (160), uploads (161), channel creation, settings, deletion and archiving, flags and review, pins, message search, incoming webhooks, the drawer, scroll paging | 215-227, 212 | several L: 160-162 plus 2 L and 9 M and S new |
+| chat | started | 78 server, 63 UI (overlapping where a UI action needs an endpoint) | threads (160 done, its rest listed there), uploads (161), channel creation, settings, deletion and archiving, flags and review, pins, message search, incoming webhooks, the drawer, scroll paging | 215-227, 212 | several L: 160-162 plus 2 L and 9 M and S new |
 | poll | started | 27 | no client at all: voting, results, pie and ranked choice views, breakdown; the builder; emails | 228-230, 211 | L plus 2 M |
 | discourse-reactions | started | 23 | deleted users' reactions kept, the regular like sync, logged-out reacting, op_reactions_data on lists, picker and paging UI | 231-232, 211, 212 | 2 M |
 | discourse-solved | started | 30 | unaccepting on post deletion, revisions and moves, auto bump, category custom fields on site and categories JSON, composer education message | 233-235, 213, 212 | 2 M, 2 S plus 163 |
@@ -53,7 +53,7 @@ running Rails settles is under each plugin's "Couldn't determine".
 | discourse-gamification | started | 8 | the workflows node (discourse-workflows unported), the seed fixture, plugin columns on the directory page, the minimal leaderboard, native choosers in the edit form | none | S per gap; the directory page with core |
 | discourse-graphviz | started | 3 | the rich editor node and its preview (196), DAsyncContent's loading state, the menu item's place | none | 196 plus S |
 | discourse-narrative-bot | started | 8 | the flag step (core refuses flags in messages), the recover step (core refuses authors recovering their own posts), locales other than English and French, image URLs counted only once oneboxed | none | 2 core M (flags in messages, user_recovered) plus S |
-| discourse-templates | started | 8 | the chat thread composer (no threads, 160), the chat dropdown's core items, the keyboard shortcuts help entry, the canned-replies rake tasks | none | S, with 160 for threads |
+| discourse-templates | started | 8 | the chat thread composer's variables (the composer exists since 160), the chat dropdown's core items, the keyboard shortcuts help entry, the canned-replies rake tasks | none | S |
 | styleguide | started | 7 | 43 of 50 sections showcase Ember components the port does not have; the sidebar panel, the color mode toggle, code samples | none | L (follows the port's own components) |
 | discourse-math | started | 5 | the rich editor node and edit modal (196) | none | S plus 196 |
 
@@ -119,7 +119,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - POST /chat/admin/export/messages (ExportCsvFile entity chat_message via Chat::MessagesExporter, log_entity_export). Rails: routes.rb:71; app/controllers/chat/admin/export_controller.rb:8; lib/chat/messages_exporter.rb. Port: absent. [item 200]
 - Incoming webhooks: POST /chat/hooks/:key and /chat/hooks/:key/slack (SlackCompatibility, rate limit, chat_debug_webhook_payloads). Rails: routes.rb:78,87; app/controllers/chat/incoming_webhooks_controller.rb:15,25,90,118; lib/chat/slack_compatibility.rb:19. Port: absent (incoming_chat_webhooks is never read).
 - Admin incoming webhooks: GET/POST /admin/plugins/chat/hooks, GET new, GET :id/edit, PUT and DELETE :id. Rails: plugin.rb:547-562; app/controllers/chat/admin/incoming_webhooks_controller.rb:8-74. Port: absent; /admin/plugins/chat itself refuses (src/routes/admin_plugins.rs:110 "a plugin's own admin pages").
-- Thread routes (GET /me/threads, the 8 /threads routes, mark-thread-title-prompt-seen, thread drafts). Rails: routes.rb:8,52-62. Port: absent. [item 160]
+- ~~Thread routes~~ (done, 160): GET /me/threads, the 8 /threads routes, mark-thread-title-prompt-seen and thread drafts (src/plugins/chat/threads.rs; src/routes/chat.rs).
 - Respond pages not routed: /chat/new-message, /chat/c/:title/:id/info, info/about, info/members, info/settings, info/search (these 404 today: "info" fails the message_id parse, src/routes/chat_pages.rs:410-412), and the /chat/channel/:channel_id(/:channel_title(/info...)) redirects to /chat/c. Rails: routes.rb:99,121-138. Port: absent. (/chat/search, /chat/starred-channels: [item 162]; /chat/direct-messages, /chat/threads, /chat/c/.../t/...: [item 160])
 
 **plugin.rb**
@@ -136,7 +136,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - register_push_notification_filter (chat_only push level). Rails: plugin.rb:117-123. Port: absent. [item 186]
 - Oneboxer and InlineOneboxer local handlers for chat channels and messages. Rails: plugin.rb:184-190; lib/chat/onebox_handler.rb, inline_onebox_handler.rb. Port: src/onebox/mod.rs:250 (refusal "oneboxes of chat channels and messages"). [item 142]
 - register_bookmarkable(Chat::MessageBookmarkable). Rails: plugin.rb:648. Port: src/bookmark_manager.rs:175; src/bookmarks.rs:266,743. [item 161]
-- register_notification_consolidation_plan(watched_thread_message_plan). Rails: plugin.rb:644-646; lib/chat/notification_consolidation_extension.rb. Port: absent. [item 160]
+- ~~register_notification_consolidation_plan(watched_thread_message_plan)~~ (done, 160: src/plugins/chat/notify.rs consolidate_watched_thread).
 - Category deletion with a chat channel (cannot_delete_reason has_chat_channels, deletable_for_chat?, dependent destroy). Rails: lib/chat/category_extension.rb:8-27. Port: src/category_writes.rs:2876 (refusal "destroying a category's chat channel").
 - register_mcp_tool chat_channel_list, discourse_get_chat_messages, chat_message_create. Rails: plugin.rb:660-753; lib/chat/mcp_tools.rb. Port: absent (no core MCP server either).
 - add_api_key_scope :chat create_message (chat/api/channel_messages#create, path param chat_channel_id). Rails: plugin.rb:593-601. Port: absent from src/api_key_scopes.rs.
@@ -158,11 +158,11 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - The channels list without a membership or without user options (src/plugins/chat/view.rs:319,322); a chat page for a message it can't load (src/plugins/chat/page.rs:126); reactions whose emoji has no image (src/plugins/chat/page.rs:1478); a web hook for a message gone before it fires (src/plugins/chat/web_hooks.rs:37); a site without its system user (src/plugins/chat/dm_groups.rs:323). Rails answers each (empty list, redirect, fallback). Port: refusals as listed.
 - Messages of deleted users, webhook messages and blocks, bot changes, archived and other chatables, anonymous access, separate sidebar. [item 162]
 - Chat message uploads, oneboxes, images and videos in messages, Jobs::Chat::PullHotlinkedImages. Rails: app/jobs/regular/chat/pull_hotlinked_images.rb. Port: absent. [item 161]
-- Threads everywhere (create.rs:213,216,226 etc.). [item 160]
+- ~~Threads everywhere~~ (done, 160): creation, memberships, tracking, publisher targets, notifications, the summary email.
 - User status in chat serializers. [item 130]
 
 **Jobs**
-- Jobs::Chat::MarkAllChannelThreadsRead: enqueued by turning threading on (src/plugins/chat/dm_groups.rs:526) but has no handler, so the job fails "not ported" (src/jobs/handlers.rs:167). Rails: app/jobs/regular/chat/mark_all_channel_threads_read.rb. [item 160]
+- ~~Jobs::Chat::MarkAllChannelThreadsRead~~ (done, 160: src/plugins/chat/threads.rs).
 - Jobs::Chat::ChannelArchive. Rails: app/jobs/regular/chat/channel_archive.rb. Port: absent.
 - Jobs::Chat::ChannelDelete. Rails: app/jobs/regular/chat/channel_delete.rb. Port: absent.
 - Jobs::Chat::ResumeWorkflowApproval, ResumeWorkflowApprovalInteraction. Port: absent. [item 202]
@@ -188,7 +188,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 **Emails and notifications**
 - chat_invitation notifications (invites route above). Rails: app/services/chat/invite_users_to_channel.rb. Port: absent.
 - chat_quoted notifications (post handler above).
-- chat_watched_thread notifications, threads in the summary email (src/plugins/chat/summary_email.rs:223). [item 160]
+- ~~chat_watched_thread notifications, threads in the summary email~~ (done, 160).
 - Push notifications for chat mentions and messages (refused at src/plugins/chat/notify.rs:283,448 docs; jobs/post_alert.rs). [item 186]
 - chat_summary unsubscribe strategy (above).
 
@@ -227,7 +227,7 @@ Verdict: started (63 gaps)
 
 **UI: routes**
 - /chat/direct-messages and /chat/threads index routes, and chat_preferred_index other than channels. Rails: c/chat-route-map.js:19,22; c/routes/chat/direct-messages.js; c/routes/chat/threads.js. Port: src/routes/chat_pages.rs:200 (refusal "chat's direct messages and threads indexes"). [item 160]
-- Thread routes /chat/c/:slug/:id/t, /t/:thread_id, /t/:thread_id/:message_id and /:message_id/t/:thread_id. Rails: c/chat-route-map.js:8-14. Port: absent (/t parses as a message id and 404s, chat_pages.rs:412). [item 160]
+- ~~Thread routes /chat/c/:slug/:id/t, /t/:thread_id, /t/:thread_id/:message_id and /:message_id/t/:thread_id~~ (done, 160: src/routes/chat_pages.rs channel_thread; src/plugins/chat/thread_view.rs).
 - /chat/starred-channels and /chat/search routes (the mobile footer's and the sidebar's search link go there). Rails: c/chat-route-map.js:5,21; c/routes/chat/search.js; c/components/chat/routes/search.gjs. Port: absent (view.rs:430,462 and :569 link to them). [item 162]
 - /chat/new-message route (the sidebar's "start a new DM" link, view.rs:681). Rails: c/chat-route-map.js:24; c/routes/chat/new-message.js. Port: absent.
 - /chat/c/:slug/:id/info, /info/members, /info/settings (the navbar title links to it, page.rs:544; browse cards link members, page.rs:1791). Rails: c/chat-route-map.js:26-33; c/components/chat/routes/channel-info*.gjs; config/routes.rb:121-123. Port: absent (404).
@@ -246,7 +246,7 @@ Verdict: started (63 gaps)
 - The navbar filter button (in-channel search, ChatNavbarFilter) is inert. Rails: c/components/chat/navbar/filter.gjs; c/components/chat-search.gjs. Port: page.rs:565, no handler. [item 162 for the route; the in-channel filter is not covered]
 - The retention reminder's dismiss button is inert (the endpoint exists). Rails: c/components/chat-retention-reminder.gjs. Port: page.rs:510, no handler in chat.js.
 - The pinned message bar. Rails: c/components/chat/pinned-message-bar.gjs; c/components/chat-channel.gjs:819; c/lib/chat-pinned-bar-dismissal.js. Port: absent.
-- Bus message types self_flagged, flag, notice, pin, unpin (and thread_created, update_thread_original_message for threads). Rails: c/lib/chat-channel-subscription-manager.js:68-86. Port: static/js/chat.js:1805 (onBus handles only sent, processed, edit, refresh, restore, reaction, delete, bulk_delete). [threads: item 160]
+- Bus message types self_flagged, flag, notice, pin, unpin (thread_created and update_thread_original_message done, 160). Rails: c/lib/chat-channel-subscription-manager.js:68-86. Port: static/js/chat.js:1805 (onBus handles only sent, processed, edit, refresh, restore, reaction, delete, bulk_delete).
 - The global chat subscriptions: new channels, channel status, channel edits, archive status, membership kicks, the user's new-channel and notices channels. Rails: c/services/chat-subscriptions-manager.js:105-509; c/services/chat-channel-notices-manager.js. Port: src/routes/live.rs:146-166 subscribes only new-messages, new-mentions and user-tracking-state. [archive status: item 162]
 - Chat notices (mention_without_membership with its "invite" action, POST /chat/api/channels/:id/invites unrouted). Rails: c/components/chat-notices.gjs; c/components/chat/notices/mention_without_membership.gjs. Port: page.rs:173 draws an empty .chat-notices, no notice rendering.
 - Composer mention warnings (unreachable, too many, channel-wide disabled, group hints via GET /chat/api/mentions/groups, unrouted). Rails: c/components/chat-mention-warnings.gjs; c/services/chat-composer-warnings-tracker.js. Port: absent.
@@ -259,7 +259,7 @@ Verdict: started (63 gaps)
 - Reactions without an emoji image refuse the page. Rails: c/components/chat-message-reaction.gjs. Port: src/plugins/chat/page.rs:1478 (refusal "chat reactions without an emoji image").
 - The reaction users popover (ChatMessageReactionsUsers, GET /chat/:channel_id/:message_id/reactions-users, unrouted). Rails: c/components/chat-message-reaction.gjs:40; c/components/chat-message-reactions-users.gjs:88. Port: absent.
 - User status in the author line and DM avatars. Rails: c/components/chat/message/info.gjs:152. Port: src/plugins/chat/channels.rs:654 (refusal "user status"). [item 130]
-- Threads in the pane: thread indicator, thread panel, thread list, thread title prompt, threads list navbar button. Rails: c/components/chat-thread*.gjs; c/components/chat/navbar/threads-list-button.gjs. Port: src/plugins/chat/page.rs:589 (refusal "chat threads (the threads list button)"). [item 160]
+- Threads in the pane: the thread indicator, the thread panel, the thread lists and the threads list button are done (160); left: the thread title prompt, the thread settings modal, message actions in the thread pane, the side panel resizer, the lists' paging and live updates (ROADMAP 160).
 - Uploads in the composer (picker, paste, drop zone, upload previews) and in messages (images, video, audio, collapser). Rails: c/components/chat-composer-uploads.gjs; c/components/chat-upload-drop-zone.gjs; c/components/chat-message-collapser.gjs. Port: page.rs:847 (the hidden field has no handler), page.rs:880,1315 (refusals). [item 161]
 - Archived channel status with progress and retry (ChatChannelArchiveStatus). Rails: c/components/chat-channel-archive-status.gjs. Port: absent. [item 162]
 
@@ -1856,7 +1856,7 @@ plugin at the vendored bf55a44c.
 - `lib/tasks/discourse-templates.rake` (migrate from and purge discourse-canned-replies) and the `RenameCategorySetting` data migration: absent; the port has no rake tasks.
 
 **UI**
-- The chat thread composer and its variables (extractVariablesFromChatThread, `#thread-composer`): the port has no threads. [item 160]
+- The chat thread composer's variables (extractVariablesFromChatThread, `#thread-composer`): the thread composer exists since 160, its variables are not wired.
 - The chat composer dropdown shows only the plugins' buttons: core's upload, GIFs, local dates and mobile emoji items are not ported (Chat, UI).
 - The keyboard shortcuts help modal's "Templates (within a textarea)" entry: the help modal is not ported.
 - The editor-preview connector's empty `div.d-templates` is created when the panel first opens, not drawn with the composer.
@@ -1865,7 +1865,7 @@ plugin at the vendored bf55a44c.
 
 ### Items
 
-None new; the thread composer waits on 160.
+None new; the thread composer exists since 160.
 
 ### Couldn't determine
 - The core Ember sources are not in the extracted reference: select-kit TagDrop's shortcut rows order and its header label for no-tags, DCookText's wrapper markup, `User#displayName` and whether `composer.openNewTopic` falls back to the default category were written from memory.
