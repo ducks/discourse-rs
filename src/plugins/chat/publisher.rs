@@ -309,6 +309,22 @@ pub async fn publish_delete(
     publish_to_channel(cx, bus, channel, &payload).await
 }
 
+/// `Chat::Publisher.publish_bulk_delete!` for channel messages (threads
+/// are refused before it): the ids as the request gave them.
+pub async fn publish_bulk_delete(
+    cx: &mut Context<'_>,
+    bus: &pg_bus::Bus,
+    channel: &ChannelRow,
+    deleted_ids: &[Value],
+) -> Result<(), AppError> {
+    let payload = json!({
+        "type": "bulk_delete",
+        "deleted_ids": deleted_ids,
+        "deleted_at": super::channels::time_json(crate::clock::now_naive()),
+    });
+    publish_to_channel(cx, bus, channel, &payload).await
+}
+
 /// `Chat::Publisher.publish_unpin!`
 pub async fn publish_unpin(
     cx: &mut Context<'_>,

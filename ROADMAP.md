@@ -4558,17 +4558,49 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     channel and DM validation errors (plugins/chat/dm_groups.rs:498;
     plugins/chat/dm_create.rs:285). 162's archived channel reads land
     with it
-217. `feat/chat-moderation` L: flagging (POST messages/:id/flags,
-    FlagMessage, ReviewQueue) with the flag menu entry and the flag mark
-    in the info line (static/js/chat.js:1468 drops the entry;
-    plugins/chat/page.rs:1228's data is drawn nowhere),
-    Chat::ReviewableMessage's actions and its queue entries
-    (review_list.rs:570, with 148), auto silence from flags
-    (chat_auto_silence_from_flags_duration,
-    chat_silence_user_sensitivity), select mode with bulk delete (DELETE
-    .../messages, TrashMessages) and move to channel (POST
-    messages/moves, MessageMover, MoveMessageToChannel), the
-    self_flagged bus message (static/js/chat.js:1805)
+217. ~~`feat/chat-moderation`~~ (done, but the queue entries) L: chat
+    messages could not be flagged, selected, deleted together or moved.
+    Now src/plugins/chat/flags.rs ports POST .../messages/:id/flags
+    (four a minute, Chat::FlagMessage's contract and policy with
+    can_flag_chat_message? and can_flag_message_as?, then
+    Chat::ReviewQueue#flag_message: notify flags refused in DMs as
+    invalid parameters, can_flag_again? as message_already_handled, a
+    notify_user flag without a message doing nothing,
+    Chat::ReviewableMessage.needs_review! with its payload and
+    target_created_by, add_score, enforce_auto_silence_threshold over
+    sensitivity_score(chat_silence_user_sensitivity, 0.6) for
+    chat_auto_silence_from_flags_duration minutes after the commit, and
+    publish_flag!: self_flagged to the flagger, flag to staff); messages
+    in DMs offer no notify flags. src/plugins/chat/review.rs is
+    Chat::ReviewableMessage#perform behind PUT /review/:id/perform
+    (src/review.rs hands it the type): build_combined_actions checking
+    the action and its aliases, agree_and_keep_message, _keep_deleted,
+    _restore, _delete (and its suspend, silence and delete_and_agree
+    aliases), disagree and disagree_and_restore lifting a silence this
+    reviewable brought, ignore, unsilence_user, the version, the
+    transition, the scores, the flag stats and the recalculated score.
+    DELETE .../messages is Chat::TrashMessages (modify.rs: up to 200,
+    can_delete_chat? for each, notifications, last message ids, read
+    states, one bulk_delete publish of the ids as given) and POST
+    .../messages/moves Chat::MessageMover (mover.rs: public channels
+    only, the copies with their reactions, uploads, mentions,
+    revisions, webhook events and hotlinked media, the originals
+    trashed and published, replies cut, read states reset, the system
+    user's messages_moved placeholder). The page: the flag menu entry
+    opens core's flag modal (static/js/flag-modal.js, loaded on demand,
+    with ChatMessageFlag: the message's available_flags, chat's
+    descriptions, POST .../flags; the chat page carries the modal's
+    config), the flag marks drawn from self_flagged and flag, and select
+    mode (the checkboxes, shift-click ranges, ChatSelectionManager in
+    the composer's place with its delete count, DeleteMessagesConfirm,
+    ChatModalMoveMessageToChannel over the member's other public
+    channels, as a plain select, then the first moved message).
+    tests/chat_moderation.rs. Left: the review queue's entries and page
+    for chat reviewables (Chat::ReviewableMessageSerializer; the queue
+    refuses plugin types, review_list.rs:603, with 148). Refused: notify
+    flags with a message (the companion PM), the transcript a DM flag
+    sends, take_action, queue_for_review, flagging messages with
+    uploads, moving threads. Select mode's quote and copy are 218's
 218. `feat/chat-message-actions` M: the message actions left after 217:
     select mode's quote to topic and copy (ChatToTopicSelector, POST
     /chat/:id/quote, TranscriptService), the reaction users popover (GET

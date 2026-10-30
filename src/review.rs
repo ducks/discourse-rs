@@ -259,6 +259,17 @@ pub async fn perform(
             json!({ "reviewable_perform_result": result }),
         ));
     }
+    if reviewable.kind == "Chat::ReviewableMessage" {
+        return crate::plugins::chat::review::perform(
+            conn,
+            ctx,
+            guardian,
+            reviewable.id,
+            action_id,
+            version,
+        )
+        .await;
+    }
     if reviewable.kind != "ReviewableFlaggedPost" {
         return Err(Unsupported("reviewable types other than flagged posts").into());
     }
