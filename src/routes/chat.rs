@@ -1164,3 +1164,132 @@ pub async fn chatables(
         .await?;
     Ok(Json(body).into_response())
 }
+
+fn pin_response(state: &AppState, outcome: crate::plugins::chat::pins::PinOutcome) -> Response {
+    use crate::plugins::chat::pins::PinOutcome;
+    match outcome {
+        PinOutcome::Done(body) => Json(body).into_response(),
+        PinOutcome::NotFound => super::topics::not_found_response(state),
+        PinOutcome::Forbidden => super::search::invalid_access(state),
+        PinOutcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        PinOutcome::Failed(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"failed": "FAILED", "error": error})),
+        )
+            .into_response(),
+    }
+}
+
+/// GET /chat/api/channels/:channel_id/pins: Chat::Api::ChannelPinsController
+/// #index, 404 while chat_pinned_messages is off.
+pub async fn pins(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    if !settings.get("chat_pinned_messages")?.truthy() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let outcome = context(&state, &mut conn, &settings, &guardian)
+        .list_pins(cast_integer(Some(strip_format(&id))))
+        .await?;
+    Ok(pin_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id/pins/read (#mark_read), POST and
+/// DELETE /chat/api/channels/:channel_id/messages/:message_id/pin (#create,
+/// #destroy).
+#[allow(clippy::too_many_arguments)]
+async fn pin_write(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+    method: &str,
+    channel_id: &str,
+    message_id: Option<&str>,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, method, &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    if !settings.get("chat_pinned_messages")?.truthy() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let channel_id = cast_integer(Some(strip_format(channel_id)));
+    let message_id = message_id.and_then(|id| cast_integer(Some(strip_format(id))));
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    let outcome = match method {
+        "PUT" => cx.mark_pins_read(channel_id).await?,
+        "POST" => cx.pin_message(&state.bus, channel_id, message_id).await?,
+        _ => cx.unpin_message(&state.bus, channel_id, message_id).await?,
+    };
+    if matches!(outcome, crate::plugins::chat::pins::PinOutcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(pin_response(&state, outcome))
+}
+
+pub async fn mark_pins_read(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    pin_write(state, guardian, headers, uri, body, "PUT", &id, None).await
+}
+
+pub async fn pin_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    pin_write(
+        state,
+        guardian,
+        headers,
+        uri,
+        body,
+        "POST",
+        &id,
+        Some(&message_id),
+    )
+    .await
+}
+
+pub async fn unpin_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    pin_write(
+        state,
+        guardian,
+        headers,
+        uri,
+        body,
+        "DELETE",
+        &id,
+        Some(&message_id),
+    )
+    .await
+}

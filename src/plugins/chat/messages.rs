@@ -218,6 +218,33 @@ pub(crate) fn build_excerpt_for(
     )
 }
 
+/// `Chat::Message#build_excerpt(strip_links: false)`, the pinned bar's.
+/// A message of links only (urls_as_links with their rel attributes) is
+/// refused.
+pub(crate) fn build_excerpt_keeping_links(
+    message: &str,
+    cooked: &str,
+    plugins: crate::excerpt::Plugins,
+) -> Result<String, AppError> {
+    let urls = crate::posting::links::extract_with_quotes(cooked)?;
+    if !urls.is_empty() {
+        let mut clean: Vec<String> = urls.iter().map(|u| strip_schemes(u)).collect();
+        let stripped = strip_schemes(message);
+        let mut words: Vec<&str> = stripped.split_whitespace().collect();
+        clean.sort();
+        words.sort();
+        if words == clean.iter().map(String::as_str).collect::<Vec<_>>() {
+            return Err(Unsupported("the pinned excerpt of a chat message of links only").into());
+        }
+    }
+    Ok(crate::excerpt::excerpt(
+        cooked,
+        EXCERPT_LENGTH,
+        &crate::excerpt::Options::default(),
+        plugins,
+    ))
+}
+
 /// `Chat::Message#excerpt_for_display`: the stored excerpt, else one
 /// built from the cooked message.
 fn excerpt_for_display(
