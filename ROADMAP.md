@@ -396,7 +396,19 @@ Admin:
     the collapsed post menu drew the flag button (its double-button
     wrapper's display beat [hidden]), and a refused read marker
     (another session read further) popped an alert and an unhandled
-    rejection in chat.js, where Ember shows nothing.
+    rejection in chat.js, where Ember shows nothing. Then
+    history.spec.js: back and forward on the server's own pages (a
+    boosted forum page restored in place, 223d's chat URL opening in the
+    drawer, forward to the forum page, full page preferred loading
+    full-page chat, the focus on a page swap); and assign redrawing the
+    topic in place (title, footer buttons, the drawn posts, from the
+    topic page as it is now, as /staff/topic-assignment updates Ember's
+    topic) instead of reloading, the topic-level assign spec'd too.
+    Found and fixed there: full-page chat loaded directly (not reached
+    from the drawer) opened the drawer on /chat, not its channel, from
+    its open drawer button, as chat-drawer.js read lastKnownChatURL
+    before leaving the page that stores it; Ember reads it in the
+    then().
 
 ## Now: the parity queue (2026-10-13)
 
