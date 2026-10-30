@@ -1083,12 +1083,20 @@ impl Context<'_> {
             "many_users_other": t("chat.replying_indicator.many_users.other"),
             "comma": t("word_connector.comma"),
         });
+        // modifySelection's example texts (applySurround's bold_text,
+        // italic_text and code_text), for chat-drawer.js's shortcuts.
+        let surround = serde_json::json!({
+            "bold": t("composer.bold_text"),
+            "italic": t("composer.italic_text"),
+            "code": t("composer.code_text"),
+        });
         let mut out = format!(
-            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\" data-autocomplete=\"{}\" data-replying=\"{}\">",
+            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\" data-autocomplete=\"{}\" data-replying=\"{}\" data-surround=\"{}\">",
             self.settings.get("chat_minimum_message_length")?.to_i(),
             self.settings.get("chat_maximum_message_length")?.to_i(),
             escape(&autocomplete.to_string()),
-            escape(&replying.to_string())
+            escape(&replying.to_string()),
+            escape(&surround.to_string())
         );
         out.push_str(&draft.details);
         // In the mobile view the toolbar trigger and the send button sit
