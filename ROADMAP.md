@@ -4753,12 +4753,23 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     links), pinned messages, a channel's threads and a thread (with 160's
     threads), my threads (ChatDrawerRoutesThreads), search (with chat
     search); refused at plugins/chat/drawer.rs recognize.
-    223d. `fix/chat-drawer-history` S: the browser's back and forward to
-    a chat URL while the drawer is preferred (Ember aborts the transition
-    and opens the drawer; the port's history restore loads full-page
-    chat, htmx skipping htmx:beforeRequest), and the focus a forum
-    navigation takes from the drawer's composer on the reference (the
-    port's stays in it).
+    223d. ~~`fix/chat-drawer-history`~~ (done) S: the browser's back and
+    forward run the chat route's beforeModel, activate and deactivate in
+    chat-drawer.js on htmx:historyCacheMiss (the restore skips
+    htmx:beforeRequest): a chat URL the drawer takes while it is
+    preferred, from a page that isn't full-page chat, cancels the
+    restore and opens in the drawer, the address bar left on the chat
+    URL as Ember leaves it after aborting a URL transition (and
+    router.currentURL, which storeAppURL reads, still the page shown);
+    any other chat URL closes the drawer and keeps the forum URL left,
+    and leaving full-page chat keeps its URL as the last chat URL. A
+    forum page swapped in takes the focus from the drawer's composer.
+    Driven in headless Chromium over a fixture app with htmx (back to
+    the chat URL asks for the drawer's route only, forward restores the
+    forum page, full page preferred loads full-page chat, the focus).
+    Where the reference's focus lands after the route change (core's
+    frontend isn't in the vendored ref) wasn't determined: the port
+    blurs to the body.
 224. `feat/chat-pane` M: the channel pane's paging and jumps: older and
     newer messages on scroll, jumping to and highlighting a target
     message, the scroll-to-bottom arrow (plugins/chat/page.rs:256),

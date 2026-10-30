@@ -57,6 +57,10 @@
     request: 0,
     // computeDrawerStyle on the next route drawn (after a toggle).
     restyle: false,
+    // The page shown, as each one arrives, and the chat URL back or
+    // forward left in the address bar over it ({url, shown}).
+    shown: null,
+    aborted: null,
   };
 
   // The current page's chat-drawer.js tag: its attributes follow the page.
@@ -113,8 +117,14 @@
     return !!document.querySelector(".full-page-chat");
   }
 
+  // router.currentURL: the page shown, which is not the address bar's
+  // after back or forward to a chat URL the drawer took.
   function currentURL() {
-    return withoutPrefix(location.pathname + location.search);
+    var url = withoutPrefix(location.pathname + location.search);
+    if (state.aborted && state.aborted.url === url) {
+      return state.aborted.shown;
+    }
+    return url;
   }
 
   function lastKnownAppURL() {
@@ -669,6 +679,34 @@
     }
   });
 
+  // The browser's back and forward: the same beforeModel, activate and
+  // deactivate, which htmx's history restore skips htmx:beforeRequest
+  // for. A chat URL the drawer takes aborts the transition (the restore
+  // isn't asked for) and opens in the drawer, the address bar left where
+  // the browser put it, as Ember leaves it after an aborted URL
+  // transition.
+  document.addEventListener("htmx:historyCacheMiss", function (event) {
+    var url = withoutPrefix(event.detail.path || location.pathname + location.search);
+    // The page being left, which the address bar no longer shows.
+    var left = (state.aborted && state.aborted.shown) || state.shown || "/";
+    var fullPage = isFullPageActive();
+    if (isChatURL(url)) {
+      if (fullPage) {
+        return;
+      }
+      if (isDrawerPreferred() && canHandle(url)) {
+        event.preventDefault();
+        state.aborted = { url: url, shown: left };
+        openURL(url);
+        return;
+      }
+      close();
+      state.appURL = left.indexOf("/chat") === 0 ? "/" : left;
+    } else if (fullPage) {
+      state.chatURL = left.replace(/\?.*$/, "");
+    }
+  });
+
   document.addEventListener(
     "click",
     function (event) {
@@ -795,6 +833,14 @@
   // came without them), the composer it sits beside, and what waits for
   // the page (the open drawer button's chat URL).
   Discourse.onPage(function () {
+    state.shown = withoutPrefix(location.pathname + location.search);
+    state.aborted = null;
+    // A forum navigation takes the focus from the drawer's composer (the
+    // drawer, kept across the swap, would keep it).
+    var focused = document.activeElement;
+    if (Discourse.swapped && focused && focused !== document.body && focused.closest(".chat-drawer")) {
+      focused.blur();
+    }
     // routeDidChange: the routes after the first, which renders the
     // header after its transition.
     if (Discourse.swapped && !isChatURL(currentURL())) {
