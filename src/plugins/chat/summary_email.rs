@@ -750,10 +750,7 @@ async fn messages_for(
                     let dm = cx.direct_message(row.chatable_id).await?;
                     match row.name.clone().filter(|n| !n.is_empty()) {
                         Some(name) if dm.group => name,
-                        _ => match cx.dm_title(&row, &dm)? {
-                            serde_json::Value::String(s) => s,
-                            other => other.to_string(),
-                        },
+                        _ => cx.dm_title(&row, &dm)?,
                     }
                 } else {
                     match row.name.clone().filter(|n| !n.is_empty()) {

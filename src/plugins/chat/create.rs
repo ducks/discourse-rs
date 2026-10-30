@@ -692,7 +692,12 @@ impl Context<'_> {
         // recipient_can_chat?
         let target_user = crate::session::current::SessionUser::load(&mut *self.conn, target.id)
             .await?
-            .ok_or(Unsupported("a direct message to a user that is gone"))?;
+            // The participant was read with the channel's users a moment
+            // ago (Rails holds the record); only a concurrent delete gets
+            // here.
+            .ok_or(std::io::Error::other(
+                "a direct message participant deleted while sending",
+            ))?;
         let target_guardian =
             crate::guardian::Guardian::for_user(&mut *self.conn, &target_user).await?;
         let can_chat = super::can_chat(&mut *self.conn, self.settings, &target_guardian).await?

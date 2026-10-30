@@ -396,11 +396,6 @@ async fn slugified_title(
             None => {
                 let dm = cx.direct_message(channel.chatable_id).await?;
                 cx.dm_title(channel, &dm)?
-                    .as_str()
-                    .map(str::to_string)
-                    .ok_or(crate::Unsupported(
-                        "a direct message whose participants are all deleted",
-                    ))?
             }
         };
         Some(title)

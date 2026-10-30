@@ -432,8 +432,11 @@ async fn dm_title_for(
     }
     let user = crate::session::current::SessionUser::load(&mut *conn, user_id)
         .await?
-        .ok_or(Unsupported(
-            "a direct message title for a user that is gone",
+        // A membership of a deleted user: NotifyMentioned's
+        // `membership.user.id` raises before the title (NotifyWatching's
+        // members are joined to their users).
+        .ok_or(std::io::Error::other(
+            "NoMethodError: id of a chat membership's deleted user",
         ))?;
     let guardian = crate::guardian::Guardian::for_user(&mut *conn, &user).await?;
     let mut cx = super::channels::Context {
@@ -445,10 +448,7 @@ async fn dm_title_for(
         config: &state.config,
     };
     let dm = cx.direct_message(channel.chatable_id).await?;
-    Ok(match cx.dm_title(&channel, &dm)? {
-        Value::String(s) => s,
-        other => other.to_string(),
-    })
+    cx.dm_title(&channel, &dm)
 }
 
 /// ActiveSupport's String#truncate: at most `max` characters, the last

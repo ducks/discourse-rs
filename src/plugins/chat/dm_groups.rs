@@ -320,7 +320,10 @@ impl Context<'_> {
         );
         let system = crate::session::current::SessionUser::load(&mut *self.conn, -1)
             .await?
-            .ok_or(Unsupported("a site without its system user"))?;
+            // Discourse.system_user.guardian on nil, inside the transaction
+            .ok_or(std::io::Error::other(
+                "NoMethodError: guardian of a missing system user",
+            ))?;
         let system_guardian = crate::guardian::Guardian::for_user(&mut *self.conn, &system).await?;
         let outcome = Context {
             conn: &mut *self.conn,
@@ -639,7 +642,7 @@ impl Context<'_> {
             .ok_or(Unsupported("a chat channel gone while editing"))?;
         let title = match (&dm, &channel.name) {
             (Some(dm), Some(name)) if dm.group => json!(name),
-            (Some(dm), _) => self.dm_title(&channel, dm)?,
+            (Some(dm), _) => json!(self.dm_title(&channel, dm)?),
             (None, Some(name)) => json!(name),
             (None, None) => json!(
                 self.category(channel.chatable_id)

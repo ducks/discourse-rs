@@ -59,8 +59,13 @@ impl Context<'_> {
                 .bind(dm_id)
                 .fetch_optional(&mut *self.conn)
                 .await?;
+        // A channel whose chatable is gone: Rails' serializer and guardian
+        // call methods on the nil chatable.
         let Some(group) = group else {
-            return Err(Unsupported("direct message channels without their direct message").into());
+            return Err(std::io::Error::other(
+                "NoMethodError: a direct message channel without its direct message",
+            )
+            .into());
         };
         let rows: Vec<DmUserRow> = sqlx::query_as(
             "SELECT u.id, u.username, u.name, u.uploaded_avatar_id, uo.chat_enabled \
@@ -89,12 +94,15 @@ impl Context<'_> {
 
     /// `chat_channel_title_for_user`: the group's name, else the other
     /// participants (system users left out), sorted, joined and truncated
-    /// past seven; the viewer's own name for a DM to themselves.
-    pub fn dm_title(&self, channel: &ChannelRow, dm: &DirectMessage) -> Result<Value, AppError> {
+    /// past seven; the viewer's own name for a DM to themselves. Its "all
+    /// users deleted" branch (the channel's id) can't be reached: deleted
+    /// users are NullUsers by then, unless there is no viewer, whose
+    /// `- [nil]` takes them out and leaves the single user branch to raise.
+    pub fn dm_title(&self, channel: &ChannelRow, dm: &DirectMessage) -> Result<String, AppError> {
         if dm.group
             && let Some(name) = channel.name.as_deref().filter(|n| !n.trim().is_empty())
         {
-            return Ok(json!(name));
+            return Ok(name.to_string());
         }
         let s = self.settings;
         let viewer = self.guardian.user();
@@ -128,18 +136,21 @@ impl Context<'_> {
             }
         };
         if others.is_empty() {
+            // acting_user.username on nil
             let Some(viewer) = viewer else {
-                return Err(Unsupported("a direct message title without a viewer").into());
+                return Err(std::io::Error::other(
+                    "NoMethodError: username of a direct message title's nil viewer",
+                )
+                .into());
             };
             let username = display(&viewer.username, viewer.name.as_deref());
-            return Ok(json!(
-                self.i18n
-                    .t_with(
-                        "chat.channel.dm_title.single_user",
-                        &[("username", &username)]
-                    )
-                    .unwrap_or(username)
-            ));
+            return Ok(self
+                .i18n
+                .t_with(
+                    "chat.channel.dm_title.single_user",
+                    &[("username", &username)],
+                )
+                .unwrap_or(username));
         }
         let mut names: Vec<String> = others
             .iter()
@@ -159,25 +170,23 @@ impl Context<'_> {
             let shown = names[..6].join(comma);
             let count = (names.len() - 6) as i64;
             let n = count.to_string();
-            return Ok(json!(
-                self.i18n
-                    .t_count(
-                        "chat.channel.dm_title.multi_user_truncated",
-                        count,
-                        &[("comma_separated_usernames", &shown), ("count", &n)],
-                    )
-                    .unwrap_or(shown)
-            ));
+            return Ok(self
+                .i18n
+                .t_count(
+                    "chat.channel.dm_title.multi_user_truncated",
+                    count,
+                    &[("comma_separated_usernames", &shown), ("count", &n)],
+                )
+                .unwrap_or(shown));
         }
         let joined = names.join(comma);
-        Ok(json!(
-            self.i18n
-                .t_with(
-                    "chat.channel.dm_title.multi_user",
-                    &[("comma_separated_usernames", &joined)],
-                )
-                .unwrap_or(joined)
-        ))
+        Ok(self
+            .i18n
+            .t_with(
+                "chat.channel.dm_title.multi_user",
+                &[("comma_separated_usernames", &joined)],
+            )
+            .unwrap_or(joined))
     }
 
     /// Chat::DirectMessageSerializer: the group flag and the participants
@@ -313,12 +322,17 @@ impl Context<'_> {
         .bind(&fields)
         .fetch_all(&mut *self.conn)
         .await?;
+        // FieldDescriptor#append_field: a second row of a name makes its
+        // value an array, in id order.
         let mut values = Map::new();
         for (name, value) in rows {
-            if values.contains_key(&name) {
-                return Err(Unsupported("multi-valued user custom fields").into());
+            match values.get_mut(&name) {
+                Some(Value::Array(items)) => items.push(json!(value)),
+                Some(first) => *first = json!([first.take(), value]),
+                None => {
+                    values.insert(name, json!(value));
+                }
             }
-            values.insert(name, json!(value));
         }
         Ok(Value::Object(values))
     }
@@ -385,14 +399,11 @@ impl Context<'_> {
             out.insert("emoji".into(), json!(emoji));
         }
         // object.name || object.title(scope.user)
-        let title = match &channel.name {
-            Some(name) => json!(name),
+        let title_str = match &channel.name {
+            Some(name) => name.clone(),
             None => self.dm_title(channel, &dm)?,
         };
-        let Some(title_str) = title.as_str().map(str::to_string) else {
-            return Err(Unsupported("a direct message whose participants are all deleted").into());
-        };
-        out.insert("title".into(), title);
+        out.insert("title".into(), json!(title_str));
         out.insert(
             "unicode_title".into(),
             json!(self.settings.emojis().gsub_to_unicode(&title_str)),
