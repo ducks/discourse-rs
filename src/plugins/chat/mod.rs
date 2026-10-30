@@ -10,6 +10,7 @@
 pub mod actions_view;
 pub mod auto_join;
 pub mod bookmarks;
+pub mod channel_settings;
 pub mod channels;
 pub mod chatables;
 pub(crate) mod collapser;
@@ -21,6 +22,7 @@ pub mod dm_groups;
 pub mod drawer;
 pub mod flags;
 pub mod interact;
+pub mod info;
 pub mod membership;
 pub mod mentions;
 pub mod messages;

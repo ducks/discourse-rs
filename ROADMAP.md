@@ -4710,20 +4710,44 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     problem_checks.rs:227), and discourse-lti's resubmit page script
     taking that nonce (plugins/lti.rs:54; routes/omniauth.rs:676-693) so
     its auto-submit runs under strict-dynamic
-215. `feat/chat-channel-settings` M: a channel's info pages and what they
-    edit: /chat/c/:slug/:id/info, /info/settings and /info/members
-    (routes/chat_pages.rs:410 404s them; the navbar title,
-    plugins/chat/page.rs:544, and the card's members, :1791, link there),
-    the name, slug and description modals, auto join, channel-wide
-    mentions, PUT notifications-settings/me (levels and mute), PUT
-    .../status with its publish, DELETE /chat/api/channels/:id
-    (TrashChannel, Jobs::Chat::ChannelDelete), leaving, the members list
-    with add members and invites (POST .../invites, chat_invitation
-    notifications), PUT /chat/user_chat_enabled/:user_id, the global
-    channel subscriptions (new channel, status, edits, kick;
-    routes/live.rs:146), deleting a category whose channel is empty
-    (category_writes.rs:2876), editing messages of deleted channels
-    (plugins/chat/modify.rs:107)
+215. ~~`feat/chat-channel-settings`~~ (done) M: a channel's info pages
+    404ed and what they edit had no endpoints. Now /chat/c/:slug/:id/info
+    replaces itself with /info/settings (ChatChannelInfoIndexRoute),
+    /info/settings and /info/members are drawn (plugins/chat/info.rs:
+    ChatRoutesChannelInfo's navbar back to the channel with the title and
+    star, ChatChannelStatus, ChannelInfoNav, withChatChannel's redirects
+    to the channel's own slug or /chat, the members route sending a
+    channel that isn't open to the settings), and
+    static/js/chat-channel-info.js acts on them: the name, slug and emoji
+    modal (with /slugs.json and the emoji picker), the description modal,
+    mute and the notification level (PUT notifications-settings/me), auto
+    join after its confirmation, channel-wide mentions and threading, the
+    close and open modal (PUT .../status: Chat::UpdateChannelStatus, the
+    chat_channel_status_change staff log, /chat/channel-status), the
+    delete modal (DELETE /chat/api/channels/:id: Chat::TrashChannel with
+    the moved slug, its hashtag remap and the chat_channel_delete log;
+    Jobs::Chat::ChannelDelete clears webhooks, drafts, memberships and
+    the messages' rows and trashes them), leaving or joining, and the
+    members list (the filter, more as it scrolls, a profile, removal).
+    UpdateChannel changes the slug (generate_auto_slug, ensure_slug_ok,
+    the remap) and answers its validation errors as record_invalid
+    (dm_groups.rs). POST .../invites (Chat::InviteUsersToChannel,
+    chat_invitation notifications, its rate limit) and PUT
+    /chat/user_chat_enabled/:user_id are routed. The live page hears
+    ChatSubscriptionsManager's global channels (new channel, status,
+    edits, metadata, each followed channel's kick; routes/live.rs; a
+    channel joined or left ends the stream, and the page reconnects to
+    what the member follows now), and
+    the channel page redraws on its status or edits and leaves on a kick
+    (static/js/chat.js). Deleting a category destroys its empty live
+    channel (category_writes.rs), and can_delete and cannot_delete_reason
+    read live channels and messages only. Editing, trashing or restoring a
+    message of a trashed channel fails with a 500 as Rails' NoMethodError
+    does. Tests: tests/chat_channel_settings.rs. Left: the settings'
+    archive row (216), adding members to a DM from its members (222a),
+    the composer's mention warnings that send invites (218), the drawer's
+    info route, info/about and info/search (404 as Ember has no route for
+    them).
 216. `feat/chat-channel-create` M: POST /chat/api/channels
     (CreateCategoryChannel, the auto join limiter) with the create
     channel modal behind the browse page's New channel button

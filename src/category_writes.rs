@@ -2863,17 +2863,20 @@ impl Record {
 /// first (HasDestroyedWebHook), the `dependent:` associations in their
 /// declaration order, the row, then the after_destroy callbacks (the
 /// definition trashed, the site settings naming it cleared, the
-/// deletion published) and the hooks enqueued. The category's chat
-/// channel (Chat::Channel#destroy) is refused.
+/// deletion published) and the hooks enqueued. Chat's category_channel
+/// and category_channels (`dependent: :destroy`, the live ones through
+/// Trashable's default scope) go with their custom fields; can_delete
+/// only lets an empty one through.
 pub async fn destroy(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<(), AppError> {
-    let channel: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM chat_channels WHERE chatable_type = 'Category' AND chatable_id = $1)",
-    )
-    .bind(id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if channel {
-        return Err(Unsupported("destroying a category's chat channel").into());
+    for sql in [
+        "DELETE FROM chat_channel_custom_fields WHERE channel_id IN (SELECT id FROM chat_channels \
+           WHERE chatable_type = 'Category' AND chatable_id = $1 AND deleted_at IS NULL)",
+        "DELETE FROM chat_channels WHERE chatable_type = 'Category' AND chatable_id = $1 AND deleted_at IS NULL",
+    ] {
+        sqlx::query(sql)
+            .bind(i64::from(id))
+            .execute(&mut *conn)
+            .await?;
     }
     let embeddable: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM embeddable_hosts WHERE category_id = $1)")

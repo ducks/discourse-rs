@@ -54,6 +54,25 @@ const MAX_LIFETIME: Duration = Duration::from_secs(600);
 /// TopicTrackingState's channels; a member's own `/unread/<id>` too.
 const TRACKING_CHANNELS: [&str; 5] = ["/latest", "/new", "/unread", "/delete", "/recover"];
 
+/// ChatSubscriptionsManager's global channels: a channel the member was
+/// added to, and status, edit and member count changes to theirs.
+const CHAT_GLOBAL_CHANNELS: [&str; 4] = [
+    "/chat/new-channel",
+    "/chat/channel-status",
+    "/chat/channel-edits",
+    "/chat/channel-metadata",
+];
+
+/// What a followed chat channel is heard on: its new messages, the
+/// member's mentions in it, and being kicked from it.
+fn followed_chat_channels(channel_id: i64) -> [String; 3] {
+    [
+        format!("/chat/{channel_id}/new-messages"),
+        format!("/chat/{channel_id}/new-mentions"),
+        format!("/chat/{channel_id}/kick"),
+    ]
+}
+
 #[derive(Deserialize, Default)]
 pub struct Params {
     position: Option<String>,
@@ -165,10 +184,11 @@ pub async fn page(
         .fetch_all(&mut *conn)
         .await?;
         for channel in followed {
-            chat_channels.push(format!("/chat/{channel}/new-messages"));
-            chat_channels.push(format!("/chat/{channel}/new-mentions"));
+            chat_channels.extend(followed_chat_channels(channel));
         }
         chat_channels.push(format!("/chat/user-tracking-state/{id}"));
+        // ChatSubscriptionsManager's global subscriptions.
+        chat_channels.extend(CHAT_GLOBAL_CHANNELS.iter().map(|c| c.to_string()));
         channels.extend(chat_channels.iter().cloned());
     }
     let subscription = state.bus.subscribe(from, Filter { channels, tags });
@@ -177,6 +197,7 @@ pub async fn page(
         guardian,
         settings,
         subscription,
+        reconnect: false,
         topic_channel: topic_id.map(crate::bus::topic_channel),
         polls_channel: topic_id.map(|id| format!("/polls/{id}")),
         tail: params.tail.as_deref() == Some("1"),
@@ -208,6 +229,9 @@ pub async fn page(
             if let Some(event) = live.pending.pop_front() {
                 return Some((Ok::<_, Infallible>(event), live));
             }
+            if live.reconnect {
+                return None;
+            }
             let result = if live.started {
                 next_batch(&mut live).await?
             } else {
@@ -238,6 +262,10 @@ struct Live {
     guardian: Guardian,
     settings: SiteSettings,
     subscription: Subscription,
+    /// A chat channel was joined (/chat/new-channel) or left (a kick):
+    /// the stream ends once its events are out, and the browser's
+    /// reconnect subscribes to what the member follows now.
+    reconnect: bool,
     topic_channel: Option<String>,
     /// `/polls/<topic_id>`: a post's polls changed (PollsUpdater, votes,
     /// toggle_status), for static/js/poll.js to draw them again.
@@ -363,6 +391,9 @@ async fn handle_batch(
             );
         } else if live.chat_channels.contains(&message.channel) {
             chat = true;
+            if follows_changed(live, &message) {
+                live.reconnect = true;
+            }
         } else {
             tracking = Some(message.position);
         }
@@ -375,6 +406,17 @@ async fn handle_batch(
         chat_chrome(live, last).await?;
     }
     Ok(())
+}
+
+/// Whether a channel the member now follows (onNewChannel) or was kicked
+/// from (onKickFromChannel) changes what the stream must hear.
+fn follows_changed(live: &Live, message: &pg_bus::Message) -> bool {
+    if message.channel == "/chat/new-channel" {
+        return message.data["channel"]["id"]
+            .as_i64()
+            .is_some_and(|id| !live.chat_channels.contains(&followed_chat_channels(id)[0]));
+    }
+    message.channel.ends_with("/kick")
 }
 
 /// The lists counted again; queued only when they changed.

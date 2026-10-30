@@ -1351,7 +1351,7 @@ pub(crate) fn slugified_title(c: &Value) -> String {
 
 /// ChatUserAvatar, not interactive: the avatar in a span, marked online
 /// when the user is on /chat/online.
-pub(super) fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
+pub(crate) fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
     let is_online = user["id"].as_i64().is_some_and(|id| online.contains(&id));
     format!(
         "<div class=\"chat-user-avatar{}\" data-username=\"{}\"><span class=\"chat-user-avatar__container\">{}</span></div>",
@@ -1362,7 +1362,7 @@ pub(super) fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> Str
 }
 
 /// ChatChannelTitle: the channel's icon (ChannelIcon) and its name.
-pub(super) fn channel_title(
+pub(crate) fn channel_title(
     c: &Value,
     emojis: &crate::emojis::Emojis,
     base_path: &str,
@@ -1459,7 +1459,7 @@ fn emoji_img(emojis: &crate::emojis::Emojis, base_path: &str, name: &str) -> Str
 
 /// ChatChannelStatus, long: a closed, read only or archived channel says
 /// so above its messages, with ChatChannelArchiveStatus for an admin.
-pub(super) fn channel_status(
+pub(crate) fn channel_status(
     c: &Value,
     t: &dyn Fn(&str) -> String,
     admin: bool,

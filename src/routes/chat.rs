@@ -1030,6 +1030,11 @@ fn dm_groups_response(
             (StatusCode::BAD_REQUEST, Json(json!({"error": error}))).into_response()
         }
         Outcome::RateLimited(refused) => refused.into_response(&state.i18n),
+        Outcome::RecordInvalid(errors) => (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": errors, "error_type": "record_invalid"})),
+        )
+            .into_response(),
     }
 }
 
@@ -2049,4 +2054,168 @@ pub async fn search(
                 .into_response(),
         },
     )
+}
+
+/// Commits a dm_groups-style outcome that went through and answers it.
+async fn finish_channel(
+    state: &AppState,
+    tx: sqlx::Transaction<'static, sqlx::Postgres>,
+    outcome: crate::plugins::chat::dm_groups::Outcome,
+) -> Result<Response, AppError> {
+    if matches!(outcome, crate::plugins::chat::dm_groups::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(dm_groups_response(state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id/notifications-settings/me:
+/// ChannelsCurrentUserNotificationsSettingsController#update.
+pub async fn notifications_settings(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    // params.require(:notifications_settings).permit(...)
+    let edits = match p.get("notifications_settings") {
+        Some(serde_json::Value::Object(edits)) if !edits.is_empty() => edits.clone(),
+        _ => return Ok(super::accounts::param_missing("notifications_settings")),
+    };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .update_notifications_settings(strip_format(&id), &edits)
+        .await?;
+    if matches!(outcome, crate::plugins::chat::membership::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(membership_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id/status: Chat::UpdateChannelStatus.
+pub async fn update_status(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let status = p.get("status").and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .update_status(&state.bus, contract_integer(&id), status.as_deref())
+        .await?;
+    finish_channel(&state, tx, outcome).await
+}
+
+/// DELETE /chat/api/channels/:channel_id: Chat::TrashChannel.
+pub async fn trash_channel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .trash_channel(contract_integer(&id))
+        .await?;
+    finish_channel(&state, tx, outcome).await
+}
+
+/// POST /chat/api/channels/:channel_id/invites: the invite rate limit (5 a
+/// minute), then Chat::InviteUsersToChannel.
+pub async fn invite_users(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::dm_create::cast_array;
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    if let Some(user) = guardian.user() {
+        let limiter = crate::rate_limiter::RateLimiter::new(
+            Some(crate::rate_limiter::LimitUser {
+                id: user.id,
+                staff: guardian.is_staff(),
+            }),
+            "invite_to_chat_channel",
+            5,
+            60,
+        );
+        if let Err(refused) = limiter
+            .performed(&state.pool, state.config.rate_limits)
+            .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
+    }
+    let user_ids = cast_array(p.get("user_ids"));
+    let message_id = p
+        .get("message_id")
+        .and_then(params::scalar)
+        .and_then(|v| contract_integer(&v));
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .invite_users(&state, contract_integer(&id), &user_ids, message_id)
+        .await?;
+    finish_channel(&state, tx, outcome).await
+}
+
+/// PUT /chat/user_chat_enabled/:user_id: ChatController#
+/// set_user_chat_status, the current user's chat_enabled whatever the id.
+pub async fn user_chat_enabled(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, _, p) = match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+        Ok(begun) => begun,
+        Err(refused) => return Ok(refused),
+    };
+    let Some(value) = p
+        .get("chat_enabled")
+        .and_then(params::scalar)
+        .filter(|v| !v.trim().is_empty())
+    else {
+        return Ok(super::accounts::param_missing("chat_enabled"));
+    };
+    let enabled = cast_boolean(Some(&value)).unwrap_or(false);
+    let user_id = guardian.user_id().unwrap_or(0);
+    sqlx::query(
+        "UPDATE user_options SET chat_enabled = $2 WHERE user_id = $1 AND chat_enabled IS DISTINCT FROM $2",
+    )
+    .bind(user_id)
+    .bind(enabled)
+    .execute(&mut *tx)
+    .await?;
+    let saved: bool =
+        sqlx::query_scalar("SELECT chat_enabled FROM user_options WHERE user_id = $1")
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+    tx.commit().await?;
+    Ok(Json(json!({ "chat_enabled": saved })).into_response())
 }

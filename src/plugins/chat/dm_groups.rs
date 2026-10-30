@@ -25,6 +25,9 @@ pub enum Outcome {
     RateLimited(crate::rate_limiter::LimitExceeded),
     /// Discourse::InvalidAccess
     Forbidden,
+    /// ActiveRecord::RecordInvalid's full messages, a 422 with
+    /// `error_type: record_invalid`.
+    RecordInvalid(Vec<String>),
 }
 
 /// A user the services add.
@@ -560,18 +563,73 @@ impl Context<'_> {
         } else {
             channel.allow_channel_wide_mentions
         };
+        let mut slug = text("slug").unwrap_or(channel.slug.clone());
+        // generate_auto_slug: a category channel without one takes its
+        // title's, unless another channel has it.
+        if category && slug.as_deref().is_none_or(|s| s.trim().is_empty()) {
+            let title = match &name {
+                Some(n) => n.clone(),
+                None => self
+                    .category(channel.chatable_id)
+                    .await?
+                    .map(|c| c.name)
+                    .unwrap_or_default(),
+            };
+            let auto = super::channel_settings::auto_slug(self.settings, title.trim())?;
+            slug = Some(
+                if super::channel_settings::duplicate_slug(&mut *self.conn, &auto, channel.id)
+                    .await?
+                {
+                    String::new()
+                } else {
+                    auto
+                },
+            );
+        }
         let max_title = self.settings.get("max_topic_title_length")?.to_i();
+        let mut errors = Vec::new();
         if name
             .as_deref()
             .is_some_and(|n| n.chars().count() as i64 > max_title)
-            || description
-                .as_deref()
-                .is_some_and(|d| d.chars().count() > 500)
-            || emoji.as_deref().is_some_and(|e| e.chars().count() > 100)
         {
-            return Err(Unsupported("an invalid chat channel edit (record_invalid)").into());
+            errors.push(format!(
+                "Name is too long (maximum is {max_title} characters)"
+            ));
+        }
+        if description
+            .as_deref()
+            .is_some_and(|d| d.chars().count() > 500)
+        {
+            errors.push("Description is too long (maximum is 500 characters)".into());
+        }
+        if slug.as_deref().is_some_and(|s| s.chars().count() > 100) {
+            errors.push("Slug is too long (maximum is 100 characters)".into());
+        }
+        if emoji.as_deref().is_some_and(|e| e.chars().count() > 100) {
+            errors.push("Emoji is too long (maximum is 100 characters)".into());
+        }
+        // ensure_slug_ok, when the slug changed.
+        if slug != channel.slug
+            && let Some(given) = slug.clone().filter(|s| !s.trim().is_empty())
+        {
+            match super::channel_settings::checked_slug(
+                &mut *self.conn,
+                self.settings,
+                self.i18n,
+                &given,
+                channel.id,
+            )
+            .await?
+            {
+                Ok(normalized) => slug = Some(normalized),
+                Err(error) => errors.push(error),
+            }
+        }
+        if !errors.is_empty() {
+            return Ok(Outcome::RecordInvalid(errors));
         }
         let changed = name != channel.name
+            || slug != channel.slug
             || description != channel.description
             || emoji != channel.emoji
             || threading != channel.threading_enabled
@@ -594,6 +652,18 @@ impl Context<'_> {
             .bind(&slug)
             .execute(&mut *self.conn)
             .await?;
+            // after_update enqueue_channel_hashtag_remap
+            if slug != channel.slug
+                && let Some(old) = channel.slug.as_deref()
+            {
+                super::channel_settings::channel_hashtag_remap(
+                    &mut *self.conn,
+                    channel.id,
+                    old,
+                    slug.as_deref().unwrap_or(""),
+                )
+                .await?;
+            }
         }
         // enqueue_channel_hashtag_remap through HashtagRemapper.enqueue:
         // the old slug, unless only its case changed.

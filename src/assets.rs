@@ -566,6 +566,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/chat-new-message.js"),
     ),
     (
+        "chat-channel-info.js",
+        JS,
+        include_str!("../static/js/chat-channel-info.js"),
+    ),
+    (
         "emoji-picker.js",
         JS,
         include_str!("../static/js/emoji-picker.js"),

@@ -158,7 +158,7 @@ impl Context<'_> {
 
     /// `Chat::Channel#title(user)` for the viewer: a category channel's
     /// name, else its category's; a direct message's participants.
-    async fn channel_title(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
+    pub(crate) async fn channel_title(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
         match channel.chatable_type.as_str() {
             "Category" => {
                 if let Some(name) = channel

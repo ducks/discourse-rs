@@ -2972,6 +2972,32 @@
       });
   });
 
+  // ChatSubscriptionsManager's channel status and edits for the open
+  // channel (the status bar, the composer and the title drawn again), and
+  // a kick from it (onKickFromChannel: back to /chat). Null for the
+  // channel's own messages.
+  function onChannelBus(channel, message) {
+    var data = message.data || {};
+    if (message.channel === "/chat/" + channel.dataset.id + "/kick") {
+      var link = document.createElement("a");
+      link.href = basePath() + "/chat";
+      link.hidden = true;
+      document.body.appendChild(link);
+      if (window.htmx) {
+        window.htmx.process(link);
+      }
+      link.click();
+      return Promise.resolve();
+    }
+    if (message.channel === "/chat/channel-status" || message.channel === "/chat/channel-edits") {
+      if (String(data.chat_channel_id) !== channel.dataset.id) {
+        return Promise.resolve();
+      }
+      return refresh();
+    }
+    return null;
+  }
+
   function startLive() {
     var channel = document.querySelector(".chat-channel[data-id]");
     if (!channel || !window.EventSource) {
@@ -2981,7 +3007,9 @@
     var url =
       basePath() +
       "/bus/events?channels=" +
-      encodeURIComponent("/chat/" + channel.dataset.id) +
+      encodeURIComponent(
+        ["/chat/" + channel.dataset.id, "/chat/channel-status", "/chat/channel-edits", "/chat/" + channel.dataset.id + "/kick"].join(",")
+      ) +
       (meta && meta.content ? "&position=" + encodeURIComponent(meta.content) : "");
     var source = new EventSource(url, { withCredentials: true });
     var queue = Promise.resolve();
@@ -2989,7 +3017,7 @@
       var message = JSON.parse(event.data);
       queue = queue
         .then(function () {
-          return onBus(message.data);
+          return onChannelBus(channel, message) || onBus(message.data);
         })
         .catch(function () {});
     });
