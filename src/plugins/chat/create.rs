@@ -337,7 +337,10 @@ impl Context<'_> {
             .bind(message.trim().to_lowercase())
             .fetch_one(&mut *self.conn)
             .await?;
-        if duplicate {
+        // Bots and DMs of two or fewer members are exempt too.
+        let duplicate_exempt =
+            bot || (channel.chatable_type == "DirectMessage" && channel.user_count <= 2);
+        if duplicate && !duplicate_exempt {
             model_errors.push(t(self.i18n, "chat.errors.duplicate_message"));
         }
         let min = settings.get("chat_minimum_message_length")?.to_i();

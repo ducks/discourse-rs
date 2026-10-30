@@ -1150,10 +1150,15 @@
     var canModify = flag(tpl, "canModify");
     var pinned = message.dataset.pinned !== undefined;
     var actions = ["copyLink"];
+    if (document.documentElement.classList.contains("mobile-view")) {
+      actions.push("copyText");
+    }
     if (canEdit(message)) {
       actions.push("edit");
     }
-    actions.push("select");
+    if (!selecting()) {
+      actions.push("select");
+    }
     if (flag(tpl, "canPin") && !pinned) {
       actions.push("pin");
     }
@@ -1583,6 +1588,9 @@
       case "copyLink":
         copyLink(message);
         break;
+      case "copyText":
+        copyText(message);
+        break;
       case "edit":
         startEdit(message);
         break;
@@ -1927,11 +1935,596 @@
       .catch(function () {});
   }
 
-  function notPortedYet(what) {
-    if (Discourse.dialog && Discourse.dialog.alert) {
-      Discourse.dialog.alert("Not ported yet: " + what + ".");
+  // ChatSelectionManager#generateQuote: the transcript of the selection
+  // (POST /chat/:id/quote).
+  function generateQuote(ids) {
+    var channel = document.querySelector(".chat-channel[data-id]");
+    var params = ids.map(function (id) {
+      return ["message_ids[]", id];
+    });
+    return fetch(basePath() + "/chat/" + channel.dataset.id + "/quote", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: csrfHeaders(),
+      body: new URLSearchParams(params).toString(),
+    }).then(function (r) {
+      if (!r.ok) {
+        return failed(r).then(function () {
+          throw new Error(r.statusText);
+        });
+      }
+      return r.json();
+    });
+  }
+
+  // quoteMessages: the topic composer opened with the quote, in a category
+  // channel's category. Here it is /new-topic, which leaves the chat page
+  // where Ember opens the composer over it on desktop.
+  function quoteSelected(ids) {
+    var tpl = document.querySelector("template.chat-selection-template");
+    generateQuote(ids)
+      .then(function (data) {
+        var url = basePath() + "/new-topic?body=" + encodeURIComponent(data.markdown);
+        if (tpl && tpl.dataset.categoryId) {
+          url += "&category_id=" + encodeURIComponent(tpl.dataset.categoryId);
+        }
+        window.location.assign(url);
+      })
+      .catch(function () {});
+  }
+
+  function copyToClipboard(text, message) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        function () {
+          toast(message);
+        },
+        function () {}
+      );
+    }
+    return Promise.resolve();
+  }
+
+  // copyMessages: the quote on the clipboard, and its toast.
+  function copySelected(ids) {
+    var tpl = document.querySelector("template.chat-selection-template");
+    generateQuote(ids)
+      .then(function (data) {
+        return copyToClipboard(data.markdown, tpl.dataset.labelCopied);
+      })
+      .catch(function () {});
+  }
+
+  // ChatMessageInteractor#copyText: the message's raw text.
+  function copyText(message) {
+    var tpl = document.querySelector("template.chat-selection-template");
+    copyToClipboard(message.dataset.message || "", tpl ? tpl.dataset.labelTextCopied : "");
+  }
+
+  // stopMessageStreaming: DELETE .../messages/:id/streaming; the edit
+  // publish redraws the message.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".stop-streaming-btn");
+    var message = button && button.closest(".chat-message-container[data-id]");
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (!message || !channel) {
+      return;
+    }
+    button.disabled = true;
+    api("DELETE", "/channels/" + channel.dataset.id + "/messages/" + message.dataset.id + "/streaming")
+      .then(changed)
+      .catch(function () {
+        button.disabled = false;
+      });
+  });
+
+  // ChatMessageReactionsUsers in a DMenu: hovering a reaction lists who
+  // reacted (GET /chat/:id/:message_id/reactions-users, which returns the
+  // message's reactions whatever the emoji), a page at a time, with a tab
+  // per reaction when there are several. It closes 250ms after the pointer
+  // leaves the reaction and the menu.
+  var REACTIONS_PAGE_SIZE = 30;
+  var reactionsMenu = null;
+  var reactionsCloseTimer = null;
+
+  function closeReactionsMenu() {
+    clearTimeout(reactionsCloseTimer);
+    if (reactionsMenu) {
+      reactionsMenu.content.remove();
+      reactionsMenu = null;
     }
   }
+
+  function scheduleReactionsClose() {
+    clearTimeout(reactionsCloseTimer);
+    reactionsCloseTimer = setTimeout(closeReactionsMenu, 250);
+  }
+
+  function reactionUserRow(tpl, user) {
+    var href = basePath() + "/u/" + encodeURIComponent(user.username.toLowerCase());
+    var name = user.name ? user.name : user.username;
+    return (
+      '<div class="users-popup__item">' +
+      '<a class="trigger-user-card" data-user-card="' + escapeHtml(user.username) + '" href="' +
+      escapeHtml(href) + '" aria-hidden="true" tabindex="-1">' +
+      '<img loading="lazy" alt="" width="24" height="24" src="' +
+      escapeHtml(user.avatar_template.replace("{size}", "48")) +
+      '" class="avatar"></a><div class="users-popup__user-info">' +
+      '<a class="users-popup__name" data-user-card="' + escapeHtml(user.username) + '" href="' +
+      escapeHtml(href) + '">' + escapeHtml(name) + "</a>" +
+      (user.name
+        ? '<a aria-hidden="true" class="users-popup__username" data-user-card="' +
+          escapeHtml(user.username) + '" href="' + escapeHtml(href) + '">@' + escapeHtml(user.username) + "</a>"
+        : "") +
+      "</div>" +
+      (user.reaction
+        ? '<img width="20" height="20" src="' + escapeHtml(emojiUrl(tpl, user.reaction)) + '" alt="' +
+          escapeHtml(user.reaction) + '" class="emoji users-popup__reaction">'
+        : "") +
+      "</div>"
+    );
+  }
+
+  function loadReactionUsers() {
+    var m = reactionsMenu;
+    if (!m || m.loading || !m.more) {
+      return;
+    }
+    m.loading = true;
+    var url =
+      basePath() + "/chat/" + m.channelId + "/" + m.messageId + "/reactions-users?page=" + m.page +
+      "&limit=" + REACTIONS_PAGE_SIZE + "&emoji=" + encodeURIComponent(m.filter || "");
+    fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } })
+      .then(function (r) {
+        return r.ok ? r.json() : { users: [], total_rows: 0 };
+      })
+      .then(function (data) {
+        if (reactionsMenu !== m) {
+          return;
+        }
+        var users = data.users || [];
+        m.loaded += users.length;
+        m.more = data.total_rows ? m.loaded < data.total_rows : users.length >= REACTIONS_PAGE_SIZE;
+        m.page += 1;
+        m.loading = false;
+        var body = m.content.querySelector(".users-popup__body");
+        body.insertAdjacentHTML(
+          "beforeend",
+          users
+            .map(function (u) {
+              return reactionUserRow(m.tpl, u);
+            })
+            .join("")
+        );
+      })
+      .catch(function () {
+        m.loading = false;
+      });
+  }
+
+  function openReactionsMenu(trigger) {
+    var message = trigger.closest(".chat-message-container[data-id]");
+    var channel = document.querySelector(".chat-channel[data-id]");
+    var tpl = actionsTemplate();
+    var labels = document.querySelector("template.chat-selection-template");
+    if (!message || !channel || !tpl || !labels) {
+      return;
+    }
+    if (reactionsMenu && reactionsMenu.trigger === trigger) {
+      clearTimeout(reactionsCloseTimer);
+      return;
+    }
+    closeReactionsMenu();
+    var reactions = [];
+    var total = 0;
+    message.querySelectorAll(".chat-message-reaction-list .chat-message-reaction").forEach(function (button) {
+      var count = Number((button.querySelector(".count") || {}).textContent || 0);
+      if (count) {
+        reactions.push({ emoji: button.dataset.emojiName, count: count });
+        total += count;
+      }
+    });
+    var header = "";
+    if (reactions.length > 1) {
+      header =
+        '<div class="users-popup__header">' +
+        reactions
+          .map(function (r) {
+            return (
+              '<button class="users-popup__filter' +
+              (r.emoji === trigger.dataset.emojiName ? " is-active" : "") +
+              '" data-reaction-filter="' + escapeHtml(r.emoji) + '" type="button"><img width="20" height="20" src="' +
+              escapeHtml(emojiUrl(tpl, r.emoji)) + '" alt=":' + escapeHtml(r.emoji) + ':" class="emoji"><span>' +
+              r.count + "</span></button>"
+            );
+          })
+          .join("") +
+        "</div>";
+    }
+    var title = (total === 1 ? labels.dataset.labelReactionsOne : labels.dataset.labelReactionsOther).replace(
+      "%{count}",
+      total
+    );
+    var portals = document.getElementById("d-menu-portals");
+    if (!portals) {
+      portals = document.createElement("div");
+      portals.id = "d-menu-portals";
+      document.body.appendChild(portals);
+    }
+    var content = document.createElement("div");
+    content.className = "fk-d-menu chat-message-reaction-users-content -animated -expanded";
+    content.setAttribute("role", "dialog");
+    content.dataset.identifier = "chat-message-reaction-users";
+    content.dataset.content = "";
+    content.dataset.placement = "bottom";
+    content.innerHTML =
+      '<div class="fk-d-menu__inner-content"><div class="users-popup" tabindex="-1" aria-label="' +
+      escapeHtml(title) + '"><div class="users-popup__sticky-header">' + header +
+      '</div><div class="users-popup__body"></div></div></div>';
+    portals.appendChild(content);
+    var rect = trigger.getBoundingClientRect();
+    var width = content.offsetWidth;
+    var left = Math.max(5, Math.min(rect.left + rect.width / 2 - width / 2, document.documentElement.clientWidth - width - 5));
+    content.style.position = "absolute";
+    content.style.left = left + window.scrollX + "px";
+    content.style.top = rect.bottom + window.scrollY + 15 + "px";
+    content.addEventListener("pointerenter", function () {
+      clearTimeout(reactionsCloseTimer);
+    });
+    content.addEventListener("pointerleave", scheduleReactionsClose);
+    content.querySelector(".users-popup__body").addEventListener("scroll", function (event) {
+      var body = event.target;
+      if (body.scrollTop + body.clientHeight >= body.scrollHeight - 20) {
+        loadReactionUsers();
+      }
+    });
+    content.addEventListener("click", function (event) {
+      var filter = event.target.closest(".users-popup__filter");
+      if (!filter || !reactionsMenu) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      content.querySelectorAll(".users-popup__filter").forEach(function (b) {
+        b.classList.toggle("is-active", b === filter);
+      });
+      reactionsMenu.filter = filter.dataset.reactionFilter;
+      reactionsMenu.page = 0;
+      reactionsMenu.loaded = 0;
+      reactionsMenu.more = true;
+      content.querySelector(".users-popup__body").innerHTML = "";
+      loadReactionUsers();
+    });
+    reactionsMenu = {
+      trigger: trigger,
+      content: content,
+      tpl: tpl,
+      channelId: channel.dataset.id,
+      messageId: message.dataset.id,
+      filter: trigger.dataset.emojiName,
+      page: 0,
+      loaded: 0,
+      more: true,
+      loading: false,
+    };
+    loadReactionUsers();
+  }
+
+  document.addEventListener(
+    "pointerover",
+    function (event) {
+      if (document.documentElement.classList.contains("mobile-view")) {
+        return;
+      }
+      var reaction =
+        event.target.closest &&
+        event.target.closest(".chat-messages-container .chat-message-reaction-list .chat-message-reaction");
+      if (reaction && reaction.querySelector(".count")) {
+        openReactionsMenu(reaction);
+      }
+    },
+    { passive: true }
+  );
+  document.addEventListener(
+    "pointerout",
+    function (event) {
+      var reaction = event.target.closest && event.target.closest(".chat-message-reaction");
+      if (reactionsMenu && reaction === reactionsMenu.trigger && !reaction.contains(event.relatedTarget)) {
+        scheduleReactionsClose();
+      }
+    },
+    { passive: true }
+  );
+
+  // ChatMessageActionsMobile: a long press on a message (ChatOnLongPress)
+  // opens its actions as a modal: the message, the secondary actions, then
+  // the quick reactions, the emoji picker and reply.
+  var LONG_PRESS_MS = 400;
+  var longPress = null;
+
+  function openMobileActions(message) {
+    var tpl = actionsTemplate();
+    if (!tpl || !Discourse.modal || message.classList.contains("-staged")) {
+      return;
+    }
+    var avatar = message.querySelector(".chat-message-avatar .chat-user-avatar");
+    var rows = tpl.content.querySelectorAll(".more-actions-chat .select-kit-row");
+    var actions = secondaryActions(message);
+    var items = "";
+    rows.forEach(function (row) {
+      if (actions.indexOf(row.dataset.value) === -1) {
+        return;
+      }
+      var icon = row.querySelector(".icons svg");
+      items +=
+        '<li class="chat-message-action-item" data-id="' + escapeHtml(row.dataset.value) + '">' +
+        '<button class="btn btn-icon-text chat-message-action" type="button">' + (icon ? icon.outerHTML : "") +
+        '<span class="d-button-label">' + escapeHtml(row.dataset.name) + "</span></button></li>";
+    });
+    var main = "";
+    if (canInteract(message)) {
+      main += quickReactions(tpl)
+        .map(function (emoji, index) {
+          return quickReaction(tpl, message, emoji, index)
+            .map(function (node) {
+              return node.outerHTML;
+            })
+            .join("");
+        })
+        .join("");
+      main +=
+        '<button class="btn no-text btn-icon btn-flat react-btn" type="button">' + iconHtml("discourse-emojis") +
+        '<span aria-hidden="true">&#8203;</span></button>';
+      // The bookmark button is left out: chat bookmarks aren't made here.
+      main +=
+        '<button class="btn no-text btn-icon chat-message-action reply-btn btn-flat" data-id="reply" title="' +
+        escapeHtml((tpl.content.querySelector(".reply-btn") || {}).title || "") + '" type="button">' +
+        iconHtml("reply") + '<span aria-hidden="true">&#8203;</span></button>';
+    }
+    var close = Discourse.modal.show({
+      className: "chat-message-actions",
+      hideHeader: true,
+      body: function (body) {
+        body.innerHTML =
+          '<div class="selected-message-container"><div class="selected-message">' +
+          (avatar ? avatar.outerHTML : "") +
+          '<span class="selected-message-reply" role="button">' + escapeHtml(message.dataset.message || "") +
+          "</span></div></div>" +
+          '<ul class="secondary-actions">' + items + "</ul>" +
+          (main ? '<div class="main-actions">' + main + "</div>" : "");
+        body.querySelector(".selected-message-reply").addEventListener(
+          "touchstart",
+          function (event) {
+            event.currentTarget.classList.add("is-expanded");
+          },
+          { passive: true }
+        );
+        body.addEventListener("click", function (event) {
+          var item = event.target.closest(".chat-message-action-item");
+          if (item) {
+            close();
+            secondaryAction(message, item.dataset.id);
+            return;
+          }
+          var reaction = event.target.closest(".chat-message-reaction");
+          if (reaction) {
+            close();
+            react(message, reaction.dataset.emojiName, reaction.classList.contains("reacted") ? "remove" : "add");
+            return;
+          }
+          if (event.target.closest(".react-btn")) {
+            close();
+            openReactionPicker(message);
+            return;
+          }
+          if (event.target.closest("[data-id='reply']")) {
+            close();
+            startReply(message);
+          }
+        });
+      },
+    });
+    if (navigator.vibrate) {
+      navigator.vibrate(5);
+    }
+  }
+
+  document.addEventListener(
+    "touchstart",
+    function (event) {
+      if (!document.documentElement.classList.contains("mobile-view") || selecting()) {
+        return;
+      }
+      var message = event.target.closest(".chat-messages-container > .chat-message-container[data-id]");
+      if (!message || message.classList.contains("-deleted") || event.target.closest("a, button")) {
+        return;
+      }
+      clearTimeout(longPress);
+      longPress = setTimeout(function () {
+        longPress = null;
+        openMobileActions(message);
+      }, LONG_PRESS_MS);
+    },
+    { passive: true }
+  );
+  ["touchend", "touchmove", "touchcancel"].forEach(function (type) {
+    document.addEventListener(
+      type,
+      function () {
+        clearTimeout(longPress);
+        longPress = null;
+      },
+      { passive: true }
+    );
+  });
+
+  // ChatComposerWarningsTracker and ChatMentionWarnings: a second after
+  // typing stops, the composer's @mentions (a word match, not the cooked
+  // message Ember parses) are counted against
+  // max_mentions_per_chat_message, @here and @all checked against the
+  // channel, and the group ones not seen yet asked about (GET
+  // /chat/api/mentions/groups); the warnings sit above the messages.
+  var MENTION_DEBOUNCE_MS = 1000;
+  var mentionTimer = null;
+  var mentionsSeen = {};
+
+  function composerMentions(text) {
+    var found = [];
+    var re = /(?:^|[^\p{L}\p{N}_@])@([\p{L}\p{N}_][\p{L}\p{N}_.-]*)/gu;
+    var match;
+    while ((match = re.exec(text))) {
+      var name = match[1].replace(/[.-]+$/, "").toLowerCase();
+      if (name && found.indexOf(name) === -1) {
+        found.push(name);
+      }
+    }
+    return found;
+  }
+
+  function drawMentionWarnings(state) {
+    var tpl = document.querySelector("template.chat-mention-warnings-template");
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (!tpl || !channel) {
+      return;
+    }
+    var existing = channel.querySelector(".chat-mention-warnings");
+    var d = tpl.dataset;
+    var items = [];
+    var warnings = state.unreachable.length + state.over.length;
+    if (state.tooMany) {
+      items.push(d.tooMany);
+    } else {
+      if (state.channelWide) {
+        items.push(escapeHtml(d.channelWideDisallowed));
+      }
+      var u = state.unreachable;
+      if (u.length === 1) {
+        items.push(escapeHtml(d["unreachable-1"] || "").replace("%{group}", escapeHtml(u[0])));
+      } else if (u.length === 2) {
+        items.push(
+          escapeHtml(d["unreachable-2"] || "")
+            .replace("%{group1}", escapeHtml(u[0]))
+            .replace("%{group2}", escapeHtml(u[1]))
+        );
+      } else if (u.length > 2) {
+        items.push(
+          escapeHtml(u.length - 1 === 1 ? d["unreachableMultipleOne"] : d["unreachableMultipleOther"])
+            .replace("%{group}", escapeHtml(u[0]))
+            .replace("%{count}", u.length - 1)
+        );
+      }
+      var o = state.over;
+      if (o.length) {
+        var text = o.length === 1 ? d["over-1"] : o.length === 2 ? d["over-2"] : d.overOther;
+        items.push(
+          (text || "")
+            .replace("{group1}", escapeHtml(o[0] || ""))
+            .replace("{group2}", escapeHtml(o[1] || ""))
+            .replace("{groupCount}", o.length)
+        );
+      }
+    }
+    if (!items.length) {
+      if (existing) {
+        existing.remove();
+      }
+      return;
+    }
+    var box = tpl.content.querySelector(".chat-mention-warnings").cloneNode(true);
+    box.querySelector(".chat-mention-warning__header").textContent =
+      state.count <= warnings || state.tooMany ? d.headerAll : d.headerSome;
+    var list = box.querySelector("ul");
+    list.className =
+      !state.tooMany && warnings > 1 ? "chat-mention-warnings-list__multiple" : "chat-mention-warnings-list__simple";
+    list.innerHTML = items
+      .map(function (item) {
+        return "<li>" + item + "</li>";
+      })
+      .join("");
+    if (existing) {
+      existing.replaceWith(box);
+    } else {
+      var notices = channel.querySelector(".chat-notices");
+      if (notices) {
+        notices.insertAdjacentElement("afterend", box);
+      }
+    }
+  }
+
+  function trackMentions(text) {
+    var tpl = document.querySelector("template.chat-mention-warnings-template");
+    if (!tpl || tpl.dataset.enabled !== "true") {
+      return;
+    }
+    var mentions = composerMentions(text);
+    var state = { count: mentions.length, tooMany: false, channelWide: false, unreachable: [], over: [] };
+    if (!mentions.length) {
+      drawMentionWarnings(state);
+      return;
+    }
+    state.tooMany = mentions.length > Number(tpl.dataset.maxMentions);
+    if (state.tooMany) {
+      drawMentionWarnings(state);
+      return;
+    }
+    state.channelWide =
+      tpl.dataset.channelWide !== "true" && (mentions.indexOf("here") !== -1 || mentions.indexOf("all") !== -1);
+    var rebuild = function () {
+      mentions.forEach(function (m) {
+        if (mentionsSeen[m] === "unreachable") {
+          state.unreachable.push(m);
+        } else if (mentionsSeen[m] === "over") {
+          state.over.push(m);
+        }
+      });
+      drawMentionWarnings(state);
+    };
+    var fresh = mentions.filter(function (m) {
+      return !(m in mentionsSeen);
+    });
+    if (!fresh.length) {
+      rebuild();
+      return;
+    }
+    var query = fresh
+      .map(function (m) {
+        return "mentions[]=" + encodeURIComponent(m);
+      })
+      .join("&");
+    fetch(basePath() + "/chat/api/mentions/groups.json?" + query, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (data) {
+        if (data) {
+          (data.unreachable || []).forEach(function (g) {
+            mentionsSeen[g] = "unreachable";
+          });
+          (data.over_members_limit || []).forEach(function (g) {
+            mentionsSeen[g] = "over";
+          });
+          (data.invalid || []).forEach(function (g) {
+            mentionsSeen[g] = "invalid";
+          });
+        }
+        rebuild();
+      })
+      .catch(rebuild);
+  }
+
+  document.addEventListener("input", function (event) {
+    if (event.target.id !== "channel-composer") {
+      return;
+    }
+    clearTimeout(mentionTimer);
+    var text = event.target.value;
+    mentionTimer = setTimeout(function () {
+      trackMentions(text);
+    }, MENTION_DEBOUNCE_MS);
+  });
 
   document.addEventListener("click", function (event) {
     var target = event.target;
@@ -1952,10 +2545,10 @@
           openMoveToChannel(selectedIds());
           break;
         case "chat-quote-btn":
-          notPortedYet("quoting chat messages in a topic");
+          quoteSelected(selectedIds());
           break;
         case "chat-copy-btn":
-          notPortedYet("copying chat messages as a quote");
+          copySelected(selectedIds());
           break;
       }
       return;

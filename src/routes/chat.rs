@@ -1664,3 +1664,211 @@ pub async fn flag_message(
             .into_response(),
     })
 }
+
+fn acted_response(state: &AppState, acted: crate::plugins::chat::interact::Acted) -> Response {
+    use crate::plugins::chat::interact::Acted;
+    match acted {
+        Acted::Done(body) => Json(body).into_response(),
+        Acted::NotFound => super::topics::not_found_response(state),
+        Acted::Forbidden => super::search::invalid_access(state),
+        Acted::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+    }
+}
+
+/// ChatController's set_channel_and_chatable_with_access_check: the
+/// channel by id or slug, one the member can join.
+async fn chat_controller_channel(
+    state: &AppState,
+    cx: &mut Context<'_>,
+    id: &str,
+) -> Result<Result<crate::plugins::chat::channels::ChannelRow, Response>, AppError> {
+    let Some(channel) = cx.find_by_id_or_slug(id).await? else {
+        return Ok(Err(super::topics::not_found_response(state)));
+    };
+    if !cx.can_join(&channel, None).await? {
+        return Ok(Err(super::search::invalid_access(state)));
+    }
+    Ok(Ok(channel))
+}
+
+/// GET /chat/:chat_channel_id/:message_id/reactions-users
+/// (ChatController#message_reactions_users).
+pub async fn reaction_users(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let p = uri.query().map(params::parse_query).unwrap_or_default();
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let channel = match chat_controller_channel(&state, &mut cx, &id).await? {
+        Ok(channel) => channel,
+        Err(refused) => return Ok(refused),
+    };
+    let page = scalar("page").map_or(0, |p| crate::ruby::to_i(&p)).max(0);
+    let limit = match scalar("limit").filter(|l| !l.trim().is_empty()) {
+        Some(l) => crate::ruby::to_i(&l).clamp(1, 50),
+        None => 30,
+    };
+    let acted = cx
+        .reaction_users(
+            &channel,
+            crate::ruby::to_i(strip_format(&message_id)),
+            page,
+            limit,
+        )
+        .await?;
+    Ok(acted_response(&state, acted))
+}
+
+/// POST /chat/:chat_channel_id/quote (ChatController#quote_messages):
+/// the selection's transcript.
+pub async fn quote_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    let channel = match chat_controller_channel(&state, &mut cx, strip_format(&id)).await? {
+        Ok(channel) => channel,
+        Err(refused) => return Ok(refused),
+    };
+    // params.require(:message_ids)
+    let ids: Vec<i64> = match p.get("message_ids") {
+        Some(serde_json::Value::Array(ids)) if !ids.is_empty() => ids
+            .iter()
+            .filter_map(params::scalar)
+            .map(|id| crate::ruby::to_i(&id))
+            .collect(),
+        _ => return Ok(super::accounts::param_missing("message_ids")),
+    };
+    let markdown = cx.transcript_markdown(&channel, &ids).await?;
+    Ok(Json(json!({"success": "OK", "markdown": markdown})).into_response())
+}
+
+/// DELETE /chat/api/channels/:channel_id/messages/:message_id/streaming
+/// (Chat::Api::ChannelsMessagesStreamingController#destroy).
+pub async fn stop_streaming(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    // channel_from_params
+    if let Err(refused) = channel(&state, &mut cx, &id).await? {
+        return Ok(refused);
+    }
+    let acted = cx
+        .stop_streaming(&state.bus, cast_integer(Some(strip_format(&message_id))))
+        .await?;
+    if matches!(acted, crate::plugins::chat::interact::Acted::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(acted_response(&state, acted))
+}
+
+/// POST /chat/api/channels/:channel_id/messages/:message_id/interactions
+/// (Chat::Api::ChannelsMessagesInteractionsController#create).
+pub async fn create_interaction(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let action_id = p.get("action_id").and_then(params::scalar);
+    let acted = context(&state, &mut tx, &settings, &guardian)
+        .create_interaction(
+            cast_integer(Some(strip_format(&id))),
+            cast_integer(Some(strip_format(&message_id))),
+            action_id.as_deref(),
+        )
+        .await?;
+    if matches!(acted, crate::plugins::chat::interact::Acted::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(acted_response(&state, acted))
+}
+
+/// GET /chat/api/mentions/groups (Chat::Api::HintsController
+/// #check_group_mentions): requires_plugin and ensure_logged_in only, five
+/// every ten seconds.
+pub async fn group_mention_hints(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !crate::plugins::chat::enabled(&settings)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(user) = guardian.user().cloned() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let limiter = crate::rate_limiter::RateLimiter::new(
+        Some(crate::likes::limit_user(&guardian, &user)),
+        "group_mention_hints",
+        5,
+        10,
+    );
+    if let Err(refused) = limiter
+        .performed(&state.pool, state.config.rate_limits)
+        .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
+    let p = params::parse(uri.query(), &headers, &body);
+    // `group_names.blank?`: no param, an empty list or a blank string.
+    let names: Vec<String> = match p.get("mentions") {
+        Some(serde_json::Value::Array(names)) => names.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v)
+            .filter(|n| !n.trim().is_empty())
+            .into_iter()
+            .collect(),
+        None => Vec::new(),
+    };
+    if names.is_empty() {
+        return Ok(super::search::invalid_parameters(&state, "mentions"));
+    }
+    let body = crate::plugins::chat::interact::group_mention_hints(
+        &mut conn, &settings, &guardian, &names,
+    )
+    .await?;
+    Ok(Json(body).into_response())
+}

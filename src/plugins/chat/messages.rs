@@ -11,7 +11,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use chrono::NaiveDateTime;
+use chrono::{Datelike, NaiveDateTime};
 use serde_json::{Map, Value, json};
 
 use super::channels::{ChannelRow, Context, Found};
@@ -1463,8 +1463,8 @@ impl Context<'_> {
     }
 }
 
-/// `String#to_time` for the dates the client sends: an ISO 8601 date, or
-/// date and time, read as UTC.
+/// `String#to_time` for the dates the client sends: ISO 8601 read as UTC,
+/// other spellings through Date._parse.
 fn parse_date(s: &str) -> Result<NaiveDateTime, AppError> {
     let s = s.trim();
     if let Ok(t) = chrono::DateTime::parse_from_rfc3339(s) {
@@ -1482,7 +1482,75 @@ fn parse_date(s: &str) -> Result<NaiveDateTime, AppError> {
     if let Ok(d) = chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d") {
         return Ok(d.and_hms_opt(0, 0, 0).unwrap_or_default());
     }
-    Err(Unsupported("chat target dates other than ISO 8601").into())
+    // Any other spelling as String#to_time reads it: Date._parse's
+    // fields, the date's missing parts today's, the time's zero, in the
+    // server's zone (UTC) unless it names an offset.
+    if !s.is_ascii() {
+        return Err(Unsupported("chat target dates that aren't ASCII").into());
+    }
+    let h = crate::ruby_date::parse(s);
+    if h.year.is_none()
+        && h.mon.is_none()
+        && h.mday.is_none()
+        && h.hour.is_none()
+        && h.min.is_none()
+        && h.sec.is_none()
+        && h.zone.is_none()
+    {
+        // to_time is nil, and `.utc` on it raises: a 500.
+        return Err(Unsupported("a chat target date String#to_time can't read").into());
+    }
+    if h.sec_fraction {
+        return Err(Unsupported("chat target dates with fractions of a second").into());
+    }
+    let offset = match h.zone.as_deref() {
+        None => 0,
+        Some(z) => zone_offset(z).ok_or(Unsupported("chat target dates in a named time zone"))?,
+    };
+    let today = crate::clock::now_naive().date();
+    let date = chrono::NaiveDate::from_ymd_opt(
+        h.year.map_or(today.year(), |y| y as i32),
+        h.mon.map_or(today.month(), |m| m as u32),
+        h.mday.map_or(today.day(), |d| d as u32),
+    )
+    .ok_or(Unsupported("chat target dates Time.new rejects"))?;
+    let time = date
+        .and_hms_opt(
+            h.hour.unwrap_or(0) as u32,
+            h.min.unwrap_or(0) as u32,
+            h.sec.unwrap_or(0) as u32,
+        )
+        .ok_or(Unsupported("chat target dates Time.new rejects"))?;
+    Ok(time - chrono::Duration::seconds(offset))
+}
+
+/// The seconds east of UTC a numeric zone (or Z, UTC, GMT) names.
+fn zone_offset(zone: &str) -> Option<i64> {
+    let z = zone.trim();
+    if ["z", "utc", "gmt", "ut"].contains(&z.to_ascii_lowercase().as_str()) {
+        return Some(0);
+    }
+    let (sign, rest) = match z.as_bytes().first()? {
+        b'+' => (1, &z[1..]),
+        b'-' => (-1, &z[1..]),
+        _ => return None,
+    };
+    let digits: String = rest.chars().filter(|c| *c != ':').collect();
+    if !digits.chars().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    let (hours, minutes) = match digits.len() {
+        1 | 2 => (digits.parse::<i64>().ok()?, 0),
+        3 | 4 => {
+            let split = digits.len() - 2;
+            (
+                digits[..split].parse::<i64>().ok()?,
+                digits[split..].parse::<i64>().ok()?,
+            )
+        }
+        _ => return None,
+    };
+    Some(sign * (hours * 3600 + minutes * 60))
 }
 
 #[cfg(test)]

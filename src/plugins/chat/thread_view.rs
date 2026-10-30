@@ -137,6 +137,8 @@ impl Context<'_> {
             }
             .base_url()?,
             can_interact: channel_json["meta"]["user_silenced"] != true,
+            prioritize_name: super::page::prioritize_name(self.settings)?,
+            admin: self.guardian.is_admin(),
             t: &t,
             i18n: self.i18n,
             relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),

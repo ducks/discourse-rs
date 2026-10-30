@@ -397,6 +397,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/api/channels.json", get(chat::index))
         .route("/chat/api/chatables", get(chat::chatables))
         .route("/chat/api/chatables.json", get(chat::chatables))
+        .route("/chat/api/mentions/groups", get(chat::group_mention_hints))
+        .route(
+            "/chat/api/mentions/groups.json",
+            get(chat::group_mention_hints),
+        )
         .route(
             "/chat/api/direct-message-channels",
             post(chat::create_direct_message_channel),
@@ -454,6 +459,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/chat/api/channels/{id}/messages/moves",
             post(chat::move_messages),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/streaming",
+            delete(chat::stop_streaming),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/interactions",
+            post(chat::create_interaction),
         )
         .route(
             "/chat/api/channels/{id}/messages/{message_id}/flags",
@@ -530,6 +543,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/chat/{id}/react/{message_id}", put(chat::react))
         .route("/chat/{id}/{message_id}/rebake", put(chat::rebake_message))
+        .route(
+            "/chat/{id}/{message_id}/reactions-users",
+            get(chat::reaction_users),
+        )
+        .route(
+            "/chat/{id}/{message_id}/reactions-users.json",
+            get(chat::reaction_users),
+        )
+        .route("/chat/{id}/quote", post(chat::quote_messages))
+        .route("/chat/{id}/quote.json", post(chat::quote_messages))
         .route(
             "/chat/{id}/{message_id}/rebake.json",
             put(chat::rebake_message),

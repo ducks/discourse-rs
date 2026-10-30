@@ -4779,20 +4779,47 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     flags with a message (the companion PM), the transcript a DM flag
     sends, take_action, queue_for_review, flagging messages with
     uploads, moving threads. Select mode's quote and copy are 218's
-218. `feat/chat-message-actions` M: the message actions left after 217:
-    select mode's quote to topic and copy (ChatToTopicSelector, POST
-    /chat/:id/quote, TranscriptService), the reaction users popover (GET
-    /chat/:id/:message_id/reactions-users), stop streaming (DELETE
-    messages/:id/streaming), message interactions (POST
-    messages/:id/interactions, the :chat_message_interaction event), the
-    composer's group mention warnings (GET /chat/api/mentions/groups),
-    copy text and the mobile long-press action sheet, the author's name
-    under enable_names (plugins/chat/page.rs:1449), the
-    DuplicateMessageValidator's exemptions for bots, upload-only messages
-    and small DMs (plugins/chat/create.rs:257; plugins/chat/modify.rs:363,
-    which check every message today), non-ISO target dates
-    (plugins/chat/messages.rs:1027), edits too large to diff
-    (plugins/chat/modify.rs:431)
+218. ~~`feat/chat-message-actions`~~ (done, stacked on
+    feat/chat-moderation) M: the message actions left after 217. Now
+    POST /chat/:id/quote is ChatController#quote_messages over
+    Chat::TranscriptService#generate_markdown (src/plugins/chat/
+    transcript.rs: a `[chat]` block per run of one author with quote,
+    channel by serialize_attr's marks, channelId, multiQuote and
+    chained; at this reference the blocks carry no messages), behind
+    select mode's quote (the composer through /new-topic with the body
+    and a category channel's category) and copy (the clipboard and
+    chat.quote.copy_success). src/plugins/chat/interact.rs: GET
+    /chat/:id/:message_id/reactions-users (MessageReactionUsersQuery,
+    every reaction whatever the emoji as the query leaves its filter
+    out, Chat::ReactionUserSerializer, page and limit) under a hover
+    popover (UsersPopup's markup, a tab per reaction, the next page on
+    scroll), DELETE .../messages/:id/streaming (Chat::StopMessageStreaming:
+    the member's membership, admins, the author or the replied-to author,
+    publish_edit!) with the stop-streaming button on streaming messages,
+    POST .../messages/:id/interactions (Chat::CreateMessageInteraction:
+    the block element by action_id, the interaction saved,
+    Chat::MessageInteractionSerializer; :chat_message_interaction has
+    no listener until 202), and GET /chat/api/mentions/groups
+    (HintsController: five every ten seconds, the visible groups by
+    lowercased name, unreachable, over the limit and the rest as invalid)
+    with ChatComposerWarningsTracker and ChatMentionWarnings in chat.js
+    (a second's debounce, too many mentions, @here and @all where
+    disallowed, the group hints; too_many_members_MF rendered server
+    side for one, two and more groups). Copy text and the mobile
+    long-press sheet (ChatMessageActionsMobile: the message, the
+    secondary actions, quick reactions, the picker and reply), select
+    hidden from the menu while selecting, the author's name first under
+    display_name_on_posts and enable_names without
+    prioritize_username_in_ux, the DuplicateMessageValidator's
+    exemptions for bots and DMs of two or fewer members (upload-only
+    messages can't happen while uploads are refused), target dates in
+    any spelling String#to_time reads (Date._parse, numeric zones) and an
+    edit too large to diff as Rails' 500. tests/chat_message_actions.rs.
+    Left: the popover on mobile (a held reaction), the sheet's bookmark
+    button (no chat bookmarks are made from the page), mention parsing
+    from the cooked message (a word match here). Refused: transcripts of
+    threaded channels, target dates in named zones or with fractions of
+    a second
 219. `feat/chat-pins` S: GET pins, PUT pins/read, POST and DELETE
     messages/:id/pin (ListChannelPins, PinMessage, UnpinMessage,
     MarkPinsAsRead, chat_pinning_messages_allowed_groups) and their
