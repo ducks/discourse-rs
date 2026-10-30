@@ -93,6 +93,7 @@ pub(crate) use topics::not_found_response;
 mod categories;
 mod category_notifications;
 mod chat;
+mod chat_admin;
 mod chat_pages;
 mod checklist;
 mod color_schemes;
@@ -570,6 +571,32 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/captcha/hcaptcha/create.json", post(captcha::hcaptcha))
         .route("/captcha/recaptcha/create", post(captcha::recaptcha))
         .route("/captcha/recaptcha/create.json", post(captcha::recaptcha))
+        // chat's incoming webhooks and admin controllers.
+        .route("/chat/hooks/{key}", post(chat_admin::create_message))
+        .route(
+            "/chat/hooks/{key}/slack",
+            post(chat_admin::create_message_slack),
+        )
+        .route(
+            "/chat/admin/export/messages",
+            post(chat_admin::export_messages),
+        )
+        .route(
+            "/admin/plugins/chat/hooks",
+            get(chat_admin::index).post(chat_admin::create),
+        )
+        .route("/admin/plugins/chat/hooks.json", get(chat_admin::index))
+        .route("/admin/plugins/chat/hooks/new", get(chat_admin::new))
+        .route("/admin/plugins/chat/hooks/new.json", get(chat_admin::new))
+        .route(
+            "/admin/plugins/chat/hooks/{id}",
+            put(chat_admin::update).delete(chat_admin::destroy),
+        )
+        .route("/admin/plugins/chat/hooks/{id}/edit", get(chat_admin::edit))
+        .route(
+            "/admin/plugins/chat/hooks/{id}/edit.json",
+            get(chat_admin::edit),
+        )
         // discourse-gamification's engine and admin controllers.
         .route("/leaderboard", get(gamification::default_leaderboard))
         .route("/leaderboard.json", get(gamification::default_leaderboard))
@@ -2915,6 +2942,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))
+        .route("/assets/chat-admin.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))
         .route("/assets/autocomplete.js", get(asset))
         .route("/assets/presence.js", get(asset))

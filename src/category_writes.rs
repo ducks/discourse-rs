@@ -938,7 +938,7 @@ fn prettify(slug: &str) -> String {
 }
 
 /// `CGI.unescape`
-fn cgi_unescape(s: &str) -> String {
+pub(crate) fn cgi_unescape(s: &str) -> String {
     let bytes = s.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;

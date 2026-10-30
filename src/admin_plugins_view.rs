@@ -355,7 +355,7 @@ pub fn config_page(
             },
         ],
         title: titleized.clone(),
-        actions: String::new(),
+        actions: crate::plugins::admin_plugin_actions(cx, name),
         description: Some(escape(s(&plugin["about"]))),
         learn_more_url: (!link.is_empty()).then(|| link.to_string()),
         tabs,

@@ -8,6 +8,7 @@
 //! to users, the current user and their options.
 
 pub mod actions_view;
+pub mod admin_view;
 pub mod auto_join;
 pub mod bookmarks;
 pub mod channels;
@@ -18,6 +19,7 @@ pub mod direct_messages;
 pub mod dm_create;
 pub mod dm_groups;
 pub mod drawer;
+pub mod incoming_webhooks;
 pub mod membership;
 pub mod mentions;
 pub mod messages;

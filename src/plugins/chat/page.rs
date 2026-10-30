@@ -1049,7 +1049,7 @@ fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
 }
 
 /// ChatChannelTitle: the channel's icon (ChannelIcon) and its name.
-fn channel_title(
+pub(crate) fn channel_title(
     c: &Value,
     emojis: &crate::emojis::Emojis,
     base_path: &str,

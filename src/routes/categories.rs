@@ -818,7 +818,7 @@ pub(super) async fn editor_page(
         return Ok(super::login_required::not_logged_in(state));
     }
     let tab = match tab.unwrap_or("general") {
-        t @ ("general" | "security" | "settings") => t,
+        t @ ("general" | "security" | "settings" | "chat") => t,
         "setup" => "general",
         _ => return Err(Unsupported("this category editor tab").into()),
     };
@@ -876,6 +876,37 @@ pub(super) async fn editor_page(
     let groups: Vec<String> = sqlx::query_scalar("SELECT name FROM groups ORDER BY name")
         .fetch_all(&mut *conn)
         .await?;
+    // Chat's tab: its condition is chat on and a saved category.
+    let chat_tab = match own_id {
+        Some(id) if crate::plugins::chat::enabled(&s)? => {
+            let channels = crate::plugins::chat::channels::Context {
+                conn: &mut conn,
+                settings: &s,
+                i18n: &state.i18n,
+                guardian,
+                base_path: &base_path,
+                config: &state.config,
+            }
+            .index(&crate::plugins::chat::channels::Search {
+                chatable: Some(("Category".to_string(), i64::from(id))),
+                include_subcategories: true,
+                limit: Some(25),
+                ..Default::default()
+            })
+            .await?;
+            Some(crate::plugins::chat::admin_view::category_tab(
+                &state.i18n,
+                s.emojis(),
+                &base_path,
+                i64::from(id),
+                &channels,
+            ))
+        }
+        _ => None,
+    };
+    if tab == "chat" && chat_tab.is_none() {
+        return Ok(not_found(state));
+    }
     let editor = crate::category_edit_view::Editor {
         i18n: &state.i18n,
         base_path: &base_path,
@@ -886,6 +917,7 @@ pub(super) async fn editor_page(
         parents,
         groups,
         types: &types,
+        chat_tab,
     };
     let main = editor.html();
     let frame = super::groups::frame(
