@@ -3151,6 +3151,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chat.js", get(asset))
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))
+        .route("/assets/chat-thread.js", get(asset))
         .route("/assets/chat-channel-info.js", get(asset))
         .route("/assets/chat-channel-menus.js", get(asset))
         .route("/assets/chat-admin.js", get(asset))
