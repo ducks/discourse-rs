@@ -412,11 +412,24 @@ async fn slugified_title(
             channel.slug.as_deref(),
             &crate::topic_list_view::escape(title),
         ),
-        None => channel
-            .slug
-            .clone()
-            .filter(|s| !s.is_empty())
-            .ok_or(crate::Unsupported("chat channels without a slug"))?,
+        None => match channel.slug.clone().filter(|s| !s.is_empty()) {
+            Some(slug) => slug,
+            // A channel without a slug: its title slugified
+            // (CategoryChannel#title: its name, else its category's).
+            None => {
+                let title = match channel.name.clone().filter(|n| !n.is_empty()) {
+                    Some(name) => name,
+                    None => {
+                        sqlx::query_scalar::<_, String>("SELECT name FROM categories WHERE id = $1")
+                            .bind(channel.chatable_id)
+                            .fetch_optional(&mut *cx.conn)
+                            .await?
+                            .ok_or(crate::Unsupported("chat channels of deleted categories"))?
+                    }
+                };
+                super::user_menu::slugify_channel(None, &crate::topic_list_view::escape(&title))
+            }
+        },
     };
     Ok((own_slug, dm_title))
 }
@@ -756,4 +769,143 @@ pub async fn live_message(
             .into_response(),
         None => StatusCode::NOT_FOUND.into_response(),
     })
+}
+
+#[derive(serde::Deserialize, Default)]
+pub struct LiveMessagesParams {
+    target_message_id: Option<String>,
+    direction: Option<String>,
+    /// "true": the viewer's page has no "last visit" line.
+    newest: Option<String>,
+}
+
+/// GET /live/chat/:channel_id/messages: a page of the channel's messages
+/// as the viewer's channel page draws them (Context::messages_page), for
+/// chat.js to page through, jump to a message or go back to the latest
+/// (ChatMessagesLoader over GET /chat/api/channels/:id/messages), with
+/// whether more load either way (x-chat-can-load-more-past and -future:
+/// true, false, or null when the page went the other way).
+/// Not found where the API is (a channel the viewer can't see, a target
+/// that's gone).
+pub async fn live_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(channel_id): Path<String>,
+    axum::extract::Query(params): axum::extract::Query<LiveMessagesParams>,
+) -> Result<Response, AppError> {
+    let Ok(channel_id) = channel_id.parse::<i64>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let target = match params.target_message_id.as_deref() {
+        None | Some("") => None,
+        Some(id) => match id.parse::<i64>() {
+            Ok(id) => Some(id),
+            Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        },
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let page = context(&state, &mut conn, &settings, &guardian)
+        .messages_page(
+            channel_id,
+            target,
+            params.direction.as_deref(),
+            params.newest.as_deref() == Some("true"),
+        )
+        .await?;
+    let Some(page) = page else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    Ok((
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        [
+            (
+                "x-chat-can-load-more-past",
+                page.can_load_more_past.to_string(),
+            ),
+            (
+                "x-chat-can-load-more-future",
+                page.can_load_more_future.to_string(),
+            ),
+        ],
+        page.html,
+    )
+        .into_response())
+}
+
+/// Journey::Router::Utils.escape_path: a path keeps the unreserved
+/// characters, the sub-delimiters, ":", "@" and "/" unescaped.
+const PATH: &percent_encoding::AsciiSet = &percent_encoding::NON_ALPHANUMERIC
+    .remove(b'-')
+    .remove(b'.')
+    .remove(b'_')
+    .remove(b'~')
+    .remove(b'!')
+    .remove(b'$')
+    .remove(b'&')
+    .remove(b'\'')
+    .remove(b'(')
+    .remove(b')')
+    .remove(b'*')
+    .remove(b'+')
+    .remove(b',')
+    .remove(b';')
+    .remove(b'=')
+    .remove(b':')
+    .remove(b'@')
+    .remove(b'/');
+
+/// GET /chat/channel/:channel_id, /chat/channel/:channel_id/:channel_title
+/// and its info routes: the `/channel -> /c` redirects (a 301; the title
+/// "-" without one), the channel's own route then correcting the slug.
+/// Routed whether or not chat is on, as the engine's redirects are.
+pub async fn channel_legacy(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(params): Path<std::collections::HashMap<String, String>>,
+) -> Response {
+    let escape = |v: &str| percent_encoding::utf8_percent_encode(v, PATH).to_string();
+    let id = escape(params.get("channel_id").map_or("", String::as_str));
+    let title = escape(params.get("channel_title").map_or("-", String::as_str));
+    let tail = match params.get("route") {
+        Some(route) => format!("/{route}"),
+        None => String::new(),
+    };
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("localhost");
+    (
+        StatusCode::MOVED_PERMANENTLY,
+        [(
+            header::LOCATION,
+            format!(
+                "http://{host}{}/chat/c/{title}/{id}{tail}",
+                state.config.globals.relative_url_root()
+            ),
+        )],
+    )
+        .into_response()
+}
+
+/// The info routes /chat/channel/:id/:title redirects with their own.
+pub async fn channel_legacy_info(
+    state: State<AppState>,
+    headers: HeaderMap,
+    Path(mut params): Path<std::collections::HashMap<String, String>>,
+    uri: Uri,
+) -> Response {
+    // The route after the title: info, info/about, info/members, ...
+    let route = ["about", "members", "settings", "search"]
+        .iter()
+        .find(|r| uri.path().ends_with(&format!("/info/{r}")))
+        .map_or_else(|| "info".to_string(), |r| format!("info/{r}"));
+    params.insert("route".into(), route);
+    channel_legacy(state, headers, Path(params)).await
 }

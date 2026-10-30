@@ -4749,19 +4749,55 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat, htmx skipping htmx:beforeRequest), and the focus a forum
     navigation takes from the drawer's composer on the reference (the
     port's stays in it).
-224. `feat/chat-pane` M: the channel pane's paging and jumps: older and
-    newer messages on scroll, jumping to and highlighting a target
-    message, the scroll-to-bottom arrow (plugins/chat/page.rs:256),
-    /chat/message/:id, the /chat/channel/... redirects, a channel
-    without a slug (routes/chat_pages.rs:406) and a target message that
-    can't load (plugins/chat/page.rs:126); reactions without an emoji
-    image (:1478), the retention reminder's dismiss (:510), chat notices
-    with mention_without_membership's invite (:173), the composer's "+"
-    menu (:811: GIFs, local dates, the mobile emoji button), the
-    in-channel filter (:565), the stop-streaming button, the message
-    decorators chat.js lacks (spoiler, hashtag icons, code block
-    buttons; static/js/chat.js:170), the channels list without a member
-    or chat options (plugins/chat/view.rs:319,322)
+224. ~~`feat/chat-pane`~~ (done) M: the channel pane's paging and
+    jumps. The server draws pages of a channel's messages for the viewer
+    (GET /live/chat/:channel_id/messages, Context::messages_page over
+    ListChannelMessages: a page past or future from a message, the page
+    around one, or the latest, with the meta's can_load_more_past and
+    _future in x-chat-can-load-more-* headers, null for the direction
+    not asked, as the API answers; a past page draws its first message
+    of the page shown again, its reply line following the message now
+    above it; each page's first is firstOfResults; the "last visit" line
+    only when the page shown has none). chat.js's pane (ChatChannel,
+    ChatMessagesLoader, ChatScrollableList, ChatPaneState): older pages
+    at the top or scrolling up under 40% from it (not on iOS), newer at
+    the bottom (the last message shown kept at the bottom), loadMore
+    stopping only on false, fillPaneAttempt while the first message's
+    top shows (under 200 messages), the "all loaded" line; the
+    near-message url's target scrolled to the center and highlighted
+    for two seconds and the url replaced with the channel's
+    (ChatChannelNearMessage), else the last read message centered; a
+    link to a message of the channel (the in-reply-to line) jumps in
+    place when loaded (expanding a collapsed deleted run), else loads
+    the page around it (highlightOrFetchMessage); the scroll to bottom
+    arrow (hasPendingContentBelow: newer to load, over 250px away, or
+    messages that came while away, which keep the view where it was)
+    scrolls to the bottom or loads the latest page. A target that can't
+    load draws the unloaded channel with ChatSkeleton and pops the 404's
+    error (popupAjaxError) instead of refusing. The engine's /chat/
+    channel/:id(/:title(/info...)) redirects (301 to /chat/c/..., the
+    title "-" without one); /chat/message/:id stays a 404 on a page load
+    as in Rails (only Ember's router has it). A channel without a slug
+    takes its title slugified. A reaction without an emoji image draws
+    nothing (it refused). The retention reminder's dismiss (POST
+    /chat/dismiss-retention-reminder, the reminder gone). In the drawer
+    a link to a message reloads its route around it (chat-drawer.js's
+    transition), scrolled and highlighted the same way. Tests in
+    tests/chat_pane.rs; chat.js driven in headless Chromium over a
+    fixture channel (the target, paging both ways to the first message,
+    the arrow both ways, jumps loaded and not, the 404's error). Left,
+    split into 224a.
+    224a. `feat/chat-pane-rest` S: chat notices with
+    mention_without_membership's invite, the composer's "+" menu's core
+    buttons (GIFs, local dates, the mobile emoji button), the in-channel
+    filter (ChatChannelFilter, the navbar's filter button), the
+    stop-streaming button, the message decorators chat.js lacks (spoiler,
+    hashtag icons, code block buttons), the channels list without a
+    member or chat options, the mobile arrow's new messages count
+    (chat.new_messages from the channel's unread count), the date
+    separator's click (fetchMessagesByDate, target_date), the saved
+    scroll position per channel (chatChannelScrollPositions), and the
+    pane's live edge for a reader who isn't active (browser attention)
 225. `feat/chat-notify-client` S: desktop notifications for chat, the new
     message sound (ChatAudioManager), the title counter,
     ChatNewMessageAnnouncer under chat_announce_new_messages, the chat
