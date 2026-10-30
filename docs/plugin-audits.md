@@ -125,7 +125,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 **plugin.rb**
 - Chat::ReviewableMessage behavior: actions (agree_and_keep_message, agree_and_delete, agree_and_restore, agree_and_suspend/silence, disagree, ignore), auto silence from flags (chat_auto_silence_from_flags_duration, chat_silence_user_sensitivity), review queue listing of chat reviewables. Rails: plugin.rb:125; app/models/chat/reviewable_message.rb:4; lib/chat/review_queue.rb:12. Port: only the sti name (src/reviewables.rs:20); the queue refuses other types (src/review_list.rs:570). [item 148 for the queue's other types; chat's actions are not covered]
 - :post_alerter_after_save_post, Chat::PostNotificationHandler: chat_quoted notifications for users whose chat messages a post quotes with [chat quote=...]. Rails: plugin.rb:436-439; lib/chat/post_notification_handler.rb:16-37. Port: absent (chat_quoted is only a type id and a menu icon).
-- register_post_stripper removing `.chat-transcript .mention`. Rails: plugin.rb:630-632. Port: absent (transcripts don't cook). [item 161]
+- register_post_stripper removing `.chat-transcript .mention`. Rails: plugin.rb:630-632. Port: absent; transcripts cook (crates/markdown/src/render/chat_transcript.rs) but their mentions stay in stripped text.
 - Site.markdown_additional_options["chat"] (limited_pretty_text_features, rules, hashtag_configurations). Rails: plugin.rb:634-638. Port: src/site.rs:452-453 emits `{}`; parity ignores it (parity/cases:12-15).
 - Hashtag contexts on /site.json: chat-composer (channel 200, category 100, tag 50) and channel in topic-composer (10), and hashtag_icons.channel. Rails: plugin.rb:623-628 (register_hashtag_type_priority_for_context, data source icon). Port: src/site.rs:1022-1037 core types only (hashtag cooking does use the chat order, src/pretty_text/mod.rs:291).
 - register_hashtag_content_store(Chat::MessageHashtagStore): remapping #category/#tag refs in chat messages on rename. Rails: plugin.rb:624; lib/chat/message_hashtag_store.rb. Port: absent; the remap_hashtag job itself has no handler (enqueued at src/category_writes.rs:2461, src/tag_writes.rs:274, fails in src/jobs/handlers.rs' fallback).
@@ -147,7 +147,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - register_stat chat_channel_messages, chat_direct_messages, chat_open_channels_with_threads_enabled, chat_threaded_messages (not exposed via api). Rails: plugin.rb:615-620; lib/chat/statistics.rb. Port: absent (only the three exposed stats, src/about.rs:167-187).
 
 **Services and model behavior**
-- Chat::DuplicateMessageValidator exemptions: bots, DMs with two or fewer users and upload-only messages skip the check. Rails: lib/chat/duplicate_message_validator.rb:14-23. Port: src/plugins/chat/create.rs:257 and src/plugins/chat/modify.rs:363 check every message.
+- Chat::DuplicateMessageValidator exemptions: bots, DMs with two or fewer users and upload-only messages skip the check. Rails: lib/chat/duplicate_message_validator.rb:14-23. Port: upload-only messages skip it (161); src/plugins/chat/create.rs and modify.rs check bots and small DMs too.
 - Channel edits that fail validation (record_invalid, e.g. name too long) and DM names that fail. Rails: app/services/chat/update_channel.rb:58; create_direct_message_channel.rb. Port: src/plugins/chat/dm_groups.rs:498; src/plugins/chat/dm_create.rs:285 (refusals "... (record_invalid)").
 - Slug changes. Port: src/plugins/chat/dm_groups.rs:478. [item 162]
 - Editing a message of a deleted channel. Rails: app/services/chat/update_message.rb. Port: src/plugins/chat/modify.rs:107 (refusal "messages of deleted chat channels").
@@ -157,7 +157,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - Direct message channels without their direct_message row, multi-valued user custom fields in DM user serialization. Port: src/plugins/chat/direct_messages.rs:63,319.
 - The channels list without a membership or without user options (src/plugins/chat/view.rs:319,322); a chat page for a message it can't load (src/plugins/chat/page.rs:126); reactions whose emoji has no image (src/plugins/chat/page.rs:1478); a web hook for a message gone before it fires (src/plugins/chat/web_hooks.rs:37); a site without its system user (src/plugins/chat/dm_groups.rs:323). Rails answers each (empty list, redirect, fallback). Port: refusals as listed.
 - Messages of deleted users, webhook messages and blocks, bot changes, archived and other chatables, anonymous access, separate sidebar. [item 162]
-- Chat message uploads, oneboxes, images and videos in messages, Jobs::Chat::PullHotlinkedImages. Rails: app/jobs/regular/chat/pull_hotlinked_images.rb. Port: absent. [item 161]
+- Oneboxes, hotlinked images, lightboxes and video placeholders in messages (the rest of Chat::MessageProcessor), Jobs::Chat::PullHotlinkedImages. Rails: lib/chat/message_processor.rb; app/jobs/regular/chat/pull_hotlinked_images.rb. Port: src/plugins/chat/create.rs:816 (refusal). Message uploads are ported (create.rs, modify.rs, messages.rs, collapser.rs). [item 161]
 - Threads everywhere (create.rs:213,216,226 etc.). [item 160]
 - User status in chat serializers. [item 130]
 

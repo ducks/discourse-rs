@@ -3,7 +3,7 @@
 //! (DELETE there), Chat::RestoreMessage (PUT .../restore) and
 //! Chat::MessageReactor (PUT /chat/:chat_channel_id/react/:message_id).
 //!
-//! Not ported yet, and refused: uploads, direct message channels, threads
+//! Not ported yet, and refused: direct message channels, threads
 //! proper (threading on, forced threads), bots, and messages of deleted
 //! users or channels.
 
@@ -267,6 +267,7 @@ impl Context<'_> {
         if channel_id.is_none() {
             errors.push("Channel can't be blank".to_string());
         }
+        let message_missing = message.is_none();
         let raw = message.unwrap_or_default();
         if upload_ids.is_empty() && raw.trim().is_empty() {
             errors.push("Message can't be blank".to_string());
@@ -297,9 +298,8 @@ impl Context<'_> {
         let Some(channel) = self.message_channel(channel_id).await? else {
             return Ok(Outcome::NotFound);
         };
-        if !upload_ids.is_empty() {
-            return Err(Unsupported("chat message uploads").into());
-        }
+        // model :uploads
+        let uploads = self.own_uploads(user.id, upload_ids).await?;
         // model :membership
         let has_membership: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2)",
@@ -340,15 +340,59 @@ impl Context<'_> {
             .fetch_optional(&mut *self.conn)
             .await?
             .ok_or(Unsupported("chat messages of deleted users"))?;
+        if message_missing {
+            // A nil message fails the model's length checks.
+            return Err(Unsupported("a chat message edit with upload_ids and no message").into());
+        }
         let cooked = super::cook::cook(host, &new_message, user.id, &author).await?;
+        let now = crate::clock::now_naive();
+        // The uploads, replaced (`upload_ids=`) when every id given is the
+        // user's and the set differs; kept otherwise.
+        let existing: Vec<(i64, String)> = sqlx::query_as(
+            "SELECT u.id::int8, u.original_filename FROM upload_references ur \
+             JOIN uploads u ON u.id = ur.upload_id \
+             WHERE ur.target_type = 'ChatMessage' AND ur.target_id = $1 ORDER BY ur.id",
+        )
+        .bind(old.id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let uploads = match uploads {
+            Some(new) if new.len() == upload_ids.len() => {
+                let mut a: Vec<i64> = existing.iter().map(|u| u.0).collect();
+                let mut b: Vec<i64> = new.iter().map(|u| u.0).collect();
+                a.sort_unstable();
+                a.dedup();
+                b.sort_unstable();
+                b.dedup();
+                if a == b {
+                    existing
+                } else {
+                    // The references of uploads gone are deleted, those
+                    // of uploads added made; the others stay.
+                    sqlx::query(
+                        "DELETE FROM upload_references WHERE target_type = 'ChatMessage' \
+                         AND target_id = $1 AND NOT (upload_id = ANY($2))",
+                    )
+                    .bind(old.id)
+                    .bind(&b)
+                    .execute(&mut *self.conn)
+                    .await?;
+                    let added: Vec<(i64, String)> =
+                        new.iter().filter(|u| !a.contains(&u.0)).cloned().collect();
+                    self.attach_uploads(old.id, &added, now).await?;
+                    new
+                }
+            }
+            _ => existing,
+        };
         // update_excerpt
-        let excerpt = super::messages::build_excerpt_for(
+        let excerpt = super::messages::build_excerpt_with_uploads(
             &new_message,
             &cooked,
+            uploads.first().map(|u| u.1.as_str()),
             crate::excerpt::Plugins::from_settings(settings)?,
         )?;
         // save_message: the model's validations.
-        let now = crate::clock::now_naive();
         let mut model_errors = Vec::new();
         if cooked.chars().count() > 20_000 {
             model_errors.push("Cooked is too long (maximum is 20000 characters)".to_string());
@@ -362,7 +406,8 @@ impl Context<'_> {
             model_errors.push(blocked);
         }
         let message_changed = old.message.as_deref() != Some(new_message.as_str());
-        if message_changed {
+        let only_uploads = new_message.trim().is_empty() && !uploads.is_empty();
+        if message_changed && !only_uploads {
             // Chat::DuplicateMessageValidator, the author's.
             let duplicate: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND user_id = $2 \
@@ -379,7 +424,7 @@ impl Context<'_> {
             }
         }
         let min = settings.get("chat_minimum_message_length")?.to_i();
-        if (new_message.chars().count() as i64) < min {
+        if uploads.is_empty() && (new_message.chars().count() as i64) < min {
             model_errors.push(
                 t(
                     self.i18n,

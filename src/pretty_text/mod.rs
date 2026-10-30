@@ -608,6 +608,15 @@ pub fn render_settings(
         force_quote_link: false,
         post_id: None,
         chat: false,
+        chat_transcript: settings.get("chat_enabled")?.truthy(),
+        chat_quote_original_channel: i18n
+            .t("js.chat.quote.original_channel")
+            .unwrap_or_default()
+            .to_string(),
+        chat_quote_default_thread_title: i18n
+            .t("js.chat.quote.default_thread_title")
+            .unwrap_or_default()
+            .to_string(),
         onebox: true,
         censored: Vec::new(),
         watched_replace: Vec::new(),
@@ -641,12 +650,7 @@ pub fn extract_mentions(cooked: &str) -> Result<Vec<String>, crate::Unsupported>
 /// MARKDOWN_FEATURES leaving out polls, checklists, footnotes and policies
 /// while always including inlineEmoji.
 pub fn chat_render_settings(render_settings: &mut render::RenderSettings) {
-    render_settings.chat = true;
-    render_settings.poll = false;
-    render_settings.checklist = false;
-    render_settings.footnotes = false;
-    render_settings.policy = false;
-    render_settings.inline_emoji = true;
+    render::chat_settings(render_settings);
 }
 
 #[cfg(test)]

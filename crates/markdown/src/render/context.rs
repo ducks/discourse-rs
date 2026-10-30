@@ -108,6 +108,24 @@ impl Context {
             .get_or_insert(what);
     }
 
+    /// What a nested cook (a chat transcript's) wanted to look up.
+    pub fn note_needs(&self, needs: Needs) {
+        self.noting(|n| {
+            for u in needs.usernames {
+                note(&mut n.usernames, u);
+            }
+            for t in needs.topics {
+                note(&mut n.topics, t);
+            }
+            for h in needs.hashtags {
+                note(&mut n.hashtags, h);
+            }
+            for u in needs.uploads {
+                note(&mut n.uploads, u);
+            }
+        });
+    }
+
     fn noting(&self, f: impl FnOnce(&mut Needs)) {
         f(&mut self.needs.lock().unwrap_or_else(|e| e.into_inner()));
     }

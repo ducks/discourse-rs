@@ -5,7 +5,7 @@
 //!
 //! A reply makes (or joins) the replied-to message's thread, as Rails does
 //! in channels without threading too: the thread stays hidden there. Not
-//! ported yet, and refused: uploads, blocks, threads proper (threading on,
+//! ported yet, and refused: blocks, threads proper (threading on,
 //! forced threads, a thread_id), bots, group and channel-wide mentions,
 //! oneboxes and images in a message. The controller's
 //! Chat::MessageRateLimiter is in the route.
@@ -73,6 +73,53 @@ impl Context<'_> {
             .await?)
     }
 
+    /// `fetch_uploads`: the uploads of these ids that are the user's own
+    /// (user_uploads), as (id, original_filename); None when
+    /// chat_allow_uploads is off.
+    pub(crate) async fn own_uploads(
+        &mut self,
+        user_id: i32,
+        upload_ids: &[String],
+    ) -> Result<Option<Vec<(i64, String)>>, AppError> {
+        if !self.settings.get("chat_allow_uploads")?.truthy() {
+            return Ok(None);
+        }
+        let ids: Vec<i64> = upload_ids.iter().map(|id| crate::ruby::to_i(id)).collect();
+        Ok(Some(
+            sqlx::query_as(
+                "SELECT uploads.id::int8, uploads.original_filename FROM uploads \
+                 INNER JOIN user_uploads ON user_uploads.upload_id = uploads.id \
+                 WHERE uploads.id::int8 = ANY($1) AND user_uploads.user_id = $2 ORDER BY uploads.id",
+            )
+            .bind(&ids)
+            .bind(user_id)
+            .fetch_all(&mut *self.conn)
+            .await?,
+        ))
+    }
+
+    /// The upload references a message's `uploads` (or `upload_ids=`)
+    /// saves, one per upload.
+    pub(crate) async fn attach_uploads(
+        &mut self,
+        message_id: i64,
+        uploads: &[(i64, String)],
+        now: NaiveDateTime,
+    ) -> Result<(), AppError> {
+        for (upload_id, _) in uploads {
+            sqlx::query(
+                "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) \
+                 VALUES ($1, 'ChatMessage', $2, $3, $3)",
+            )
+            .bind(upload_id)
+            .bind(message_id)
+            .bind(now)
+            .execute(&mut *self.conn)
+            .await?;
+        }
+        Ok(())
+    }
+
     /// Chat::CreateMessage, the message created by the guardian's user.
     pub async fn create_message(
         &mut self,
@@ -95,15 +142,12 @@ impl Context<'_> {
             return Ok(Outcome::Forbidden);
         }
         // The contract.
-        if !params.upload_ids.is_empty() {
-            return Err(Unsupported("chat message uploads").into());
-        }
         let raw = params.message.clone().unwrap_or_default();
         let mut errors = Vec::new();
         if params.chat_channel_id.trim().is_empty() {
             errors.push("Chat channel can't be blank".to_string());
         }
-        if raw.trim().is_empty() {
+        if raw.trim().is_empty() && params.upload_ids.is_empty() {
             errors.push("Message can't be blank".to_string());
         }
         let max = settings.get("chat_maximum_message_length")?.to_i();
@@ -113,7 +157,12 @@ impl Context<'_> {
         if !errors.is_empty() {
             return Ok(Outcome::Invalid(errors));
         }
-        let message = crate::posting::text::clean_message(&raw, true);
+        // A blank message (with uploads) is kept as it came, uncleaned.
+        let message = if raw.trim().is_empty() {
+            raw.clone()
+        } else {
+            crate::posting::text::clean_message(&raw, true)
+        };
 
         // model :channel, policy :can_post_in_channel
         let Some(channel) = self.find_by_id_or_slug(&params.chat_channel_id).await? else {
@@ -229,6 +278,17 @@ impl Context<'_> {
             }
             None => None,
         };
+        // model :uploads
+        let uploads = self
+            .own_uploads(user.id, &params.upload_ids)
+            .await?
+            .unwrap_or_default();
+        // A nil message with upload_ids fails the model's length checks
+        // (message.length on nil).
+        if params.message.is_none() {
+            return Err(Unsupported("a chat message with upload_ids and no message").into());
+        }
+        let only_uploads = message.trim().is_empty() && !uploads.is_empty();
 
         // model :message_instance: cooked, then the model's validations.
         let cooked = super::cook::cook(host, &message, user.id, &user.username).await?;
@@ -253,22 +313,24 @@ impl Context<'_> {
             model_errors.push("Cooked is too long (maximum is 20000 characters)".into());
         }
         model_errors.extend(blocked);
-        // Chat::DuplicateMessageValidator
-        let duplicate: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND user_id = $2 \
+        // Chat::DuplicateMessageValidator (an upload-only message can't be
+        // one).
+        let duplicate: bool = !only_uploads
+            && sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND user_id = $2 \
                AND deleted_at IS NULL AND created_at >= $3 - interval '10 seconds' AND LOWER(message) = $4)",
-        )
-        .bind(channel.id)
-        .bind(user.id)
-        .bind(now)
-        .bind(message.trim().to_lowercase())
-        .fetch_one(&mut *self.conn)
-        .await?;
+            )
+            .bind(channel.id)
+            .bind(user.id)
+            .bind(now)
+            .bind(message.trim().to_lowercase())
+            .fetch_one(&mut *self.conn)
+            .await?;
         if duplicate {
             model_errors.push(t(self.i18n, "chat.errors.duplicate_message"));
         }
         let min = settings.get("chat_minimum_message_length")?.to_i();
-        if (message.chars().count() as i64) < min {
+        if uploads.is_empty() && (message.chars().count() as i64) < min {
             model_errors.push(
                 t(
                     self.i18n,
@@ -286,9 +348,10 @@ impl Context<'_> {
         }
 
         // The transaction.
-        let excerpt = super::messages::build_excerpt_for(
+        let excerpt = super::messages::build_excerpt_with_uploads(
             &message,
             &cooked,
+            uploads.first().map(|u| u.1.as_str()),
             crate::excerpt::Plugins::from_settings(settings)?,
         )?;
         let new_thread = match (reply, existing_thread) {
@@ -328,6 +391,8 @@ impl Context<'_> {
         .bind(&excerpt)
         .fetch_one(&mut *self.conn)
         .await?;
+        // The uploads' references, as `uploads:` saves them.
+        self.attach_uploads(message_id, &uploads, now).await?;
         // The reply's autosaved thread.
         if let (Some(r), Some(new)) = (reply, new_thread) {
             sqlx::query("UPDATE chat_messages SET thread_id = $2, updated_at = $3 WHERE id = $1")
@@ -750,6 +815,7 @@ pub async fn process_message(
     {
         return Err(Unsupported("oneboxes, images and videos in chat messages").into());
     }
+    process_thumbnails(conn, settings, &state.config, message_id).await?;
     if stored_cooked.as_deref() != Some(cooked.as_str()) {
         sqlx::query("UPDATE chat_messages SET cooked = $2, cooked_version = $3, updated_at = $4 WHERE id = $1")
             .bind(message_id)
@@ -816,6 +882,103 @@ pub async fn process_message(
         };
         super::publisher::publish_message(&mut cx, &state.bus, &channel, message_id, "processed")
             .await?;
+    }
+    Ok(())
+}
+
+/// `Chat::MessageProcessor::IMG_FILETYPES`
+const IMG_FILETYPES: [&str; 7] = ["jpg", "jpeg", "gif", "png", "heic", "heif", "webp"];
+
+/// `Chat::MessageProcessor#process_thumbnails`: each image upload larger
+/// than max_image_width by max_image_height gets its thumbnail and the
+/// responsive ones, until the first that isn't (Rails returns there). The
+/// optimized videos post_process_videos references are refused.
+async fn process_thumbnails(
+    conn: &mut sqlx::PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    config: &crate::config::Config,
+    message_id: i64,
+) -> Result<(), AppError> {
+    #[derive(sqlx::FromRow)]
+    struct Row {
+        #[sqlx(flatten)]
+        upload: crate::optimized_images::Upload,
+        thumbnail_width: Option<i32>,
+        thumbnail_height: Option<i32>,
+        optimized_video: bool,
+    }
+    let rows: Vec<Row> = sqlx::query_as(
+        "SELECT u.id, u.url, u.sha1, u.extension, u.original_filename, u.filesize, u.width, u.height, \
+                u.animated, u.dominant_color, u.thumbnail_width, u.thumbnail_height, \
+                EXISTS (SELECT 1 FROM optimized_videos v WHERE v.upload_id = u.id) AS optimized_video \
+         FROM upload_references ur JOIN uploads u ON u.id = ur.upload_id \
+         WHERE ur.target_type = 'ChatMessage' AND ur.target_id = $1 ORDER BY ur.id",
+    )
+    .bind(message_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let video = |name: &str| {
+        let lower = name.to_lowercase();
+        ["mov", "mp4", "webm", "ogv", "m4v", "3gp", "avi", "mpeg"]
+            .iter()
+            .any(|e| lower.ends_with(&format!(".{e}")))
+    };
+    if rows
+        .iter()
+        .any(|r| r.optimized_video && video(&r.upload.original_filename))
+    {
+        return Err(Unsupported("optimized videos of chat message uploads").into());
+    }
+    if !settings.get("create_thumbnails")?.truthy() {
+        return Ok(());
+    }
+    let store = crate::file_store::FileStore::for_site(config, settings)?;
+    let max_width = settings.get("max_image_width")?.to_i();
+    let max_height = settings.get("max_image_height")?.to_i();
+    let min_ratio_to_crop = settings.get("min_ratio_to_crop")?.to_f();
+    // each_responsive_ratio
+    let mut ratios: Vec<f64> = settings
+        .get("responsive_post_image_sizes")?
+        .to_s()
+        .split('|')
+        .map(|r| r.trim().parse::<f64>().unwrap_or(0.0))
+        .collect();
+    ratios.sort_by(|a, b| a.total_cmp(b));
+    for r in rows {
+        let ext = r
+            .upload
+            .extension
+            .clone()
+            .unwrap_or_default()
+            .to_lowercase();
+        if !IMG_FILETYPES.contains(&ext.as_str()) {
+            continue;
+        }
+        let (Some(width), Some(height)) = (r.upload.width, r.upload.height) else {
+            return Err(Unsupported("a chat image upload without its dimensions").into());
+        };
+        if i64::from(width) <= max_width && i64::from(height) <= max_height {
+            return Ok(());
+        }
+        let (Some(tw), Some(th)) = (r.thumbnail_width, r.thumbnail_height) else {
+            return Err(Unsupported("a chat image upload without its thumbnail size").into());
+        };
+        let crop =
+            min_ratio_to_crop > 0.0 && f64::from(width) / f64::from(height) < min_ratio_to_crop;
+        crate::optimized_images::create_thumbnail(conn, settings, &store, &r.upload, tw, th, crop)
+            .await?;
+        for ratio in ratios.iter().filter(|r| **r > 1.0) {
+            let (rw, rh) = (
+                (f64::from(tw) * ratio) as i32,
+                (f64::from(th) * ratio) as i32,
+            );
+            if rw <= width {
+                crate::optimized_images::create_thumbnail(
+                    conn, settings, &store, &r.upload, rw, rh, crop,
+                )
+                .await?;
+            }
+        }
     }
     Ok(())
 }

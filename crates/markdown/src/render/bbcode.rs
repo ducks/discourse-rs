@@ -239,17 +239,11 @@ enum BlockTag {
     Poll,
     Policy,
     Graphviz,
+    ChatTranscript,
 }
 
 /// Tags the bundled plugins register and this port does not render.
-const UNPORTED_BLOCK_TAGS: [&str; 6] = [
-    "chat",
-    "calendar",
-    "timezones",
-    "event",
-    "preview",
-    "hidden",
-];
+const UNPORTED_BLOCK_TAGS: [&str; 5] = ["calendar", "timezones", "event", "preview", "hidden"];
 
 fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<BlockTag> {
     Some(match tag {
@@ -263,9 +257,10 @@ fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<Bloc
         "poll" if settings.poll => BlockTag::Poll,
         "policy" if settings.policy => BlockTag::Policy,
         "graphviz" if settings.graphviz && !settings.chat => BlockTag::Graphviz,
+        "chat" if settings.chat_transcript => BlockTag::ChatTranscript,
         _ => {
             if UNPORTED_BLOCK_TAGS.contains(&tag) {
-                ctx.refuse("a bbcode block of a plugin that is not ported (chat, events)");
+                ctx.refuse("a bbcode block of a plugin that is not ported (events)");
             }
             return None;
         }
@@ -450,6 +445,19 @@ impl BlockRule for BlockBbcode {
             return Some((Node::new(RawHtml(html)), lines));
         }
 
+        // chat-transcript.js's `replace`: the source between the tags,
+        // cooked with chat's rules inside the transcript; declined when the
+        // quote is incomplete.
+        if let BlockTag::ChatTranscript = kind {
+            let content = if close.line.is_none() {
+                src[start + info.length..close.start].to_string()
+            } else {
+                state.get_lines(start_line + 1, next_line, 0, false).0
+            };
+            let html = super::chat_transcript::build(&info, &content, settings, ctx)?;
+            return Some((Node::new(RawHtml(html)), lines));
+        }
+
         // The content: the lines between the tags as blocks, or what sits
         // between them on the one line as a paragraph.
         // A poll inside a poll stays plain content.
@@ -496,7 +504,9 @@ impl BlockRule for BlockBbcode {
         };
         let class = |name: &str| vec![("class".to_string(), name.to_string())];
         let node = match kind {
-            BlockTag::Code | BlockTag::Graphviz => unreachable!("handled above"),
+            BlockTag::Code | BlockTag::Graphviz | BlockTag::ChatTranscript => {
+                unreachable!("handled above")
+            }
             BlockTag::Excerpt => wrap("div", class("excerpt"), children),
             BlockTag::Spoiler => wrap("div", class("spoiler"), children),
             BlockTag::Policy => policy(&info, children),

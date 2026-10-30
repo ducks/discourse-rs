@@ -26,7 +26,7 @@ pub fn parse_int(s: &str) -> Option<i64> {
 /// `avatarImg({ size: "tiny", avatarTemplate }, getURL)`: tiny is 24
 /// pixels, drawn from the 48 pixel image (the context claims a pixel
 /// ratio of 2).
-fn avatar_img(template: &str, settings: &RenderSettings) -> Option<String> {
+pub(super) fn avatar_img(template: &str, settings: &RenderSettings) -> Option<String> {
     if template.is_empty() {
         return None;
     }

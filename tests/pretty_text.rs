@@ -672,3 +672,58 @@ async fn affiliate_codes_reach_the_cooked_column() {
         "{on}"
     );
 }
+
+/// chat's spec/integration/post_chat_transcript_spec.rb: a `[chat]`
+/// transcript in a post while chat is enabled, text while it is off.
+#[tokio::test]
+async fn chat_transcripts_cook_as_rails() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    common::set_setting(&db.pool, "chat_enabled", 5, "f").await;
+    let off = cook(
+        &host,
+        "[chat quote=\"martin;2321;2022-01-25T05:40:39Z\"]\nhi\n[/chat]",
+        &MarkdownOptions::default(),
+    )
+    .await
+    .unwrap();
+    assert!(!off.contains("chat-transcript"), "{off}");
+
+    common::set_setting(&db.pool, "chat_enabled", 5, "t").await;
+    let version = discourse_markdown::emoji::image_version();
+    let reactions = format!(
+        "<div class=\"chat-transcript\" data-message-id=\"2321\" data-username=\"martin\" data-datetime=\"2022-01-25T05:40:39Z\" data-reactions=\"+1:martin;heart:martin,eviltrout\" data-channel-name=\"Cool Cats Club\" data-channel-id=\"1234\">\n<div class=\"chat-transcript-user\">\n<div class=\"chat-transcript-user-avatar\"></div>\n<div class=\"chat-transcript-username\">\nmartin</div>\n<div class=\"chat-transcript-datetime\">\n<a href=\"/chat/c/-/1234/2321\" title=\"2022-01-25T05:40:39Z\"></a></div>\n<a class=\"chat-transcript-channel\" href=\"/chat/c/-/1234\">\n#Cool Cats Club</a></div>\n<div class=\"chat-transcript-messages\">\n<p>This is a chat message.</p><div class=\"chat-transcript-reactions\">\n<div class=\"chat-transcript-reaction\">\n<img width=\"20\" height=\"20\" src=\"/images/emoji/twitter/+1.png?v={version}\" title=\"+1\" loading=\"lazy\" alt=\"+1\" class=\"emoji\"> 1</div>\n<div class=\"chat-transcript-reaction\">\n<img width=\"20\" height=\"20\" src=\"/images/emoji/twitter/heart.png?v={version}\" title=\"heart\" loading=\"lazy\" alt=\"heart\" class=\"emoji\"> 2</div>\n</div>\n</div>\n</div>"
+    );
+    let cases = [
+        (
+            "[chat quote=\"martin;2321;2022-01-25T05:40:39Z\"]\nThis is a chat message.\n[/chat]",
+            "<div class=\"chat-transcript\" data-message-id=\"2321\" data-username=\"martin\" data-datetime=\"2022-01-25T05:40:39Z\">\n<div class=\"chat-transcript-user\">\n<div class=\"chat-transcript-user-avatar\"></div>\n<div class=\"chat-transcript-username\">\nmartin</div>\n<div class=\"chat-transcript-datetime\">\n<span title=\"2022-01-25T05:40:39Z\"></span></div>\n</div>\n<div class=\"chat-transcript-messages\">\n<p>This is a chat message.</p></div>\n</div>".to_string(),
+        ),
+        (
+            "[chat quote=\"martin;2321;2022-01-25T05:40:39Z\" channel=\"Cool Cats Club\" channelId=\"1234\" multiQuote=\"true\"]\nThis is a chat message.\n[/chat]",
+            "<div class=\"chat-transcript\" data-message-id=\"2321\" data-username=\"martin\" data-datetime=\"2022-01-25T05:40:39Z\" data-channel-name=\"Cool Cats Club\" data-channel-id=\"1234\" data-multiquote=\"true\">\n<div class=\"chat-transcript-meta\">\nOriginally sent in <a href=\"/chat/c/-/1234\">Cool Cats Club</a></div>\n<div class=\"chat-transcript-user\">\n<div class=\"chat-transcript-user-avatar\"></div>\n<div class=\"chat-transcript-username\">\nmartin</div>\n<div class=\"chat-transcript-datetime\">\n<a href=\"/chat/c/-/1234/2321\" title=\"2022-01-25T05:40:39Z\"></a></div>\n</div>\n<div class=\"chat-transcript-messages\">\n<p>This is a chat message.</p></div>\n</div>".to_string(),
+        ),
+        (
+            "[chat quote=\"martin;2321;2022-01-25T05:40:39Z\" channel=\"Cool Cats Club\" channelId=\"1234\" chained=\"true\"]\nThis is a chat message.\n[/chat]",
+            "<div class=\"chat-transcript chat-transcript-chained\" data-message-id=\"2321\" data-username=\"martin\" data-datetime=\"2022-01-25T05:40:39Z\" data-chained=\"true\" data-channel-name=\"Cool Cats Club\" data-channel-id=\"1234\">\n<div class=\"chat-transcript-user\">\n<div class=\"chat-transcript-user-avatar\"></div>\n<div class=\"chat-transcript-username\">\nmartin</div>\n<div class=\"chat-transcript-datetime\">\n<a href=\"/chat/c/-/1234/2321\" title=\"2022-01-25T05:40:39Z\"></a></div>\n<a class=\"chat-transcript-channel\" href=\"/chat/c/-/1234\">\n#Cool Cats Club</a></div>\n<div class=\"chat-transcript-messages\">\n<p>This is a chat message.</p></div>\n</div>".to_string(),
+        ),
+        (
+            "[chat quote=\"martin;2321;2022-01-25T05:40:39Z\" channel=\"Cool Cats Club\" channelId=\"1234\" multiQuote=\"true\" noLink=\"true\"]\nThis is a chat message.\n[/chat]",
+            "<div class=\"chat-transcript\" data-message-id=\"2321\" data-username=\"martin\" data-datetime=\"2022-01-25T05:40:39Z\" data-channel-name=\"Cool Cats Club\" data-channel-id=\"1234\" data-multiquote=\"true\">\n<div class=\"chat-transcript-meta\">\nOriginally sent in <a href=\"/chat/c/-/1234\">Cool Cats Club</a></div>\n<div class=\"chat-transcript-user\">\n<div class=\"chat-transcript-user-avatar\"></div>\n<div class=\"chat-transcript-username\">\nmartin</div>\n<div class=\"chat-transcript-datetime\">\n<span title=\"2022-01-25T05:40:39Z\"></span></div>\n</div>\n<div class=\"chat-transcript-messages\">\n<p>This is a chat message.</p></div>\n</div>".to_string(),
+        ),
+        (
+            "[chat quote=\"martin;2321;2022-01-25T05:40:39Z\" channel=\"Cool Cats Club\" channelId=\"1234\" reactions=\"+1:martin;heart:martin,eviltrout\"]\nThis is a chat message.\n[/chat]",
+            reactions,
+        ),
+        // Without its time the rule declines and the tag stays text (the
+        // typographer curling its quotes).
+        (
+            "[chat quote=\"martin;2321\"]\nhi\n[/chat]",
+            "<p>[chat quote=“martin;2321”]<br>\nhi<br>\n[/chat]</p>".to_string(),
+        ),
+    ];
+    for (raw, rails) in &cases {
+        let ours = cook(&host, raw, &MarkdownOptions::default()).await.unwrap();
+        assert_eq!(&ours, rails, "{raw}");
+    }
+}

@@ -12,6 +12,7 @@ pub mod auto_join;
 pub mod bookmarks;
 pub mod channels;
 pub mod chatables;
+pub(crate) mod collapser;
 pub mod cook;
 pub mod create;
 pub mod direct_messages;
