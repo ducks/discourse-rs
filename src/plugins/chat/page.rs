@@ -2395,7 +2395,9 @@ impl Context<'_> {
 }
 
 /// The settings behind ChatMessageInfo#prioritizeName.
-pub(super) fn prioritize_name(settings: &crate::site_settings::SiteSettings) -> Result<bool, AppError> {
+pub(super) fn prioritize_name(
+    settings: &crate::site_settings::SiteSettings,
+) -> Result<bool, AppError> {
     Ok(settings.get("display_name_on_posts")?.truthy()
         && settings.get("enable_names")?.truthy()
         && !settings.get("prioritize_username_in_ux")?.truthy())

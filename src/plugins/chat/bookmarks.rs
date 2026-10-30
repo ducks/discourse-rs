@@ -35,7 +35,7 @@ pub fn registered(settings: &SiteSettings) -> Result<bool, AppError> {
 /// `Chat::ChannelFetcher.all_secured_channel_ids(guardian)` (following:
 /// true): the channels the viewer has a membership of among those
 /// generate_allowed_channel_ids_sql allows.
-async fn all_secured_channel_ids(
+pub(crate) async fn all_secured_channel_ids(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     guardian: &Guardian,

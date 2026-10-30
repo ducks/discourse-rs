@@ -205,6 +205,37 @@ impl Context<'_> {
         Ok(())
     }
 
+    /// Chat::Action::ResetUserLastReadThreadMessage: members who last read
+    /// the trashed message read the thread's latest message left, or
+    /// nothing once none is.
+    async fn reset_thread_last_read(
+        &mut self,
+        message_id: i64,
+        thread_id: i64,
+    ) -> Result<(), AppError> {
+        sqlx::query(
+            "WITH cte AS (SELECT * FROM (SELECT id, thread_id, row_number() OVER ( \
+                 PARTITION BY thread_id ORDER BY created_at DESC, id DESC) AS row_number \
+               FROM chat_messages WHERE deleted_at IS NULL AND thread_id = $2 AND chat_messages.id NOT IN ( \
+                 SELECT original_message_id FROM chat_threads WHERE thread_id = $2)) AS recent_messages \
+               WHERE recent_messages.row_number = 1) \
+             UPDATE user_chat_thread_memberships SET last_read_message_id = cte.id FROM cte \
+             WHERE user_chat_thread_memberships.last_read_message_id = $1 \
+               AND cte.thread_id = user_chat_thread_memberships.thread_id",
+        )
+        .bind(message_id)
+        .bind(thread_id)
+        .execute(&mut *self.conn)
+        .await?;
+        sqlx::query(
+            "UPDATE user_chat_thread_memberships SET last_read_message_id = NULL WHERE last_read_message_id = $1",
+        )
+        .bind(message_id)
+        .execute(&mut *self.conn)
+        .await?;
+        Ok(())
+    }
+
     /// The thread's reply count changed (`increment_replies_count_cache`
     /// and `decrement_replies_count_cache`): the count in Redis (not kept
     /// here), and the job that writes it down.
@@ -617,26 +648,7 @@ impl Context<'_> {
         .execute(&mut *self.conn)
         .await?;
         if let Some(thread_id) = message.thread_id {
-            sqlx::query(
-                "WITH cte AS (SELECT * FROM (SELECT id, thread_id, row_number() OVER ( \
-                     PARTITION BY thread_id ORDER BY created_at DESC, id DESC) AS row_number \
-                   FROM chat_messages WHERE deleted_at IS NULL AND thread_id = $2 AND chat_messages.id NOT IN ( \
-                     SELECT original_message_id FROM chat_threads WHERE thread_id = $2)) AS recent_messages \
-                   WHERE recent_messages.row_number = 1) \
-                 UPDATE user_chat_thread_memberships SET last_read_message_id = cte.id FROM cte \
-                 WHERE user_chat_thread_memberships.last_read_message_id = $1 \
-                   AND cte.thread_id = user_chat_thread_memberships.thread_id",
-            )
-            .bind(message.id)
-            .bind(thread_id)
-            .execute(&mut *self.conn)
-            .await?;
-            sqlx::query(
-                "UPDATE user_chat_thread_memberships SET last_read_message_id = NULL WHERE last_read_message_id = $1",
-            )
-            .bind(message.id)
-            .execute(&mut *self.conn)
-            .await?;
+            self.reset_thread_last_read(message.id, thread_id).await?;
         }
         // update_thread_reply_cache
         self.thread_reply_count_changed(thread_id).await?;
@@ -986,10 +998,7 @@ impl Context<'_> {
         if !allowed {
             return Ok(Outcome::Forbidden(None));
         }
-        let mut thread_ids = Vec::new();
-        for m in &messages {
-            thread_ids.push(self.hidden_thread(&channel, m.thread_id).await?);
-        }
+        let thread_ids: Vec<Option<i64>> = messages.iter().map(|m| m.thread_id).collect();
         let now = crate::clock::now_naive();
         // trash_messages
         let trashed: Vec<i64> = messages.iter().map(|m| m.id).collect();
@@ -1033,14 +1042,8 @@ impl Context<'_> {
             .bind(m.id)
             .execute(&mut *self.conn)
             .await?;
-            // ResetUserLastReadThreadMessage
-            if m.thread_id.is_some() {
-                sqlx::query(
-                    "UPDATE user_chat_thread_memberships SET last_read_message_id = NULL WHERE last_read_message_id = $1",
-                )
-                .bind(m.id)
-                .execute(&mut *self.conn)
-                .await?;
+            if let Some(thread_id) = m.thread_id {
+                self.reset_thread_last_read(m.id, thread_id).await?;
             }
         }
         // update_thread_reply_cache

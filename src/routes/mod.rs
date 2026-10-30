@@ -402,6 +402,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/mentions/groups.json",
             get(chat::group_mention_hints),
         )
+        .route("/chat/api/search", get(chat::search))
+        .route("/chat/api/search.json", get(chat::search))
         .route(
             "/chat/api/direct-message-channels",
             post(chat::create_direct_message_channel),

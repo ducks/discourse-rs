@@ -4848,9 +4848,24 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     show footer and the navbar button's showing only while the bar is
     dismissed (it shows whenever there are pins); the pinned excerpt of a
     message of links only (urls_as_links) is refused
-220. `feat/chat-search` S: GET /chat/api/search (SearchMessage over
-    chat_message_search_data, which posting/search_index.rs:631 already
-    writes and nothing reads); the /chat/search page stays with 162
+220. ~~`feat/chat-search`~~ (done) S: GET /chat/api/search had no
+    route though posting/search_index.rs:631 wrote
+    chat_message_search_data. Now src/plugins/chat/search.rs ports
+    Chat::SearchMessage behind Chat::Api::SearchController (404 while
+    chat_search_enabled is off): the contract (query present, limit
+    1..40, offset >= 0, sort relevance or latest, with Rails' messages),
+    the channel_id scope (missing or not joinable: 404), else the
+    member's secured channels; ProcessSearchQuery's @username (@me) and
+    #channel words as filters (the first ten; an unknown user or a
+    channel the member can't preview matches nothing), the rest through
+    Search.prepare_data and Search.ts_query (prefix match, the site's
+    ts config); exclude_threads keeping thread originals; latest by
+    created_at desc, relevance unordered as Rails leaves it; one extra
+    row for has_more; Chat::MessageSerializer with include_channel (the
+    channel after blocks) and meta {has_more, limit, offset}.
+    tests/chat_search.rs. Refused: CJK segmentation and
+    search_ignore_accents, as the post search refuses them. The
+    /chat/search page stays with 162
 221. `feat/chat-admin` M: chat's admin plugin page
     (routes/admin_plugins.rs:110)
     with its configuration nav; incoming webhooks: POST /chat/hooks/:key
