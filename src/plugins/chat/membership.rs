@@ -378,7 +378,7 @@ impl Context<'_> {
         .bind(message_id)
         .fetch_optional(&mut *self.conn)
         .await?;
-        let Some(thread_id) = message else {
+        let Some(_) = message else {
             return Ok(Outcome::NotFound);
         };
         // ensure_message_id_recency
@@ -398,27 +398,7 @@ impl Context<'_> {
         .await?;
         self.mark_mentions_read(&[channel.id], Some(message_id))
             .await?;
-        // Chat::Publisher.publish_user_tracking_state!
-        let tracking = self.channel_tracking(&[channel.id]).await?;
-        let mut data = json!({
-            "channel_id": channel.id,
-            "last_read_message_id": message_id,
-            "thread_id": thread_id,
-        });
-        if let (Some(d), Some(Value::Object(t))) =
-            (data.as_object_mut(), tracking.get(&channel.id.to_string()))
-        {
-            for (k, v) in t {
-                d.insert(k.clone(), v.clone());
-            }
-        }
-        bus.publish(
-            &mut *self.conn,
-            &format!("/chat/user-tracking-state/{user_id}"),
-            &data,
-            Some(&[crate::bus::user_tag(user_id)]),
-        )
-        .await?;
+        super::publisher::publish_user_tracking_state(self, bus, &channel, message_id).await?;
         Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 
@@ -510,15 +490,19 @@ impl Context<'_> {
 }
 
 impl Context<'_> {
-    /// POST /chat/api/channels/:id/drafts: Chat::UpsertDraft. The contract
+    /// POST /chat/api/channels/:id/drafts and
+    /// .../threads/:thread_id/drafts: Chat::UpsertDraft. The contract
     /// types `data` as a string, so the client's draft object is stored as
     /// Ruby writes the parameter hash (`{message: "..."}`), as Rails
-    /// stores it; a blank one removes the draft.
+    /// stores it; a blank one removes the draft. A thread not in the
+    /// channel fails the service: 404 from the thread's route
+    /// (`thread_route`), 422 from the channel's.
     pub async fn upsert_draft(
         &mut self,
         channel_id: i64,
         data: Option<&Value>,
         thread_id: Option<&str>,
+        thread_route: bool,
     ) -> Result<Outcome, AppError> {
         let data = match data {
             None | Some(Value::Null) => String::new(),
@@ -538,38 +522,59 @@ impl Context<'_> {
         if !self.can_join(&channel, None).await? {
             return Ok(Outcome::Unprocessable);
         }
-        if thread_id.is_some_and(|t| !t.trim().is_empty()) {
-            return Err(Unsupported("chat thread drafts").into());
+        // check_thread_exists
+        let thread_id = thread_id
+            .filter(|t| !t.trim().is_empty())
+            .map(crate::ruby::to_i);
+        if let Some(thread_id) = thread_id {
+            let exists: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM chat_threads WHERE id = $1 AND channel_id = $2)",
+            )
+            .bind(thread_id)
+            .bind(channel.id)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if !exists {
+                return Ok(if thread_route {
+                    Outcome::NotFound
+                } else {
+                    Outcome::Unprocessable
+                });
+            }
         }
         let user_id = self.guardian.user_id().unwrap_or(0);
         let now = crate::clock::now_naive();
         if crate::ruby::is_blank(&data) {
             sqlx::query(
-                "DELETE FROM chat_drafts WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NULL",
+                "DELETE FROM chat_drafts WHERE user_id = $1 AND chat_channel_id = $2 \
+                   AND thread_id IS NOT DISTINCT FROM $3",
             )
             .bind(user_id)
             .bind(channel.id)
+            .bind(thread_id)
             .execute(&mut *self.conn)
             .await?;
         } else {
             let updated = sqlx::query(
                 "UPDATE chat_drafts SET data = $3, updated_at = $4 \
-                 WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NULL",
+                 WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NOT DISTINCT FROM $5",
             )
             .bind(user_id)
             .bind(channel.id)
             .bind(&data)
             .bind(now)
+            .bind(thread_id)
             .execute(&mut *self.conn)
             .await?;
             if updated.rows_affected() == 0 {
                 sqlx::query(
-                    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) \
-                     VALUES ($1, $2, $3, $4, $4)",
+                    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, thread_id, created_at, updated_at) \
+                     VALUES ($1, $2, $3, $4, $5, $5)",
                 )
                 .bind(user_id)
                 .bind(channel.id)
                 .bind(&data)
+                .bind(thread_id)
                 .bind(now)
                 .execute(&mut *self.conn)
                 .await?;

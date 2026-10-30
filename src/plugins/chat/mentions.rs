@@ -255,6 +255,38 @@ pub async fn upsert(
             .execute(&mut *conn)
             .await?;
         }
+        // upsert_user_mentions: the mentioned join a thread that shows,
+        // to track what they read.
+        if kind == "Chat::UserMention" && !targets.is_empty() {
+            let thread: Option<i64> = sqlx::query_scalar(
+                "SELECT chat_threads.id FROM chat_messages \
+                 JOIN chat_threads ON chat_threads.id = chat_messages.thread_id \
+                 JOIN chat_channels ON chat_channels.id = chat_messages.chat_channel_id \
+                 WHERE chat_messages.id = $1 AND (chat_channels.threading_enabled OR chat_threads.force)",
+            )
+            .bind(message_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if let Some(thread_id) = thread {
+                let mut users: Vec<i32> =
+                    sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) ORDER BY id")
+                        .bind(&targets)
+                        .fetch_all(&mut *conn)
+                        .await?;
+                users.dedup();
+                for user_id in users {
+                    super::threads::add_member(
+                        conn,
+                        bus,
+                        thread_id,
+                        i64::from(user_id),
+                        super::threads::NORMAL,
+                        now,
+                    )
+                    .await?;
+                }
+            }
+        }
     }
     // create_or_delete_all_mention, create_or_delete_here_mention
     for (kind, wanted) in [

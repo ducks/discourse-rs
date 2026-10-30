@@ -98,9 +98,6 @@ pub async fn notify_mentioned(
         }
         None => false,
     };
-    if in_thread {
-        return Err(Unsupported("chat threads").into());
-    }
     let already: Vec<i64> = args["already_notified_user_ids"]
         .as_array()
         .into_iter()
@@ -116,6 +113,8 @@ pub async fn notify_mentioned(
         message_id,
         direct_message,
         channel_id: message.chat_channel_id,
+        thread_id: message.thread_id,
+        in_thread,
         creator: &creator,
         title: channel
             .name
@@ -147,6 +146,9 @@ struct Job<'a> {
     message_id: i64,
     direct_message: bool,
     channel_id: i64,
+    thread_id: Option<i64>,
+    /// `Chat::Message#in_thread?`
+    in_thread: bool,
     creator: &'a str,
     title: String,
     slug: Option<String>,
@@ -234,6 +236,9 @@ impl Job<'_> {
             "is_direct_message_channel".into(),
             json!(self.direct_message),
         );
+        if self.in_thread {
+            data.insert("chat_thread_id".into(), json!(self.thread_id));
+        }
         if !self.direct_message {
             data.insert("chat_channel_title".into(), json!(self.title));
             data.insert("chat_channel_slug".into(), json!(self.slug));
@@ -336,12 +341,20 @@ impl Job<'_> {
             "chat_message_id": self.message_id,
             "tag": format!("{hostname}-chat-mention-{}", self.channel_id),
             "excerpt": truncate(&self.excerpt, 400),
-            "post_url": format!(
-                "{base_path}/chat/c/{}/{}/{}",
-                self.slug.as_deref().unwrap_or("-"),
-                self.channel_id,
-                self.message_id
-            ),
+            // A thread's relative_url, else the channel's and the message.
+            "post_url": match (self.in_thread, self.thread_id) {
+                (true, Some(thread_id)) => format!(
+                    "{base_path}/chat/c/{}/{}/t/{thread_id}",
+                    self.slug.as_deref().unwrap_or("-"),
+                    self.channel_id,
+                ),
+                _ => format!(
+                    "{base_path}/chat/c/{}/{}/{}",
+                    self.slug.as_deref().unwrap_or("-"),
+                    self.channel_id,
+                    self.message_id
+                ),
+            },
             "channel_id": self.channel_id,
             "is_direct_message_channel": self.direct_message,
             "actions": [{
@@ -351,7 +364,7 @@ impl Job<'_> {
                 "type": "text",
                 "icon": format!("{}/assets/push-notifications/inline_reply.png", urls.base_url()?),
             }],
-            "action_data": { "channel_id": self.channel_id, "message_id": self.message_id },
+            "action_data": action_data(self.channel_id, self.message_id, self.thread_id),
             "translated_title": title,
         });
         self.state
@@ -435,7 +448,20 @@ fn truncate(text: &str, max: usize) -> String {
     format!("{kept}...")
 }
 
+/// `push_notification_reply_action`'s action_data: the thread's id only
+/// when the message has one (`compact`).
+fn action_data(channel_id: i64, message_id: i64, thread_id: Option<i64>) -> Value {
+    let mut data = json!({ "channel_id": channel_id, "message_id": message_id });
+    if let Some(thread_id) = thread_id {
+        data["thread_id"] = json!(thread_id);
+    }
+    data
+}
+
 pub const NOTIFY_WATCHING_JOB: &str = "Jobs::Chat::NotifyWatching";
+
+/// `Notification.types[:chat_watched_thread]`
+const CHAT_WATCHED_THREAD: i32 = 40;
 
 /// `Chat::UserChatChannelMembership::NOTIFICATION_LEVELS[:always]`
 const NOTIFICATION_ALWAYS: i32 = 2;
@@ -473,15 +499,20 @@ pub async fn notify_watching(
         .fetch_one(&mut *conn)
         .await?;
     let direct_message = channel.chatable_type == "DirectMessage";
-    if message.thread_id.is_some() {
-        let force: bool = sqlx::query_scalar("SELECT force FROM chat_threads WHERE id = $1")
-            .bind(message.thread_id)
-            .fetch_one(&mut *conn)
-            .await?;
-        if channel.threading_enabled || force {
-            return Err(Unsupported("chat threads").into());
+    // Chat::Message#in_thread?: the thread (title, original message) when
+    // it shows.
+    let thread: Option<(Option<String>, i64, bool)> = match message.thread_id {
+        Some(thread_id) => {
+            sqlx::query_as(
+                "SELECT title, original_message_id, force FROM chat_threads WHERE id = $1",
+            )
+            .bind(thread_id)
+            .fetch_optional(&mut *conn)
+            .await?
         }
-    }
+        None => None,
+    };
+    let thread = thread.filter(|(_, _, force)| channel.threading_enabled || *force);
     let creator_id = message
         .user_id
         .ok_or(Unsupported("chat messages of deleted users"))?;
@@ -495,21 +526,24 @@ pub async fn notify_watching(
         .flatten()
         .filter_map(|v| v.as_i64().map(|id| id as i32))
         .collect();
-    // A thread's watchers are its members watching it; the message is in
-    // no shown thread here.
+    // The members who want every message, and those watching the
+    // message's thread (any thread, hidden or not).
     let members: Vec<Membership> = sqlx::query_as(
         "SELECT m.user_id, m.notification_level, m.muted, m.last_read_message_id \
          FROM user_chat_channel_memberships m \
          JOIN users ON users.id = m.user_id \
          JOIN user_options ON user_options.user_id = users.id AND user_options.chat_enabled \
          WHERE m.chat_channel_id = $1 AND m.following AND NOT (m.user_id = ANY($2)) \
-           AND m.notification_level = $3 \
+           AND (m.notification_level = $3 OR users.id IN (SELECT user_id FROM user_chat_thread_memberships \
+                  WHERE thread_id = $4 AND notification_level = $5)) \
            AND (users.suspended_till IS NULL OR users.suspended_till <= now()) \
          ORDER BY m.id",
     )
     .bind(channel.id)
     .bind(&except)
     .bind(NOTIFICATION_ALWAYS)
+    .bind(message.thread_id)
+    .bind(super::threads::WATCHING)
     .fetch_all(&mut *conn)
     .await?;
     // CategoryChannel#title: its name, else its category's.
@@ -623,7 +657,13 @@ pub async fn notify_watching(
             "username": creator,
             "notification_type": CHAT_MESSAGE,
             "chat_message_id": message_id,
-            "post_url": format!("{base_path}/chat/c/-/{}/{message_id}", channel.id),
+            // Chat::Message#url
+            "post_url": match (&thread, message.thread_id) {
+                (Some(_), Some(thread_id)) => {
+                    format!("{base_path}/chat/c/-/{}/t/{thread_id}/{message_id}", channel.id)
+                }
+                _ => format!("{base_path}/chat/c/-/{}/{message_id}", channel.id),
+            },
             "translated_title": translated_title,
             "tag": format!("{}-chat-message-{}", urls.current_hostname()?, channel.id),
             "excerpt": truncate(
@@ -641,8 +681,51 @@ pub async fn notify_watching(
                 "type": "text",
                 "icon": format!("{}/assets/push-notifications/inline_reply.png", urls.base_url()?),
             }],
-            "action_data": { "channel_id": channel.id, "message_id": message_id },
+            "action_data": action_data(channel.id, message_id, message.thread_id),
         });
+        // create_watched_thread_notification, for a member watching the
+        // thread the message shows in.
+        if let (Some((title, original_message_id, _)), Some(thread_id)) =
+            (&thread, message.thread_id)
+        {
+            let watching: Option<Option<i64>> = sqlx::query_scalar(
+                "SELECT last_read_message_id FROM user_chat_thread_memberships \
+                 WHERE user_id = $1 AND thread_id = $2 AND notification_level = $3",
+            )
+            .bind(i64::from(membership.user_id))
+            .bind(thread_id)
+            .bind(super::threads::WATCHING)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if let Some(last_read_message_id) = watching {
+                let description = match title.as_deref().filter(|t| !t.trim().is_empty()) {
+                    Some(title) => Value::String(title.to_string()),
+                    None => json!(
+                        sqlx::query_scalar::<_, Option<String>>(
+                            "SELECT message FROM chat_messages WHERE id = $1"
+                        )
+                        .bind(original_message_id)
+                        .fetch_optional(&mut *conn)
+                        .await?
+                        .flatten()
+                    ),
+                };
+                let data = json!({
+                    "username": creator,
+                    "chat_message_id": message_id,
+                    "chat_channel_id": channel.id,
+                    "chat_thread_id": thread_id,
+                    "last_read_message_id": last_read_message_id,
+                    "description": description,
+                    "user_ids": [creator_id],
+                });
+                consolidate_watched_thread(conn, &state.bus, settings, membership.user_id, data)
+                    .await?;
+            }
+        }
+        if membership.notification_level != NOTIFICATION_ALWAYS {
+            continue;
+        }
         state
             .bus
             .publish(
@@ -654,5 +737,151 @@ pub async fn notify_watching(
             .await?;
         crate::jobs::post_alert::push_notification(conn, settings, membership.user_id).await?;
     }
+    Ok(())
+}
+
+/// `Notification.consolidate_or_create!` with chat's
+/// watched_thread_message_plan (Chat::NotificationConsolidationExtension:
+/// chat_watched_thread into itself, threshold 1, by thread): the data
+/// merged with the thread's last such notification (its message kept
+/// while the member hasn't read past it, a second username and the user
+/// ids gathered), then the consolidated notification updated, or the
+/// unconsolidated ones replaced by one counting them, or a new one saved.
+async fn consolidate_watched_thread(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    user_id: i32,
+    data: Value,
+) -> Result<(), AppError> {
+    let Value::Object(mut data) = data else {
+        return Ok(());
+    };
+    let thread_id = match &data["chat_thread_id"] {
+        Value::String(s) => s.clone(),
+        other => other.to_string(),
+    };
+    let as_i = |v: Option<&Value>| match v {
+        Some(Value::Number(n)) => n.as_i64().unwrap_or(0),
+        Some(Value::String(s)) => crate::ruby::to_i(s),
+        _ => 0,
+    };
+    // set_data_blk
+    let last: Option<String> = sqlx::query_scalar(
+        "SELECT data FROM notifications WHERE user_id = $1 AND data::json ->> 'chat_thread_id' = $2 \
+           AND notification_type = $3 ORDER BY id DESC LIMIT 1",
+    )
+    .bind(user_id)
+    .bind(&thread_id)
+    .bind(CHAT_WATCHED_THREAD)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some(last) = last {
+        let consolidated: Map<String, Value> = serde_json::from_str(&last).unwrap_or_default();
+        if as_i(data.get("last_read_message_id")) <= as_i(consolidated.get("chat_message_id")) {
+            data.insert(
+                "chat_message_id".into(),
+                consolidated
+                    .get("chat_message_id")
+                    .cloned()
+                    .unwrap_or(Value::Null),
+            );
+        }
+        let mut user_ids: Vec<Value> = consolidated
+            .get("user_ids")
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default();
+        user_ids.extend(
+            data.get("user_ids")
+                .and_then(Value::as_array)
+                .cloned()
+                .unwrap_or_default(),
+        );
+        let username2 = consolidated.get("username2").filter(|v| !v.is_null());
+        if username2.is_none() && data.get("username") != consolidated.get("username") {
+            data.insert(
+                "username2".into(),
+                consolidated.get("username").cloned().unwrap_or(Value::Null),
+            );
+            data.insert("user_ids".into(), Value::Array(user_ids));
+        } else {
+            let mut unique: Vec<Value> = Vec::new();
+            for id in user_ids {
+                if !unique.contains(&id) {
+                    unique.push(id);
+                }
+            }
+            data.insert(
+                "username".into(),
+                consolidated.get("username").cloned().unwrap_or(Value::Null),
+            );
+            data.insert(
+                "username2".into(),
+                consolidated
+                    .get("username2")
+                    .cloned()
+                    .unwrap_or(Value::Null),
+            );
+            data.insert("user_ids".into(), Value::Array(unique));
+        }
+    }
+    // update_consolidated_notification!
+    let consolidated: Option<(i64, String)> = sqlx::query_as(
+        "SELECT id, data FROM notifications WHERE user_id = $1 AND notification_type = $2 \
+           AND (data::json ->> 'consolidated')::bool AND data::json ->> 'chat_thread_id' = $3 \
+         ORDER BY id LIMIT 1",
+    )
+    .bind(user_id)
+    .bind(CHAT_WATCHED_THREAD)
+    .bind(&thread_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some((id, existing)) = consolidated {
+        let mut merged: Map<String, Value> = serde_json::from_str(&existing).unwrap_or_default();
+        for (key, value) in &data {
+            merged.insert(key.clone(), value.clone());
+        }
+        if let Some(count) = merged.get("count").filter(|c| !c.is_null()) {
+            let next = count.as_i64().unwrap_or(0) + 1;
+            merged.insert("count".into(), json!(next));
+        }
+        sqlx::query(
+            "UPDATE notifications SET data = $2, read = FALSE, updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(id)
+        .bind(Value::Object(merged).to_string())
+        .execute(&mut *conn)
+        .await?;
+        crate::bus::publish_notifications_state(bus, &mut *conn, settings, user_id).await?;
+        return Ok(());
+    }
+    // create_consolidated_notification!
+    let unconsolidated: Vec<(i64, chrono::NaiveDateTime)> = sqlx::query_as(
+        "SELECT id, created_at FROM notifications WHERE user_id = $1 AND notification_type = $2 \
+           AND data::json ->> 'consolidated' IS NULL AND data::json ->> 'chat_thread_id' = $3 \
+         ORDER BY id",
+    )
+    .bind(user_id)
+    .bind(CHAT_WATCHED_THREAD)
+    .bind(&thread_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut n = crate::notification_create::NewNotification::new(
+        CHAT_WATCHED_THREAD,
+        user_id,
+        Value::Object(data.clone()),
+    );
+    if let Some((_, timestamp)) = unconsolidated.last() {
+        data.insert("count".into(), json!(unconsolidated.len() + 1));
+        let ids: Vec<i64> = unconsolidated.iter().map(|(id, _)| *id).collect();
+        sqlx::query("DELETE FROM notifications WHERE id = ANY($1)")
+            .bind(&ids)
+            .execute(&mut *conn)
+            .await?;
+        n.data = data;
+        n.created_at = Some(*timestamp);
+    }
+    crate::notification_create::create(conn, bus, settings, &n).await?;
     Ok(())
 }

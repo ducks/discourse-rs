@@ -201,31 +201,28 @@ pub async fn build(
     }
     let channels = if allow_mentions {
         let mentions = unread_mentions(conn, user_id).await?;
-        messages_for(conn, ctx, &guardian, &mentions).await?
+        messages_for(conn, ctx, &guardian, &mentions, false).await?
     } else {
         Vec::new()
     };
     let dms = if allow_dms {
         let unread = unread_messages(conn, user_id).await?;
-        messages_for(conn, ctx, &guardian, &unread).await?
+        messages_for(conn, ctx, &guardian, &unread, false).await?
     } else {
         Vec::new()
     };
-    if allow_mentions {
-        let watched: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_chat_thread_memberships WHERE user_id = $1 AND notification_level = $2)",
-        )
-        .bind(user_id)
-        .bind(WATCHING)
-        .fetch_one(&mut *conn)
-        .await?;
-        if watched {
-            return Err(Unsupported("chat threads").into());
-        }
-    }
+    // Watched threads count, and name the subject without DMs or
+    // channels, but the email doesn't list them.
+    let threads = if allow_mentions {
+        let unread = unread_threads(conn, user_id).await?;
+        messages_for(conn, ctx, &guardian, &unread, true).await?
+    } else {
+        Vec::new()
+    };
     let count: usize = channels
         .iter()
         .chain(dms.iter())
+        .chain(threads.iter())
         .map(|(_, m)| m.len())
         .sum();
     if count == 0 {
@@ -251,7 +248,7 @@ pub async fn build(
     };
 
     // The subject (chat_summary_subject): DMs of more than two members
-    // count as channels; watched threads are refused above.
+    // count as channels; watched threads name it when nothing else does.
     let subject_key = |kind: &str| {
         let key = format!("user_notifications.chat_summary.subject.{kind}");
         let improved = format!("{key}_improved");
@@ -314,6 +311,21 @@ pub async fn build(
             }
         } else {
             match one_to_one.len() {
+                // Watched threads, by channel; `count` the other channels.
+                0 if !threads.is_empty() => tc(
+                    &subject_key(if threads.len() == 1 {
+                        "watched_thread"
+                    } else {
+                        "watched_threads"
+                    }),
+                    threads.len() - 1,
+                    &[("site_name", &site_name), ("channel", &threads[0].0.title)],
+                ),
+                0 => tc(
+                    &subject_key("private_email"),
+                    count,
+                    &[("site_name", &site_name)],
+                ),
                 1 => tc(
                     &subject_key("chat_dm_1"),
                     one_to_one[0].1.len(),
@@ -669,31 +681,43 @@ async fn unread_mentions(
         .await?)
 }
 
-/// `#messages_for`: each channel's messages from its first unread on,
-/// oldest first, by channel in the order of their first message, the
-/// channels the user can join.
+/// `#messages_for` (and `#messages_for_threads`, `by_thread`): each
+/// channel's (or thread's) messages from its first unread on, oldest
+/// first, by channel in the order of their first message, the channels
+/// the user can join.
 async fn messages_for(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     data: &[(i64, i64)],
+    by_thread: bool,
 ) -> Result<Vec<(SummaryChannel, Vec<SummaryMessage>)>, AppError> {
     if data.is_empty() {
         return Ok(Vec::new());
     }
-    let channel_ids: Vec<i64> = data.iter().map(|(c, _)| *c).collect();
+    let ids: Vec<i64> = data.iter().map(|(c, _)| *c).collect();
     let mins: Vec<i64> = data.iter().map(|(_, m)| *m).collect();
-    let messages: Vec<SummaryMessage> = sqlx::query_as(
+    let messages: Vec<SummaryMessage> = sqlx::query_as(&format!(
         "SELECT m.id, m.chat_channel_id, m.user_id, m.cooked, m.created_at FROM chat_messages m \
-         JOIN UNNEST($1::bigint[], $2::bigint[]) AS t(channel_id, min_unread_id) ON t.channel_id = m.chat_channel_id \
+         JOIN UNNEST($1::bigint[], $2::bigint[]) AS t(group_id, min_unread_id) ON t.group_id = m.{} \
          WHERE m.deleted_at IS NULL AND m.id >= t.min_unread_id ORDER BY m.created_at ASC",
-    )
-    .bind(&channel_ids)
+        if by_thread {
+            "thread_id"
+        } else {
+            "chat_channel_id"
+        }
+    ))
+    .bind(&ids)
     .bind(&mins)
     .fetch_all(&mut *conn)
     .await?;
     let mut out: Vec<(SummaryChannel, Vec<SummaryMessage>)> = Vec::new();
+    // The channels the user can't join (`select { can_join_chat_channel? }`).
+    let mut unjoinable: Vec<i64> = Vec::new();
     for m in messages {
+        if unjoinable.contains(&m.chat_channel_id) {
+            continue;
+        }
         match out.iter_mut().find(|(c, _)| c.id == m.chat_channel_id) {
             Some((_, list)) => list.push(m),
             None => {
@@ -748,15 +772,48 @@ async fn messages_for(
                     title,
                     memberships,
                 };
-                let mut list = vec![m];
-                if !joinable {
-                    list.clear();
+                if joinable {
+                    out.push((channel, vec![m]));
+                } else {
+                    unjoinable.push(channel.id);
                 }
-                out.push((channel, list));
             }
         }
     }
-    // The channels the user can't join, left out.
-    out.retain(|(_, list)| !list.is_empty());
     Ok(out)
+}
+
+/// `#unread_threads`: per watched thread membership, the first unread
+/// message of the last day not yet emailed (the membership marked emailed
+/// up to the last).
+async fn unread_threads(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Vec<(i64, i64)>, AppError> {
+    Ok(sqlx::query_as(
+        "WITH unread_threads AS ( \
+           SELECT uctm.id membership_id, uctm.thread_id, MIN(chat_messages.id) first_chat_message_id, MAX(chat_messages.id) last_chat_message_id \
+           FROM user_chat_thread_memberships uctm \
+           JOIN chat_threads ON chat_threads.id = uctm.thread_id \
+           JOIN chat_messages ON chat_messages.thread_id = chat_threads.id \
+           JOIN users ON users.id = chat_messages.user_id \
+           WHERE uctm.user_id = $1 \
+           AND uctm.notification_level = $2 \
+           AND chat_messages.deleted_at IS NULL \
+           AND chat_messages.created_at > now() - interval '1 day' \
+           AND (uctm.last_read_message_id IS NULL OR uctm.last_read_message_id < chat_messages.id) \
+           AND (uctm.last_unread_message_when_emailed_id IS NULL OR uctm.last_unread_message_when_emailed_id < chat_messages.id) \
+           GROUP BY uctm.id \
+         ) \
+         UPDATE user_chat_thread_memberships uctm \
+         SET last_unread_message_when_emailed_id = ut.last_chat_message_id \
+         FROM unread_threads ut \
+         WHERE uctm.id = ut.membership_id \
+         AND uctm.user_id = $1 \
+         RETURNING ut.thread_id, ut.first_chat_message_id",
+    )
+    .bind(i64::from(user_id))
+    .bind(WATCHING)
+    .fetch_all(&mut *conn)
+    .await?)
 }

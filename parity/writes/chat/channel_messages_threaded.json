@@ -1,0 +1,477 @@
+{
+  "name": "channel_messages_threaded",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/messages.json"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/messages.json?target_message_id=3"
+    }
+  ],
+  "started_at": "2026-10-29T22:18:33.301583",
+  "transaction_started_at": "2026-10-29T22:18:31.994942",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "messages": [
+          {
+            "id": 1,
+            "message": "Hello **world**",
+            "cooked": "<p>Hello <strong>world</strong></p>",
+            "created_at": "2026-10-29T21:28:31Z",
+            "excerpt": "Hello world",
+            "thread_id": 1,
+            "chat_channel_id": 2,
+            "streaming": false,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null,
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "new_user": false,
+              "primary_group_name": null
+            },
+            "mentioned_users": [],
+            "available_flags": [
+              "notify_user",
+              "off_topic",
+              "inappropriate",
+              "spam",
+              "illegal",
+              "notify_moderators"
+            ],
+            "thread": {
+              "id": 1,
+              "title": null,
+              "status": "open",
+              "channel_id": 2,
+              "meta": {
+                "message_bus_last_ids": {
+                  "thread_message_bus_last_id": 0
+                }
+              },
+              "reply_count": 2,
+              "current_user_membership": {
+                "notification_level": 2,
+                "thread_id": 1,
+                "last_read_message_id": 2,
+                "thread_title_prompt_seen": false
+              },
+              "preview": {
+                "last_reply_created_at": "2026-10-29T21:43:31Z",
+                "last_reply_excerpt": "thread reply two",
+                "last_reply_id": 3,
+                "participant_count": 3,
+                "reply_count": 2,
+                "participant_users": [
+                  {
+                    "id": 2,
+                    "username": "user0",
+                    "name": "User0",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+                  },
+                  {
+                    "id": 3,
+                    "username": "user1",
+                    "name": "User1",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+                  },
+                  {
+                    "id": 1,
+                    "username": "admin",
+                    "name": "Admin",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                  }
+                ],
+                "last_reply_user": {
+                  "id": 1,
+                  "username": "admin",
+                  "name": "Admin",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                }
+              },
+              "last_message_id": 3,
+              "force": false,
+              "original_message": {
+                "id": 1,
+                "message": "Hello **world**",
+                "cooked": "<p>Hello <strong>world</strong></p>",
+                "created_at": "2026-10-29T21:28:31.994Z",
+                "excerpt": "Hello world",
+                "chat_channel_id": 2,
+                "deleted_at": null,
+                "mentioned_users": [],
+                "user": {
+                  "id": 2,
+                  "username": "user0",
+                  "name": "User0",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                  "can_chat": null,
+                  "has_chat_enabled": null
+                }
+              }
+            },
+            "blocks": [],
+            "pinned": false,
+            "is_action": false,
+            "chat_webhook_event": null,
+            "uploads": []
+          },
+          {
+            "id": 4,
+            "message": "channel chatter",
+            "cooked": "<p>channel chatter</p>",
+            "created_at": "2026-10-29T21:48:31Z",
+            "excerpt": "channel chatter",
+            "thread_id": null,
+            "chat_channel_id": 2,
+            "streaming": false,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null,
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "new_user": false,
+              "primary_group_name": null
+            },
+            "mentioned_users": [],
+            "available_flags": [
+              "notify_user",
+              "off_topic",
+              "inappropriate",
+              "spam",
+              "illegal",
+              "notify_moderators"
+            ],
+            "blocks": [],
+            "pinned": false,
+            "is_action": false,
+            "chat_webhook_event": null,
+            "uploads": []
+          }
+        ],
+        "tracking": {
+          "channel_tracking": {},
+          "thread_tracking": {
+            "1": {
+              "channel_id": 2,
+              "mention_count": 0,
+              "unread_count": 1,
+              "watched_threads_unread_count": 0
+            }
+          }
+        },
+        "meta": {
+          "target_message_id": null,
+          "can_load_more_future": false,
+          "can_load_more_past": false
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "messages": [
+          {
+            "id": 1,
+            "message": "Hello **world**",
+            "cooked": "<p>Hello <strong>world</strong></p>",
+            "created_at": "2026-10-29T21:28:31Z",
+            "excerpt": "Hello world",
+            "thread_id": 1,
+            "chat_channel_id": 2,
+            "streaming": false,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null,
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "new_user": false,
+              "primary_group_name": null
+            },
+            "mentioned_users": [],
+            "available_flags": [
+              "notify_user",
+              "off_topic",
+              "inappropriate",
+              "spam",
+              "illegal",
+              "notify_moderators"
+            ],
+            "thread": {
+              "id": 1,
+              "title": null,
+              "status": "open",
+              "channel_id": 2,
+              "meta": {
+                "message_bus_last_ids": {
+                  "thread_message_bus_last_id": 0
+                }
+              },
+              "reply_count": 2,
+              "current_user_membership": {
+                "notification_level": 2,
+                "thread_id": 1,
+                "last_read_message_id": 2,
+                "thread_title_prompt_seen": false
+              },
+              "preview": {
+                "last_reply_created_at": "2026-10-29T21:43:31Z",
+                "last_reply_excerpt": "thread reply two",
+                "last_reply_id": 3,
+                "participant_count": 3,
+                "reply_count": 2,
+                "participant_users": [
+                  {
+                    "id": 2,
+                    "username": "user0",
+                    "name": "User0",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+                  },
+                  {
+                    "id": 3,
+                    "username": "user1",
+                    "name": "User1",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+                  },
+                  {
+                    "id": 1,
+                    "username": "admin",
+                    "name": "Admin",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                  }
+                ],
+                "last_reply_user": {
+                  "id": 1,
+                  "username": "admin",
+                  "name": "Admin",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                }
+              },
+              "last_message_id": 3,
+              "force": false,
+              "original_message": {
+                "id": 1,
+                "message": "Hello **world**",
+                "cooked": "<p>Hello <strong>world</strong></p>",
+                "created_at": "2026-10-29T21:28:31.994Z",
+                "excerpt": "Hello world",
+                "chat_channel_id": 2,
+                "deleted_at": null,
+                "mentioned_users": [],
+                "user": {
+                  "id": 2,
+                  "username": "user0",
+                  "name": "User0",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                  "can_chat": null,
+                  "has_chat_enabled": null
+                }
+              }
+            },
+            "blocks": [],
+            "pinned": false,
+            "is_action": false,
+            "chat_webhook_event": null,
+            "uploads": []
+          },
+          {
+            "id": 4,
+            "message": "channel chatter",
+            "cooked": "<p>channel chatter</p>",
+            "created_at": "2026-10-29T21:48:31Z",
+            "excerpt": "channel chatter",
+            "thread_id": null,
+            "chat_channel_id": 2,
+            "streaming": false,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null,
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "new_user": false,
+              "primary_group_name": null
+            },
+            "mentioned_users": [],
+            "available_flags": [
+              "notify_user",
+              "off_topic",
+              "inappropriate",
+              "spam",
+              "illegal",
+              "notify_moderators"
+            ],
+            "blocks": [],
+            "pinned": false,
+            "is_action": false,
+            "chat_webhook_event": null,
+            "uploads": []
+          }
+        ],
+        "tracking": {
+          "channel_tracking": {},
+          "thread_tracking": {
+            "1": {
+              "channel_id": 2,
+              "mention_count": 0,
+              "unread_count": 1,
+              "watched_threads_unread_count": 0
+            }
+          }
+        },
+        "meta": {
+          "target_message_id": 3,
+          "can_load_more_future": false,
+          "can_load_more_past": false
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RxjSfEJ2D9Gyh6jbbmDRhpVktPA=",
+            "created_at": "2026-10-29T22:18:32.360336",
+            "rotated_at": "2026-10-29T22:18:32.359483",
+            "updated_at": "2026-10-29T22:18:32.360336",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RxjSfEJ2D9Gyh6jbbmDRhpVktPA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-10-29T22:18:33.309304",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RxjSfEJ2D9Gyh6jbbmDRhpVktPA=",
+            "created_at": "2026-10-29T22:18:32.360336",
+            "rotated_at": "2026-10-29T22:18:32.359483",
+            "updated_at": "2026-10-29T22:18:32.360336",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RxjSfEJ2D9Gyh6jbbmDRhpVktPA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T15:42:53.286883",
+            "updated_at": "2026-10-01T15:42:53.286883",
+            "last_viewed_at": "2026-10-01T15:42:53.287295",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": 4,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 2,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T15:42:53.286883",
+            "updated_at": "2026-10-29T22:18:33.484851",
+            "last_viewed_at": "2026-10-29T22:18:33.484097",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": 4,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          }
+        }
+      ]
+    },
+    "user_custom_fields": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "last_chat_channel_id",
+          "value": "2",
+          "user_id": 3,
+          "created_at": "2026-10-29T22:18:33.367643",
+          "updated_at": "2026-10-29T22:18:33.367643"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_custom_fields": 1
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, in_reply_to_id) VALUES (2, 2, 3, now() - interval '40 minutes', now() - interval '40 minutes', '@user0 hi back', '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>', 1, 3, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (3, 2, 1, now() - interval '35 minutes', now() - interval '35 minutes', 'thread reply two', '<p>thread reply two</p>', 1, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (4, 2, 2, now() - interval '30 minutes', now() - interval '30 minutes', 'channel chatter', '<p>channel chatter</p>', 1, 2)",
+    "SELECT setval('chat_messages_id_seq', 4)",
+    "UPDATE chat_channels SET last_message_id = 4, messages_count = 4, threading_enabled = true WHERE id = 2",
+    "INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 'Chat::UserMention', 2, now() - interval '40 minutes', now() - interval '40 minutes')",
+    "INSERT INTO chat_threads (id, channel_id, original_message_id, original_message_user_id, status, replies_count, force, last_message_id, created_at, updated_at) VALUES (1, 2, 1, 2, 0, 2, false, 3, now() - interval '40 minutes', now() - interval '35 minutes')",
+    "SELECT setval('chat_threads_id_seq', 1)",
+    "UPDATE chat_messages SET thread_id = 1 WHERE id IN (1, 2, 3)",
+    "INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, last_read_message_id, created_at, updated_at) VALUES (2, 1, 2, NULL, now() - interval '40 minutes', now() - interval '40 minutes'), (3, 1, 2, 2, now() - interval '40 minutes', now() - interval '40 minutes'), (1, 1, 2, 3, now() - interval '35 minutes', now() - interval '35 minutes')",
+    "UPDATE user_chat_channel_memberships SET last_read_message_id = 4 WHERE chat_channel_id = 2"
+  ],
+  "recorded_from": {
+    "case": "b8a1a80f919bed0cc18c20f8f84d74e9ac5455cf49ba901e1dc26d8e21b5f748",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

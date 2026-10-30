@@ -96,22 +96,27 @@ pub async fn me_channels(
 /// GET /chat/api/me/threads: Chat::Api::CurrentUserThreadsController#index
 /// (Chat::LookupUserThreads). Its contract casts limit and offset and
 /// never fails; no thread to list answers as the controller's
-/// on_model_not_found does. Listing threads is refused until they are
-/// ported (160).
+/// on_model_not_found does.
 pub async fn me_threads(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
 ) -> Result<Response, AppError> {
+    use crate::plugins::chat::threads::cast_param;
     let mut conn = state.pool.acquire().await?;
     let settings = match begin(&state, &mut conn, &guardian).await? {
         Ok(settings) => settings,
         Err(refused) => return Ok(refused),
     };
-    let mut cx = context(&state, &mut conn, &settings, &guardian);
-    if cx.has_viewable_threads().await? {
-        return Err(crate::Unsupported("chat threads (the member's threads list)").into());
-    }
-    Ok(Json(json!({"success": "OK", "threads": []})).into_response())
+    let p = uri.query().map(params::parse_query).unwrap_or_default();
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let outcome = context(&state, &mut conn, &settings, &guardian)
+        .user_threads(
+            cast_param(scalar("limit").as_deref()),
+            cast_param(scalar("offset").as_deref()),
+        )
+        .await?;
+    Ok(thread_response(&state, outcome))
 }
 
 /// GET /chat/api/channels: Chat::Api::ChannelsController#index.
@@ -643,7 +648,12 @@ pub async fn draft(
         };
     let thread_id = p.get("thread_id").and_then(params::scalar);
     let outcome = context(&state, &mut tx, &settings, &guardian)
-        .upsert_draft(path_channel_id(&id), p.get("data"), thread_id.as_deref())
+        .upsert_draft(
+            path_channel_id(&id),
+            p.get("data"),
+            thread_id.as_deref(),
+            false,
+        )
         .await?;
     tx.commit().await?;
     Ok(membership_response(&state, outcome))
@@ -1163,4 +1173,311 @@ pub async fn chatables(
         .search_chatables(&params)
         .await?;
     Ok(Json(body).into_response())
+}
+
+/// A thread action's outcome as its controller answers it.
+fn thread_response(state: &AppState, outcome: crate::plugins::chat::threads::Outcome) -> Response {
+    use crate::plugins::chat::threads::Outcome;
+    match outcome {
+        Outcome::Done(body) => Json(body).into_response(),
+        Outcome::NotFound => super::topics::not_found_response(state),
+        Outcome::Forbidden => super::search::invalid_access(state),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::Unprocessable(None) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"failed": "FAILED"})),
+        )
+            .into_response(),
+        Outcome::Unprocessable(Some(error)) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"failed": "FAILED", "errors": [error]})),
+        )
+            .into_response(),
+    }
+}
+
+/// Commits a thread write that went through, else drops it.
+async fn finish_thread(
+    state: &AppState,
+    tx: sqlx::Transaction<'static, sqlx::Postgres>,
+    outcome: crate::plugins::chat::threads::Outcome,
+) -> Result<Response, AppError> {
+    if matches!(outcome, crate::plugins::chat::threads::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(thread_response(state, outcome))
+}
+
+/// GET /chat/api/channels/:channel_id/threads:
+/// Chat::Api::ChannelThreadsController#index (Chat::LookupChannelThreads).
+pub async fn channel_threads(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::threads::cast_param;
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let p = uri.query().map(params::parse_query).unwrap_or_default();
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let outcome = context(&state, &mut conn, &settings, &guardian)
+        .channel_threads(
+            path_channel_id(&id),
+            cast_param(scalar("limit").as_deref()),
+            cast_param(scalar("offset").as_deref()),
+        )
+        .await?;
+    Ok(thread_response(&state, outcome))
+}
+
+/// GET /chat/api/channels/:channel_id/threads/:thread_id:
+/// Chat::Api::ChannelThreadsController#show (Chat::LookupThread).
+pub async fn show_thread(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((id, thread_id)): Path<(String, String)>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let outcome = context(&state, &mut conn, &settings, &guardian)
+        .show_thread(path_channel_id(&id), path_channel_id(&thread_id))
+        .await?;
+    Ok(thread_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id/threads/:thread_id:
+/// Chat::Api::ChannelThreadsController#update (Chat::UpdateThread).
+pub async fn update_thread(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((_id, thread_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let title = p.get("title").and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .update_thread(
+            &state.bus,
+            cast_integer(Some(strip_format(&thread_id))),
+            title.as_deref(),
+        )
+        .await?;
+    finish_thread(&state, tx, outcome).await
+}
+
+/// POST /chat/api/channels/:channel_id/threads:
+/// Chat::Api::ChannelThreadsController#create (Chat::CreateThread).
+pub async fn create_thread(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .create_thread(
+            &state.bus,
+            cast_integer(Some(strip_format(&id))),
+            crate::plugins::chat::threads::cast_param(scalar("original_message_id").as_deref()),
+            scalar("title").as_deref(),
+        )
+        .await?;
+    finish_thread(&state, tx, outcome).await
+}
+
+/// GET /chat/api/channels/:channel_id/threads/:thread_id/messages:
+/// Chat::Api::ChannelThreadMessagesController#index
+/// (Chat::ListChannelThreadMessages).
+pub async fn thread_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((id, thread_id)): Path<(String, String)>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::messages::{Listed, ThreadListParams};
+    /// `ChannelThreadMessagesController::MAX_PAGE_SIZE`
+    const MAX_PAGE_SIZE: i64 = 50;
+
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let p = uri.query().map(params::parse_query).unwrap_or_default();
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    // The contract.
+    let page_size = cast_integer(scalar("page_size").as_deref());
+    let direction = scalar("direction");
+    let mut errors = Vec::new();
+    if page_size.is_some_and(|n| n < 1) {
+        errors.push("Page size must be greater than or equal to 1");
+    }
+    if direction
+        .as_deref()
+        .is_some_and(|d| d != "past" && d != "future")
+    {
+        errors.push("Direction is not included in the list");
+    }
+    if !errors.is_empty() {
+        return Ok((
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response());
+    }
+    let flag = |key: &str| cast_boolean(scalar(key).as_deref()) == Some(true);
+    let list = ThreadListParams {
+        page_size: page_size.unwrap_or(MAX_PAGE_SIZE).min(MAX_PAGE_SIZE),
+        target_message_id: cast_integer(scalar("target_message_id").as_deref()),
+        direction,
+        fetch_from_last_read: flag("fetch_from_last_read"),
+        fetch_from_last_message: flag("fetch_from_last_message"),
+        fetch_from_first_message: flag("fetch_from_first_message"),
+        target_date: scalar("target_date"),
+    };
+    let listed = context(&state, &mut conn, &settings, &guardian)
+        .list_thread_messages(path_channel_id(&id), path_channel_id(&thread_id), &list)
+        .await?;
+    Ok(match listed {
+        Listed::Messages(body) => Json(body).into_response(),
+        Listed::NotFound => super::topics::not_found_response(&state),
+        Listed::Forbidden => super::search::invalid_access(&state),
+    })
+}
+
+/// PUT /chat/api/channels/:channel_id/threads/:thread_id/read:
+/// Chat::Api::ChannelsThreadsReadController#update
+/// (Chat::UpdateUserThreadLastRead).
+pub async fn thread_read(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, thread_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let message_id = cast_integer(p.get("message_id").and_then(params::scalar).as_deref());
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .mark_thread_read(
+            &state.bus,
+            path_channel_id(&id),
+            path_channel_id(&thread_id),
+            message_id,
+        )
+        .await?;
+    finish_thread(&state, tx, outcome).await
+}
+
+/// POST /chat/api/channels/:channel_id/threads/:thread_id/drafts:
+/// Chat::Api::ChannelsThreadsDraftsController#create (Chat::UpsertDraft).
+pub async fn thread_draft(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, thread_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .upsert_draft(
+            path_channel_id(&id),
+            p.get("data"),
+            Some(strip_format(&thread_id)),
+            true,
+        )
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// PUT .../threads/:thread_id/notifications-settings/me:
+/// Chat::Api::ChannelThreadsCurrentUserNotificationsSettingsController
+/// (Chat::UpdateThreadNotificationSettings).
+pub async fn thread_notification_level(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, thread_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let level = cast_integer(
+        p.get("notification_level")
+            .and_then(params::scalar)
+            .as_deref(),
+    );
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .set_thread_notification_level(
+            &state.bus,
+            path_channel_id(&id),
+            path_channel_id(&thread_id),
+            level,
+        )
+        .await?;
+    finish_thread(&state, tx, outcome).await
+}
+
+/// POST .../threads/:thread_id/mark-thread-title-prompt-seen/me:
+/// Chat::Api::ChannelThreadsCurrentUserTitlePromptSeenController
+/// (Chat::MarkThreadTitlePromptSeen).
+pub async fn thread_title_prompt_seen(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, thread_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .mark_thread_title_prompt_seen(
+            &state.bus,
+            path_channel_id(&id),
+            path_channel_id(&thread_id),
+        )
+        .await?;
+    finish_thread(&state, tx, outcome).await
 }

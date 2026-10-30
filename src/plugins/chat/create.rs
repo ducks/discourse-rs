@@ -4,9 +4,11 @@
 //! mention and watching jobs enqueued, and the processed message published).
 //!
 //! A reply makes (or joins) the replied-to message's thread, as Rails does
-//! in channels without threading too: the thread stays hidden there. Not
-//! ported yet, and refused: uploads, blocks, threads proper (threading on,
-//! forced threads, a thread_id), bots, group and channel-wide mentions,
+//! in channels without threading too: the thread stays hidden there, and
+//! its messages are the channel's. With threading on (or in a forced
+//! thread) a message in a thread is the thread's: the channel's last
+//! message and the sender's last read stay as they were. Not ported yet,
+//! and refused: uploads, blocks, bots, group and channel-wide mentions,
 //! oneboxes and images in a message. The controller's
 //! Chat::MessageRateLimiter is in the route.
 
@@ -20,9 +22,6 @@ use crate::{AppError, Unsupported};
 pub const PROCESS_MESSAGE_JOB: &str = "Jobs::Chat::ProcessMessage";
 /// The job that recounts a thread's replies.
 pub const UPDATE_THREAD_REPLY_COUNT_JOB: &str = "Jobs::Chat::UpdateThreadReplyCount";
-
-/// `Chat::NotificationLevels.all[:tracking]`
-const THREAD_TRACKING: i32 = 2;
 
 /// Chat::CreateMessage's params.
 #[derive(Default)]
@@ -155,15 +154,17 @@ impl Context<'_> {
                 .await?;
             }
         }
-        // model :membership (its following, for PublishAndFollow)
-        let following: Option<bool> = sqlx::query_scalar(
-            "SELECT following FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2",
+        // model :membership (its following, for PublishAndFollow, and its
+        // last read message, for the tracking state)
+        let membership: Option<(bool, Option<i64>)> = sqlx::query_as(
+            "SELECT following, last_read_message_id FROM user_chat_channel_memberships \
+             WHERE user_id = $1 AND chat_channel_id = $2",
         )
         .bind(user.id)
         .bind(channel.id)
         .fetch_optional(&mut *self.conn)
         .await?;
-        let Some(was_following) = following else {
+        let Some((was_following, last_read_message_id)) = membership else {
             return Ok(Outcome::NotFound);
         };
         // policy :channel_allows_message_creation (can_create_channel_message?)
@@ -205,30 +206,40 @@ impl Context<'_> {
         };
         // model :thread: a thread_id, or the reply's thread (made when it
         // has none).
-        if params
+        let thread_param = params
             .thread_id
             .as_deref()
-            .is_some_and(|t| !t.trim().is_empty())
-        {
-            return Err(Unsupported("chat threads").into());
-        }
-        if channel.threading_enabled && reply.is_some() {
-            return Err(Unsupported("chat threads").into());
-        }
-        let existing_thread = match reply.and_then(|r| r.3) {
-            Some(thread_id) => {
-                let force: bool =
-                    sqlx::query_scalar("SELECT force FROM chat_threads WHERE id = $1")
-                        .bind(thread_id)
-                        .fetch_one(&mut *self.conn)
-                        .await?;
-                if force {
-                    return Err(Unsupported("chat threads").into());
-                }
-                Some(thread_id)
-            }
-            None => None,
+            .filter(|t| !t.trim().is_empty())
+            .map(crate::ruby::to_i);
+        let existing_thread = match (thread_param, reply.and_then(|r| r.3)) {
+            (Some(id), _) | (None, Some(id)) => self.find_thread(id, None).await?,
+            (None, None) => None,
         };
+        // policy :ensure_valid_thread_for_channel
+        if thread_param.is_some()
+            && existing_thread.as_ref().map(|t| t.channel_id) != Some(channel.id)
+        {
+            return Ok(Outcome::Unprocessable(t(
+                self.i18n,
+                "chat.errors.thread_invalid_for_channel",
+            )));
+        }
+        // policy :ensure_thread_matches_parent
+        if let (Some(thread), Some(r)) = (&existing_thread, reply)
+            && r.3 != Some(thread.id)
+        {
+            return Ok(Outcome::Unprocessable(t(
+                self.i18n,
+                "chat.errors.thread_does_not_match_parent",
+            )));
+        }
+        // Chat::Message#in_thread?: the new message's thread shows (a
+        // thread built for the reply is never forced).
+        let in_thread = match &existing_thread {
+            Some(thread) => super::threads::shows(&channel, thread),
+            None => reply.is_some() && channel.threading_enabled,
+        };
+        let existing_thread = existing_thread.map(|t| t.id);
 
         // model :message_instance: cooked, then the model's validations.
         let cooked = super::cook::cook(host, &message, user.id, &user.username).await?;
@@ -344,7 +355,7 @@ impl Context<'_> {
             .execute(&mut *self.conn)
             .await?;
         // post_process_thread
-        if let (Some(thread_id), Some(r)) = (thread_id, reply) {
+        if let Some(thread_id) = thread_id {
             sqlx::query(
                 "UPDATE chat_threads SET last_message_id = $2, updated_at = $3 WHERE id = $1",
             )
@@ -367,15 +378,39 @@ impl Context<'_> {
                 // tracking, when the channel has no threading.
                 Some(dm) if !channel.threading_enabled => {
                     for participant in dm.users.iter().flatten() {
-                        self.add_to_thread(thread_id, i64::from(participant.id), now)
-                            .await?;
+                        self.add_thread_member(
+                            bus,
+                            thread_id,
+                            i64::from(participant.id),
+                            super::threads::TRACKING,
+                            now,
+                        )
+                        .await?;
                     }
                 }
                 _ => {
-                    let original_user = r.2.map(i64::from).unwrap_or(0);
-                    self.add_to_thread(thread_id, original_user, now).await?;
-                    self.add_to_thread(thread_id, i64::from(user.id), now)
-                        .await?;
+                    let original_user: i64 = sqlx::query_scalar(
+                        "SELECT original_message_user_id FROM chat_threads WHERE id = $1",
+                    )
+                    .bind(thread_id)
+                    .fetch_one(&mut *self.conn)
+                    .await?;
+                    self.add_thread_member(
+                        bus,
+                        thread_id,
+                        original_user,
+                        super::threads::TRACKING,
+                        now,
+                    )
+                    .await?;
+                    self.add_thread_member(
+                        bus,
+                        thread_id,
+                        i64::from(user.id),
+                        super::threads::TRACKING,
+                        now,
+                    )
+                    .await?;
                 }
             }
             sqlx::query(
@@ -389,29 +424,40 @@ impl Context<'_> {
             .execute(&mut *self.conn)
             .await?;
         }
-        // update_channel_last_message, update_membership_last_read (a
-        // hidden thread's messages are the channel's).
-        sqlx::query("UPDATE chat_channels SET last_message_id = $2, updated_at = $3 WHERE id = $1")
+        // update_channel_last_message, update_membership_last_read: not
+        // for a message in a thread that shows (a hidden thread's
+        // messages are the channel's).
+        if !in_thread {
+            sqlx::query(
+                "UPDATE chat_channels SET last_message_id = $2, updated_at = $3 WHERE id = $1",
+            )
             .bind(channel.id)
             .bind(message_id)
             .bind(now)
             .execute(&mut *self.conn)
             .await?;
-        sqlx::query(
-            "UPDATE user_chat_channel_memberships SET last_read_message_id = $3, updated_at = $4 \
-             WHERE user_id = $1 AND chat_channel_id = $2",
-        )
-        .bind(user.id)
-        .bind(channel.id)
-        .bind(message_id)
-        .bind(now)
-        .execute(&mut *self.conn)
-        .await?;
+            sqlx::query(
+                "UPDATE user_chat_channel_memberships SET last_read_message_id = $3, updated_at = $4 \
+                 WHERE user_id = $1 AND chat_channel_id = $2",
+            )
+            .bind(user.id)
+            .bind(channel.id)
+            .bind(message_id)
+            .bind(now)
+            .execute(&mut *self.conn)
+            .await?;
+        }
 
         // process_direct_message_channel: PublishAndFollowDirectMessageChannel.
         if dm.is_some() {
             self.publish_and_follow(bus, &channel, user.id, g.is_staff(), was_following)
                 .await?;
+        }
+        // publish_new_thread: the reply that started a thread that shows.
+        if let (Some(r), Some(new)) = (reply, new_thread)
+            && channel.threading_enabled
+        {
+            super::publisher::publish_thread_created(self, bus, &channel, r.0, new).await?;
         }
         // process: publish_new!, then the processing job.
         super::publisher::publish_new(self, bus, &channel, message_id, params.staged_id.as_deref())
@@ -425,8 +471,20 @@ impl Context<'_> {
             json!({ "chat_message_id": message_id, "staged_id": params.staged_id }),
         )
         .await?;
-        super::publisher::publish_user_tracking_state(self, bus, channel.id, message_id, thread_id)
+        // publish_user_tracking_state: a message in a thread publishes the
+        // membership's last read message (a live one) instead.
+        let tracked = if in_thread {
+            let live: Option<i64> = sqlx::query_scalar(
+                "SELECT id FROM chat_messages WHERE id = $1 AND deleted_at IS NULL",
+            )
+            .bind(last_read_message_id)
+            .fetch_optional(&mut *self.conn)
             .await?;
+            live.unwrap_or(message_id)
+        } else {
+            message_id
+        };
+        super::publisher::publish_user_tracking_state(self, bus, &channel, tracked).await?;
         // index_message (deferred in Rails, made here).
         let urls = crate::url::Urls {
             config: self.config,
@@ -494,7 +552,7 @@ impl Context<'_> {
 
     /// `Chat::Channel::Policy::MessageCreation::DirectMessageStrategy`:
     /// the reason the actor may not post in the DM, None when they may.
-    async fn dm_creation_refusal(
+    pub(crate) async fn dm_creation_refusal(
         &mut self,
         dm: &super::direct_messages::DirectMessage,
         can_create: bool,
@@ -659,27 +717,6 @@ impl Context<'_> {
             &user_ids,
         )
         .await
-    }
-
-    /// `Chat::Thread#add(user)`: a tracking membership, unless there is one.
-    async fn add_to_thread(
-        &mut self,
-        thread_id: i64,
-        user_id: i64,
-        now: NaiveDateTime,
-    ) -> Result<(), AppError> {
-        sqlx::query(
-            "INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, created_at, updated_at) \
-             SELECT $1, $2, $3, $4, $4 WHERE NOT EXISTS \
-               (SELECT 1 FROM user_chat_thread_memberships WHERE user_id = $1 AND thread_id = $2)",
-        )
-        .bind(user_id)
-        .bind(thread_id)
-        .bind(THREAD_TRACKING)
-        .bind(now)
-        .execute(&mut *self.conn)
-        .await?;
-        Ok(())
     }
 }
 

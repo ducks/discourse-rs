@@ -1,9 +1,10 @@
 //! A channel's messages as GET /chat/api/channels/:id/messages serves
 //! them: Chat::ListChannelMessages over Chat::MessagesQuery, serialized
-//! by Chat::MessagesSerializer and Chat::MessageSerializer.
+//! by Chat::MessagesSerializer and Chat::MessageSerializer; a thread's
+//! (Chat::ListChannelThreadMessages) over the same query.
 //!
-//! Refused as Unsupported until their slices port them: threads (slice
-//! 5), uploads, webhook events and blocks (slice 6), and user status.
+//! Refused as Unsupported until their slices port them: uploads, webhook
+//! events and blocks (slice 6), and user status.
 //! The two writes Rails defers (Scheduler::Defer) to after the response,
 //! the membership's last_viewed_at and the user's last chat channel, are
 //! made before it.
@@ -87,6 +88,28 @@ struct BookmarkRow {
     bookmarkable_type: String,
 }
 
+/// `MessagesQuery.call`'s thread options.
+struct Query {
+    /// Only this thread's messages.
+    thread_id: Option<i64>,
+    /// Thread replies kept but a forced thread's; else every thread's
+    /// replies left out.
+    include_thread_messages: bool,
+    /// A paged query's target included.
+    include_target_message_id: bool,
+}
+
+/// Chat::ListChannelThreadMessages' params, past the contract.
+pub struct ThreadListParams {
+    pub page_size: i64,
+    pub target_message_id: Option<i64>,
+    pub direction: Option<String>,
+    pub fetch_from_last_read: bool,
+    pub fetch_from_last_message: bool,
+    pub fetch_from_first_message: bool,
+    pub target_date: Option<String>,
+}
+
 /// `MessagesQuery.call`'s result: the messages in order and the meta.
 struct Page {
     messages: Vec<MessageRow>,
@@ -117,6 +140,14 @@ struct Shared {
     threading_enabled: bool,
     users: HashMap<i32, UserRow>,
     groups: HashMap<i32, crate::groups::Group>,
+    /// The messages' threads, by id.
+    threads: HashMap<i64, super::threads::ThreadRow>,
+    /// The serializer's thread options: the original message in an
+    /// original message's thread (unless asked not to), the participants
+    /// and the viewer's memberships when given.
+    thread_original_message: bool,
+    thread_participants: Option<HashMap<i64, super::threads::Participants>>,
+    thread_memberships: Option<HashMap<i64, super::threads::ThreadMembership>>,
 }
 
 pub enum Listed {
@@ -324,6 +355,33 @@ impl Context<'_> {
         Ok(out)
     }
 
+    /// Chat::MessageSerializer for these messages as a page lists them:
+    /// their threads with participants and the viewer's memberships.
+    pub(crate) async fn serialize_page_messages(
+        &mut self,
+        channel: &ChannelRow,
+        ids: &[i64],
+    ) -> Result<Vec<Value>, AppError> {
+        let sql = format!(
+            "SELECT {MESSAGE_COLUMNS} FROM chat_messages WHERE chat_messages.id = ANY($1) ORDER BY chat_messages.id"
+        );
+        let rows: Vec<MessageRow> = sqlx::query_as(&sql)
+            .bind(ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        let mut shared = self.shared(channel, &rows).await?;
+        let thread_ids: Vec<i64> = shared.threads.keys().copied().collect();
+        if !thread_ids.is_empty() {
+            shared.thread_participants = Some(self.thread_participants(&thread_ids).await?);
+            shared.thread_memberships = Some(self.thread_memberships(&thread_ids).await?);
+        }
+        let mut out = Vec::new();
+        for m in &rows {
+            out.push(self.message(&shared, m).await?);
+        }
+        Ok(out)
+    }
+
     /// GET /chat/api/channels/:channel_id/messages
     pub async fn list_messages(
         &mut self,
@@ -368,15 +426,46 @@ impl Context<'_> {
                 Some(_) => {}
             }
         }
-        // With no threads, the thread clauses (include_thread_messages or
-        // not) keep every message.
-        self.refuse_threads().await?;
         let with_deleted = self.can_moderate(&channel).await?;
-        let page = self
-            .messages_query(&channel, with_deleted, target, params)
+        let query = Query {
+            thread_id: None,
+            include_thread_messages: !channel.threading_enabled,
+            include_target_message_id: false,
+        };
+        let mut page = self
+            .messages_query(&channel, with_deleted, target, params, &query)
             .await?;
+        // fetch_messages: the target left out when it is a thread's reply.
+        if let Some(target_id) = page.target_message_id {
+            let target_thread = page
+                .messages
+                .iter()
+                .find(|m| m.id == target_id)
+                .and_then(|m| m.thread_id);
+            if let Some(thread) = match target_thread {
+                Some(id) => self.find_thread(id, None).await?,
+                None => None,
+            } && super::threads::shows(&channel, &thread)
+                && thread.original_message_id != target_id
+            {
+                page.messages.retain(|m| m.id != target_id);
+            }
+        }
 
-        let shared = self.shared(&channel, &page.messages).await?;
+        let mut shared = self.shared(&channel, &page.messages).await?;
+        // thread_ids, tracking, thread_participants, thread_memberships
+        let thread_ids: Vec<i64> = {
+            let mut ids: Vec<i64> = page.messages.iter().filter_map(|m| m.thread_id).collect();
+            ids.sort_unstable();
+            ids.dedup();
+            ids
+        };
+        if !thread_ids.is_empty() {
+            shared.thread_participants = Some(self.thread_participants(&thread_ids).await?);
+            if self.guardian.is_authenticated() {
+                shared.thread_memberships = Some(self.thread_memberships(&thread_ids).await?);
+            }
+        }
         let mut messages = Vec::new();
         for m in &page.messages {
             messages.push(self.message(&shared, m).await?);
@@ -433,17 +522,113 @@ impl Context<'_> {
             }
         }
 
-        // Chat::TrackingStateReportQuery for no channels and the messages'
-        // threads (include_threads): none without threads, else the
-        // member's threads.
-        let thread_tracking = if page.messages.iter().any(|m| m.thread_id.is_some()) {
-            self.thread_tracking().await?
-        } else {
-            serde_json::Map::new()
-        };
+        // Chat::TrackingStateReportQuery for the messages' threads
+        // (include_threads).
+        let thread_tracking = self.thread_tracking_for(&thread_ids, false).await?;
         Ok(Listed::Messages(json!({
             "messages": messages,
             "tracking": {"channel_tracking": {}, "thread_tracking": thread_tracking},
+            "meta": {
+                "target_message_id": page.target_message_id,
+                "can_load_more_future": page.can_load_more_future,
+                "can_load_more_past": page.can_load_more_past,
+            },
+        })))
+    }
+
+    /// GET /chat/api/channels/:channel_id/threads/:thread_id/messages:
+    /// Chat::ListChannelThreadMessages, serialized without the threads'
+    /// original messages, participants, memberships or tracking.
+    pub async fn list_thread_messages(
+        &mut self,
+        channel_id: i64,
+        thread_id: i64,
+        params: &ThreadListParams,
+    ) -> Result<Listed, AppError> {
+        // model :thread, policy :can_view_thread
+        let Some(thread) = self.find_thread(thread_id, Some(channel_id)).await? else {
+            return Ok(Listed::NotFound);
+        };
+        let channel = self.thread_channel(&thread).await?;
+        if self.guardian.user_id() != Some(SYSTEM_USER_ID) && !self.can_join(&channel, None).await?
+        {
+            return Ok(Listed::Forbidden);
+        }
+        // policy :threading_enabled_for_channel, :original_message_not_deleted
+        if !super::threads::shows(&channel, &thread) {
+            return Ok(Listed::NotFound);
+        }
+        let om_deleted: bool =
+            sqlx::query_scalar("SELECT deleted_at IS NOT NULL FROM chat_messages WHERE id = $1")
+                .bind(thread.original_message_id)
+                .fetch_one(&mut *self.conn)
+                .await?;
+        let with_deleted = self.can_moderate(&channel).await?;
+        if om_deleted && !with_deleted {
+            return Ok(Listed::NotFound);
+        }
+        // model :membership, model :target_message_id
+        let membership = match self.guardian.user_id() {
+            Some(_) => self
+                .thread_memberships(&[thread.id])
+                .await?
+                .remove(&thread.id),
+            None => None,
+        };
+        let target = if params.fetch_from_last_message {
+            thread.last_message_id
+        } else if params.fetch_from_first_message {
+            Some(thread.original_message_id)
+        } else if params.fetch_from_last_read || params.target_message_id.is_none() {
+            membership.as_ref().and_then(|m| m.last_read_message_id)
+        } else {
+            params.target_message_id
+        };
+        // Chat::Thread::Policy::MessageExistence
+        if let Some(id) = target {
+            let found: Option<(Option<i32>, bool)> = sqlx::query_as(
+                "SELECT user_id, deleted_at IS NOT NULL FROM chat_messages WHERE id = $1 AND thread_id = $2",
+            )
+            .bind(id)
+            .bind(thread.id)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+            match found {
+                None => return Ok(Listed::NotFound),
+                Some((user_id, true))
+                    if !(user_id.is_some() && user_id == self.guardian.user_id()
+                        || self.guardian.is_staff()) =>
+                {
+                    return Ok(Listed::NotFound);
+                }
+                Some(_) => {}
+            }
+        }
+        let list = ListParams {
+            page_size: params.page_size,
+            target_message_id: target,
+            direction: params.direction.clone(),
+            fetch_from_last_read: false,
+            target_date: params.target_date.clone(),
+        };
+        let query = Query {
+            thread_id: Some(thread.id),
+            include_thread_messages: true,
+            include_target_message_id: params.fetch_from_first_message
+                || params.fetch_from_last_message,
+        };
+        let page = self
+            .messages_query(&channel, with_deleted, target, &list, &query)
+            .await?;
+        let mut shared = self.shared(&channel, &page.messages).await?;
+        shared.thread_original_message = false;
+        let mut messages = Vec::new();
+        for m in &page.messages {
+            messages.push(self.message(&shared, m).await?);
+        }
+        Ok(Listed::Messages(json!({
+            "messages": messages,
+            "tracking": {},
             "meta": {
                 "target_message_id": page.target_message_id,
                 "can_load_more_future": page.can_load_more_future,
@@ -460,15 +645,36 @@ impl Context<'_> {
         with_deleted: bool,
         target: Option<i64>,
         params: &ListParams,
+        query: &Query,
     ) -> Result<Page, AppError> {
-        let base = format!(
-            "SELECT {MESSAGE_COLUMNS} FROM chat_messages WHERE chat_messages.chat_channel_id = $1{}",
+        let mut base = format!(
+            "SELECT {MESSAGE_COLUMNS} FROM chat_messages{} WHERE chat_messages.chat_channel_id = $1{}",
+            if query.thread_id.is_none() && query.include_thread_messages {
+                " LEFT JOIN chat_threads ON chat_threads.id = chat_messages.thread_id"
+            } else {
+                ""
+            },
             if with_deleted {
                 ""
             } else {
                 " AND chat_messages.deleted_at IS NULL"
             }
         );
+        // A thread's messages; or the channel's, a forced thread's replies
+        // left out (include_thread_messages), or every thread's replies.
+        match query.thread_id {
+            Some(thread_id) => {
+                base.push_str(&format!(" AND chat_messages.thread_id = {thread_id}"));
+            }
+            None if query.include_thread_messages => base.push_str(
+                " AND (chat_threads.id IS NULL OR chat_threads.force = false \
+                   OR chat_messages.id = chat_threads.original_message_id)",
+            ),
+            None => base.push_str(
+                " AND (chat_messages.thread_id IS NULL OR chat_messages.id IN ( \
+                   SELECT original_message_id FROM chat_threads WHERE chat_threads.channel_id = $1))",
+            ),
+        }
         if let (Some(target), None) = (target, params.direction.as_deref()) {
             // query_around_target: the target found with deleted ones.
             let sql = format!(
@@ -520,7 +726,12 @@ impl Context<'_> {
         let direction = params.direction.as_deref();
         let mut sql = base;
         if let Some(target) = target {
-            let op = if direction == Some("past") { "<" } else { ">" };
+            let op = match (direction == Some("past"), query.include_target_message_id) {
+                (true, false) => "<",
+                (true, true) => "<=",
+                (false, false) => ">",
+                (false, true) => ">=",
+            };
             sql.push_str(&format!(" AND chat_messages.id {op} {target}"));
         }
         let order = if direction == Some("future") {
@@ -679,6 +890,10 @@ impl Context<'_> {
             .await?
             .into_iter()
             .collect();
+        let mut thread_ids: Vec<i64> = messages.iter().filter_map(|m| m.thread_id).collect();
+        thread_ids.sort_unstable();
+        thread_ids.dedup();
+        let threads = self.threads_by_id(&thread_ids).await?;
         Ok(Shared {
             viewer_id: g.user_id(),
             enable_names: settings.get("enable_names")?.truthy(),
@@ -700,6 +915,10 @@ impl Context<'_> {
             threading_enabled: channel.threading_enabled,
             users: users.into_iter().map(|u| (u.id, u)).collect(),
             groups,
+            threads,
+            thread_original_message: true,
+            thread_participants: None,
+            thread_memberships: None,
         })
     }
 
@@ -849,9 +1068,14 @@ impl Context<'_> {
             out.insert("deleted_at".into(), json!(iso8601(at)));
             out.insert("deleted_by_id".into(), json!(m.deleted_by_id));
         }
-        if s.threading_enabled {
+        // include_thread_id?: threading on, or a forced thread.
+        let thread = m.thread_id.and_then(|id| s.threads.get(&id));
+        let include_thread_id = s.threading_enabled || thread.is_some_and(|t| t.force);
+        if include_thread_id {
             out.insert("thread_id".into(), json!(m.thread_id));
         }
+        let thread = thread.filter(|_| include_thread_id);
+        let thread_om = thread.is_some_and(|t| t.original_message_id == m.id);
         out.insert("chat_channel_id".into(), json!(m.chat_channel_id));
         out.insert("streaming".into(), json!(m.streaming));
         out.insert("user".into(), self.message_user(s, m.user_id)?);
@@ -953,7 +1177,20 @@ impl Context<'_> {
         if edited {
             out.insert("edited".into(), json!(true));
         }
+        if let Some(t) = thread.filter(|_| thread_om) {
+            let opts = super::threads::ThreadOpts {
+                preview: true,
+                original_message: s.thread_original_message,
+                channel: false,
+                membership: s.thread_memberships.as_ref().and_then(|m| m.get(&t.id)),
+                participants: s.thread_participants.as_ref().and_then(|p| p.get(&t.id)),
+            };
+            out.insert("thread".into(), Box::pin(self.thread_json(t, opts)).await?);
+        }
         out.insert("blocks".into(), json!([]));
+        if let Some(t) = thread.filter(|_| !thread_om) {
+            out.insert("thread_title".into(), json!(t.title));
+        }
         if s.pinned_setting {
             let pinned: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM chat_pinned_messages WHERE chat_message_id = $1)",
