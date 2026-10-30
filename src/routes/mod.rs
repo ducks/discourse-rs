@@ -325,6 +325,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/new-message", get(chat_pages::new_message))
         .route("/chat/direct-messages", get(chat_pages::direct_messages))
         .route("/chat/threads", get(chat_pages::threads))
+        .route("/chat/starred-channels", get(chat_pages::starred_channels))
         .route("/chat/browse", get(chat_pages::browse_index))
         .route("/chat/browse/{tab}", get(chat_pages::browse))
         .route("/chat/browse/{tab}/page", get(chat_pages::browse_more))

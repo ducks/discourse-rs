@@ -282,16 +282,13 @@ pub fn render(p: &Prefs, n: &Notifications) -> Result<(String, Map<String, Value
                 "btn-flat chat-sound-preview",
                 Some("play"),
                 None,
-                &format!(
-                    " title=\"{}\" data-unported=\"chat's notification sounds (162)\"",
-                    escape(&t(cx, "chat.sound.preview"))
-                ),
+                &format!(" title=\"{}\"", escape(&t(cx, "chat.sound.preview"))),
             )
         } else {
             String::new()
         };
         out.push_str(&format!(
-            "<div class=\"control-group chat-notifications\"><label class=\"control-label\">{}</label>{}<div class=\"controls controls-dropdown\"><label>{}</label><div class=\"chat-sound-controls\">{}{preview}</div></div><div class=\"controls controls-dropdown\"><label>{}</label>{}</div></div>",
+            "<div class=\"control-group chat-notifications\"><label class=\"control-label\">{}</label>{}<div class=\"controls controls-dropdown\"><label>{}</label><div class=\"chat-sound-controls\" data-preview-title=\"{}\">{}{preview}</div></div><div class=\"controls controls-dropdown\"><label>{}</label>{}</div></div>",
             escape(&t(cx, "chat.chat_notifications_title")),
             checkbox(
                 "pref-chat-ignore-channel-wide-mention",
@@ -301,6 +298,7 @@ pub fn render(p: &Prefs, n: &Notifications) -> Result<(String, Map<String, Value
                 Some("ignore_channel_wide_mention")
             ),
             escape(&t(cx, "chat.sound.title")),
+            escape(&t(cx, "chat.sound.preview")),
             combo(
                 cx,
                 &Combo {

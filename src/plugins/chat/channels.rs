@@ -811,17 +811,31 @@ impl Context<'_> {
                     .unwrap_or("open")
             ),
         );
-        // The archive's progress, for staff: refused until archiving is
-        // ported.
+        // The archive's progress, for staff (include_archive_status?):
+        // Chat::ChannelArchive#complete? (every message archived and none
+        // left live) and #failed?.
         if staff {
-            let archived: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM chat_channel_archives WHERE chat_channel_id = $1)",
+            let archive: Option<(i32, i32, Option<String>, Option<i32>)> = sqlx::query_as(
+                "SELECT archived_messages, total_messages, archive_error, destination_topic_id \
+                 FROM chat_channel_archives WHERE chat_channel_id = $1 ORDER BY id LIMIT 1",
             )
             .bind(channel.id)
-            .fetch_one(&mut *self.conn)
+            .fetch_optional(&mut *self.conn)
             .await?;
-            if archived {
-                return Err(Unsupported("archived chat channels").into());
+            if let Some((archived, total, error, topic_id)) = archive {
+                let live: bool = sqlx::query_scalar(
+                    "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE chat_channel_id = $1 AND deleted_at IS NULL)",
+                )
+                .bind(channel.id)
+                .fetch_one(&mut *self.conn)
+                .await?;
+                let complete = archived >= total && !live;
+                let failed = !complete && error.is_some_and(|e| !e.trim().is_empty());
+                out.insert("archive_failed".into(), json!(failed));
+                out.insert("archive_completed".into(), json!(complete));
+                out.insert("archived_messages".into(), json!(archived));
+                out.insert("total_messages".into(), json!(total));
+                out.insert("archive_topic_id".into(), json!(topic_id));
             }
         }
         out.insert("memberships_count".into(), json!(channel.user_count));

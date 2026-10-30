@@ -398,6 +398,79 @@ impl Context<'_> {
         Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 
+    /// The slug an edit saves: the one given (the channel's when none, nil
+    /// when blank); a category channel without one gets its title's
+    /// (`generate_auto_slug`, blank when taken). A changed one goes
+    /// through `ensure_slug_ok`: encoded, and refused as the model's
+    /// record_invalid when it comes out blank, non-ASCII under the ascii
+    /// method, taken by another live channel or over 100 characters.
+    async fn channel_slug(
+        &mut self,
+        channel: &ChannelRow,
+        given: Option<Option<String>>,
+        name: Option<&str>,
+    ) -> Result<Option<String>, AppError> {
+        let invalid = || Unsupported("an invalid chat channel edit (record_invalid)");
+        let method = self.settings.get("slug_generation_method")?.to_s();
+        let mut slug = given.unwrap_or_else(|| channel.slug.clone());
+        if channel.chatable_type == "Category" && slug.is_none() {
+            // CategoryChannel#title: its name, else its category's.
+            let title = match name {
+                Some(n) => n.to_string(),
+                None => self
+                    .category(channel.chatable_id)
+                    .await?
+                    .map(|c| c.name)
+                    .unwrap_or_default(),
+            };
+            let title = crate::ruby::strip(&title).to_string();
+            let generated = match method.as_str() {
+                "ascii" => crate::posting::text::slug_with_default(
+                    &title,
+                    &self.settings.get("default_locale")?.to_s(),
+                    "",
+                )?,
+                "encoded" => crate::category_writes::encoded_slug(&title),
+                _ => String::new(),
+            };
+            let taken = !generated.is_empty() && self.slug_taken(channel.id, &generated).await?;
+            slug = Some(if taken { String::new() } else { generated });
+        }
+        if slug == channel.slug {
+            return Ok(slug);
+        }
+        if let Some(given) = slug.clone().filter(|s| !s.is_empty()) {
+            let unescaped = if method == "encoded" {
+                crate::category_writes::cgi_unescape(&given)
+            } else {
+                given
+            };
+            let encoded = crate::category_writes::encoded_slug(&unescaped);
+            if encoded.is_empty()
+                || (method == "ascii" && !crate::category_writes::cgi_unescape(&encoded).is_ascii())
+                || self.slug_taken(channel.id, &encoded).await?
+            {
+                return Err(invalid().into());
+            }
+            slug = Some(encoded);
+        }
+        if slug.as_deref().is_some_and(|s| s.chars().count() > 100) {
+            return Err(invalid().into());
+        }
+        Ok(slug)
+    }
+
+    /// `duplicate_slug?`: another live channel has it.
+    async fn slug_taken(&mut self, channel_id: i64, slug: &str) -> Result<bool, AppError> {
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM chat_channels WHERE slug = $1 AND id <> $2 AND deleted_at IS NULL)",
+        )
+        .bind(slug)
+        .bind(channel_id)
+        .fetch_one(&mut *self.conn)
+        .await?)
+    }
+
     /// `Chat::UpdateChannel` (with the controller's channel_from_params
     /// and auto join limiter): the editable fields (blank text nil; a
     /// category channel's auto_join_users and allow_channel_wide_mentions
@@ -472,12 +545,10 @@ impl Context<'_> {
                 .get(key)
                 .map(|v| crate::params::scalar(v).filter(|s| !s.trim().is_empty()))
         };
-        if let Some(slug) = text("slug")
-            && slug != channel.slug
-        {
-            return Err(Unsupported("changing a chat channel's slug").into());
-        }
         let name = text("name").unwrap_or(channel.name.clone());
+        let slug = self
+            .channel_slug(&channel, text("slug"), name.as_deref())
+            .await?;
         let description = text("description").unwrap_or(channel.description.clone());
         let emoji = text("emoji").unwrap_or(channel.emoji.clone());
         let threading = flag("threading_enabled").unwrap_or(channel.threading_enabled);
@@ -502,11 +573,12 @@ impl Context<'_> {
             || emoji != channel.emoji
             || threading != channel.threading_enabled
             || auto_join != channel.auto_join_users
-            || wide_mentions != channel.allow_channel_wide_mentions;
+            || wide_mentions != channel.allow_channel_wide_mentions
+            || slug != channel.slug;
         if changed {
             sqlx::query(
                 "UPDATE chat_channels SET name = $2, description = $3, emoji = $4, threading_enabled = $5, \
-                   auto_join_users = $6, allow_channel_wide_mentions = $7, updated_at = $8 WHERE id = $1",
+                   auto_join_users = $6, allow_channel_wide_mentions = $7, updated_at = $8, slug = $9 WHERE id = $1",
             )
             .bind(channel.id)
             .bind(&name)
@@ -516,7 +588,20 @@ impl Context<'_> {
             .bind(auto_join)
             .bind(wide_mentions)
             .bind(crate::clock::now_naive())
+            .bind(&slug)
             .execute(&mut *self.conn)
+            .await?;
+        }
+        // enqueue_channel_hashtag_remap through HashtagRemapper.enqueue:
+        // the old slug, unless only its case changed.
+        if let Some(old) = channel.slug.as_deref().filter(|s| !s.is_empty())
+            && slug.as_deref().unwrap_or_default().to_lowercase() != old.to_lowercase()
+        {
+            crate::jobs::enqueue(
+                &mut *self.conn,
+                "remap_hashtag",
+                json!({ "remaps": [{ "type": "channel", "id": channel.id, "old_ref": old }] }),
+            )
             .await?;
         }
         // mark_all_threads_as_read_if_needed

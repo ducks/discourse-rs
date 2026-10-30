@@ -2750,9 +2750,41 @@
     });
   }
 
-  // The chat footer's buttons are routes (DButton @route).
+  // ChatChannelArchiveStatus#retryArchive (createChannelArchive), its
+  // error as popupAjaxError shows it.
   document.addEventListener("click", function (event) {
-    var button = event.target.closest(".c-footer__item[data-href]");
+    var retry = event.target.closest(".chat-channel-archive-failed-retry .btn[data-channel-id]");
+    if (retry) {
+      api("POST", "/channels/" + retry.dataset.channelId + "/archives").catch(function () {});
+    }
+  });
+
+  // A block's button (Blocks#createInteraction): the interaction sent,
+  // the button loading meanwhile; an error as popupAjaxError shows it.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".chat-message__blocks .block__button[data-message-id]");
+    var channel = button && button.closest(".chat-channel[data-id]");
+    if (!button || !channel || button.classList.contains("is-loading")) {
+      return;
+    }
+    button.classList.add("is-loading");
+    button.disabled = true;
+    api(
+      "POST",
+      "/channels/" + channel.dataset.id + "/messages/" + button.dataset.messageId + "/interactions",
+      { action_id: button.id }
+    )
+      .catch(function () {})
+      .then(function () {
+        button.classList.remove("is-loading");
+        button.disabled = false;
+      });
+  });
+
+  // The chat footer's buttons and the empty channels list's are routes
+  // (DButton @route).
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".c-footer__item[data-href], .--empty-channels-list .empty-state__cta .btn[data-href]");
     if (button) {
       window.location.assign(button.dataset.href);
     }

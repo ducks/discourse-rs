@@ -1579,10 +1579,10 @@ with the viewport, guessing from the user agent without it
     `chat_mobile` bundle: the chat header (back to the forum), the
     channel navbar's back button with the other channels' unread count,
     the mobile composer's layout, /chat as the channels list with the
-    chat footer. Left: the footer's ~~DMs~~ (done, 280), search,
-    starred and ~~threads~~ (done, 280; its threads refused with 160)
+    chat footer. Left: the footer's ~~DMs~~ (done, 280), search, ~~starred~~
+    (done, 162) and ~~threads~~ (done, 280; its threads refused with 160)
     routes, the channel list options menu (desktop's too), swipe and long
-    press on a row, the list's empty states (refused)
+    press on a row, the list's filtered empty states (the unfiltered one done, 162)
 101. ~~`feat/header-search-menu`~~ (done) M: the desktop header's search
     button (not while the welcome banner's field is in view, nor on the
     full-page search and login) and the search menu it opens
@@ -2297,21 +2297,59 @@ have handlers now.
     (bookmarks.rs:863); channels of deleted categories or other chatables
     (plugins/chat/bookmarks.rs:176,183, with 162)), chat transcripts in
     posts (crates/markdown's bbcode refusal)
-162. `feat/chat-rest` M: messages of deleted users
-    (plugins/chat/notify.rs:76,487; plugins/chat/create.rs:293,721,763;
-    plugins/chat/modify.rs:337,342; plugins/chat/summary_email.rs:459;
-    plugins/chat/messages.rs:884), webhook messages and blocks
-    (plugins/chat/messages.rs:598,601), bot changes
-    (plugins/chat/modify.rs:166), archived channels and channels of
-    deleted categories or other chatables
-    (plugins/chat/channels.rs:141,536,713,718,749,797;
-    plugins/chat/membership.rs:70; plugins/chat/publisher.rs:34),
-    anonymous access (plugins/chat/mod.rs:129;
-    plugins/chat/publisher.rs:66; plugins/chat/channels.rs:434), slug
-    changes (plugins/chat/dm_groups.rs:478), the separate sidebar and
-    empty states (plugins/chat/view.rs:276,341,345), the mobile footer's
-    search and starred routes (99), chat's notification sounds (the
-    preferences' sound preview, static/js/preferences.js)
+162. `feat/chat-rest` M: messages of deleted users (the notification
+    jobs done, feat/chat-rest: NotifyMentioned and NotifyWatching run for
+    a deleted author's message and fail, as Rails does on @creator, only
+    once a mention or a watcher is to be notified; still refused where
+    Rails fails on the nil author too: processing one
+    (plugins/chat/create.rs:725,767), editing one (DuplicateMessageValidator's
+    user.bot?, plugins/chat/modify.rs:336,341), its summary email line
+    (summary_email.rs:459), its reactions' users (messages.rs:955), and a
+    reply to one, whose thread fails its original_message_user
+    (create.rs:297)), ~~webhook messages and blocks~~ (done,
+    feat/chat-rest: Chat::WebhookEventSerializer on messages and the
+    messages replied to, Chat::BlockSerializer with its button, text and
+    category elements; the channel page draws a webhook's ChatEmojiAvatar,
+    its name and the bot indicator, the reply line's emoji avatar, and
+    ChatMessageBlocks (actions and informative blocks, buttons and
+    categories), chat.js sending a button as POST
+    .../messages/:id/interactions (218's endpoint); refused: an event
+    whose webhook is gone and blocks or elements Rails or the client
+    throws on, messages.rs:139,666; page.rs:1543,1578), ~~bot changes~~
+    (done, feat/chat-rest: a bot edits, trashes, restores and reacts as
+    any user, joining the channel before an edit, enforce_membership),
+    ~~archived channels~~ (done, feat/chat-rest, reads only: the channel
+    serializer's archive_failed, archive_completed, archived_messages,
+    total_messages and archive_topic_id for staff, and
+    ChatChannelArchiveStatus for an admin above an archived channel's
+    messages, its retry button posting to 216's archives endpoint) and
+    channels of deleted categories or other chatables (left: a category
+    channel outlives its category only trashed, which these reads hide,
+    and core chat has no other chatable; refused where met,
+    plugins/chat/channels.rs:563,740,745,776; membership.rs:70;
+    publisher.rs:34; bookmarks.rs:176,183), anonymous access
+    (plugins/chat/mod.rs:134; publisher.rs:66; channels.rs:461),
+    ~~slug changes~~ (done, feat/chat-rest: UpdateChannel's slug, nil when
+    blank so a category channel takes its title's (generate_auto_slug,
+    blank when taken), ensure_slug_ok encoding a changed one, and
+    enqueue_channel_hashtag_remap's remap_hashtag job unless only the case
+    changed; an invalid or taken slug is the record_invalid refusal 216
+    replaces, dm_groups.rs), the separate sidebar (view.rs:295) and
+    empty states (the mobile channels list's done, feat/chat-rest:
+    DEmptyState offering the browser; left: the filtered lists' empty
+    states, whose show all bypass belongs with 216's filter toggle,
+    view.rs:362,676,777,917), the mobile footer's search route (with 220's
+    search) and ~~starred route~~ (done, feat/chat-rest: GET
+    /chat/starred-channels, ChatStarredChannelsRoute: to /chat on desktop,
+    to the channels without a starred one, else the navbar,
+    ChannelsListStarred without its divider and the footer; the drawer's
+    starred route shares the list, and an unfiltered empty one says
+    starred_channels_empty), chat's notification sounds (the preferences'
+    preview done, feat/chat-rest: chat-audio-manager's sounds synthesized
+    with Web Audio in static/js/preferences.js, played on choosing one and
+    by the preview button; left: playing them on a new message or mention,
+    since no desktop notification alert handler is ported). Tests:
+    tests/chat_rest.rs
 163. `feat/solved-rest` S: discourse-solved's crawler schema markup and
     lists by solved status (its auto close timers, web hooks and search
     filters are done, 143d, 143e; the rest of solved's gaps: 233-235),

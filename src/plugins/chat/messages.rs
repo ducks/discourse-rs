@@ -3,7 +3,7 @@
 //! by Chat::MessagesSerializer and Chat::MessageSerializer.
 //!
 //! Refused as Unsupported until their slices port them: threads (slice
-//! 5), uploads, webhook events and blocks (slice 6), and user status.
+//! 5), uploads, and user status.
 //! The two writes Rails defers (Scheduler::Defer) to after the response,
 //! the membership's last_viewed_at and the user's last chat channel, are
 //! made before it.
@@ -128,6 +128,59 @@ pub enum Listed {
 /// `Time#iso8601`: whole seconds.
 fn iso8601(t: NaiveDateTime) -> String {
     t.format("%Y-%m-%dT%H:%M:%SZ").to_string()
+}
+
+/// Chat::BlockSerializer over a message's blocks: each block's type and
+/// its elements, a button (Chat::Blocks::Elements::ButtonSerializer, its
+/// text through TextSerializer) or a category (CategorySerializer, its
+/// optional keys only when present). Rails raises on any other element
+/// type and on a block or button missing what it reads.
+fn serialize_blocks(blocks: &Value) -> Result<Value, AppError> {
+    let malformed = || Unsupported("chat message blocks Rails can't serialize");
+    let present = |v: &Value| match v {
+        Value::Null => false,
+        Value::String(s) => !s.trim().is_empty(),
+        Value::Array(a) => !a.is_empty(),
+        Value::Object(o) => !o.is_empty(),
+        _ => true,
+    };
+    let mut out = Vec::new();
+    for block in blocks.as_array().ok_or_else(malformed)? {
+        let mut elements = Vec::new();
+        for e in block["elements"].as_array().ok_or_else(malformed)? {
+            let element = match e["type"].as_str() {
+                Some("button") => {
+                    let text = &e["text"];
+                    if !text.is_object() {
+                        return Err(malformed().into());
+                    }
+                    json!({
+                        "action_id": e["action_id"],
+                        "type": e["type"],
+                        "text": { "text": text["text"], "type": text["type"] },
+                        "style": e["style"],
+                        "icon": e["icon"],
+                    })
+                }
+                Some("category") => {
+                    let mut c = Map::new();
+                    c.insert("type".into(), e["type"].clone());
+                    c.insert("title".into(), e["title"].clone());
+                    c.insert("color".into(), e["color"].clone());
+                    for key in ["description", "url", "parent_name", "parent_color"] {
+                        if present(&e[key]) {
+                            c.insert(key.into(), e[key].clone());
+                        }
+                    }
+                    Value::Object(c)
+                }
+                _ => return Err(malformed().into()),
+            };
+            elements.push(element);
+        }
+        out.push(json!({ "type": block["type"], "elements": elements }));
+    }
+    Ok(Value::Array(out))
 }
 
 /// `Chat::Message#action?`: a /me message.
@@ -599,18 +652,18 @@ impl Context<'_> {
         if uploads {
             return Err(Unsupported("chat message uploads").into());
         }
-        let webhooks: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM chat_webhook_events WHERE chat_message_id = ANY($1) \
-               OR chat_message_id IN (SELECT in_reply_to_id FROM chat_messages WHERE id = ANY($1)))",
+        // A webhook event whose webhook is gone fails its delegation.
+        let orphaned: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM chat_webhook_events e \
+               LEFT JOIN incoming_chat_webhooks w ON w.id = e.incoming_chat_webhook_id \
+               WHERE w.id IS NULL AND (e.chat_message_id = ANY($1) \
+                 OR e.chat_message_id IN (SELECT in_reply_to_id FROM chat_messages WHERE id = ANY($1))))",
         )
         .bind(&ids)
         .fetch_one(&mut *self.conn)
         .await?;
-        if webhooks {
-            return Err(Unsupported("chat webhook messages").into());
-        }
-        if messages.iter().any(|m| m.blocks.is_some()) {
-            return Err(Unsupported("chat message blocks").into());
+        if orphaned {
+            return Err(Unsupported("a chat webhook event without its webhook").into());
         }
 
         // The authors, mentioned users, reacting users and replied-to
@@ -953,7 +1006,13 @@ impl Context<'_> {
         if edited {
             out.insert("edited".into(), json!(true));
         }
-        out.insert("blocks".into(), json!([]));
+        out.insert(
+            "blocks".into(),
+            match &m.blocks {
+                Some(blocks) => serialize_blocks(blocks)?,
+                None => json!([]),
+            },
+        );
         if s.pinned_setting {
             let pinned: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM chat_pinned_messages WHERE chat_message_id = $1)",
@@ -964,12 +1023,29 @@ impl Context<'_> {
             out.insert("pinned".into(), json!(pinned));
         }
         out.insert("is_action".into(), json!(is_action(m.message.as_deref())));
-        out.insert("chat_webhook_event".into(), Value::Null);
+        out.insert("chat_webhook_event".into(), self.webhook_event(m.id).await?);
         if let Some(parent_id) = m.in_reply_to_id {
             out.insert("in_reply_to".into(), self.in_reply_to(s, parent_id).await?);
         }
         out.insert("uploads".into(), json!([]));
         Ok(Value::Object(out))
+    }
+
+    /// Chat::WebhookEventSerializer for the message's webhook event: its
+    /// incoming webhook's username and emoji; null without one.
+    async fn webhook_event(&mut self, message_id: i64) -> Result<Value, AppError> {
+        let event: Option<(Option<String>, Option<String>)> = sqlx::query_as(
+            "SELECT w.username, w.emoji FROM chat_webhook_events e \
+             JOIN incoming_chat_webhooks w ON w.id = e.incoming_chat_webhook_id \
+             WHERE e.chat_message_id = $1 ORDER BY e.id LIMIT 1",
+        )
+        .bind(message_id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        Ok(match event {
+            Some((username, emoji)) => json!({ "username": username, "emoji": emoji }),
+            None => Value::Null,
+        })
     }
 
     /// Chat::InReplyToSerializer: the live message replied to (null when
@@ -994,7 +1070,7 @@ impl Context<'_> {
             "cooked": parent.cooked,
             "excerpt": excerpt_for_display(&parent, crate::excerpt::Plugins::from_settings(self.settings)?)?,
             "user": user,
-            "chat_webhook_event": null,
+            "chat_webhook_event": self.webhook_event(parent.id).await?,
         }))
     }
 

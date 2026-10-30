@@ -532,14 +532,119 @@
       if (value && !preview) {
         controls.insertAdjacentHTML(
           "beforeend",
-          '<button class="btn no-text btn-icon btn-flat chat-sound-preview" data-unported="chat\'s notification sounds (162)" type="button">' +
+          '<button class="btn no-text btn-icon btn-flat chat-sound-preview" title="' +
+            escape(controls.dataset.previewTitle || "") +
+            '" type="button">' +
             icon("play") +
             '<span aria-hidden="true">&#8203;</span></button>'
         );
       } else if (!value && preview) {
         preview.remove();
       }
+      // setChatSound: the chosen sound plays.
+      if (value) {
+        playChatSound(value);
+      }
     }
+  });
+
+  // chat-audio-manager.js: chat's sounds, synthesized with Web Audio (no
+  // files), each an "incoming" and a "mention" sequence. Only the
+  // preferences' preview plays them here: the notification alerts that
+  // would play them on a new message have no handler in the port.
+  var CHAT_SOUNDS = ["classic", "soft", "retro", "bubble", "ethereal"];
+  var MIN_GAIN = 0.001;
+  var audioContext = null;
+
+  function playOscillator(ctx, type, frequency, startTime, duration, maxGain) {
+    var oscillator = ctx.createOscillator();
+    var gain = ctx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(maxGain, startTime);
+    gain.gain.exponentialRampToValueAtTime(MIN_GAIN, startTime + duration);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration);
+  }
+
+  function playSweep(ctx, o) {
+    var oscillator = ctx.createOscillator();
+    var gain = ctx.createGain();
+    if (o.type) {
+      oscillator.type = o.type;
+    }
+    oscillator.frequency.setValueAtTime(o.from, o.startTime);
+    if (o.ramp === "linear") {
+      oscillator.frequency.linearRampToValueAtTime(o.to, o.rampEndTime);
+    } else {
+      oscillator.frequency.exponentialRampToValueAtTime(o.to, o.rampEndTime);
+    }
+    gain.gain.setValueAtTime(o.gain, o.startTime);
+    gain.gain.exponentialRampToValueAtTime(MIN_GAIN, o.endTime);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(o.startTime);
+    oscillator.stop(o.endTime);
+  }
+
+  // SOUND_SEQUENCES' incoming sounds, which play({ type: "incoming" })
+  // picks by default.
+  var INCOMING = {
+    classic: function (ctx, now) {
+      playOscillator(ctx, "sine", 587.33, now, 0.1, 0.15);
+      playOscillator(ctx, "sine", 783.99, now + 0.1, 0.3, 0.15);
+    },
+    soft: function (ctx, now) {
+      playOscillator(ctx, "sine", 349.23, now, 0.15, 0.2);
+      playOscillator(ctx, "sine", 466.16, now + 0.1, 0.25, 0.2);
+    },
+    retro: function (ctx, now) {
+      playOscillator(ctx, "square", 392, now, 0.08, 0.04);
+      playOscillator(ctx, "square", 493.88, now + 0.08, 0.15, 0.04);
+    },
+    bubble: function (ctx, now) {
+      playSweep(ctx, { from: 300, to: 700, startTime: now, rampEndTime: now + 0.1, endTime: now + 0.15, gain: 0.2 });
+    },
+    ethereal: function (ctx, now) {
+      [523.25, 659.25, 783.99].forEach(function (frequency) {
+        playOscillator(ctx, "sine", frequency, now, 1.2, 0.05);
+      });
+    },
+  };
+
+  // ChatAudioManager#play(name, { throttle: false }): a name it doesn't
+  // know plays the classic sound; a suspended context (no interaction yet)
+  // plays nothing.
+  function playChatSound(name) {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext || !name) {
+      return;
+    }
+    if (!audioContext || audioContext.state === "closed") {
+      audioContext = new AudioContext();
+    }
+    var ctx = audioContext;
+    var resume = ctx.state === "suspended" ? ctx.resume().catch(function () {}) : Promise.resolve();
+    var timeout = new Promise(function (resolve) {
+      setTimeout(resolve, 500);
+    });
+    Promise.race([resume, timeout]).then(function () {
+      if (ctx.state === "suspended") {
+        return;
+      }
+      var sound = CHAT_SOUNDS.indexOf(name) === -1 ? "classic" : name;
+      INCOMING[sound](ctx, ctx.currentTime);
+    });
+  }
+
+  // previewChatSound
+  document.addEventListener("click", function (event) {
+    var preview = event.target.closest(".chat-sound-controls .chat-sound-preview");
+    if (!preview) {
+      return;
+    }
+    var summary = preview.closest(".chat-sound-controls").querySelector(".chat-sound summary");
+    playChatSound(summary && summary.dataset.value);
   });
 
   // UserNotificationSchedule#buildTimeOptions, moment's LT in English.

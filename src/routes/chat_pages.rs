@@ -599,6 +599,45 @@ pub async fn direct_messages(
     .await
 }
 
+/// GET /chat/starred-channels: ChatStarredChannelsRoute. The desktop view
+/// goes to /chat (no channel is active on a page load); the mobile view
+/// draws the member's starred channels, or goes to the channels without
+/// any.
+pub async fn starred_channels(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    let base_path = state.config.globals.relative_url_root();
+    if !crate::mobile::mobile_view() {
+        return Ok(redirect(format!("{base_path}/chat")));
+    }
+    let Some(content) = context(&state, &mut conn, &settings, &guardian)
+        .starred_channels_route()
+        .await?
+    else {
+        return Ok(redirect(format!("{base_path}/chat/channels")));
+    };
+    let title = format!("{} - ", chat_title(&state));
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::Chat,
+        title,
+        &content,
+        true,
+    )
+    .await
+}
+
 /// GET /chat/threads: the member's threads (ChatChannelThreads route,
 /// UserThreads).
 pub async fn threads(
