@@ -497,11 +497,12 @@
   }
 
   // ChatNavbarOpenDrawerButton#openDrawer
+  // The chat URL is read once the forum page arrived, as Ember's then()
+  // does: leaving full-page chat is what stores it.
   function openDrawer() {
     write(PREFERRED_MODE, DRAWER_CHAT);
-    var chatURL = lastKnownChatURL();
     go(lastKnownAppURL(), function () {
-      transitionTo(chatURL);
+      transitionTo(lastKnownChatURL());
     });
   }
 

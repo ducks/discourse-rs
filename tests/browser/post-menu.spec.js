@@ -127,9 +127,19 @@ test("discourse-solved: accept and unaccept the answer", async ({ page, context,
   expect(sql("SELECT count(*) FROM discourse_solved_topic_answers a JOIN discourse_solved_solved_topics s ON s.id = a.solved_topic_id WHERE s.topic_id = :'p1'", t.id)).toEqual([["0"]]);
 });
 
+// The page is redrawn in place, not reloaded: a mark set on the window
+// before the action is still there after it.
+async function markDocument(page) {
+  await page.evaluate(() => (window.__sameDocument = true));
+}
+async function expectSameDocument(page) {
+  expect(await page.evaluate(() => window.__sameDocument === true), "the page reloaded").toBe(true);
+}
+
 test("discourse-assign: assign the post from its modal, then unassign", async ({ page, context, session }) => {
   const { t, answer } = await setup(session, context);
   await page.goto(t.url);
+  await markDocument(page);
   const post = page.locator(`article[data-post-id="${answer}"]`);
   await post.locator(".post-action-menu__show-more").click();
   await post.locator(".post-action-menu__assign-post").click();
@@ -145,19 +155,62 @@ test("discourse-assign: assign the post from its modal, then unassign", async ({
   await expect(modal).toHaveCount(0);
 
   await expect(post.locator(".assigned-to .assigned-to-username")).toHaveText("admin");
+  // The footer's Assign button became the topic-level menu listing the post.
+  await expect(page.locator("#topic-footer-buttons .reassign-trigger")).toBeVisible();
+  await expect(page.locator("#topic-footer-button-assign")).toHaveCount(0);
   expect(
     sql(
       "SELECT assigned_to_type, assigned_to_id, active FROM assignments WHERE target_type = 'Post' AND target_id = :'p1'",
       answer,
     ),
   ).toEqual([["User", "1", "t"]]);
+  await expectSameDocument(page);
 
   await post.locator(".post-action-menu__unassign-post").click();
   await expect(post.locator(".assigned-to")).toHaveCount(0);
   await expect(post.locator(".post-action-menu__assign-post")).toBeAttached();
+  await expect(page.locator("#topic-footer-button-assign")).toBeVisible();
   expect(sql("SELECT count(*) FROM assignments WHERE target_type = 'Post' AND target_id = :'p1'", answer)).toEqual([
     ["0"],
   ]);
+  await expectSameDocument(page);
+});
+
+test("discourse-assign: assign the topic from the footer, then unassign from its menu", async ({
+  page,
+  context,
+  session,
+}) => {
+  const { t } = await setup(session, context);
+  await page.goto(t.url);
+  await markDocument(page);
+  await page.locator("#topic-footer-button-assign").click();
+  const modal = page.locator(".d-modal.assign");
+  await expect(modal.locator(".d-modal__title-text")).toHaveText("Assign Topic");
+  // Staff only may be assigned (assign_allowed_on_groups).
+  await modal.locator("#assignee").fill("admin");
+  await modal.locator(".assign-submit").click();
+  await expect(modal).toHaveCount(0);
+
+  const trigger = page.locator("#topic-footer-buttons .reassign-trigger");
+  await expect(trigger).toBeVisible();
+  await expect(page.locator("#post_1 .assigned-to .assigned-to--user")).toHaveText("Assigned topic to admin");
+  expect(
+    sql(
+      "SELECT a.assigned_to_type, u.username FROM assignments a JOIN users u ON u.id = a.assigned_to_id WHERE a.target_type = 'Topic' AND a.target_id = :'p1'",
+      t.id,
+    ),
+  ).toEqual([["User", "admin"]]);
+  await expectSameDocument(page);
+
+  await trigger.click();
+  await page.locator('.reassign-item[data-action="unassign"][data-target-type="Topic"]').click();
+  await expect(page.locator("#topic-footer-button-assign")).toBeVisible();
+  await expect(page.locator("#post_1 .assigned-to")).toHaveCount(0);
+  expect(sql("SELECT count(*) FROM assignments WHERE target_type = 'Topic' AND target_id = :'p1'", t.id)).toEqual([
+    ["0"],
+  ]);
+  await expectSameDocument(page);
 });
 
 test("the flag modal enables its button once a reason is chosen", async ({ page, context, session }) => {

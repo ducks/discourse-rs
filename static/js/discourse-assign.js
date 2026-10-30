@@ -2,9 +2,10 @@
 // reassign menu (TopicLevelAssignMenu), the post menu's assign button
 // (AssignButton) and a post's assignment menu (AssignedToPost) assign
 // and unassign through AssignController, the assign modal (AssignUserForm)
-// offering /assign/suggestions, then the user search as one types. The page
-// reloads once the assignment changed, as the topic's reload_topic
-// message would redraw it.
+// offering /assign/suggestions, then the user search as one types. Once the
+// assignment changed, the topic's title, footer buttons and the drawn posts
+// are redrawn in place from the topic page as it is now, as Ember's
+// /staff/topic-assignment subscriber updates the topic and its posts.
 (function () {
   "use strict";
 
@@ -25,8 +26,7 @@
   }
 
   function basePath() {
-    var timeline = document.querySelector(".timeline-container[data-topic-url]");
-    var url = timeline ? timeline.dataset.topicUrl : "";
+    var url = topicUrl();
     var at = url.indexOf("/t/");
     return at > 0 ? url.slice(0, at) : "";
   }
@@ -40,6 +40,57 @@
       })
       .catch(function () {
         window.alert(r.statusText);
+      });
+  }
+
+  function topicUrl() {
+    var timeline = document.querySelector(".timeline-container[data-topic-url]");
+    return timeline ? timeline.dataset.topicUrl : "";
+  }
+
+  // The topic page around the target (a post's page, else the first), its
+  // title, footer buttons and the posts this page draws swapped out of band
+  // as the live stream swaps a redrawn post, so the scripts hooked on
+  // htmx:oobAfterSwap run as for any redraw.
+  function redraw(targetType, targetId) {
+    var url = topicUrl();
+    var post =
+      targetType === "Post" ? document.querySelector('#posts [data-post-id="' + targetId + '"]') : null;
+    var wrapper = post ? post.closest("#posts > [data-post-number]") : null;
+    if (wrapper) {
+      url += "/" + wrapper.dataset.postNumber;
+    }
+    return fetch(url, { credentials: "same-origin" })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.statusText);
+        }
+        return r.text();
+      })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var out = [];
+        ["topic-title", "topic-footer-buttons"].forEach(function (id) {
+          var now = doc.getElementById(id);
+          if (now && document.getElementById(id)) {
+            now.setAttribute("hx-swap-oob", "true");
+            out.push(now.outerHTML);
+          }
+        });
+        document.querySelectorAll("#posts > [data-post-number]").forEach(function (shown) {
+          var number = shown.dataset.postNumber;
+          var now = doc.querySelector('#posts > [data-post-number="' + number + '"]');
+          if (now) {
+            now.setAttribute("hx-swap-oob", "outerHTML:#posts > [data-post-number='" + number + "']");
+            out.push(now.outerHTML);
+          }
+        });
+        window.htmx.swap(document.body, out.join(""), { swapStyle: "none" });
+      })
+      .catch(function (e) {
+        // The page can't be redrawn from here: drawn again whole.
+        console.error("discourse-assign: redrawing the topic:", e.message);
+        window.location.reload();
       });
   }
 
@@ -57,7 +108,7 @@
     put("/assign/unassign", { target_type: targetType, target_id: targetId }).then(
       function (r) {
         if (r.ok) {
-          window.location.reload();
+          redraw(targetType, targetId);
         } else {
           showError(r);
         }
@@ -73,7 +124,7 @@
       username: username,
     }).then(function (r) {
       if (r.ok) {
-        window.location.reload();
+        redraw(targetType, targetId);
       } else {
         showError(r);
       }
@@ -221,7 +272,7 @@
       put("/assign/assign", params).then(function (r) {
         if (r.ok) {
           closeModal();
-          window.location.reload();
+          redraw(targetType, targetId);
         } else {
           showError(r);
         }
