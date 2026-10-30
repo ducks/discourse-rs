@@ -106,6 +106,9 @@ impl Context<'_> {
         chat_view: bool,
         hide_presence: bool,
     ) -> String {
+        // isSidePanelExpanded: a route drew the side panel (a thread, a
+        // channel's threads, the pins).
+        let side_panel = content.contains("<div class=\"chat-side-panel\">");
         format!(
             "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"{}><div class=\"main-chat-outlet{}{}\" id=\"main-chat-outlet\">{content}</div></div>",
             escape(base_path),
@@ -114,9 +117,7 @@ impl Context<'_> {
             } else {
                 ""
             },
-            // mainOutletModifierClasses: has-side-panel-expanded while the
-            // side panel shows (a thread, a channel's threads).
-            if content.contains("<div class=\"chat-side-panel\">") {
+            if side_panel {
                 " has-side-panel-expanded"
             } else {
                 ""
@@ -2912,4 +2913,186 @@ fn composer_upload(upload: &Value, base_path: &str, t: &dyn Fn(&str) -> String) 
         escape(&t("chat.remove_upload")),
         d_icon("xmark", None)
     )
+}
+
+impl Context<'_> {
+    /// The channel's pins route in ChatSidePanel (ChatRoutesChannelPins:
+    /// ChatPinnedMessagesListHeader and ChatPinnedMessagesList), drawn
+    /// beside the channel route. A pin is unseen when someone else pinned
+    /// it after the member last looked (the list's snapshot, taken before
+    /// chat.js marks the pins read). The footer toggling the pinned bar is
+    /// left out with the bar.
+    pub async fn pins_side_panel(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
+        let listed = match self.list_pins(Some(channel.id)).await? {
+            super::pins::PinOutcome::Done(v) => v,
+            _ => return Err(Unsupported("the pins of a chat channel it can't list").into()),
+        };
+        let channel_json = self.channel(channel, None, None, None).await?;
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let viewer_id = i64::from(self.guardian.user_id().unwrap_or(0));
+        let view = View {
+            base_path: self.base_path,
+            channel: &channel_json,
+            viewer_id,
+            online: self.online_ids().await?,
+            emojis: self.settings.emojis().clone(),
+            max_image: (
+                self.settings.get("max_image_width")?.to_f(),
+                self.settings.get("max_image_height")?.to_f(),
+            ),
+            base_url: crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            }
+            .base_url()?,
+            // @interactive={{false}}: no emoji picker button.
+            can_interact: false,
+            prioritize_name: prioritize_name(self.settings)?,
+            admin: self.guardian.is_admin(),
+            t: &t,
+            i18n: self.i18n,
+            relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
+            thread_context: false,
+        };
+        let mobile = crate::mobile::mobile_view();
+        let slug = slugified_title(&channel_json);
+        let channel_url = format!("{}/chat/c/{}/{}", self.base_path, escape(&slug), channel.id);
+        let can_manage = self.can_manage_pins(channel).await?;
+
+        // The mobile title names the channel too (its emoji left as typed).
+        let mut title = t("chat.pinned_messages.title");
+        if mobile {
+            title.push_str(" - ");
+            title.push_str(s(&channel_json["title"]));
+        }
+        let mut out = String::from(
+            "<div class=\"chat-side-panel\"><div class=\"c-routes --channel-pins c-channel-pins\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\">",
+        );
+        if mobile {
+            out.push_str(&format!(
+                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{channel_url}\">{}</a>",
+                escape(&t("chat.return_to_channel")),
+                d_icon("chevron-left", None)
+            ));
+        }
+        out.push_str(&format!(
+            "<div class=\"c-navbar__title\" title=\"{t}\"><span class=\"c-navbar__title-text\">{}{t}</span></div><nav class=\"c-navbar__actions\">",
+            d_icon("thumbtack", None),
+            t = escape(&title)
+        ));
+        if !mobile {
+            out.push_str(&format!(
+                "<a class=\"c-navbar__close-pins-button btn-transparent btn btn-icon no-text\" title=\"{}\" href=\"{channel_url}\">{}</a>",
+                escape(&t("chat.pinned_messages.close")),
+                d_icon("xmark", None)
+            ));
+        }
+        out.push_str("</nav></nav></div>");
+        out.push_str(&format!(
+            "<div class=\"chat-pinned-messages-list chat-messages-scroller\" data-channel-id=\"{}\"><div class=\"chat-pinned-messages-list__items\">",
+            channel.id
+        ));
+        let last_viewed = listed["membership"]["last_viewed_pins_at"].as_str();
+        let pins = listed["pinned_messages"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+        if pins.is_empty() {
+            out.push_str(&format!(
+                "<div class=\"chat-pinned-messages-list__empty\" tabindex=\"-1\">{}</div>",
+                escape(&t("chat.no_pinned_messages"))
+            ));
+        }
+        for pin in &pins {
+            let by_viewer = pin["pinned_by"]["id"].as_i64() == Some(viewer_id);
+            let unseen = !by_viewer && last_viewed.is_none_or(|at| s(&pin["pinned_at"]) > at);
+            let pinned_by = if by_viewer {
+                t("chat.pinned_messages.pinned_by_you")
+            } else {
+                t("chat.pinned_messages.pinned_by_user")
+                    .replace("%{username}", s(&pin["pinned_by"]["username"]))
+            };
+            let top = format!(
+                "<div class=\"chat-pinned-message__pinned-by\">{}<span>{}</span></div>",
+                if unseen {
+                    d_icon("thumbtack", Some("chat-pinned-message__pinned-by-icon"))
+                } else {
+                    String::new()
+                },
+                escape(&pinned_by)
+            );
+            let message = &pin["message"];
+            let html = message_html(&view, std::slice::from_ref(message), 0, None, None, false)?;
+            out.push_str(&format!(
+                "<div class=\"chat-pinned-message\"><a class=\"chat-pinned-message__link\" href=\"{channel_url}/{}\">{}</a>",
+                message["id"],
+                not_interactive(&html, &top)
+            ));
+            if can_manage {
+                out.push_str(&format!(
+                    "<button class=\"btn no-text btn-icon btn-transparent chat-pinned-message__unpin\" aria-label=\"{l}\" title=\"{l}\" type=\"button\" data-message-id=\"{}\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+                    message["id"],
+                    d_icon("thumbtack-slash", None),
+                    l = escape(&t("chat.unpin_message"))
+                ));
+            }
+            out.push_str("</div>");
+        }
+        out.push_str("</div></div></div>");
+        if !mobile {
+            out.push_str("<div class=\"chat-side-panel-resizer\"></div>");
+        }
+        out.push_str("</div>");
+        Ok(out)
+    }
+}
+
+/// A message drawn with @context="pinned" @interactive={{false}}: the
+/// container marked -not-interactive with the route's top block first,
+/// the avatar and the author's name without their links, reactions out
+/// of the tab order, and no pin mark.
+fn not_interactive(html: &str, top: &str) -> String {
+    static AVATAR_LINK: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(
+            r#"(<div class="chat-message-avatar"><div class="chat-user-avatar[^"]*" data-username="[^"]*">)<a( aria-hidden="true")? class="chat-user-avatar__container" data-user-card="[^"]*" href="[^"]*"(?: tabindex="-1")?>(.*?)</a>"#,
+        )
+        .expect("static pattern")
+    });
+    static NAME: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(
+            r#" clickable"><button class="chat-message-info__username__name" data-user-card="[^"]*" type="button">([^<]*)</button>"#,
+        )
+        .expect("static pattern")
+    });
+    static PINNED: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"<span class="chat-message-info__pinned" title="[^"]*">.*?</span>"#)
+            .expect("static pattern")
+    });
+    let Some(end) = html.find('>') else {
+        return html.to_string();
+    };
+    let (open, rest) = html.split_at(end);
+    let open = if open.contains(" has-reply\"") {
+        open.replacen(" has-reply\"", " -not-interactive has-reply\"", 1)
+    } else {
+        open.replacen("\" data-id=", " -not-interactive\" data-id=", 1)
+    };
+    let rest = AVATAR_LINK.replace(&rest[1..], |c: &regex::Captures| {
+        format!(
+            "{}<span{} class=\"chat-user-avatar__container\">{}</span>",
+            &c[1],
+            c.get(2).map_or("", |m| m.as_str()),
+            &c[3]
+        )
+    });
+    let rest = NAME.replace(
+        &rest,
+        "\"><span class=\"chat-message-info__username__name\">$1</span>",
+    );
+    let rest = PINNED.replace(&rest, "").replace(
+        "\" tabindex=\"0\" title=\":",
+        "\" tabindex=\"-1\" title=\":",
+    );
+    format!("{open}>{top}{rest}")
 }

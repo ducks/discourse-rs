@@ -541,6 +541,24 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/channels/{id}/threads/{thread_id}/mark-thread-title-prompt-seen/me.json",
             post(chat::thread_title_prompt_seen),
         )
+        .route("/chat/api/channels/{id}/pins", get(chat::pins))
+        .route("/chat/api/channels/{id}/pins.json", get(chat::pins))
+        .route(
+            "/chat/api/channels/{id}/pins/read",
+            put(chat::mark_pins_read),
+        )
+        .route(
+            "/chat/api/channels/{id}/pins/read.json",
+            put(chat::mark_pins_read),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/pin",
+            post(chat::pin_message).delete(chat::unpin_message),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/pin.json",
+            post(chat::pin_message).delete(chat::unpin_message),
+        )
         .route("/chat/{id}/react/{message_id}", put(chat::react))
         .route("/chat/{id}/{message_id}/rebake", put(chat::rebake_message))
         .route(

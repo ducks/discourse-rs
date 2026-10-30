@@ -95,6 +95,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - Emails: chat summary (src/plugins/chat/summary_email.rs; src/jobs/user_email.rs:88).
 - Message actions: POST /chat/:id/quote (TranscriptService, src/plugins/chat/transcript.rs), GET /chat/:id/:message_id/reactions-users, DELETE .../streaming, POST .../interactions, GET /chat/api/mentions/groups (src/plugins/chat/interact.rs), the DuplicateMessageValidator exemptions (create.rs, modify.rs), target dates through Date._parse (messages.rs), ONPDiff's limit as a 500 (modify.rs). Refused: transcripts of threaded channels.
 - Moderation: POST .../messages/:id/flags (Chat::FlagMessage and ReviewQueue#flag_message: Chat::ReviewableMessage.needs_review!, the score, can_flag_again?, auto silence from flags, publish_flag!; src/plugins/chat/flags.rs), Chat::ReviewableMessage's perform actions (src/plugins/chat/review.rs, from src/review.rs), DELETE .../messages (Chat::TrashMessages, src/plugins/chat/modify.rs), POST .../messages/moves (Chat::MessageMover, src/plugins/chat/mover.rs). Refused: notify flags with a message (companion PMs), the DM transcript, take_action, queue_for_review, flagging uploads, moving threads.
+- Pins: GET .../pins, PUT .../pins/read, POST and DELETE .../messages/:id/pin (ListChannelPins with ChannelPinsSerializer, MarkPinsAsRead, PinMessage, UnpinMessage, can_manage_chat_channel_pins?, the pin and unpin publishes; src/plugins/chat/pins.rs). The pinned excerpt of a links-only message is refused.
 - Cooking: chat engine with MARKDOWN_IT_RULES and features, chat-html-inline (crates/markdown/src/render/chat_html.rs; mod.rs:190,282), slash commands /me /shrug /tableflip (src/plugins/chat/cook.rs), parity corpus parity/chat_cook.
 
 ### Gaps
@@ -106,7 +107,6 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: absent.
 - POST /chat/api/channels/:channel_id/invites (InviteUsersToChannel, chat_invitation notifications). Rails: routes.rb:26; app/services/chat/invite_users_to_channel.rb. Port: absent.
 - PUT /chat/api/channels/:channel_id/notifications-settings/me (muted, notification_level). Rails: routes.rb:36; channels_current_user_notifications_settings_controller.rb:6. Port: absent.
-- Pins: GET /channels/:id/pins, PUT /pins/read, POST and DELETE /messages/:id/pin (ListChannelPins, PinMessage, UnpinMessage, MarkPinsAsRead). Rails: routes.rb:39-42; app/controllers/chat/api/channel_pins_controller.rb. Port: absent (the chat_pinned_messages setting and pin counts are read, src/plugins/chat/channels.rs:720, but nothing pins).
 - GET /chat/api/search (Chat::SearchMessage over chat_message_search_data). Rails: routes.rb:21; app/services/chat/search_message.rb. Port: absent (the index is written, src/posting/search_index.rs:631, never read).
 - GET /chat/api/category-chatables/:id/permissions (staff). Rails: routes.rb:45; category_chatables_controller.rb:6. Port: absent.
 - PUT /chat/user_chat_enabled/:user_id (set_user_chat_status). Rails: routes.rb:114; chat_controller.rb:63. Port: absent.
@@ -224,7 +224,6 @@ Verdict: started (63 gaps)
 - /chat/starred-channels and /chat/search routes (the mobile footer's and the sidebar's search link go there). Rails: c/chat-route-map.js:5,21; c/routes/chat/search.js; c/components/chat/routes/search.gjs. Port: absent (view.rs:430,462 and :569 link to them). [item 162]
 - /chat/new-message route (the sidebar's "start a new DM" link, view.rs:681). Rails: c/chat-route-map.js:24; c/routes/chat/new-message.js. Port: absent.
 - /chat/c/:slug/:id/info, /info/members, /info/settings (the navbar title links to it, page.rs:544; browse cards link members, page.rs:1791). Rails: c/chat-route-map.js:26-33; c/components/chat/routes/channel-info*.gjs; config/routes.rb:121-123. Port: absent (404).
-- /chat/c/:slug/:id/pins (the navbar's pinned button, page.rs:581). Rails: c/chat-route-map.js:15; c/components/chat/routes/channel-pins.gjs; c/components/chat-pinned-messages-list.gjs. Port: absent (chat_pages.rs:412 404s "pins").
 - /chat/message/:messageId (ChatMessageRoute, finds the channel and redirects). Rails: c/chat-route-map.js:41; c/routes/chat-channel-legacy.js. Port: absent.
 - The /chat/channel/:channel_id and /chat/channel/:id/:title(/info...) legacy redirects. Rails: config/routes.rb:126,134-138. Port: absent.
 - A channel without a slug refuses the channel page. Rails: c/routes/chat/channel.js (slugifyChannel). Port: src/routes/chat_pages.rs:406 (refusal "chat channels without a slug").
@@ -239,7 +238,7 @@ Verdict: started (63 gaps)
 - The navbar filter button (in-channel search, ChatNavbarFilter) is inert. Rails: c/components/chat/navbar/filter.gjs; c/components/chat-search.gjs. Port: page.rs:565, no handler. [item 162 for the route; the in-channel filter is not covered]
 - The retention reminder's dismiss button is inert (the endpoint exists). Rails: c/components/chat-retention-reminder.gjs. Port: page.rs:510, no handler in chat.js.
 - The pinned message bar. Rails: c/components/chat/pinned-message-bar.gjs; c/components/chat-channel.gjs:819; c/lib/chat-pinned-bar-dismissal.js. Port: absent.
-- Bus message types notice, pin, unpin (self_flagged and flag done, 217; thread_created and update_thread_original_message done, 160). Rails: c/lib/chat-channel-subscription-manager.js:68-86. Port: static/js/chat.js:1805 (onBus handles only sent, processed, edit, refresh, restore, reaction, delete, bulk_delete).
+- Bus message types notice (self_flagged and flag done, 217; pin and unpin redraw the page, 219; thread_created and update_thread_original_message done, 160). Rails: c/lib/chat-channel-subscription-manager.js:68-86. Port: static/js/chat.js:1805 (onBus handles only sent, processed, edit, refresh, restore, reaction, delete, bulk_delete).
 - The global chat subscriptions: new channels, channel status, channel edits, archive status, membership kicks, the user's new-channel and notices channels. Rails: c/services/chat-subscriptions-manager.js:105-509; c/services/chat-channel-notices-manager.js. Port: src/routes/live.rs:146-166 subscribes only new-messages, new-mentions and user-tracking-state. [archive status: item 162]
 - Chat notices (mention_without_membership with its "invite" action, POST /chat/api/channels/:id/invites unrouted). Rails: c/components/chat-notices.gjs; c/components/chat/notices/mention_without_membership.gjs. Port: page.rs:173 draws an empty .chat-notices, no notice rendering.
 - Composer mention warnings parse mentions with a word match, not the cooked message (ChatMessage#parseMentions). Rails: c/services/chat-composer-warnings-tracker.js. Port: static/js/chat.js (composerMentions).
@@ -254,7 +253,6 @@ Verdict: started (63 gaps)
 - Archived channel status with progress and retry (ChatChannelArchiveStatus). Rails: c/components/chat-channel-archive-status.gjs. Port: absent. [item 162]
 
 **UI: message actions**
-- "Pin" and "Unpin" are listed but do nothing (POST/DELETE .../messages/:id/pin unrouted). Rails: c/lib/chat-message-interactor.js:427,443. Port: static/js/chat.js:1049-1052, :1468 (no case).
 - The bookmark button is drawn with its states but has no click (BookmarkModal on a chat message). Rails: c/lib/chat-message-interactor.js:357. Port: src/plugins/chat/actions_view.rs:90; no handler in chat.js. [item 161]
 - "Copy text" in the mobile view. Rails: c/lib/chat-message-interactor.js:181,277. Port: absent from static/js/chat.js:1037.
 - The mobile long-press sheet's bookmark button (chat bookmarks are not made from the page). Rails: c/components/chat-message-actions-mobile.gjs. Port: static/js/chat.js (openMobileActions).

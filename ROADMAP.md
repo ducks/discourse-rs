@@ -4820,12 +4820,34 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     from the cooked message (a word match here). Refused: transcripts of
     threaded channels, target dates in named zones or with fractions of
     a second
-219. `feat/chat-pins` S: GET pins, PUT pins/read, POST and DELETE
-    messages/:id/pin (ListChannelPins, PinMessage, UnpinMessage,
-    MarkPinsAsRead, chat_pinning_messages_allowed_groups) and their
-    publishes, the pins route (routes/chat_pages.rs:412 404s it), the
-    pin and unpin menu entries (static/js/chat.js:1468), the pinned
-    message bar and the pin and unpin bus messages (:1805)
+219. ~~`feat/chat-pins`~~ (done) S: nothing pinned: the pin routes were
+    unrouted, /chat/c/:slug/:id/pins 404'd and the menu's Pin and Unpin
+    did nothing. Now src/plugins/chat/pins.rs ports
+    Chat::Api::ChannelPinsController behind chat_pinned_messages (404
+    while off): GET .../pins (Chat::ListChannelPins, joinable or 403,
+    Chat::ChannelPinsSerializer: the pins in timeline order with
+    pinned_at, the excerpt keeping links, the core BasicUserSerializer
+    pinned_by and the message, and the member's
+    UserChannelMembershipSerializer or null), PUT .../pins/read
+    (MarkPinsAsRead: last_viewed_pins_at, 404 without a membership),
+    POST and DELETE .../messages/:id/pin (PinMessage and UnpinMessage:
+    can_manage_chat_channel_pins? with chat_pinning_messages_allowed_groups
+    outside DMs, the 20 pin limit, already pinned and not pinned as 422
+    failed_json errors, publish_pin! and publish_unpin! with the
+    authoritative count). The pins route draws the channel with
+    ChatSidePanel (has-side-panel-expanded) holding
+    ChatPinnedMessagesListHeader and ChatPinnedMessagesList: each pin
+    as a non-interactive ChatMessage with "Pinned by" and the unseen
+    thumbtack, linking to the message, the unpin button for those who
+    manage pins, the empty state; chat.js marks the pins read as the
+    list opens, unpins from it, acts on the menu's Pin and Unpin, and
+    redraws the page on the pin and unpin bus messages (the message's
+    mark, the navbar's pinned button). tests/chat_pins.rs. Left: the
+    pinned message bar (ChatPinnedMessageBar with its viewport anchor,
+    jump, indicator and per-device dismissal) with the list's dismiss and
+    show footer and the navbar button's showing only while the bar is
+    dismissed (it shows whenever there are pins); the pinned excerpt of a
+    message of links only (urls_as_links) is refused
 220. `feat/chat-search` S: GET /chat/api/search (SearchMessage over
     chat_message_search_data, which posting/search_index.rs:631 already
     writes and nothing reads); the /chat/search page stays with 162

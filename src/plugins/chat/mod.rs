@@ -29,6 +29,7 @@ pub mod mover;
 pub mod new_message;
 pub mod notify;
 pub mod page;
+pub mod pins;
 pub mod presence;
 pub mod publisher;
 pub mod review;

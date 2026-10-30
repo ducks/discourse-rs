@@ -334,7 +334,7 @@ pub async fn publish_user_tracking_state(
 
 /// BasicUserSerializer without a scope, as the publisher's payloads carry
 /// a user.
-async fn basic_user(cx: &mut Context<'_>, user_id: i32) -> Result<Value, AppError> {
+pub(crate) async fn basic_user(cx: &mut Context<'_>, user_id: i32) -> Result<Value, AppError> {
     let row: Option<(String, Option<String>, Option<i32>)> =
         sqlx::query_as("SELECT username, name, uploaded_avatar_id FROM users WHERE id = $1")
             .bind(user_id)

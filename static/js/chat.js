@@ -259,7 +259,7 @@
           return {};
         })
         .then(function (body) {
-          window.alert((body.errors || [r.statusText]).join("\n"));
+          window.alert((body.errors || (body.error ? [body.error] : [r.statusText])).join("\n"));
           throw new Error(r.statusText);
         });
     });
@@ -1606,6 +1606,13 @@
       case "flag":
         openFlag(channelId, message);
         break;
+      // ChatMessageInteractor#pin and #unpin.
+      case "pin":
+        api("POST", path + "/pin").then(changed).catch(function () {});
+        break;
+      case "unpin":
+        api("DELETE", path + "/pin").then(changed).catch(function () {});
+        break;
       case "rebake":
         fetch(basePath() + "/chat/" + channelId + "/" + message.dataset.id + "/rebake", {
           method: "PUT",
@@ -2928,9 +2935,42 @@
       case "flag":
         drawFlag(data.chat_message_id, "reviewable", data.reviewable_id);
         return Promise.resolve();
+      // handlePinMessage and handleUnpinMessage: the message's mark, the
+      // navbar's pinned button and the pins list follow the page drawn
+      // again.
+      case "pin":
+      case "unpin":
+        return refresh();
     }
     return Promise.resolve();
   }
+
+  // ChatPinnedMessagesList: the pins marked read as the list opens, and
+  // its unpin buttons.
+  var pinsMarkedRead = null;
+
+  function markPinsRead() {
+    var list = document.querySelector(".chat-pinned-messages-list[data-channel-id]");
+    if (!list || pinsMarkedRead === location.href) {
+      return;
+    }
+    pinsMarkedRead = location.href;
+    api("PUT", "/channels/" + list.dataset.channelId + "/pins/read").catch(function () {});
+  }
+
+  document.addEventListener("click", function (event) {
+    var unpin = event.target.closest(".chat-pinned-message__unpin");
+    if (!unpin) {
+      return;
+    }
+    var list = unpin.closest(".chat-pinned-messages-list[data-channel-id]");
+    unpin.disabled = true;
+    api("DELETE", "/channels/" + list.dataset.channelId + "/messages/" + unpin.dataset.messageId + "/pin")
+      .then(changed)
+      .catch(function () {
+        unpin.disabled = false;
+      });
+  });
 
   function startLive() {
     var channel = document.querySelector(".chat-channel[data-id]");
@@ -4156,6 +4196,7 @@
       api("POST", "/channels/" + channel.dataset.id + "/memberships/me").then(refresh);
     }
     setupAutocomplete();
+    markPinsRead();
     drawTimes(channel);
     drawSeparators(channel);
     decorateLinks(channel);

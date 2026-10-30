@@ -535,7 +535,12 @@ pub async fn channel(
         Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
     };
     let (own_slug, dm_title) = slugified_title(&mut cx, &channel).await?;
-    let target = match &message_id {
+    // chat.channel.pins: the channel with its pins in the side panel.
+    let pins = message_id.as_deref() == Some("pins");
+    if pins && !settings.get("chat_pinned_messages")?.truthy() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let target = match message_id.as_deref().filter(|_| !pins) {
         None => None,
         Some(m) => match m.parse::<i64>() {
             Ok(m) => Some(m),
@@ -543,13 +548,20 @@ pub async fn channel(
         },
     };
     if slug != own_slug {
-        let tail = target.map(|m| format!("/{m}")).unwrap_or_default();
+        let tail = match (pins, target) {
+            (true, _) => "/pins".to_string(),
+            (false, Some(m)) => format!("/{m}"),
+            (false, None) => String::new(),
+        };
         return Ok(redirect(format!(
             "{base_path}/chat/c/{own_slug}/{}{tail}",
             channel.id
         )));
     }
-    let content = cx.channel_page(&channel, target, None).await?;
+    let mut content = cx.channel_page(&channel, target, None).await?;
+    if pins {
+        content.push_str(&cx.pins_side_panel(&channel).await?);
+    }
     let channel_title = channel.name.clone().filter(|n| !n.is_empty());
     let title = match (dm_title, channel_title) {
         (Some(dm), _) => format!(
