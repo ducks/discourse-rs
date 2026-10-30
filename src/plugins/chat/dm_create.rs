@@ -21,6 +21,11 @@ pub enum Outcome {
     Refused(String),
     /// render_json_error: a 422 `{errors: [...]}`.
     Unprocessable(String),
+    /// The channel's ActiveRecord::RecordInvalid, raised by
+    /// set_optional_params after the direct message and its channel were
+    /// saved (the service has no transaction): a 422 record_invalid, the
+    /// rows kept.
+    RecordInvalid(Vec<String>),
 }
 
 /// The service's params.
@@ -281,11 +286,13 @@ impl Context<'_> {
         // set_optional_params
         if let Some(name) = &name {
             let max_title = s.get("max_topic_title_length")?.to_i();
-            if name.trim().is_empty() || name.chars().count() as i64 > max_title {
-                return Err(crate::Unsupported(
-                    "an invalid direct message channel name (record_invalid)",
-                )
-                .into());
+            if name.trim().is_empty() {
+                return Ok(Outcome::RecordInvalid(vec!["Name can't be blank".into()]));
+            }
+            if name.chars().count() as i64 > max_title {
+                return Ok(Outcome::RecordInvalid(vec![format!(
+                    "Name is too long (maximum is {max_title} characters)"
+                )]));
             }
             sqlx::query(
                 "UPDATE chat_channels SET name = $2, updated_at = $3 WHERE id = $1 AND name IS DISTINCT FROM $2",

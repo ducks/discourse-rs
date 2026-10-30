@@ -356,8 +356,18 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/api/me/channels.json", get(chat::me_channels))
         .route("/chat/api/me/threads", get(chat::me_threads))
         .route("/chat/api/me/threads.json", get(chat::me_threads))
-        .route("/chat/api/channels", get(chat::index))
-        .route("/chat/api/channels.json", get(chat::index))
+        .route(
+            "/chat/api/channels",
+            get(chat::index).post(chat::create_channel),
+        )
+        .route(
+            "/chat/api/channels.json",
+            get(chat::index).post(chat::create_channel),
+        )
+        .route(
+            "/chat/api/category-chatables/{id}/permissions",
+            get(chat::category_permissions),
+        )
         .route("/chat/api/chatables", get(chat::chatables))
         .route("/chat/api/chatables.json", get(chat::chatables))
         .route(
@@ -378,6 +388,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/chat/api/channels/{id}/status.json",
             put(chat::update_status),
+        )
+        .route(
+            "/chat/api/channels/{id}/archives",
+            post(chat::archive_channel),
         )
         .route("/chat/api/channels/{id}/invites", post(chat::invite_users))
         .route(
@@ -2952,6 +2966,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chat-drawer.js", get(asset))
         .route("/assets/chat-new-message.js", get(asset))
         .route("/assets/chat-channel-info.js", get(asset))
+        .route("/assets/chat-channel-menus.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))
         .route("/assets/autocomplete.js", get(asset))
         .route("/assets/presence.js", get(asset))

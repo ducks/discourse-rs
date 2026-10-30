@@ -98,10 +98,10 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 ### Gaps
 
 **Routes and controllers**
-- POST /chat/api/channels (create a category channel, Chat::CreateCategoryChannel, auto_join limiter). Rails: plugins/chat/config/routes.rb:9; plugins/chat/app/controllers/chat/api/channels_controller.rb:63. Port: absent (src/routes/mod.rs:308 GET only).
+- POST /chat/api/channels (Chat::CreateCategoryChannel). Port: done (src/plugins/chat/channel_create.rs). [item 216]
 - DELETE /chat/api/channels/:channel_id (Chat::TrashChannel, Jobs::Chat::ChannelDelete). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
 - PUT /chat/api/channels/:channel_id/status (Chat::UpdateChannelStatus, the staff log and /chat/channel-status). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
-- POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: absent.
+- POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: routed, Unsupported (needs TranscriptService). [item 216a]
 - POST /chat/api/channels/:channel_id/invites (InviteUsersToChannel, chat_invitation notifications). Port: done (src/plugins/chat/channel_settings.rs); nothing in the UI sends one yet (the mention warnings, 218). [item 215]
 - PUT /chat/api/channels/:channel_id/notifications-settings/me (muted, notification_level). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
 - POST /chat/api/channels/:channel_id/messages/:message_id/flags (Chat::FlagMessage, ReviewQueue). Rails: routes.rb:12; app/services/chat/flag_message.rb; lib/chat/review_queue.rb:12. Port: absent.
@@ -111,7 +111,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - DELETE /chat/api/channels/:channel_id/messages (bulk_destroy, Chat::TrashMessages). Rails: routes.rb:67; channel_messages_controller.rb:36. Port: absent.
 - Pins: GET /channels/:id/pins, PUT /pins/read, POST and DELETE /messages/:id/pin (ListChannelPins, PinMessage, UnpinMessage, MarkPinsAsRead). Rails: routes.rb:39-42; app/controllers/chat/api/channel_pins_controller.rb. Port: absent (the chat_pinned_messages setting and pin counts are read, src/plugins/chat/channels.rs:720, but nothing pins).
 - GET /chat/api/search (Chat::SearchMessage over chat_message_search_data). Rails: routes.rb:21; app/services/chat/search_message.rb. Port: absent (the index is written, src/posting/search_index.rs:631, never read).
-- GET /chat/api/category-chatables/:id/permissions (staff). Rails: routes.rb:45; category_chatables_controller.rb:6. Port: absent.
+- GET /chat/api/category-chatables/:id/permissions (staff). Port: done (src/plugins/chat/channel_create.rs). [item 216]
 - GET /chat/api/mentions/groups (HintsController#check_group_mentions). Rails: routes.rb:50; hints_controller.rb:8. Port: absent.
 - GET /chat/:chat_channel_id/:message_id/reactions-users (MessageReactionUsersQuery). Rails: routes.rb:111; chat_controller.rb:25. Port: absent.
 - POST /chat/:chat_channel_id/quote (TranscriptService). Rails: routes.rb:113; chat_controller.rb:89; lib/chat/transcript_service.rb:18. Port: absent.

@@ -353,9 +353,7 @@ impl Context<'_> {
             return Err(Unsupported("chat's empty channels list").into());
         }
         let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
-        if list.is_empty() {
-            return Err(Unsupported("chat's filtered channels list empty state").into());
-        }
+        let filtered_empty = list.is_empty();
 
         let title = escape(&self.t("chat.chat_channels"));
         let mut out = format!(
@@ -370,6 +368,9 @@ impl Context<'_> {
                 continue;
             };
             out.push_str(&self.channel_row(c, channel, &emojis, now));
+        }
+        if filtered_empty {
+            out.push_str(&self.filtered_empty_state());
         }
         out.push_str("</div></div>");
 
@@ -522,6 +523,17 @@ impl Context<'_> {
         )
     }
 
+    /// ChatSidebarChannelListFilterEmptyState: the section's filter leaves
+    /// nothing, with the way back to all (chat-channel-menus.js).
+    fn filtered_empty_state(&self) -> String {
+        format!(
+            "<div class=\"empty-state__container --empty-channels-list --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div></div>",
+            super::page::CHAT_ZERO,
+            escape(&self.t("chat.channel_list.empty.filtered")),
+            escape(&self.t("chat.channel_list.empty.show_all"))
+        )
+    }
+
     /// ChatChannelListFilterToggle (shown while the section's filter isn't
     /// all) and ChatChannelListOptionsButton.
     fn list_option_buttons(&self, p: ListPrefs) -> String {
@@ -642,7 +654,7 @@ impl Context<'_> {
             let mut list = filter_and_sort(dms.iter().collect(), dm_prefs, None);
             list.truncate(DIRECT_MESSAGE_CHANNELS_LIMIT);
             if list.is_empty() {
-                return Err(Unsupported("chat's filtered direct messages empty state").into());
+                out.push_str(&self.filtered_empty_state());
             }
             let online = self.online_ids().await?;
             let emojis = settings.emojis().clone();
@@ -743,7 +755,7 @@ impl Context<'_> {
         } else {
             let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
             if list.is_empty() {
-                return Err(Unsupported("chat's filtered channels list empty state").into());
+                out.push_str(&self.filtered_empty_state());
             }
             let emojis = settings.emojis().clone();
             let now = crate::clock::now();
@@ -814,9 +826,7 @@ impl Context<'_> {
         if starred_prefs.sort != "alphabetical" {
             sort(&mut list, starred_prefs);
         }
-        if list.is_empty() {
-            return Err(Unsupported("chat's filtered starred channels empty state").into());
-        }
+        let filtered_empty = list.is_empty();
         let mut out = format!(
             "<div class=\"c-drawer-routes --starred-channels\">{navbar}<div class=\"chat-drawer-content\"><div class=\"chat-channel-divider starred-channels-section\"><span class=\"channel-title\">{}</span><div class=\"chat-channel-divider__actions\">{}</div></div><div class=\"channels-list-container starred-channels\">",
             escape(&self.t("chat.starred_channels")),
@@ -840,6 +850,9 @@ impl Context<'_> {
             } else if let Some(c) = public.iter().find(|c| c["id"].as_i64() == Some(channel.id)) {
                 out.push_str(&self.channel_row(c, channel, &emojis, now));
             }
+        }
+        if filtered_empty {
+            out.push_str(&self.filtered_empty_state());
         }
         out.push_str("</div></div>");
         out.push_str(&self.footer("starred", &channels, &dms).await?);

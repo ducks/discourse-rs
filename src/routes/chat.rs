@@ -988,6 +988,14 @@ pub async fn create_direct_message_channel(
             Json(json!({ "errors": [error] })),
         )
             .into_response(),
+        Outcome::RecordInvalid(errors) => {
+            tx.commit().await?;
+            (
+                axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                Json(json!({ "errors": errors, "error_type": "record_invalid" })),
+            )
+                .into_response()
+        }
     })
 }
 
@@ -1332,4 +1340,87 @@ pub async fn user_chat_enabled(
             .await?;
     tx.commit().await?;
     Ok(Json(json!({ "chat_enabled": saved })).into_response())
+}
+
+/// POST /chat/api/channels: Chat::Api::ChannelsController#create
+/// (Chat::CreateCategoryChannel).
+pub async fn create_channel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::channel_create::{Created, Params};
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    // params.require(:channel)
+    let Some(serde_json::Value::Object(channel)) = p.get("channel").cloned() else {
+        return Ok(super::accounts::param_missing("channel"));
+    };
+    let params = Params::from_map(&channel);
+    let created = context(&state, &mut tx, &settings, &guardian)
+        .create_category_channel(&state, &params)
+        .await?;
+    Ok(match created {
+        Created::Outcome(outcome) => return finish_channel(&state, tx, outcome).await,
+        Created::PublicChannelsDisabled => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({
+                "errors": [state.i18n.t("chat.errors.public_channels_disabled").unwrap_or_default()]
+            })),
+        )
+            .into_response(),
+        Created::ChannelExists => super::search::invalid_parameters(
+            &state,
+            state
+                .i18n
+                .t("chat.errors.channel_exists_for_category")
+                .unwrap_or_default(),
+        ),
+    })
+}
+
+/// GET /chat/api/category-chatables/:id/permissions:
+/// Chat::Api::CategoryChatablesController#permissions, behind
+/// StaffConstraint (anyone else finds no route).
+pub async fn category_permissions(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !guardian.is_staff() || !crate::plugins::chat::enabled(&settings)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let body = context(&state, &mut conn, &settings, &guardian)
+        .category_permissions(crate::ruby::to_i(strip_format(&id)))
+        .await?;
+    Ok(match body {
+        Some(Ok(body)) => Json(body).into_response(),
+        Some(Err(())) => super::search::invalid_access(&state),
+        None => super::topics::not_found_response(&state),
+    })
+}
+
+/// POST /chat/api/channels/:channel_id/archives: refused. Its
+/// ChannelArchiveService quotes the messages into posts through
+/// Chat::TranscriptService, which is not ported (218).
+pub async fn archive_channel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    if let Err(refused) = begin(&state, &mut conn, &guardian).await? {
+        return Ok(refused);
+    }
+    Err(crate::Unsupported(
+        "archiving chat channels (ChannelArchiveService needs the TranscriptService, 218)",
+    )
+    .into())
 }

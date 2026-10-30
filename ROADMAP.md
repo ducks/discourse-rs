@@ -4570,18 +4570,42 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the composer's mention warnings that send invites (218), the drawer's
     info route, info/about and info/search (404 as Ember has no route for
     them).
-216. `feat/chat-channel-create` M: POST /chat/api/channels
-    (CreateCategoryChannel, the auto join limiter) with the create
-    channel modal behind the browse page's New channel button
-    (plugins/chat/page.rs:1624), GET category-chatables/:id/permissions,
-    archiving (POST archives, ChannelArchiveService,
-    Jobs::Chat::ChannelArchive, chat_allow_archiving_channels,
-    chat_archive_destination_topic_status), the channel list options
-    menus (plugins/chat/view.rs:350,732,739: create, browse, new DM, new
-    group, filter, sort) and the sidebar channel hover menu (:788),
-    channel and DM validation errors (plugins/chat/dm_groups.rs:498;
-    plugins/chat/dm_create.rs:285). 162's archived channel reads land
-    with it
+216. ~~`feat/chat-channel-create`~~ (done, stacked on
+    feat/chat-channel-settings for its slug checks and record_invalid
+    answers) M: nothing created a channel, and the list menus and the
+    sidebar's hover menu did nothing. Now POST /chat/api/channels
+    (plugins/chat/channel_create.rs: Chat::CreateCategoryChannel's
+    policies, contract, the existing name's InvalidParameters, the
+    channel's auto slug and validations as record_invalid, the creator's
+    membership, auto join), GET category-chatables/:id/permissions
+    (staff, the restricted category's posting groups visible to the
+    viewer with their member count, else everyone), and
+    static/js/chat-channel-menus.js on every page a member chats on:
+    ChatModalCreateChannel (name, slug from /slugs.json, description, the
+    category with its security hint and the auto join warning, emoji,
+    auto join, threading) behind the browse page's New channel button
+    and the menu's, ChatChannelListSidebarMenu from the lists' options
+    buttons and the sidebar headers (new channel, browse, new DM and
+    group chat through chat-new-message.js, the filter and sort submenus
+    saved as the member's chat_channel_list_* options), the filter
+    toggle, ChatSidebarChannelListFilterEmptyState (plugins/chat/view.rs,
+    refused before), and ChatChannelSidebarContextMenu from a sidebar
+    link's hover button (notification levels and mute, settings, star,
+    leave). CreateDirectMessageChannel's name errors answer
+    record_invalid with the DM and channel kept, as Rails' service has no
+    transaction (dm_create.rs). Tests: tests/chat_channel_create.rs.
+    Deviations: the category chooser is a native select over /site.json's
+    categories (CategoryChooser is select-kit), the empty state's Show
+    all saves the filter as all (Ember bypasses it for the session), the
+    context menu reads the channel from GET /chat/api/channels/:id.
+    Left, as 216a.
+    216a. `feat/chat-channel-archive` M: archiving (POST archives answers
+    Unsupported: ChannelArchiveService quotes messages into posts through
+    Chat::TranscriptService, 218; Jobs::Chat::ChannelArchive,
+    chat_archive_destination_topic_status, the archive modal and the
+    settings' archive row, info.rs refuses it while archiving is
+    allowed), and 162's archived channel reads (channels.rs refuses an
+    archived channel for staff)
 217. `feat/chat-moderation` L: flagging (POST messages/:id/flags,
     FlagMessage, ReviewQueue) with the flag menu entry and the flag mark
     in the info line (static/js/chat.js:1468 drops the entry;
