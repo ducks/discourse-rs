@@ -914,18 +914,16 @@ impl Context<'_> {
         if starred_prefs.sort != "alphabetical" {
             sort(&mut list, starred_prefs);
         }
-        if list.is_empty() {
-            if starred.is_empty() {
-                return Ok(StarredList {
-                    list: format!(
-                        "<div class=\"channels-list-container starred-channels\"><div class=\"chat-channel-list__empty\"><span class=\"chat-channel-list__empty-message\">{}</span></div></div>",
-                        escape(&self.t("chat.starred_channels_empty"))
-                    ),
-                    prefs: starred_prefs,
-                    channels,
-                    dms,
-                });
-            }
+        if list.is_empty() && starred.is_empty() {
+            return Ok(StarredList {
+                list: format!(
+                    "<div class=\"channels-list-container starred-channels\"><div class=\"chat-channel-list__empty\"><span class=\"chat-channel-list__empty-message\">{}</span></div></div>",
+                    escape(&self.t("chat.starred_channels_empty"))
+                ),
+                prefs: starred_prefs,
+                channels,
+                dms,
+            });
         }
         let filtered_empty = list.is_empty();
         let mut out = String::from("<div class=\"channels-list-container starred-channels\">");

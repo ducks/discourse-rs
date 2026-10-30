@@ -4913,16 +4913,31 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     tests/chat_search.rs. Refused: CJK segmentation and
     search_ignore_accents, as the post search refuses them. The
     /chat/search page stays with 162
-221. `feat/chat-admin` M: chat's admin plugin page
-    (routes/admin_plugins.rs:110)
-    with its configuration nav; incoming webhooks: POST /chat/hooks/:key
-    and /:key/slack (SlackCompatibility, the per-hook rate limit,
-    chat_debug_webhook_payloads), the six /admin/plugins/chat/hooks
-    routes with the list, new, edit and delete pages; the messages
-    export (POST /chat/api/admin/export/messages, Chat::MessagesExporter,
-    log_entity_export, with 200); the category editor's Chat tab
-    (category_edit_view.rs:369). Drawing webhook messages stays with 162
-    (plugins/chat/messages.rs:598)
+221. ~~`feat/chat-admin`~~ (done) M: chat's admin plugin page refused
+    (its configuration nav), and incoming webhooks, their admin and the
+    messages export had no routes. Now /admin/plugins/chat draws its
+    settings with the nav (Settings, Incoming webhooks; plugins/mod.rs)
+    and ChatAdminPluginActions' Create export in the header of every
+    chat admin page (admin_plugins_view.rs takes a plugin's header
+    actions); POST /chat/hooks/:key and /:key/slack
+    (routes/chat_admin.rs, plugins/chat/incoming_webhooks.rs:
+    validate_payload, debug_payload, Chat::SlackCompatibility's text and
+    legacy attachments, the 10 a minute limit, the system user following
+    the channel, Chat::CreateMessage as it with the webhook event); the
+    six /admin/plugins/chat/hooks routes as JSON
+    (AdminChatIndexSerializer, IncomingWebhookSerializer,
+    AdminChatWebhookShowSerializer, create's key and validations, update,
+    destroy) and as pages (plugins/chat/admin_view.rs: the list, new and
+    edit forms; static/js/chat-admin.js saves, deletes and picks the
+    emoji); POST /chat/admin/export/messages (Jobs::ExportCsvFile for
+    chat_message and the entity_export log, a 204); the category editor's
+    Chat tab (EditCategoryChat: the category's and subcategories' channels
+    with the subcategories' toggle, or the empty state). Tests:
+    tests/chat_admin.rs. Left: the ExportCsvFile job itself
+    (Chat::MessagesExporter) with 200, drawing webhook messages with 162
+    (plugins/chat/messages.rs refuses them); ChatChannelChooser and
+    EmojiPicker's trigger are drawn as a native select and a plain
+    button
 222. ~~`feat/chat-new-message`~~ (done, as feat/message-composers) M:
     /chat/new-message answered 405 and the drawer's "Start a
     conversation", the sidebar's "Start DM or group chat" and the

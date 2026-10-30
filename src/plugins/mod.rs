@@ -599,12 +599,22 @@ pub fn admin_dashboard_section_html(
     solved::dashboard_view::section(dashboard, data, error).map(Some)
 }
 
+/// The header actions a plugin registers on its admin pages
+/// (registerPluginHeaderActionComponent): chat's Create export.
+pub fn admin_plugin_actions(cx: &crate::admin_view::AdminCx, plugin_name: &str) -> String {
+    match plugin_name {
+        chat::admin_view::PLUGIN_ID => chat::admin_view::header_actions(cx),
+        _ => String::new(),
+    }
+}
+
 /// A plugin's configuration nav (`addAdminPluginConfigurationNav`) as its
 /// settings page's tabs; None for a plugin whose own admin pages the port
 /// doesn't draw.
 pub fn admin_config_nav(cx: &crate::admin_view::AdminCx, plugin_id: &str) -> Option<String> {
     match plugin_id {
         "discourse-gamification" => Some(gamification::admin_view::config_nav(cx, false)),
+        chat::admin_view::PLUGIN_ID => Some(chat::admin_view::config_nav(cx, false)),
         _ => None,
     }
 }

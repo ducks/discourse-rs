@@ -34,6 +34,9 @@ pub struct Editor<'a> {
     pub groups: Vec<String>,
     /// `Categories::TypeRegistry.list` for the viewer.
     pub types: &'a Value,
+    /// Chat's tab (registerEditCategoryTab), drawn, when chat is on and
+    /// the category exists.
+    pub chat_tab: Option<String>,
 }
 
 fn t(i18n: &I18n, key: &str) -> String {
@@ -409,13 +412,28 @@ impl Editor<'_> {
                 t(i18n, key)
             ));
         }
+        if self.chat_tab.is_some() {
+            nav.push_str(&format!(
+                "<li class=\"edit-category-chat\"><a href=\"{tab_base}/chat\"{}>{}</a></li>",
+                if self.tab == "chat" {
+                    " class=\"active\""
+                } else {
+                    ""
+                },
+                t(i18n, "chat.edit_category.tab_title")
+            ));
+        }
         nav.push_str("</ul>");
         let mut sections = String::new();
-        for (tab, body) in [
+        let mut tabs = vec![
             ("general", self.general()),
             ("security", self.security()),
             ("settings", self.settings()),
-        ] {
+        ];
+        if let Some(chat) = &self.chat_tab {
+            tabs.push(("chat", chat.clone()));
+        }
+        for (tab, body) in tabs {
             sections.push_str(&format!(
                 "<div class=\"edit-category-tab edit-category-tab-{tab}\"{}>{body}</div>",
                 if tab == self.tab { "" } else { " hidden" }
