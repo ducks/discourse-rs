@@ -348,6 +348,30 @@ Admin:
 - [x] Silencing a member: the system message notifies them and the
   account_silenced email is sent (a_silenced_member_is_told): 146
 
+284. `feat/browser-tests` M: nothing runs the client. static/js is about
+    67k lines in 112 files and no test executes a line of it:
+    demo_smoke.rs drives the endpoints the scripts call, not the scripts,
+    and every browser check so far (the playwright comparisons against
+    rs-ref-a/b/c, 223b, 223d and 224's harnesses) was a one-off run left
+    out of the repo. Add a committed browser suite:
+    - Playwright pinned through nix (nixpkgs' playwright-driver and its
+      browsers, in shell.nix and the flake), no npm install at test time,
+      no network.
+    - tests/browser/*.spec.js and a harness that boots the server on a
+      TestDb-style throwaway copy on a free port, with the job worker,
+      runs the specs, and tears both down; `make browser-test`, kept out
+      of `make lint`'s loop, and its own CI job.
+    - First specs: the demo script's steps that need the client
+      (composer open, write and post; the post menu and its plugin
+      buttons; chat send and live arrival in a second session; the chat
+      drawer; dark mode; the review queue's actions), then 223b's, 223d's
+      and 224's harnesses folded in (resize, back and forward, paging and
+      jumps).
+    - From then on a branch that changes static/js adds or changes a
+      spec; agent briefs say so.
+    Comparing against a running Rails reference stays a manual step
+    (parity/ does the HTTP side).
+
 ## Now: the parity queue (2026-10-13)
 
 The next branches, in order. Each has a brief with the Rails reading
