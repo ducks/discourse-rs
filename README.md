@@ -85,6 +85,31 @@ migrations (newer Discourse, third-party plugins) are logged and tolerated.
 Tests clone the `discourse_rs_test` template into a private database per test,
 so they can write freely and run in parallel.
 
+## Browser tests
+
+`make browser-test` runs the Playwright specs in `tests/browser/`, the only
+tests that execute `static/js`. scripts/browser-test builds the server,
+clones `discourse_rs_test` as tests do (named `<template>_<pid>_0`, so
+`scripts/drop-stale-test-dbs` sweeps a copy a killed run leaves),
+applies `tests/browser/setup.sql`, boots the server on it on a free port
+with the job worker, runs the specs and then stops that server and drops
+that copy, also on a failure or an interrupt. Playwright's runner and
+Chromium come from nixpkgs (`nix/playwright.nix`, in shell.nix and the
+flake's `browser-test` shell): nothing is installed at test time and no
+spec reaches the network. `BROWSER_ARGS` go to `playwright test`
+(`make browser-test BROWSER_ARGS="-g drawer --headed"`), `KEEP=1` keeps
+the scratch directory with the server log, and a failure's trace and
+screenshot land in `tmp/browser-test-results/`. It is not part of `make
+lint`; CI runs it as the `browser` job.
+
+Specs drive the app as a member does and assert what changes: the DOM,
+what arrives over the message bus in a second session (`session()` in
+`tests/browser/helpers.js`), the rows written (`sql()`); any uncaught page
+error fails the test. A script whose server side is hard to reach is
+driven over a fixture page answered by `page.route`
+(`chat-pane-fixture.spec.js`). A branch that changes `static/js` adds or
+changes a spec for it.
+
 ## Vendoring
 
 ```bash

@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# The browser suite (tests/browser): builds the server, boots it on a
+# throwaway copy of the test database on a free port with the job worker
+# running, runs the Playwright specs against it and tears both down. Only
+# the process it started is killed and only the copy it made is dropped,
+# also when a spec fails or the run is interrupted.
+#
+#   scripts/browser-test                    # every spec
+#   scripts/browser-test chat               # specs matching "chat"
+#   scripts/browser-test --headed -g resize # extra arguments go to playwright test
+#
+# Needs TEST_DATABASE_URL (`make db-test` once) and playwright and
+# PLAYWRIGHT_BROWSERS_PATH from nix (shell.nix, or the flake's browser-test
+# shell); nothing is installed or fetched at test time. KEEP=1 leaves the
+# scratch directory (server log, uploads) in place.
+set -euo pipefail
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+
+url=${TEST_DATABASE_URL:?TEST_DATABASE_URL must be set; run inside nix-shell after make db-test}
+command -v playwright >/dev/null || { echo "playwright is not on PATH; run inside nix-shell" >&2; exit 2; }
+: "${PLAYWRIGHT_BROWSERS_PATH:?PLAYWRIGHT_BROWSERS_PATH must be set; run inside nix-shell}"
+
+template=$(sed -E 's|^[a-z]+://[^/]*/([^?]*).*|\1|' <<<"$url")
+admin=$(sed -E "s|^([a-z]+://[^/]*/)[^?]*|\1postgres|" <<<"$url")
+# Named as tests/common/mod.rs names TestDb copies, <template>_<pid>_<n>,
+# so scripts/drop-stale-test-dbs sweeps it if this script is killed
+# before its own cleanup runs.
+copy="${template}_$$_0"
+copy_url=$(sed -E "s|^([a-z]+://[^/]*/)[^?]*|\1${copy}|" <<<"$url")
+
+work=$(mktemp -d "${TMPDIR:-/tmp}/browser-test.XXXXXX")
+log="$work/server.log"
+server_pid=
+runner_pid=
+copied=
+
+cleanup() {
+  local status=$?
+  set +e
+  if [[ -n $runner_pid ]] && kill -0 "$runner_pid" 2>/dev/null; then
+    kill -TERM "$runner_pid"
+    wait "$runner_pid" 2>/dev/null
+  fi
+  if [[ -n $server_pid ]] && kill -0 "$server_pid" 2>/dev/null; then
+    kill -TERM "$server_pid"
+    for _ in $(seq 50); do
+      kill -0 "$server_pid" 2>/dev/null || break
+      sleep 0.2
+    done
+    kill -KILL "$server_pid" 2>/dev/null
+    wait "$server_pid" 2>/dev/null
+  fi
+  if [[ -n $copied ]]; then
+    psql -X -q "$admin" -c "DROP DATABASE IF EXISTS \"$copy\" WITH (FORCE)" ||
+      echo "browser-test: could not drop $copy (scripts/drop-stale-test-dbs will)" >&2
+  fi
+  if [[ $status -ne 0 && -s $log ]]; then
+    echo "--- last lines of the server log ($log) ---" >&2
+    tail -n 40 "$log" >&2
+  fi
+  if [[ -n ${KEEP:-} ]]; then
+    echo "browser-test: kept $work" >&2
+  else
+    rm -rf "$work"
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+echo "browser-test: building the server"
+cargo build --quiet --bin discourse-rs
+# The target directory may be shared with other checkouts: run a copy of
+# this build, not whatever lands at the path next.
+cp "${CARGO_TARGET_DIR:-$root/target}/debug/discourse-rs" "$work/discourse-rs"
+
+psql -X -q -v ON_ERROR_STOP=1 "$admin" -c "CREATE DATABASE \"$copy\" TEMPLATE \"$template\""
+copied=1
+# The fixtures the specs share (tests/browser/setup.sql), before the
+# server's first connection.
+psql -X -q -v ON_ERROR_STOP=1 "$copy_url" -f tests/browser/setup.sql
+
+free_port() {
+  local port
+  while :; do
+    port=$((20000 + RANDOM % 40000))
+    # Nothing answers a connection there.
+    if ! (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+      echo "$port"
+      return
+    fi
+  done
+}
+
+secret=$(head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n')
+mkdir -p "$work/public" "$work/tmp"
+port=
+for attempt in 1 2 3 4 5; do
+  port=$(free_port)
+  : >"$log"
+  env DATABASE_URL="$copy_url" \
+    BIND_ADDR="127.0.0.1:$port" UNICORN_PORT="$port" DISCOURSE_HOSTNAME=127.0.0.1 \
+    RAILS_ENV=development RUST_LOG="${RUST_LOG:-info}" \
+    PUBLIC_DIR="$work/public" TMP_DIR="$work/tmp" \
+    DISCOURSE_SECRET_KEY_BASE="$secret" \
+    DISCOURSE_RS_RATE_LIMITS=off \
+    "$work/discourse-rs" >>"$log" 2>&1 &
+  server_pid=$!
+  ready=
+  for _ in $(seq 600); do
+    if ! kill -0 "$server_pid" 2>/dev/null; then
+      break
+    fi
+    if curl -fsS -o /dev/null "http://127.0.0.1:$port/srv/status" 2>/dev/null; then
+      ready=1
+      break
+    fi
+    sleep 0.1
+  done
+  [[ -n $ready ]] && break
+  wait "$server_pid" 2>/dev/null || true
+  server_pid=
+  # Another process took the port between the check and the bind.
+  grep -q "Address already in use" "$log" && continue
+  echo "browser-test: the server did not start (attempt $attempt)" >&2
+  exit 1
+done
+[[ -n $server_pid ]] || { echo "browser-test: no free port after 5 attempts" >&2; exit 1; }
+echo "browser-test: server on 127.0.0.1:$port (pid $server_pid), database $copy"
+
+# In the background and waited for, so a TERM or INT runs the cleanup at
+# once instead of after the runner (bash defers traps until a foreground
+# child exits).
+BASE_URL="http://127.0.0.1:$port" BROWSER_TEST_DATABASE_URL="$copy_url" BROWSER_TEST_ROOT="$root" \
+  playwright test --config tests/browser/playwright.config.js "$@" &
+runner_pid=$!
+wait "$runner_pid"

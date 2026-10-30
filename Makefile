@@ -1,4 +1,4 @@
-.PHONY: help version-bump release release-push build test parity-test clean clippy fmt fmt-check lint install-hooks \
+.PHONY: help version-bump release release-push build test parity-test browser-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv snapshot-clean reset-reference \
 	record-pretty-text \
 	bench bench-startup release-build install emoji-assets rehearsal wasm-plugins
@@ -36,6 +36,7 @@ help:
 	@echo "  make build                         - Build release binary"
 	@echo "  make test                          - Run tests (needs make db-test once)"
 	@echo "  make parity-test                   - Run the Rails comparison tests (slow)"
+	@echo "  make browser-test                  - Run the Playwright suite in tests/browser (not in lint)"
 	@echo "  make clippy                        - Run clippy"
 	@echo "  make fmt / fmt-check               - Format / check formatting"
 	@echo "  make lint                          - fmt-check, clippy, tests (CI also runs parity-test)"
@@ -119,6 +120,14 @@ test:
 parity-test:
 	cargo nextest run --profile parity
 	scripts/drop-stale-test-dbs
+
+# The Playwright suite (tests/browser): boots the server on a throwaway
+# copy of the test database with the job worker and drives static/js in
+# Chromium (scripts/browser-test). Not part of lint, as it builds and
+# boots a server; CI runs it as a job of its own. BROWSER_ARGS go to
+# playwright test, e.g. BROWSER_ARGS="-g resize".
+browser-test:
+	scripts/browser-test $(BROWSER_ARGS)
 
 # Run clippy with warnings-as-errors (mirrors CI)
 clippy:

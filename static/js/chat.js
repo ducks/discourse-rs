@@ -242,8 +242,9 @@
     return headers;
   }
 
-  // A chat API request; errors as popupAjaxError shows them.
-  function api(method, path, params) {
+  // A chat API request; errors as popupAjaxError shows them, or, with
+  // quiet, only rejected (a caller that doesn't popupAjaxError).
+  function api(method, path, params, quiet) {
     return fetch(basePath() + "/chat/api" + path, {
       method: method,
       credentials: "same-origin",
@@ -259,7 +260,9 @@
           return {};
         })
         .then(function (body) {
-          window.alert((body.errors || (body.error ? [body.error] : [r.statusText])).join("\n"));
+          if (!quiet) {
+            window.alert((body.errors || (body.error ? [body.error] : [r.statusText])).join("\n"));
+          }
           throw new Error(r.statusText);
         });
     });
@@ -458,16 +461,22 @@
       other.classList.remove("-last-read");
     });
     message.classList.add("-last-read");
-    api("PUT", "/channels/" + channel.dataset.id + "/read?message_id=" + id).then(function () {
-      // The sidebar's unread dot goes once the last message is read.
-      return fetch(location.href, { credentials: "same-origin" })
-        .then(function (r) {
-          return r.text();
-        })
-        .then(function (html) {
-          refreshSidebar(new DOMParser().parseFromString(html, "text/html"));
-        });
-    });
+    // updateLastReadMessage shows no error: a refusal (another tab or
+    // session read further, ensure_message_id_recency) only logs.
+    api("PUT", "/channels/" + channel.dataset.id + "/read?message_id=" + id, null, true)
+      .then(function () {
+        // The sidebar's unread dot goes once the last message is read.
+        return fetch(location.href, { credentials: "same-origin" })
+          .then(function (r) {
+            return r.text();
+          })
+          .then(function (html) {
+            refreshSidebar(new DOMParser().parseFromString(html, "text/html"));
+          });
+      })
+      .catch(function (e) {
+        console.error("chat: marking the channel read:", e.message);
+      });
   }
 
   // ChatComposer: the send button follows hasContent (or an edit), the
