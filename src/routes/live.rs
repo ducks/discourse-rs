@@ -191,14 +191,13 @@ pub async fn page(
         chat_channels.extend(CHAT_GLOBAL_CHANNELS.iter().map(|c| c.to_string()));
         channels.extend(chat_channels.iter().cloned());
     }
-    let filter = Filter { channels, tags };
-    let subscription = state.bus.subscribe(from, filter.clone());
+    let subscription = state.bus.subscribe(from, Filter { channels, tags });
     let live = Live {
         state,
         guardian,
         settings,
         subscription,
-        filter,
+        reconnect: false,
         topic_channel: topic_id.map(crate::bus::topic_channel),
         polls_channel: topic_id.map(|id| format!("/polls/{id}")),
         tail: params.tail.as_deref() == Some("1"),
@@ -230,6 +229,9 @@ pub async fn page(
             if let Some(event) = live.pending.pop_front() {
                 return Some((Ok::<_, Infallible>(event), live));
             }
+            if live.reconnect {
+                return None;
+            }
             let result = if live.started {
                 next_batch(&mut live).await?
             } else {
@@ -260,9 +262,10 @@ struct Live {
     guardian: Guardian,
     settings: SiteSettings,
     subscription: Subscription,
-    /// What the subscription hears, changed as chat channels are joined
-    /// (/chat/new-channel) or left (a kick).
-    filter: Filter,
+    /// A chat channel was joined (/chat/new-channel) or left (a kick):
+    /// the stream ends once its events are out, and the browser's
+    /// reconnect subscribes to what the member follows now.
+    reconnect: bool,
     topic_channel: Option<String>,
     /// `/polls/<topic_id>`: a post's polls changed (PollsUpdater, votes,
     /// toggle_status), for static/js/poll.js to draw them again.
@@ -337,7 +340,6 @@ async fn handle_batch(
     let do_not_disturb = live.user_id.map(|id| format!("/do-not-disturb/{id}"));
     let mut tracking: Option<Position> = None;
     let mut chat = false;
-    let mut resubscribe = false;
     let mut last: Option<Position> = None;
     for item in batch {
         let message = match item? {
@@ -389,8 +391,8 @@ async fn handle_batch(
             );
         } else if live.chat_channels.contains(&message.channel) {
             chat = true;
-            if follow_chat_changes(live, &message) {
-                resubscribe = true;
+            if follows_changed(live, &message) {
+                live.reconnect = true;
             }
         } else {
             tracking = Some(message.position);
@@ -400,43 +402,21 @@ async fn handle_batch(
         // Carries the batch's last position, so the ids stay in bus order.
         recount_lists(live, last).await?;
     }
-    if resubscribe && let Some(position) = last {
-        live.subscription = live.state.bus.subscribe(position, live.filter.clone());
-    }
     if chat {
         chat_chrome(live, last).await?;
     }
     Ok(())
 }
 
-/// A channel the member now follows is heard from on (onNewChannel), one
-/// they were kicked from no more (onKickFromChannel); whether the filter
-/// changed.
-fn follow_chat_changes(live: &mut Live, message: &pg_bus::Message) -> bool {
-    let (add, channel_id) = if message.channel == "/chat/new-channel" {
-        (true, message.data["channel"]["id"].as_i64())
-    } else if message.channel.ends_with("/kick") {
-        (false, message.data["channel_id"].as_i64())
-    } else {
-        return false;
-    };
-    let Some(channel_id) = channel_id else {
-        return false;
-    };
-    let names = followed_chat_channels(channel_id);
-    let before = live.filter.channels.len();
-    for name in names {
-        if add {
-            if !live.chat_channels.contains(&name) {
-                live.chat_channels.push(name.clone());
-                live.filter.channels.push(name);
-            }
-        } else {
-            live.chat_channels.retain(|c| *c != name);
-            live.filter.channels.retain(|c| *c != name);
-        }
+/// Whether a channel the member now follows (onNewChannel) or was kicked
+/// from (onKickFromChannel) changes what the stream must hear.
+fn follows_changed(live: &Live, message: &pg_bus::Message) -> bool {
+    if message.channel == "/chat/new-channel" {
+        return message.data["channel"]["id"]
+            .as_i64()
+            .is_some_and(|id| !live.chat_channels.contains(&followed_chat_channels(id)[0]));
     }
-    live.filter.channels.len() != before
+    message.channel.ends_with("/kick")
 }
 
 /// The lists counted again; queued only when they changed.

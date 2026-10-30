@@ -4557,7 +4557,9 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat_invitation notifications, its rate limit) and PUT
     /chat/user_chat_enabled/:user_id are routed. The live page hears
     ChatSubscriptionsManager's global channels (new channel, status,
-    edits, metadata, each followed channel's kick; routes/live.rs), and
+    edits, metadata, each followed channel's kick; routes/live.rs; a
+    channel joined or left ends the stream, and the page reconnects to
+    what the member follows now), and
     the channel page redraws on its status or edits and leaves on a kick
     (static/js/chat.js). Deleting a category destroys its empty live
     channel (category_writes.rs), and can_delete and cannot_delete_reason

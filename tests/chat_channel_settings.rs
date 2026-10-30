@@ -673,11 +673,17 @@ async fn the_live_page_hears_channels_change() {
     let html = common::next_sse_event(&mut body, &mut buffer, "chat").await;
     assert!(html.contains("Lobby"), "{html}");
 
-    // Added to Staff: its new messages are heard.
+    // Added to a new channel: its new messages are heard.
+    exec(
+        &db,
+        "INSERT INTO chat_channels (id, chatable_id, chatable_type, type, name, slug, created_at, updated_at) \
+         VALUES (3, 2, 'Category', 'CategoryChannel', 'Feedback', 'feedback', now(), now())",
+    )
+    .await;
     exec(
         &db,
         "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, created_at, updated_at, last_viewed_at) \
-         VALUES (3, 1, TRUE, now(), now(), now())",
+         VALUES (3, 3, TRUE, now(), now(), now())",
     )
     .await;
     let mut conn = db.pool.acquire().await.unwrap();
@@ -685,34 +691,47 @@ async fn the_live_page_hears_channels_change() {
         .publish(
             &mut conn,
             "/chat/new-channel",
-            &json!({"channel": {"id": 1}}),
+            &json!({"channel": {"id": 3}}),
             Some(&[discourse_rs::bus::user_tag(3)]),
         )
         .await
         .unwrap();
     common::next_sse_event(&mut body, &mut buffer, "chat").await;
+    // The stream ends for the page to reconnect, following it now.
+    let ended = tokio::time::timeout(std::time::Duration::from_secs(30), async {
+        while let Some(frame) = body.frame().await {
+            frame.unwrap();
+        }
+    })
+    .await;
+    assert!(ended.is_ok(), "the stream ends");
+    let from = st.bus.now().await.unwrap();
+    let mut body = user1
+        .open(&format!("/live?chat=discovery&position={from}"))
+        .await;
+    let mut buffer = String::new();
     exec(
         &db,
         "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
-         VALUES (1, 1, 1, now(), now(), 'hi', '<p>hi</p>', 1, 1)",
+         VALUES (1, 3, 1, now(), now(), 'hi', '<p>hi</p>', 1, 1)",
     )
     .await;
     exec(
         &db,
-        "UPDATE chat_channels SET last_message_id = 1 WHERE id = 1",
+        "UPDATE chat_channels SET last_message_id = 1 WHERE id = 3",
     )
     .await;
     st.bus
         .publish(
             &mut conn,
-            "/chat/1/new-messages",
-            &json!({"type": "channel", "channel_id": 1}),
+            "/chat/3/new-messages",
+            &json!({"type": "channel", "channel_id": 3}),
             Some(&[discourse_rs::bus::user_tag(3)]),
         )
         .await
         .unwrap();
     let html = common::next_sse_event(&mut body, &mut buffer, "chat").await;
-    assert!(html.contains("channel-1"), "{html}");
+    assert!(html.contains("channel-3"), "{html}");
 }
 
 #[tokio::test]
