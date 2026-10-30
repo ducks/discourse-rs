@@ -166,10 +166,20 @@
   // the server answers with JSON (a member's hx-headers say so for their
   // other requests). The page it leaves is kept for the pages that
   // return to it (the login and signup routes' destination_url).
+  //
+  // The link keeps its history push as an attribute: htmx decides to push
+  // from the element's internal `boosted` flag once the response is in,
+  // and an out-of-band swap replacing the link meanwhile (the live
+  // stream's sidebar or nav redraw) cleans that flag off, so the page
+  // arrived with the address bar left on the page before.
   document.addEventListener("htmx:configRequest", function (event) {
     if (boosted(event)) {
       Discourse.previousUrl = location.pathname + location.search;
       delete event.detail.headers["X-Requested-With"];
+      var elt = event.detail.elt;
+      if (elt && !elt.hasAttribute("hx-push-url")) {
+        elt.setAttribute("hx-push-url", "true");
+      }
     }
   });
 

@@ -45,6 +45,34 @@ test("back and forward between forum pages restore them in place", async ({ page
   await expectSameDocument(page);
 });
 
+// The live stream redraws sidebar sections out of band (outerHTML) as
+// counts change: one replacing the clicked link while its page is on the
+// way must not leave the address bar on the page before.
+test("a link replaced by a live redraw while its page loads still pushes its URL", async ({ page, context }) => {
+  await login(context, "admin");
+  await page.goto("/latest");
+  await markDocument(page);
+  let release;
+  const held = new Promise((resolve) => (release = resolve));
+  await page.route(/\/review$/, async (route) => {
+    await held;
+    await route.continue();
+  });
+  const link = page.locator("#d-sidebar a[href='/review']");
+  await link.click();
+  // The section's redraw, as src/routes/live.rs swaps it.
+  await page.evaluate(() => {
+    const section = document.querySelector("#d-sidebar a[href='/review']").closest(".sidebar-section");
+    const swap = section.cloneNode(true);
+    swap.setAttribute("hx-swap-oob", `outerHTML:.sidebar-section[data-section-name='${section.dataset.sectionName}']`);
+    window.htmx.swap(document.body, swap.outerHTML, { swapStyle: "none" });
+  });
+  release();
+  await expect(page.locator(".reviewable-filters, .reviewables").first()).toBeVisible();
+  await expect(page).toHaveURL(/\/review$/);
+  await expectSameDocument(page);
+});
+
 test("back to a chat URL opens it in the drawer, forward restores the forum page", async ({ page, context }) => {
   await login(context, "user1");
   await page.goto("/latest");
