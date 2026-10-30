@@ -169,6 +169,7 @@
   }
 
   function decorateLinks(channel) {
+    decorateUploads(channel);
     channel.querySelectorAll(".chat-cooked a:not([target]), .chat-cooked a[target]:not([target='_blank'])").forEach(function (link) {
       if (link.origin !== location.origin) {
         link.setAttribute("target", "_blank");
@@ -500,11 +501,12 @@
 
   function hasContent(parts) {
     var min = Number(parts.wrapper.dataset.minLength || 1) || 1;
-    return parts.input.value.length >= min;
+    return parts.input.value.length >= min || composerUploads().length > 0;
   }
 
   function updateSendState(parts) {
-    var enabled = (hasContent(parts) || !!editing(parts)) && !parts.input.disabled;
+    var enabled =
+      (hasContent(parts) || !!editing(parts)) && !parts.input.disabled && uploading.length === 0;
     parts.composer.classList.toggle("is-send-enabled", enabled);
     parts.composer.classList.toggle("is-send-disabled", !enabled);
     parts.send.disabled = !enabled;
@@ -516,10 +518,14 @@
     var message = parts.input.value;
     var reply = replying(parts);
     var edit = editing(parts);
-    if (message.length === 0 && !reply) {
+    var uploads = composerUploads();
+    if (message.length === 0 && uploads.length === 0 && !reply) {
       return null;
     }
     var data = {};
+    if (uploads.length > 0) {
+      data.uploads = uploads;
+    }
     if (message.length > 0) {
       data.message = message;
     }
@@ -664,6 +670,7 @@
     }
     setDetails(parts, "edit", message);
     parts.input.value = message.dataset.message || "";
+    setComposerUploads(message.dataset.uploads ? JSON.parse(message.dataset.uploads) : [], false);
     updateSendState(parts);
     focusComposer(parts);
   }
@@ -681,6 +688,7 @@
   // resetDraft: the composer emptied, its details gone.
   function resetComposer(parts) {
     parts.input.value = "";
+    setComposerUploads([], false);
     setDetails(parts, null);
     updateSendState(parts);
     refreshHeight(parts.input);
@@ -705,7 +713,7 @@
     var message = parts.input.value;
     var channelId = parts.channel.dataset.id;
     var edit = editing(parts);
-    if (edit && message.length === 0) {
+    if (edit && message.length === 0 && composerUploads().length === 0) {
       // #deleteEmptyMessage
       var id = edit.dataset.id;
       resetComposer(parts);
@@ -746,6 +754,10 @@
       return;
     }
     var reply = replying(parts);
+    var uploads = composerUploads();
+    var uploadIds = uploads.map(function (u) {
+      return u.id;
+    });
     parts.composer.classList.add("is-sending");
     var done = function () {
       var now = composerParts();
@@ -763,7 +775,7 @@
         method: "PUT",
         credentials: "same-origin",
         headers: csrfHeaders(),
-        body: new URLSearchParams({ message: message }).toString(),
+        body: formBody({ message: message, upload_ids: uploadIds }),
       })
         .then(function (r) {
           return r.ok ? changed() : failed(r);
@@ -784,9 +796,10 @@
     if (reply) {
       params.in_reply_to_id = reply.dataset.id;
     }
+    params.upload_ids = uploadIds;
     cookStaged(message)
       .then(function (cooked) {
-        var staged = stage(cooked, params, reply);
+        var staged = stage(message.length > 0 ? cooked : "", params, reply, uploads);
         resetComposer(parts);
         return sendStaged(channelId, params, staged);
       })
@@ -850,7 +863,7 @@
   // ChatChannel#stageMessage: the member's message at the end of the list
   // (-staged, -not-processed), its author line hidden after their own
   // recent message (hideUserInfo).
-  function stage(cooked, params, reply) {
+  function stage(cooked, params, reply, uploads) {
     var channel = document.querySelector(".chat-channel[data-id]");
     var list = channel && channel.querySelector(".chat-messages-container");
     if (!list) {
@@ -884,7 +897,12 @@
     node.dataset.createdAt = now.toISOString();
     node.dataset.message = params.message;
     node.dataset.excerpt = params.message;
-    node.querySelector(".chat-cooked").innerHTML = cooked;
+    var collapsed = stagedCollapser(cooked, uploads || []);
+    if (collapsed) {
+      node.querySelector(".chat-cooked").outerHTML = collapsed;
+    } else {
+      node.querySelector(".chat-cooked").innerHTML = cooked;
+    }
     var bottom = atBottom(channel);
     list.appendChild(node);
     redraw(channel);
@@ -903,6 +921,22 @@
     return node;
   }
 
+  // A form body as jQuery's $.param writes one: arrays as name[] pairs.
+  function formBody(params) {
+    var body = new URLSearchParams();
+    Object.keys(params).forEach(function (k) {
+      var v = params[k];
+      if (Array.isArray(v)) {
+        v.forEach(function (item) {
+          body.append(k + "[]", item);
+        });
+      } else if (v !== undefined && v !== null) {
+        body.append(k, v);
+      }
+    });
+    return body.toString();
+  }
+
   // The send, and setSendError on the staged message when it fails: the
   // server's reason, or a network error with "Send again?".
   function sendStaged(channelId, params, staged) {
@@ -917,7 +951,7 @@
       method: "POST",
       credentials: "same-origin",
       headers: csrfHeaders(),
-      body: new URLSearchParams(params).toString(),
+      body: formBody(params),
     }).then(
       function (r) {
         if (r.ok) {
@@ -2771,12 +2805,434 @@
     stopPresence();
   }
 
+  // ChatComposerUploads (chat-composer-uploads.gjs): the uploads the
+  // draft carries (the box's data-uploads, as the draft saves them), each
+  // a ChatComposerUpload, then those in progress. A file picked, dropped
+  // on the channel or pasted without text goes to /uploads.json
+  // (upload_type chat-composer), one POST per file as composer.js sends
+  // them, without Uppy.
+  var uploading = [];
+  var uploadSequence = 0;
+
+  function uploadsBox() {
+    return document.querySelector(".chat-composer__wrapper .chat-composer-uploads[data-uploads]");
+  }
+
+  function composerUploads() {
+    var box = uploadsBox();
+    if (!box) {
+      return [];
+    }
+    try {
+      return JSON.parse(box.dataset.uploads || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // isImage, isVideo, isAudio (discourse/lib/uploads)
+  function uploadKind(name) {
+    if (/\.(png|webp|jpe?g|gif|svg|ico|heic|heif|avif|jxl)$/i.test(name)) {
+      return "image";
+    }
+    if (/\.(mov|mp4|webm|m4v|3gp|ogv|avi|mpeg)$/i.test(name)) {
+      return "video";
+    }
+    if (/\.(mp3|og[ga]|opus|wav|m4[abpr]|aac|flac)$/i.test(name)) {
+      return "audio";
+    }
+    return "attachment";
+  }
+
+  // getURLWithCDN, without a CDN.
+  function cdnUrl(url) {
+    var base = basePath();
+    if (url && url.charAt(0) === "/" && url.charAt(1) !== "/" && (!base || url.indexOf(base + "/") !== 0)) {
+      return base + url;
+    }
+    return url;
+  }
+
+  // ChatComposerUpload: done (an upload's json) or in progress.
+  function composerUploadHtml(box, upload, done) {
+    var name = done ? upload.original_filename : upload.fileName;
+    var kind = uploadKind(name);
+    var preview;
+    if (kind === "image") {
+      preview = done
+        ? '<img class="preview-img" src="' + escapeHtml(cdnUrl(upload.url)) + '">'
+        : iconHtml("far-image");
+    } else {
+      preview = iconHtml(kind === "video" ? "file-video" : kind === "audio" ? "file-audio" : "file-lines");
+    }
+    var data = "";
+    if (kind !== "image") {
+      data += '<div class="top-data"><span class="file-name">' + escapeHtml(name) + "</span></div>";
+    }
+    data += '<div class="bottom-data">';
+    if (done) {
+      if (kind !== "image") {
+        data += '<span class="extension-pill">' + escapeHtml(upload.extension) + "</span>";
+      }
+    } else {
+      data += upload.processing
+        ? '<span class="processing">' + escapeHtml(box.dataset.labelProcessing) + "</span>"
+        : '<span class="uploading">' + escapeHtml(box.dataset.labelUploading) + "</span>";
+      data += '<progress class="upload-progress" id="file" max="100" value="' + (upload.progress || 0) + '"></progress>';
+    }
+    data += "</div>";
+    return (
+      '<div class="chat-composer-upload' +
+      (kind === "image" ? " chat-composer-upload--image" : "") +
+      (done ? "" : " chat-composer-upload--in-progress") +
+      '" data-' + (done ? "id" : "staged-id") + '="' + escapeHtml(upload.id) + '">' +
+      '<div class="preview">' + preview + '</div><span class="data">' + data + "</span>" +
+      '<button class="btn no-text btn-icon btn-flat chat-composer-upload__remove-btn" title="' +
+      escapeHtml(box.dataset.labelRemove) + '" type="button">' + iconHtml("xmark") +
+      '<span aria-hidden="true">&#8203;</span></button></div>'
+    );
+  }
+
+  function drawComposerUploads() {
+    var box = uploadsBox();
+    if (!box) {
+      return;
+    }
+    var old = box.querySelector(".chat-composer-uploads-container");
+    if (old) {
+      old.remove();
+    }
+    var done = composerUploads();
+    if (done.length === 0 && uploading.length === 0) {
+      return;
+    }
+    var container = el("div", "chat-composer-uploads-container");
+    container.innerHTML =
+      done.map(function (u) {
+        return composerUploadHtml(box, u, true);
+      }).join("") +
+      uploading.map(function (u) {
+        return composerUploadHtml(box, u, false);
+      }).join("");
+    box.insertBefore(container, box.firstChild);
+  }
+
+  // onUploadChanged: the composer's state follows, and the draft is saved
+  // once nothing is in progress.
+  function setComposerUploads(list, save) {
+    var box = uploadsBox();
+    if (!box) {
+      return;
+    }
+    box.dataset.uploads = JSON.stringify(list);
+    drawComposerUploads();
+    var parts = composerParts();
+    if (parts) {
+      updateSendState(parts);
+      if (save && uploading.length === 0) {
+        saveDraft(parts);
+      }
+    }
+  }
+
+  function uploadFile(file, pasted) {
+    var upload = {
+      id: "upload-" + ++uploadSequence,
+      fileName: file.name,
+      progress: 0,
+      processing: false,
+      xhr: new XMLHttpRequest(),
+    };
+    uploading.push(upload);
+    setComposerUploads(composerUploads(), false);
+    var body = new FormData();
+    body.append("upload_type", "chat-composer");
+    if (pasted) {
+      body.append("pasted", "true");
+    }
+    body.append("file", file, file.name);
+    var xhr = upload.xhr;
+    xhr.open("POST", basePath() + "/uploads.json");
+    var headers = csrfHeaders();
+    delete headers["Content-Type"];
+    Object.keys(headers).forEach(function (k) {
+      xhr.setRequestHeader(k, headers[k]);
+    });
+    xhr.upload.addEventListener("progress", function (e) {
+      if (e.lengthComputable) {
+        upload.progress = Math.round((e.loaded / e.total) * 100);
+        upload.processing = e.loaded >= e.total;
+        drawComposerUploads();
+      }
+    });
+    var finish = function () {
+      uploading = uploading.filter(function (u) {
+        return u !== upload;
+      });
+    };
+    xhr.addEventListener("load", function () {
+      var json = null;
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch (e) {
+        // An error page.
+      }
+      finish();
+      var list = composerUploads();
+      if (xhr.status >= 200 && xhr.status < 300 && json && json.id) {
+        list.push(json);
+      } else {
+        window.alert(json && json.errors ? json.errors.join("\n") : xhr.statusText);
+      }
+      setComposerUploads(list, true);
+    });
+    xhr.addEventListener("error", function () {
+      finish();
+      setComposerUploads(composerUploads(), true);
+    });
+    xhr.send(body);
+  }
+
+  function addUploadFiles(files, pasted) {
+    if (!uploadsBox()) {
+      return;
+    }
+    Array.prototype.forEach.call(files, function (file) {
+      uploadFile(file, pasted);
+    });
+  }
+
+  document.addEventListener("change", function (event) {
+    if (event.target.id === "channel-file-uploader") {
+      addUploadFiles(event.target.files, false);
+      event.target.value = "";
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var remove = event.target.closest(".chat-composer-upload__remove-btn");
+    if (!remove || !remove.closest(".chat-composer__wrapper")) {
+      return;
+    }
+    var item = remove.closest(".chat-composer-upload");
+    if (item.dataset.stagedId) {
+      // cancelUploading
+      uploading.forEach(function (u) {
+        if (u.id === item.dataset.stagedId) {
+          u.xhr.abort();
+        }
+      });
+      uploading = uploading.filter(function (u) {
+        return u.id !== item.dataset.stagedId;
+      });
+      setComposerUploads(composerUploads(), true);
+    } else {
+      // removeUpload
+      setComposerUploads(
+        composerUploads().filter(function (u) {
+          return String(u.id) !== item.dataset.id;
+        }),
+        true
+      );
+    }
+  });
+
+  // _pasteEventListener: files pasted without text are uploaded.
+  document.addEventListener("paste", function (event) {
+    if (event.target.id !== "channel-composer" || !uploadsBox()) {
+      return;
+    }
+    var clipboard = event.clipboardData;
+    if (!clipboard) {
+      return;
+    }
+    var types = Array.prototype.slice.call(clipboard.types);
+    if (types.includes("text/plain") || types.includes("text/html")) {
+      return;
+    }
+    if (clipboard.files && clipboard.files.length > 0) {
+      event.preventDefault();
+      addUploadFiles(clipboard.files, true);
+    }
+  });
+
+  // ChatUploadDropZone: files dropped on the channel.
+  document.addEventListener("dragover", function (event) {
+    if (
+      event.target.closest &&
+      event.target.closest(".chat-channel[data-id]") &&
+      uploadsBox() &&
+      event.dataTransfer &&
+      Array.prototype.includes.call(event.dataTransfer.types, "Files")
+    ) {
+      event.preventDefault();
+    }
+  });
+
+  document.addEventListener("drop", function (event) {
+    if (
+      event.target.closest &&
+      event.target.closest(".chat-channel[data-id]") &&
+      uploadsBox() &&
+      event.dataTransfer &&
+      event.dataTransfer.files.length > 0
+    ) {
+      event.preventDefault();
+      addUploadFiles(event.dataTransfer.files, false);
+    }
+  });
+
+  // ChatUpload, for a staged message's uploads, as the server draws them
+  // (plugins/chat/collapser.rs).
+  function chatUploadHtml(box, upload) {
+    var name = upload.original_filename || "";
+    var kind = uploadKind(name);
+    if (kind === "image") {
+      var max = (box.dataset.maxImage || "690x500").split("x").map(Number);
+      var width = upload.width;
+      var height = upload.height;
+      var ratio = Math.min(1, max[0] / width, max[1] / height);
+      var html = '<img class="chat-img-upload lightbox"';
+      if (upload.dominant_color) {
+        html += ' data-dominant-color="' + escapeHtml(upload.dominant_color) + '"';
+      }
+      html +=
+        ' data-download-href="' + escapeHtml(upload.short_path) + '" data-large-src="' +
+        escapeHtml(cdnUrl(upload.url)) + '" data-orig-src="' + escapeHtml(upload.short_url) + '"';
+      if (height !== null && height !== undefined) {
+        html += ' data-target-height="' + height + '"';
+      }
+      if (width !== null && width !== undefined) {
+        html += ' data-target-width="' + width + '"';
+      }
+      html +=
+        ' height="' + height * ratio + '" loading="lazy" src="' +
+        escapeHtml(cdnUrl((upload.thumbnail && upload.thumbnail.url) || upload.url)) + '"';
+      if (upload.dominant_color) {
+        html += ' style="background-color: #' + escapeHtml(upload.dominant_color) + ';"';
+      }
+      return html + ' tabindex="0" width="' + width * ratio + '">';
+    }
+    if (kind === "video") {
+      return (
+        '<video class="chat-video-upload" controls="" height="150" preload="metadata"><source src="' +
+        escapeHtml(videoUrl(cdnUrl((upload.optimized_video && upload.optimized_video.url) || upload.url))) +
+        '"></video>'
+      );
+    }
+    if (kind === "audio") {
+      return (
+        '<audio class="chat-audio-upload" controls="" preload="metadata"><source src="' +
+        escapeHtml(cdnUrl(upload.url)) + '"></audio>'
+      );
+    }
+    return (
+      '<a class="chat-other-upload" data-orig-href="' + escapeHtml(upload.short_url) + '" href="' +
+      escapeHtml(cdnUrl(upload.url)) + '">' + escapeHtml(name) + "</a>"
+    );
+  }
+
+  // videoSourceUrl: iOS and Safari get the first frame shown.
+  function videoUrl(url) {
+    var ua = navigator.userAgent;
+    var safari = /^((?!chrome|android).)*safari/i.test(ua) || /iPad|iPhone|iPod/.test(ua);
+    return safari && url.indexOf("#t=") === -1 ? url + "#t=0.001" : url;
+  }
+
+  // ChatMessageCollapser with uploads, for a staged message.
+  function stagedCollapser(cooked, uploads) {
+    var box = uploadsBox();
+    if (!box || uploads.length === 0) {
+      return null;
+    }
+    var name =
+      uploads.length === 1
+        ? (uploads[0].optimized_video && uploads[0].optimized_video.original_filename) ||
+          uploads[0].original_filename
+        : (box.dataset.labelUploadedFiles || "").replace("%{count}", String(uploads.length));
+    return (
+      '<div class="chat-message-collapser"><div class="chat-cooked">' + cooked + "</div>" +
+      '<div class="chat-message-collapser-header"><span class="chat-message-collapser-link-small">' +
+      escapeHtml(name) + "</span>" + collapserButton(false) + "</div>" +
+      '<div class="chat-message-collapser-body"><div class="chat-uploads">' +
+      uploads.map(function (u) {
+        return chatUploadHtml(box, u);
+      }).join("") +
+      "</div></div></div>"
+    );
+  }
+
+  function collapserButton(collapsed) {
+    return (
+      '<button class="btn no-text btn-icon chat-message-collapser-button chat-message-collapser-' +
+      (collapsed ? "closed" : "opened") + '" type="button">' +
+      iconHtml(collapsed ? "angle-right" : "angle-down") + '<span aria-hidden="true">&#8203;</span></button>'
+    );
+  }
+
+  // Collapser: its button opens and closes the body.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".chat-message-collapser-button");
+    if (!button) {
+      return;
+    }
+    var header = button.closest(".chat-message-collapser-header");
+    var body = header && header.nextElementSibling;
+    var collapsed = button.classList.contains("chat-message-collapser-opened");
+    button.outerHTML = collapserButton(collapsed);
+    if (body) {
+      body.classList.toggle("hidden", collapsed);
+    }
+  });
+
+  // The collapser's lightbox modifier and videoSourceUrl, on the
+  // server-drawn messages.
+  function decorateUploads(channel) {
+    channel.querySelectorAll(".chat-uploads:not([data-decorated])").forEach(function (uploads) {
+      uploads.dataset.decorated = "true";
+      if (Discourse.lightbox && uploads.querySelector(".lightbox")) {
+        Discourse.lightbox(uploads);
+      }
+      uploads.querySelectorAll("video.chat-video-upload source[src]").forEach(function (source) {
+        source.setAttribute("src", videoUrl(source.getAttribute("src")));
+      });
+    });
+  }
+
+  // The chat-upload-btn composer button (chat-setup.js): the file picker,
+  // while uploads are allowed (canAttachUploads).
+  Discourse.chatComposerButtons = Discourse.chatComposerButtons || [];
+  if (
+    !Discourse.chatComposerButtons.some(function (b) {
+      return b.id === "chat-upload-btn";
+    })
+  ) {
+    Discourse.chatComposerButtons.unshift({
+      id: "chat-upload-btn",
+      icon: "far-image",
+      get label() {
+        var box = uploadsBox();
+        return box ? box.dataset.labelUpload : "";
+      },
+      displayed: function () {
+        return !!uploadsBox();
+      },
+      action: function () {
+        var input = document.getElementById("channel-file-uploader");
+        if (input) {
+          input.click();
+        }
+      },
+    });
+  }
+
   // ChatComposerDropdown: the "+" trigger's menu of the composer buttons
   // registered for the dropdown (registerChatComposerButton, position
   // "dropdown"), each {id, icon, label, displayed(context), action(context,
-  // textarea)}. Core's own (upload, GIFs, local dates, the mobile emoji)
-  // are not ported, so only the plugins' show; with none the trigger is
-  // left alone, as DMenu renders no trigger without buttons.
+  // textarea)}. Of core's own, upload is registered above; GIFs, local
+  // dates and the mobile emoji are not ported, so the plugins' show
+  // besides; with none the trigger is left alone, as DMenu renders no
+  // trigger without buttons.
   Discourse.chatComposerButtons = Discourse.chatComposerButtons || [];
   document.addEventListener("click", function (event) {
     var trigger = event.target.closest(".chat-composer-dropdown__trigger-btn");

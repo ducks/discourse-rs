@@ -54,6 +54,11 @@ struct View<'a> {
     /// Who is in /chat/online, drawn online (chat.js follows it after).
     online: Vec<i64>,
     emojis: std::sync::Arc<crate::emojis::Emojis>,
+    /// max_image_width and max_image_height, which ChatUpload shrinks to.
+    max_image: (f64, f64),
+    /// The site's base url, which an element's href and src resolve
+    /// against in the browser.
+    base_url: String,
     /// `userCanInteractWithChat`: not silenced.
     can_interact: bool,
     t: &'a (dyn Fn(&str) -> String + Sync),
@@ -147,6 +152,15 @@ impl Context<'_> {
             viewer_id,
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
+            max_image: (
+                self.settings.get("max_image_width")?.to_f(),
+                self.settings.get("max_image_height")?.to_f(),
+            ),
+            base_url: crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            }
+            .base_url()?,
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
         };
@@ -478,6 +492,15 @@ impl Context<'_> {
             viewer_id: i64::from(viewer.unwrap_or(0)),
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
+            max_image: (
+                self.settings.get("max_image_width")?.to_f(),
+                self.settings.get("max_image_height")?.to_f(),
+            ),
+            base_url: crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            }
+            .base_url()?,
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
         };
@@ -899,8 +922,30 @@ impl Context<'_> {
             "</div></div></div>"
         });
         if self.settings.get("chat_allow_uploads")?.truthy() {
+            // ChatComposerUploads: the draft's uploads (existingUploads),
+            // done, then the file picker.
+            let uploads = if draft.uploads.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    "<div class=\"chat-composer-uploads-container\">{}</div>",
+                    draft
+                        .uploads
+                        .iter()
+                        .map(|u| composer_upload(u, self.base_path, &t))
+                        .collect::<String>()
+                )
+            };
             out.push_str(&format!(
-                "<div class=\"chat-composer-uploads\"><div class=\"pick-files-button\"><input accept=\"{}\" class=\"hidden-upload-field\" id=\"channel-file-uploader\" multiple=\"\" type=\"file\"></div></div>",
+                "<div class=\"chat-composer-uploads\" data-uploads=\"{}\" data-label-upload=\"{}\" data-label-uploading=\"{}\" data-label-processing=\"{}\" data-label-remove=\"{}\" data-label-uploaded-files=\"{}\" data-max-image=\"{}x{}\">{uploads}<div class=\"pick-files-button\"><input accept=\"{}\" class=\"hidden-upload-field\" id=\"channel-file-uploader\" multiple=\"\" type=\"file\"></div></div>",
+                escape(&Value::Array(draft.uploads.clone()).to_string()),
+                escape(&t("chat.upload")),
+                escape(&t("uploading")),
+                escape(&t("processing")),
+                escape(&t("chat.remove_upload")),
+                escape(&t("chat.uploaded_files.other")),
+                self.settings.get("max_image_width")?.to_i(),
+                self.settings.get("max_image_height")?.to_i(),
                 escape(&self.upload_accept()?)
             ));
         }
@@ -908,9 +953,8 @@ impl Context<'_> {
         Ok(out)
     }
 
-    /// The member's draft for the channel (chat_drafts): its text, and the
-    /// message it edits or replies to. One carrying uploads is refused until
-    /// uploads are ported.
+    /// The member's draft for the channel (chat_drafts): its text, its
+    /// uploads, and the message it edits or replies to.
     async fn draft_message(&mut self, channel_id: i64) -> Result<Draft, AppError> {
         let Some(user_id) = self.guardian.user_id() else {
             return Ok(Draft::default());
@@ -932,12 +976,10 @@ impl Context<'_> {
         let Ok(draft) = serde_json::from_str::<Value>(&data) else {
             return Ok(Draft::default());
         };
-        if draft["uploads"].as_array().is_some_and(|u| !u.is_empty()) {
-            return Err(Unsupported("chat drafts with uploads").into());
-        }
         Ok(Draft {
             message: s(&draft["message"]).to_string(),
             details: self.draft_details(&draft).await?,
+            uploads: draft["uploads"].as_array().cloned().unwrap_or_default(),
         })
     }
 
@@ -987,6 +1029,15 @@ impl Context<'_> {
             viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
             online: self.online_ids().await?,
             emojis: self.settings.emojis().clone(),
+            max_image: (
+                self.settings.get("max_image_width")?.to_f(),
+                self.settings.get("max_image_height")?.to_f(),
+            ),
+            base_url: crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            }
+            .base_url()?,
             can_interact: true,
             t: &t,
         };
@@ -1278,6 +1329,13 @@ fn message_html(
     if let Some(name) = user["name"].as_str() {
         data.push_str(&format!(" data-name=\"{}\"", escape(name)));
     }
+    // Its uploads, which an edit starts from.
+    if m["uploads"].as_array().is_some_and(|u| !u.is_empty()) {
+        data.push_str(&format!(
+            " data-uploads=\"{}\"",
+            escape(&m["uploads"].to_string())
+        ));
+    }
     if deleted {
         data.push_str(&format!(" data-deleted-by-id=\"{}\"", m["deleted_by_id"]));
     }
@@ -1367,13 +1425,30 @@ fn message_html(
             u = escape(s(&user["username"]))
         ));
     }
-    if m["uploads"].as_array().is_some_and(|u| !u.is_empty()) {
-        return Err(Unsupported("chat message uploads").into());
+    // ChatMessageText: the collapser when it has uploads, images or image
+    // oneboxes.
+    let uploads: &[Value] = m["uploads"]
+        .as_array()
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    let cooked = s(&m["cooked"]);
+    if super::collapser::is_collapsible(cooked, uploads) {
+        let page_url = format!("{}/chat/", v.base_url);
+        let opts = super::collapser::Opts {
+            base_path: v.base_path,
+            page_url: &page_url,
+            max_image: v.max_image,
+            t,
+        };
+        out.push_str(&format!(
+            "<div class=\"chat-message-text\">{}",
+            super::collapser::collapser_html(cooked, uploads, &opts)?
+        ));
+    } else {
+        out.push_str(&format!(
+            "<div class=\"chat-message-text\"><div class=\"chat-cooked\">{cooked}</div>"
+        ));
     }
-    out.push_str(&format!(
-        "<div class=\"chat-message-text\"><div class=\"chat-cooked\">{}</div>",
-        s(&m["cooked"])
-    ));
     if m["edited"] == true {
         out.push_str(&format!(
             "<span class=\"chat-message-edited\">({})</span>",
@@ -1904,4 +1979,59 @@ struct Draft {
     message: String,
     /// ChatComposerMessageDetails, when it edits or replies.
     details: String,
+    /// The uploads it carries, as the client saved them.
+    uploads: Vec<Value>,
+}
+
+/// ChatComposerUpload for an upload that is done: its preview (the image,
+/// or its type's icon), its name and extension unless an image, and the
+/// remove button.
+fn composer_upload(upload: &Value, base_path: &str, t: &dyn Fn(&str) -> String) -> String {
+    let name = s(&upload["original_filename"]);
+    let lower = name.to_lowercase();
+    let ends = |exts: &[&str]| exts.iter().any(|e| lower.ends_with(&format!(".{e}")));
+    let image = ends(&[
+        "png", "webp", "jpg", "jpeg", "gif", "svg", "ico", "heic", "heif", "avif", "jxl",
+    ]);
+    let preview = if image {
+        let url = s(&upload["url"]);
+        // getURLWithCDN
+        let url = if url.starts_with('/')
+            && !url.starts_with("//")
+            && !url.starts_with(&format!("{base_path}/"))
+        {
+            format!("{base_path}{url}")
+        } else {
+            url.to_string()
+        };
+        format!("<img class=\"preview-img\" src=\"{}\">", escape(&url))
+    } else if ends(&["mov", "mp4", "webm", "m4v", "3gp", "ogv", "avi", "mpeg"]) {
+        d_icon("file-video", None)
+    } else if ends(&[
+        "mp3", "ogg", "oga", "opus", "wav", "m4a", "m4b", "m4p", "m4r", "aac", "flac",
+    ]) {
+        d_icon("file-audio", None)
+    } else {
+        d_icon("file-lines", None)
+    };
+    let data = if image {
+        "<div class=\"bottom-data\"></div>".to_string()
+    } else {
+        format!(
+            "<div class=\"top-data\"><span class=\"file-name\">{}</span></div><div class=\"bottom-data\"><span class=\"extension-pill\">{}</span></div>",
+            escape(name),
+            escape(s(&upload["extension"]))
+        )
+    };
+    format!(
+        "<div class=\"chat-composer-upload{}\" data-id=\"{}\"><div class=\"preview\">{preview}</div><span class=\"data\">{data}</span><button class=\"btn no-text btn-icon btn-flat chat-composer-upload__remove-btn\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></div>",
+        if image {
+            " chat-composer-upload--image"
+        } else {
+            ""
+        },
+        upload["id"],
+        escape(&t("chat.remove_upload")),
+        d_icon("xmark", None)
+    )
 }

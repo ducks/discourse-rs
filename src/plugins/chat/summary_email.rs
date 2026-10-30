@@ -460,6 +460,12 @@ pub async fn build(
                 };
                 let at = chrono::TimeZone::from_utc_datetime(&tz, &m.created_at);
                 let when = at.format("%B %-d, %Y, %l:%M%P").to_string();
+                // cooked_for_excerpt: an upload-only message, its first upload.
+                let first_upload = super::messages::first_upload_filename(&mut *conn, m.id).await?;
+                let cooked = super::messages::cooked_for_excerpt(
+                    m.cooked.as_deref().unwrap_or_default(),
+                    first_upload.as_deref(),
+                );
                 html.push_str(&format!(
                     "              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"{}\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top;\" alt=\"{}\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold;\">\n                    {}                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em;\">\n                    {}                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top;\">\n                  {}\n                </td>\n              </tr>\n",
                     html_escape(&avatar),
@@ -470,7 +476,7 @@ pub async fn build(
                         s,
                         &urls,
                         ctx.i18n,
-                        m.cooked.as_deref().unwrap_or_default(),
+                        &cooked,
                         None
                     )?
                 ));

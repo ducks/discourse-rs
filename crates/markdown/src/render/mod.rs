@@ -12,6 +12,7 @@ mod anchor;
 mod bbcode;
 mod blocks;
 mod chat_html;
+mod chat_transcript;
 mod checklist;
 mod code;
 pub mod context;
@@ -134,6 +135,15 @@ pub struct RenderSettings {
     /// details off. The other features chat leaves out (poll, checklist,
     /// footnotes, policy) are off in the settings it cooks with.
     pub chat: bool,
+    /// chat's `[chat]` transcripts (features["chat-transcript"]:
+    /// chat_enabled), with the client strings they write
+    /// (`chat.quote.original_channel`, `chat.quote.default_thread_title`).
+    #[serde(default)]
+    pub chat_transcript: bool,
+    #[serde(default)]
+    pub chat_quote_original_channel: String,
+    #[serde(default)]
+    pub chat_quote_default_thread_title: String,
     /// features.onebox: standalone links marked as onebox candidates (off
     /// for tag descriptions, HasCookedTagDescription::COOK_OPTIONS).
     #[serde(default = "onebox_default")]
@@ -196,7 +206,48 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
     if settings.math {
         math::allow(&mut list);
     }
+    if settings.chat_transcript {
+        chat_transcript::allow(&mut list);
+    }
     list
+}
+
+/// `RenderSettings` as Chat::Message.markdown_options sets them: chat's
+/// rules, MARKDOWN_FEATURES leaving out polls, checklists, footnotes and
+/// policies while always including inlineEmoji.
+pub fn chat_settings(settings: &mut RenderSettings) {
+    settings.chat = true;
+    settings.poll = false;
+    settings.checklist = false;
+    settings.footnotes = false;
+    settings.policy = false;
+    settings.inline_emoji = true;
+}
+
+/// chat-transcript.js's `customMarkdownCookFn`: a transcript's messages
+/// cooked with chat's limited features (MARKDOWN_FEATURES as given, so no
+/// emoji shortcuts and none of the plugins' chat features) and rules plus
+/// `image`, which chat's rules have. What it would look up goes to the
+/// outer cook; a hashtag, which the chat composer's context would order
+/// differently, is refused outside chat.
+fn render_chat_fragment(raw: &str, settings: &RenderSettings, ctx: &Context) -> String {
+    let mut inner = settings.clone();
+    chat_settings(&mut inner);
+    inner.emoji_shortcuts = false;
+    inner.math = false;
+    match render(raw, &inner, ctx.lookups.clone()) {
+        Ok((html, needs)) => {
+            if !settings.chat && !needs.hashtags.is_empty() {
+                ctx.refuse("hashtags in a chat transcript");
+            }
+            ctx.note_needs(needs);
+            html
+        }
+        Err(Unsupported(what)) => {
+            ctx.refuse(what);
+            String::new()
+        }
+    }
 }
 
 fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {

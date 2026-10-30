@@ -3,7 +3,8 @@
 //! by Chat::MessagesSerializer and Chat::MessageSerializer.
 //!
 //! Refused as Unsupported until their slices port them: threads (slice
-//! 5), uploads, webhook events and blocks (slice 6), and user status.
+//! 5), webhook events and blocks (slice 6), optimized videos of uploads,
+//! and user status.
 //! The two writes Rails defers (Scheduler::Defer) to after the response,
 //! the membership's last_viewed_at and the user's last chat channel, are
 //! made before it.
@@ -117,6 +118,8 @@ struct Shared {
     threading_enabled: bool,
     users: HashMap<i32, UserRow>,
     groups: HashMap<i32, crate::groups::Group>,
+    /// The messages' uploads, by message.
+    uploads: HashMap<i64, Vec<MessageUpload>>,
 }
 
 pub enum Listed {
@@ -218,12 +221,74 @@ pub(crate) fn build_excerpt_for(
     )
 }
 
-/// `Chat::Message#excerpt_for_display`: the stored excerpt, else one
-/// built from the cooked message.
-fn excerpt_for_display(
-    m: &MessageRow,
+/// `Chat::Message#build_excerpt` of a message with uploads: one whose
+/// cooked is blank is its first upload's name.
+pub(crate) fn build_excerpt_with_uploads(
+    message: &str,
+    cooked: &str,
+    first_upload: Option<&str>,
     plugins: crate::excerpt::Plugins,
 ) -> Result<String, AppError> {
+    match first_upload {
+        // A blank cooked has no urls, so the urls-only case can't come
+        // first.
+        Some(name) if cooked.trim().is_empty() => Ok(upload_filename_excerpt(name)),
+        _ => build_excerpt_for(message, cooked, plugins),
+    }
+}
+
+/// `Chat::Message#upload_filename_excerpt`: the first upload's name, cut
+/// to EXCERPT_LENGTH and escaped.
+pub(crate) fn upload_filename_excerpt(filename: &str) -> String {
+    crate::category_badge::html_escape(&filename.chars().take(EXCERPT_LENGTH).collect::<String>())
+}
+
+/// `Chat::Message#cooked_for_excerpt`: a message with a blank cooked and
+/// uploads reads as its first upload's name.
+pub(crate) fn cooked_for_excerpt(cooked: &str, first_upload: Option<&str>) -> String {
+    match first_upload {
+        Some(name) if cooked.trim().is_empty() => {
+            format!("<p>{}</p>", upload_filename_excerpt(name))
+        }
+        _ => cooked.to_string(),
+    }
+}
+
+/// The name of a message's first upload, in the order they were attached.
+pub(crate) async fn first_upload_filename(
+    conn: &mut sqlx::PgConnection,
+    message_id: i64,
+) -> Result<Option<String>, AppError> {
+    Ok(sqlx::query_scalar(
+        "SELECT u.original_filename FROM upload_references ur JOIN uploads u ON u.id = ur.upload_id \
+         WHERE ur.target_type = $1 AND ur.target_id = $2 ORDER BY ur.id LIMIT 1",
+    )
+    .bind(POLYMORPHIC_NAME)
+    .bind(message_id)
+    .fetch_optional(conn)
+    .await?)
+}
+
+/// An upload of a message: its name, and UploadSerializer's json.
+pub(crate) struct MessageUpload {
+    pub original_filename: String,
+    pub json: Value,
+}
+
+/// `Chat::Message#excerpt_for_display`: an upload-only message's first
+/// upload's name, else the stored excerpt, else one built from the cooked
+/// message.
+fn excerpt_for_display(
+    m: &MessageRow,
+    first_upload: Option<&str>,
+    plugins: crate::excerpt::Plugins,
+) -> Result<String, AppError> {
+    // only_uploads?: a blank message with uploads.
+    if let Some(name) = first_upload
+        && m.message.as_deref().is_none_or(|t| t.trim().is_empty())
+    {
+        return Ok(upload_filename_excerpt(name));
+    }
     match &m.excerpt {
         Some(e) => Ok(e.clone()),
         None => build_excerpt(m, plugins),
@@ -263,6 +328,64 @@ impl Context<'_> {
         .await?)
     }
 
+    /// The name of a message's first upload (`uploads.first`), in the
+    /// order they were attached.
+    pub(crate) async fn first_upload_filename(
+        &mut self,
+        message_id: i64,
+    ) -> Result<Option<String>, AppError> {
+        first_upload_filename(&mut *self.conn, message_id).await
+    }
+
+    /// The messages' uploads (`has_many :uploads, through:
+    /// :upload_references`) by message, each in the order it was attached,
+    /// through UploadSerializer. An upload's optimized_video, which the
+    /// serializer adds when video_conversion_enabled, is refused.
+    pub(crate) async fn message_uploads(
+        &mut self,
+        ids: &[i64],
+    ) -> Result<HashMap<i64, Vec<MessageUpload>>, AppError> {
+        let refs: Vec<(i64, i64, String)> = sqlx::query_as(
+            "SELECT ur.target_id, ur.upload_id, u.original_filename FROM upload_references ur \
+             JOIN uploads u ON u.id = ur.upload_id \
+             WHERE ur.target_type = $1 AND ur.target_id = ANY($2) ORDER BY ur.id",
+        )
+        .bind(POLYMORPHIC_NAME)
+        .bind(ids)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut out: HashMap<i64, Vec<MessageUpload>> = HashMap::new();
+        if refs.is_empty() {
+            return Ok(out);
+        }
+        if self.settings.get("video_conversion_enabled")?.truthy() {
+            let upload_ids: Vec<i64> = refs.iter().map(|r| r.1).collect();
+            let optimized: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM optimized_videos WHERE upload_id::int8 = ANY($1))",
+            )
+            .bind(&upload_ids)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if optimized {
+                return Err(Unsupported("optimized videos of chat message uploads").into());
+            }
+        }
+        let urls = crate::url::Urls {
+            config: self.config,
+            settings: self.settings,
+        };
+        for (message_id, upload_id, original_filename) in refs {
+            let json =
+                crate::uploads::serialize(&mut *self.conn, self.settings, &urls, upload_id as i32)
+                    .await?;
+            out.entry(message_id).or_default().push(MessageUpload {
+                original_filename,
+                json,
+            });
+        }
+        Ok(out)
+    }
+
     /// Chat::LastMessageSerializer for a channel's last message, None when
     /// it is deleted (the association's default scope hides it, leaving
     /// the NullMessage).
@@ -277,22 +400,13 @@ impl Context<'_> {
         let Some(m) = m else {
             return Ok(None);
         };
-        let uploads: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = $1 AND target_id = $2)",
-        )
-        .bind(POLYMORPHIC_NAME)
-        .bind(m.id)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if uploads {
-            return Err(Unsupported("chat message uploads").into());
-        }
+        let first_upload = self.first_upload_filename(m.id).await?;
         Ok(Some(json!({
             "id": m.id,
             "message": m.message,
             "cooked": m.cooked,
             "created_at": iso8601(m.created_at),
-            "excerpt": excerpt_for_display(&m, crate::excerpt::Plugins::from_settings(self.settings)?)?,
+            "excerpt": excerpt_for_display(&m, first_upload.as_deref(), crate::excerpt::Plugins::from_settings(self.settings)?)?,
             "deleted_at": null,
             "deleted_by_id": m.deleted_by_id,
             "thread_id": m.thread_id,
@@ -588,17 +702,8 @@ impl Context<'_> {
         let settings = self.settings;
         let g = self.guardian;
         let ids: Vec<i64> = messages.iter().map(|m| m.id).collect();
+        let uploads = self.message_uploads(&ids).await?;
         // Not ported yet: refused rather than served without them.
-        let uploads: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = $1 AND target_id = ANY($2))",
-        )
-        .bind(POLYMORPHIC_NAME)
-        .bind(&ids)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if uploads {
-            return Err(Unsupported("chat message uploads").into());
-        }
         let webhooks: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM chat_webhook_events WHERE chat_message_id = ANY($1) \
                OR chat_message_id IN (SELECT in_reply_to_id FROM chat_messages WHERE id = ANY($1)))",
@@ -700,6 +805,7 @@ impl Context<'_> {
             threading_enabled: channel.threading_enabled,
             users: users.into_iter().map(|u| (u.id, u)).collect(),
             groups,
+            uploads,
         })
     }
 
@@ -835,6 +941,10 @@ impl Context<'_> {
             "excerpt".into(),
             json!(excerpt_for_display(
                 m,
+                s.uploads
+                    .get(&m.id)
+                    .and_then(|u| u.first())
+                    .map(|u| u.original_filename.as_str()),
                 crate::excerpt::Plugins::from_settings(self.settings)?
             )?),
         );
@@ -968,7 +1078,17 @@ impl Context<'_> {
         if let Some(parent_id) = m.in_reply_to_id {
             out.insert("in_reply_to".into(), self.in_reply_to(s, parent_id).await?);
         }
-        out.insert("uploads".into(), json!([]));
+        out.insert(
+            "uploads".into(),
+            Value::Array(
+                s.uploads
+                    .get(&m.id)
+                    .into_iter()
+                    .flatten()
+                    .map(|u| u.json.clone())
+                    .collect(),
+            ),
+        );
         Ok(Value::Object(out))
     }
 
@@ -989,10 +1109,11 @@ impl Context<'_> {
             Some(u) => self.basic_user(s, u, true)?,
             None => self.null_user(s, true),
         };
+        let first_upload = self.first_upload_filename(parent.id).await?;
         Ok(json!({
             "id": parent.id,
             "cooked": parent.cooked,
-            "excerpt": excerpt_for_display(&parent, crate::excerpt::Plugins::from_settings(self.settings)?)?,
+            "excerpt": excerpt_for_display(&parent, first_upload.as_deref(), crate::excerpt::Plugins::from_settings(self.settings)?)?,
             "user": user,
             "chat_webhook_event": null,
         }))

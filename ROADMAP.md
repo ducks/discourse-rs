@@ -2278,10 +2278,37 @@ have handlers now.
     plugins/chat/summary_email.rs:223; plugins/chat/publisher.rs:367;
     plugins/chat/dm_groups.rs:540; plugins/chat/membership.rs:542), the
     threads list (280a)
-161. `feat/chat-uploads` M: chat message uploads
-    (plugins/chat/messages.rs:276,588; plugins/chat/create.rs:99;
-    plugins/chat/modify.rs:301; plugins/chat/page.rs:880,1315),
-    oneboxes, images and videos in messages (plugins/chat/create.rs:747),
+161. `feat/chat-uploads` M: ~~chat message uploads~~ (done,
+    feat/chat-uploads: Chat::CreateMessage and Chat::UpdateMessage take
+    upload_ids, the sender's own uploads (user_uploads) while
+    chat_allow_uploads, an upload-only message passing the contract and
+    the minimum length and never a duplicate; an edit replaces the
+    references only when every id given is the editor's (those gone
+    deleted, those added made, the rest kept); upload_filename_excerpt as
+    the excerpt of a message with a blank cooked, excerpt_for_display and
+    cooked_for_excerpt (the summary email) of an upload-only one;
+    Chat::MessageSerializer's uploads through UploadSerializer, in the
+    messages list, the bus payloads and the last message;
+    MessageProcessor#process_thumbnails in Jobs::Chat::ProcessMessage
+    (Rails' early return at the first small image kept); the channel
+    page's ChatMessageCollapser (plugins/chat/collapser.rs: the uploads
+    behind their name or "N files", ChatUpload's image, video, audio and
+    attachment, and the cooked's images, image oneboxes and galleries
+    behind their links) with the Collapser toggle and the uploads'
+    lightbox in chat.js; ChatComposerUploads: the draft's uploads
+    restored in the composer and saved with it, the dropdown's "Attach a
+    file" (chat-upload-btn), the picker, a paste or a drop on the channel
+    sent to /uploads.json (upload_type chat-composer) with each upload's
+    progress, removing one, sending (upload_ids[]) and editing with
+    them, the staged message drawing them; tests/chat_uploads.rs and the
+    collapser's unit tests. Left refused: an upload's optimized video
+    (plugins/chat/messages.rs:370; plugins/chat/create.rs:930), a nil
+    message with upload_ids, a 500 in Rails (create.rs:289; modify.rs:345),
+    lazy videos in the collapser (collapser.rs:309, they only come from
+    oneboxes)), oneboxes, images and videos in messages: the rest of
+    Chat::MessageProcessor (oneboxes, hotlinked images and
+    Jobs::Chat::PullHotlinkedImages, lightboxes on cooked images, video
+    placeholders; plugins/chat/create.rs:816),
     ~~chat message bookmarks~~ (done, fix/chat-bookmarks: chat's registered
     bookmarkable, Chat::MessageBookmarkable, in plugins/chat/bookmarks.rs:
     its list query and search on /u/:username/bookmarks.json, the
@@ -2295,8 +2322,20 @@ have handlers now.
     (bookmarks.rs:704; jobs/bookmark_reminders.rs:119;
     bookmark_manager.rs:407), bookmarks of unregistered types
     (bookmarks.rs:863); channels of deleted categories or other chatables
-    (plugins/chat/bookmarks.rs:176,183, with 162)), chat transcripts in
-    posts (crates/markdown's bbcode refusal)
+    (plugins/chat/bookmarks.rs:176,183, with 162)), ~~chat transcripts in
+    posts~~ (done, feat/chat-uploads: chat-transcript.js's `[chat]` rule
+    in crates/markdown (render/chat_transcript.rs) while chat_enabled, in
+    posts and chat messages alike: the quote's user, message and time,
+    the avatar (lookupAvatar), the message link or the noLink span, the
+    channel link or the multiQuote meta line, chained, reactions with
+    their emoji, a thread's details summary, the messages cooked with
+    chat's rules (customMarkdownCookFn) and its allow list, the tokens
+    rendered as renderToken writes them; chat's
+    post_chat_transcript_spec cases in tests/pretty_text.rs. Left
+    refused: a hashtag inside a transcript outside chat, which the chat
+    composer's context would order differently (render/mod.rs:241), a
+    multiQuote without a channel id and a reaction without users, which
+    Rails writes as "null" or throws on (render/chat_transcript.rs:216,338))
 162. `feat/chat-rest` M: messages of deleted users
     (plugins/chat/notify.rs:76,487; plugins/chat/create.rs:293,721,763;
     plugins/chat/modify.rs:337,342; plugins/chat/summary_email.rs:459;
