@@ -594,7 +594,11 @@ pub async fn create(
     )
     .await?;
     let base_path = ctx.config.globals.relative_url_root().to_string();
-    let analysis = validate::analyze(&cooked, &base_path)?;
+    let analysis = validate::analyze_stripped(
+        &cooked,
+        &base_path,
+        crate::plugins::chat::enabled(ctx.settings)?,
+    )?;
     crate::onebox::refuse_unported(
         &analysis.onebox_links,
         &crate::url::Urls {

@@ -280,8 +280,14 @@ pub async fn perform_unsubscribe(
         params.insert("unwatch_category".into(), serde_json::json!(true));
         params.insert("unsubscribe_all".into(), serde_json::json!(true));
     }
+    let settings = crate::site_settings::SiteSettings::load(
+        &mut conn,
+        &state.site_setting_defs,
+        &state.config.globals,
+    )
+    .await?;
     let mut tx = state.pool.begin().await?;
-    let updated = unsubscribe::unsubscribe(&mut tx, &found, owner.id, &params).await?;
+    let updated = unsubscribe::unsubscribe(&mut tx, &found, owner.id, &params, &settings).await?;
     tx.commit().await?;
     let base_path = state.config.globals.relative_url_root();
     if !updated {

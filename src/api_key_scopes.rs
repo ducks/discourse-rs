@@ -221,9 +221,39 @@ static TABLE: LazyLock<Table> = LazyLock::new(|| {
     Table { scopes, routes }
 });
 
-/// `ApiKeyScope.scope_mappings`, in order.
+/// `ApiKeyScope.scope_mappings`, in order, every plugin's included.
 pub fn scope_mappings() -> &'static [(String, Vec<(String, Mapping)>)] {
     &TABLE.scopes
+}
+
+/// The recorded resources plugins add (`add_api_key_scope`, a filtered
+/// register) and their plugin's enabled setting.
+const PLUGIN_RESOURCES: [(&str, &str); 2] =
+    [("chat", "chat_enabled"), ("solved", "solved_enabled")];
+
+/// Whether `scope_mappings` has the resource now: core's always, a
+/// plugin's while the plugin is enabled. A key's scope on a resource it
+/// lacks permits nothing and shows no parameters or urls.
+pub fn resource_enabled(
+    resource: &str,
+    settings: &crate::site_settings::SiteSettings,
+) -> Result<bool, crate::site_settings::SettingError> {
+    match PLUGIN_RESOURCES.iter().find(|(r, _)| *r == resource) {
+        Some((_, setting)) => Ok(settings.get(setting)?.truthy()),
+        None => Ok(true),
+    }
+}
+
+/// `scope_mappings.dig(resource, action)` as the site has them now.
+pub fn enabled_mapping(
+    resource: &str,
+    action: &str,
+    settings: &crate::site_settings::SiteSettings,
+) -> Result<Option<&'static Mapping>, crate::site_settings::SettingError> {
+    if !resource_enabled(resource, settings)? {
+        return Ok(None);
+    }
+    Ok(mapping(resource, action))
 }
 
 pub fn mapping(resource: &str, action: &str) -> Option<&'static Mapping> {

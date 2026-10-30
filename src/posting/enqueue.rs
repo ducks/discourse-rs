@@ -155,7 +155,11 @@ pub(super) async fn enqueue(
         .await?;
         conn = pool.acquire().await?;
         let base_path = ctx.config.globals.relative_url_root().to_string();
-        let analysis = validate::analyze(&cooked, &base_path)?;
+        let analysis = validate::analyze_stripped(
+            &cooked,
+            &base_path,
+            crate::plugins::chat::enabled(ctx.settings)?,
+        )?;
         // has_host_spam? (handle_spam only follows a create).
         let max_oneboxes = s.get("max_oneboxes_per_post")?.to_i();
         if validate::host_spam(&mut conn, ctx, guardian, false, &analysis, max_oneboxes)

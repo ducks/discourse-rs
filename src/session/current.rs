@@ -507,7 +507,7 @@ pub async fn layer(
                     params: &params,
                     format: &format,
                 };
-                match super::api_key::resolve(&mut conn, &headers, &ip, &matched).await? {
+                match super::api_key::resolve(&state, &mut conn, &headers, &ip, &matched).await? {
                     super::api_key::Resolved::User(user) => Err(user),
                     super::api_key::Resolved::Invalid => Ok("invalid_api_credentials"),
                     super::api_key::Resolved::Refused => Ok("invalid_access"),

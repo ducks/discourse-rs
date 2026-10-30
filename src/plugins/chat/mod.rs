@@ -29,6 +29,7 @@ pub mod page;
 pub mod presence;
 pub mod publisher;
 pub mod scheduled;
+pub mod site_integration;
 pub mod summary_email;
 pub mod thread_view;
 pub mod threads;

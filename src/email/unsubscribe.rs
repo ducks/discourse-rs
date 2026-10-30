@@ -98,15 +98,23 @@ pub enum Strategy {
     Topic,
     /// discourse-policy's PolicyEmailUnsubscriber.
     Policy,
+    /// chat's ChatSummaryUnsubscriber, registered while chat is on.
+    ChatSummary,
 }
 
-pub fn strategy_for(key: &Key) -> Result<Strategy, AppError> {
+/// `UnsubscribeKey::CHAT_SUMMARY`'s type (chat's register_email_unsubscriber).
+pub const CHAT_SUMMARY_TYPE: &str = "chat_summary";
+
+pub fn strategy_for(key: &Key, settings: &SiteSettings) -> Result<Strategy, AppError> {
     match key.unsubscribe_key_type.as_deref() {
         Some(DIGEST_TYPE) => Ok(Strategy::Digest),
         Some(TOPIC_TYPE) => Ok(Strategy::Topic),
         Some(ALL_TYPE) => Ok(Strategy::Base),
         Some(crate::plugins::policy::email::EMAIL_TYPE) => Ok(Strategy::Policy),
-        // chat_summary (chat's strategy), or a type nothing handles (Rails
+        Some(CHAT_SUMMARY_TYPE) if crate::plugins::chat::enabled(settings)? => {
+            Ok(Strategy::ChatSummary)
+        }
+        // chat_summary with chat off, or a type nothing handles (Rails
         // then fails rendering the page).
         _ => Err(Unsupported("unsubscribe keys of plugins' email types").into()),
     }
@@ -184,6 +192,8 @@ pub struct Options {
     /// discourse-policy's PolicyEmailUnsubscriber: the frequencies
     /// (label, name) and the owner's.
     pub policy_email_frequencies: Option<(Vec<(String, String)>, String)>,
+    /// chat's ChatSummaryUnsubscriber: the same for chat summary emails.
+    pub chat_email_frequencies: Option<(Vec<(String, String)>, String)>,
 }
 
 /// The digest frequencies the page offers: the user's, the choices
@@ -260,7 +270,7 @@ pub async fn prepare(
     key: &Key,
     owner: &Owner,
 ) -> Result<Options, AppError> {
-    let strategy = strategy_for(key)?;
+    let strategy = strategy_for(key, settings)?;
     // UserOption#mailing_list_mode reads false while the site disables it.
     let mailing_list_mode =
         owner.mailing_list_mode && !settings.get("disable_mailing_list_mode")?.truthy();
@@ -279,9 +289,32 @@ pub async fn prepare(
         watching_topic: false,
         watched_category: false,
         policy_email_frequencies: None,
+        chat_email_frequencies: None,
     };
     match strategy {
         Strategy::Base => {}
+        Strategy::ChatSummary => {
+            let current: i32 = sqlx::query_scalar(
+                "SELECT chat_email_frequency FROM user_options WHERE user_id = $1",
+            )
+            .bind(owner.id)
+            .fetch_one(&mut *conn)
+            .await?;
+            let names = crate::plugins::chat::site_integration::EMAIL_FREQUENCIES;
+            let mut frequencies = Vec::new();
+            for name in names {
+                frequencies.push((
+                    translated(i18n, &format!("unsubscribe.chat_summary.{name}"))?,
+                    name.to_string(),
+                ));
+            }
+            let current = names
+                .get(usize::try_from(current).unwrap_or(usize::MAX))
+                .copied()
+                .unwrap_or_default()
+                .to_string();
+            options.chat_email_frequencies = Some((frequencies, current));
+        }
         Strategy::Policy => {
             let current: i32 = sqlx::query_scalar(
                 "SELECT policy_email_frequency FROM user_options WHERE user_id = $1",
@@ -552,10 +585,12 @@ pub fn render_unsubscribe(
         ));
         out.push_str("          </p>\n");
     }
-    // server_plugin_outlet "unsubscribe_options": chat's connector shows
-    // nothing for these keys, discourse-policy's its frequencies for its own.
-    let mut outlet = String::new();
-    if let Some((frequencies, current)) = &o.policy_email_frequencies {
+    // server_plugin_outlet "unsubscribe_options": chat's connector, then
+    // discourse-policy's, each drawing its frequencies for its own keys.
+    let frequency_select = |name: &str,
+                            title_key: &str,
+                            (frequencies, current): &(Vec<(String, String)>, String)|
+     -> Result<String, AppError> {
         let options: Vec<String> = frequencies
             .iter()
             .map(|(label, value)| {
@@ -571,11 +606,26 @@ pub fn render_unsubscribe(
                 )
             })
             .collect();
-        outlet = format!(
-            "  <p>\n    <label>{}</label>\n    <select name=\"policy_email_frequency\" id=\"policy_email_frequency\" class=\"combobox\">{}</select>\n  </p>\n",
-            html_escape(&translated(i18n, "unsubscribe.policy_emails.select_title")?),
+        Ok(format!(
+            "  <p>\n    <label>{}</label>\n    <select name=\"{name}\" id=\"{name}\" class=\"combobox\">{}</select>\n  </p>\n",
+            html_escape(&translated(i18n, title_key)?),
             options.join("\n")
-        );
+        ))
+    };
+    let mut outlet = String::new();
+    if let Some(chat) = &o.chat_email_frequencies {
+        outlet.push_str(&frequency_select(
+            "chat_email_frequency",
+            "unsubscribe.chat_summary.select_title",
+            chat,
+        )?);
+    }
+    if let Some(policy) = &o.policy_email_frequencies {
+        outlet.push_str(&frequency_select(
+            "policy_email_frequency",
+            "unsubscribe.policy_emails.select_title",
+            policy,
+        )?);
     }
     out.push_str(&format!("\n      {outlet}\n\n"));
     if !o.unsubscribed_from_all {
@@ -662,14 +712,17 @@ fn given(params: &serde_json::Map<String, serde_json::Value>, name: &str) -> boo
 
 /// The strategy's `unsubscribe(params)`, after One-Click's params are
 /// resolved: whether any preference changed. Every write is
-/// update_columns or update_all (no callbacks, no updated_at).
+/// update_columns or update_all (no callbacks, no updated_at), but chat's
+/// update!, whose callbacks leave this column alone (user_options has no
+/// timestamps).
 pub async fn unsubscribe(
     conn: &mut PgConnection,
     key: &Key,
     owner_id: i32,
     params: &serde_json::Map<String, serde_json::Value>,
+    settings: &SiteSettings,
 ) -> Result<bool, AppError> {
-    let strategy = strategy_for(key)?;
+    let strategy = strategy_for(key, settings)?;
     let mut updated = false;
     // BaseEmailUnsubscriber
     if given(params, "disable_mailing_list") {
@@ -691,6 +744,31 @@ pub async fn unsubscribe(
     }
     match strategy {
         Strategy::Base => {}
+        Strategy::ChatSummary => {
+            // `user_option.update!(chat_email_frequency:)`: the enum
+            // raises on anything else (a blank one breaks NOT NULL).
+            if given(params, "chat_email_frequency") {
+                let value = params
+                    .get("chat_email_frequency")
+                    .and_then(crate::params::scalar)
+                    .unwrap_or_default();
+                let Some(frequency) = crate::plugins::chat::site_integration::EMAIL_FREQUENCIES
+                    .iter()
+                    .position(|f| *f == value)
+                else {
+                    return Err(std::io::Error::other(format!(
+                        "ArgumentError: '{value}' is not a valid chat_email_frequency"
+                    ))
+                    .into());
+                };
+                sqlx::query("UPDATE user_options SET chat_email_frequency = $2 WHERE user_id = $1")
+                    .bind(owner_id)
+                    .bind(frequency as i32)
+                    .execute(&mut *conn)
+                    .await?;
+                updated = true;
+            }
+        }
         Strategy::Policy => {
             if given(params, "policy_email_frequency") {
                 let value = params

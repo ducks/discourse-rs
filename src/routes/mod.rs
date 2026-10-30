@@ -277,6 +277,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
+        .route("/notifications/totals", get(notifications::totals))
+        .route("/notifications/totals.json", get(notifications::totals))
         .route("/onebox", get(onebox::show))
         .route("/inline-onebox", get(onebox::inline))
         .route("/hashtags", get(hashtags::lookup))

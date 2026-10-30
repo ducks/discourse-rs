@@ -10,10 +10,9 @@ GET /srv/status?cluster=parity
 GET /site/basic-info.json
 
 # site#site (anonymous). Ignored until ported:
-#   markdown_additional_options, hashtag_configurations, hashtag_icons: chat plugin
 #   access_control: boards plugin ACLs
 #   categories/*/custom_fields: plugin-registered category custom fields
-GET /site.json ignore=/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields
+GET /site.json ignore=/access_control,/categories/*/custom_fields
 
 # list#latest (anonymous).
 GET /latest.json
@@ -94,14 +93,14 @@ GET /search/query.json?term=fixture&type_filter=bogus
 GET /search/query.json
 
 # users#show (anonymous). profile_view_count: Rails bumps it per IP and 8 h window
-GET /u/user1.json ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/User1.json?case=upper ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/admin.json ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/system.json ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/user0.json ignore=/user/can_chat_user,/user/profile_view_count
+GET /u/user1.json ignore=/user/profile_view_count
+GET /u/User1.json?case=upper ignore=/user/profile_view_count
+GET /u/admin.json ignore=/user/profile_view_count
+GET /u/system.json ignore=/user/profile_view_count
+GET /u/user0.json ignore=/user/profile_view_count
 GET /u/nobody.json
-GET /u/user1/badges.json ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/user1/activity/topics.json ignore=/user/can_chat_user,/user/profile_view_count
+GET /u/user1/badges.json ignore=/user/profile_view_count
+GET /u/user1/activity/topics.json ignore=/user/profile_view_count
 # users#show_card (UserCardSerializer, HiddenProfileSerializer,
 # InactiveUserSerializer), with topic_post_count for a topic the viewer may
 # see (35) or not (42, a message between user1 and user0).
@@ -113,7 +112,7 @@ GET /u/user0/card.json?include_post_count_for=42&skip_track_visit=true as=user1
 GET /u/user0/card.json?include_post_count_for=42&skip_track_visit=true as=user2
 GET /u/user1/card.json?include_post_count_for=35 as=user1 ignore=/user/last_seen_at
 GET /u/user1/card.json?include_post_count_for=35&skip_track_visit=true as=admin
-GET /u/user1.json?include_post_count_for=35&skip_track_visit=true ignore=/user/can_chat_user,/user/profile_view_count
+GET /u/user1.json?include_post_count_for=35&skip_track_visit=true ignore=/user/profile_view_count
 # users#summary
 GET /u/user1/summary.json ignore=/user_summary/top_categories
 # user1's top categories tie (one post each in General and Sub General);
@@ -157,15 +156,15 @@ POST /session body=login=nobody&password=password
 POST /session body=login=user1
 POST /session body=login=user1&password=password&second_factor_token=123456 ignore=/user
 
-# logged-in /session/current.json. Plugin keys ignored (chat, templates,
+# logged-in /session/current.json. Plugin keys ignored (templates,
 # voting, poll); custom_fields carry plugin-registered fields;
 # treat_as_new_topic_start_date and previous_visit_at move with time.
 # sidebar_category_ids plucks the sidebar links with no ORDER BY
 # (User#secured_sidebar_category_ids): compared in any order.
-GET /session/current.json as=user1 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids
-GET /session/current.json as=user0 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids
+GET /session/current.json as=user1 ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids
+GET /session/current.json as=user0 ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids
 # has_unseen_features is redis state (the new-features feed fetched after a staff login).
-GET /session/current.json as=admin ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features unordered=/current_user/sidebar_category_ids
+GET /session/current.json as=admin ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features unordered=/current_user/sidebar_category_ids
 
 # Topic lists for a logged-in user. user1 (TL2) tracks 35 with unread
 # posts, watches 38, cleared the pin on and bookmarked 37, muted topic
@@ -221,9 +220,9 @@ GET /t/about-the-staff-category/2.json as=user1 ignore=/timeline_lookup
 GET /t/parity-fixture-deleted-topic/40.json as=user1 ignore=/timeline_lookup
 
 # site#site for a logged-in user. Plugin-shaped keys ignored: the flag
-GET /site.json as=user1 ignore=/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
-GET /site.json as=user0 ignore=/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
-GET /site.json as=admin ignore=/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
+GET /site.json as=user1 ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
+GET /site.json as=user0 ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
+GET /site.json as=admin ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
 
 # search for a logged-in user: user data on /search.json topics only,
 # secure categories and staff group visibility, the log keyed by user.
@@ -246,9 +245,9 @@ GET /categories.json as=admin ignore=/category_list/categories/*/custom_fields
 
 # users#show for another logged-in user: mute/ignore/PM flags, visible
 # groups, the new-profile gate relaxed for TL2 viewers.
-GET /u/user1.json as=user0 ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/admin.json as=user0 ignore=/user/can_chat_user,/user/profile_view_count
-GET /u/user0.json as=user1 ignore=/user/can_chat_user,/user/profile_view_count
+GET /u/user1.json as=user0 ignore=/user/profile_view_count
+GET /u/admin.json as=user0 ignore=/user/profile_view_count
+GET /u/user0.json as=user1 ignore=/user/profile_view_count
 GET /u/user0/summary.json as=user1
 GET /u/user1/summary.json as=user1
 GET /u/user0/summary.json as=admin
@@ -318,17 +317,17 @@ GET /t/parity-fixture-pm-user1-to-user0/42.json ignore=/timeline_lookup
 
 # users#show for the user themself and for staff: the private block.
 # user_auth_tokens is ignored (the seed carries no tokens; the sessions
-# test covers the shape), as are chat plugin option keys and
-# last_seen_at (bumped by the recording login itself).
-GET /u/user1.json as=user1 ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at
-GET /u/user1.json?skip_track_visit=true as=admin ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at
-GET /u/user0.json?skip_track_visit=true as=admin ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at
-GET /u/admin.json as=admin ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at
+# test covers the shape), as is last_seen_at (bumped by the recording
+# login itself).
+GET /u/user1.json as=user1 ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
+GET /u/user1.json?skip_track_visit=true as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
+GET /u/user0.json?skip_track_visit=true as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
+GET /u/admin.json as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
 # Users with a gravatar upload, as an admin: the gravatar_avatar_* keys in
 # the private block.
-GET /u/system.json as=admin ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at,/user/user_option/event_reminder_preference
-GET /u/discobot.json as=admin ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at,/user/user_option/event_reminder_preference
-GET /u/user0.json as=user0 ignore=/user/can_chat_user,/user/profile_view_count,/user/user_auth_tokens,/user/user_option/chat_enabled,/user/user_option/chat_sound,/user/user_option/ignore_channel_wide_mention,/user/user_option/show_thread_title_prompts,/user/user_option/chat_announce_new_messages,/user/user_option/chat_channel_list_filter,/user/user_option/chat_channel_list_sort,/user/user_option/chat_channel_list_sort_starred,/user/user_option/chat_channel_list_sort_dms,/user/user_option/chat_channel_list_filter_starred,/user/user_option/chat_channel_list_filter_dms,/user/user_option/chat_new_message_sound,/user/user_option/chat_email_frequency,/user/user_option/chat_header_indicator_preference,/user/user_option/chat_separate_sidebar_mode,/user/user_option/chat_send_shortcut,/user/user_option/chat_quick_reaction_type,/user/user_option/chat_quick_reactions_custom,/user/last_seen_at
+GET /u/system.json as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at,/user/user_option/event_reminder_preference
+GET /u/discobot.json as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at,/user/user_option/event_reminder_preference
+GET /u/user0.json as=user0 ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
 
 # users#bookmarks (scripts/fixtures/bookmarks.rb): the owner and admins
 # only. user1 has a pinned PM bookmark, one with a reminder, one whose

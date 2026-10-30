@@ -2,10 +2,10 @@
 //! app/serializers/site_serializer.rb for anonymous users.
 //!
 //! Attributes are emitted in the serializer's declaration order. Plugin
-//! contributions (topic-voting's `votes` filter, chat's hashtag and markdown
-//! entries, category custom fields) are not ported; those keys are listed
-//! with `ignore=` in parity/cases until a plugin layer exists. Categories are
-//! a slice of their own and are left out too.
+//! contributions not ported (topic-voting's `votes` filter, category
+//! custom fields) are listed with `ignore=` in parity/cases; chat's hashtag
+//! and markdown entries come from src/plugins/chat/site_integration.rs.
+//! Categories are a slice of their own and are left out too.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -450,13 +450,18 @@ impl Site<'_> {
         if !categories.is_empty() {
             out.insert("categories".into(), Value::Array(categories));
         }
-        // Site.markdown_additional_options: plugins only.
-        out.insert("markdown_additional_options".into(), json!({}));
+        // Site.markdown_additional_options: plugins only, chat's.
+        let hashtag_configurations = self.hashtag_configurations(tagging)?;
         out.insert(
-            "hashtag_configurations".into(),
-            self.hashtag_configurations(tagging),
+            "markdown_additional_options".into(),
+            json!({
+                "chat": crate::plugins::chat::site_integration::markdown_additional_options(
+                    hashtag_configurations.clone()
+                )
+            }),
         );
-        out.insert("hashtag_icons".into(), self.hashtag_icons(tagging));
+        out.insert("hashtag_configurations".into(), hashtag_configurations);
+        out.insert("hashtag_icons".into(), self.hashtag_icons(tagging)?);
         if self.guardian.is_anonymous() {
             if let Some(tags) = self.anonymous_default_navigation_menu_tags(tagging).await? {
                 out.insert("anonymous_default_navigation_menu_tags".into(), tags);
@@ -1055,23 +1060,72 @@ impl Site<'_> {
         })
     }
 
-    /// `HashtagAutocompleteService.contexts_with_ordered_types`, core data
-    /// sources only (category, tag).
-    fn hashtag_configurations(&self, tagging: bool) -> Value {
-        let mut types = vec!["category"];
+    /// `HashtagAutocompleteService.enabled_data_sources`: (type, icon) of
+    /// core's category and tag sources, then chat's channel source while
+    /// chat is on (a filtered register).
+    fn hashtag_data_sources(&self, tagging: bool) -> Result<Vec<(&str, &str)>, SiteError> {
+        let mut sources = vec![("category", "folder")];
         if tagging {
-            types.push("tag");
+            sources.push(("tag", "tag"));
         }
-        json!({"topic-composer": types})
+        if crate::plugins::chat::enabled(self.settings)?
+            && crate::plugins::chat::site_integration::hashtag_source_enabled(self.settings)?
+        {
+            sources.push((
+                crate::plugins::chat::site_integration::HASHTAG_TYPE,
+                crate::plugins::chat::site_integration::HASHTAG_ICON,
+            ));
+        }
+        Ok(sources)
     }
 
-    fn hashtag_icons(&self, tagging: bool) -> Value {
-        let mut icons = Map::new();
-        icons.insert("category".into(), json!("folder"));
-        if tagging {
-            icons.insert("tag".into(), json!("tag"));
+    /// `HashtagAutocompleteService.contexts_with_ordered_types`: each
+    /// context of the type priorities (core's, then chat's while it is
+    /// on), its types by priority without those no enabled source has.
+    fn hashtag_configurations(&self, tagging: bool) -> Result<Value, SiteError> {
+        let enabled: Vec<&str> = self
+            .hashtag_data_sources(tagging)?
+            .into_iter()
+            .map(|(t, _)| t)
+            .collect();
+        let mut priorities = vec![
+            ("category", "topic-composer", 100),
+            ("tag", "topic-composer", 50),
+        ];
+        if crate::plugins::chat::enabled(self.settings)? {
+            priorities.extend(crate::plugins::chat::site_integration::HASHTAG_TYPE_PRIORITIES);
         }
-        Value::Object(icons)
+        let mut contexts: Vec<&str> = Vec::new();
+        for (_, context, _) in &priorities {
+            if !contexts.contains(context) {
+                contexts.push(context);
+            }
+        }
+        let mut out = Map::new();
+        for context in contexts {
+            let mut of: Vec<(&str, i64)> = priorities
+                .iter()
+                .filter(|(_, c, _)| *c == context)
+                .map(|(t, _, p)| (*t, *p))
+                .collect();
+            of.sort_by_key(|(_, p)| -p);
+            let types: Vec<&str> = of
+                .into_iter()
+                .map(|(t, _)| t)
+                .filter(|t| enabled.contains(t))
+                .collect();
+            out.insert(context.to_string(), json!(types));
+        }
+        Ok(Value::Object(out))
+    }
+
+    /// `HashtagAutocompleteService.data_source_icon_map`
+    fn hashtag_icons(&self, tagging: bool) -> Result<Value, SiteError> {
+        let mut icons = Map::new();
+        for (t, icon) in self.hashtag_data_sources(tagging)? {
+            icons.insert(t.into(), json!(icon));
+        }
+        Ok(Value::Object(icons))
     }
 
     async fn anonymous_default_navigation_menu_tags(
