@@ -130,6 +130,18 @@ impl Tracking {
             .count() as i64
     }
 
+    /// `TopicTrackingState.report_totals`: the report's rows with unified
+    /// new, else its new and its unread rows (`report_count_by_type`,
+    /// the report's own filters).
+    pub fn report_totals(&self) -> serde_json::Value {
+        if self.unified_new {
+            return serde_json::json!({"new": self.states.len()});
+        }
+        let new = self.states.iter().filter(|t| t.is_new()).count();
+        let unread = self.states.iter().filter(|t| t.is_unread()).count();
+        serde_json::json!({"new": new, "unread": unread})
+    }
+
     /// `updateSeen`: the topic is read through `highest_seen`.
     pub fn update_seen(&mut self, topic_id: i32, highest_seen: i32) {
         if highest_seen == 0 {

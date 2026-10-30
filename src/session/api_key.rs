@@ -14,7 +14,7 @@ use sha2::{Digest, Sha256};
 use sqlx::PgConnection;
 
 use super::current::{SESSION_USER_COLUMNS, SessionUser};
-use crate::{AppError, Unsupported};
+use crate::AppError;
 
 pub const HEADER_API_KEY: &str = "api-key";
 
@@ -42,7 +42,8 @@ fn header<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
 fn scopes_permit(
     scopes: &[(String, String, Option<String>)],
     request: &crate::api_key_scopes::Request,
-) -> Result<bool, Unsupported> {
+    settings: &crate::site_settings::SiteSettings,
+) -> Result<bool, AppError> {
     // No scopes allow everything (the route table needn't be read).
     if scopes.is_empty() {
         return Ok(true);
@@ -56,7 +57,9 @@ fn scopes_permit(
         return Ok(true);
     }
     for (resource, action, allowed) in scopes {
-        let Some(mapping) = crate::api_key_scopes::mapping(resource, action) else {
+        // `permits?` is false without a mapping (a disabled plugin's).
+        let Some(mapping) = crate::api_key_scopes::enabled_mapping(resource, action, settings)?
+        else {
             continue;
         };
         let allowed: Option<serde_json::Map<String, serde_json::Value>> = allowed
@@ -71,6 +74,7 @@ fn scopes_permit(
 
 /// `lookup_api_user`, then the suspended and inactive check.
 pub async fn resolve(
+    state: &crate::AppState,
     conn: &mut PgConnection,
     headers: &HeaderMap,
     ip: &str,
@@ -103,7 +107,13 @@ pub async fn resolve(
     .bind(key_id)
     .fetch_all(&mut *conn)
     .await?;
-    if !scopes_permit(&scopes, request)? {
+    let settings = crate::site_settings::SiteSettings::load(
+        &mut *conn,
+        &state.site_setting_defs,
+        &state.config.globals,
+    )
+    .await?;
+    if !scopes_permit(&scopes, request, &settings)? {
         return Ok(Resolved::Invalid);
     }
     let username = header(headers, "api-username");

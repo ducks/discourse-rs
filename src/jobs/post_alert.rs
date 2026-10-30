@@ -19,7 +19,7 @@ use sqlx::PgConnection;
 use crate::guardian::Guardian;
 use crate::posting::Ctx;
 use crate::posting::revisions::find_post;
-use crate::posting::validate::analyze;
+use crate::posting::validate::analyze_stripped;
 use crate::session::current::SessionUser;
 use crate::{AppError, Unsupported};
 
@@ -38,6 +38,8 @@ mod types {
     pub const WATCHING_CATEGORY_OR_TAG: i32 = 36;
     /// discourse-reactions' type.
     pub const REACTION: i32 = 25;
+    /// chat's type.
+    pub const CHAT_QUOTED: i32 = 33;
 }
 
 /// `TagUser.notification_levels[:watching_first_post]`
@@ -316,7 +318,11 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     }
 
     // mentions
-    let analysis = analyze(&post.cooked, ctx.config.globals.relative_url_root())?;
+    let analysis = analyze_stripped(
+        &post.cooked,
+        ctx.config.globals.relative_url_root(),
+        crate::plugins::chat::enabled(s)?,
+    )?;
     let mentions = analysis.mention_names;
     // extract_mentions: the groups named, the rest as users.
     let mentioned_groups: Vec<(i32, String)> = if mentions.is_empty() {
@@ -697,6 +703,33 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
             {
                 alerter.notified.push(user_id);
             }
+        }
+    }
+
+    // DiscourseEvent :post_alerter_after_save_post: chat's
+    // PostNotificationHandler on a new post that is not a whisper nor in
+    // a message notifies those whose messages it quotes.
+    if new_record
+        && crate::plugins::chat::enabled(s)?
+        && post.post_type != crate::posting::post_types::WHISPER
+        && !private_message
+    {
+        let quoted = crate::plugins::chat::site_integration::quoted_user_ids(
+            &mut *conn,
+            &post.raw,
+            post.user_id,
+            &alerter.notified,
+        )
+        .await?;
+        let opts = Opts {
+            user_id: post.user_id,
+            display_username: post.username.clone(),
+            ..Opts::default()
+        };
+        for user_id in quoted {
+            alerter
+                .create_notification(conn, user_id, types::CHAT_QUOTED, &opts)
+                .await?;
         }
     }
     Ok(())
@@ -1148,7 +1181,13 @@ impl Alerter<'_> {
                 return Ok(false);
             }
         }
-        if [types::QUOTED, types::LINKED, types::MENTIONED].contains(&notification_type)
+        if [
+            types::QUOTED,
+            types::LINKED,
+            types::MENTIONED,
+            types::CHAT_QUOTED,
+        ]
+        .contains(&notification_type)
             && existing.contains(&types::REPLIED)
         {
             return Ok(false);

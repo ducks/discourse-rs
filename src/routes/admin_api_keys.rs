@@ -132,16 +132,21 @@ fn time(t: chrono::NaiveDateTime) -> Value {
 }
 
 /// ApiKeyScopeSerializer
-fn scope_json(resource: &str, action: &str, allowed: Option<Value>) -> Value {
-    let mapping = api_key_scopes::mapping(resource, action);
-    json!({
+fn scope_json(
+    settings: &SiteSettings,
+    resource: &str,
+    action: &str,
+    allowed: Option<Value>,
+) -> Result<Value, AppError> {
+    let mapping = api_key_scopes::enabled_mapping(resource, action, settings)?;
+    Ok(json!({
         "resource": resource,
         "action": action.replace('_', " "),
         "parameters": mapping.and_then(|m| m.restrictable_parameters()).unwrap_or_default(),
         "urls": mapping.map(|m| m.urls.clone()).unwrap_or_default(),
         "allowed_parameters": allowed.unwrap_or(Value::Null),
         "key": action,
-    })
+    }))
 }
 
 /// ApiKeySerializer (`key` only when just created).
@@ -188,9 +193,9 @@ async fn key_json(
                 .into_iter()
                 .map(|(r, a, allowed)| {
                     let allowed = allowed.and_then(|t| serde_json::from_str(&t).ok());
-                    scope_json(&r, &a, allowed)
+                    scope_json(urls.settings, &r, &a, allowed)
                 })
-                .collect(),
+                .collect::<Result<Vec<_>, _>>()?,
         ),
     );
     Ok(Value::Object(out))
@@ -316,7 +321,7 @@ async fn page(
             let key = key_json(&mut conn, &urls, &k, None).await?;
             (Tab::Show, view::show(&cx, &key))
         }
-        Page::New => (Tab::New, view::new(&cx, &scopes_doc())),
+        Page::New => (Tab::New, view::new(&cx, &scopes_doc(&shell.settings)?)),
         Page::Settings => (
             Tab::Settings,
             super::admin_advanced::area_settings(
@@ -353,12 +358,15 @@ async fn page(
 }
 
 /// ApiKeysNew's scopes: /admin/api/keys/scopes.json's.
-fn scopes_doc() -> Value {
+fn scopes_doc(settings: &SiteSettings) -> Result<Value, AppError> {
     let mut resources: Vec<&(String, Vec<(String, api_key_scopes::Mapping)>)> =
         api_key_scopes::scope_mappings().iter().collect();
     resources.sort_by(|a, b| a.0.cmp(&b.0));
     let mut out = Map::new();
     for (resource, actions) in resources {
+        if !api_key_scopes::resource_enabled(resource, settings)? {
+            continue;
+        }
         out.insert(
             resource.clone(),
             Value::Array(
@@ -377,7 +385,7 @@ fn scopes_doc() -> Value {
             ),
         );
     }
-    Value::Object(out)
+    Ok(Value::Object(out))
 }
 
 /// GET /admin/api/keys/scopes(.json): every resource's scopes, by
@@ -392,7 +400,9 @@ pub async fn scopes(
         return Ok(r);
     }
     refuse_html(&uri, &headers)?;
-    Ok(Json(json!({"scopes": scopes_doc()})).into_response())
+    let mut conn = state.pool.acquire().await?;
+    let settings = settings(&state, &mut conn).await?;
+    Ok(Json(json!({"scopes": scopes_doc(&settings)?})).into_response())
 }
 
 /// GET /admin/api/keys/:id(.json): the key; as a page the key's, or the
@@ -533,6 +543,8 @@ pub async fn create(
     if scope_mode.as_deref() == Some("read_only") && scope_list.is_empty() {
         return Ok(invalid_parameters(&state));
     }
+    let mut conn = state.pool.acquire().await?;
+    let settings = settings(&state, &mut conn).await?;
     // build_scopes
     let mut scopes: Vec<(String, String, Option<Value>)> = Vec::new();
     for s in &scope_list {
@@ -543,7 +555,7 @@ pub async fn create(
             return Err(Unsupported("an API key scope_id without an action").into());
         };
         let action = action.split(':').next().unwrap_or_default();
-        let Some(mapping) = api_key_scopes::mapping(resource, action) else {
+        let Some(mapping) = api_key_scopes::enabled_mapping(resource, action, &settings)? else {
             return Ok(invalid_parameters(&state));
         };
         let allowed = mapping.restrictable_parameters().map(|names| {
@@ -576,8 +588,6 @@ pub async fn create(
         // ArgumentError on the enum: a 500 in Rails.
         Some(_) => return Err(Unsupported("an unknown API key scope_mode").into()),
     };
-    let mut conn = state.pool.acquire().await?;
-    let settings = settings(&state, &mut conn).await?;
     let user_id = match key_params
         .get("username")
         .and_then(crate::params::scalar)

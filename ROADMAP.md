@@ -4767,20 +4767,45 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     ChatNewMessageAnnouncer under chat_announce_new_messages, the chat
     keyboard shortcuts (channel switching, composer formatting, Shift+Esc
     to mark all read) and their section in the shortcuts help
-226. `feat/chat-site-integration` M: chat's keys on core: /site.json's
-    markdown_additional_options.chat (emitted as `{}`),
-    hashtag_configurations (chat-composer, the channel type in
-    topic-composer) and hashtag_icons.channel (site.rs:454,1024), GET
-    /notifications/totals with chat_notifications (not routed),
-    chat_quoted notifications from posts quoting messages
-    (PostNotificationHandler) and the transcript post stripper, the
-    remap_hashtag job with chat's MessageHashtagStore (no handler;
-    category_writes.rs:2461; tag_writes.rs:274), secure_uploads' change
-    handler and the chat-composer public upload type, the chat_summary
-    unsubscriber (email/unsubscribe.rs:108), the chat:create_message API
-    key scope, the four stats, Chat::Seeder, and chat's keys dropped
-    from the parity ignore lists (parity/cases:12-15,97-116,163-166,
-    247-249,321-327) with cases for them
+226. ~~`feat/chat-site-integration`~~ (done) M: chat's keys on core.
+    /site.json's markdown_additional_options.chat (MARKDOWN_FEATURES,
+    MARKDOWN_IT_RULES and the hashtag contexts, always there as Rails
+    sets it in after_initialize), hashtag_configurations from core's and
+    chat's type priorities (chat-composer, the channel type in
+    topic-composer) and hashtag_icons from the enabled data sources
+    (the channel source under enable_public_channels), both only while
+    chat is on (src/plugins/chat/site_integration.rs, src/site.rs). GET
+    /notifications/totals (UserNotificationTotalSerializer: unread
+    notifications less new messages, unread_personal_messages, staff's
+    unseen_reviewables, report_totals, group_inboxes) with chat's
+    chat_notifications (unreads_total: mentions of followed open
+    channels plus followed DMs' unread). chat_quoted notifications from
+    a new post quoting messages (PostNotificationHandler after
+    after_save_post: `[chat quote="name;...` authors less the notified
+    and the author, not for whispers or messages; chat_quoted joins the
+    types a reply notification suppresses), and chat's post stripper
+    (`.chat-transcript .mention`) in the analysis of post creation,
+    revision, the queue and post alerts. The chat_summary unsubscriber
+    (its frequency select in the unsubscribe_options outlet and its
+    save), registered only while chat is on. The chat:create_message
+    API key scope (already recorded) listed, shown and permitting only
+    while chat is on, as solved's while solved is (a filtered
+    register). Chat's keys dropped from every parity ignore list
+    (site.json, users#show, current.json, user_option), the goldens
+    matching. Tests in tests/chat_site.rs. Not ported: the four stats
+    nothing reads (only Plugin::Instance.stats, which nothing in the
+    reference calls); Chat::Seeder's work is in the clean seed
+    snapshot (both channels, needs_chat_seeded false). Left, split into
+    226a.
+    226a. `feat/chat-site-integration-rest` S: what waits on core: the
+    remap_hashtag job with chat's MessageHashtagStore (core's
+    HashtagRemapper and its stores are unported, the job has no
+    handler; category_writes.rs:2461; tag_writes.rs:274),
+    secure_uploads' change handler and the chat-composer public upload
+    type (secure_uploads can't be turned on, site_setting_update.rs
+    CUSTOM_VALIDATIONS, and uploads refuse it, uploads.rs), and
+    Chat::Seeder at start for a database still needing it (with
+    category channel creation)
 227. `feat/chat-pages-rest` S: the small refusals no item names: DMs
     missing their row or with multi-valued custom fields
     (plugins/chat/direct_messages.rs:63,319), DM titles without a viewer

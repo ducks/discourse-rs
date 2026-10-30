@@ -541,13 +541,27 @@ pub struct Analysis {
 /// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing
 /// that the post processor can't onebox (see `onebox::refuse_unported`).
 pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
+    analyze_stripped(cooked, base_path, false)
+}
+
+/// `analyze` with the enabled plugins' post strippers: chat's
+/// (`.chat-transcript .mention` removed) when `chat` is on.
+pub fn analyze_stripped(
+    cooked: &str,
+    base_path: &str,
+    chat: bool,
+) -> Result<Analysis, Unsupported> {
     let dom = parse(cooked);
     let mut a = Analysis::default();
     let mut mentions = Vec::new();
     walk(
         &fragment_root(&dom),
         base_path,
-        false,
+        Strip {
+            quoted: false,
+            chat,
+            in_transcript: false,
+        },
         &mut a,
         &mut mentions,
     );
@@ -558,10 +572,34 @@ pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     Ok(a)
 }
 
+/// Where the walk is, for PostStripper: under a quote or `pre` (its
+/// mentions removed), and under a chat transcript while chat's stripper
+/// runs.
+#[derive(Clone, Copy)]
+struct Strip {
+    quoted: bool,
+    chat: bool,
+    in_transcript: bool,
+}
+
+impl Strip {
+    fn quote(self) -> Strip {
+        Strip {
+            quoted: true,
+            ..self
+        }
+    }
+}
+
 /// PostStripper removes mentions in code and quotes, quote titles,
 /// oneboxes and elided parts before anything is counted.
-fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mut Vec<String>) {
+fn walk(node: &Handle, bp: &str, stripped: Strip, a: &mut Analysis, mentions: &mut Vec<String>) {
     let name = element_name(node);
+    let stripped = Strip {
+        in_transcript: stripped.in_transcript
+            || (stripped.chat && name.is_some() && has_class(node, "chat-transcript")),
+        ..stripped
+    };
     if let Some(name) = name {
         let inline = has_class(node, "inline-onebox-loading");
         if has_class(node, "onebox") || inline {
@@ -587,12 +625,12 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
                 if has_class(child, "title") {
                     continue;
                 }
-                walk(child, bp, true, a, mentions);
+                walk(child, bp, stripped.quote(), a, mentions);
             }
             return;
         }
         let mention = has_class(node, "mention") || has_class(node, "mention-group");
-        if mention && stripped {
+        if (mention && stripped.quoted) || (stripped.in_transcript && has_class(node, "mention")) {
             return;
         }
         if mention {
@@ -636,7 +674,7 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
         }
         if name == "pre" {
             for child in node.children.borrow().iter() {
-                walk(child, bp, true, a, mentions);
+                walk(child, bp, stripped.quote(), a, mentions);
             }
             return;
         }
