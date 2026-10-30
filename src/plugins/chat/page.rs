@@ -215,7 +215,12 @@ impl Context<'_> {
             escape(&t("chat.deleted.other")),
             channel.chatable_type == "DirectMessage",
         ));
-        out.push_str(&channel_status(&channel_json, &t));
+        out.push_str(&channel_status(
+            &channel_json,
+            &t,
+            self.guardian.is_admin(),
+            self.base_path,
+        ));
         out.push_str(&format!(
             "<div class=\"chat-notices\">{}</div>",
             self.retention_reminder(&channel_json).await?
@@ -1303,8 +1308,8 @@ fn emoji_img(emojis: &crate::emojis::Emojis, base_path: &str, name: &str) -> Str
 }
 
 /// ChatChannelStatus, long: a closed, read only or archived channel says
-/// so above its messages.
-fn channel_status(c: &Value, t: &dyn Fn(&str) -> String) -> String {
+/// so above its messages, with ChatChannelArchiveStatus for an admin.
+fn channel_status(c: &Value, t: &dyn Fn(&str) -> String, admin: bool, base_path: &str) -> String {
     let status = s(&c["status"]);
     let icon = match status {
         "closed" => "lock",
@@ -1313,10 +1318,49 @@ fn channel_status(c: &Value, t: &dyn Fn(&str) -> String) -> String {
         _ => return String::new(),
     };
     format!(
-        "<div class=\"chat-channel-status\">{}<span>{}</span></div>",
+        "<div class=\"chat-channel-status\">{}<span>{}</span>{}</div>",
         d_icon(icon, None),
-        escape(&t(&format!("chat.channel_status.{status}_header")))
+        escape(&t(&format!("chat.channel_status.{status}_header"))),
+        if admin {
+            archive_status(c, t, base_path)
+        } else {
+            String::new()
+        }
     )
+}
+
+/// ChatChannelArchiveStatus: a failed archive's progress with its retry
+/// button, or a completed one's topic (ChatChannel#archive, made when the
+/// serializer says either).
+fn archive_status(c: &Value, t: &dyn Fn(&str) -> String, base_path: &str) -> String {
+    let topic_url = c["archive_topic_id"]
+        .as_i64()
+        .map(|id| format!("{base_path}/t/-/{id}"))
+        .unwrap_or_default();
+    let status = s(&c["status"]);
+    if c["archive_failed"] == true {
+        let key = if c["archive_topic_id"].is_null() {
+            "chat.channel_status.archive_failed_no_topic"
+        } else {
+            "chat.channel_status.archive_failed"
+        };
+        let message = t(key)
+            .replace("%{completed}", &c["archived_messages"].to_string())
+            .replace("%{total}", &c["total_messages"].to_string())
+            .replace("%{topic_url}", &topic_url);
+        format!(
+            "<div class=\"alert alert-warn chat-channel-retry-archive {status}\"><div class=\"chat-channel-archive-failed-message\">{message}</div><div class=\"chat-channel-archive-failed-retry\"><button class=\"btn btn-text\" type=\"button\" data-channel-id=\"{}\"><span class=\"d-button-label\">{}</span></button></div></div>",
+            c["id"],
+            escape(&t("chat.channel_archive.retry"))
+        )
+    } else if c["archive_completed"] == true {
+        format!(
+            "<div class=\"chat-channel-archive-status {status}\">{}</div>",
+            t("chat.channel_status.archive_completed").replace("%{topic_url}", &topic_url)
+        )
+    } else {
+        String::new()
+    }
 }
 
 /// ChatChannelPreviewCard for a member who doesn't follow the channel.
@@ -1598,7 +1642,7 @@ fn message_html(
             reply["id"],
             escape(&t("chat.in_reply_to")),
             d_icon("share", None),
-            user_avatar(&reply["user"], 24, false, v),
+            message_avatar(&reply["chat_webhook_event"], &reply["user"], 24, false, v),
             s(&reply["excerpt"])
         ));
     }
@@ -1611,7 +1655,7 @@ fn message_html(
     } else {
         out.push_str(&format!(
             "<div class=\"chat-message-avatar\">{}</div>",
-            user_avatar(user, 48, true, v)
+            message_avatar(&m["chat_webhook_event"], user, 48, true, v)
         ));
     }
     out.push_str("<div class=\"chat-message-content\">");
@@ -1666,7 +1710,9 @@ fn message_html(
         }
         out.push_str("</div>");
     }
-    out.push_str("</div></div></div></div>");
+    out.push_str("</div>");
+    out.push_str(&blocks_html(m, v)?);
+    out.push_str("</div></div></div>");
     Ok(out)
 }
 
@@ -1688,6 +1734,140 @@ fn user_avatar(user: &Value, size: u32, aria_hidden: bool, v: &View) -> String {
         v.base_path,
         u = escape(username)
     )
+}
+
+/// ChatMessageBlocks: a bot's blocks, each "actions" (its buttons, which
+/// chat.js sends as interactions) or "informative" (its elements); the
+/// client throws on any other block or element type.
+fn blocks_html(m: &Value, v: &View) -> Result<String, AppError> {
+    let Some(blocks) = m["blocks"].as_array().filter(|b| !b.is_empty()) else {
+        return Ok(String::new());
+    };
+    let element = |e: &Value| -> Result<String, AppError> {
+        match e["type"].as_str() {
+            Some("button") => {
+                let icon = e["icon"].as_str().filter(|i| !i.is_empty());
+                let mut class = format!(
+                    "btn {} block__button",
+                    if icon.is_some() {
+                        "btn-icon-text"
+                    } else {
+                        "btn-text"
+                    }
+                );
+                if let Some(style) = e["style"].as_str().filter(|s| !s.is_empty()) {
+                    class.push_str(&format!(" btn-{style}"));
+                }
+                let id = match e["action_id"].as_str() {
+                    Some(id) => format!(" id=\"{}\"", escape(id)),
+                    None => String::new(),
+                };
+                Ok(format!(
+                    "<button class=\"{}\"{id} type=\"button\" data-message-id=\"{}\">{}<span class=\"d-button-label\">{}</span></button>",
+                    escape(&class),
+                    m["id"],
+                    icon.map(|i| d_icon(i, None)).unwrap_or_default(),
+                    crate::topic_list_view::emoji_unescape(
+                        &escape(s(&e["text"]["text"])),
+                        &v.emojis,
+                        v.base_path
+                    )
+                ))
+            }
+            Some("category") => {
+                let mut style = format!("--category-badge-color: #{}", s(&e["color"]));
+                let parent_color = e["parent_color"].as_str().filter(|c| !c.is_empty());
+                if let Some(pc) = parent_color {
+                    style.push_str(&format!("; --parent-category-badge-color: #{pc}"));
+                }
+                let badge = format!(
+                    "<span class=\"badge-category --style-square\"><span class=\"badge-category__name\">{}</span></span>",
+                    escape(s(&e["title"]))
+                );
+                let heading = match e["url"].as_str().filter(|u| !u.is_empty()) {
+                    Some(url) => format!(
+                        "<a class=\"block__category-link\" href=\"{}\">{badge}</a>",
+                        escape(url)
+                    ),
+                    None => badge,
+                };
+                let mut out = format!(
+                    "<div class=\"block__category\" style=\"{}\"><div class=\"block__category-inner\"><div class=\"block__category-heading\">{heading}</div>",
+                    escape(&style)
+                );
+                if let Some(parent) = e["parent_name"].as_str().filter(|p| !p.is_empty()) {
+                    let parent_style = parent_color
+                        .map(|pc| format!(" style=\"--category-badge-color: #{}\"", escape(pc)))
+                        .unwrap_or_default();
+                    out.push_str(&format!(
+                        "<div class=\"block__category-parent\"><span class=\"badge-category --style-square\"{parent_style}><span class=\"badge-category__name\">{}</span></span></div>",
+                        escape(parent)
+                    ));
+                }
+                if let Some(d) = e["description"].as_str().filter(|d| !d.is_empty()) {
+                    out.push_str(&format!(
+                        "<div class=\"block__category-description\">{}</div>",
+                        escape(d)
+                    ));
+                }
+                out.push_str("</div></div>");
+                Ok(out)
+            }
+            _ => Err(Unsupported("a chat message block element the client can't draw").into()),
+        }
+    };
+    let mut out = String::from(
+        "<div class=\"chat-message__blocks-wrapper\"><div class=\"chat-message__blocks\">",
+    );
+    for block in blocks {
+        let elements = block["elements"].as_array().cloned().unwrap_or_default();
+        let inner = match block["type"].as_str() {
+            Some("actions") => {
+                let mut html = String::from(
+                    "<div class=\"block__actions-wrapper\"><div class=\"block__actions\">",
+                );
+                for e in &elements {
+                    html.push_str(&format!(
+                        "<div class=\"block__action-wrapper\"><div class=\"block__action\">{}</div></div>",
+                        element(e)?
+                    ));
+                }
+                html.push_str("</div></div>");
+                html
+            }
+            Some("informative") => {
+                let mut html = String::from(
+                    "<div class=\"block__informative-wrapper\"><div class=\"block__informative\">",
+                );
+                for e in &elements {
+                    html.push_str(&format!(
+                        "<div class=\"block__informative-item\">{}</div>",
+                        element(e)?
+                    ));
+                }
+                html.push_str("</div></div>");
+                html
+            }
+            _ => return Err(Unsupported("a chat message block the client can't draw").into()),
+        };
+        out.push_str(&format!(
+            "<div class=\"chat-message__block-wrapper\"><div class=\"chat-message__block\">{inner}</div></div>"
+        ));
+    }
+    out.push_str("</div></div>");
+    Ok(out)
+}
+
+/// A message's avatar: ChatEmojiAvatar for a webhook's message with an
+/// emoji, else the author's ChatUserAvatar.
+fn message_avatar(hook: &Value, user: &Value, size: u32, aria_hidden: bool, v: &View) -> String {
+    match hook["emoji"].as_str().filter(|e| !e.is_empty()) {
+        Some(emoji) => format!(
+            "<div class=\"chat-emoji-avatar\"><div class=\"chat-emoji-avatar-container\">{}</div></div>",
+            crate::topic_list_view::emoji_unescape(&escape(emoji), &v.emojis, v.base_path)
+        ),
+        None => user_avatar(user, size, aria_hidden, v),
+    }
 }
 
 /// formatChatDate: the time linking to the message, drawn in UTC here
@@ -1774,12 +1954,30 @@ fn message_info(m: &Value, date: &str, v: &View) -> String {
     if let Some(group) = user["primary_group_name"].as_str() {
         classes.push(format!("group--{group}"));
     }
-    classes.push("clickable".into());
-    let mut out = format!(
-        "<div class=\"chat-message-info\"><span class=\"{}\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{u}</button></span><span class=\"chat-message-info__date\">{date}</span>",
-        escape(&classes.join(" ")),
-        u = escape(s(&user["username"]))
-    );
+    let hook = &m["chat_webhook_event"];
+    let mut out = if hook.is_null() {
+        classes.push("clickable".into());
+        format!(
+            "<div class=\"chat-message-info\"><span class=\"{}\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{u}</button></span><span class=\"chat-message-info__date\">{date}</span>",
+            escape(&classes.join(" ")),
+            u = escape(s(&user["username"]))
+        )
+    } else {
+        // A webhook's message: the webhook's name, if it has one, and the
+        // bot indicator.
+        let name = match hook["username"].as_str().filter(|n| !n.is_empty()) {
+            Some(n) => format!(
+                "<span class=\"{}\">{}</span>",
+                escape(&classes.join(" ")),
+                escape(n)
+            ),
+            None => String::new(),
+        };
+        format!(
+            "<div class=\"chat-message-info\">{name}<span class=\"chat-message-info__bot-indicator\">{}</span><span class=\"chat-message-info__date\">{date}</span>",
+            escape(&(v.t)("chat.bot"))
+        )
+    };
     out.push_str(&bookmark_icon(m, v.t, "chat-message-info__bookmark"));
     if m["pinned"] == true {
         out.push_str(&format!(

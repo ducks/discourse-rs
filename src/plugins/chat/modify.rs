@@ -4,7 +4,7 @@
 //! Chat::MessageReactor (PUT /chat/:chat_channel_id/react/:message_id).
 //!
 //! Not ported yet, and refused: direct message channels, threads
-//! proper (threading on, forced threads), bots, and messages of deleted
+//! proper (threading on, forced threads), and messages of deleted
 //! users or channels.
 
 use chrono::NaiveDateTime;
@@ -157,15 +157,10 @@ impl Context<'_> {
                 .is_empty())
     }
 
-    /// The guardian's user, refused when a bot.
+    /// The guardian's user. A bot (User#bot?, an id not above 0) acts as
+    /// any user; only an edit makes it join the channel first.
     fn acting_user(&self) -> Result<Option<crate::session::current::SessionUser>, AppError> {
-        let Some(user) = self.guardian.user().cloned() else {
-            return Ok(None);
-        };
-        if user.id <= 0 {
-            return Err(Unsupported("chat changes made by bots").into());
-        }
-        Ok(Some(user))
+        Ok(self.guardian.user().cloned())
     }
 
     /// `Chat::Thread#update_last_message_id!` and
@@ -300,6 +295,10 @@ impl Context<'_> {
         };
         // model :uploads
         let uploads = self.own_uploads(user.id, upload_ids).await?;
+        // enforce_membership: a bot joins the channel.
+        if user.id <= 0 {
+            self.follow(&channel, user.id).await?;
+        }
         // model :membership
         let has_membership: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2)",

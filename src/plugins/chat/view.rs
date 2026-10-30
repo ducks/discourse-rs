@@ -162,6 +162,14 @@ struct ListPrefs {
     sort: &'static str,
 }
 
+/// ChannelsListStarred's list, with what the routes around it read.
+struct StarredList {
+    list: String,
+    prefs: ListPrefs,
+    channels: Vec<SidebarChannel>,
+    dms: Vec<SidebarChannel>,
+}
+
 fn prefs(filter: i32, sort: i32) -> ListPrefs {
     let pick = |names: &[&'static str], v: i32, default: &'static str| {
         usize::try_from(v)
@@ -349,11 +357,8 @@ impl Context<'_> {
             options.chat_channel_list_filter,
             options.chat_channel_list_sort,
         );
-        if channels.is_empty() {
-            return Err(Unsupported("chat's empty channels list").into());
-        }
         let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
-        if list.is_empty() {
+        if !channels.is_empty() && list.is_empty() {
             return Err(Unsupported("chat's filtered channels list empty state").into());
         }
 
@@ -363,6 +368,32 @@ impl Context<'_> {
             escape(&self.t("chat.channel_list.options.title")),
             d_icon("ellipsis-vertical", None)
         );
+        if channels.is_empty() {
+            // publicMessageChannelsEmpty: DEmptyState, its button to the
+            // browser while public channels show (displayPublicChannels).
+            let display_public = settings.get("enable_public_channels")?.truthy()
+                && (self.guardian.is_staff()
+                    || super::has_joinable_public_channels(
+                        &mut *self.conn,
+                        settings,
+                        self.guardian,
+                    )
+                    .await?);
+            let cta = if display_public {
+                format!(
+                    "<div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\" data-href=\"{}/chat/browse\"><span class=\"d-button-label\">{}</span></button></div>",
+                    self.base_path,
+                    escape(&self.t("chat.no_public_channels_cta"))
+                )
+            } else {
+                String::new()
+            };
+            out.push_str(&format!(
+                "<div class=\"empty-state__container --empty-channels-list --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div>{cta}</div></div>",
+                super::page::CHAT_ZERO,
+                escape(&self.t("chat.no_public_channels"))
+            ));
+        }
         let emojis = settings.emojis().clone();
         let now = crate::clock::now();
         for channel in list {
@@ -782,6 +813,63 @@ impl Context<'_> {
                 "<div class=\"c-drawer-routes --starred-channels\">{navbar}</div>"
             ));
         }
+        let starred = self.starred_list().await?;
+        let mut out = format!(
+            "<div class=\"c-drawer-routes --starred-channels\">{navbar}<div class=\"chat-drawer-content\"><div class=\"chat-channel-divider starred-channels-section\"><span class=\"channel-title\">{}</span><div class=\"chat-channel-divider__actions\">{}</div></div>{}",
+            escape(&self.t("chat.starred_channels")),
+            self.list_option_buttons(starred.prefs),
+            starred.list
+        );
+        out.push_str("</div>");
+        out.push_str(
+            &self
+                .footer("starred", &starred.channels, &starred.dms)
+                .await?,
+        );
+        out.push_str("</div>");
+        Ok(out)
+    }
+
+    /// The starred channels route (ChatRoutesStarredChannels), which only
+    /// the mobile view draws: the navbar with the section's buttons,
+    /// ChannelsListStarred without its divider, and the chat footer. None
+    /// without a starred channel (the route goes to the channels).
+    pub async fn starred_channels_route(&mut self) -> Result<Option<String>, AppError> {
+        if !self.has_starred_channels().await? {
+            return Ok(None);
+        }
+        let starred = self.starred_list().await?;
+        let mut out = format!(
+            "<div class=\"c-routes --starred-channels\">{}{}",
+            self.route_navbar(
+                &self.t("chat.starred"),
+                &format!(
+                    "{}{}",
+                    self.open_drawer_button(),
+                    if crate::mobile::mobile_view() {
+                        self.list_option_buttons(starred.prefs)
+                    } else {
+                        String::new()
+                    }
+                )
+            ),
+            starred.list
+        );
+        out.push_str("</div>");
+        if crate::mobile::mobile_view() {
+            out.push_str(
+                &self
+                    .footer("starred", &starred.channels, &starred.dms)
+                    .await?,
+            );
+        }
+        Ok(Some(out))
+    }
+
+    /// ChannelsListStarred's list: the starred public channels by slug,
+    /// then DMs by title, by the member's starred list preferences, a DM
+    /// with its leave button.
+    async fn starred_list(&mut self) -> Result<StarredList, AppError> {
         let Some(user_id) = self.guardian.user_id() else {
             return Err(Unsupported("chat's starred channels without a member").into());
         };
@@ -815,13 +903,20 @@ impl Context<'_> {
             sort(&mut list, starred_prefs);
         }
         if list.is_empty() {
+            if starred.is_empty() {
+                return Ok(StarredList {
+                    list: format!(
+                        "<div class=\"channels-list-container starred-channels\"><div class=\"chat-channel-list__empty\"><span class=\"chat-channel-list__empty-message\">{}</span></div></div>",
+                        escape(&self.t("chat.starred_channels_empty"))
+                    ),
+                    prefs: starred_prefs,
+                    channels,
+                    dms,
+                });
+            }
             return Err(Unsupported("chat's filtered starred channels empty state").into());
         }
-        let mut out = format!(
-            "<div class=\"c-drawer-routes --starred-channels\">{navbar}<div class=\"chat-drawer-content\"><div class=\"chat-channel-divider starred-channels-section\"><span class=\"channel-title\">{}</span><div class=\"chat-channel-divider__actions\">{}</div></div><div class=\"channels-list-container starred-channels\">",
-            escape(&self.t("chat.starred_channels")),
-            self.list_option_buttons(starred_prefs)
-        );
+        let mut out = String::from("<div class=\"channels-list-container starred-channels\">");
         let emojis = self.settings.emojis().clone();
         let now = crate::clock::now();
         let online = if list.iter().any(|c| c.dm.is_some()) {
@@ -841,10 +936,13 @@ impl Context<'_> {
                 out.push_str(&self.channel_row(c, channel, &emojis, now));
             }
         }
-        out.push_str("</div></div>");
-        out.push_str(&self.footer("starred", &channels, &dms).await?);
         out.push_str("</div>");
-        Ok(out)
+        Ok(StarredList {
+            list: out,
+            prefs: starred_prefs,
+            channels,
+            dms,
+        })
     }
 
     /// The threads route (ChatRoutesThreads, drawing UserThreads): the

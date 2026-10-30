@@ -892,7 +892,7 @@ fn emoji_exists(s: &SiteSettings, name: &str) -> bool {
 }
 
 /// `Slug.for(string, "", method: :encoded)`
-fn encoded_slug(s: &str) -> String {
+pub(crate) fn encoded_slug(s: &str) -> String {
     const FILTER: &str = ":/?#[]@!$&'()*+,;=_.~%\\`^|{}\"<>";
     let mut collapsed = String::new();
     let mut in_space = false;
@@ -938,7 +938,7 @@ fn prettify(slug: &str) -> String {
 }
 
 /// `CGI.unescape`
-fn cgi_unescape(s: &str) -> String {
+pub(crate) fn cgi_unescape(s: &str) -> String {
     let bytes = s.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;

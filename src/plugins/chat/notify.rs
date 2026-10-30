@@ -71,13 +71,17 @@ pub async fn notify_mentioned(
     if edited_since {
         return Ok(());
     }
-    let creator_id = message
-        .user_id
-        .ok_or(Unsupported("chat messages of deleted users"))?;
-    let creator: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
-        .bind(creator_id)
-        .fetch_one(&mut *conn)
-        .await?;
+    // @creator: nil for a deleted author, which Rails only fails on once
+    // a mention is to be notified.
+    let creator: Option<String> = match message.user_id {
+        Some(id) => {
+            sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
     let channel: ChannelRow = sqlx::query_as(
         "SELECT c.chatable_type, c.name, c.slug, c.threading_enabled, categories.name AS category_name \
          FROM chat_channels c LEFT JOIN categories ON c.chatable_type = 'Category' AND categories.id = c.chatable_id \
@@ -116,7 +120,7 @@ pub async fn notify_mentioned(
         message_id,
         direct_message,
         channel_id: message.chat_channel_id,
-        creator: &creator,
+        creator: creator.as_deref(),
         title: channel
             .name
             .clone()
@@ -147,13 +151,20 @@ struct Job<'a> {
     message_id: i64,
     direct_message: bool,
     channel_id: i64,
-    creator: &'a str,
+    /// The author's username, None once they are deleted.
+    creator: Option<&'a str>,
     title: String,
     slug: Option<String>,
     excerpt: String,
 }
 
 impl Job<'_> {
+    /// `@creator.username`, which fails on a deleted author.
+    fn creator(&self) -> Result<&str, Unsupported> {
+        self.creator
+            .ok_or(Unsupported("notifying of a chat message of a deleted user"))
+    }
+
     /// process_mentions: each member (following, the channel being public;
     /// any member of a DM) whose mention the message holds.
     async fn process(
@@ -226,10 +237,11 @@ impl Job<'_> {
         mention: i64,
         mention_type: &str,
     ) -> Result<(), AppError> {
+        let creator = self.creator()?;
         let mut data = Map::new();
         data.insert("chat_message_id".into(), json!(self.message_id));
         data.insert("chat_channel_id".into(), json!(self.channel_id));
-        data.insert("mentioned_by_username".into(), json!(self.creator));
+        data.insert("mentioned_by_username".into(), json!(creator));
         data.insert(
             "is_direct_message_channel".into(),
             json!(self.direct_message),
@@ -290,6 +302,7 @@ impl Job<'_> {
         if membership.notification_level == NOTIFICATION_NEVER || membership.muted {
             return Ok(());
         }
+        let creator = self.creator()?;
         let urls = crate::url::Urls {
             config: &self.state.config,
             settings: self.settings,
@@ -324,7 +337,7 @@ impl Job<'_> {
             .t_with(
                 &key,
                 &[
-                    ("username", self.creator),
+                    ("username", creator),
                     ("identifier", &identifier),
                     ("channel", &channel_title),
                 ],
@@ -332,7 +345,7 @@ impl Job<'_> {
             .unwrap_or_default();
         let payload = json!({
             "notification_type": CHAT_MENTION,
-            "username": self.creator,
+            "username": creator,
             "chat_message_id": self.message_id,
             "tag": format!("{hostname}-chat-mention-{}", self.channel_id),
             "excerpt": truncate(&self.excerpt, 400),
@@ -482,13 +495,6 @@ pub async fn notify_watching(
             return Err(Unsupported("chat threads").into());
         }
     }
-    let creator_id = message
-        .user_id
-        .ok_or(Unsupported("chat messages of deleted users"))?;
-    let creator: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
-        .bind(creator_id)
-        .fetch_one(&mut *conn)
-        .await?;
     let except: Vec<i32> = args["except_user_ids"]
         .as_array()
         .into_iter()
@@ -512,6 +518,18 @@ pub async fn notify_watching(
     .bind(NOTIFICATION_ALWAYS)
     .fetch_all(&mut *conn)
     .await?;
+    if members.is_empty() {
+        return Ok(());
+    }
+    // @creator, which a deleted author fails on with someone to notify.
+    let creator_id = message
+        .user_id
+        .ok_or(Unsupported("notifying of a chat message of a deleted user"))?;
+    let creator: String = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+        .bind(creator_id)
+        .fetch_optional(&mut *conn)
+        .await?
+        .ok_or(Unsupported("notifying of a chat message of a deleted user"))?;
     // CategoryChannel#title: its name, else its category's.
     let category_title = match channel.name.clone().filter(|n| !n.is_empty()) {
         Some(name) => name,
