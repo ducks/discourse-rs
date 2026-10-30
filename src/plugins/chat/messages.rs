@@ -138,6 +138,8 @@ struct Shared {
     /// scope.
     viewer_can_chat: bool,
     threading_enabled: bool,
+    /// A direct message channel: no notify flags.
+    direct_message: bool,
     users: HashMap<i32, UserRow>,
     groups: HashMap<i32, crate::groups::Group>,
     /// The messages' uploads, by message.
@@ -1069,6 +1071,7 @@ impl Context<'_> {
             allow_flagging_staff: settings.get("allow_flagging_staff")?.truthy(),
             viewer_can_chat: can_chat,
             threading_enabled: channel.threading_enabled,
+            direct_message: channel.chatable_type == "DirectMessage",
             users: users.into_iter().map(|u| (u.id, u)).collect(),
             groups,
             uploads,
@@ -1430,7 +1433,8 @@ impl Context<'_> {
         }))
     }
 
-    /// `available_flags`: the flag types (but notify_user to a bot, or by
+    /// `available_flags`: the flag types (no notify flags in a direct
+    /// message, nor notify_user to a bot, or by
     /// a viewer who can't send personal messages) when the viewer may
     /// flag the message. Rails also compares the viewer with the
     /// serialized user, which never matches.
@@ -1449,6 +1453,10 @@ impl Context<'_> {
         }
         s.flag_types
             .iter()
+            .filter(|t| {
+                !(s.direct_message
+                    && (t.as_str() == "notify_moderators" || t.as_str() == "notify_user"))
+            })
             .filter(|t| !(t.as_str() == "notify_user" && (author.id <= 0 || !s.can_message)))
             .cloned()
             .collect()

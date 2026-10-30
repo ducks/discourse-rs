@@ -1481,3 +1481,186 @@ pub async fn thread_title_prompt_seen(
         .await?;
     finish_thread(&state, tx, outcome).await
 }
+
+/// DELETE /chat/api/channels/:channel_id/messages
+/// (Chat::Api::ChannelMessagesController#bulk_destroy, Chat::TrashMessages).
+pub async fn trash_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    // An :array attribute keeps the values as given.
+    let message_ids: Vec<serde_json::Value> = match p.get("message_ids") {
+        Some(serde_json::Value::Array(ids)) => ids.clone(),
+        Some(serde_json::Value::Null) | None => Vec::new(),
+        Some(v) => vec![v.clone()],
+    };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .trash_messages(
+            &state.bus,
+            cast_integer(Some(strip_format(&id))),
+            &message_ids,
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// POST /chat/api/channels/:channel_id/messages/moves
+/// (Chat::Api::ChannelsMessagesMovesController#create, Chat::MessageMover).
+pub async fn move_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::mover::Moved;
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    // params.require(:move)
+    let Some(serde_json::Value::Object(move_params)) = p.get("move") else {
+        return Ok(super::accounts::param_missing("move"));
+    };
+    let message_ids: Option<Vec<String>> = match move_params.get("message_ids") {
+        Some(serde_json::Value::Array(ids)) => {
+            Some(ids.iter().filter_map(params::scalar).collect())
+        }
+        Some(v) => params::scalar(v).map(|v| vec![v]),
+        None => None,
+    };
+    let destination = move_params
+        .get("destination_channel_id")
+        .and_then(params::scalar);
+    let host = crate::pretty_text::Host::from_state(&state);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .move_messages(
+            &host,
+            &state.bus,
+            strip_format(&id),
+            message_ids.as_deref(),
+            destination.as_deref(),
+        )
+        .await?;
+    Ok(match outcome {
+        Moved::Done(body) => {
+            tx.commit().await?;
+            Json(body).into_response()
+        }
+        Moved::NotFound => super::topics::not_found_response(&state),
+        Moved::Forbidden => super::search::invalid_access(&state),
+        Moved::ParamMissing(name) => super::accounts::param_missing(name),
+        Moved::Failed(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": [error]})),
+        )
+            .into_response(),
+    })
+}
+
+/// POST /chat/api/channels/:channel_id/messages/:message_id/flags
+/// (Chat::Api::ChannelsMessagesFlagsController#create, Chat::FlagMessage):
+/// four a minute, then the flag; the author's auto silence follows its
+/// commit.
+pub async fn flag_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::flags::{FlagParams, Flagged};
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let Some(user) = guardian.user().cloned() else {
+        return Ok(super::search::invalid_access(&state));
+    };
+    let limiter = crate::rate_limiter::RateLimiter::new(
+        Some(crate::likes::limit_user(&guardian, &user)),
+        "flag_chat_message",
+        4,
+        60,
+    );
+    if let Err(refused) = limiter
+        .performed(&state.pool, state.config.rate_limits)
+        .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
+    let get = |key: &str| p.get(key).and_then(params::scalar);
+    let flag = |key: &str| cast_boolean(get(key).as_deref()) == Some(true);
+    let params = FlagParams {
+        message_id: cast_integer(Some(strip_format(&message_id))),
+        channel_id: cast_integer(Some(strip_format(&id))),
+        flag_type_id: cast_integer(get("flag_type_id").as_deref()),
+        message: get("message"),
+        is_warning: flag("is_warning"),
+        take_action: flag("take_action"),
+        queue_for_review: flag("queue_for_review"),
+    };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .flag_message(&state.bus, &params)
+        .await?;
+    Ok(match outcome {
+        Flagged::Done(silence) => {
+            tx.commit().await?;
+            if let Some((author_id, reviewable_id)) = silence {
+                let host = crate::pretty_text::Host::from_state(&state);
+                let ctx = crate::posting::Ctx {
+                    host: &host,
+                    settings: &settings,
+                    config: &state.config,
+                    i18n: &state.i18n,
+                    bus: &state.bus,
+                };
+                let minutes = settings
+                    .get("chat_auto_silence_from_flags_duration")?
+                    .to_i();
+                let reason = state
+                    .i18n
+                    .t("chat.errors.auto_silence_from_flags")
+                    .unwrap_or_default()
+                    .to_string();
+                crate::user_penalties::silencer_silence(
+                    &state.pool,
+                    &ctx,
+                    -1,
+                    author_id,
+                    crate::clock::now_naive() + chrono::Duration::minutes(minutes),
+                    &reason,
+                    Some(reviewable_id),
+                    false,
+                )
+                .await?;
+            }
+            Json(json!({"success": "OK"})).into_response()
+        }
+        Flagged::NotFound => super::topics::not_found_response(&state),
+        Flagged::InvalidFlagType => super::search::invalid_parameters(&state, "flag_type"),
+        Flagged::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Flagged::Failed(errors) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": errors})),
+        )
+            .into_response(),
+    })
+}

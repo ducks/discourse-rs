@@ -278,6 +278,37 @@
     submitLabel: "flagging_topic.action",
     customSubmitLabel: "flagging_topic.notify_action",
   };
+  // chat's lib/chat-message-flag.js: POST .../messages/:id/flags.
+  var ChatMessageFlag = {
+    targetsTopic: false,
+    chat: true,
+    title: "flagging.title",
+    submitLabel: "chat.flagging.action",
+    customSubmitLabel: "flagging.notify_action",
+  };
+
+  // ChatMessageFlag#flagsAvailable: the site's flag types the message
+  // offers (its available_flags) that apply to chat messages, notify user
+  // first, each described as chat describes it.
+  function chatFlags(c, available) {
+    var flags = c.post_action_types.filter(function (flag) {
+      return available.indexOf(flag.name_key) !== -1 && (flag.applies_to || []).indexOf("Chat::Message") !== -1;
+    });
+    var notifyUser = flags.findIndex(function (flag) {
+      return flag.name_key === "notify_user";
+    });
+    if (notifyUser !== -1) {
+      flags.unshift(flags.splice(notifyUser, 1)[0]);
+    }
+    return flags.map(function (flag) {
+      var key = "chat.flags." + flag.name_key;
+      var copy = Object.assign({}, flag);
+      if (c.strings[key]) {
+        copy.description = c.strings[key].replace("%{basePath}", base());
+      }
+      return copy;
+    });
+  }
 
   function show(target, flagModel, flags) {
     var c = config();
@@ -589,6 +620,24 @@
       }
       var selected = state.selected;
       close();
+      if (target.chat) {
+        // The bus's self_flagged draws the flag mark.
+        return ajax("POST", "/chat/api/channels/" + flagModel.channel_id + "/messages/" + flagModel.id + "/flags", {
+          flag_type_id: selected.id,
+          message: opts.message,
+          is_warning: opts.isWarning,
+          take_action: opts.takeAction,
+          queue_for_review: opts.queue_for_review,
+        }).then(
+          function () {
+            return true;
+          },
+          function (error) {
+            popupAjaxError(error);
+            return false;
+          }
+        );
+      }
       if (c.topic.archetype === "private_message") {
         notPorted("flags in messages");
         return Promise.resolve(false);
@@ -819,4 +868,17 @@
       show(TopicFlag, c.topic, topicFlags(c));
     }
   });
+
+  // ChatMessageInteractor#flag: the modal over a chat message, its model
+  // { id, channel_id, user_id, available_flags }.
+  Discourse.flagModal = {
+    showChat: function (message) {
+      var c = config();
+      if (!c || !Discourse.modal) {
+        return;
+      }
+      strings = c.strings;
+      show(ChatMessageFlag, message, chatFlags(c, message.available_flags || []));
+    },
+  };
 })();

@@ -124,6 +124,77 @@ pub fn template(tb: &Toolbar, c: &Value, following: bool) -> String {
     out.push_str("</template>");
     out.push_str(&toast_template());
     out.push_str(&emoji_picker_template(tb));
+    out.push_str(&selection_template(tb, c));
+    out
+}
+
+/// What select mode and the flag marks draw: ChatSelectionManager (in the
+/// composer's place while selecting; move only outside DMs for those who
+/// moderate), DeleteMessagesConfirm's strings, and ChatMessageInfo's flag
+/// marks, which the self_flagged and flag bus messages bring.
+fn selection_template(tb: &Toolbar, c: &Value) -> String {
+    let t = tb.t;
+    let button = |id: &str, icon: &str, label: &str, extra: &str| {
+        format!(
+            "<button class=\"btn btn-icon-text btn-default{extra}\" id=\"{id}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+            d_icon(icon, None),
+            escape(label)
+        )
+    };
+    let enable_move = c["chatable_type"] != "DirectMessage" && c["meta"]["can_moderate"] == true;
+    let mut out = format!(
+        "<template class=\"chat-selection-template\" data-label-delete=\"{}\" data-label-confirm-one=\"{}\" data-label-confirm-other=\"{}\" data-label-delete-button=\"{}\" data-label-cancel=\"{}\" data-label-move-title=\"{}\" data-label-move-one=\"{}\" data-label-move-other=\"{}\" data-label-move-confirm=\"{}\" data-channel-title=\"{}\"><div class=\"chat-selection-management\"><div class=\"chat-selection-management__buttons\">",
+        escape(&t("chat.selection.delete")),
+        escape(&t("chat.delete_messages.confirm.one")),
+        escape(&t("chat.delete_messages.confirm.other")),
+        escape(&t("delete")),
+        escape(&t("cancel")),
+        escape(&t("chat.move_to_channel.title")),
+        escape(&t("chat.move_to_channel.instructions.one")),
+        escape(&t("chat.move_to_channel.instructions.other")),
+        escape(&t("chat.move_to_channel.confirm_move")),
+        escape(c["title"].as_str().unwrap_or_default()),
+    );
+    out.push_str(&button(
+        "chat-quote-btn",
+        "quote-left",
+        &t("chat.selection.quote_selection"),
+        "",
+    ));
+    out.push_str(&button(
+        "chat-copy-btn",
+        "copy",
+        &t("chat.selection.copy"),
+        "",
+    ));
+    if enable_move {
+        out.push_str(&button(
+            "chat-move-to-channel-btn",
+            "right-from-bracket",
+            &t("chat.selection.move_selection_to_channel"),
+            "",
+        ));
+    }
+    out.push_str(&button("chat-delete-btn", "trash-can", "", ""));
+    out.push_str(&button(
+        "chat-cancel-selection-btn",
+        "xmark",
+        &t("chat.selection.cancel"),
+        " cancel-btn",
+    ));
+    out.push_str("</div></div>");
+    out.push_str(&format!(
+        "<span class=\"chat-message-info__flag\" data-flag=\"self\"><span class=\"svg-icon-title\" title=\"{}\">{}</span></span>",
+        escape(&t("chat.you_flagged")),
+        d_icon("flag", None)
+    ));
+    out.push_str(&format!(
+        "<span class=\"chat-message-info__flag\" data-flag=\"reviewable\"><a href=\"{}/review/\"><span class=\"svg-icon-title\" title=\"{}\">{}</span></a></span>",
+        escape(tb.base_path),
+        escape(&t("chat.flagged")),
+        d_icon("flag", None)
+    ));
+    out.push_str("</template>");
     out
 }
 

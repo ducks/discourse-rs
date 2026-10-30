@@ -447,8 +447,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/channels/{id}/memberships/me/follows.json",
             delete(chat::unfollow),
         )
-        .route("/chat/api/channels/{id}/messages", get(chat::messages))
-        .route("/chat/api/channels/{id}/messages.json", get(chat::messages))
+        .route(
+            "/chat/api/channels/{id}/messages",
+            get(chat::messages).delete(chat::trash_messages),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/moves",
+            post(chat::move_messages),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/flags",
+            post(chat::flag_message),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages.json",
+            get(chat::messages).delete(chat::trash_messages),
+        )
         .route(
             "/chat/api/channels/{id}/messages/{message_id}",
             put(chat::update_message).delete(chat::trash_message),

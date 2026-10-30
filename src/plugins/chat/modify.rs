@@ -912,3 +912,150 @@ impl Context<'_> {
         Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 }
+
+impl Context<'_> {
+    /// Chat::TrashMessages (DELETE /chat/api/channels/:channel_id/messages):
+    /// the channel's messages among `message_ids` trashed by the guardian's
+    /// user, when they may delete every one, then one bulk_delete publish
+    /// naming the ids as given. Unlike TrashMessage it leaves pins alone.
+    pub async fn trash_messages(
+        &mut self,
+        bus: &pg_bus::Bus,
+        channel_id: Option<i64>,
+        message_ids: &[Value],
+    ) -> Result<Outcome, AppError> {
+        let mut errors = Vec::new();
+        if channel_id.is_none() {
+            errors.push("Channel can't be blank".to_string());
+        }
+        if message_ids.is_empty() {
+            errors.push("Message ids is too short (minimum is 1 character)".to_string());
+        } else if message_ids.len() > 200 {
+            errors.push("Message ids is too long (maximum is 200 characters)".to_string());
+        }
+        let Some(channel_id) = channel_id.filter(|_| errors.is_empty()) else {
+            return Ok(Outcome::Invalid(errors));
+        };
+        let Some(user) = self.acting_user()? else {
+            return Ok(Outcome::Forbidden(None));
+        };
+        // model :messages: where(id: message_ids), each id cast as an
+        // integer column casts it.
+        let ids: Vec<i64> = message_ids
+            .iter()
+            .filter_map(|v| match v {
+                Value::Number(n) => n.as_i64(),
+                Value::String(s) => cast_id(s),
+                _ => None,
+            })
+            .collect();
+        let sql = format!(
+            "SELECT {MESSAGE_COLUMNS} FROM chat_messages WHERE id = ANY($1) AND chat_channel_id = $2 \
+               AND deleted_at IS NULL ORDER BY id"
+        );
+        let messages: Vec<MessageRow> = sqlx::query_as(&sql)
+            .bind(&ids)
+            .bind(channel_id)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        if messages.is_empty() {
+            return Ok(Outcome::NotFound);
+        }
+        let Some(channel) = self.message_channel(channel_id).await? else {
+            return Ok(Outcome::NotFound);
+        };
+        // policy :can_delete_all_chat_messages (can_delete_chat? each)
+        let moderator = self.can_moderate(&channel).await?;
+        let base = !self.guardian.is_silenced()
+            && self.can_modify(&channel)
+            && (self.guardian.is_admin() || self.can_preview(&channel).await?);
+        let deletions = self.settings.get("max_post_deletions_per_day")?.to_i() >= 1;
+        let allowed = base
+            && messages.iter().all(|m| {
+                if m.user_id == Some(user.id) {
+                    deletions
+                } else {
+                    moderator
+                }
+            });
+        if !allowed {
+            return Ok(Outcome::Forbidden(None));
+        }
+        let mut thread_ids = Vec::new();
+        for m in &messages {
+            thread_ids.push(self.hidden_thread(&channel, m.thread_id).await?);
+        }
+        let now = crate::clock::now_naive();
+        // trash_messages
+        let trashed: Vec<i64> = messages.iter().map(|m| m.id).collect();
+        sqlx::query(
+            "UPDATE chat_messages SET deleted_at = $2, deleted_by_id = $3 WHERE id = ANY($1)",
+        )
+        .bind(&trashed)
+        .bind(now)
+        .bind(user.id)
+        .execute(&mut *self.conn)
+        .await?;
+        // destroy_notifications
+        let notified: Vec<i32> = sqlx::query_scalar(
+            "DELETE FROM notifications WHERE id IN (SELECT notifications.id FROM chat_mentions \
+               INNER JOIN chat_mention_notifications ON chat_mention_notifications.chat_mention_id = chat_mentions.id \
+               INNER JOIN notifications ON notifications.id = chat_mention_notifications.notification_id \
+               WHERE chat_mentions.chat_message_id = ANY($1)) RETURNING user_id",
+        )
+        .bind(&trashed)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        for (m, thread_id) in messages.iter().zip(&thread_ids) {
+            // update_last_message_ids
+            self.update_last_message_ids(channel.id, *thread_id, now)
+                .await?;
+            // update_tracking_states: ResetUserLastReadChannelMessage.
+            sqlx::query(
+                "WITH cte AS (SELECT chat_channels.id AS chat_channel_id, last_message_id FROM chat_channels \
+                   WHERE chat_channels.id = $2) \
+                 UPDATE user_chat_channel_memberships SET last_read_message_id = cte.last_message_id FROM cte \
+                 WHERE user_chat_channel_memberships.last_read_message_id = $1 \
+                   AND cte.chat_channel_id = user_chat_channel_memberships.chat_channel_id",
+            )
+            .bind(m.id)
+            .bind(channel.id)
+            .execute(&mut *self.conn)
+            .await?;
+            sqlx::query(
+                "UPDATE user_chat_channel_memberships SET last_read_message_id = NULL WHERE last_read_message_id = $1",
+            )
+            .bind(m.id)
+            .execute(&mut *self.conn)
+            .await?;
+            // ResetUserLastReadThreadMessage
+            if m.thread_id.is_some() {
+                sqlx::query(
+                    "UPDATE user_chat_thread_memberships SET last_read_message_id = NULL WHERE last_read_message_id = $1",
+                )
+                .bind(m.id)
+                .execute(&mut *self.conn)
+                .await?;
+            }
+        }
+        // update_thread_reply_cache
+        for thread_id in &thread_ids {
+            self.thread_reply_count_changed(*thread_id).await?;
+        }
+        // publish_events
+        let mut refreshed: Vec<i32> = Vec::new();
+        for id in notified {
+            if !refreshed.contains(&id) {
+                crate::bus::publish_notifications_state(bus, &mut *self.conn, self.settings, id)
+                    .await?;
+                refreshed.push(id);
+            }
+        }
+        for m in &messages {
+            self.enqueue_message_hooks("chat_message_trashed", channel.id, m.id)
+                .await?;
+        }
+        super::publisher::publish_bulk_delete(self, bus, &channel, message_ids).await?;
+        Ok(Outcome::Done(json!({ "success": "OK" })))
+    }
+}

@@ -324,6 +324,24 @@ impl Context<'_> {
             };
             out.push_str(&actions);
             out.push_str(&self.staged_templates(&view).await?);
+            // The flag modal ChatMessageFlag opens (static/js/flag-modal.js,
+            // which chat.js loads from data-src when a flag is asked for).
+            if channel_json["meta"]["can_flag"] == true {
+                out.push_str(&format!(
+                    "<template class=\"chat-flag-modal\" data-src=\"{}\"></template>",
+                    escape(&crate::assets::url(self.base_path, "flag-modal.js"))
+                ));
+                out.push_str(
+                    &crate::flag_modal_view::chat_config(
+                        &mut *self.conn,
+                        self.i18n,
+                        self.settings,
+                        self.base_path,
+                        self.guardian.is_staff(),
+                    )
+                    .await?,
+                );
+            }
         }
         out.push_str(&format!(
             "<div class=\"chat-scroll-to-bottom\"><button class=\"btn no-text btn-flat chat-scroll-to-bottom__button\" type=\"button\"><span class=\"chat-scroll-to-bottom__arrow\">{}</span></button></div>",
@@ -1717,6 +1735,14 @@ pub(super) fn message_html(
     }
     if let Some(status) = m.get("user_flag_status") {
         data.push_str(&format!(" data-user-flag-status=\"{status}\""));
+    }
+    // What the flag modal offers (ChatMessageFlag#flagsAvailable).
+    if let Some(flags) = m["available_flags"].as_array().filter(|f| !f.is_empty()) {
+        let names: Vec<&str> = flags.iter().filter_map(Value::as_str).collect();
+        data.push_str(&format!(
+            " data-available-flags=\"{}\"",
+            escape(&names.join("|"))
+        ));
     }
     if m["pinned"] == true {
         data.push_str(" data-pinned=\"\"");

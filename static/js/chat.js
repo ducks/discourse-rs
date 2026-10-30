@@ -1592,6 +1592,12 @@
       case "restore":
         api("PUT", path + "/restore").then(changed).catch(function () {});
         break;
+      case "select":
+        startSelecting(message);
+        break;
+      case "flag":
+        openFlag(channelId, message);
+        break;
       case "rebake":
         fetch(basePath() + "/chat/" + channelId + "/" + message.dataset.id + "/rebake", {
           method: "PUT",
@@ -1603,6 +1609,372 @@
         break;
     }
   }
+
+  // ChatMessageInteractor#flag: core's flag modal with ChatMessageFlag
+  // (static/js/flag-modal.js, loaded the first time).
+  function openFlag(channelId, message) {
+    var show = function () {
+      Discourse.flagModal.showChat({
+        id: Number(message.dataset.id),
+        channel_id: Number(channelId),
+        user_id: Number(message.dataset.userId),
+        available_flags: (message.dataset.availableFlags || "").split("|").filter(Boolean),
+      });
+    };
+    if (Discourse.flagModal) {
+      show();
+      return;
+    }
+    var tpl = document.querySelector("template.chat-flag-modal");
+    if (!tpl) {
+      return;
+    }
+    var script = document.createElement("script");
+    script.src = tpl.dataset.src;
+    script.onload = function () {
+      if (Discourse.flagModal) {
+        show();
+      }
+    };
+    document.head.appendChild(script);
+  }
+
+  // ChatMessageInfo's flag mark: the viewer's own flag (self_flagged), or
+  // for staff the reviewable it opened (flag).
+  function drawFlag(id, kind, reviewableId) {
+    var message = document.querySelector(".chat-messages-container > .chat-message-container[data-id='" + id + "']");
+    var tpl = document.querySelector("template.chat-selection-template");
+    if (!message || !tpl) {
+      return;
+    }
+    if (kind === "self") {
+      message.dataset.userFlagStatus = "0";
+    } else {
+      message.dataset.reviewableId = reviewableId;
+    }
+    var info = message.querySelector(".chat-message-info");
+    if (!info) {
+      return;
+    }
+    var existing = info.querySelector(".chat-message-info__flag");
+    // A reviewable's link wins over the viewer's own mark.
+    if (existing && (kind === "self" || existing.dataset.flag === "reviewable")) {
+      return;
+    }
+    var mark = tpl.content.querySelector(".chat-message-info__flag[data-flag='" + kind + "']").cloneNode(true);
+    var link = mark.querySelector("a");
+    if (link) {
+      link.href = link.getAttribute("href") + reviewableId;
+    }
+    if (existing) {
+      existing.replaceWith(mark);
+    } else {
+      info.appendChild(mark);
+    }
+  }
+
+  // Select mode (ChatChannelPane's selectingMessages and
+  // ChatSelectionManager): checkboxes on the messages, the selection bar
+  // in the composer's place.
+  var DELETE_COUNT_LIMIT = 200;
+  var lastSelectedId = null;
+
+  function selecting() {
+    return !!document.querySelector(".chat-channel .chat-selection-management");
+  }
+
+  function selectedMessages() {
+    return messages().filter(function (m) {
+      return m.classList.contains("-selected");
+    });
+  }
+
+  function setSelected(message, checked) {
+    message.classList.toggle("-selected", checked);
+    var box = message.querySelector(":scope > .chat-message-selector");
+    if (box) {
+      box.checked = checked;
+    }
+  }
+
+  // canDeleteMessage: one's own or another's as the channel allows, live,
+  // in a channel whose messages can change.
+  function canDeleteSelected(message) {
+    var tpl = actionsTemplate();
+    var own = isOwn(message);
+    return (
+      (own ? flag(tpl, "canDeleteSelf") : flag(tpl, "canDeleteOthers")) &&
+      !message.classList.contains("-deleted") &&
+      flag(tpl, "canModify")
+    );
+  }
+
+  function drawSelectionBar() {
+    var bar = document.querySelector(".chat-channel .chat-selection-management");
+    var tpl = document.querySelector("template.chat-selection-template");
+    if (!bar || !tpl) {
+      return;
+    }
+    var selected = selectedMessages();
+    var none = selected.length === 0;
+    ["#chat-quote-btn", "#chat-copy-btn", "#chat-move-to-channel-btn"].forEach(function (id) {
+      var button = bar.querySelector(id);
+      if (button) {
+        button.disabled = none;
+      }
+    });
+    var del = bar.querySelector("#chat-delete-btn");
+    del.disabled = none || !selected.every(canDeleteSelected) || selected.length > DELETE_COUNT_LIMIT;
+    del.querySelector(".d-button-label").textContent = tpl.dataset.labelDelete
+      .replace("%{selectionCount}", selected.length)
+      .replace("%{totalCount}", DELETE_COUNT_LIMIT);
+  }
+
+  function startSelecting(message) {
+    var channel = document.querySelector(".chat-channel[data-id]");
+    var tpl = document.querySelector("template.chat-selection-template");
+    if (!channel || !tpl) {
+      return;
+    }
+    if (!selecting()) {
+      messages().forEach(function (m) {
+        m.classList.add("-selectable");
+        var box = document.createElement("input");
+        box.className = "chat-message-selector";
+        box.type = "checkbox";
+        m.insertBefore(box, m.firstChild);
+      });
+      var composer = channel.querySelector(".chat-composer__wrapper, .chat-channel-preview-card");
+      if (composer) {
+        composer.hidden = true;
+      }
+      var bar = tpl.content.querySelector(".chat-selection-management").cloneNode(true);
+      if (composer) {
+        composer.parentNode.insertBefore(bar, composer);
+      } else {
+        channel.appendChild(bar);
+      }
+    }
+    setSelected(message, true);
+    lastSelectedId = message.dataset.id;
+    drawSelectionBar();
+  }
+
+  function cancelSelecting() {
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (!channel) {
+      return;
+    }
+    messages().forEach(function (m) {
+      m.classList.remove("-selectable", "-selected");
+      var box = m.querySelector(":scope > .chat-message-selector");
+      if (box) {
+        box.remove();
+      }
+    });
+    var bar = channel.querySelector(".chat-selection-management");
+    if (bar) {
+      bar.remove();
+    }
+    var composer = channel.querySelector(".chat-composer__wrapper, .chat-channel-preview-card");
+    if (composer) {
+      composer.hidden = false;
+    }
+    lastSelectedId = null;
+  }
+
+  // select and bulkSelect: a click (or its checkbox) toggles the message;
+  // with Shift every message from the last one picked takes its state.
+  function toggleSelected(message, checked, range) {
+    if (range && lastSelectedId) {
+      var all = messages();
+      var from = all.findIndex(function (m) {
+        return m.dataset.id === lastSelectedId;
+      });
+      var to = all.indexOf(message);
+      if (from !== -1 && to !== -1) {
+        var lo = Math.min(from, to);
+        var hi = Math.max(from, to);
+        for (var i = lo; i <= hi; i++) {
+          setSelected(all[i], checked);
+        }
+        drawSelectionBar();
+        return;
+      }
+    }
+    setSelected(message, checked);
+    lastSelectedId = message.dataset.id;
+    drawSelectionBar();
+  }
+
+  function selectedIds() {
+    return selectedMessages().map(function (m) {
+      return m.dataset.id;
+    });
+  }
+
+  // DeleteMessagesConfirm: Chat::TrashMessages for the selection.
+  function confirmDeleteSelected() {
+    var tpl = document.querySelector("template.chat-selection-template");
+    var channel = document.querySelector(".chat-channel[data-id]");
+    var ids = selectedIds();
+    if (!tpl || !channel || !ids.length || !Discourse.modal) {
+      return;
+    }
+    var label = ids.length === 1 ? tpl.dataset.labelConfirmOne : tpl.dataset.labelConfirmOther.replace("%{count}", ids.length);
+    var close = Discourse.modal.show({
+      className: "delete-messages-confirm",
+      hideHeader: true,
+      body: function (body) {
+        body.textContent = label;
+      },
+      footer: function (footer) {
+        footer.innerHTML =
+          '<button class="btn btn-icon-text btn-primary" type="button">' +
+          iconHtml("trash-can") +
+          '<span class="d-button-label">' +
+          escapeHtml(tpl.dataset.labelDeleteButton) +
+          '</span></button><button class="btn btn-flat d-modal-cancel" type="button"><span class="d-button-label">' +
+          escapeHtml(tpl.dataset.labelCancel) +
+          "</span></button>";
+        footer.querySelector(".btn-primary").addEventListener("click", function () {
+          var params = ids.map(function (id) {
+            return ["message_ids[]", id];
+          });
+          api("DELETE", "/channels/" + channel.dataset.id + "/messages", params)
+            .then(changed)
+            .catch(function () {})
+            .then(close);
+        });
+        footer.querySelector(".d-modal-cancel").addEventListener("click", function () {
+          close();
+        });
+      },
+    });
+  }
+
+  // ChatModalMoveMessageToChannel: the member's other public channels
+  // (publicMessageChannels, from /chat/api/me/channels) to move the
+  // selection to, then the first moved message in its new channel. The
+  // chooser is a plain select, not select-kit's ChatChannelChooser.
+  function openMoveToChannel(ids) {
+    var tpl = document.querySelector("template.chat-selection-template");
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (!tpl || !channel || !ids.length || !Discourse.modal) {
+      return;
+    }
+    var sourceId = Number(channel.dataset.id);
+    api("GET", "/me/channels")
+      .then(function (data) {
+        var channels = (data.public_channels || []).filter(function (c) {
+          return c.id !== sourceId;
+        });
+        var instructions = (ids.length === 1 ? tpl.dataset.labelMoveOne : tpl.dataset.labelMoveOther)
+          .replace("%{count}", ids.length)
+          .replace("%{channelTitle}", escapeHtml(tpl.dataset.channelTitle));
+        var close = Discourse.modal.show({
+          className: "chat-modal-move-message-to-channel",
+          title: tpl.dataset.labelMoveTitle,
+          body: function (body) {
+            body.innerHTML =
+              "<p>" +
+              instructions +
+              '</p><select class="chat-modal-move-message-to-channel__channel-chooser"><option value=""></option>' +
+              channels
+                .map(function (c) {
+                  return '<option value="' + c.id + '">' + escapeHtml(c.title) + "</option>";
+                })
+                .join("") +
+              "</select>";
+            body.querySelector("select").addEventListener("change", function (event) {
+              var move = document.querySelector(".chat-modal-move-message-to-channel .d-modal__footer .btn-primary");
+              if (move) {
+                move.disabled = !event.target.value;
+              }
+            });
+          },
+          footer: function (footer) {
+            footer.innerHTML =
+              '<button class="btn btn-icon-text btn-primary" type="button" disabled="">' +
+              iconHtml("right-from-bracket") +
+              '<span class="d-button-label">' +
+              escapeHtml(tpl.dataset.labelMoveConfirm) +
+              '</span></button><button class="btn btn-text btn-flat" type="button"><span class="d-button-label">' +
+              escapeHtml(tpl.dataset.labelCancel) +
+              "</span></button>";
+            var move = footer.querySelector(".btn-primary");
+            move.addEventListener("click", function () {
+              var chooser = document.querySelector(".chat-modal-move-message-to-channel__channel-chooser");
+              var params = ids.map(function (id) {
+                return ["move[message_ids][]", id];
+              });
+              params.push(["move[destination_channel_id]", chooser.value]);
+              api("POST", "/channels/" + sourceId + "/messages/moves", params)
+                .then(function (response) {
+                  close();
+                  window.location.assign(
+                    basePath() + "/chat/c/-/" + response.destination_channel_id + "/" + response.first_moved_message_id
+                  );
+                })
+                .catch(function () {});
+            });
+            footer.querySelector(".btn-flat").addEventListener("click", function () {
+              close();
+            });
+          },
+        });
+      })
+      .catch(function () {});
+  }
+
+  function notPortedYet(what) {
+    if (Discourse.dialog && Discourse.dialog.alert) {
+      Discourse.dialog.alert("Not ported yet: " + what + ".");
+    }
+  }
+
+  document.addEventListener("click", function (event) {
+    var target = event.target;
+    var bar = target.closest(".chat-selection-management");
+    if (bar) {
+      var button = target.closest("button");
+      if (!button || button.disabled) {
+        return;
+      }
+      switch (button.id) {
+        case "chat-cancel-selection-btn":
+          cancelSelecting();
+          break;
+        case "chat-delete-btn":
+          confirmDeleteSelected();
+          break;
+        case "chat-move-to-channel-btn":
+          openMoveToChannel(selectedIds());
+          break;
+        case "chat-quote-btn":
+          notPortedYet("quoting chat messages in a topic");
+          break;
+        case "chat-copy-btn":
+          notPortedYet("copying chat messages as a quote");
+          break;
+      }
+      return;
+    }
+    if (!selecting()) {
+      return;
+    }
+    var message = target.closest(".chat-messages-container > .chat-message-container.-selectable");
+    if (!message) {
+      return;
+    }
+    var box = target.closest(".chat-message-selector");
+    if (box) {
+      event.stopPropagation();
+      toggleSelected(message, box.checked, event.shiftKey);
+      return;
+    }
+    toggleSelected(message, !message.classList.contains("-selected"), event.shiftKey);
+  });
 
   // expand: the run of deleted messages the label stands for, drawn.
   function expand(message) {
@@ -1949,11 +2321,20 @@
       case "update_thread_original_message":
         return onChanged(channel, list, data.original_message_id, data.type);
       case "bulk_delete":
-        return data.deleted_ids.reduce(function (done, id) {
-          return done.then(function () {
-            return onDelete(channel, list, { deleted_id: id, deleted_at: data.deleted_at });
-          });
-        }, Promise.resolve());
+        return data.deleted_ids
+          .reduce(function (done, id) {
+            return done.then(function () {
+              return onDelete(channel, list, { deleted_id: id, deleted_at: data.deleted_at });
+            });
+          }, Promise.resolve())
+          .then(drawSelectionBar);
+      // handleSelfFlaggedMessage and handleFlaggedMessage.
+      case "self_flagged":
+        drawFlag(data.chat_message_id, "self");
+        return Promise.resolve();
+      case "flag":
+        drawFlag(data.chat_message_id, "reviewable", data.reviewable_id);
+        return Promise.resolve();
     }
     return Promise.resolve();
   }

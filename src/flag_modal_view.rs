@@ -91,6 +91,34 @@ async fn flag_types(
     ))
 }
 
+/// The `#flag-modal-config` block on a chat page, for chat's
+/// ChatMessageFlag: no topic, and chat's strings (its submit label and
+/// its descriptions of the flags) beside core's.
+pub async fn chat_config(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    settings: &SiteSettings,
+    base_path: &str,
+    staff: bool,
+) -> Result<String, HtmlError> {
+    let mut extra = Map::new();
+    let mut keys = vec!["chat.flagging.action".to_string()];
+    for flag in [
+        "off_topic",
+        "inappropriate",
+        "illegal",
+        "spam",
+        "notify_user",
+        "notify_moderators",
+    ] {
+        keys.push(format!("chat.flags.{flag}"));
+    }
+    for key in keys {
+        extra.insert(key.clone(), json!(crate::admin_view::t(i18n, &key)));
+    }
+    config_with(conn, i18n, settings, base_path, &json!({}), staff, extra).await
+}
+
 /// The `#flag-modal-config` block, or nothing for an anonymous viewer.
 pub async fn config(
     conn: &mut PgConnection,
@@ -100,7 +128,19 @@ pub async fn config(
     view: &Value,
     staff: bool,
 ) -> Result<String, HtmlError> {
-    let mut strings = Map::new();
+    config_with(conn, i18n, settings, base_path, view, staff, Map::new()).await
+}
+
+async fn config_with(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    settings: &SiteSettings,
+    base_path: &str,
+    view: &Value,
+    staff: bool,
+    extra: Map<String, Value>,
+) -> Result<String, HtmlError> {
+    let mut strings = extra;
     for key in KEYS {
         strings.insert(key.to_string(), json!(crate::admin_view::t(i18n, key)));
     }
