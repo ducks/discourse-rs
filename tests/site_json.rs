@@ -219,9 +219,11 @@ async fn tagging_disabled_drops_tag_fields_and_permissions() {
     assert!(json.get("tags_filter_regexp").is_none());
     assert!(json.get("top_tags").is_none());
     assert_eq!(json["can_tag_topics"], false);
+    // Chat, on in the test seed, registers its channel type for the topic
+    // composer too.
     assert_eq!(
         json["hashtag_configurations"]["topic-composer"],
-        json!(["category"])
+        json!(["category", "channel"])
     );
 }
 
