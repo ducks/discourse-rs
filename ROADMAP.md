@@ -2423,23 +2423,63 @@ have handlers now.
     matches now; tests in tests/chat_threads.rs. The page markup is
     ported from the components, not compared against the reference.
     Left, split into 160a.
-    160a. `feat/chat-threads-rest` M: the thread pane's message actions
-    (react, reply, edit, the secondary menu; chat.js skips the thread's
-    messages), the thread settings modal and the title's click
-    (ChatModalThreadSettings, PUT .../threads/:id), the thread title
-    prompt (ChatThreadTitlePrompt with mark-thread-title-prompt-seen),
-    the side panel resizer (discourse_chat_side_panel_size_width), the
-    thread pane's paging and jump to a message, the channel threads
-    list's and the member's threads' load more and live updates (the
-    list subscriptions), the thread composer's emoji, autocomplete and
-    replying indicator (/chat-reply/:id/thread/:id), uploads in a
-    thread (161), ChatHistory's back link to the threads list or my
-    threads, do not disturb on the channel navbar's thread indicator,
-    the sidebar's and header's unread thread indicators
-    (hasUnreadThreads), and threads in the drawer (223c); threads of
-    deleted users' messages stay refused (plugins/chat/threads.rs
-    thread_original_message, plugins/chat/create.rs, with 162), as do
-    threads of deleted channels (threads.rs thread_channel).
+    160a. ~~`feat/chat-threads-rest`~~ (done) M: the thread pane in the
+    browser. chat.js's composer takes either textarea (composerParts by
+    input): the thread's (ChatComposerThread) sends with thread_id,
+    stages in the thread's pane, saves the thread's draft, edits with Up
+    and drops an edit on Escape (else closes the pane), has no replies,
+    reports /chat-reply/:id/thread/:id, and gets the emoji picker, the
+    autocompletes, its own replying indicator and its own uploads box
+    (picker, paste, drop on the thread, the dropdown's upload button);
+    the messages' actions work in the thread (MESSAGE_CONTEXT_THREAD:
+    no reply, copyLink's thread url, the thread's own select mode
+    without move), and the channel's Up, "+emoji" and selection keep to
+    the channel's messages (they took the thread's beside it). The
+    thread route draws ChatModalThreadSettings (the title's click for
+    admins and the original message's author, the gear for staff and
+    the author; PUT .../threads/:id, the header and the heading drawn
+    again) and ChatThreadTitlePrompt's toast on a phone (an untitled
+    thread of five replies, show_thread_title_prompts, not seen yet;
+    mark-thread-title-prompt-seen, "don't show again" saving the user
+    option). static/js/chat-thread.js pages the thread (GET
+    /live/chat/:id/messages?thread_id=, Context::thread_messages_page:
+    past and future from the first and last shown, around a target or
+    from the first message; fillPaneAttempt, the arrow to the latest,
+    jumps to a message of the thread in place), sizes the side panel
+    and drags its resizer (discourse_chat_side_panel_size_width, 250
+    each side), picks the back link from the previous chat route
+    (ChatHistory, kept per tab in sessionStorage: the threads list after
+    the threads list or the channel on desktop, my threads after my
+    threads), and runs the lists' load more (GET
+    /live/chat/:id/threads and /live/chat/threads, ten at a time) and
+    their live updates (ChatThreadList's /chat/:id: an original message
+    deleted or restored or a preview changed draws the loaded pages
+    again; UserThreads' channels: a preview drawn again in place).
+    Unread threads count in the chrome (plugins/chat/view.rs from
+    unread_thread_overview): the sidebar's My threads section with its
+    dot (urgent for watched), a channel link's dot and the sidebar sort
+    and filter with threads replied to since it was viewed
+    (unreadThreadsCountSinceLastViewed, #sidebarUnreadCount,
+    #compareDirectMessageChannelsByActivity), the header icon's and the
+    phone back button's dot (hasUnreadThreads), the phone footer's My
+    threads (UnreadThreadsIndicator) and the channel rows; do not
+    disturb hides the navbar's and the thread header's unread counts.
+    The thread indicator's last replier is drawn without its link (the
+    parser split it out of the indicator's link into stray anchors).
+    Tests in tests/chat_threads_rest.rs and
+    tests/browser/chat-threads.spec.js. Threads in the drawer stay with
+    223c. Threads of deleted users' messages stay refused
+    (plugins/chat/threads.rs thread_original_message,
+    plugins/chat/create.rs, with 162), as do threads of deleted channels
+    (threads.rs thread_channel). Left, as 160b.
+    160b. `feat/chat-threads-tracking-live` S: the threads lists and the
+    sidebar's thread indicators following /chat/user-tracking-state
+    (a thread read elsewhere, a new reply's unread count before its
+    preview), ChatModalThreadSettings' header save button in the mobile
+    view (headerPrimaryAction), the thread pane's date separator click
+    (fetchMessagesByDate, with 224a's), ChatHistory across page loads
+    (the port keeps it in sessionStorage where Ember starts empty on a
+    reload).
 161. `feat/chat-uploads` M: ~~chat message uploads~~ (done,
     feat/chat-uploads: Chat::CreateMessage and Chat::UpdateMessage take
     upload_ids, the sender's own uploads (user_uploads) while

@@ -282,7 +282,16 @@
     if (composer && nextComposer) {
       nextComposer.replaceWith(composer);
     }
+    // The thread's composer too (chat-thread.js), its pane set up again.
+    var threadComposer = page.querySelector(".chat-thread .chat-composer__wrapper");
+    var nextThreadComposer = nextPage.querySelector(".chat-thread .chat-composer__wrapper");
+    if (threadComposer && nextThreadComposer && threadComposer !== composer) {
+      nextThreadComposer.replaceWith(threadComposer);
+    }
     page.replaceWith(nextPage);
+    if (Discourse.chatThread) {
+      Discourse.chatThread.remount();
+    }
     if (window.htmx && nextPage.closest(".chat-drawer")) {
       window.htmx.process(nextPage);
     }
@@ -485,21 +494,39 @@
   // or Ctrl/Cmd+Enter with meta_enter) or the button sends, edits (an
   // emptied edit deletes the message) or replies, per the message details
   // bar (ChatComposerMessageDetails).
-  function composerParts() {
-    // The channel's composer, not a thread's (chat-thread.js).
-    var channelInput = document.getElementById("channel-composer");
-    var wrapper = channelInput && channelInput.closest(".chat-composer__wrapper");
+  //
+  // `input`: the composer's textarea, the channel's when not given; a
+  // thread's (ChatComposerThread, in the pane chat-thread.js runs) sends
+  // to its thread, saves its thread's draft and has no replies.
+  function composerParts(input) {
+    input = input || document.getElementById("channel-composer");
+    var wrapper = input && input.closest(".chat-composer__wrapper");
     if (!wrapper) {
       return null;
     }
+    var thread = input.id === "thread-composer" ? input.closest(".chat-thread[data-id]") : null;
+    var channel = document.querySelector(".chat-channel[data-id]");
     return {
       wrapper: wrapper,
       composer: wrapper.querySelector(".chat-composer"),
-      input: wrapper.querySelector("#channel-composer"),
+      input: input,
       send: wrapper.querySelector(".chat-composer-button.-send"),
-      channel: document.querySelector(".chat-channel[data-id]"),
+      channel: channel,
+      thread: thread,
+      channelId: thread ? thread.dataset.channelId : channel && channel.dataset.id,
+      pane: thread || channel,
       details: wrapper.querySelector(".chat-composer-message-details"),
     };
+  }
+
+  function isComposer(node) {
+    return !!node && (node.id === "channel-composer" || node.id === "thread-composer");
+  }
+
+  // The composer of the pane a message is in.
+  function composerFor(message) {
+    var thread = message && message.closest(".chat-thread[data-id]");
+    return composerParts(thread ? thread.querySelector("#thread-composer") : null);
   }
 
   function editing(parts) {
@@ -512,12 +539,12 @@
 
   function hasContent(parts) {
     var min = Number(parts.wrapper.dataset.minLength || 1) || 1;
-    return parts.input.value.length >= min || composerUploads().length > 0;
+    return parts.input.value.length >= min || composerUploads(uploadsBox(parts)).length > 0;
   }
 
   function updateSendState(parts) {
     var enabled =
-      (hasContent(parts) || !!editing(parts)) && !parts.input.disabled && uploading.length === 0;
+      (hasContent(parts) || !!editing(parts)) && !parts.input.disabled && inProgress(uploadsBox(parts)).length === 0;
     parts.composer.classList.toggle("is-send-enabled", enabled);
     parts.composer.classList.toggle("is-send-disabled", !enabled);
     parts.send.disabled = !enabled;
@@ -529,7 +556,7 @@
     var message = parts.input.value;
     var reply = replying(parts);
     var edit = editing(parts);
-    var uploads = composerUploads();
+    var uploads = composerUploads(uploadsBox(parts));
     if (message.length === 0 && uploads.length === 0 && !reply) {
       return null;
     }
@@ -561,10 +588,10 @@
     clearTimeout(draftTimer);
     parts.composer.classList.remove("is-draft-saved");
     parts.composer.classList.add("is-draft-unsaved");
-    var channelId = parts.channel.dataset.id;
+    var path = "/channels/" + parts.channelId + (parts.thread ? "/threads/" + parts.thread.dataset.id : "") + "/drafts";
     var data = draftJSON(parts);
     draftTimer = setTimeout(function () {
-      api("POST", "/channels/" + channelId + "/drafts", { data: data === null ? "" : data })
+      api("POST", path, { data: data === null ? "" : data })
         .then(function () {
           parts.composer.classList.remove("is-draft-unsaved");
           parts.composer.classList.add("is-draft-saved");
@@ -655,13 +682,13 @@
 
   // isFocused
   document.addEventListener("focusin", function (event) {
-    if (event.target.id === "channel-composer") {
+    if (isComposer(event.target)) {
       event.target.closest(".chat-composer").classList.add("is-focused");
     }
   });
 
   document.addEventListener("focusout", function (event) {
-    if (event.target.id === "channel-composer") {
+    if (isComposer(event.target)) {
       event.target.closest(".chat-composer").classList.remove("is-focused");
     }
   });
@@ -675,20 +702,20 @@
 
   // ChatChannelComposer#edit and #replyTo
   function startEdit(message) {
-    var parts = composerParts();
+    var parts = composerFor(message);
     if (!parts) {
       return;
     }
     setDetails(parts, "edit", message);
     parts.input.value = message.dataset.message || "";
-    setComposerUploads(message.dataset.uploads ? JSON.parse(message.dataset.uploads) : [], false);
+    setComposerUploads(message.dataset.uploads ? JSON.parse(message.dataset.uploads) : [], false, uploadsBox(parts));
     updateSendState(parts);
     focusComposer(parts);
   }
 
   function startReply(message) {
-    var parts = composerParts();
-    if (!parts) {
+    var parts = composerFor(message);
+    if (!parts || parts.thread) {
       return;
     }
     setDetails(parts, "reply", message);
@@ -699,7 +726,7 @@
   // resetDraft: the composer emptied, its details gone.
   function resetComposer(parts) {
     parts.input.value = "";
-    setComposerUploads([], false);
+    setComposerUploads([], false, uploadsBox(parts));
     setDetails(parts, null);
     updateSendState(parts);
     refreshHeight(parts.input);
@@ -722,9 +749,9 @@
     }
     clearTimeout(draftTimer);
     var message = parts.input.value;
-    var channelId = parts.channel.dataset.id;
+    var channelId = parts.channelId;
     var edit = editing(parts);
-    if (edit && message.length === 0 && composerUploads().length === 0) {
+    if (edit && message.length === 0 && composerUploads(uploadsBox(parts)).length === 0) {
       // #deleteEmptyMessage
       var id = edit.dataset.id;
       resetComposer(parts);
@@ -743,7 +770,7 @@
         })
         .then(function (code) {
           parts.composer.classList.remove("is-sending");
-          var last = lastMessage();
+          var last = lastMessage(parts.pane);
           if (code && last) {
             resetComposer(parts);
             react(last, code, "add");
@@ -765,13 +792,13 @@
       return;
     }
     var reply = replying(parts);
-    var uploads = composerUploads();
+    var uploads = composerUploads(uploadsBox(parts));
     var uploadIds = uploads.map(function (u) {
       return u.id;
     });
     parts.composer.classList.add("is-sending");
     var done = function () {
-      var now = composerParts();
+      var now = composerParts(parts.input);
       if (now) {
         now.composer.classList.remove("is-sending");
         updateSendState(now);
@@ -807,10 +834,13 @@
     if (reply) {
       params.in_reply_to_id = reply.dataset.id;
     }
+    if (parts.thread) {
+      params.thread_id = parts.thread.dataset.id;
+    }
     params.upload_ids = uploadIds;
     cookStaged(message)
       .then(function (cooked) {
-        var staged = stage(message.length > 0 ? cooked : "", params, reply, uploads);
+        var staged = stage(message.length > 0 ? cooked : "", params, reply, uploads, parts.pane);
         resetComposer(parts);
         return sendStaged(channelId, params, staged);
       })
@@ -874,8 +904,9 @@
   // ChatChannel#stageMessage: the member's message at the end of the list
   // (-staged, -not-processed), its author line hidden after their own
   // recent message (hideUserInfo).
-  function stage(cooked, params, reply, uploads) {
-    var channel = document.querySelector(".chat-channel[data-id]");
+  // `pane`: the channel's, or the thread's the message goes to.
+  function stage(cooked, params, reply, uploads, pane) {
+    var channel = pane || document.querySelector(".chat-channel[data-id]");
     var list = channel && channel.querySelector(".chat-messages-container");
     if (!list) {
       return null;
@@ -908,7 +939,7 @@
     node.dataset.createdAt = now.toISOString();
     node.dataset.message = params.message;
     node.dataset.excerpt = params.message;
-    var collapsed = stagedCollapser(cooked, uploads || []);
+    var collapsed = stagedCollapser(cooked, uploads || [], channel);
     if (collapsed) {
       node.querySelector(".chat-cooked").outerHTML = collapsed;
     } else {
@@ -1011,10 +1042,10 @@
   }
 
   document.addEventListener("input", function (event) {
-    if (event.target.id !== "channel-composer") {
+    if (!isComposer(event.target)) {
       return;
     }
-    var parts = composerParts();
+    var parts = composerParts(event.target);
     if (parts) {
       updateSendState(parts);
       saveDraft(parts);
@@ -1026,15 +1057,30 @@
   document.addEventListener("keydown", function (event) {
     // An open autocomplete has the keys (#isAutocompleteDisplayed).
     if (
-      event.target.id !== "channel-composer" ||
+      !isComposer(event.target) ||
       event.isComposing ||
       event.altKey ||
       (Discourse.autocomplete && Discourse.autocomplete.isOpen())
     ) {
       return;
     }
-    var parts = composerParts();
+    var parts = composerParts(event.target);
     if (!parts) {
+      return;
+    }
+    if (event.key === "Escape" && !event.shiftKey && parts.thread) {
+      // ChatComposerThread#handleEscape: an edit is dropped, else the
+      // pane closes, back to the channel.
+      if (editing(parts)) {
+        event.stopPropagation();
+        resetComposer(parts);
+        return;
+      }
+      var close = document.querySelector(".c-navbar__close-thread-button");
+      if (close) {
+        event.stopPropagation();
+        window.location.assign(close.href);
+      }
       return;
     }
     if (event.key === "Escape" && !event.shiftKey) {
@@ -1063,13 +1109,13 @@
     if (event.key === "ArrowUp" && !hasContent(parts) && !editing(parts)) {
       // Shift+Up replies to the last message, Up edits the member's last.
       if (event.shiftKey) {
-        var last = lastMessage();
+        var last = lastMessage(parts.pane);
         if (last && canReply(last)) {
           event.preventDefault();
           startReply(last);
         }
       } else {
-        var own = lastOwnMessage();
+        var own = lastOwnMessage(parts.pane);
         if (own && canEdit(own)) {
           event.preventDefault();
           startEdit(own);
@@ -1079,15 +1125,17 @@
   });
 
   document.addEventListener("click", function (event) {
-    if (event.target.closest(".chat-composer-button.-send") && !event.target.closest(".chat-thread")) {
-      var parts = composerParts();
+    var sendButton = event.target.closest(".chat-composer-button.-send");
+    if (sendButton) {
+      var parts = composerParts(sendButton.closest(".chat-composer__wrapper").querySelector("textarea.chat-composer__input"));
       if (parts) {
         sendMessage(parts);
       }
       return;
     }
-    if (event.target.closest(".chat-composer-message-details .cancel-message-action")) {
-      var now = composerParts();
+    var cancel = event.target.closest(".chat-composer-message-details .cancel-message-action");
+    if (cancel) {
+      var now = composerParts(cancel.closest(".chat-composer__wrapper").querySelector("textarea.chat-composer__input"));
       if (now) {
         resetComposer(now);
         now.input.focus();
@@ -1101,22 +1149,24 @@
     return document.querySelector("template.chat-message-actions-template");
   }
 
-  function messages() {
-    return Array.prototype.slice.call(
-      document.querySelectorAll(".chat-messages-container > .chat-message-container[data-id]")
-    );
+  // A pane's messages: the channel's unless a thread's pane is given.
+  function messages(pane) {
+    pane = pane || document.querySelector(".chat-channel[data-id]");
+    return pane
+      ? Array.prototype.slice.call(pane.querySelectorAll(".chat-messages-container > .chat-message-container[data-id]"))
+      : [];
   }
 
-  function lastMessage() {
-    var all = messages().filter(function (m) {
+  function lastMessage(pane) {
+    var all = messages(pane).filter(function (m) {
       return !m.classList.contains("-deleted");
     });
     return all[all.length - 1] || null;
   }
 
-  function lastOwnMessage() {
+  function lastOwnMessage(pane) {
     var tpl = actionsTemplate();
-    var all = messages().filter(function (m) {
+    var all = messages(pane).filter(function (m) {
       return tpl && m.dataset.userId === tpl.dataset.viewerId && !m.classList.contains("-deleted");
     });
     return all[all.length - 1] || null;
@@ -1142,8 +1192,9 @@
     );
   }
 
+  // Not in a thread (MESSAGE_CONTEXT_THREAD).
   function canReply(message) {
-    return canInteract(message);
+    return canInteract(message) && !message.closest(".chat-thread");
   }
 
   function canEdit(message) {
@@ -1165,7 +1216,7 @@
     if (canEdit(message)) {
       actions.push("edit");
     }
-    if (!selecting()) {
+    if (!selecting(message)) {
       actions.push("select");
     }
     if (flag(tpl, "canPin") && !pinned) {
@@ -1342,6 +1393,8 @@
     }
     if (!interact) {
       toolbar.querySelector(".react-btn").remove();
+    }
+    if (!canReply(message)) {
       toolbar.querySelector(".reply-btn").remove();
     }
     var bookmark = toolbar.querySelector(".bookmark-btn");
@@ -1405,8 +1458,7 @@
 
   document.addEventListener("mouseover", function (event) {
     var message = event.target.closest(".chat-messages-container > .chat-message-container[data-id]");
-    // A thread's messages have no toolbar here (chat-thread.js).
-    if (!message || message.closest(".chat-thread") || message.classList.contains("-active") || menuOpen()) {
+    if (!message || message.classList.contains("-active") || menuOpen()) {
       return;
     }
     clearTimeout(hoverTimer);
@@ -1521,12 +1573,13 @@
   // The composer's emoji button: the picked emoji goes into the composer
   // (onSelectEmoji).
   function openComposerPicker(trigger) {
+    var input = trigger.closest(".chat-composer__wrapper").querySelector("textarea.chat-composer__input");
     // EmojiPicker's own DMenu, 405 wide.
     Discourse.emojiPicker.open(trigger, {
       context: "chat",
       maxWidth: 405,
       onSelect: function (emoji) {
-        var parts = composerParts();
+        var parts = composerParts(input);
         if (parts) {
           emojiSelected(parts.input, emoji);
           parts.input.focus();
@@ -1538,8 +1591,7 @@
   // react: the reaction toggled, the emoji counted as used, the page drawn
   // again.
   function react(message, emoji, action) {
-    var channel = document.querySelector(".chat-channel[data-id]");
-    return fetch(basePath() + "/chat/" + channel.dataset.id + "/react/" + message.dataset.id, {
+    return fetch(basePath() + "/chat/" + channelIdOf(message) + "/react/" + message.dataset.id, {
       method: "PUT",
       credentials: "same-origin",
       headers: csrfHeaders(),
@@ -1575,10 +1627,13 @@
     setTimeout(close, 3000);
   }
 
+  // In a thread: the thread's near-message url.
   function copyLink(message) {
     var tpl = actionsTemplate();
-    var channel = document.querySelector(".chat-channel[data-id]");
-    var url = location.protocol + "//" + location.host + basePath() + "/chat/c/-/" + channel.dataset.id + "/" + message.dataset.id;
+    var thread = message.closest(".chat-thread[data-id]");
+    var url =
+      location.protocol + "//" + location.host + basePath() + "/chat/c/-/" + channelIdOf(message) +
+      (thread ? "/t/" + thread.dataset.id : "") + "/" + message.dataset.id;
     var done = function () {
       toast(tpl.dataset.labelLinkCopied);
     };
@@ -1589,8 +1644,14 @@
     }
   }
 
+  // The channel a message is in: its thread's, else the page's.
+  function channelIdOf(message) {
+    var thread = message.closest(".chat-thread[data-id]");
+    return thread ? thread.dataset.channelId : document.querySelector(".chat-channel[data-id]").dataset.id;
+  }
+
   function secondaryAction(message, value) {
-    var channelId = document.querySelector(".chat-channel[data-id]").dataset.id;
+    var channelId = channelIdOf(message);
     var path = "/channels/" + channelId + "/messages/" + message.dataset.id;
     clearActive();
     switch (value) {
@@ -1700,15 +1761,23 @@
   // Select mode (ChatChannelPane's selectingMessages and
   // ChatSelectionManager): checkboxes on the messages, the selection bar
   // in the composer's place.
+  // In a thread (ChatThread's chatThreadPane), the thread's pane.
   var DELETE_COUNT_LIMIT = 200;
   var lastSelectedId = null;
+  var selectionPane = null;
 
-  function selecting() {
-    return !!document.querySelector(".chat-channel .chat-selection-management");
+  function paneOf(message) {
+    return (message && message.closest(".chat-thread[data-id]")) || document.querySelector(".chat-channel[data-id]");
+  }
+
+  // Selecting in the message's pane, or in any without one.
+  function selecting(message) {
+    var bar = document.querySelector(".chat-selection-management");
+    return !!bar && (!message || paneOf(message).contains(bar));
   }
 
   function selectedMessages() {
-    return messages().filter(function (m) {
+    return messages(selectionPane).filter(function (m) {
       return m.classList.contains("-selected");
     });
   }
@@ -1734,7 +1803,7 @@
   }
 
   function drawSelectionBar() {
-    var bar = document.querySelector(".chat-channel .chat-selection-management");
+    var bar = document.querySelector(".chat-selection-management");
     var tpl = document.querySelector("template.chat-selection-template");
     if (!bar || !tpl) {
       return;
@@ -1755,13 +1824,17 @@
   }
 
   function startSelecting(message) {
-    var channel = document.querySelector(".chat-channel[data-id]");
+    var channel = paneOf(message);
     var tpl = document.querySelector("template.chat-selection-template");
     if (!channel || !tpl) {
       return;
     }
+    if (selecting() && !selecting(message)) {
+      cancelSelecting();
+    }
     if (!selecting()) {
-      messages().forEach(function (m) {
+      selectionPane = channel;
+      messages(channel).forEach(function (m) {
         m.classList.add("-selectable");
         var box = document.createElement("input");
         box.className = "chat-message-selector";
@@ -1773,6 +1846,11 @@
         composer.hidden = true;
       }
       var bar = tpl.content.querySelector(".chat-selection-management").cloneNode(true);
+      // A thread's selection can't be moved (no enableMove).
+      var move = channel.matches(".chat-thread") && bar.querySelector("#chat-move-to-channel-btn");
+      if (move) {
+        move.remove();
+      }
       if (composer) {
         composer.parentNode.insertBefore(bar, composer);
       } else {
@@ -1785,11 +1863,11 @@
   }
 
   function cancelSelecting() {
-    var channel = document.querySelector(".chat-channel[data-id]");
+    var channel = selectionPane || document.querySelector(".chat-channel[data-id]");
     if (!channel) {
       return;
     }
-    messages().forEach(function (m) {
+    messages(channel).forEach(function (m) {
       m.classList.remove("-selectable", "-selected");
       var box = m.querySelector(":scope > .chat-message-selector");
       if (box) {
@@ -1805,13 +1883,14 @@
       composer.hidden = false;
     }
     lastSelectedId = null;
+    selectionPane = null;
   }
 
   // select and bulkSelect: a click (or its checkbox) toggles the message;
   // with Shift every message from the last one picked takes its state.
   function toggleSelected(message, checked, range) {
     if (range && lastSelectedId) {
-      var all = messages();
+      var all = messages(selectionPane);
       var from = all.findIndex(function (m) {
         return m.dataset.id === lastSelectedId;
       });
@@ -2292,10 +2371,12 @@
         '<button class="btn no-text btn-icon btn-flat react-btn" type="button">' + iconHtml("discourse-emojis") +
         '<span aria-hidden="true">&#8203;</span></button>';
       // The bookmark button is left out: chat bookmarks aren't made here.
-      main +=
-        '<button class="btn no-text btn-icon chat-message-action reply-btn btn-flat" data-id="reply" title="' +
-        escapeHtml((tpl.content.querySelector(".reply-btn") || {}).title || "") + '" type="button">' +
-        iconHtml("reply") + '<span aria-hidden="true">&#8203;</span></button>';
+      if (canReply(message)) {
+        main +=
+          '<button class="btn no-text btn-icon chat-message-action reply-btn btn-flat" data-id="reply" title="' +
+          escapeHtml((tpl.content.querySelector(".reply-btn") || {}).title || "") + '" type="button">' +
+          iconHtml("reply") + '<span aria-hidden="true">&#8203;</span></button>';
+      }
     }
     var close = Discourse.modal.show({
       className: "chat-message-actions",
@@ -2597,13 +2678,13 @@
       templates.unshift(node);
       node = node.previousElementSibling;
     }
+    var channel = paneOf(message);
     var fragment = document.createDocumentFragment();
     templates.forEach(function (template) {
       fragment.appendChild(template.content.cloneNode(true));
       template.remove();
     });
     message.replaceWith(fragment);
-    var channel = document.querySelector(".chat-channel[data-id]");
     if (channel) {
       drawTimes(channel);
       decorateLinks(channel);
@@ -3152,14 +3233,20 @@
 
   // ChatComposer#reportReplyingPresence
   function reportReplying(parts) {
-    if (!parts.channel) {
+    if (!parts.channelId) {
       return;
     }
-    notifyReplying("/chat-reply/" + parts.channel.dataset.id, !editing(parts) && hasContent(parts));
+    notifyReplying(replyingName(parts.channelId, parts.thread && parts.thread.dataset.id), !editing(parts) && hasContent(parts));
   }
 
-  // ChatReplyingIndicator: who else is typing in the channel.
-  var replyingIndicator = null;
+  // presenceChannelName: the channel's, or ChatComposerThread's.
+  function replyingName(channelId, threadId) {
+    return "/chat-reply/" + channelId + (threadId ? "/thread/" + threadId : "");
+  }
+
+  // ChatReplyingIndicator: who else is typing in the channel, and in the
+  // thread beside it; one presence channel for each composer.
+  var replyingIndicators = [];
 
   function replyingText(usernames, labels) {
     var fill = function (text, values) {
@@ -3183,15 +3270,15 @@
     });
   }
 
-  function drawReplying() {
-    var node = document.querySelector(".chat-replying-indicator");
-    var wrapper = document.querySelector(".chat-composer__wrapper[data-replying]");
-    if (!node || !wrapper || !replyingIndicator) {
+  function drawReplying(entry) {
+    var node = entry.node;
+    var wrapper = node.closest(".chat-composer__wrapper[data-replying]");
+    if (!node.isConnected || !wrapper) {
       return;
     }
     var tpl = actionsTemplate();
     var viewer = tpl ? tpl.dataset.viewerId : null;
-    var usernames = (replyingIndicator.users() || [])
+    var usernames = (entry.channel.users() || [])
       .filter(function (u) {
         return String(u.id) !== viewer;
       })
@@ -3212,27 +3299,50 @@
   }
 
   function startReplyingIndicator() {
+    var wanted = [];
     var channel = document.querySelector(".chat-channel[data-id]");
-    var name = channel ? "/chat-reply/" + channel.dataset.id : null;
-    if (replyingIndicator && replyingIndicator.name === name) {
-      drawReplying();
+    var channelNode = channel && channel.querySelector(".chat-replying-indicator");
+    if (channelNode) {
+      wanted.push({ name: replyingName(channel.dataset.id), node: channelNode });
+    }
+    var thread = document.querySelector(".chat-thread[data-id]");
+    var threadNode = thread && thread.querySelector(".chat-replying-indicator");
+    if (threadNode) {
+      wanted.push({ name: replyingName(thread.dataset.channelId, thread.dataset.id), node: threadNode });
+    }
+    var same =
+      wanted.length === replyingIndicators.length &&
+      wanted.every(function (w, i) {
+        return replyingIndicators[i].name === w.name;
+      });
+    if (same) {
+      replyingIndicators.forEach(function (entry, i) {
+        entry.node = wanted[i].node;
+        drawReplying(entry);
+      });
       return;
     }
     stopReplyingIndicator();
-    if (!name || !document.querySelector(".chat-replying-indicator")) {
+    if (!Discourse.presence) {
       return;
     }
-    replyingIndicator = Discourse.presence.getChannel(name);
-    replyingIndicator.on(drawReplying);
-    replyingIndicator.subscribe().catch(function () {});
+    replyingIndicators = wanted.map(function (w) {
+      var entry = { name: w.name, node: w.node, channel: Discourse.presence.getChannel(w.name) };
+      entry.draw = function () {
+        drawReplying(entry);
+      };
+      entry.channel.on(entry.draw);
+      entry.channel.subscribe().catch(function () {});
+      return entry;
+    });
   }
 
   function stopReplyingIndicator() {
-    if (replyingIndicator) {
-      replyingIndicator.off(drawReplying);
-      replyingIndicator.unsubscribe();
-      replyingIndicator = null;
-    }
+    replyingIndicators.forEach(function (entry) {
+      entry.channel.off(entry.draw);
+      entry.channel.unsubscribe();
+    });
+    replyingIndicators = [];
     leaveReplying();
   }
 
@@ -3623,8 +3733,7 @@
     });
   }
 
-  function setupAutocomplete() {
-    var parts = composerParts();
+  function setupAutocomplete(parts) {
     if (!parts || !parts.input || parts.input.chatAutocomplete) {
       return;
     }
@@ -4232,7 +4341,14 @@
       channel.dataset.followRequested = "true";
       api("POST", "/channels/" + channel.dataset.id + "/memberships/me").then(refresh);
     }
-    setupAutocomplete();
+    setupAutocomplete(composerParts());
+    var threadInput = document.getElementById("thread-composer");
+    if (threadInput) {
+      var threadParts = composerParts(threadInput);
+      setupAutocomplete(threadParts);
+      updateSendState(threadParts);
+      refreshHeight(threadInput);
+    }
     markPinsRead();
     drawTimes(channel);
     drawSeparators(channel);
@@ -4373,16 +4489,35 @@
   // a ChatComposerUpload, then those in progress. A file picked, dropped
   // on the channel or pasted without text goes to /uploads.json
   // (upload_type chat-composer), one POST per file as composer.js sends
-  // them, without Uppy.
+  // them, without Uppy. Each composer (the channel's, a thread's) has its
+  // own box; an upload in progress knows its box.
   var uploading = [];
   var uploadSequence = 0;
 
-  function uploadsBox() {
-    return document.querySelector(".chat-composer__wrapper .chat-composer-uploads[data-uploads]");
+  // The box of the composer `of` (its parts, or a node in it), else the
+  // channel's.
+  function uploadsBox(of) {
+    var node = of && of.wrapper ? of.wrapper : of;
+    var wrapper = node && node.closest ? node.closest(".chat-composer__wrapper") : null;
+    if (wrapper) {
+      return wrapper.querySelector(".chat-composer-uploads[data-uploads]");
+    }
+    var all = document.querySelectorAll(".chat-composer__wrapper .chat-composer-uploads[data-uploads]");
+    for (var i = 0; i < all.length; i++) {
+      if (!all[i].closest(".chat-thread")) {
+        return all[i];
+      }
+    }
+    return null;
   }
 
-  function composerUploads() {
-    var box = uploadsBox();
+  function inProgress(box) {
+    return uploading.filter(function (u) {
+      return u.box === box;
+    });
+  }
+
+  function composerUploads(box) {
     if (!box) {
       return [];
     }
@@ -4456,8 +4591,7 @@
     );
   }
 
-  function drawComposerUploads() {
-    var box = uploadsBox();
+  function drawComposerUploads(box) {
     if (!box) {
       return;
     }
@@ -4465,8 +4599,9 @@
     if (old) {
       old.remove();
     }
-    var done = composerUploads();
-    if (done.length === 0 && uploading.length === 0) {
+    var done = composerUploads(box);
+    var pending = inProgress(box);
+    if (done.length === 0 && pending.length === 0) {
       return;
     }
     var container = el("div", "chat-composer-uploads-container");
@@ -4474,7 +4609,7 @@
       done.map(function (u) {
         return composerUploadHtml(box, u, true);
       }).join("") +
-      uploading.map(function (u) {
+      pending.map(function (u) {
         return composerUploadHtml(box, u, false);
       }).join("");
     box.insertBefore(container, box.firstChild);
@@ -4482,32 +4617,32 @@
 
   // onUploadChanged: the composer's state follows, and the draft is saved
   // once nothing is in progress.
-  function setComposerUploads(list, save) {
-    var box = uploadsBox();
+  function setComposerUploads(list, save, box) {
     if (!box) {
       return;
     }
     box.dataset.uploads = JSON.stringify(list);
-    drawComposerUploads();
-    var parts = composerParts();
+    drawComposerUploads(box);
+    var parts = composerParts(box.closest(".chat-composer__wrapper").querySelector("textarea.chat-composer__input"));
     if (parts) {
       updateSendState(parts);
-      if (save && uploading.length === 0) {
+      if (save && inProgress(box).length === 0) {
         saveDraft(parts);
       }
     }
   }
 
-  function uploadFile(file, pasted) {
+  function uploadFile(file, pasted, box) {
     var upload = {
       id: "upload-" + ++uploadSequence,
       fileName: file.name,
       progress: 0,
       processing: false,
       xhr: new XMLHttpRequest(),
+      box: box,
     };
     uploading.push(upload);
-    setComposerUploads(composerUploads(), false);
+    setComposerUploads(composerUploads(box), false, box);
     var body = new FormData();
     body.append("upload_type", "chat-composer");
     if (pasted) {
@@ -4525,7 +4660,7 @@
       if (e.lengthComputable) {
         upload.progress = Math.round((e.loaded / e.total) * 100);
         upload.processing = e.loaded >= e.total;
-        drawComposerUploads();
+        drawComposerUploads(box);
       }
     });
     var finish = function () {
@@ -4541,33 +4676,33 @@
         // An error page.
       }
       finish();
-      var list = composerUploads();
+      var list = composerUploads(box);
       if (xhr.status >= 200 && xhr.status < 300 && json && json.id) {
         list.push(json);
       } else {
         window.alert(json && json.errors ? json.errors.join("\n") : xhr.statusText);
       }
-      setComposerUploads(list, true);
+      setComposerUploads(list, true, box);
     });
     xhr.addEventListener("error", function () {
       finish();
-      setComposerUploads(composerUploads(), true);
+      setComposerUploads(composerUploads(box), true, box);
     });
     xhr.send(body);
   }
 
-  function addUploadFiles(files, pasted) {
-    if (!uploadsBox()) {
+  function addUploadFiles(files, pasted, box) {
+    if (!box) {
       return;
     }
     Array.prototype.forEach.call(files, function (file) {
-      uploadFile(file, pasted);
+      uploadFile(file, pasted, box);
     });
   }
 
   document.addEventListener("change", function (event) {
-    if (event.target.id === "channel-file-uploader") {
-      addUploadFiles(event.target.files, false);
+    if (event.target.id === "channel-file-uploader" || event.target.id === "thread-file-uploader") {
+      addUploadFiles(event.target.files, false, uploadsBox(event.target));
       event.target.value = "";
     }
   });
@@ -4578,6 +4713,7 @@
       return;
     }
     var item = remove.closest(".chat-composer-upload");
+    var box = uploadsBox(item);
     if (item.dataset.stagedId) {
       // cancelUploading
       uploading.forEach(function (u) {
@@ -4588,21 +4724,22 @@
       uploading = uploading.filter(function (u) {
         return u.id !== item.dataset.stagedId;
       });
-      setComposerUploads(composerUploads(), true);
+      setComposerUploads(composerUploads(box), true, box);
     } else {
       // removeUpload
       setComposerUploads(
-        composerUploads().filter(function (u) {
+        composerUploads(box).filter(function (u) {
           return String(u.id) !== item.dataset.id;
         }),
-        true
+        true,
+        box
       );
     }
   });
 
   // _pasteEventListener: files pasted without text are uploaded.
   document.addEventListener("paste", function (event) {
-    if (event.target.id !== "channel-composer" || !uploadsBox()) {
+    if (!isComposer(event.target) || !uploadsBox(event.target)) {
       return;
     }
     var clipboard = event.clipboardData;
@@ -4615,16 +4752,24 @@
     }
     if (clipboard.files && clipboard.files.length > 0) {
       event.preventDefault();
-      addUploadFiles(clipboard.files, true);
+      addUploadFiles(clipboard.files, true, uploadsBox(event.target));
     }
   });
 
-  // ChatUploadDropZone: files dropped on the channel.
+  // ChatUploadDropZone: files dropped on the channel, or on the thread
+  // (to its composer).
+  function dropBox(target) {
+    var pane = target.closest && target.closest(".chat-thread[data-id], .chat-channel[data-id]");
+    if (!pane) {
+      return null;
+    }
+    var input = pane.querySelector("textarea.chat-composer__input");
+    return input ? uploadsBox(input) : null;
+  }
+
   document.addEventListener("dragover", function (event) {
     if (
-      event.target.closest &&
-      event.target.closest(".chat-channel[data-id]") &&
-      uploadsBox() &&
+      dropBox(event.target) &&
       event.dataTransfer &&
       Array.prototype.includes.call(event.dataTransfer.types, "Files")
     ) {
@@ -4633,15 +4778,10 @@
   });
 
   document.addEventListener("drop", function (event) {
-    if (
-      event.target.closest &&
-      event.target.closest(".chat-channel[data-id]") &&
-      uploadsBox() &&
-      event.dataTransfer &&
-      event.dataTransfer.files.length > 0
-    ) {
+    var box = dropBox(event.target);
+    if (box && event.dataTransfer && event.dataTransfer.files.length > 0) {
       event.preventDefault();
-      addUploadFiles(event.dataTransfer.files, false);
+      addUploadFiles(event.dataTransfer.files, false, box);
     }
   });
 
@@ -4703,8 +4843,9 @@
   }
 
   // ChatMessageCollapser with uploads, for a staged message.
-  function stagedCollapser(cooked, uploads) {
-    var box = uploadsBox();
+  function stagedCollapser(cooked, uploads, pane) {
+    var input = pane && pane.querySelector("textarea.chat-composer__input");
+    var box = uploadsBox(input);
     if (!box || uploads.length === 0) {
       return null;
     }
@@ -4777,11 +4918,12 @@
         var box = uploadsBox();
         return box ? box.dataset.labelUpload : "";
       },
-      displayed: function () {
-        return !!uploadsBox();
+      displayed: function (context, textarea) {
+        return !!uploadsBox(textarea);
       },
-      action: function () {
-        var input = document.getElementById("channel-file-uploader");
+      action: function (context, textarea) {
+        var box = uploadsBox(textarea);
+        var input = box && box.querySelector(".hidden-upload-field");
         if (input) {
           input.click();
         }
@@ -4857,6 +4999,10 @@
     // browser's cook of a staged message.
     redraw: redraw,
     cook: cookStaged,
+    // A thread pane's deleted run expanded, and its collapsed runs.
+    collapseRuns: collapseRuns,
+    expand: expand,
+    highlight: highlight,
   };
 
   Discourse.onPage(function () {

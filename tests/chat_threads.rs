@@ -361,7 +361,7 @@ async fn the_channel_threads_list_its_threads() {
     // The member's threads.
     let page = user1.page("/chat/threads").await;
     assert!(
-        page.contains("<div class=\"c-user-thread\" data-id=\"1\">"),
+        page.contains("<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\">"),
         "{page}"
     );
     assert!(page.contains(

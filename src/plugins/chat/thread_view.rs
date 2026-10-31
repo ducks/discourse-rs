@@ -2,15 +2,18 @@
 //! the channel route: a thread (ChatRoutesChannelThread: ThreadHeader and
 //! ChatThread, in the side panel beside its channel), a channel's threads
 //! (ChatRoutesChannelThreads: ChatThreadListHeader and ChatThreadList) and
-//! the member's threads (UserThreads, for the threads route).
-//! static/js/chat-thread.js runs a drawn thread: its composer, its live
-//! messages and its read state.
+//! the member's threads (UserThreads, for the threads route), and the
+//! pages of a thread's messages and of both lists that static/js
+//! chat-thread.js loads as the member scrolls or the lists change.
+//! chat-thread.js runs a drawn thread (its live messages, its read state,
+//! its paging, the settings modal), chat.js its composer and its
+//! messages' actions.
 
 use serde_json::Value;
 
-use super::channels::{ChannelRow, Context};
+use super::channels::{ChannelRow, Context, Found};
 use super::messages::{Listed, ThreadListParams};
-use super::page::{View, js, message_html, preview_card, s, static_user_avatar};
+use super::page::{MessagesPage, View, js, messages_html, preview_card, s, static_user_avatar};
 use super::threads::{Outcome, ThreadRow};
 use crate::post_view::d_icon;
 use crate::topic_list_view::escape;
@@ -18,6 +21,9 @@ use crate::{AppError, Unsupported};
 
 /// `DEFAULT_MESSAGE_PAGE_SIZE`
 const PAGE_SIZE: i64 = 50;
+/// `THREAD_TITLE_PROMPT_THRESHOLD`: the replies a thread has before its
+/// author is asked for a title.
+const THREAD_TITLE_PROMPT_THRESHOLD: i64 = 5;
 
 /// Where a thread's back button goes (ChatThreadHeader#backLink): the
 /// channel's threads, or the channel.
@@ -117,6 +123,27 @@ impl Context<'_> {
             Some(id) => crate::notification_create::do_not_disturb(&mut *self.conn, id).await?,
             None => false,
         };
+        // ChatThreadTitlePrompt#canShowToast: on a phone, for the original
+        // message's author or an admin, an untitled thread with five
+        // replies or more whose prompt the member hasn't seen, while they
+        // want the prompts.
+        let viewer = self.guardian.user_id().map(i64::from);
+        let title_prompt = match self.guardian.user_id() {
+            Some(id)
+                if crate::mobile::mobile_view()
+                    && (viewer == original_user || self.guardian.is_admin())
+                    && thread.title.is_none()
+                    && !thread_membership
+                        .as_ref()
+                        .is_some_and(|m| m.thread_title_prompt_seen) =>
+            {
+                super::options(&mut *self.conn, id)
+                    .await?
+                    .is_some_and(|o| o.show_thread_title_prompts)
+                    && self.thread_reply_count(thread).await? >= THREAD_TITLE_PROMPT_THRESHOLD
+            }
+            _ => false,
+        };
 
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -154,8 +181,14 @@ impl Context<'_> {
             unread,
             do_not_disturb,
         ));
+        // The latest message, which scrollToLatestMessage loads around.
+        let pane = format!(
+            "{} data-last-message-id=\"{}\"",
+            self.pane_attrs(&listed, target, true),
+            thread.last_message_id.unwrap_or(0)
+        );
         out.push_str(&format!(
-            "<div class=\"chat-thread --loaded\" data-id=\"{}\" data-channel-id=\"{}\" data-original-message-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\">",
+            "<div class=\"chat-thread --loaded\" data-id=\"{}\" data-channel-id=\"{}\" data-original-message-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-moderate=\"{}\" data-label-deleted-one=\"{}\" data-label-deleted-other=\"{}\" data-title-prompt=\"{title_prompt}\"{pane}>",
             thread.id,
             channel.id,
             thread.original_message_id,
@@ -171,31 +204,21 @@ impl Context<'_> {
                 .unwrap_or(0),
             following,
             viewer_id,
+            self.guardian.is_staff(),
+            channel_json["meta"]["can_moderate"] == true,
+            escape(&t("chat.deleted.one")),
+            escape(&t("chat.deleted.other")),
         ));
         out.push_str(
             "<div class=\"chat-messages-scroller\"><div class=\"chat-messages-container\">",
         );
-        for index in 0..messages.len() {
-            if messages[index]["deleted_at"].is_null() {
-                out.push_str(&message_html(
-                    &view, &messages, index, None, last_read, false,
-                )?);
-                continue;
-            }
-            let next_deleted = messages
-                .get(index + 1)
-                .is_some_and(|n| !n["deleted_at"].is_null());
-            if !next_deleted {
-                out.push_str(&message_html(
-                    &view, &messages, index, None, last_read, false,
-                )?);
-            }
-            out.push_str(&format!(
-                "<template class=\"chat-message-expanded\" data-id=\"{}\">{}</template>",
-                messages[index]["id"],
-                message_html(&view, &messages, index, None, last_read, true)?
-            ));
-        }
+        out.push_str(&messages_html(
+            &view,
+            &messages,
+            0..messages.len(),
+            None,
+            last_read,
+        )?);
         out.push_str("</div>");
         // ChatThreadHeading: a titled thread's title.
         if let Some(title) = thread.title.as_deref().filter(|t| !t.is_empty()) {
@@ -219,8 +242,190 @@ impl Context<'_> {
                     .await?,
             );
         }
+        // ChatModalThreadSettings for those who may change it (the title's
+        // click and the settings button), and ChatThreadTitlePrompt's
+        // toast.
+        let editable = viewer.is_some()
+            && (self.guardian.is_staff() || self.guardian.is_admin() || viewer == original_user);
+        if editable {
+            out.push_str(&self.thread_settings_template(thread));
+        }
+        if title_prompt {
+            let username: Option<String> =
+                sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                    .bind(self.guardian.user_id())
+                    .fetch_optional(&mut *self.conn)
+                    .await?;
+            out.push_str(&self.thread_title_toast_template(&username.unwrap_or_default()));
+        }
         out.push_str("</div></div>");
         Ok(out)
+    }
+
+    /// ChatModalThreadSettings' body and footer, for chat-thread.js to show
+    /// in a modal: the title input with its length, Discourse AI's call to
+    /// action for admins, and the save button.
+    fn thread_settings_template(&self, thread: &ThreadRow) -> String {
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let title = thread.title.clone().unwrap_or_default();
+        let ai = if self.guardian.is_admin() {
+            format!(
+                "<div class=\"discourse-ai-cta\"><p class=\"discourse-ai-cta__title\">{} {}</p><p class=\"discourse-ai-cta__description\">{}</p></div>",
+                d_icon("circle-info", None),
+                escape(&t("chat.thread_title_modal.discourse_ai.title")),
+                escape(&t("chat.thread_title_modal.discourse_ai.description")).replace(
+                    "%{url}",
+                    "<a href='https://www.discourse.org/ai' rel='noopener noreferrer' target='_blank'>Discourse AI</a>"
+                )
+            )
+        } else {
+            String::new()
+        };
+        format!(
+            "<template class=\"chat-modal-thread-settings-template\" data-title=\"{}\" data-label-save=\"{}\"><div class=\"chat-modal-thread-settings__body\"><input class=\"chat-modal-thread-settings__title-input\" maxlength=\"100\" name=\"thread-title\" placeholder=\"{}\" type=\"text\" value=\"{}\"><div class=\"thread-title-length\"><span>{}</span>/100</div>{ai}</div><div class=\"chat-modal-thread-settings__footer\"><button class=\"btn btn-text btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></template>",
+            escape(&t("chat.thread_title_modal.title")),
+            escape(&t("chat.save")),
+            escape(&t("chat.thread_title_modal.input_placeholder")),
+            escape(&title),
+            title.chars().count(),
+            escape(&t("save")),
+        )
+    }
+
+    /// ChatThreadTitlePrompt's toast (toasts.default, long, with its
+    /// progress bar): don't show again, or set the title.
+    /// `username`: whose user option "don't show again" turns off.
+    fn thread_title_toast_template(&self, username: &str) -> String {
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        format!(
+            "<template class=\"chat-thread-title-toast-template\" data-username=\"{}\"><output class=\"fk-d-toast thread-toast\" role=\"status\"><div class=\"fk-d-default-toast\"><div class=\"fk-d-default-toast__progress-bar\"></div><div class=\"fk-d-default-toast__main-container\"><div class=\"fk-d-default-toast__texts\"><div class=\"fk-d-default-toast__title\">{}</div><div class=\"fk-d-default-toast__message\">{}</div></div><div class=\"fk-d-default-toast__actions\"><button class=\"btn btn-text btn-link toast-hide\" type=\"button\"><span class=\"d-button-label\">{}</span></button><button class=\"btn btn-text btn-primary toast-action\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div><div class=\"fk-d-default-toast__close-container\"><button class=\"btn no-text btn-icon btn-transparent\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></div></div></output></template>",
+            escape(username),
+            escape(&t("chat.thread_title_toast.title")),
+            escape(&t("chat.thread_title_toast.message")),
+            escape(&t("chat.thread_title_toast.dismiss_action")),
+            escape(&t("chat.thread_title_toast.primary_action")),
+            d_icon("xmark", None),
+        )
+    }
+
+    /// A page of a thread's messages as chat-thread.js asks for one, as
+    /// Context::messages_page draws the channel's: `direction` past or
+    /// future from `target` (the first or last message the viewer has),
+    /// the target drawn again after the past ones; else the page around
+    /// `target` or from the first message. None when the viewer can't see
+    /// the thread or the target is gone.
+    pub async fn thread_messages_page(
+        &mut self,
+        channel_id: i64,
+        thread_id: i64,
+        target: Option<i64>,
+        direction: Option<&str>,
+    ) -> Result<Option<MessagesPage>, AppError> {
+        let channel = match self.find_joinable(&channel_id.to_string()).await? {
+            Found::Channel(channel) => channel,
+            Found::NotFound | Found::Forbidden => return Ok(None),
+        };
+        let Some(thread) = self.shown_thread(&channel, thread_id).await? else {
+            return Ok(None);
+        };
+        let direction = direction.filter(|d| *d == "past" || *d == "future");
+        let params = ThreadListParams {
+            page_size: PAGE_SIZE,
+            target_message_id: target,
+            direction: match (direction, target) {
+                (Some(d), _) => Some(d.to_string()),
+                (None, None) => Some("future".into()),
+                (None, Some(_)) => None,
+            },
+            fetch_from_last_read: false,
+            fetch_from_last_message: false,
+            // Without a target, from the first message, not the member's
+            // last read one.
+            fetch_from_first_message: target.is_none(),
+            target_date: None,
+        };
+        let listed = match self
+            .list_thread_messages(channel.id, thread.id, &params)
+            .await?
+        {
+            Listed::Messages(v) => v,
+            Listed::NotFound | Listed::Forbidden => return Ok(None),
+        };
+        let mut messages = listed["messages"].as_array().cloned().unwrap_or_default();
+        let membership = self
+            .memberships()
+            .await?
+            .into_iter()
+            .find(|m| m.chat_channel_id == channel.id);
+        let channel_json = self
+            .channel(&channel, membership.as_ref(), None, None)
+            .await?;
+        let last_read = membership.as_ref().and_then(|m| m.last_read_message_id);
+        let anchor = match (direction, target) {
+            (Some(_), Some(id)) => self
+                .serialize_messages(&channel, &[id])
+                .await?
+                .into_iter()
+                .next(),
+            _ => None,
+        };
+        let count = messages.len();
+        let (range, redraw) = match (direction, anchor) {
+            (Some("past"), Some(mut anchor)) => {
+                anchor["first_of_results"] = Value::Bool(true);
+                let redraw = anchor["deleted_at"].is_null();
+                messages.push(anchor);
+                (0..count, redraw.then_some(count))
+            }
+            (Some(_), Some(anchor)) => {
+                if let Some(first) = messages.first_mut() {
+                    first["first_of_results"] = Value::Bool(true);
+                }
+                messages.insert(0, anchor);
+                (1..count + 1, None)
+            }
+            _ => (0..count, None),
+        };
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let view = View {
+            base_path: self.base_path,
+            channel: &channel_json,
+            viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
+            online: self.online_ids().await?,
+            emojis: self.settings.emojis().clone(),
+            max_image: (
+                self.settings.get("max_image_width")?.to_f(),
+                self.settings.get("max_image_height")?.to_f(),
+            ),
+            base_url: crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            }
+            .base_url()?,
+            can_interact: channel_json["meta"]["user_silenced"] != true,
+            prioritize_name: super::page::prioritize_name(self.settings)?,
+            admin: self.guardian.is_admin(),
+            t: &t,
+            i18n: self.i18n,
+            relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
+            thread_context: true,
+        };
+        let mut html = messages_html(&view, &messages, range, None, last_read)?;
+        if let Some(index) = redraw {
+            html.push_str(&format!(
+                "<template class=\"chat-message-anchor\" data-id=\"{}\">{}</template>",
+                messages[index]["id"],
+                super::page::message_html(&view, &messages, index, None, last_read, false)?
+            ));
+        }
+        Ok(Some(MessagesPage {
+            html,
+            can_load_more_past: listed["meta"]["can_load_more_past"].clone(),
+            can_load_more_future: listed["meta"]["can_load_more_future"].clone(),
+        }))
     }
 
     /// ChatThreadHeader: the back button (to the channel's threads while
@@ -250,11 +455,17 @@ impl Context<'_> {
             } else {
                 ThreadBack::Channel
             };
+            // ChatThreadHeaderUnreadIndicator, hidden in do not disturb.
+            let unread_indicator = if do_not_disturb {
+                String::new()
+            } else {
+                super::page::thread_header_unread_indicator(self.i18n, unread)
+            };
             let (href, title, indicator) = match back {
                 ThreadBack::Threads => (
                     format!("{channel_url}/t"),
                     t("chat.return_to_threads_list"),
-                    super::page::thread_header_unread_indicator(self.i18n, unread),
+                    unread_indicator.clone(),
                 ),
                 ThreadBack::Channel => (
                     channel_url.clone(),
@@ -262,9 +473,16 @@ impl Context<'_> {
                     String::new(),
                 ),
             };
+            // What chat-thread.js picks the back link from with the
+            // previous chat route (ChatHistory).
             out.push_str(&format!(
-                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{href}\">{indicator}{}</a>",
+                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{href}\" data-channel-href=\"{channel_url}\" data-threads-href=\"{channel_url}/t\" data-my-threads-href=\"{}/chat/threads\" data-label-channel=\"{}\" data-label-threads=\"{}\" data-label-my-threads=\"{}\" data-unread-indicator=\"{}\">{indicator}{}</a>",
                 escape(&title),
+                self.base_path,
+                escape(&t("chat.return_to_channel")),
+                escape(&t("chat.return_to_threads_list")),
+                escape(&t("chat.my_threads.title")),
+                escape(&unread_indicator),
                 d_icon("chevron-left", None)
             ));
         }
@@ -372,26 +590,73 @@ impl Context<'_> {
             ));
         }
         out.push_str("</nav></nav></div>");
-        out.push_str("<div class=\"chat-thread-list\"><div class=\"chat-thread-list__items\">");
-        let threads = match self.channel_threads(channel.id, None, None).await? {
-            Outcome::Done(v) => v,
-            _ => serde_json::json!({ "threads": [] }),
-        };
-        let list = threads["threads"].as_array().cloned().unwrap_or_default();
-        if list.is_empty() {
+        // The list's bus (/chat/:id) and its pages, for chat-thread.js.
+        out.push_str(&format!(
+            "<div class=\"chat-thread-list\" data-channel-id=\"{}\"><div class=\"chat-thread-list__items\">",
+            channel.id
+        ));
+        let (items, count) = self.channel_thread_items(channel, &channel_url, 0).await?;
+        if count == 0 {
             out.push_str(&format!(
                 "<div class=\"chat-thread-list__no-threads\">{}</div>",
                 escape(&t("chat.threads.none"))
             ));
         }
-        for thread in &list {
-            out.push_str(&self.thread_list_item(&channel_url, thread, &threads["tracking"])?);
-        }
+        out.push_str(&items);
         out.push_str(&format!(
-            "<div data-load-more-url=\"{}\"><br></div></div></div></div>",
-            escape(s(&threads["meta"]["load_more_url"]))
+            "<div class=\"chat-thread-list__load-more\" data-load-more-url=\"{}/live/chat/{}/threads\" data-offset=\"{count}\" data-done=\"{}\"><br></div></div></div></div>",
+            self.base_path,
+            channel.id,
+            count == 0
         ));
         Ok(out)
+    }
+
+    /// A page of the channel's threads from `offset` as ChatThreadList
+    /// draws its items (GET /chat/api/channels/:id/threads), with how many.
+    pub async fn channel_thread_items(
+        &mut self,
+        channel: &ChannelRow,
+        channel_url: &str,
+        offset: i64,
+    ) -> Result<(String, usize), AppError> {
+        let threads = match self.channel_threads(channel.id, None, Some(offset)).await? {
+            Outcome::Done(v) => v,
+            _ => serde_json::json!({ "threads": [] }),
+        };
+        let list = threads["threads"].as_array().cloned().unwrap_or_default();
+        let mut out = String::new();
+        for thread in &list {
+            out.push_str(&self.thread_list_item(channel_url, thread, &threads["tracking"])?);
+        }
+        Ok((out, list.len()))
+    }
+
+    /// GET /live/chat/:channel_id/threads: chat-thread.js's next page of
+    /// the channel's threads, None when the viewer can't see them.
+    pub async fn channel_threads_more(
+        &mut self,
+        channel_id: i64,
+        offset: i64,
+    ) -> Result<Option<(String, usize)>, AppError> {
+        let channel = match self.find_joinable(&channel_id.to_string()).await? {
+            Found::Channel(channel) if channel.threading_enabled => channel,
+            _ => return Ok(None),
+        };
+        let membership = self
+            .memberships()
+            .await?
+            .into_iter()
+            .find(|m| m.chat_channel_id == channel.id);
+        let channel_json = self
+            .channel(&channel, membership.as_ref(), None, None)
+            .await?;
+        let slug = super::page::slugified_title(&channel_json);
+        let channel_url = format!("{}/chat/c/{}/{}", self.base_path, escape(&slug), channel.id);
+        Ok(Some(
+            self.channel_thread_items(&channel, &channel_url, offset)
+                .await?,
+        ))
     }
 
     /// ChatThreadListItem: the title (the thread's, else its original
@@ -495,22 +760,38 @@ impl Context<'_> {
     pub async fn user_threads_list(&mut self) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
-        let listed = match self.user_threads(None, None).await? {
-            Outcome::Done(v) => v,
-            _ => serde_json::json!({ "threads": [] }),
-        };
-        let threads = listed["threads"].as_array().cloned().unwrap_or_default();
-        if threads.is_empty() {
+        let (items, count) = self.user_thread_items(0).await?;
+        if count == 0 {
             return Ok(format!(
                 "<div class=\"c-list\"><div class=\"--loaded c-user-threads\"><div class=\"c-list-empty-state\"><div class=\"empty-state-threads\">{}</div></div></div><div><br></div><div class=\"loading-container\"></div></div>",
                 escape(&t("chat.empty_state.my_threads"))
             ));
         }
+        Ok(format!(
+            "<div class=\"c-list\"><div class=\"--loaded c-user-threads\">{items}</div><div class=\"c-user-threads__load-more\" data-load-more-url=\"{}/live/chat/threads\" data-offset=\"{count}\"><br></div><div class=\"loading-container\"></div></div>",
+            self.base_path
+        ))
+    }
+
+    /// A page of the member's threads from `offset` as UserThreads draws
+    /// them (GET /chat/api/me/threads), with how many: each `.c-user-thread`
+    /// carries its channel for chat-thread.js's live updates.
+    pub async fn user_thread_items(&mut self, offset: i64) -> Result<(String, usize), AppError> {
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let listed = match self.user_threads(None, Some(offset)).await? {
+            Outcome::Done(v) => v,
+            _ => serde_json::json!({ "threads": [] }),
+        };
+        let threads = listed["threads"].as_array().cloned().unwrap_or_default();
+        if threads.is_empty() {
+            return Ok((String::new(), 0));
+        }
         let mobile = crate::mobile::mobile_view();
         let emojis = self.settings.emojis().clone();
         let online = self.online_ids().await?;
         let duration = self.settings.get("relative_date_duration")?.to_i();
-        let mut out = String::from("<div class=\"c-list\"><div class=\"--loaded c-user-threads\">");
+        let mut out = String::new();
         for thread in &threads {
             let id = thread["id"].as_i64().unwrap_or(0);
             let c = &thread["channel"];
@@ -545,7 +826,10 @@ impl Context<'_> {
                 thread_unread_indicator(tracked)
             );
             let preview = &thread["preview"];
-            out.push_str(&format!("<div class=\"c-user-thread\" data-id=\"{id}\">"));
+            out.push_str(&format!(
+                "<div class=\"c-user-thread\" data-id=\"{id}\" data-channel-id=\"{}\">",
+                c["id"]
+            ));
             if mobile {
                 // ChannelIcon for a thread: its last replier and the threads flair.
                 out.push_str(&format!(
@@ -588,11 +872,7 @@ impl Context<'_> {
             }
             out.push_str("</div>");
         }
-        out.push_str(&format!(
-            "</div><div data-load-more-url=\"{}\"><br></div><div class=\"loading-container\"></div></div>",
-            escape(s(&listed["meta"]["load_more_url"]))
-        ));
-        Ok(out)
+        Ok((out, threads.len()))
     }
 }
 
