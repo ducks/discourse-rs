@@ -1256,6 +1256,16 @@ pub fn is_inline_safe(filename: &str) -> bool {
             || ends_with_any(filename, &SUPPORTED_AUDIO))
 }
 
+/// `FileHelper.is_supported_audio?`
+pub fn is_supported_audio(filename: &str) -> bool {
+    ends_with_any(filename, &SUPPORTED_AUDIO)
+}
+
+/// `FileHelper.is_supported_video?`
+pub fn is_supported_video(filename: &str) -> bool {
+    ends_with_any(filename, &SUPPORTED_VIDEO)
+}
+
 /// `FileHelper.is_supported_media?`: an image, video or audio file.
 pub fn is_supported_media(filename: &str) -> bool {
     ends_with_any(filename, &SUPPORTED_IMAGES)

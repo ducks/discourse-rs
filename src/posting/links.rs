@@ -326,7 +326,7 @@ fn parse_url(url: &str) -> Option<Parsed<'_>> {
 }
 
 /// Site paths Rails' router recognizes, the users ones apart.
-const RECOGNIZED: [&str; 19] = [
+const RECOGNIZED: [&str; 20] = [
     "/c/",
     "/tag/",
     "/tags",
@@ -349,6 +349,8 @@ const RECOGNIZED: [&str; 19] = [
     // uploads#show_short and uploads#show: links to uploads the store
     // does not have a row for.
     "/uploads/",
+    // chat's engine (chat#respond and its api), mounted at /chat.
+    "/chat/",
 ];
 
 /// `File.extname(path)[1..10].downcase`, None without an extension.

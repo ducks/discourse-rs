@@ -268,16 +268,11 @@ impl Context<'_> {
         let id = channel.id;
         let mobile = crate::mobile::mobile_view();
 
-        if can_edit_chat
-            && category
+        // chatGuardian.canArchiveChannel
+        let can_archive = can_edit_chat
             && self.settings.get("chat_allow_archiving_channels")?.truthy()
             && c["status"] != "archived"
-            && c["status"] != "read_only"
-        {
-            return Err(
-                Unsupported("archiving chat channels (the settings' archive button)").into(),
-            );
-        }
+            && c["status"] != "read_only";
 
         let mut form = String::new();
         // The title section: the name, a category channel's url.
@@ -448,6 +443,19 @@ impl Context<'_> {
                     Some(&t("chat.settings.channel_threading_description")),
                 ));
             }
+            if category && can_archive {
+                rows.push_str(&row(
+                    None,
+                    None,
+                    Some(&button(
+                        "archive-btn chat-form__btn btn-transparent",
+                        Some("box-archive"),
+                        &t("chat.channel_settings.archive_channel"),
+                        "",
+                    )),
+                    None,
+                ));
+            }
             if category {
                 let status = if open {
                     button(
@@ -567,9 +575,34 @@ impl Context<'_> {
             "delete_started": t("chat.channel_delete.process_started"),
             "auto_join_warning": t("chat.settings.auto_join_users_warning"),
             "generic_error": t("generic_error"),
+            // ChatModalArchiveChannel and its ChatToTopicSelector.
+            "archive_title": t("chat.channel_archive.title"),
+            "archive_instructions": t("chat.channel_archive.instructions"),
+            "archive_started": t("chat.channel_archive.process_started"),
+            "new_topic_radio": t("topic.split_topic.radio_label"),
+            "existing_topic_radio": t("topic.merge_topic.radio_label"),
+            "new_topic_instructions": t("chat.selection.new_topic.instructions_channel_archive"),
+            "existing_topic_instructions": t("chat.selection.existing_topic.instructions_channel_archive"),
+            "topic_name": t("topic.split_topic.topic_name"),
+            "title_placeholder": t("composer.title_placeholder"),
+            "category_label": t("categories.category"),
+            "tags_label": t("tagging.tags"),
+            "choose_topic_search": t("choose_topic.title.search"),
+            "choose_topic_placeholder": t("choose_topic.title.placeholder"),
+            "choose_topic_none": t("choose_topic.none_found"),
+            "loading": t("loading"),
         });
+        let can_create_tag = self.guardian.can_create_tag(self.settings).unwrap_or(false);
         format!(
-            "data-channel-id=\"{}\" data-title=\"{}\" data-slug=\"{}\" data-emoji=\"{}\" data-description=\"{}\" data-category-name=\"{}\" data-max-title=\"{}\" data-strings=\"{}\"",
+            "data-min-title=\"{}\" data-min-search=\"{}\" data-can-create-tag=\"{can_create_tag}\" data-channel-id=\"{}\" data-title=\"{}\" data-slug=\"{}\" data-emoji=\"{}\" data-description=\"{}\" data-category-name=\"{}\" data-max-title=\"{}\" data-strings=\"{}\"",
+            self.settings
+                .get("min_topic_title_length")
+                .map(|v| v.to_i())
+                .unwrap_or(15),
+            self.settings
+                .get("min_search_term_length")
+                .map(|v| v.to_i())
+                .unwrap_or(3),
             channel.id,
             escape(s(&c["title"])),
             escape(s(&c["slug"])),

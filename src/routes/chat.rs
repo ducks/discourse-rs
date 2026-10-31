@@ -2294,19 +2294,41 @@ pub async fn category_permissions(
     })
 }
 
-/// POST /chat/api/channels/:channel_id/archives: refused. Its
-/// ChannelArchiveService quotes the messages into posts through
-/// Chat::TranscriptService, which is not ported (218).
+/// POST /chat/api/channels/:channel_id/archives:
+/// ChannelsArchivesController#create (plugins/chat/archive.rs).
 pub async fn archive_channel(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
 ) -> Result<Response, AppError> {
-    let mut conn = state.pool.acquire().await?;
-    if let Err(refused) = begin(&state, &mut conn, &guardian).await? {
-        return Ok(refused);
-    }
-    Err(crate::Unsupported(
-        "archiving chat channels (ChannelArchiveService needs the TranscriptService, 218)",
-    )
-    .into())
+    use crate::plugins::chat::archive::Archived;
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let archived = context(&state, &mut tx, &settings, &guardian)
+        .archive_channel(&state, strip_format(&id), p.get("archive"))
+        .await?;
+    Ok(match archived {
+        Archived::Done => {
+            tx.commit().await?;
+            Json(json!({"success": "OK"})).into_response()
+        }
+        Archived::NotFound => super::topics::not_found_response(&state),
+        Archived::Forbidden => super::search::invalid_access(&state),
+        Archived::ParamMissing(name) => super::accounts::param_missing(name),
+        Archived::InvalidParameters(name) => super::search::invalid_parameters(
+            &state,
+            name.unwrap_or("Discourse::InvalidParameters"),
+        ),
+        Archived::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+    })
 }

@@ -9,6 +9,7 @@
 
 pub mod actions_view;
 pub mod admin_view;
+pub mod archive;
 pub mod auto_join;
 pub mod bookmarks;
 pub mod channel_create;
