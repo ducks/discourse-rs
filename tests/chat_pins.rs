@@ -190,7 +190,7 @@ async fn the_pins_route_lists_them_beside_the_channel() {
     assert!(html.contains("<div class=\"chat-pinned-message__pinned-by\"><svg class=\""));
     assert!(html.contains("chat-pinned-message__pinned-by-icon"));
     assert!(html.contains("<span>Pinned by admin</span>"));
-    assert!(html.contains("<a class=\"chat-pinned-message__link\" href=\"/chat/c/general/2/1\"><div class=\"chat-message-container -persisted -processed -not-interactive\" data-id=\"1\""));
+    assert!(html.contains("<a class=\"chat-pinned-message__link\" href=\"/chat/c/general/2/1\"><template class=\"chat-pinned-message__content\"><div class=\"chat-message-container -persisted -processed -not-interactive\" data-id=\"1\""));
     assert!(html.contains("<span class=\"chat-message-info__username__name\">user0</span>"));
     assert!(html.contains("<span aria-hidden=\"true\" class=\"chat-user-avatar__container\">"));
     // Members outside the pinning groups get no unpin button.

@@ -419,6 +419,8 @@
       var close = document.querySelector(".c-navbar__close-thread-button");
       if (close) {
         window.location.assign(close.href);
+      } else if (pane.closest(".chat-drawer") && Discourse.chatDrawer) {
+        Discourse.chatDrawer.transitionTo("/chat/c/-/" + pane.dataset.channelId);
       }
       return;
     }
@@ -451,20 +453,23 @@
 
   var cleanup = null;
 
-  function mount() {
+  // `focus`: the composer takes the focus (not for the drawer's thread
+  // when a forum page swaps in beside it).
+  function mount(focus) {
     var pane = thread();
     if (!pane) {
       return;
     }
     // The near-message routes replace themselves with the thread's
-    // (ChatChannelThreadNearMessage, ChatChannelNearMessageWithThread).
+    // (ChatChannelThreadNearMessage, ChatChannelNearMessageWithThread);
+    // the drawer's routes aren't in the address bar.
     var close = document.querySelector(".c-navbar__close-thread-button");
     var threadPath = location.pathname.replace(/\/t\/(\d+)\/\d+$/, "/t/$1");
     var channelHere = location.pathname.match(/^(.*\/chat\/c\/[^/]+\/\d+)\/\d+\/t\/(\d+)$/);
     if (channelHere) {
       threadPath = channelHere[1] + "/t/" + channelHere[2];
     }
-    if (threadPath !== location.pathname && (close || !channelHere)) {
+    if (!pane.closest(".chat-drawer") && threadPath !== location.pathname && (close || !channelHere)) {
       history.replaceState(history.state, "", threadPath + location.search);
     }
     redraw(pane);
@@ -485,7 +490,7 @@
     var p = parts(pane);
     if (p) {
       updateSendState(p);
-      if (!p.input.disabled && !document.documentElement.classList.contains("mobile-view")) {
+      if (focus && !p.input.disabled && !document.documentElement.classList.contains("mobile-view")) {
         p.input.focus({ preventScroll: true });
       }
     }
@@ -510,8 +515,18 @@
     }
   }
 
+  // For chat-drawer.js: the drawer's thread route drawn, or gone.
+  Discourse.chatThread = {
+    mount: function () {
+      unmount();
+      mount(true);
+    },
+    unmount: unmount,
+  };
+
   Discourse.onPage(function () {
-    mount();
+    var pane = thread();
+    mount(!(pane && pane.closest(".chat-drawer")));
     return unmount;
   });
 })();

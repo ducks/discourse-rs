@@ -154,8 +154,12 @@
     link.click();
   }
 
-  // The info route drawn again, as the server draws it now.
+  // The info route drawn again, as the server draws it now (in the
+  // drawer, its route).
   function redraw() {
+    if (document.querySelector(".chat-drawer .c-channel-settings, .chat-drawer .c-channel-members") && Discourse.chatDrawer) {
+      return Discourse.chatDrawer.reload();
+    }
     return fetch(location.href, { credentials: "same-origin" })
       .then(function (r) {
         return r.text();
@@ -744,10 +748,10 @@
     }
   });
 
-  Discourse.onPage(function () {
+  function mountMembers() {
     var root = membersRoot();
     if (!root || !window.IntersectionObserver) {
-      return;
+      return null;
     }
     done = false;
     var observer = new IntersectionObserver(function (entries) {
@@ -762,5 +766,22 @@
     return function () {
       observer.disconnect();
     };
-  });
+  }
+
+  // For chat-drawer.js: the drawer's info route drawn, or gone.
+  var drawerCleanup = null;
+  Discourse.chatChannelInfo = {
+    mount: function () {
+      Discourse.chatChannelInfo.unmount();
+      drawerCleanup = mountMembers();
+    },
+    unmount: function () {
+      if (drawerCleanup) {
+        drawerCleanup();
+        drawerCleanup = null;
+      }
+    },
+  };
+
+  Discourse.onPage(mountMembers);
 })();

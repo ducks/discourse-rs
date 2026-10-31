@@ -902,6 +902,63 @@ pub async fn drawer(
 }
 
 #[derive(serde::Deserialize, Default)]
+pub struct LiveSearchParams {
+    q: Option<String>,
+    sort: Option<String>,
+    offset: Option<i64>,
+    channel_id: Option<i64>,
+}
+
+/// GET /live/chat/search: a page of ChatSearch's results for
+/// static/js/chat-search.js (crate::plugins::chat::search_view), what
+/// GET /chat/api/search answers drawn, with x-chat-search-has-more. Not
+/// found while chat_search_enabled is off, as the API is; the contract's
+/// errors are a 400.
+pub async fn live_search(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Query(params): axum::extract::Query<LiveSearchParams>,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::search::{SearchParams, Searched};
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    if !settings.get("chat_search_enabled")?.truthy() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let found = match cx
+        .search_messages(SearchParams {
+            query: params.q,
+            channel_id: params.channel_id,
+            limit: Some(crate::plugins::chat::search_view::LIMIT),
+            offset: Some(params.offset.unwrap_or(0)),
+            exclude_threads: false,
+            sort: Some(params.sort.unwrap_or_else(|| "relevance".into())),
+        })
+        .await?
+    {
+        Searched::Found(found) => found,
+        Searched::NotFound => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Searched::Invalid(_) => return Ok(StatusCode::BAD_REQUEST.into_response()),
+    };
+    let results = cx
+        .search_results(&found, params.channel_id.is_some())
+        .await?;
+    Ok((
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        [("x-chat-search-has-more", results.has_more.to_string())],
+        results.html,
+    )
+        .into_response())
+}
+
+#[derive(serde::Deserialize, Default)]
 pub struct LiveMessageParams {
     previous: Option<String>,
     /// `thread`: as a thread's pane draws it.

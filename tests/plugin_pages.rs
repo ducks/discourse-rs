@@ -1346,22 +1346,12 @@ async fn the_chat_drawer_browses_and_lists_dms() {
 }
 
 #[tokio::test]
-async fn the_chat_drawer_refuses_what_it_doesnt_draw_yet() {
+async fn the_chat_drawer_leaves_what_it_doesnt_handle() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut user1 = Client::logged_in(st.clone(), "user1").await;
-    for url in [
-        "/chat/threads",
-        "/chat/search",
-        "/chat/c/general/2/pins",
-        "/chat/c/general/2/t",
-        "/chat/c/general/2/t/1",
-        "/chat/c/general/2/info/settings",
-        "/chat/c/general/2/info/members",
-    ] {
-        assert_eq!(user1.drawer(&format!("url={url}")).await.0, 500, "{url}");
-    }
     // What the drawer doesn't handle goes to full-page chat: not found here.
+    // (Its other routes: tests/chat_drawer_routes.rs.)
     for url in [
         "/chat/new-message",
         "/chat/disabled",

@@ -65,6 +65,19 @@ impl Context<'_> {
         thread: &ThreadRow,
         target: Option<i64>,
     ) -> Result<String, AppError> {
+        self.thread_page_in(channel, thread, target, None).await
+    }
+
+    /// The thread route, or in the drawer (ChatDrawerRoutesChannelThread)
+    /// the drawer's `navbar` in place of ThreadHeader and ChatThread in
+    /// the drawer's content.
+    pub async fn thread_page_in(
+        &mut self,
+        channel: &ChannelRow,
+        thread: &ThreadRow,
+        target: Option<i64>,
+        drawer: Option<&str>,
+    ) -> Result<String, AppError> {
         let membership = self
             .memberships()
             .await?
@@ -145,15 +158,22 @@ impl Context<'_> {
             thread_context: true,
         };
 
-        let mut out = String::from("<div class=\"c-routes --channel-thread\">");
-        out.push_str(&self.thread_header(
-            &channel_json,
-            thread,
-            thread_membership.as_ref().map(|m| m.notification_level),
-            original_user,
-            unread,
-            do_not_disturb,
-        ));
+        let mut out = String::new();
+        if let Some(navbar) = drawer {
+            out.push_str(&format!(
+                "<div class=\"c-drawer-routes --channel-thread\">{navbar}<div class=\"chat-drawer-content\">"
+            ));
+        } else {
+            out.push_str("<div class=\"c-routes --channel-thread\">");
+            out.push_str(&self.thread_header(
+                &channel_json,
+                thread,
+                thread_membership.as_ref().map(|m| m.notification_level),
+                original_user,
+                unread,
+                do_not_disturb,
+            ));
+        }
         out.push_str(&format!(
             "<div class=\"chat-thread --loaded\" data-id=\"{}\" data-channel-id=\"{}\" data-original-message-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\">",
             thread.id,
@@ -220,6 +240,9 @@ impl Context<'_> {
             );
         }
         out.push_str("</div></div>");
+        if drawer.is_some() {
+            out.push_str("</div>");
+        }
         Ok(out)
     }
 
@@ -322,6 +345,17 @@ impl Context<'_> {
     /// ChatThreadList: the member's threads of the channel as
     /// GET /chat/api/channels/:id/threads lists them, or its empty label.
     pub async fn channel_threads_page(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
+        self.channel_threads_page_in(channel, None).await
+    }
+
+    /// The channel threads route, or in the drawer
+    /// (ChatDrawerRoutesChannelThreads) the drawer's `navbar` in place of
+    /// ChatThreadListHeader and ChatThreadList in the drawer's content.
+    pub async fn channel_threads_page_in(
+        &mut self,
+        channel: &ChannelRow,
+        drawer: Option<&str>,
+    ) -> Result<String, AppError> {
         let membership = self
             .memberships()
             .await?
@@ -372,6 +406,11 @@ impl Context<'_> {
             ));
         }
         out.push_str("</nav></nav></div>");
+        if let Some(navbar) = drawer {
+            out = format!(
+                "<div class=\"c-drawer-routes --channel-threads\">{navbar}<div class=\"chat-drawer-content\">"
+            );
+        }
         out.push_str("<div class=\"chat-thread-list\"><div class=\"chat-thread-list__items\">");
         let threads = match self.channel_threads(channel.id, None, None).await? {
             Outcome::Done(v) => v,
@@ -391,6 +430,9 @@ impl Context<'_> {
             "<div data-load-more-url=\"{}\"><br></div></div></div></div>",
             escape(s(&threads["meta"]["load_more_url"]))
         ));
+        if drawer.is_some() {
+            out.push_str("</div>");
+        }
         Ok(out)
     }
 

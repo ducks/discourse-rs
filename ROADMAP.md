@@ -5143,12 +5143,74 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     checks its offset once a frame while it is dragged. Driven in
     headless Chromium over a fixture page (the drag, the minimums, the
     toggle's restyle, the composer events). Nothing refused.
-    223c. `feat/chat-drawer-routes` M: the drawer's other routes, each
-    with its full-page counterpart: a channel's settings and members
-    (channel info, with the channel title's and the browse cards' member
-    links), pinned messages, a channel's threads and a thread (with 160's
-    threads), my threads (ChatDrawerRoutesThreads), search (with chat
-    search); refused at plugins/chat/drawer.rs recognize.
+    223c. ~~`feat/chat-drawer-routes`~~ (done) M: the drawer's other
+    routes, drawn by plugins/chat/drawer.rs as ROUTES maps them (each
+    with its model's channel in x-chat-drawer-channel, the routes
+    visited in x-chat-drawer-routes, and while collapsed the navbar
+    alone): chat.channel.info.settings and .members
+    (ChatDrawerRoutesSettings and ChatDrawerRoutesMembers: the back
+    button to the channel, ChatNavbarChannelTitle with the star, then
+    ChannelInfoNav and the tab as full-page chat draws them, info.rs;
+    members not sent to the settings for a channel that isn't open, as
+    the drawer doesn't), reached from the channel title, the nav, and
+    the browse cards' members links; chat.channel.pins
+    (ChatDrawerRoutesChannelPins: "Pinned messages - <title>" with its
+    emoji, then ChatPinnedMessagesList, the side panel's list now
+    page.rs pinned_messages_list; refused while chat_pinned_messages is
+    off, the API's 404); chat.channel.threads (ChatThreadList, through
+    thread_view.rs channel_threads_page_in) and chat.channel.thread and
+    .thread.near-message (ChatThread through thread_page_in, the
+    drawer's navbar in place of ThreadHeader; the back button to the
+    threads list or my threads after them (chatHistory.previousRoute),
+    else the channel; a thread that isn't the channel's or doesn't show
+    refused, as Ember pops the request's error over an empty route);
+    chat.channel.near-message-with-thread, the channel around the
+    message (the drawer has no side panel); chat.threads
+    (ChatDrawerRoutesThreads: UserThreads and the footer), also
+    ROUTES.chat's redirect for my_threads; chat.search
+    (ChatDrawerRoutesSearch: ChatSearch's filter and sort menu,
+    search_view.rs, and the footer). ChatFooter gained its threads item
+    (includeThreads: chat_threads_enabled and the member's viewable
+    threads, UnreadThreadsIndicator), in the drawer and the mobile view.
+    GET /live/chat/search draws a page of ChatSearch's results (LIMIT
+    20 over Chat::SearchMessage, x-chat-search-has-more): each entry
+    with its accessible label, the channel's title unless scoped,
+    ChatThreadHeading, and the message not interactive in the long date
+    mode (dates.js draws it in the viewer's zone), its url the thread's
+    for a thread's message. static/js/chat-search.js runs it: the query
+    after INPUT_DELAY (chatSearchQuery's, kept across routes, the sort
+    back to relevance as the component is new), the sort menu, the next
+    page as the list's end shows, the alert when nothing is found, a
+    result opening its message in the drawer. chat-drawer.js loads
+    chat-thread.js, chat-channel-info.js and chat-search.js with
+    chat.js and mounts and unmounts each with the route (a drawer
+    thread's composer takes the focus when drawn, not on a page swap;
+    its Escape goes back to the channel; its near-message URL isn't
+    written to the address bar); chat-channel-info.js redraws the
+    drawer's route after a change (chatDrawer.reload) and watches the
+    drawer's members list; chat.js marks the drawer's pins read each
+    time they are drawn. Fixed on the way: a pin's message waits in a
+    template chat.js puts in the pin's link (its own links, the time
+    above all, closed the link as the page was parsed, leaving it empty
+    and the pin's layout broken, in the full page's side panel too). Back and forward and the back buttons follow
+    state.history and previous as for the other routes. Tests in
+    tests/chat_drawer_routes.rs; driven against the server in
+    tests/browser/chat-drawer-routes.spec.js (each route from the
+    drawer's UI, its content, a setting saved, a thread reply sent from
+    the drawer, the back buttons, search sorting and opening a result,
+    back to a thread's URL opening it in the drawer and forward;
+    tests/browser/setup.sql turns on chat_threads_enabled, hidden from
+    the admin). Not compared against the reference. Left, split into
+    223e.
+    223e. `feat/chat-drawer-routes-rest` S: the drawer's pins list's own
+    live pin and unpin (ChatPinnedMessagesList subscribes to the
+    channel's bus; the drawer's list follows only a refresh), the
+    search's clear button and dTabToSibling, DLoadMore's and
+    DConditionalLoadingSpinner's markup (core's frontend isn't in the
+    vendored ref: drawn as a sentinel div and loading-container), the
+    "chat.deleted_user" label core's locale lacks, the thread pane's
+    plugin outlet (chat-thread-navbar-actions), and the full-page
+    /chat/search route (162)
     223d. ~~`fix/chat-drawer-history`~~ (done) S: the browser's back and
     forward run the chat route's beforeModel, activate and deactivate in
     chat-drawer.js on htmx:historyCacheMiss (the restore skips
