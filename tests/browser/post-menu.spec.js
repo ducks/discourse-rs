@@ -107,6 +107,10 @@ test("discourse-reactions: like, then another reaction from the picker", async (
 
 test("discourse-solved: accept and unaccept the answer", async ({ page, context, session }) => {
   const { t, answer } = await setup(session, context);
+  // The live redraw's out-of-band swaps: one without a target (deleting a
+  // solved status a first accept doesn't have) is an htmx console error.
+  const consoleErrors = [];
+  page.on("console", (m) => m.type() === "error" && /htmx/.test(m.text()) && consoleErrors.push(m.text()));
   await page.goto(t.url);
   const post = page.locator(`article[data-post-id="${answer}"]`);
   const title = page.locator("#topic-title .topic-statuses");
@@ -124,6 +128,7 @@ test("discourse-solved: accept and unaccept the answer", async ({ page, context,
   await accepted.click();
   await expect(post.locator(".post-action-menu__solved-unaccepted")).toBeVisible();
   await expect(title.locator(".topic-status.--solved")).toHaveCount(0);
+  expect(consoleErrors).toEqual([]);
   expect(sql("SELECT count(*) FROM discourse_solved_topic_answers a JOIN discourse_solved_solved_topics s ON s.id = a.solved_topic_id WHERE s.topic_id = :'p1'", t.id)).toEqual([["0"]]);
 });
 

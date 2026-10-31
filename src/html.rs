@@ -428,6 +428,8 @@ impl Chrome {
         self.sidebar = sidebar;
         self.hamburger = hamburger;
         self.live_params = remove_param(&self.live_params, "sidebar");
+        // Chat's sidebar sections aren't on the page either.
+        self.live_param("admin_panel", "1");
         if !self.sidebar.is_empty() && !had_sidebar {
             self.body_classes.push_str(" has-sidebar-page");
         }

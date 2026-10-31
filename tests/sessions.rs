@@ -2756,6 +2756,62 @@ async fn chat_unread_state_goes_live_on_every_page() {
     );
 }
 
+/// An admin page draws the admin panel, not chat's sidebar sections: its
+/// live stream keeps the header icon current and sends no section swaps,
+/// whose missing targets htmx would log as console errors.
+#[tokio::test(flavor = "multi_thread")]
+async fn chat_sections_stay_off_admin_pages() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::new(app_state.clone());
+    admin.login("admin", "password").await;
+    let page = admin.get("/admin").await.body;
+    assert!(page.contains("&#38;admin_panel=1"), "{page}");
+    assert!(page.contains("&#38;chat="), "{page}");
+
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    sqlx::query("UPDATE users SET last_seen_at = now() WHERE username = 'user1'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let from = app_state.bus.now().await.unwrap();
+    let mut body = client
+        .open(&format!(
+            "/live?chat=discovery&admin_panel=1&position={from}"
+        ))
+        .await;
+    let mut buffer = String::new();
+    sqlx::query(
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
+         VALUES (1, 2, 2, now(), now(), 'hi', '<p>hi</p>', 1, 2)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE chat_channels SET last_message_id = 1 WHERE id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut conn = db.pool.acquire().await.unwrap();
+    app_state
+        .bus
+        .publish(
+            &mut conn,
+            "/chat/2/new-messages",
+            &serde_json::json!({ "type": "channel", "channel_id": 2 }),
+            Some(&[discourse_rs::bus::group_tag(10)]),
+        )
+        .await
+        .unwrap();
+    let html = common::next_sse_event(&mut body, &mut buffer, "chat").await;
+    assert!(
+        html.starts_with(r#"<li hx-swap-oob="outerHTML:.chat-header-icon" class="header-dropdown-toggle chat-header-icon">"#),
+        "{html}"
+    );
+    assert!(!html.contains(".sidebar-section"), "{html}");
+}
+
 #[tokio::test]
 async fn tokens_that_find_no_user_are_limited_per_ip() {
     let db = TestDb::new().await;
