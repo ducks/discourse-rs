@@ -26,11 +26,13 @@ test("back and forward between forum pages restore them in place", async ({ page
   await page.goto("/latest");
   await markDocument(page);
   const link = page.locator("#main-outlet .topic-list a.title").first();
-  const title = (await link.textContent()).trim();
+  const id = await link.locator("xpath=ancestor::tr[@data-topic-id]").getAttribute("data-topic-id");
   await link.click();
-  await expect(page).toHaveURL(/\/t\//);
+  // Settled: at the top, the scroll tracker drops a /1 the list's link
+  // may carry (the last read post), as Ember does for the first post.
+  await expect(page).toHaveURL(/\/t\/[^/]+\/\d+$/);
   const topicUrl = page.url();
-  await expect(page.locator("#topic-title h1")).toContainText(title);
+  await expect(page.locator("#topic-title h1")).toHaveAttribute("data-topic-id", id);
 
   await page.goBack();
   await expect(page).toHaveURL(/\/latest$/);
@@ -40,7 +42,7 @@ test("back and forward between forum pages restore them in place", async ({ page
 
   await page.goForward();
   await expect(page).toHaveURL(topicUrl);
-  await expect(page.locator("#topic-title h1")).toContainText(title);
+  await expect(page.locator("#topic-title h1")).toHaveAttribute("data-topic-id", id);
   await expect(page.locator(".topic-post").first()).toBeVisible();
   await expectSameDocument(page);
 });

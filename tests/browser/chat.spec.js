@@ -131,7 +131,9 @@ test("the drawer across page swaps, collapsed and expanded, full page and back, 
   // A forum page swapped in keeps the drawer and its channel (hx-preserve).
   await page.evaluate(() => (window.__noReload = true));
   await page.locator("#main-outlet a.title, #main-outlet .topic-list a.title").first().click();
-  await expect(page).toHaveURL(/\/t\//);
+  // Settled: at the top, the scroll tracker drops a /1 the list's link
+  // may carry (the last read post), as Ember does for the first post.
+  await expect(page).toHaveURL(/\/t\/[^/]+\/\d+$/);
   await expect(page.locator(".topic-post").first()).toBeVisible();
   await expect(drawer.locator(".chat-composer__input")).toBeVisible();
   expect(await page.evaluate(() => window.__noReload)).toBe(true);
