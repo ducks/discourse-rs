@@ -11,6 +11,16 @@
 
   var open = null;
 
+  // DNavigation's New Category button (createCategory): the new category
+  // page.
+  document.addEventListener("click", function (event) {
+    if (!event.target.closest("#create-category")) {
+      return;
+    }
+    var base = (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+    window.location.assign(base + "/new-category");
+  });
+
   document.addEventListener("click", function (event) {
     var trigger = event.target.closest(".list-control-toggle-link-trigger");
     if (!trigger) {
