@@ -274,6 +274,7 @@ impl Context<'_> {
             "<div class=\"chat-notices\">{}</div>",
             self.retention_reminder(&channel_json).await?
         ));
+        out.push_str(&self.pane_extras(channel).await?);
         out.push_str(
             "<div class=\"chat-messages-scroller\"><div class=\"chat-messages-container\">",
         );
@@ -626,6 +627,21 @@ impl Context<'_> {
         direction: Option<&str>,
         newest: bool,
     ) -> Result<Option<MessagesPage>, AppError> {
+        self.messages_page_at(channel_id, target, direction, newest, None)
+            .await
+    }
+
+    /// messages_page, or with `target_date` (fetchMessagesByDate) the page
+    /// around that time as query_by_date answers it: the 25 messages up to
+    /// it and the 25 after, drawn alone.
+    pub async fn messages_page_at(
+        &mut self,
+        channel_id: i64,
+        target: Option<i64>,
+        direction: Option<&str>,
+        newest: bool,
+        target_date: Option<&str>,
+    ) -> Result<Option<MessagesPage>, AppError> {
         let channel = match self.find_joinable(&channel_id.to_string()).await? {
             Found::Channel(channel) => channel,
             Found::NotFound | Found::Forbidden => return Ok(None),
@@ -636,7 +652,7 @@ impl Context<'_> {
             target_message_id: target,
             direction: direction.map(str::to_string),
             fetch_from_last_read: false,
-            target_date: None,
+            target_date: target_date.map(str::to_string),
         };
         let listed = match self.list_messages(channel.id, &params).await? {
             Listed::Messages(v) => v,
@@ -720,6 +736,55 @@ impl Context<'_> {
             can_load_more_past: listed["meta"]["can_load_more_past"].clone(),
             can_load_more_future: listed["meta"]["can_load_more_future"].clone(),
         }))
+    }
+
+    /// What chat.js draws in the channel besides its messages (224a), as
+    /// a template's data: the strings of the notices
+    /// (mention_without_membership's invite), of the in-channel filter
+    /// (ChatChannelFilter) and of the mobile arrow's count, the member's
+    /// unread count in the channel (channel.tracking.unreadCount, which
+    /// the mobile arrow shows), the mobile "+" menu's emoji label, and
+    /// whether code blocks get their copy buttons
+    /// (chat_show_copy_button_on_codeblocks).
+    async fn pane_extras(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let tracking = self.channel_tracking(&[channel.id]).await?;
+        let unread = tracking
+            .get(&channel.id.to_string())
+            .and_then(|t| t["unread_count"].as_i64())
+            .unwrap_or(0);
+        let attrs = [
+            ("label-invite", t("chat.mention_warning.invite")),
+            (
+                "label-invitations-sent-one",
+                t("chat.mention_warning.invitations_sent.one"),
+            ),
+            (
+                "label-invitations-sent-other",
+                t("chat.mention_warning.invitations_sent.other"),
+            ),
+            ("label-filter", t("chat.search.title")),
+            ("label-done", t("done")),
+            ("label-no-results", t("chat.search.no_results")),
+            ("label-new-messages-one", t("chat.new_messages.one")),
+            ("label-new-messages-other", t("chat.new_messages.other")),
+            ("label-emoji", t("chat.emoji")),
+            ("unread-count", unread.to_string()),
+            (
+                "codeblock-buttons",
+                self.settings
+                    .get("chat_show_copy_button_on_codeblocks")?
+                    .truthy()
+                    .to_string(),
+            ),
+        ];
+        let mut out = String::from("<template class=\"chat-channel-extras\"");
+        for (name, value) in attrs {
+            out.push_str(&format!(" data-{name}=\"{}\"", escape(&value)));
+        }
+        out.push_str("></template>");
+        Ok(out)
     }
 
     /// ChatRetentionReminder on a category channel, for staff who haven't

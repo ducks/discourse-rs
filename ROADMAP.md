@@ -5204,17 +5204,57 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     fixture channel (the target, paging both ways to the first message,
     the arrow both ways, jumps loaded and not, the 404's error). Left,
     split into 224a.
-    224a. `feat/chat-pane-rest` S: chat notices with
-    mention_without_membership's invite, the composer's "+" menu's core
-    buttons (GIFs, local dates, the mobile emoji button), the in-channel
-    filter (ChatChannelFilter, the navbar's filter button), the
-    stop-streaming button, the message decorators chat.js lacks (spoiler,
-    hashtag icons, code block buttons), the channels list without a
-    member or chat options, the mobile arrow's new messages count
-    (chat.new_messages from the channel's unread count), the date
-    separator's click (fetchMessagesByDate, target_date), the saved
-    scroll position per channel (chatChannelScrollPositions), and the
-    pane's live edge for a reader who isn't active (browser attention)
+    224a. ~~`feat/chat-pane-rest`~~ (done) S: the rest of the channel
+    pane. The channel draws its extras for chat.js as a template's data
+    (Context::pane_extras: the notices', filter's and arrow's strings,
+    the member's unread count in the channel, the mobile emoji label,
+    chat_show_copy_button_on_codeblocks). Chat notices: the bus's notice
+    (text, or mention_without_membership with its invite: POST
+    .../invites with the user ids and, as Ember's notice.data.messageId
+    is undefined, no message id; "Invitation(s) sent" for three seconds),
+    cleared by their button (ChatNotice has no id, so clearing one clears
+    them all) or when the channel is left. The navbar's filter button
+    toggles ChatChannelFilter (GET /chat/api/search latest first after
+    INPUT_DELAY, the position, previous and next wrapping round, no
+    results, Esc and Done). The "+" menu's local dates (the insert date
+    modal, its markup at the selection) and the mobile emoji button (the
+    picker, the emoji at the selection), in chat-setup.js's order; GIFs
+    stay out, core's GIF picker (GifsModal) isn't ported. The stop
+    streaming button's refusal shows nothing, as Ember leaves it
+    unhandled. Spoilers (spoiler-alert.js's, under spoiler_enabled),
+    hashtag icons (hashtags.js's decorate) and code block buttons
+    (codeblock-buttons.js's attach, under chat's own setting) on each
+    message once, loaded and live; the deferred decorators now also run
+    once the page has loaded, which highlight and local dates missed on
+    a page load. The channels lists for no member (no channels, no
+    browse button, no divider) and a member without chat options (the
+    columns' defaults); the mobile list no longer draws the filter's
+    empty state under the empty one. The mobile arrow's "N new messages"
+    (another member's message past the last read counts, the read sets
+    it from the page drawn again, the latest message read clears it).
+    The date separator's click (fetchMessagesByDate): the day's first
+    message highlighted in the center, or, when it was the first of the
+    page that loaded it with older ones left, the page around the day's
+    start (GET /live/chat/:id/messages?target_date, query_by_date; the
+    meta has no target for a date, so the page shows from its bottom).
+    The saved scroll position per channel (chatChannelScrollPositions:
+    the bottom-most message in view as the scroll rests away from the
+    bottom, forgotten at the bottom, a channel opened again without a
+    target highlighted there at the end, chat-channel--saved-scroll-
+    position). Browser attention (ChatPaneState): only an active reader
+    (present in the last minute, focused, visible) marks read; a message
+    at the live edge (10px) follows for an active reader, the member's
+    own, or a visible unfocused pane that was at the edge, else keeps the
+    place and counts pending; coming back reads what shows. Tests in
+    tests/chat_pane_rest.rs; tests/browser/chat-pane-rest.spec.js on the
+    real server (the notice and invite, the filter, the separator's jump,
+    the saved position across htmx navigation, the decorators, stop
+    streaming, local dates, the mobile emoji and count, a hidden tab by
+    emulated page visibility). Left, 224b.
+    224b. `feat/chat-pane-gifs` S: the "+" menu's GIFs (enable_gifs,
+    GifsModal with buildGifPickHandler), once core's GIF picker is
+    ported; the DM and starred lists' refusals without a member or chat
+    options (unreachable past chat's gate, as the channels list's were)
 225. `feat/chat-notify-client` S: desktop notifications for chat, the new
     message sound (ChatAudioManager), the title counter,
     ChatNewMessageAnnouncer under chat_announce_new_messages, the chat

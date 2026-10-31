@@ -235,15 +235,15 @@ Verdict: started (63 gaps)
 
 **UI: channel pane**
 - Loading past and future messages on scroll (fetchMoreMessages), jumping to and highlighting a target message, the scroll-to-bottom arrow (drawn inert, page.rs:256). Rails: c/components/chat-channel.gjs:286,457,543,583; c/components/chat/scroll-to-bottom-arrow.gjs. Port: absent.
-- The navbar filter button (in-channel search, ChatNavbarFilter) is inert. Rails: c/components/chat/navbar/filter.gjs; c/components/chat-search.gjs. Port: page.rs:565, no handler. [item 162 for the route; the in-channel filter is not covered]
+- ~~The navbar filter button (in-channel search, ChatNavbarFilter) is inert.~~ (done, 224a: ChatChannelFilter in static/js/chat.js over GET /chat/api/search)
 - The retention reminder's dismiss button is inert (the endpoint exists). Rails: c/components/chat-retention-reminder.gjs. Port: page.rs:510, no handler in chat.js.
 - The pinned message bar. Rails: c/components/chat/pinned-message-bar.gjs; c/components/chat-channel.gjs:819; c/lib/chat-pinned-bar-dismissal.js. Port: absent.
-- Bus message types notice (self_flagged and flag done, 217; pin and unpin redraw the page, 219; thread_created and update_thread_original_message done, 160). Rails: c/lib/chat-channel-subscription-manager.js:68-86. Port: static/js/chat.js:1805 (onBus handles only sent, processed, edit, refresh, restore, reaction, delete, bulk_delete).
+- ~~Bus message types notice (self_flagged and flag done, 217; pin and unpin redraw the page, 219; thread_created and update_thread_original_message done, 160).~~ (done, 224a: notice in chat.js's onBus)
 - The global chat subscriptions: new channels, channel status, channel edits, archive status, membership kicks, the user's new-channel and notices channels. Rails: c/services/chat-subscriptions-manager.js:105-509; c/services/chat-channel-notices-manager.js. Port: src/routes/live.rs:146-166 subscribes only new-messages, new-mentions and user-tracking-state. [archive status: item 162]
-- Chat notices (mention_without_membership with its "invite" action, POST /chat/api/channels/:id/invites unrouted). Rails: c/components/chat-notices.gjs; c/components/chat/notices/mention_without_membership.gjs. Port: page.rs:173 draws an empty .chat-notices, no notice rendering.
+- ~~Chat notices (mention_without_membership with its "invite" action).~~ (done, 224a: ChatNotices and MentionWithoutMembership in static/js/chat.js; the invite sends no message_id, as Ember's notice.data.messageId is undefined)
 - Composer mention warnings parse mentions with a word match, not the cooked message (ChatMessage#parseMentions). Rails: c/services/chat-composer-warnings-tracker.js. Port: static/js/chat.js (composerMentions).
-- The composer dropdown (its "+" trigger is drawn inert, page.rs:811): upload, GIFs (enable_gifs, GifsModal), local dates, the mobile emoji button. Rails: c/initializers/chat-setup.js:88,118,132,156; c/components/chat-composer-dropdown.gjs. Port: absent. [uploads: item 161]
-- Message decorators missing from chat.js: spoiler, hashtag icons, codeblock buttons, GitHub onebox body and scrolling, lightbox, transcript dates. Rails: c/initializers/chat-decorators.js:18-90; c/initializers/chat-plugin-decorators.js:24. Port: static/js/chat.js:170 (links, highlight, local dates only). [lightbox, oneboxes and transcripts: item 161]
+- The composer dropdown's GIFs button (enable_gifs, GifsModal): core's GIF picker isn't ported. Rails: c/initializers/chat-setup.js:132. Port: absent. (upload done, 161; local dates and the mobile emoji button done, 224a)
+- Message decorators missing from chat.js: GitHub onebox body and scrolling, lightbox, transcript dates. Rails: c/initializers/chat-decorators.js:18-90. Port: static/js/chat.js decorateLinks. (spoiler, hashtag icons and code block buttons done, 224a) [lightbox, oneboxes and transcripts: item 161]
 - Webhook and bot messages (bot indicator, message blocks and their interactions, POST .../interactions unrouted). Rails: c/components/chat/message/info.gjs:115-128; c/components/chat-message/blocks/*.gjs. Port: absent. [item 162]
 - Reactions without an emoji image refuse the page. Rails: c/components/chat-message-reaction.gjs. Port: src/plugins/chat/page.rs:1478 (refusal "chat reactions without an emoji image").
 - The reaction users popover on mobile (a held reaction opening it as a modal). Rails: c/components/chat-message-reaction.gjs:40. Port: static/js/chat.js opens it on hover only.
@@ -274,7 +274,7 @@ Verdict: started (63 gaps)
 - Swipe and long press on a channel row in the mobile list. Rails: c/components/chat-channel-row.gjs. Port: absent. (named as left in done item 99)
 - The separate sidebar modes (always, fullscreen), the chat panel and its switch buttons. Rails: c/initializers/chat-sidebar.js:298-317. Port: src/plugins/chat/view.rs:276 (refusal "chat's separate sidebar"). [item 162]
 - Empty states of the channels list (none, and none after the filter). Rails: c/components/chat/list/empty-state.gjs; c/components/chat-sidebar-channel-list-filter-empty-state.gjs. Port: src/plugins/chat/view.rs:341,345 (refusals). [item 162]
-- The channels list for a member without chat options refuses. Rails: c/components/channels-list-public.gjs. Port: src/plugins/chat/view.rs:319,322 (refusals "chat's channels list without a member", "... without chat options").
+- ~~The channels list for a member without chat options refuses.~~ (done, 224a: no member draws no channels and no browse button; no chat options takes the columns' defaults. The DM and starred lists still refuse both, unreachable past chat's gate as these were)
 - Anonymous viewing of public chat (chat-enabled body class, card listener, the sidebar). Rails: c/initializers/chat-setup.js:65-75; c/initializers/chat-sidebar.js:289. Port: absent. [item 162]
 
 **UI: notifications, sounds, title, shortcuts**

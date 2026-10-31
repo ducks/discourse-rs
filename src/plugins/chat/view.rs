@@ -330,18 +330,29 @@ impl Context<'_> {
         }))
     }
 
+    /// Who a channels list draws for: whether there is a member
+    /// (ChannelsListPublic's canBrowseChannels), their channel list
+    /// preferences, and their channels (/chat/api/me/channels). Without a
+    /// member chatChannelsManager holds no channels; without chat options
+    /// the preferences are the columns' defaults, as a new user_options
+    /// row has them.
+    async fn channels_list_viewer(&mut self) -> Result<(bool, ListPrefs, Value), AppError> {
+        let Some(user_id) = self.guardian.user_id() else {
+            return Ok((false, prefs(0, 0), Value::Null));
+        };
+        let channel_prefs = match super::options(&mut *self.conn, user_id).await? {
+            Some(o) => prefs(o.chat_channel_list_filter, o.chat_channel_list_sort),
+            None => prefs(0, 0),
+        };
+        Ok((true, channel_prefs, self.me_channels().await?))
+    }
+
     /// The mobile view's channels route (ChatChannelsRoute with
     /// ChannelsListPublic): the navbar, every followed public channel by
     /// the member's channel list preferences, and the chat footer.
     pub async fn channels_route(&mut self) -> Result<String, AppError> {
         let settings = self.settings;
-        let Some(user_id) = self.guardian.user_id() else {
-            return Err(Unsupported("chat's channels list without a member").into());
-        };
-        let Some(options) = super::options(&mut *self.conn, user_id).await? else {
-            return Err(Unsupported("chat's channels list without chat options").into());
-        };
-        let me = self.me_channels().await?;
+        let (member, channel_prefs, me) = self.channels_list_viewer().await?;
         let tracking = &me["tracking"]["channel_tracking"];
         let json = |key: &str| me[key].as_array().cloned().unwrap_or_default();
         let public = json("public_channels");
@@ -353,10 +364,6 @@ impl Context<'_> {
             .iter()
             .map(|c| SidebarChannel::from_json(c, tracking))
             .collect::<Result<Vec<_>, _>>()?;
-        let channel_prefs = prefs(
-            options.chat_channel_list_filter,
-            options.chat_channel_list_sort,
-        );
         let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
         let filtered_empty = list.is_empty();
 
@@ -368,8 +375,10 @@ impl Context<'_> {
         );
         if channels.is_empty() {
             // publicMessageChannelsEmpty: DEmptyState, its button to the
-            // browser while public channels show (displayPublicChannels).
-            let display_public = settings.get("enable_public_channels")?.truthy()
+            // browser while public channels show (displayPublicChannels)
+            // to a member (canBrowseChannels).
+            let display_public = member
+                && settings.get("enable_public_channels")?.truthy()
                 && (self.guardian.is_staff()
                     || super::has_joinable_public_channels(
                         &mut *self.conn,
@@ -400,7 +409,8 @@ impl Context<'_> {
             };
             out.push_str(&self.channel_row(c, channel, &emojis, now));
         }
-        if filtered_empty {
+        // The each's else: only under channels the filter hides.
+        if filtered_empty && !channels.is_empty() {
             out.push_str(&self.filtered_empty_state());
         }
         out.push_str("</div></div>");
@@ -726,13 +736,7 @@ impl Context<'_> {
                 "<div class=\"c-drawer-routes --channels\">{navbar}</div>"
             ));
         }
-        let Some(user_id) = self.guardian.user_id() else {
-            return Err(Unsupported("chat's channels list without a member").into());
-        };
-        let Some(options) = super::options(&mut *self.conn, user_id).await? else {
-            return Err(Unsupported("chat's channels list without chat options").into());
-        };
-        let me = self.me_channels().await?;
+        let (member, channel_prefs, me) = self.channels_list_viewer().await?;
         let tracking = &me["tracking"]["channel_tracking"];
         let json = |key: &str| me[key].as_array().cloned().unwrap_or_default();
         let public = json("public_channels");
@@ -744,12 +748,10 @@ impl Context<'_> {
             .iter()
             .map(|c| SidebarChannel::from_json(c, tracking))
             .collect::<Result<Vec<_>, _>>()?;
-        let channel_prefs = prefs(
-            options.chat_channel_list_filter,
-            options.chat_channel_list_sort,
-        );
-        // chatChannelsManager.displayPublicChannels
-        let display_public = settings.get("enable_public_channels")?.truthy()
+        // chatChannelsManager.displayPublicChannels (has_joinable_public_
+        // channels is the current user's: none without one)
+        let display_public = member
+            && settings.get("enable_public_channels")?.truthy()
             && (!channels.is_empty()
                 || self.guardian.is_staff()
                 || super::has_joinable_public_channels(&mut *self.conn, settings, self.guardian)

@@ -193,6 +193,7 @@
         Discourse.renderMath(cooked);
       });
     }
+    decorateMessages(channel);
   }
 
   function filterCards(select) {
@@ -444,13 +445,15 @@
   }
 
   function markRead(channel) {
-    if (channel.dataset.following !== "true" || document.visibilityState !== "visible") {
+    // shouldMarkRead: an active reader (isActiveReader).
+    if (channel.dataset.following !== "true" || !isActiveReader()) {
       return;
     }
     var message = lastVisibleMessage(channel);
     if (!message) {
       return;
     }
+    readOptimistically(channel, message);
     var id = Number(message.dataset.id);
     if (!Number.isInteger(id) || id <= Number(channel.dataset.lastRead || 0)) {
       return;
@@ -471,7 +474,9 @@
             return r.text();
           })
           .then(function (html) {
-            refreshSidebar(new DOMParser().parseFromString(html, "text/html"));
+            var doc = new DOMParser().parseFromString(html, "text/html");
+            unreadFrom(channel, doc);
+            refreshSidebar(doc);
           });
       })
       .catch(function (e) {
@@ -2027,7 +2032,8 @@
       return;
     }
     button.disabled = true;
-    api("DELETE", "/channels/" + channel.dataset.id + "/messages/" + message.dataset.id + "/streaming")
+    // Ember leaves a refusal unhandled: nothing shows.
+    api("DELETE", "/channels/" + channel.dataset.id + "/messages/" + message.dataset.id + "/streaming", null, true)
       .then(changed)
       .catch(function () {
         button.disabled = false;
@@ -2788,9 +2794,10 @@
     if (channel.classList.contains("is-empty")) {
       return refresh();
     }
+    countUnread(channel, data);
     var items = listItems(list);
     var previous = items[items.length - 1] || null;
-    var bottom = atBottom(channel);
+    var bottom = followsLive(channel, data);
     return fetchMessage(channel.dataset.id, id, previous).then(function (html) {
       if (!html || findMessage(list, id)) {
         return;
@@ -2950,6 +2957,9 @@
       case "pin":
       case "unpin":
         return refresh();
+      // handleNotice
+      case "notice":
+        return onNotice(channel, data);
     }
     return Promise.resolve();
   }
@@ -3900,6 +3910,7 @@
     var canScroll = scroller.scrollHeight - scroller.clientHeight > 1;
     var away = canLoadMore(channel, FUTURE) || -scroller.scrollTop > 250;
     button.classList.toggle("visible", canScroll && (pane.pending > 0 || away));
+    drawNewMessages(channel, button);
   }
 
   function settle(channel, list) {
@@ -3936,6 +3947,7 @@
         channel.dataset.canLoadMorePast = String(page.past);
         channel.dataset.canLoadMoreFuture = String(page.future);
         list.innerHTML = page.html;
+        markFirstOfResults(persistedItems(list)[0]);
         settle(channel, list);
         if (target) {
           scrollToMessage(channel, target, { highlight: true, position: position });
@@ -3988,6 +4000,7 @@
           redrawn.remove();
         }
         var added = template.content.querySelectorAll(":scope > .chat-message-container, :scope > template").length;
+        markFirstOfResults(template.content.firstElementChild);
         if (direction === PAST) {
           var shown = findMessage(list, anchorId);
           if (redrawn && shown && !shown.matches("template") && !shown.querySelector(":scope > .chat-message-text.-deleted")) {
@@ -3996,6 +4009,9 @@
             }
             var next = redrawn.content.firstElementChild;
             next.className = shown.className;
+            if (firstOfResults.has(shown)) {
+              markFirstOfResults(next);
+            }
             shown.replaceWith(next);
           }
           list.insertBefore(template.content, list.firstChild);
@@ -4143,6 +4159,8 @@
       popupError(channel);
     } else if (channel.dataset.target) {
       scrollToMessage(channel, channel.dataset.target, { highlight: true });
+    } else if (restoreScrollPosition(channel)) {
+      // chatChannelScrollPositions
     } else if (Number(channel.dataset.lastRead) > 0) {
       scrollToMessage(channel, channel.dataset.lastRead, {});
     }
@@ -4260,6 +4278,7 @@
     }
     scheduleRead();
     var paneCleanup = setupPane(channel);
+    var paneRestCleanup = setupPaneRest(channel, scheduleRead);
     var parts = composerParts();
     if (parts) {
       updateSendState(parts);
@@ -4278,6 +4297,7 @@
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", scheduleRead);
       paneCleanup();
+      paneRestCleanup();
       if (scroller) {
         scroller.removeEventListener("scroll", scheduleRead);
       }
@@ -4346,6 +4366,704 @@
       });
   });
 
+  // The channel pane's rest (224a): what chat.js draws besides the
+  // messages from the channel's extras (Context::pane_extras, a template's
+  // data).
+  function extras(channel) {
+    var tpl = channel.querySelector("template.chat-channel-extras");
+    return tpl ? tpl.dataset : {};
+  }
+
+  function plural(one, other, count) {
+    return (count === 1 ? one : other || one || "").replace("%{count}", String(count));
+  }
+
+  // The channel last set up: a channel opened anew (another channel, or
+  // any after chat was left; not one drawn again in place, nor the
+  // drawer's kept across pages) loses the notices and the filter of the
+  // one before, and takes its saved scroll position back, as Ember's
+  // ChatChannel is created again.
+  var paneRest = { channelId: null, element: null, left: false };
+
+  function openedAnew(channel) {
+    return channel !== paneRest.element && (paneRest.left || paneRest.channelId !== channel.dataset.id);
+  }
+
+  // ChatPaneState's browser attention: the member reads actively while
+  // present (active in the last minute, the tab not hidden:
+  // CHAT_PRESENCE_OPTIONS), the document focused and visible. Only an
+  // active reader marks messages read; a message arriving at the live
+  // edge follows it there for an active reader, the member's own message,
+  // or a visible but unfocused pane that was at the live edge when its
+  // reader left (#shouldContinueLiveFollowing); a hidden tab keeps its
+  // place and counts the message pending.
+  var READER_PRESENCE = { userUnseenTime: 60000, browserHiddenTime: 0 };
+  // LIVE_EDGE_THRESHOLD_PIXELS
+  var LIVE_EDGE = 10;
+  var reader = { active: null, wasAtLiveEdge: true, onBack: null };
+
+  function documentVisible() {
+    return document.visibilityState === "visible";
+  }
+
+  function documentFocused() {
+    return document.hasFocus();
+  }
+
+  // isActiveReader
+  function isActiveReader() {
+    var present = !Discourse.userPresent || Discourse.userPresent(READER_PRESENCE);
+    return present && documentFocused() && documentVisible();
+  }
+
+  function atLiveEdge(channel) {
+    var scroller = scrollerOf(channel);
+    return !scroller || -scroller.scrollTop <= LIVE_EDGE;
+  }
+
+  // #handleActiveReaderTransition: leaving notes whether the pane was at
+  // the live edge, coming back reads what shows (onUserPresent).
+  function readerChanged() {
+    var was = reader.active;
+    var now = isActiveReader();
+    reader.active = now;
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (was && !now && channel) {
+      reader.wasAtLiveEdge = atLiveEdge(channel);
+    }
+    if (was === false && now && reader.onBack) {
+      reader.onBack();
+    }
+  }
+
+  window.addEventListener("focus", readerChanged);
+  window.addEventListener("blur", readerChanged);
+  document.addEventListener("visibilitychange", readerChanged);
+  if (Discourse.onPresenceChange) {
+    Discourse.onPresenceChange({
+      userUnseenTime: READER_PRESENCE.userUnseenTime,
+      browserHiddenTime: READER_PRESENCE.browserHiddenTime,
+      callback: readerChanged,
+    });
+  }
+
+  // shouldAutoScrollIncomingMessage
+  function followsLive(channel, data) {
+    if (!atLiveEdge(channel)) {
+      return false;
+    }
+    var user = data.chat_message && data.chat_message.user;
+    if (user && String(user.id) === channel.dataset.viewerId) {
+      return true;
+    }
+    if (isActiveReader()) {
+      return true;
+    }
+    if (!documentVisible() || documentFocused()) {
+      return false;
+    }
+    return reader.wasAtLiveEdge;
+  }
+
+  // ChatChannelNoticesManager: the notices the channel's bus brings the
+  // member (Chat::Publisher.publish_notice), a text or a type with its
+  // data, shown in ChatNotices after the retention reminder.
+  var notices = [];
+
+  function onNotice(channel, data) {
+    notices.push({
+      channelId: String(data.channel_id),
+      text: data.text_content,
+      type: data.notice_type,
+      data: data.data || {},
+      sent: false,
+    });
+    drawNotices(channel);
+    return Promise.resolve();
+  }
+
+  // clearNotice filters on the notice's id, which ChatNotice doesn't
+  // have: clearing one clears them all.
+  function clearNotices() {
+    notices = [];
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (channel) {
+      drawNotices(channel);
+    }
+  }
+
+  function drawNotices(channel) {
+    var box = channel.querySelector(".chat-notices");
+    if (!box) {
+      return;
+    }
+    box.querySelectorAll(":scope > .chat-notices__notice").forEach(function (node) {
+      node.remove();
+    });
+    notices.forEach(function (notice) {
+      if (notice.channelId === channel.dataset.id) {
+        box.appendChild(noticeNode(channel, notice));
+      }
+    });
+  }
+
+  function noticeNode(channel, notice) {
+    var node = el("div", "chat-notices__notice");
+    if (notice.text) {
+      node.appendChild(el("p", "chat-notices__notice__content", notice.text));
+    } else if (notice.type === "mention_without_membership") {
+      node.appendChild(mentionWithoutMembership(channel, notice));
+    }
+    var clear = el("button", "btn no-text btn-icon btn-transparent chat-notices__notice__clear");
+    clear.type = "button";
+    clear.innerHTML = iconHtml("xmark") + '<span aria-hidden="true">&#8203;</span>';
+    node.appendChild(clear);
+    return node;
+  }
+
+  // MentionWithoutMembership: the mentioned members who can't see the
+  // message, and its invite link (sendInvitations); once sent, a check
+  // for three seconds before the notices go.
+  function mentionWithoutMembership(channel, notice) {
+    var d = extras(channel);
+    var ids = notice.data.user_ids || [];
+    var box = el("div", "mention-without-membership-notice");
+    if (notice.sent) {
+      var sent = el("span", "mention-without-membership-notice__invitation-sent");
+      sent.innerHTML = iconHtml("check");
+      sent.appendChild(el("span", null, plural(d.labelInvitationsSentOne, d.labelInvitationsSentOther, ids.length)));
+      box.appendChild(sent);
+      return box;
+    }
+    var body = el("p", "mention-without-membership-notice__body -without-membership");
+    body.appendChild(el("span", "mention-without-membership-notice__body__text", notice.data.text));
+    var link = el("a", "mention-without-membership-notice__body__link", d.labelInvite);
+    link.setAttribute("href", "");
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var params = new URLSearchParams();
+      ids.forEach(function (id) {
+        params.append("user_ids[]", id);
+      });
+      // chatApi.invite's messageId is the notice's data.messageId, which
+      // the payload names message_id: none is sent.
+      api("POST", "/channels/" + channel.dataset.id + "/invites", params)
+        .then(function () {
+          notice.sent = true;
+          drawNotices(channel);
+          setTimeout(clearNotices, 3000);
+        })
+        .catch(function () {});
+    });
+    body.appendChild(link);
+    box.appendChild(body);
+    return box;
+  }
+
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".chat-notices__notice__clear")) {
+      clearNotices();
+    }
+  });
+
+  // ChatChannelFilter: the navbar's filter button (ChatNavbarFilter)
+  // toggles a bar over the channel searching its messages (GET
+  // /chat/api/search, latest first, INPUT_DELAY after typing stops),
+  // each result loaded in place as onLoadTargetMessageId does
+  // (highlightOrFetchMessage), the previous and next ones a click away.
+  var INPUT_DELAY = 250;
+  var filter = { open: false, channelId: null, results: null, index: 0, noResults: false, timer: null, controller: null };
+
+  // clearFilteringState
+  function clearFilter() {
+    clearTimeout(filter.timer);
+    if (filter.controller) {
+      filter.controller.abort();
+      filter.controller = null;
+    }
+    filter.results = null;
+    filter.index = 0;
+    filter.noResults = false;
+  }
+
+  function filtering(channel) {
+    return filter.open && filter.channelId === channel.dataset.id;
+  }
+
+  // toggleIsFiltering: the active message cleared, and the bar's state
+  // cleared as it is drawn (didInsert).
+  function toggleFilter(channel) {
+    var open = !filtering(channel);
+    clearActive();
+    clearFilter();
+    filter.open = open;
+    filter.channelId = channel.dataset.id;
+    drawFilter(channel);
+    var input = channel.querySelector(".chat-channel__filter-bar .filter-input");
+    if (input) {
+      input.focus();
+    }
+  }
+
+  function filterButton(cls, icon) {
+    return (
+      '<button class="btn no-text btn-icon btn-small btn-flat ' + cls + '" type="button">' + iconHtml(icon) +
+      '<span aria-hidden="true">&#8203;</span></button>'
+    );
+  }
+
+  function drawFilter(channel) {
+    document.querySelectorAll(".c-navbar__filter").forEach(function (button) {
+      button.classList.toggle("active", filtering(channel));
+    });
+    var bar = channel.querySelector(".chat-channel__filter-bar");
+    if (!filtering(channel)) {
+      if (bar) {
+        bar.remove();
+      }
+      return;
+    }
+    var d = extras(channel);
+    if (!bar) {
+      bar = el("div", "chat-channel__filter-bar");
+      var row = el("div");
+      var container = el("div", "filter-input-container");
+      var input = el("input", "filter-input no-blur");
+      input.type = "text";
+      input.placeholder = d.labelFilter || "";
+      container.appendChild(input);
+      row.appendChild(container);
+      bar.appendChild(row);
+      var after = channel.querySelector(".chat-mention-warnings") || channel.querySelector(".chat-notices");
+      if (after) {
+        after.after(bar);
+      } else {
+        channel.prepend(bar);
+      }
+    }
+    var line = bar.firstElementChild;
+    while (line.children.length > 1) {
+      line.lastElementChild.remove();
+    }
+    var html = "";
+    var results = filter.results || [];
+    if (results.length) {
+      html +=
+        '<span class="chat-channel__filter-position"><span class="chat-channel__filter-position-index">' +
+        (filter.index + 1) +
+        '</span><span class="chat-channel__filter-position-separator">/</span><span class="chat-channel__filter-position-total">' +
+        results.length + "</span></span>";
+      if (results.length > 1) {
+        html += filterButton("chat-channel__prev-result", "chevron-up");
+        html += filterButton("chat-channel__next-result", "chevron-down");
+      }
+    }
+    html +=
+      '<button class="btn btn-text btn-small btn-flat chat-channel__filter-done" type="button"><span class="d-button-label">' +
+      escapeHtml(d.labelDone) + "</span></button>";
+    line.insertAdjacentHTML("beforeend", html);
+    var alert = bar.querySelector(":scope > .alert");
+    if (filter.noResults && !alert) {
+      bar.appendChild(el("div", "alert alert-info", d.labelNoResults));
+    } else if (!filter.noResults && alert) {
+      alert.remove();
+    }
+  }
+
+  // navigateToResult
+  function showResult(channel, index) {
+    filter.index = index;
+    drawFilter(channel);
+    if (document.documentElement.classList.contains("ios-device") && document.activeElement) {
+      document.activeElement.blur();
+    }
+    jumpToMessage(channel, filter.results[index].id);
+  }
+
+  // performSearch
+  function searchChannel(channel, query) {
+    if (filter.controller) {
+      filter.controller.abort();
+    }
+    var controller = new AbortController();
+    filter.controller = controller;
+    filter.noResults = false;
+    var params = new URLSearchParams({ query: query, channel_id: channel.dataset.id, exclude_threads: "true", sort: "latest" });
+    fetch(basePath() + "/chat/api/search?" + params.toString(), {
+      credentials: "same-origin",
+      headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      signal: controller.signal,
+    })
+      .then(function (r) {
+        if (r.ok) {
+          return r.json();
+        }
+        return r
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (body) {
+            window.alert((body.errors || (body.error ? [body.error] : [r.statusText])).join("\n"));
+            return null;
+          });
+      })
+      .then(function (response) {
+        if (!response || filter.controller !== controller || !filtering(channel) || !channel.isConnected) {
+          return;
+        }
+        filter.results = response.messages || [];
+        filter.index = 0;
+        if (!filter.results.length) {
+          filter.noResults = true;
+          drawFilter(channel);
+          return;
+        }
+        showResult(channel, 0);
+      })
+      .catch(function () {})
+      .finally(function () {
+        if (filter.controller === controller) {
+          filter.controller = null;
+        }
+      });
+  }
+
+  document.addEventListener("click", function (event) {
+    var channel = document.querySelector(".chat-channel[data-id]");
+    if (!channel) {
+      return;
+    }
+    if (event.target.closest(".c-navbar__filter")) {
+      toggleFilter(channel);
+      return;
+    }
+    var bar = event.target.closest(".chat-channel__filter-bar");
+    if (!bar) {
+      return;
+    }
+    var results = filter.results || [];
+    if (event.target.closest(".chat-channel__filter-done")) {
+      toggleFilter(channel);
+    } else if (event.target.closest(".chat-channel__prev-result") && results.length) {
+      // navigateToPreviousResult: older, wrapping to the latest.
+      showResult(channel, filter.index < results.length - 1 ? filter.index + 1 : 0);
+    } else if (event.target.closest(".chat-channel__next-result") && results.length) {
+      showResult(channel, filter.index > 0 ? filter.index - 1 : results.length - 1);
+    }
+  });
+
+  // loadSearchResults: a blank filter clears the state.
+  document.addEventListener("input", function (event) {
+    var input = event.target.closest(".chat-channel__filter-bar .filter-input");
+    var channel = input && input.closest(".chat-channel[data-id]");
+    if (!channel) {
+      return;
+    }
+    var query = input.value;
+    clearTimeout(filter.timer);
+    if (!query.trim()) {
+      clearFilter();
+      drawFilter(channel);
+      return;
+    }
+    var ios = document.documentElement.classList.contains("ios-device");
+    filter.timer = setTimeout(function () {
+      searchChannel(channel, query);
+    }, ios ? INPUT_DELAY * 2 : INPUT_DELAY);
+  });
+
+  // closeOnEscape
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") {
+      return;
+    }
+    var input = event.target.closest && event.target.closest(".chat-channel__filter-bar .filter-input");
+    var channel = input && input.closest(".chat-channel[data-id]");
+    if (channel) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleFilter(channel);
+    }
+  });
+
+  // The mobile scroll to bottom arrow's count (ScrollToBottomArrow
+  // #newMessageCount): the member's unread messages in the channel
+  // (channel.tracking.unreadCount) while the arrow shows.
+  function drawNewMessages(channel, button) {
+    var d = extras(channel);
+    var mobile = document.documentElement.classList.contains("mobile-view");
+    var count = mobile ? Number(d.unreadCount || 0) : 0;
+    var span = button.querySelector(".chat-scroll-to-bottom__new-messages");
+    if (button.classList.contains("visible") && count > 0) {
+      if (!span) {
+        span = el("span", "chat-scroll-to-bottom__new-messages");
+        button.appendChild(span);
+      }
+      span.textContent = plural(d.labelNewMessagesOne, d.labelNewMessagesOther, count);
+    } else if (span) {
+      span.remove();
+    }
+  }
+
+  function setUnreadCount(channel, count) {
+    var tpl = channel.querySelector("template.chat-channel-extras");
+    if (tpl) {
+      tpl.dataset.unreadCount = String(count);
+      updateArrow(channel);
+    }
+  }
+
+  // ChatSubscriptionsManager#_onNewChannelMessage: another member's
+  // message past the last read one counts unread.
+  function countUnread(channel, data) {
+    var m = data.chat_message;
+    if (!m || !m.user || channel.dataset.following !== "true" || String(m.user.id) === channel.dataset.viewerId) {
+      return;
+    }
+    if (Number(m.id) > Number(channel.dataset.lastRead || 0)) {
+      setUnreadCount(channel, Number(extras(channel).unreadCount || 0) + 1);
+    }
+  }
+
+  // updateLastReadMessage's optimistic clear: the latest message in view.
+  function readOptimistically(channel, message) {
+    var list = channel.querySelector(".chat-messages-container");
+    var items = list ? persistedItems(list) : [];
+    if (canLoadMore(channel, FUTURE) !== true && items.length && items[items.length - 1] === message) {
+      setUnreadCount(channel, 0);
+    }
+  }
+
+  // The count the read leaves (the tracking state the read publishes),
+  // from the page drawn again.
+  function unreadFrom(channel, doc) {
+    var next = doc.querySelector('.chat-channel[data-id="' + channel.dataset.id + '"] template.chat-channel-extras');
+    if (next && channel.isConnected) {
+      setUnreadCount(channel, Number(next.dataset.unreadCount || 0));
+    }
+  }
+
+  // ChatMessageSeparator#onDateClick (fetchMessagesByDate): the day's
+  // first message loaded is highlighted in the center, unless it was the
+  // first of the page that loaded it with older messages left to load,
+  // when the page around the day's start loads (target_date).
+  var firstOfResults = new WeakSet();
+
+  function markFirstOfResults(node) {
+    if (node && node.nodeType === 1) {
+      firstOfResults.add(node);
+    }
+  }
+
+  // moment(date).startOf("day").format()
+  function startOfDay(date) {
+    var day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    var offset = -day.getTimezoneOffset();
+    var sign = offset >= 0 ? "+" : "-";
+    offset = Math.abs(offset);
+    return (
+      day.getFullYear() + "-" + pad(day.getMonth() + 1) + "-" + pad(day.getDate()) + "T00:00:00" +
+      sign + pad(Math.floor(offset / 60)) + ":" + pad(offset % 60)
+    );
+  }
+
+  function fetchMessagesByDate(channel, id) {
+    var list = channel.querySelector(".chat-messages-container");
+    var node = list && findMessage(list, id);
+    if (pane.loading || !node || node.matches("template")) {
+      return;
+    }
+    if (firstOfResults.has(node) && canLoadMore(channel, PAST)) {
+      loadMessagesByDate(channel, startOfDay(new Date(node.dataset.createdAt)));
+    } else {
+      scrollToMessage(channel, id, { highlight: true, position: "center", autoExpand: true });
+    }
+  }
+
+  // fetchMessages({ target_date, direction: FUTURE }): the page in place
+  // of the one shown. The meta has no target message for a date, so
+  // nothing is scrolled to: the page shows from its bottom.
+  function loadMessagesByDate(channel, date) {
+    pane.loading = true;
+    channel.classList.add("loading");
+    return fetchPage(channel, { target_date: date, direction: FUTURE, newest: "true" })
+      .then(function (page) {
+        var list = channel.querySelector(".chat-messages-container");
+        if (!page) {
+          popupError(channel);
+          return;
+        }
+        if (!list || !channel.isConnected) {
+          return;
+        }
+        clearActive();
+        channel.dataset.canLoadMorePast = String(page.past);
+        channel.dataset.canLoadMoreFuture = String(page.future);
+        list.innerHTML = page.html;
+        markFirstOfResults(persistedItems(list)[0]);
+        settle(channel, list);
+        pane.ignoreNextScroll = true;
+        scrollerOf(channel).scrollTop = 0;
+        scheduleFill(channel);
+      })
+      .catch(function () {})
+      .finally(function () {
+        pane.loading = false;
+        channel.classList.remove("loading");
+        updateArrow(channel);
+      });
+  }
+
+  document.addEventListener("click", function (event) {
+    var separator = event.target.closest(".chat-message-separator-date[data-id]");
+    var channel = separator && separator.closest(".chat-channel[data-id]");
+    if (channel) {
+      fetchMessagesByDate(channel, separator.dataset.id);
+    }
+  });
+
+  // ChatChannelScrollPositions: per channel, the bottom-most message in
+  // view when the scroll last rested away from the bottom (onScrollEnd),
+  // forgotten when it rests at the bottom; the channel opened again
+  // loads around it, highlighted at the end of the pane, instead of the
+  // last read message, and is chat-channel--saved-scroll-position while
+  // one is kept.
+  var scrollPositions = {};
+
+  // firstVisibleMessageId: the last message whose bottom shows.
+  function firstVisibleMessageId(channel) {
+    var scroller = scrollerOf(channel);
+    var nodes = scroller ? scroller.querySelectorAll(":scope .chat-messages-container > [data-id]") : [];
+    var view = scroller ? scroller.getBoundingClientRect() : null;
+    for (var i = nodes.length - 1; i >= 0; i--) {
+      var rect = nodes[i].getBoundingClientRect();
+      if (rect.bottom <= view.bottom + 1 && rect.bottom >= view.top) {
+        var id = parseInt(nodes[i].dataset.id, 10);
+        return Number.isNaN(id) ? null : id;
+      }
+    }
+    return null;
+  }
+
+  function markSavedPosition(channel) {
+    channel.classList.toggle("chat-channel--saved-scroll-position", !!scrollPositions[channel.dataset.id]);
+  }
+
+  function trackScrollPosition(channel) {
+    var scroller = scrollerOf(channel);
+    if (!scroller) {
+      return function () {};
+    }
+    var timer = null;
+    var onScroll = function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (!channel.isConnected) {
+          return;
+        }
+        if (-scroller.scrollTop <= 1) {
+          delete scrollPositions[channel.dataset.id];
+        } else {
+          scrollPositions[channel.dataset.id] = firstVisibleMessageId(channel);
+        }
+        markSavedPosition(channel);
+      }, 250);
+    };
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    scroller.addEventListener("wheel", onScroll, { passive: true });
+    return function () {
+      clearTimeout(timer);
+      scroller.removeEventListener("scroll", onScroll);
+      scroller.removeEventListener("wheel", onScroll);
+    };
+  }
+
+  // loadMessages' saved position (debounceHighlightOrFetchMessage), on a
+  // channel opened anew without a near-message target: true when kept.
+  function restoreScrollPosition(channel) {
+    var id = scrollPositions[channel.dataset.id];
+    if (!id || !openedAnew(channel)) {
+      return false;
+    }
+    var list = channel.querySelector(".chat-messages-container");
+    var node = list && findMessage(list, id);
+    if (node && !node.matches("template")) {
+      scrollToMessage(channel, id, { highlight: true, position: "end" });
+    } else {
+      loadMessages(channel, id, "end");
+    }
+    return true;
+  }
+
+  // chat-decorators' hashtagIcons and codeblockButtons (under
+  // chat_show_copy_button_on_codeblocks) and chat-plugin-decorators'
+  // spoiler (spoiler-alert.js's, under spoiler_enabled), each once on a
+  // message's cooked text and once its script is in.
+  var hashtagsDone = new WeakSet();
+  var codeblocksDone = new WeakSet();
+  var spoilersDone = new WeakSet();
+
+  function decorateMessages(root) {
+    var codeblocks = extras(root.closest(".chat-channel[data-id]") || root).codeblockButtons === "true";
+    root.querySelectorAll(".chat-cooked").forEach(function (cooked) {
+      if (Discourse.hashtags && !hashtagsDone.has(cooked)) {
+        hashtagsDone.add(cooked);
+        Discourse.hashtags.decorate(cooked);
+      }
+      if (
+        codeblocks &&
+        Discourse.codeblockButtons &&
+        Discourse.codeblockButtons.attach &&
+        !codeblocksDone.has(cooked) &&
+        cooked.querySelector("pre > code")
+      ) {
+        codeblocksDone.add(cooked);
+        Discourse.codeblockButtons.attach(cooked, { showFullscreen: true, showCopy: true });
+      }
+      if (Discourse.applySpoilers && !spoilersDone.has(cooked)) {
+        spoilersDone.add(cooked);
+        Discourse.applySpoilers(cooked);
+      }
+    });
+  }
+
+  // What setup adds for the pane's rest; the cleanup it returns.
+  function setupPaneRest(channel, scheduleRead) {
+    if (openedAnew(channel)) {
+      notices = [];
+      clearFilter();
+      filter.open = false;
+    }
+    markFirstOfResults(persistedItems(channel.querySelector(".chat-messages-container") || el("div"))[0]);
+    drawNotices(channel);
+    drawFilter(channel);
+    markSavedPosition(channel);
+    reader.active = isActiveReader();
+    reader.onBack = scheduleRead;
+    // The deferred decorators (hashtags.js, spoiler-alert.js,
+    // codeblock-buttons.js, highlight-syntax.js, local-dates.js) come in
+    // after chat.js on a page load.
+    var onLoaded = function () {
+      if (channel.isConnected) {
+        decorateLinks(channel);
+      }
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", onLoaded, { once: true });
+    }
+    var untrack = trackScrollPosition(channel);
+    paneRest.channelId = channel.dataset.id;
+    paneRest.element = channel;
+    paneRest.left = false;
+    return function () {
+      document.removeEventListener("DOMContentLoaded", onLoaded);
+      untrack();
+      reader.onBack = null;
+    };
+  }
+
   // The chat footer's buttons and the empty channels list's are routes
   // (DButton @route).
   document.addEventListener("click", function (event) {
@@ -4366,6 +5084,7 @@
     teardown();
     stopLive();
     stopPresence();
+    paneRest.left = true;
   }
 
   // ChatComposerUploads (chat-composer-uploads.gjs): the uploads the
@@ -4789,13 +5508,91 @@
     });
   }
 
+  // chat-setup.js's other dropdown buttons, in its order around the
+  // upload: the emoji picker in the mobile view (under enable_emoji, which
+  // the picker's config follows), the picked emoji added at the
+  // selection; and the insert date modal (under
+  // discourse_local_dates_enabled, which loads local-dates-create.js),
+  // its markup added at the selection and the composer focused. GIFs
+  // aren't among them: core's GIF picker (GifsModal) isn't ported.
+  function addAtSelection(textarea, text) {
+    textarea.setRangeText(text, textarea.selectionStart, textarea.selectionEnd, "end");
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  if (
+    !Discourse.chatComposerButtons.some(function (b) {
+      return b.id === "emoji";
+    })
+  ) {
+    var uploadAt = Discourse.chatComposerButtons.findIndex(function (b) {
+      return b.id === "chat-upload-btn";
+    });
+    Discourse.chatComposerButtons.splice(Math.max(uploadAt, 0), 0, {
+      id: "emoji",
+      icon: "face-smile",
+      get label() {
+        var channel = document.querySelector(".chat-channel[data-id]");
+        return channel ? extras(channel).labelEmoji || "" : "";
+      },
+      displayed: function () {
+        return (
+          document.documentElement.classList.contains("mobile-view") &&
+          !!Discourse.emojiPicker &&
+          !!document.querySelector(".chat-channel[data-id] template.chat-channel-extras")
+        );
+      },
+      action: function (context, textarea) {
+        var wrapper = textarea && textarea.closest(".chat-composer__wrapper");
+        var trigger = wrapper && wrapper.querySelector(".chat-composer-dropdown__trigger-btn");
+        if (!trigger) {
+          return;
+        }
+        Discourse.emojiPicker.open(trigger, {
+          context: "chat",
+          onSelect: function (emoji) {
+            addAtSelection(textarea, ":" + emoji + ":");
+          },
+        });
+      },
+    });
+  }
+  if (
+    !Discourse.chatComposerButtons.some(function (b) {
+      return b.id === "local-dates";
+    })
+  ) {
+    var afterUpload = Discourse.chatComposerButtons.findIndex(function (b) {
+      return b.id === "chat-upload-btn";
+    });
+    Discourse.chatComposerButtons.splice(afterUpload + 1, 0, {
+      id: "local-dates",
+      icon: "calendar-days",
+      get label() {
+        return Discourse.localDates ? Discourse.localDates.i18n("discourse_local_dates.title") : "";
+      },
+      displayed: function () {
+        return !!Discourse.localDatesCreate && !!Discourse.localDates;
+      },
+      action: function (context, textarea) {
+        if (!textarea) {
+          return;
+        }
+        Discourse.localDatesCreate.show(function (markup) {
+          addAtSelection(textarea, markup);
+          textarea.focus();
+        });
+      },
+    });
+  }
+
   // ChatComposerDropdown: the "+" trigger's menu of the composer buttons
   // registered for the dropdown (registerChatComposerButton, position
   // "dropdown"), each {id, icon, label, displayed(context), action(context,
-  // textarea)}. Of core's own, upload is registered above; GIFs, local
-  // dates and the mobile emoji are not ported, so the plugins' show
-  // besides; with none the trigger is left alone, as DMenu renders no
-  // trigger without buttons.
+  // textarea)}. Core's own are registered above (the mobile emoji,
+  // upload, local dates; not GIFs), the plugins' show besides; with none
+  // the trigger is left alone, as DMenu renders no trigger without
+  // buttons.
   Discourse.chatComposerButtons = Discourse.chatComposerButtons || [];
   document.addEventListener("click", function (event) {
     var trigger = event.target.closest(".chat-composer-dropdown__trigger-btn");
