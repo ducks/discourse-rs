@@ -2061,7 +2061,12 @@ fn thread_indicator_html(v: &View, m: &Value) -> String {
         v.channel["id"],
         m["thread"]["id"],
         preview["last_reply_id"],
-        user_avatar(last_user, 24, false, v),
+        // Ember's interactive ChatUserAvatar is an <a> inside the
+        // indicator's LinkTo, which only a DOM built in script can hold:
+        // drawn as HTML, the parser closes the indicator at the inner
+        // <a> and spills the rest of it over the message. So the static
+        // avatar, as the threads list draws it.
+        static_user_avatar(last_user, 24, &v.online),
         escape(s(&last_user["username"])),
         format_date_ago(
             v.i18n,
