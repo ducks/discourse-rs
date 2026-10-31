@@ -74,6 +74,14 @@ pub async fn migrate_conn(conn: &mut PgConnection) -> Result<(), sqlx::Error> {
         // oldest stamp is a window old; pushed when allowed (always when
         // aggressive) and trimmed to max. NULL when allowed, else the
         // seconds to wait, read after the push as Ruby reads them.
+        //
+        // Stamps more than a window old are dropped first. No answer
+        // changes (a refusal needs max stamps inside the window, and
+        // `remaining` counts only those), but the array stays one window
+        // of requests: Redis's LPUSH and LTRIM cost the same however long
+        // the list, and rewriting a list grown toward a large max on every
+        // request, under the row lock, is what made sustained load slow
+        // down.
         "CREATE OR REPLACE FUNCTION discourse_rs.rate_limit_perform( \
            p_key text, p_now bigint, p_secs bigint, p_max int, p_aggressive bool) \
          RETURNS bigint LANGUAGE plpgsql AS $$ \
@@ -83,6 +91,8 @@ pub async fn migrate_conn(conn: &mut PgConnection) -> Result<(), sqlx::Error> {
              ON CONFLICT (key) DO NOTHING; \
            SELECT CASE WHEN expires_at <= p_now THEN '{}' ELSE stamps END INTO s \
              FROM discourse_rs.rate_limits WHERE key = p_key FOR UPDATE; \
+           s := ARRAY(SELECT t FROM unnest(s) WITH ORDINALITY AS u(t, i) \
+             WHERE p_now - t <= p_secs ORDER BY i); \
            allowed := cardinality(s) < p_max OR p_now - s[cardinality(s)] >= p_secs; \
            n := s; \
            IF allowed OR p_aggressive THEN \
