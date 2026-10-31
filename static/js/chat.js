@@ -2968,12 +2968,22 @@
   // its unpin buttons.
   var pinsMarkedRead = null;
 
+  // Each pin's message into its link, as Ember's DOM has it (in the
+  // page's markup the message's own links would close the link).
+  function expandPins() {
+    document.querySelectorAll(".chat-pinned-message__link > template.chat-pinned-message__content").forEach(function (template) {
+      template.replaceWith(template.content);
+    });
+  }
+
   function markPinsRead() {
     var list = document.querySelector(".chat-pinned-messages-list[data-channel-id]");
-    if (!list || pinsMarkedRead === location.href) {
+    // The drawer's pins route: each time it is drawn.
+    var key = list && list.closest(".chat-drawer") ? list : location.href;
+    if (!list || pinsMarkedRead === key) {
       return;
     }
-    pinsMarkedRead = location.href;
+    pinsMarkedRead = key;
     api("PUT", "/channels/" + list.dataset.channelId + "/pins/read").catch(function () {});
   }
 
@@ -4237,6 +4247,8 @@
   // `focus`: the composer takes the focus, as ChatComposer does when the
   // channel is drawn (not when a page swaps in beside the drawer's).
   function setup(focus) {
+    expandPins();
+    markPinsRead();
     var channel = document.querySelector(".chat-channel[data-id]");
     if (!channel) {
       return;
@@ -4251,7 +4263,6 @@
       api("POST", "/channels/" + channel.dataset.id + "/memberships/me").then(refresh);
     }
     setupAutocomplete();
-    markPinsRead();
     drawTimes(channel);
     drawSeparators(channel);
     decorateLinks(channel);

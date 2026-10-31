@@ -419,9 +419,9 @@ impl Context<'_> {
         Ok(out)
     }
 
-    /// ChatFooter in the mobile view, `route` the active item's id: shown
-    /// with more than one of starred, threads (refused upstream while
-    /// unported), DMs and public channels.
+    /// ChatFooter in the mobile view and the expanded drawer, `route` the
+    /// active item's id: shown with more than one of starred, threads,
+    /// DMs and public channels.
     async fn footer(
         &mut self,
         route: &str,
@@ -434,7 +434,19 @@ impl Context<'_> {
             || super::user_can_direct_message(&mut *self.conn, settings, self.guardian).await?;
         let starred = channels.iter().chain(dms).any(|c| c.starred);
         let public = settings.get("enable_public_channels")?.truthy();
-        let routes = [starred, dms_enabled, public]
+        // includeThreads: chatChannelsManager.shouldShowMyThreads.
+        let threads =
+            settings.get("chat_threads_enabled")?.truthy() && self.has_viewable_threads().await?;
+        // UnreadThreadsIndicator: the watched threads' unread messages,
+        // else a dot while any thread is unread (hasUnreadThreads).
+        let unread_threads = threads && {
+            let ids: Vec<i64> = channels.iter().chain(dms).map(|c| c.id).collect();
+            self.unread_thread_overview(&ids)
+                .await?
+                .values()
+                .any(|t| t.as_object().is_some_and(|t| !t.is_empty()))
+        };
+        let routes = [starred, threads, dms_enabled, public]
             .iter()
             .filter(|x| **x)
             .count();
@@ -505,6 +517,20 @@ impl Context<'_> {
                             .map(|c| c.unread + c.mentions)
                             .sum(),
                         0,
+                    ),
+                ));
+            }
+            if threads {
+                out.push_str(&item(
+                    "threads",
+                    route == "threads",
+                    "chat.my_threads.aria_label",
+                    "discourse-threads",
+                    "chat.my_threads.title",
+                    "/chat/threads",
+                    footer_indicator(
+                        channels.iter().chain(dms).map(|c| c.watched_threads).sum(),
+                        i64::from(unread_threads),
                     ),
                 ));
             }
@@ -976,6 +1002,48 @@ impl Context<'_> {
             out.push_str(&self.footer("threads", &channels, &dms).await?);
         }
         Ok(out)
+    }
+
+    /// The drawer's threads route (ChatDrawerRoutesThreads): its navbar
+    /// titled Chat (ThreadsListButton has no channel, so none), then
+    /// while expanded UserThreads and the footer.
+    pub async fn drawer_threads_route(
+        &mut self,
+        nav: &super::drawer::Nav<'_>,
+    ) -> Result<String, AppError> {
+        let navbar = nav.navbar(&self.t("chat.heading"));
+        if !nav.expanded {
+            return Ok(format!(
+                "<div class=\"c-drawer-routes --threads\">{navbar}</div>"
+            ));
+        }
+        let Preloaded { channels, dms, .. } = self.preloaded().await?;
+        let list = self.user_threads_list().await?;
+        let footer = self.footer("threads", &channels, &dms).await?;
+        Ok(format!(
+            "<div class=\"c-drawer-routes --threads\">{navbar}<div class=\"chat-drawer-content\">{list}</div>{footer}</div>"
+        ))
+    }
+
+    /// The drawer's search route (ChatDrawerRoutesSearch): its navbar,
+    /// then while expanded ChatSearch without query params (chat-search.js
+    /// keeps chatSearchQuery's query across routes) and the footer.
+    pub async fn drawer_search_route(
+        &mut self,
+        nav: &super::drawer::Nav<'_>,
+    ) -> Result<String, AppError> {
+        let navbar = nav.navbar(&self.t("chat.search.title"));
+        if !nav.expanded {
+            return Ok(format!(
+                "<div class=\"c-drawer-routes --search\">{navbar}</div>"
+            ));
+        }
+        let Preloaded { channels, dms, .. } = self.preloaded().await?;
+        let footer = self.footer("search", &channels, &dms).await?;
+        Ok(format!(
+            "<div class=\"c-drawer-routes --search\">{navbar}<div class=\"chat-drawer-content\">{}</div>{footer}</div>",
+            super::search_view::chat_search(self.i18n, self.base_path)
+        ))
     }
 
     /// ChatChannelRow for a DM in the direct messages list: its icon, name

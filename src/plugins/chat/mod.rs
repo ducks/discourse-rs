@@ -41,6 +41,7 @@ pub mod publisher;
 pub mod review;
 pub mod scheduled;
 pub mod search;
+pub mod search_view;
 pub mod site_integration;
 pub mod summary_email;
 pub mod thread_view;

@@ -8,7 +8,10 @@ VALUES
   ('interface_color_selector', 7, 'sidebar_footer', now(), now()),
   -- The post menu's plugin buttons: Solved on every topic, Assign.
   ('allow_solved_on_all_topics', 5, 't', now(), now()),
-  ('assign_enabled', 5, 't', now(), now())
+  ('assign_enabled', 5, 't', now(), now()),
+  -- Chat's my threads (the drawer's threads route and the footer's
+  -- item), a hidden setting the admin can't save.
+  ('chat_threads_enabled', 5, 't', now(), now())
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
 -- user1 writes in the markdown editor (composition_mode 0), so the

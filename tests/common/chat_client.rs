@@ -31,11 +31,34 @@ impl Client {
         (status, String::from_utf8_lossy(&bytes).into_owned())
     }
 
+    /// A page with the response's headers: the status, the headers and
+    /// the HTML.
+    #[allow(dead_code)]
+    pub async fn page_with_headers(&mut self, path: &str) -> (u16, axum::http::HeaderMap, String) {
+        let (status, headers, bytes) = self.send_full(false, "GET", path, "").await;
+        (
+            status,
+            headers,
+            String::from_utf8_lossy(&bytes).into_owned(),
+        )
+    }
+
     async fn raw(&mut self, method: &str, path: &str, body: &str) -> (u16, Vec<u8>) {
         self.send(true, method, path, body).await
     }
 
     async fn send(&mut self, xhr: bool, method: &str, path: &str, body: &str) -> (u16, Vec<u8>) {
+        let (status, _, bytes) = self.send_full(xhr, method, path, body).await;
+        (status, bytes)
+    }
+
+    async fn send_full(
+        &mut self,
+        xhr: bool,
+        method: &str,
+        path: &str,
+        body: &str,
+    ) -> (u16, axum::http::HeaderMap, Vec<u8>) {
         let mut request = Request::builder()
             .method(method)
             .uri(path)
@@ -70,8 +93,9 @@ impl Client {
             }
         }
         let status = response.status().as_u16();
+        let headers = response.headers().clone();
         let bytes = response.into_body().collect().await.unwrap().to_bytes();
-        (status, bytes.to_vec())
+        (status, headers, bytes.to_vec())
     }
 
     pub async fn logged_in(state: AppState, username: &str) -> Client {

@@ -2990,6 +2990,56 @@ impl Context<'_> {
     /// chat.js marks the pins read). The footer toggling the pinned bar is
     /// left out with the bar.
     pub async fn pins_side_panel(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
+        let channel_json = self.channel(channel, None, None, None).await?;
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let mobile = crate::mobile::mobile_view();
+        let slug = slugified_title(&channel_json);
+        let channel_url = format!("{}/chat/c/{}/{}", self.base_path, escape(&slug), channel.id);
+
+        // The mobile title names the channel too (its emoji left as typed).
+        let mut title = t("chat.pinned_messages.title");
+        if mobile {
+            title.push_str(" - ");
+            title.push_str(s(&channel_json["title"]));
+        }
+        let mut out = String::from(
+            "<div class=\"chat-side-panel\"><div class=\"c-routes --channel-pins c-channel-pins\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\">",
+        );
+        if mobile {
+            out.push_str(&format!(
+                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{channel_url}\">{}</a>",
+                escape(&t("chat.return_to_channel")),
+                d_icon("chevron-left", None)
+            ));
+        }
+        out.push_str(&format!(
+            "<div class=\"c-navbar__title\" title=\"{t}\"><span class=\"c-navbar__title-text\">{}{t}</span></div><nav class=\"c-navbar__actions\">",
+            d_icon("thumbtack", None),
+            t = escape(&title)
+        ));
+        if !mobile {
+            out.push_str(&format!(
+                "<a class=\"c-navbar__close-pins-button btn-transparent btn btn-icon no-text\" title=\"{}\" href=\"{channel_url}\">{}</a>",
+                escape(&t("chat.pinned_messages.close")),
+                d_icon("xmark", None)
+            ));
+        }
+        out.push_str("</nav></nav></div>");
+        out.push_str(&self.pinned_messages_list(channel).await?);
+        out.push_str("</div>");
+        if !mobile {
+            out.push_str("<div class=\"chat-side-panel-resizer\"></div>");
+        }
+        out.push_str("</div>");
+        Ok(out)
+    }
+
+    /// ChatPinnedMessagesList: the channel's pins (or its empty label),
+    /// each by who pinned it, the message not interactive and linking to
+    /// it, with the unpin button for those who manage pins. Also the
+    /// drawer's pins route's (drawer.rs).
+    pub async fn pinned_messages_list(&mut self, channel: &ChannelRow) -> Result<String, AppError> {
         let listed = match self.list_pins(Some(channel.id)).await? {
             super::pins::PinOutcome::Done(v) => v,
             _ => return Err(Unsupported("the pins of a chat channel it can't list").into()),
@@ -3022,44 +3072,13 @@ impl Context<'_> {
             relative_date_duration: self.settings.get("relative_date_duration")?.to_i(),
             thread_context: false,
         };
-        let mobile = crate::mobile::mobile_view();
         let slug = slugified_title(&channel_json);
         let channel_url = format!("{}/chat/c/{}/{}", self.base_path, escape(&slug), channel.id);
         let can_manage = self.can_manage_pins(channel).await?;
-
-        // The mobile title names the channel too (its emoji left as typed).
-        let mut title = t("chat.pinned_messages.title");
-        if mobile {
-            title.push_str(" - ");
-            title.push_str(s(&channel_json["title"]));
-        }
-        let mut out = String::from(
-            "<div class=\"chat-side-panel\"><div class=\"c-routes --channel-pins c-channel-pins\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\">",
-        );
-        if mobile {
-            out.push_str(&format!(
-                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{channel_url}\">{}</a>",
-                escape(&t("chat.return_to_channel")),
-                d_icon("chevron-left", None)
-            ));
-        }
-        out.push_str(&format!(
-            "<div class=\"c-navbar__title\" title=\"{t}\"><span class=\"c-navbar__title-text\">{}{t}</span></div><nav class=\"c-navbar__actions\">",
-            d_icon("thumbtack", None),
-            t = escape(&title)
-        ));
-        if !mobile {
-            out.push_str(&format!(
-                "<a class=\"c-navbar__close-pins-button btn-transparent btn btn-icon no-text\" title=\"{}\" href=\"{channel_url}\">{}</a>",
-                escape(&t("chat.pinned_messages.close")),
-                d_icon("xmark", None)
-            ));
-        }
-        out.push_str("</nav></nav></div>");
-        out.push_str(&format!(
+        let mut out = format!(
             "<div class=\"chat-pinned-messages-list chat-messages-scroller\" data-channel-id=\"{}\"><div class=\"chat-pinned-messages-list__items\">",
             channel.id
-        ));
+        );
         let last_viewed = listed["membership"]["last_viewed_pins_at"].as_str();
         let pins = listed["pinned_messages"]
             .as_array()
@@ -3091,8 +3110,11 @@ impl Context<'_> {
             );
             let message = &pin["message"];
             let html = message_html(&view, std::slice::from_ref(message), 0, None, None, false)?;
+            // The message's own links (its time, a thread indicator, the
+            // cooked text's) would close the link around it as the page
+            // is parsed: it waits in a template chat.js puts in the link.
             out.push_str(&format!(
-                "<div class=\"chat-pinned-message\"><a class=\"chat-pinned-message__link\" href=\"{channel_url}/{}\">{}</a>",
+                "<div class=\"chat-pinned-message\"><a class=\"chat-pinned-message__link\" href=\"{channel_url}/{}\"><template class=\"chat-pinned-message__content\">{}</template></a>",
                 message["id"],
                 not_interactive(&html, &top)
             ));
@@ -3106,11 +3128,7 @@ impl Context<'_> {
             }
             out.push_str("</div>");
         }
-        out.push_str("</div></div></div>");
-        if !mobile {
-            out.push_str("<div class=\"chat-side-panel-resizer\"></div>");
-        }
-        out.push_str("</div>");
+        out.push_str("</div></div>");
         Ok(out)
     }
 }
@@ -3119,7 +3137,7 @@ impl Context<'_> {
 /// container marked -not-interactive with the route's top block first,
 /// the avatar and the author's name without their links, reactions out
 /// of the tab order, and no pin mark.
-fn not_interactive(html: &str, top: &str) -> String {
+pub(super) fn not_interactive(html: &str, top: &str) -> String {
     static AVATAR_LINK: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
         regex::Regex::new(
             r#"(<div class="chat-message-avatar"><div class="chat-user-avatar[^"]*" data-username="[^"]*">)<a( aria-hidden="true")? class="chat-user-avatar__container" data-user-card="[^"]*" href="[^"]*"(?: tabindex="-1")?>(.*?)</a>"#,

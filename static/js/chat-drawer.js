@@ -25,8 +25,9 @@
 //
 // The outlet is kept across page swaps (hx-preserve), so the drawer stays
 // open as the member moves around the forum. A channel in the drawer is
-// static/js/chat.js's, loaded with its scripts when the drawer first
-// opens.
+// static/js/chat.js's, a thread chat-thread.js's, a channel's info
+// chat-channel-info.js's and the search chat-search.js's, loaded with
+// their scripts when the drawer first opens.
 (function () {
   "use strict";
 
@@ -304,17 +305,29 @@
     return scripts;
   }
 
+  // What the loaded scripts run in the drawer's route: chat.js's channel
+  // (and presence), chat-thread.js's thread, chat-channel-info.js's
+  // members list, chat-search.js's search.
+  var MOUNTED = ["chat", "chatThread", "chatChannelInfo", "chatSearch"];
+
   function unmountChat() {
-    if (Discourse.chat) {
-      Discourse.chat.unmount();
-    }
+    MOUNTED.forEach(function (name) {
+      if (Discourse[name]) {
+        Discourse[name].unmount();
+      }
+    });
   }
 
   function mountChat() {
     loadScripts().then(function () {
-      if (Discourse.chat && state.active) {
-        Discourse.chat.mount();
+      if (!state.active) {
+        return;
       }
+      MOUNTED.forEach(function (name) {
+        if (Discourse[name]) {
+          Discourse[name].mount();
+        }
+      });
     });
   }
 
@@ -997,6 +1010,10 @@
 
   Discourse.chatDrawer = {
     fetchRoute: fetchRoute,
+    // The route drawn again, for chat-channel-info.js after a change.
+    reload: function () {
+      return state.active && state.url ? load() : Promise.resolve();
+    },
     // router.transitionTo for chat-new-message.js: a channel opens in the
     // drawer when it is preferred, else in full-page chat.
     transitionTo: transitionTo,

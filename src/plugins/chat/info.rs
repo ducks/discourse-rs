@@ -12,7 +12,7 @@ use crate::topic_list_view::escape;
 use crate::{AppError, Unsupported};
 
 /// An info route's tab.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tab {
     Settings,
     Members,
@@ -193,9 +193,87 @@ impl Context<'_> {
             self.guardian.is_admin(),
             self.base_path,
         ));
-        out.push_str("<div class=\"c-channel-info\"><div class=\"c-routes --channel-info-nav\">");
-        // ChannelInfoNav: desktop, open channels.
-        if !mobile && c["status"] == "open" {
+        out.push_str("<div class=\"c-channel-info\">");
+        out.push_str(&self.info_nav(channel, &c, tab));
+        match tab {
+            Tab::Settings => out.push_str(&self.info_settings(channel, &c).await?),
+            Tab::Members => out.push_str(&self.info_members(channel, &c).await?),
+        }
+        out.push_str("</div></div>");
+        // What chat-channel-info.js shows: the toasts, the emoji picker.
+        out.push_str(&super::actions_view::toast_template());
+        out.push_str(&super::actions_view::picker_template(
+            &t,
+            self.base_path,
+            self.settings.emojis(),
+        ));
+        out.push_str(&format!(
+            "<script src=\"{}\"></script>",
+            crate::assets::url(self.base_path, "chat-channel-info.js")
+        ));
+        Ok(out)
+    }
+
+    /// The drawer's info routes (ChatDrawerRoutesSettings and
+    /// ChatDrawerRoutesMembers): the drawer's navbar (back to the
+    /// channel, ChatNavbarChannelTitle), then while expanded the nav and
+    /// the tab as the full-page info route draws them. Members isn't sent
+    /// to the settings for a channel that isn't open, as the full-page
+    /// route is. chat-drawer.js loads chat-channel-info.js with the
+    /// drawer's scripts.
+    pub async fn drawer_channel_info(
+        &mut self,
+        channel: &ChannelRow,
+        tab: Tab,
+        nav: &super::drawer::Nav<'_>,
+    ) -> Result<String, AppError> {
+        let membership = self
+            .memberships()
+            .await?
+            .into_iter()
+            .find(|m| m.chat_channel_id == channel.id);
+        let c = self
+            .channel(channel, membership.as_ref(), None, None)
+            .await?;
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let online = self.online_ids().await?;
+        let mut out = format!(
+            "<div class=\"c-drawer-routes --channel-info-{}\">{}",
+            match tab {
+                Tab::Settings => "settings",
+                Tab::Members => "members",
+            },
+            nav.channel_navbar(&c, self.settings.emojis(), &online)
+        );
+        if nav.expanded {
+            out.push_str("<div class=\"chat-drawer-content\">");
+            out.push_str(&self.info_nav(channel, &c, tab));
+            match tab {
+                Tab::Settings => out.push_str(&self.info_settings(channel, &c).await?),
+                Tab::Members => out.push_str(&self.info_members(channel, &c).await?),
+            }
+            out.push_str("</div>");
+            out.push_str(&super::actions_view::toast_template());
+            out.push_str(&super::actions_view::picker_template(
+                &t,
+                self.base_path,
+                self.settings.emojis(),
+            ));
+        }
+        out.push_str("</div>");
+        Ok(out)
+    }
+
+    /// ChannelInfoNav: the settings and members tabs, on desktop for an
+    /// open channel.
+    fn info_nav(&self, channel: &ChannelRow, c: &Value, tab: Tab) -> String {
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let slug = super::page::slugified_title(c);
+        let id = channel.id;
+        let mut out = String::from("<div class=\"c-routes --channel-info-nav\">");
+        if !crate::mobile::mobile_view() && c["status"] == "open" {
             let link = |active: bool, path: &str, label: String| {
                 format!(
                     "<li><a{} href=\"{}/chat/c/{}/{id}/info/{path}\">{label}</a></li>",
@@ -224,23 +302,7 @@ impl Context<'_> {
             ));
         }
         out.push_str("</div>");
-        match tab {
-            Tab::Settings => out.push_str(&self.info_settings(channel, &c).await?),
-            Tab::Members => out.push_str(&self.info_members(channel, &c).await?),
-        }
-        out.push_str("</div></div>");
-        // What chat-channel-info.js shows: the toasts, the emoji picker.
-        out.push_str(&super::actions_view::toast_template());
-        out.push_str(&super::actions_view::picker_template(
-            &t,
-            self.base_path,
-            self.settings.emojis(),
-        ));
-        out.push_str(&format!(
-            "<script src=\"{}\"></script>",
-            crate::assets::url(self.base_path, "chat-channel-info.js")
-        ));
-        Ok(out)
+        out
     }
 
     /// ChatRouteChannelInfoSettings
