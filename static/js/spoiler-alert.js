@@ -110,11 +110,15 @@
     return;
   }
 
-  Discourse.decorateCooked("spoiler-alert", function (el) {
+  // Also chat-plugin-decorators' spoiler, which chat.js runs on its
+  // messages.
+  Discourse.applySpoilers = function (el) {
     el.querySelectorAll(".spoiler").forEach(function (spoiler) {
       spoiler.classList.remove("spoiler");
       spoiler.classList.add("spoiled");
       applySpoiler(spoiler);
     });
-  });
+  };
+
+  Discourse.decorateCooked("spoiler-alert", Discourse.applySpoilers);
 })();

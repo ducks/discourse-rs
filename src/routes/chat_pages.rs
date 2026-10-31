@@ -957,6 +957,8 @@ pub struct LiveMessagesParams {
     direction: Option<String>,
     /// "true": the viewer's page has no "last visit" line.
     newest: Option<String>,
+    /// fetchMessagesByDate's day: the page around it.
+    target_date: Option<String>,
 }
 
 /// GET /live/chat/:channel_id/messages: a page of the channel's messages
@@ -989,11 +991,12 @@ pub async fn live_messages(
         Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
     };
     let page = context(&state, &mut conn, &settings, &guardian)
-        .messages_page(
+        .messages_page_at(
             channel_id,
             target,
             params.direction.as_deref(),
             params.newest.as_deref() == Some("true"),
+            params.target_date.as_deref(),
         )
         .await?;
     let Some(page) = page else {

@@ -161,6 +161,10 @@
     element.addEventListener("click", handleClick, false);
   }
 
+  // attachToGeneric, for chat.js's messages (chat-decorators'
+  // codeblockButtons, under chat's own setting).
+  Discourse.codeblockButtons = { attach: attach };
+
   if (!Discourse.cooked.setting("show_copy_button_on_codeblocks")) {
     return;
   }
