@@ -100,6 +100,11 @@ impl MemoryStore {
             entry.0.clear();
         }
         let s = &mut entry.0;
+        // rate_limit_perform's trim: stamps more than a window old answer
+        // nothing.
+        while s.back().is_some_and(|oldest| now - oldest > secs) {
+            s.pop_back();
+        }
         let allowed = (s.len() as i64) < max || s.back().is_some_and(|oldest| now - oldest >= secs);
         if allowed || aggressive {
             s.push_front(now);

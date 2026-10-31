@@ -410,6 +410,25 @@ Admin:
     before leaving the page that stores it; Ember reads it in the
     then().
 
+285. `perf/rate-limit-buckets` M, low priority: discourse_rs.rate_limits
+    keeps RateLimiter's Redis list as a bigint[] of epoch-second stamps,
+    and rate_limit_perform rewrites the whole array, under the row lock,
+    on every request. Since fix/rate-limit-trim-by-age stamps more than a
+    window old are dropped, so a list holds one window of requests at most
+    (and max at most): at Rails' default limits (search's largest is 150
+    a minute) that is cheap, but a raised limit pays for every request in
+    the window. The bench snapshot's 1,000,000 anonymous search limits
+    show it: back-to-back no-match searches go 1,427 / 651 / 486 / ... /
+    276 req/s as the minute window fills to about 21,500 stamps, every
+    anonymous search queued on the global key's row
+    (bench/20261030-rust/summary.md). Store (second, count) pairs instead
+    (at most secs + 1 of them, a running total beside), so a push updates
+    the newest pair: the same answers (perform's allowed and wait,
+    can_perform?, remaining, rollback! popping the newest, seconds_to_wait),
+    the table dropped and recreated (unlogged scratch state), the
+    MemoryStore and its save/load kept in step, and the trim test plus a
+    sustained-load check that stays flat.
+
 ## Now: the parity queue (2026-10-13)
 
 The next branches, in order. Each has a brief with the Rails reading

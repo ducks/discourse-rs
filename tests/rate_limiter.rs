@@ -424,3 +424,55 @@ async fn global_lists_are_loaded_apart_from_the_sites() {
     );
     clock::pin(None);
 }
+
+/// Stamps more than a window old are dropped as a limiter performs: the
+/// answers stay Rails' (worked out on the untrimmed list), and a list
+/// under a large max holds one window of requests, not all of them.
+#[tokio::test]
+async fn stamps_older_than_the_window_are_dropped() {
+    use discourse_rs::rate_limiter::MemoryStore;
+    let db = TestDb::new().await;
+    let _app = state(db.pool.clone(), recorded_config()).await;
+    let store = MemoryStore::default();
+    let table = RateLimiter::new(member(), "trim_table", 3, 60);
+    let memory = RateLimiter::new(member(), "trim_memory", 3, 60).in_memory(&store);
+    // Untrimmed: [20 10 0] full; at 70 the oldest (0) is 70 old, allowed,
+    // [70 20 10]; at 71 the oldest (10) is 61 old, allowed, [71 70 20]; at
+    // 72 the oldest (20) is 52 old: refused, 8 to wait.
+    for (secs, expected) in [
+        (0, None),
+        (10, None),
+        (20, None),
+        (70, None),
+        (71, None),
+        (72, Some(8)),
+    ] {
+        at(secs);
+        for limiter in [&table, &memory] {
+            let answer = limiter.performed(&db.pool, true).await.unwrap();
+            assert_eq!(
+                answer.map_err(|e| e.available_in).err(),
+                expected,
+                "at {secs}s"
+            );
+        }
+    }
+    assert_eq!(table.remaining(&db.pool).await.unwrap(), 0);
+    assert_eq!(memory.remaining(&db.pool).await.unwrap(), 0);
+
+    // A large max: the list keeps the window's stamps only.
+    let wide = RateLimiter::new(member(), "trim_wide", 1_000_000, 10);
+    for secs in 100..130 {
+        at(secs);
+        assert!(wide.performed(&db.pool, true).await.unwrap().is_ok());
+    }
+    let stamps: Vec<i64> =
+        sqlx::query_scalar("SELECT stamps FROM discourse_rs.rate_limits WHERE key = $1")
+            .bind(wide.key())
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(stamps, (119..130).rev().map(|s| T0 + s).collect::<Vec<_>>());
+    assert_eq!(wide.remaining(&db.pool).await.unwrap(), 1_000_000 - 11);
+    clock::pin(None);
+}
