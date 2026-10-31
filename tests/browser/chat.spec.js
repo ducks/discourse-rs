@@ -91,6 +91,44 @@ test("a reaction from the message's hover actions", async ({ page, context, sess
   });
 });
 
+test("the last message's actions menu stays above the composer; edit from it", async ({ page, context }) => {
+  await login(context, "user1");
+  await page.goto(`/chat/c/general/${CHANNEL}`);
+  const composer = page.locator(".full-page-chat .chat-composer__input");
+  await expect(composer).toBeVisible();
+  const typo = label("message with a tpyo");
+  await composer.pressSequentially(typo, { delay: 5 });
+  await composer.press("Enter");
+  const sent = page.locator(".chat-message-container[data-id]", { hasText: typo });
+  await expect(sent).toHaveAttribute("data-id", /^\d+$/);
+
+  // The menu of the list's last message would open under the composer,
+  // clipped by the list; it is kept above the list's bottom.
+  // Again if the message is drawn anew (its processed version arriving
+  // live) while the menu is open, which takes the menu with it.
+  async function action(message, value) {
+    await expect(async () => {
+      await message.hover();
+      await message.locator(".chat-message-actions .more-actions-chat summary").click({ timeout: 2000 });
+      const row = message.locator(`.chat-message-actions .select-kit-row[data-value='${value}']`);
+      await expect(row).toBeVisible({ timeout: 2000 });
+      // The whole menu, its last row included.
+      const menu = await message.locator(".chat-message-actions .more-actions-chat .select-kit-body").boundingBox();
+      const list = await page.locator(".chat-messages-scroller").first().boundingBox();
+      expect(menu.y + menu.height).toBeLessThanOrEqual(list.y + list.height);
+      await row.click({ timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
+  }
+
+  await action(sent, "edit");
+  await expect(composer).toHaveValue(typo);
+  const fixed = label("message with the typo fixed");
+  await composer.fill(fixed);
+  await composer.press("Enter");
+  await expect(page.locator(".chat-message-container", { hasText: fixed })).toBeVisible();
+  await expect.poll(() => sql("SELECT message FROM chat_messages WHERE message = :'p1'", fixed)).toEqual([[fixed]]);
+});
+
 test("a refused read marker neither alerts nor throws", async ({ page, context, session }) => {
   // Another tab or session can read further first; the server then
   // refuses the older id (ensure_message_id_recency, a 400), and Ember's
