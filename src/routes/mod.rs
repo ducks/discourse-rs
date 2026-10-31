@@ -115,6 +115,7 @@ mod sidebar_sections;
 mod site;
 mod site_texts;
 mod sitemap;
+mod slugs;
 mod solved;
 mod srv;
 mod static_pages;
@@ -628,6 +629,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/{id}/{message_id}/rebake.json",
             put(chat::rebake_message),
         )
+        // SlugsController#generate.
+        .route("/slugs", post(slugs::generate))
+        .route("/slugs.json", post(slugs::generate))
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))
