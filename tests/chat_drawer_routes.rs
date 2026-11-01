@@ -84,10 +84,12 @@ async fn the_drawer_draws_a_channels_settings_and_members() {
         html.contains(&format!("{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"c-routes --channel-info-nav\"><nav class=\"c-channel-info__nav\"><ul class=\"nav nav-pills\"><li><a class=\"active\" href=\"/chat/c/general/2/info/settings\">Settings</a></li><li><a href=\"/chat/c/general/2/info/members\">Members<span class=\"c-channel-info__member-count\">")),
         "{html}"
     );
-    assert!(
-        html.contains("<div class=\"c-channel-settings\" data-channel-id=\"2\""),
-        "{html}"
-    );
+    let settings = html
+        .split("<div class=\"c-channel-settings\"")
+        .nth(1)
+        .and_then(|rest| rest.split('>').next())
+        .unwrap_or_else(|| panic!("{html}"));
+    assert!(settings.contains(" data-channel-id=\"2\""), "{settings}");
     // The toasts and emoji picker chat-channel-info.js shows; its script
     // comes with the drawer's.
     assert!(html.contains("fk-d-toast"));
