@@ -58,6 +58,12 @@
     return m ? m[1] : null;
   }
 
+  // The id in a topic URL (/t/<slug>/<id>), which a retitle keeps.
+  function topicId(url) {
+    var m = /\/t\/[^/]+\/(\d+)$/.exec(url || "");
+    return m ? m[1] : null;
+  }
+
   function nearPost() {
     var m = TOPIC_PATH.exec(location.pathname);
     return m && m[2] ? parseInt(m[2], 10) : null;
@@ -528,10 +534,16 @@
 
     // The topic's URL as the address has it when the time comes: an edit
     // that retitled the topic has put its new slug there (routeToPost).
+    // An address that no longer names this topic was left behind: back or
+    // forward moves it before the page it restores arrives and this page
+    // is cleaned up, and Ember's transition would have cancelled the timer.
     function replaceUnlessScrolling(number) {
       var pos = document.scrollingElement.scrollTop;
       if (pos === lastScrollPos) {
-        var at = topicUrl() || url;
+        var at = topicUrl();
+        if (!at || topicId(at) !== topicId(url)) {
+          return;
+        }
         replaceState((number > 1 ? at + "/" + number : at) + location.search + location.hash);
         return;
       }
