@@ -66,6 +66,11 @@ test("a reaction from the message's hover actions", async ({ page, context, sess
   await otherComposer.fill(message);
   await otherComposer.press("Enter");
   await expect(other.locator(".chat-message-container", { hasText: message })).toBeVisible();
+  // Drawn staged at once; saved when the send answers. The reactor's page
+  // must load after that, or it draws the channel without the message.
+  await expect
+    .poll(() => sql("SELECT count(*) FROM chat_messages WHERE message = :'p1'", message))
+    .toEqual([["1"]]);
 
   await page.goto(`/chat/c/general/${CHANNEL}`);
   const sent = page.locator(".chat-message-container", { hasText: message });
