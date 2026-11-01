@@ -296,6 +296,17 @@ async fn a_threaded_channel_page_shows_the_thread_indicator() {
         )
     );
     assert!(page.contains("chat-thread-participants__avatar-group"));
+    // No link inside the indicator's link: the HTML parser would close the
+    // indicator there and draw the rest of it over the message.
+    let start = page
+        .find("<a class=\"chat-message-thread-indicator\"")
+        .unwrap();
+    let end = start + page[start..].find("</a>").unwrap();
+    assert!(
+        page[start..end].contains("chat-message-thread-indicator__last-reply-excerpt"),
+        "a nested link in the indicator: {}",
+        &page[start..end]
+    );
     assert!(!page.contains("thread reply two</p>"));
     // The threads list button, with the unread thread.
     assert!(page.contains(

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dress rehearsal of docs/demo-script.md: the 23 demo steps in Chromium.
+"""Dress rehearsal of docs/demo-script.md: the 38 demo steps in Chromium.
 
 Each step clicks and types as the presenter does, as its persona, one
 browser context per persona (Member and Second member stay open together
@@ -39,6 +39,10 @@ PERSONAS = {
 # A topic the demo opens in step 2 (docs/demo-script.md).
 LONG_TOPIC = 118
 SEARCH_TERM = "discourse"
+# Bundled plugins step 30 turns on (off on the demo database, as in
+# Discourse) and those the plugin steps need that are on by default.
+PLUGINS_TO_TURN_ON = ["assign_enabled", "policy_enabled", "user_notes_enabled", "discourse_gamification_enabled"]
+PLUGINS_ON_BY_DEFAULT = ["solved_enabled", "topic_voting_enabled", "discourse_reactions_enabled"]
 VISIBLE_ERRORS = re.compile(r"not ported yet[^\n]*|Something went wrong[^\n]*", re.I)
 # Waits for an outcome. Live updates get longer: they ride the message bus.
 WAIT = 10_000
@@ -637,6 +641,67 @@ def admin_user_page(run, page, username, listing="active"):
     expect_visible(page.locator("#main-outlet .silence-user, #main-outlet .suspend-user"), f"{username}'s admin page")
 
 
+def open_channel(run, page, path, what):
+    """A channel in full-page chat, joined if the persona only previews it."""
+    page.goto(run.base + path)
+    join = page.locator(".chat-channel .toggle-channel-membership-button.-join")
+    composer = page.locator(".chat-channel .chat-composer__input")
+    expect_visible(composer.or_(join), what)
+    if join.count() and join.first.is_visible():
+        join.first.click()
+    return expect_visible(composer, f"{what}, joined")
+
+
+def send_chat(scope, text, what):
+    """A message typed and sent in the composer under scope (a channel or
+    the thread pane); its container once drawn."""
+    composer = scope.locator(".chat-composer__input").first
+    composer.click()
+    composer.press_sequentially(text, delay=10)
+    composer.press("Enter")
+    return expect_visible(scope.locator(".chat-message-container", has_text=text), what)
+
+
+def chat_message_action(message, value, what):
+    """A secondary action from the message's hover toolbar (its "..." menu)."""
+    page = message.page
+    summary = message.locator(".chat-message-actions .more-actions-chat summary")
+    row = message.locator(f".chat-message-actions .select-kit-row[data-value='{value}']")
+    # The toolbar follows the pointer after a moment (and a message drawn
+    # anew as it is processed takes an open menu with it): as a presenter
+    # would, point at the message again until its menu holds the action.
+    for attempt in range(4):
+        message.scroll_into_view_if_needed()
+        page.mouse.move(5, 5)
+        message.hover()
+        try:
+            summary.first.wait_for(state="visible", timeout=3000)
+            summary.first.click(timeout=3000)
+            row.first.click(timeout=3000)
+            return
+        except PlaywrightError:  # a timeout, or the message swapped out mid-action
+            opened = page.locator(".more-actions-chat[open] summary")
+            try:
+                if opened.count():
+                    opened.first.click(timeout=2000)
+            except PlaywrightError:
+                pass
+    raise StepFail(f"expected {what}, it didn't appear")
+
+
+def toggle_plugin(page, setting, on):
+    """A bundled plugin's switch on /admin/plugins (the page already open);
+    whether it changed."""
+    switch = page.locator(f"[data-enabled-setting='{setting}']")
+    switch.first.wait_for(state="attached", timeout=WAIT)
+    if (switch.first.get_attribute("aria-checked") == "true") == on:
+        return False
+    page.locator(".admin-plugins-list__row", has=switch).locator(".d-toggle-switch__checkbox-slider").click()
+    wait_until(page, "([s, on]) => document.querySelector(`[data-enabled-setting='${s}']`).getAttribute('aria-checked') === on",
+               [setting, "true" if on else "false"], f"{setting} switched {'on' if on else 'off'}")
+    return True
+
+
 # --------------------------------------------------------------------------
 # The demo, in order (docs/demo-script.md)
 
@@ -671,7 +736,7 @@ def define_steps(run):
         page.goto(run.base + "/top")
         expect_visible(page.locator(".topic-list .topic-list-item"), "the top topics")
 
-    @step(2, "Visitor", f"long topic /t/{LONG_TOPIC}: scroll through the posts")
+    @step(2, "Visitor", f"long topic /t/{LONG_TOPIC}: scroll through the posts to the end")
     def _(run, s):
         page = run.persona("Visitor").use()
         page.goto(run.base + f"/t/{LONG_TOPIC}")
@@ -679,16 +744,16 @@ def define_steps(run):
         expect_visible(posts, "the topic's posts")
         before = posts.count()
         total = page.evaluate("() => { const t = document.querySelector('.timeline-replies, .topic-timeline .timeline-scroller-content'); return t ? t.innerText : '' }")
-        for _ in range(8):
-            page.mouse.wheel(0, 5000)
-            settle(page, 400)
-        s.notes.append(f"{before} posts drawn on load, {posts.count()} after scrolling; timeline says {total!r}")
+        # The post stream loads the next chunk as its end comes into view,
+        # down to the last post and the footer Ember draws only then.
+        scroll_to_topic_end(page)
+        s.notes.append(f"{before} posts drawn on load, {posts.count()} after scrolling to the end; timeline says {total!r}")
         # The corpus has no lightbox image or linked quote in a public topic
         # (its images are unresolved upload:// links, its quotes carry no
         # data-post), so the lightbox is shown on the member's own upload in
         # step 6.
-        if posts.count() < 2:
-            raise StepFail(f"/t/{LONG_TOPIC} drew {posts.count()} posts")
+        if posts.count() <= before:
+            raise StepFail(f"scrolling /t/{LONG_TOPIC} loaded no posts past the first {before}")
 
     @step(3, "Visitor", f"header search for {SEARCH_TERM!r}, then the full search page with a filter")
     def _(run, s):
@@ -872,7 +937,7 @@ def define_steps(run):
                        "the new topic")
         run.state["new_topic"] = topic_url(page.url)
         run.state["new_topic_title"] = topic_title
-        run.leave(f"topic '{topic_title}' by user1 at {run.state['new_topic']} (step 20 unlists it)")
+        run.leave(f"topic '{topic_title}' by user1 at {run.state['new_topic']} (step 26 unlists it)")
         poll = expect_visible(page.locator(".poll"), "the poll drawn in the topic")
         poll.locator("li[data-poll-option-id]").first.click()
         voted = poll.locator(".results, .poll-results, li.chosen, .d-icon-circle-check")
@@ -1186,14 +1251,205 @@ def define_steps(run):
         expect_visible(page.locator(".c-navbar__open-drawer-button"), "the button back to the drawer").click()
         expect_visible(page.locator(".chat-drawer .chat-composer__input"), "the drawer again")
 
-    @step(16, "Admin", "activate the Newcomer from the admin users list", needs=[13])
+    @step(16, "Member", "full-page chat: edit a message, then delete it")
+    def _(run, s):
+        page = run.persona("Member").use()
+        channel = page.locator(".chat-channel")
+        open_channel(run, page, "/chat/c/general/2", "#General in full-page chat")
+        typo = f"{run.label} chat with a tpyo"
+        message = send_chat(channel, typo, "the message sent")
+        # The staged message is swapped for the saved one; act on that.
+        wait_until(page, "t => [...document.querySelectorAll('.chat-message-container[data-id]')]"
+                   ".some(m => m.innerText.includes(t) && /^\\d+$/.test(m.dataset.id))",
+                   typo, "the message saved")
+        chat_message_action(message, "edit", "Edit in the message's menu")
+        composer = channel.locator(".chat-composer__input").first
+        wait_until(page, "t => document.querySelector('.chat-channel .chat-composer__input').value === t", typo,
+                   "the message's text in the composer to edit")
+        fixed = f"{run.label} chat with the typo fixed"
+        composer.fill(fixed)
+        composer.press("Enter")
+        edited = expect_visible(channel.locator(".chat-message-container", has_text=fixed), "the edited message")
+        if channel.locator(".chat-message-container", has_text=typo).count():
+            raise StepFail("the old text is still drawn after the edit")
+        chat_message_action(edited, "delete", "Delete in the message's menu")
+        expect_gone(channel.locator(".chat-message-container", has_text=fixed), "the message gone from the channel")
+        page.reload()
+        expect_visible(channel.locator(".chat-composer__input"), "#General again")
+        if channel.locator(".chat-message-container", has_text=fixed).count():
+            raise StepFail("the deleted message is back after a reload")
+        run.leave(f"user1's deleted chat message '{fixed}' in #General (trashed, kept for staff)")
+
+    @step(17, "Member", "an image in a chat message; it opens in the lightbox")
+    def _(run, s):
+        page = run.persona("Member").use()
+        channel = page.locator(".chat-channel")
+        open_channel(run, page, "/chat/c/general/2", "#General in full-page chat")
+        expect_visible(channel.locator(".chat-composer-dropdown__trigger-btn"), "the composer's + button").click()
+        attach = expect_visible(page.locator("button[data-id='chat-upload-btn']"), "Attach a file in the composer's menu")
+        with page.expect_file_chooser() as chooser:
+            attach.click()
+        chooser.value.set_files(run.files["png"])
+        expect_visible(channel.locator(".chat-composer-upload--image .preview-img"), "the image's preview in the composer", timeout=30_000)
+        # The send button waits for the upload to finish.
+        wait_until(page, "() => !document.querySelector('.chat-channel .chat-composer-button.-send').disabled", None,
+                   "the upload to finish", timeout=30_000)
+        text = f"{run.label} chat image"
+        message = send_chat(channel, text, "the message with the image")
+        image = expect_visible(message.locator(".chat-uploads img.chat-img-upload"), "the image in the message", timeout=LIVE_WAIT)
+        run.state["chat_image_message"] = text
+        run.leave(f"chat message '{text}' with an uploaded image by user1 in #General (step 20 moves it)")
+        image.click()
+        expect_visible(page.locator(".pswp"), "the lightbox to open")
+        settle(page, 800)
+        page.keyboard.press("Escape")
+        expect_gone(page.locator(".pswp"), "the lightbox to close")
+
+    @step(18, "Admin", "a new channel with threading from the browse page; its settings")
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + "/chat/browse")
+        expect_visible(page.locator("#main-outlet button").filter(has_text=re.compile(r"^\s*New channel")), "New channel on the browse page").click()
+        modal = expect_visible(page.locator(".d-modal", has=page.locator(".chat-modal-create-channel__form")), "the new channel modal")
+        # The name first: a category chosen while the name is empty names
+        # the channel after it.
+        name = f"Rehearsal {run.stamp}"
+        modal.locator("input[name=name]").press_sequentially(name, delay=20)
+        modal.locator("select[name=chatable_id]").select_option(label="General")
+        # The slug comes from POST /slugs.json as the name is typed, shown as
+        # the slug field's placeholder.
+        wait_until(page, "() => document.querySelector('.chat-modal-create-channel__form input[name=slug]').placeholder"
+                   ".startsWith('rehearsal-')", None, "the slug made from the name")
+        modal.locator("input[name=description]").fill(f"Made by the {run.label}")
+        modal.locator("label[for=control-threading_enabled-input]").click()
+        modal.locator(".d-modal__footer .create").click()
+        page.wait_for_url(re.compile(r"/chat/c/[^/]+/\d+$"), timeout=WAIT)
+        path = urlparse(page.url).path
+        run.state["channel_path"] = path
+        run.state["channel_name"] = name
+        run.leave(f"chat channel '{name}' at {path} (unless cleanup deleted it)")
+        channel = page.locator(".chat-channel")
+        expect_visible(page.locator(".c-navbar__channel-title", has_text=name), "the new channel open")
+        starter = f"{run.label}: what should the next demo show?"
+        send_chat(channel, starter, "the channel's first message")
+        run.state["thread_starter"] = starter
+        page.locator(".c-navbar__channel-title").first.click()
+        page.wait_for_url("**/info/settings", timeout=WAIT)
+        # The switch's button is drawn under its slider, so attached, not visible.
+        wait_until(page, "() => document.querySelector(\".c-channel-settings__threading-switch[aria-checked='true']\")",
+                   None, "threading shown on in the channel's settings")
+        expect_visible(page.locator(".delete-btn"), "the delete button in the channel's settings")
+
+    @step(19, "Member", "join the new channel, reply to a message: it starts a thread; reply in the side panel", needs=[18])
+    def _(run, s):
+        page = run.persona("Member").use()
+        page.goto(run.base + "/chat/browse")
+        expect_visible(page.locator("#main-outlet a, #main-outlet .chat-channel-card").filter(has_text=run.state["channel_name"]),
+                       "the new channel on the browse page").click()
+        page.wait_for_url(re.compile(r"/chat/c/[^/]+/\d+"), timeout=WAIT)
+        open_channel(run, page, run.state["channel_path"], "the new channel")
+        channel = page.locator(".chat-channel")
+        original = expect_visible(channel.locator(".chat-message-container", has_text=run.state["thread_starter"]),
+                                  "the admin's message")
+        original.hover()
+        expect_visible(original.locator(".chat-message-actions .reply-btn"), "Reply on hover").click()
+        expect_visible(channel.locator(".chat-composer-message-details, .chat-reply"), "the message being replied to above the composer")
+        reply = f"{run.label} reply that starts a thread"
+        composer = channel.locator(".chat-composer__input").first
+        composer.press_sequentially(reply, delay=10)
+        composer.press("Enter")
+        indicator = expect_visible(original.locator(".chat-message-thread-indicator"), "the thread indicator under the message",
+                                   timeout=LIVE_WAIT)
+        indicator.click()
+        page.wait_for_url(re.compile(r"/t/\d+"), timeout=WAIT)
+        panel = expect_visible(page.locator(".chat-side-panel .chat-thread"), "the thread in the side panel")
+        expect_visible(panel.locator(".chat-message-container", has_text=reply), "the reply in the thread")
+        second = f"{run.label} second reply in the thread"
+        send_chat(panel, second, "the second reply in the thread")
+        expect_visible(original.locator(".chat-message-thread-indicator__replies-count", has_text="2 replies"),
+                       "the indicator counting two replies", timeout=LIVE_WAIT)
+        run.leave("user1's thread of two replies in the new channel")
+        page.locator(".c-navbar__back-button").first.click()
+        expect_visible(page.locator(".c-navbar__threads-list-button"), "the threads list button").click()
+        # The list counts a thread once its reply count is updated, a job
+        # Discourse runs a few seconds after a reply; a presenter talking
+        # gives it that, the rehearsal looks again.
+        item = page.locator(".chat-thread-list-item").filter(has_text=run.state["thread_starter"][:30])
+        for attempt in range(4):
+            try:
+                item.first.wait_for(state="visible", timeout=3000)
+                break
+            except PlaywrightTimeout:
+                page.reload()
+        expect_visible(item, "the thread in the channel's threads list")
+
+    @step(20, "Moderator", "select chat messages in #General and move them to the new channel", needs=[17, 18])
+    def _(run, s):
+        page = run.persona("Moderator").use()
+        # The move lists the moderator's own public channels.
+        open_channel(run, page, run.state["channel_path"], "the new channel")
+        channel = page.locator(".chat-channel")
+        open_channel(run, page, "/chat/c/general/2", "#General")
+        def by_text(text):
+            return channel.locator(".chat-message-container", has=page.locator(
+                ".chat-message-text", has_text=re.compile(rf"^\s*{re.escape(text)}\s*$")))
+
+        image = expect_visible(channel.locator(".chat-message-container", has_text=run.state["chat_image_message"]),
+                               "step 17's image message")
+        chat_message_action(image, "select", "Select in the message's menu")
+        bar = expect_visible(page.locator(".chat-selection-management"), "the selection bar in the composer's place")
+        moved = [run.state["chat_image_message"]]
+        # Step 14's message too, ticked in the selection.
+        earlier = by_text(f"{run.label} chat")
+        if run.by_number(14).achieved and earlier.count():
+            earlier.first.locator(".chat-message-selector").click()
+            moved.insert(0, f"{run.label} chat")
+        expect_visible(bar.locator("#chat-delete-btn", has_text=f"({len(moved)}/"), f"{len(moved)} messages selected")
+        bar.locator("#chat-move-to-channel-btn").click()
+        modal = expect_visible(page.locator(".chat-modal-move-message-to-channel"), "the move modal")
+        modal.locator("select").select_option(label=run.state["channel_name"])
+        modal.locator(".d-modal__footer .btn-primary").click()
+        destination = run.state["channel_path"].rsplit("/", 1)[1]
+        page.wait_for_url(re.compile(rf"/chat/c/[^/]+/{destination}(/|$)"), timeout=WAIT)
+        expect_visible(page.locator(".c-navbar__channel-title", has_text=run.state["channel_name"]), "the new channel after the move")
+        expect_visible(channel.locator(".chat-message-container", has_text=run.state["chat_image_message"]),
+                       "the image message moved into the new channel")
+        if len(moved) == 2:
+            expect_visible(by_text(moved[0]), "step 14's message moved into the new channel")
+        run.leave(f"{len(moved)} messages moved from #General to the new channel, and the move's notice in #General")
+
+    @step(21, "Admin", "chat's admin page: an incoming webhook posts to the new channel", needs=[18])
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + "/admin/plugins/chat")
+        expect_visible(page.locator("#main-outlet a", has_text=re.compile(r"^\s*Incoming webhooks")), "the Incoming webhooks tab").click()
+        page.wait_for_url("**/admin/plugins/chat/hooks", timeout=WAIT)
+        expect_visible(page.locator(".admin-incoming-webhooks-new"), "New incoming webhook").click()
+        form = expect_visible(page.locator(".chat-incoming-webhook-form"), "the new webhook form")
+        hook = f"Rehearsal {run.stamp}"
+        form.locator("input[name=name]").fill(hook)
+        form.locator("select[name=chat_channel_id]").select_option(label=run.state["channel_name"])
+        form.locator("button[type=submit]").click()
+        page.wait_for_url("**/admin/plugins/chat/hooks/*/edit", timeout=WAIT)
+        run.state["webhook"] = hook
+        run.leave(f"incoming webhook '{hook}' (unless cleanup deleted it)")
+        url = expect_visible(page.locator(".chat-incoming-webhook-form [data-name=url] code"), "the webhook's URL").inner_text().strip()
+        text = f"{run.label} posted by the webhook"
+        answer = page.request.post(url, data={"text": text})
+        if answer.status != 200:
+            raise StepFail(f"POST to the webhook's URL answered {answer.status}: {answer.text()[:200]}")
+        page.goto(run.base + run.state["channel_path"])
+        expect_visible(page.locator(".chat-channel .chat-message-container", has_text=text), "the webhook's message in the channel",
+                       timeout=LIVE_WAIT)
+
+    @step(22, "Admin", "activate the Newcomer from the admin users list", needs=[13])
     def _(run, s):
         page = run.persona("Admin").use()
         admin_user_page(run, page, run.newcomer, listing="new")
         expect_visible(page.locator("#main-outlet button", has_text=re.compile(r"^\s*Activate Account")), "Activate Account").click()
         expect_visible(page.locator("#main-outlet button", has_text=re.compile(r"Deactivate Account")), "the account activated")
 
-    @step(17, "Second member", "flags a post as inappropriate", needs=[6])
+    @step(23, "Second member", "flags a post as inappropriate", needs=[6])
     def _(run, s):
         page = run.persona("Second member").use()
         page.goto(run.state["reply_url"])
@@ -1211,7 +1467,7 @@ def define_steps(run):
         expect_gone(page.locator(".flag-modal"), "the flag modal to close after flagging")
         run.leave("user0's flag (inappropriate) on that reply, and its review item")
 
-    @step(18, "Moderator", "review count in header and sidebar; /review, a note, agree with the flag", needs=[17])
+    @step(24, "Moderator", "review count in header and sidebar; /review, a note, agree with the flag", needs=[23])
     def _(run, s):
         page = run.persona("Moderator").use()
         page.goto(run.base + "/latest")
@@ -1230,7 +1486,7 @@ def define_steps(run):
         expect_visible(page.locator(".select-kit.is-expanded .select-kit-row", has_text=re.compile("Agree with flag", re.I)), "the agree choices").click()
         expect_visible(item.locator("*", has_text=re.compile(r"^\s*Flag approved\s*$")), "the flag shown approved")
 
-    @step(19, "Admin", "watched word 'require approval'; Newcomer posts it; held; approve from /review")
+    @step(25, "Admin", "watched word 'require approval'; Newcomer posts it; held; approve from /review")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/admin/customize/watched_words/action/require_approval")
@@ -1250,7 +1506,7 @@ def define_steps(run):
             pass
         expect_visible(page.locator(".watched-word", has_text=run.watched_word), "the watched word listed")
         run.state["watched_word_added"] = True
-        missing = [n for n in (13, 16) if not run.by_number(n).achieved]
+        missing = [n for n in (13, 22) if not run.by_number(n).achieved]
         if missing:
             s.miss("watched word added; the Newcomer's held post is skipped (needs "
                    + ", ".join(map(str, missing)) + ")")
@@ -1278,7 +1534,7 @@ def define_steps(run):
         # The status badge (statuses.approved_post: "Post approved").
         expect_visible(item.locator(".review-item__status.--approved"), "the held post shown approved")
 
-    @step(20, "Admin", "topic admin wrench: close, reopen, unlist", needs=[8])
+    @step(26, "Admin", "topic admin wrench: close, reopen, unlist", needs=[8])
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + run.state["new_topic"])
@@ -1297,7 +1553,7 @@ def define_steps(run):
         expect_visible(page.locator(".topic-statuses .d-icon-far-eye-slash, .topic-status .unlisted, .small-action", has_text=re.compile("unlisted", re.I)),
                        "the topic shown unlisted")
 
-    @step(21, "Admin", "dashboard, a report, the staff action log")
+    @step(27, "Admin", "dashboard, a report, the staff action log")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/latest")
@@ -1314,17 +1570,17 @@ def define_steps(run):
         expect_visible(page.locator("#main-outlet table tbody tr"), "the staff action log")
         text = page.locator("#main-outlet").inner_text().lower()
         expected = {}
-        if run.by_number(20).achieved:
-            expected["close"] = "step 20's close"
+        if run.by_number(26).achieved:
+            expected["close"] = "step 26's close"
         if run.state.get("watched_word_added"):
-            expected["watched"] = "step 19's watched word"
-        if run.by_number(16).achieved:
-            expected["activate"] = "step 16's activation"
+            expected["watched"] = "step 25's watched word"
+        if run.by_number(22).achieved:
+            expected["activate"] = "step 22's activation"
         absent = [what for word, what in expected.items() if word not in text]
         if absent:
             s.miss("the staff action log doesn't show " + ", ".join(absent))
 
-    @step(22, "Admin", "a list setting (authorized extensions), a plain one; customize a color palette")
+    @step(28, "Admin", "a list setting (authorized extensions), a plain one; customize a color palette")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/admin/site_settings?filter=authorized_extensions")
@@ -1403,10 +1659,10 @@ def define_steps(run):
         if saved.input_value().lower() != "cc3366":
             raise StepFail(f"the changed color didn't save (it reads {saved.input_value()})")
 
-    @step(23, "Admin", "silence a member, show their system message; unsilence")
+    @step(29, "Admin", "silence a member, show their system message; unsilence")
     def _(run, s):
         page = run.persona("Admin").use()
-        target = "Newcomer" if run.by_number(16).achieved else "Second member"
+        target = "Newcomer" if run.by_number(22).achieved else "Second member"
         username = run.persona(target).username
         s.notes.append(f"silencing {target} ({username})")
         admin_user_page(run, page, username)
@@ -1461,9 +1717,210 @@ def define_steps(run):
         expect_visible(page.locator(".silence-user"), "the user unsilenced")
         run.state["silenced"] = None
 
+    @step(30, "Admin", "/admin/plugins: turn on Assign, Policy, User Notes and Gamification")
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + "/latest")
+        page.locator("#d-sidebar a[href='/admin'], .sidebar-section-link[data-link-name=admin]").first.click()
+        page.wait_for_url("**/admin**", timeout=WAIT)
+        page.goto(run.base + "/admin/plugins")
+        expect_visible(page.locator(".admin-plugins-list__row"), "the plugins list")
+        turned = run.state.setdefault("plugins_turned_on", [])
+        for setting in PLUGINS_TO_TURN_ON:
+            if toggle_plugin(page, setting, True):
+                turned.append(setting)
+            else:
+                s.notes.append(f"{setting} was on already")
+        # On by default, as on the demo database.
+        off = [setting for setting in PLUGINS_ON_BY_DEFAULT
+               if page.locator(f"[data-enabled-setting='{setting}']").first.get_attribute("aria-checked") != "true"]
+        if off:
+            s.miss("off, though on by default: " + ", ".join(off))
+        page.reload()
+        not_kept = [setting for setting in PLUGINS_TO_TURN_ON
+                    if page.locator(f"[data-enabled-setting='{setting}']").first.get_attribute("aria-checked") != "true"]
+        if not_kept:
+            raise StepFail("switched on but off after a reload: " + ", ".join(not_kept))
+
+    @step(31, "Admin", "a new category with the Support and Ideas types (Solved, Topic Voting)")
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + "/categories")
+        expect_visible(page.locator("#create-category"), "New Category on /categories").click()
+        page.wait_for_url("**/new-category**", timeout=WAIT)
+        name = f"Rehearsal ideas {run.stamp}"
+        expect_visible(page.locator("input[name=name]"), "the category form").fill(name)
+        for kind in ("support", "ideas"):
+            page.locator(f".category-type-option[data-category-type='{kind}'] label").click()
+            wait_until(page, "k => document.querySelector(`.category-type-option[data-category-type='${k}'] input`).checked",
+                       kind, f"the {kind} type ticked")
+        page.locator("#main-outlet button", has_text=re.compile(r"^\s*Create category")).click()
+        page.wait_for_url(re.compile(r"/c/[^/]+/\d+"), timeout=WAIT)
+        run.state["category_path"] = urlparse(page.url).path
+        run.state["category_name"] = name
+        run.leave(f"category '{name}' at {run.state['category_path']} with the Support and Ideas types")
+        # Ideas brings topic voting's Votes and My Votes lists.
+        expect_visible(page.locator("#navigation-bar").get_by_text(re.compile(r"^\s*Votes\s*$")),
+                       "the category's Votes list in its navigation")
+
+    @step(32, "Member", "ask in that category; Second member votes for it and answers", needs=[31])
+    def _(run, s):
+        page = run.persona("Member").use()
+        page.goto(run.base + run.state["category_path"])
+        expect_visible(page.locator("#create-topic"), "New Topic in the category").click()
+        title = expect_visible(page.locator("#reply-title"), "the new topic composer")
+        question = f"{run.label} how do I move a forum to discourse-rs?"
+        title.press_sequentially(question, delay=10)
+        type_in_composer(page, f"Asked during the {run.label}: what does moving an existing forum take?")
+        submit_composer(page)
+        page.wait_for_url("**/t/**", timeout=WAIT)
+        expect_visible(page.locator("#topic-title").filter(has_text="how do I move a forum"), "the question")
+        run.state["question"] = topic_url(page.url)
+        run.leave(f"topic '{question}' by user1 at {run.state['question']}")
+        expect_visible(page.locator(".voting-wrapper"), "the vote button on the question")
+        second = run.persona("Second member").use()
+        second.goto(run.base + run.state["question"])
+        voting = expect_visible(second.locator(".voting-wrapper"), "the vote button for Second member")
+        voting.locator(".voting-wrapper__button").click()
+        wait_until(second, "() => document.querySelector('.voting-wrapper .voting-wrapper__count-text').innerText.trim() === '1'",
+                   None, "the vote counted")
+        run.leave("user0's vote on the question")
+        open_composer_reply(second)
+        answer = f"Answer from user0, {run.label}: import it, then point DNS at the new server."
+        type_in_composer(second, answer, delay=5)
+        submit_composer(second)
+        expect_visible(post_with(second, answer), "the answer in the topic")
+        run.state["answer"] = answer
+        run.leave(f"user0's answer in {run.state['question']}")
+        second.reload()
+        voted = expect_visible(second.locator(".voting-wrapper"), "the vote button after a reload")
+        if voted.get_attribute("data-user-voted") != "true":
+            raise StepFail("the vote wasn't kept after a reload")
+
+    @step(33, "Member", "accept the answer as the solution; the title shows it solved", needs=[32])
+    def _(run, s):
+        page = run.persona("Member").use()
+        page.goto(run.base + run.state["question"])
+        page.evaluate("() => { window.__rehearsalNoReload = true }")
+        # By its id: once accepted, the first post quotes the answer too.
+        answer_id = expect_visible(post_with(page, run.state["answer"]), "the answer").locator("article").first.get_attribute("data-post-id")
+        answer = page.locator(f"article[data-post-id='{answer_id}']")
+        expect_visible(answer.locator(".post-action-menu__solved-unaccepted"), "the answer's Solution button").click()
+        expect_visible(answer.locator(".post-action-menu__solved-accepted"), "the answer shown as the solution")
+        expect_visible(page.locator("#topic-title .topic-status.--solved"), "the solved status in the title")
+        if not page.evaluate("() => window.__rehearsalNoReload === true"):
+            raise StepFail("the page reloaded to show the solution")
+        run.leave("the accepted solution on the question")
+        page.reload()
+        expect_visible(page.locator("#topic-title .topic-status.--solved"), "the solved status after a reload")
+
+    @step(34, "Second member", "a reaction other than a like, from the reaction picker", needs=[32])
+    def _(run, s):
+        page = run.persona("Second member").use()
+        page.goto(run.base + run.state["question"])
+        first = expect_visible(page.locator("article[data-post-id]"), "the question's first post")
+        post_id = first.get_attribute("data-post-id")
+        actions = page.locator(f"#discourse-reactions-actions-{post_id}-right")
+        expect_visible(actions.locator(".discourse-reactions-reaction-button"), "the reaction button").hover()
+        picker = expect_visible(actions.locator(".discourse-reactions-picker.is-expanded"), "the reaction picker on hover")
+        picker.locator(".pickable-reaction.clap").click()
+        wait_until(page, "id => document.querySelector(`#discourse-reactions-actions-${id}-right`).dataset.currentReaction === 'clap'",
+                   post_id, "the post shown with Second member's clap")
+        expect_visible(page.locator(f"#discourse-reactions-list-emoji-{post_id}-clap"), "the clap in the post's reactions")
+        run.leave("user0's clap reaction on the question")
+
+    @step(35, "Admin", "assign the question to the Moderator from the footer; it redraws in place", needs=[30, 32])
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + run.state["question"])
+        expect_visible(page.locator(".topic-post"), "the question")
+        page.evaluate("() => { window.__rehearsalNoReload = true }")
+        scroll_to_topic_end(page)
+        expect_visible(page.locator("#topic-footer-button-assign"), "the footer's Assign button").click()
+        modal = expect_visible(page.locator(".d-modal.assign"), "the assign modal")
+        modal.locator("#assignee").fill(PERSONAS["Moderator"])
+        modal.locator(".assign-submit").click()
+        expect_gone(modal, "the assign modal to close")
+        expect_visible(page.locator("#topic-footer-buttons .reassign-trigger"), "the footer's reassign menu")
+        expect_visible(page.locator("#post_1 .assigned-to", has_text=PERSONAS["Moderator"]), "the assignee under the first post")
+        if not page.evaluate("() => window.__rehearsalNoReload === true"):
+            raise StepFail("the page reloaded to show the assignment")
+        run.leave(f"the question assigned to {PERSONAS['Moderator']}")
+
+    @step(36, "Admin", "a policy in a reply; Second member accepts it", needs=[30, 32])
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + run.state["question"])
+        expect_visible(page.locator(".topic-post"), "the question")
+        scroll_to_topic_end(page)
+        open_composer_reply(page)
+        marker = f"Accept the house rules ({run.label})."
+        type_in_composer(page, f'[policy group=trust_level_1 accept="I agree" revoke="Withdraw"]\n{marker}\n[/policy]')
+        submit_composer(page)
+        post = expect_visible(post_with(page, marker), "the policy reply", timeout=LIVE_WAIT)
+        expect_visible(post.locator(".policy-footer"), "the policy drawn with its footer")
+        run.leave(f"the admin's policy reply in {run.state['question']}")
+        second = run.persona("Second member").use()
+        policy = second.locator(".topic-post", has=second.locator(".cooked .policy", has_text=marker)).locator(".cooked .policy").first
+        accept = policy.locator("button.accept")
+        # The post's policy is saved as the post is processed, a moment
+        # after it shows; a presenter switching windows gives it that.
+        for attempt in range(3):
+            second.goto(run.base + run.state["question"])
+            expect_visible(policy, "the policy for Second member")
+            try:
+                accept.first.wait_for(state="visible", timeout=4000)
+                break
+            except PlaywrightTimeout:
+                continue
+        expect_visible(accept, "the policy's I agree button").click()
+        expect_visible(policy.locator("button.revoke, button", has_text="Withdraw"), "Withdraw once accepted")
+        expect_visible(policy.locator(".toggle-accepted .user-count", has_text=re.compile(r"^\s*1\s*$")), "one acceptance counted")
+        run.leave("user0's acceptance of the policy")
+
+    @step(37, "Moderator", "a staff note on Second member from their profile", needs=[30])
+    def _(run, s):
+        page = run.persona("Moderator").use()
+        page.goto(run.base + f"/u/{PERSONAS['Second member']}/summary")
+        expect_visible(page.locator(".show-user-notes-btn"), "the user notes button on the profile").click()
+        modal = expect_visible(page.locator(".d-modal .user-notes-modal-body"), "the user notes modal")
+        note = f"Note from the {run.label}"
+        modal.locator("textarea[name=content]").fill(note)
+        modal.locator("button[type=submit]").click()
+        expect_visible(modal.locator(".user-note", has_text=note), "the note listed in the modal")
+        run.leave(f"user2's note on {PERSONAS['Second member']}")
+        page.keyboard.press("Escape")
+        expect_gone(page.locator(".d-modal .user-notes-modal-body"), "the modal closed")
+        page.reload()
+        expect_visible(page.locator(".show-user-notes-btn"), "the user notes button again").click()
+        expect_visible(page.locator(".d-modal .user-note", has_text=note), "the note kept after a reload")
+        page.keyboard.press("Escape")
+
+    @step(38, "Admin", "Gamification: recalculate the scores, then the leaderboard", needs=[30])
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + "/admin/plugins/discourse-gamification/leaderboards")
+        expect_visible(page.locator(".leaderboard-admin__btn-recalculate"), "Recalculate scores").click()
+        modal = expect_visible(page.locator(".d-modal", has=page.locator(".recalculate-modal__body")), "the recalculate modal")
+        left = modal.locator(".recalculate-modal__footer-text").inner_text()
+        s.notes.append(left)
+        # Five recalculations a day (a rehearsal run spends one).
+        if re.match(r"\s*0\b", left):
+            s.notes.append("no recalculation left today; the leaderboard shows the scores as they are")
+            modal.locator("#cancel-section").click()
+        else:
+            modal.locator("#apply-section").click()
+            expect_visible(modal.get_by_text(re.compile("successfully recalculated", re.I)), "the scores recalculated",
+                           timeout=LIVE_WAIT)
+            page.keyboard.press("Escape")
+        page.goto(run.base + "/leaderboard")
+        expect_visible(page.locator(".podium .winner__name"), "the leaderboard's podium")
+        names = page.locator(".podium .winner__name").all_inner_texts()
+        s.notes.append("podium: " + ", ".join(n.strip() for n in names))
+
 
 def cleanup(run):
-    """What the UI allows: the watched word, a silence or setting left in place, the palette."""
+    """What the UI allows: the watched word, a silence or setting left in place, the palette, the chat webhook and channel, the plugins turned on."""
     admin = run.personas.get("Admin")
     if not admin or not admin.page:
         return
@@ -1535,6 +1992,43 @@ def cleanup(run):
                 raise StepFail("it is still listed after Delete")
             run.left_behind[:] = [x for x in run.left_behind if not x.startswith("color palette")]
         attempt(f"deleted the palette {name}", palette, f"color palette '{name}'")
+    if run.state.get("webhook"):
+        hook = run.state["webhook"]
+
+        def webhook():
+            page.goto(run.base + "/admin/plugins/chat/hooks")
+            row = expect_visible(page.locator(".incoming-chat-webhooks-row", has_text=hook), "the webhook")
+            row.locator(".admin-chat-incoming-webhooks-delete").click()
+            expect_visible(page.locator(".dialog-footer .btn-danger, .dialog-footer .btn-primary"), "the delete confirmation").click()
+            expect_gone(page.locator(".incoming-chat-webhooks-row", has_text=hook), "the webhook deleted")
+            run.left_behind[:] = [x for x in run.left_behind if not x.startswith(f"incoming webhook '{hook}'")]
+        attempt(f"deleted the incoming webhook {hook}", webhook, f"incoming webhook '{hook}'")
+    if run.state.get("channel_path"):
+        path = run.state["channel_path"]
+        name = run.state["channel_name"]
+
+        def channel():
+            page.goto(run.base + path + "/info/settings")
+            expect_visible(page.locator(".delete-btn"), "the channel's Delete").click()
+            expect_visible(page.locator("#channel-delete-confirm-name"), "the delete confirmation").fill(name)
+            page.locator("#chat-confirm-delete-channel").click()
+            # The modal says the deletion started, then goes to /chat.
+            wait_until(page, "() => !location.pathname.includes('/info/settings')", None,
+                       "the page to leave the deleted channel")
+            answer = page.request.get(run.base + "/chat/api/channels/" + path.rsplit("/", 1)[1] + ".json")
+            if answer.status != 404:
+                raise StepFail(f"the channel still answers {answer.status} after Delete")
+            run.left_behind[:] = [x for x in run.left_behind if not x.startswith(f"chat channel '{name}'")]
+            run.leave(f"the deleted channel '{name}' (trashed) with its messages")
+        attempt(f"deleted the chat channel {name}", channel, f"chat channel '{name}' at {path}")
+    if run.state.get("plugins_turned_on"):
+        def plugins():
+            page.goto(run.base + "/admin/plugins")
+            expect_visible(page.locator(".admin-plugins-list__row"), "the plugins list")
+            for setting in run.state["plugins_turned_on"]:
+                toggle_plugin(page, setting, False)
+        attempt("turned off " + ", ".join(run.state["plugins_turned_on"]), plugins,
+                "plugins left on: " + ", ".join(run.state["plugins_turned_on"]))
 
 
 def main():

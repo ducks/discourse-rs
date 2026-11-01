@@ -94,6 +94,10 @@ pub struct Params {
     /// A member who chats, the page's `Active::key`: chat's header icon and
     /// sidebar sections kept current.
     chat: Option<String>,
+    /// An admin page: the admin panel in the sidebar's place, so chat's
+    /// header icon is kept current but not its sidebar sections, which
+    /// the page doesn't draw.
+    admin_panel: Option<String>,
 }
 
 /// GET /live
@@ -215,6 +219,7 @@ pub async fn page(
             .filter(|_| user_id.is_some())
             .map(|key| crate::sidebar::Active::parse(&key)),
         chat,
+        chat_sections: params.admin_panel.is_none(),
         chat_channels,
         sent_chat: None,
         badge: crate::header_badge::Badge::default(),
@@ -286,6 +291,8 @@ struct Live {
     /// The page chat's chrome is kept current on, and the bus channels that
     /// change it.
     chat: Option<crate::sidebar::Active>,
+    /// Whether the page draws chat's sidebar sections (not on admin pages).
+    chat_sections: bool,
     chat_channels: Vec<String>,
     /// Chat's chrome last sent.
     sent_chat: Option<String>,
@@ -538,8 +545,12 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
         // The title's solved status (SolvedStatus), as the accepted answers
         // now have it.
         if kind != "shared_issue" {
+            // htmx logs a console error for an out-of-band delete that
+            // matches nothing (a first accept), so a status is added before
+            // the delete takes every one out; the title always draws its
+            // .topic-statuses.
             html.push_str(
-                r#"<div hx-swap-oob="delete:#topic-title .topic-status.--solved"></div>"#,
+                r#"<span hx-swap-oob="beforeend:#topic-title h1 .topic-statuses"><span class="topic-status --solved"></span></span><div hx-swap-oob="delete:#topic-title .topic-status.--solved"></div>"#,
             );
             if data["accepted_answers"]
                 .as_array()
@@ -1545,20 +1556,27 @@ async fn chat_chrome(live: &mut Live, id: Option<Position>) -> Result<(), AppErr
     else {
         return Ok(());
     };
+    // An out-of-band swap whose target isn't on the page is an htmx
+    // console error, so the sections go only to pages that draw them.
+    let sections = if live.chat_sections {
+        CHAT_SECTION
+            .replace_all(&chat.sidebar_sections, |c: &regex::Captures| {
+                format!(
+                    "<div hx-swap-oob=\"outerHTML:.sidebar-section[data-section-name='{}']\" {}",
+                    &c[2], &c[1]
+                )
+            })
+            .into_owned()
+    } else {
+        String::new()
+    };
     let html = format!(
-        "{}{}",
+        "{}{sections}",
         chat.header_icon.replacen(
             "<li class=\"header-dropdown-toggle chat-header-icon\">",
             "<li hx-swap-oob=\"outerHTML:.chat-header-icon\" class=\"header-dropdown-toggle chat-header-icon\">",
             1
         ),
-        CHAT_SECTION.replace_all(&chat.sidebar_sections, |c: &regex::Captures| {
-            format!(
-                "<div hx-swap-oob=\"outerHTML:.sidebar-section[data-section-name='{}']\" {}",
-                &c[2],
-                &c[1]
-            )
-        })
     );
     if live.sent_chat.as_ref() == Some(&html) {
         return Ok(());

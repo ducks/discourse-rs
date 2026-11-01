@@ -1513,7 +1513,13 @@
       var origin = body.getBoundingClientRect();
       var width = Math.max(body.offsetWidth, 220);
       var left = Math.max(5, header.left - width);
-      var top = Math.min(header.top, window.innerHeight - body.offsetHeight - 5);
+      // Ember's menu sits in a portal, so it is shifted up to stay in the
+      // window; this one stays in the message list, whose overflow clips
+      // it (the last message's menu went under the composer), so it is
+      // kept above the list's bottom too.
+      var scroller = details.closest(".chat-messages-scroller");
+      var bottom = scroller ? Math.min(window.innerHeight, scroller.getBoundingClientRect().bottom) : window.innerHeight;
+      var top = Math.min(header.top, bottom - body.offsetHeight - 5);
       body.style.transform =
         "translate(" + Math.round(left - origin.left) + "px, " + Math.round(top - origin.top) + "px)";
       body.style.visibility = "visible";
