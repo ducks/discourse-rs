@@ -776,6 +776,7 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
         "ReviewableUser" => "review.user_label",
         "ReviewableQueuedPost" if topic_id.is_null() => "review.queued_topic_label",
         "ReviewableQueuedPost" => "review.queued_post_label",
+        crate::reviewables::CHAT_MESSAGE => "review.chat_flagged_as",
         _ if r["created_from_flag"] == true => "review.post_flagged_as",
         _ => "review.flagged_as",
     };
@@ -834,6 +835,9 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
             &after_user,
         ),
         "ReviewableQueuedPost" => queued_post_body(cx, r, store, target_created_by, &after_user),
+        crate::reviewables::CHAT_MESSAGE => {
+            chat_message_body(p, r, store, target_created_by, &after_user)
+        }
         // review_list refuses the others before they get here.
         _ => format!(
             "<div class=\"alert alert-error review-item__no-component\">{}</div>",
@@ -1382,6 +1386,97 @@ fn post_body(
     out
 }
 
+/// chat's reviewable/chat-message.gjs: the channel (its ChannelTitle
+/// linking to the message, else the topic link), the author, and the
+/// message as it was flagged (the payload's message_cooked, else the
+/// live message's cooked) with its uploads and the transcript's link.
+fn chat_message_body(
+    p: &Page,
+    r: &Value,
+    store: &Store,
+    author: Option<&Value>,
+    after_user: &str,
+) -> String {
+    let cx = p.cx;
+    let channel = &r["chat_channel"];
+    let mut out = format!(
+        "<div class=\"review-item__meta-content\"><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-topic-title\">",
+        escape(&t(cx, "chat.reviewable.message_in_channel"))
+    );
+    if channel.is_object() {
+        // LinkTo chat.channel.near-message: slugifiedTitle, id, target_id.
+        let mut href = format!(
+            "{}/chat/c/{}/{}",
+            cx.base_path,
+            crate::plugins::chat::page::slugified_title(channel),
+            channel["id"]
+        );
+        if let Some(id) = r["target_id"].as_i64() {
+            href.push_str(&format!("/{id}"));
+        }
+        out.push_str(&format!(
+            "<a href=\"{}\">{}</a>",
+            escape(&href),
+            crate::plugins::chat::page::channel_title(
+                channel,
+                &cx.settings.emojis,
+                cx.base_path,
+                &[]
+            )
+        ));
+    } else {
+        out.push_str(&topic_link(cx, r, store, ""));
+    }
+    out.push_str(&format!(
+        "</div><div class=\"review-item__meta-label\">{}</div><div class=\"review-item__meta-flagged-user\">",
+        escape(&t(cx, "review.review_user"))
+    ));
+    out.push_str(&created_by(cx, author, &r["author_penalties"], after_user));
+    out.push_str("</div></div>");
+    let cooked = r["payload"]["message_cooked"]
+        .as_str()
+        .filter(|c| !c.is_empty())
+        .or_else(|| r["cooked"].as_str())
+        .unwrap_or_default();
+    out.push_str(&format!(
+        "<div class=\"review-item__post\"><div class=\"review-item__post-content-wrapper\"><div class=\"review-item__post-content\">{cooked}"
+    ));
+    if let Some(uploads) = r["payload"]["message_uploads"]
+        .as_array()
+        .filter(|u| !u.is_empty())
+    {
+        let dimension = |name: &str| {
+            p.acx
+                .settings
+                .get(name)
+                .map(|v| v.to_i() as f64)
+                .unwrap_or_default()
+        };
+        let translate = |key: &str| t(cx, key);
+        let opts = crate::plugins::chat::collapser::Opts {
+            base_path: cx.base_path,
+            page_url: "",
+            max_image: (dimension("max_image_width"), dimension("max_image_height")),
+            t: &translate,
+        };
+        out.push_str("<div class=\"chat-uploads\">");
+        for upload in uploads {
+            out.push_str(&crate::plugins::chat::collapser::upload_html(upload, &opts));
+        }
+        out.push_str("</div>");
+    }
+    if let Some(topic_id) = id_key(&r["payload"]["transcript_topic_id"]) {
+        out.push_str(&format!(
+            "<div class=\"transcript\"><a class=\"btn btn-default btn-small\" href=\"{}/t/-/{}\">{}</a></div>",
+            cx.base_path,
+            escape(&topic_id),
+            escape(&t(cx, "review.transcript.view"))
+        ));
+    }
+    out.push_str("</div></div></div>");
+    out
+}
+
 /// reviewable/queued-post.gjs: the topic (or the new topic's title,
 /// category and tags), the author, and the raw cooked as a preview.
 fn queued_post_body(
@@ -1726,6 +1821,7 @@ mod tests {
             type_key("Chat::ReviewableMessage"),
             "chat_reviewable_message"
         );
+        assert_eq!(type_key("ReviewableChatMessage"), "reviewable_chat_message");
     }
 
     #[test]

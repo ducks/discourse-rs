@@ -2218,7 +2218,7 @@ have handlers now.
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
     first or last post (:698), claims and notes (review_posts.rs:257;
     reviewable_user.rs:195,272,446), the other reviewable types
-    (review.rs:247; review_posts.rs:211), user and plugin reviewables in
+    (review.rs:247; review_posts.rs:211), user reviewables in
     the list (review_list.rs:594,599: ReviewableUserSerializer, the
     user.gjs card with its reject reason modal, approve_user), queued
     posts approved into closed or
@@ -2228,11 +2228,43 @@ have handlers now.
     invite-only sites or with an uploaded avatar and their rejection
     email (reviewable_user.rs:52,82,316), score conversations and types,
     reasons whose text the restricted cook would change, watched word
-    scores without their words, the ids, date and additional filters
+    scores without their words, the date and additional filters
     (review_list.rs:205,208,216,1047,1100,1246,1266), reviewable web hook
     payloads (review_list.rs:602,2196,2233,2278 and `web_hooks::refuse` for
-    the reviewable events), truncate_user_flag_stats (review.rs:534;
-    review_posts.rs:1236)
+    the reviewable events), the single reviewable page (review.show,
+    ReviewablesController#show: GET /review/:id is the permalink route),
+    the /reviewable_action publish (Reviewable#notify_users), the page's
+    warning of unknown reviewable types (meta has the list). Plugin
+    reviewables are 148a's and 148b's
+148a. ~~`feat/plugin-reviewables`~~ (done) M: plugin reviewables in the
+    queue, chat's first. Chat::ReviewableMessage is stored as Rails stores
+    it (type `ReviewableChatMessage`, type_source `chat`;
+    `reviewables::types` maps the class names meta and the type filter use
+    to the stored names, chat's while chat_enabled), listed and drawn
+    (Chat::ReviewableMessageSerializer: the live message's cooked and
+    chatmessage_id, the payload's message_cooked, message_uploads and
+    transcript_topic_id, the embedded chat_channel; chat's
+    reviewable/chat-message.gjs with the channel title linking to the
+    message, the author, uploads and the transcript link; "Chat flagged
+    as"), with build_combined_actions under chat's translations and
+    penalty_effect_for, shared with perform (src/plugins/chat/review.rs,
+    delete_and_ignore too); a staff flag's take_action agrees at once
+    (agree_and_delete, publish_delete!); update_flag_stats enqueues
+    Jobs::TruncateUserFlagStats, ported, for post and chat flags alike;
+    the ids filter, which review.js now redraws acted on items with;
+    meta's unknown_reviewable_types_and_sources. discourse-post-voting
+    creates no reviewables in the port (its comment flag is refused,
+    plugins/post_voting/comments.rs). tests/chat_reviewables.rs,
+    tests/browser/review-chat.spec.js. The rest is 148b
+148b. `feat/plugin-reviewables-rest` M: the companion message a chat
+    notify flag with a message sends (plugins/chat/flags.rs) and the score
+    conversation its meta_topic_id brings
+    (ReviewableScoreSerializer#reviewable_conversation, refused for post
+    flags with a message too, review_list.rs "score conversations"), the
+    transcript a direct message's flag sends, flags of messages with
+    uploads (the payload's message_uploads), queue_for_review, and
+    discourse-post-voting's ReviewablePostVotingComment with the comment
+    flag that makes it (plugins/post_voting/comments.rs)
 149. `feat/category-group-moderation` M: enable_category_group_moderation
     (topic_guardian.rs:214; posting/validate.rs:449; review.rs:172;
     routes/review.rs:147,285,413; routes/review_claims.rs:215;
@@ -4949,12 +4981,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the composer's place with its delete count, DeleteMessagesConfirm,
     ChatModalMoveMessageToChannel over the member's other public
     channels, as a plain select, then the first moved message).
-    tests/chat_moderation.rs. Left: the review queue's entries and page
-    for chat reviewables (Chat::ReviewableMessageSerializer; the queue
-    refuses plugin types, review_list.rs:603, with 148). Refused: notify
-    flags with a message (the companion PM), the transcript a DM flag
-    sends, take_action, queue_for_review, flagging messages with
-    uploads, moving threads. Select mode's quote and copy are 218's
+    tests/chat_moderation.rs. The review queue's entries and page for
+    chat reviewables and take_action are 148a's. Refused: notify flags
+    with a message (the companion PM), the transcript a DM flag sends,
+    queue_for_review, flagging messages with uploads (148b), moving
+    threads. Select mode's quote and copy are 218's
 218. ~~`feat/chat-message-actions`~~ (done, stacked on
     feat/chat-moderation) M: the message actions left after 217. Now
     POST /chat/:id/quote is ChatController#quote_messages over

@@ -30,6 +30,10 @@ fn handler<'a>(
         "refresh_users_reviewable_counts" => {
             Box::pin(async move { reviewable_counts_job(state, &job.args, true).await })
         }
+        "truncate_user_flag_stats" => Box::pin(async move {
+            let mut conn = state.pool.acquire().await?;
+            crate::reviewables::truncate_user_flag_stats(&mut conn, &job.args).await
+        }),
         "cleanup_acls_for_deleted" => {
             Box::pin(async move { cleanup_acls_for_deleted(state, &job.args).await })
         }

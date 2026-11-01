@@ -188,11 +188,16 @@ pub async fn index(
     let text = |k: &str| p.get(k).and_then(params::scalar).filter(|v| !v.is_empty());
     let offset = text("offset").map(|v| crate::ruby::to_i(&v)).unwrap_or(0);
 
-    if let Some(t) = text("type")
-        && !crate::reviewables::STI_NAMES.contains(&t.as_str())
-    {
-        return Ok(Listed::InvalidParameter("type"));
-    }
+    // valid_filter_type?: a registered class's name, filtering on its
+    // sti_name.
+    let types = crate::reviewables::types(s)?;
+    let type_filter = match text("type") {
+        Some(t) => match types.iter().find(|(class, _)| *class == t) {
+            Some((_, sti)) => Some(*sti),
+            None => return Ok(Listed::InvalidParameter("type")),
+        },
+        None => None,
+    };
     let status = p
         .get("status")
         .and_then(params::scalar)
@@ -205,9 +210,24 @@ pub async fn index(
             None => return Ok(Listed::InvalidParameter("status")),
         },
     };
-    if p.contains_key("ids") {
-        return Err(Unsupported("the review queue's ids filter").into());
-    }
+    // ids: `where(id: ids)`, each cast as an integer column casts it (a
+    // value that isn't one matches nothing).
+    let ids_filter: Option<Vec<i64>> = match p.get("ids") {
+        None | Some(Value::Null) => None,
+        Some(Value::Array(values)) => Some(
+            values
+                .iter()
+                .filter_map(params::scalar)
+                .filter_map(|v| v.trim().parse().ok())
+                .collect(),
+        ),
+        Some(v) => Some(
+            params::scalar(v)
+                .and_then(|v| v.trim().parse().ok())
+                .into_iter()
+                .collect(),
+        ),
+    };
     if text("from_date").is_some() || text("to_date").is_some() {
         return Err(Unsupported("the review queue's date filters").into());
     }
@@ -258,8 +278,20 @@ pub async fn index(
             .join(", ");
         q.wheres.push(format!("reviewables.status IN ({list})"));
     }
-    if let Some(t) = text("type") {
-        let b = q.bind(Bind::Text(t));
+    if let Some(ids) = &ids_filter {
+        if ids.is_empty() {
+            q.wheres.push("FALSE".into());
+        } else {
+            let list = ids
+                .iter()
+                .map(|i| i.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
+            q.wheres.push(format!("reviewables.id IN ({list})"));
+        }
+    }
+    if let Some(t) = type_filter {
+        let b = q.bind(Bind::Text(t.to_string()));
         q.wheres.push(format!("reviewables.type = {b}"));
     }
     if let Some(id) = category_id {
@@ -328,12 +360,10 @@ pub async fn index(
              OR (reviewables.target_created_by_id = {id}))"
         ));
     }
-    let types = crate::reviewables::STI_NAMES
-        .iter()
-        .map(|t| format!("'{t}'"))
-        .collect::<Vec<_>>()
-        .join(", ");
-    q.wheres.push(format!("reviewables.type IN ({types})"));
+    q.wheres.push(format!(
+        "reviewables.type IN ({})",
+        crate::reviewables::sti_names_sql(s)?
+    ));
 
     let (total, ids): (i64, Vec<i64>) = if q.none {
         (0, Vec::new())
@@ -357,7 +387,7 @@ pub async fn index(
 
     // meta: the filters as the controller holds them, then the rest.
     let mut meta = Map::new();
-    meta.insert("ids".into(), Value::Null);
+    meta.insert("ids".into(), p.get("ids").cloned().unwrap_or(Value::Null));
     meta.insert("status".into(), json!(status));
     meta.insert("category_id".into(), json!(category_id));
     meta.insert("topic_id".into(), json!(topic_id));
@@ -378,9 +408,32 @@ pub async fn index(
     );
     meta.insert(
         "reviewable_types".into(),
-        json!(crate::reviewables::STI_NAMES),
+        json!(types.iter().map(|(class, _)| *class).collect::<Vec<_>>()),
     );
-    meta.insert("unknown_reviewable_types_and_sources".into(), json!([]));
+    // Reviewable.unknown_types_and_sources: the pending types and sources
+    // no registered type accounts for, unknown sources last.
+    let mut unknown: Vec<(String, String)> = sqlx::query_as::<_, (String, String)>(
+        "SELECT DISTINCT type, type_source FROM reviewables WHERE status = 0",
+    )
+    .fetch_all(&mut *conn)
+    .await?
+    .into_iter()
+    .filter(|(t, source)| {
+        !types
+            .iter()
+            .any(|(_, sti)| sti == t && crate::reviewables::source_for(sti) == source)
+    })
+    .collect();
+    unknown.sort_by(|a, b| ((a.1 == "unknown"), &a.1, &a.0).cmp(&((b.1 == "unknown"), &b.1, &b.0)));
+    meta.insert(
+        "unknown_reviewable_types_and_sources".into(),
+        Value::Array(
+            unknown
+                .into_iter()
+                .map(|(t, source)| json!({ "type": t, "source": source }))
+                .collect(),
+        ),
+    );
     meta.insert(
         "score_types".into(),
         meta_score_types(&mut *conn, ctx).await?,
@@ -430,8 +483,19 @@ fn load_more_path(ctx: &Ctx<'_>, meta: &Map<String, Value>, offset: i64) -> Stri
         .into_iter()
         .chain(ECHOED)
     {
-        if let Some(v) = meta.get(key).and_then(params::scalar) {
-            pairs.push((key.to_string(), v));
+        match meta.get(key) {
+            // An array's `to_query`: key[]=value for each.
+            Some(Value::Array(values)) => {
+                for v in values.iter().filter_map(params::scalar) {
+                    pairs.push((format!("{key}[]"), v));
+                }
+            }
+            Some(v) => {
+                if let Some(v) = params::scalar(v) {
+                    pairs.push((key.to_string(), v));
+                }
+            }
+            None => {}
         }
     }
     pairs.sort();
@@ -486,13 +550,28 @@ fn type_title(ctx: &Ctx<'_>, t: &ScoreType) -> String {
 }
 
 /// The reviewable types the queue serializes: ReviewableFlaggedPost,
-/// ReviewableQueuedPost and ReviewablePost (review_every_post).
+/// ReviewableQueuedPost, ReviewablePost (review_every_post) and chat's
+/// Chat::ReviewableMessage.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Kind {
     Flagged,
     Queued,
     Post,
+    ChatMessage,
 }
+
+/// A Chat::ReviewableMessage's message (`chat_message`, with deleted).
+#[derive(sqlx::FromRow)]
+struct ChatMessage {
+    id: i64,
+    cooked: Option<String>,
+    deleted_at: Option<NaiveDateTime>,
+    chat_channel_id: i64,
+}
+
+/// `Chat::ReviewableMessageSerializer.payload_attributes`
+const CHAT_MESSAGE_PAYLOAD: [&str; 3] =
+    ["transcript_topic_id", "message_cooked", "message_uploads"];
 
 /// What a page side-loads, in the order the serializers add it.
 #[derive(Default)]
@@ -594,13 +673,15 @@ async fn serialize(
         "ReviewableFlaggedPost" => Kind::Flagged,
         "ReviewableQueuedPost" => Kind::Queued,
         "ReviewablePost" => Kind::Post,
+        crate::reviewables::CHAT_MESSAGE => Kind::ChatMessage,
         "ReviewableUser" => {
             return Err(Unsupported(
                 "user reviewables (must_approve_users, suspect users) in the queue",
             )
             .into());
         }
-        _ => return Err(Unsupported("plugin reviewables in the queue").into()),
+        // The list holds the registered types alone.
+        _ => return Err(Unsupported("reviewable types the port does not register").into()),
     };
     if web_hook && kind != Kind::Flagged {
         return Err(Unsupported("web hook payloads of queued and reviewed posts").into());
@@ -625,6 +706,18 @@ async fn serialize(
     if post.as_ref().is_some_and(|p| p.user_deleted) {
         return Err(Unsupported("posts the user deleted in the queue").into());
     }
+    let chat_message: Option<ChatMessage> =
+        match (kind, r.target_id) {
+            (Kind::ChatMessage, Some(target)) => sqlx::query_as(
+                "SELECT id, cooked, deleted_at, chat_channel_id FROM chat_messages WHERE id = $1",
+            )
+            .bind(i64::from(target))
+            .fetch_optional(&mut *conn)
+            .await?,
+            _ => None,
+        };
+    // `target`: Chat::Message is Trashable, so a trashed one is none.
+    let chat_target = chat_message.as_ref().filter(|m| m.deleted_at.is_none());
     // target_deleted_by / target_deleted_at read target_post_with_deleted.
     let deleted_by = post.as_ref().and_then(|p| p.deleted_by_id);
     let target_deleted_at = post
@@ -680,7 +773,12 @@ async fn serialize(
         d.insert("topic_url".into(), json!(u));
     }
     d.insert("target_type".into(), json!(r.target_type));
-    d.insert("target_id".into(), json!(r.target_id));
+    // Chat::ReviewableMessageSerializer#target_id: `object.target&.id`.
+    if kind == Kind::ChatMessage {
+        d.insert("target_id".into(), json!(chat_target.map(|m| m.id)));
+    } else {
+        d.insert("target_id".into(), json!(r.target_id));
+    }
     // target_url: `Discourse.base_url + post.url`, else the topic's URL.
     // Deleted content is loaded (`with_deleted_content`).
     let target_url = match (&post, &topic) {
@@ -754,7 +852,10 @@ async fn serialize(
         "target_created_by_trust_level".into(),
         json!(author.as_ref().map(|a| a.trust_level)),
     );
-    d.insert("created_from_flag".into(), json!(kind == Kind::Flagged));
+    d.insert(
+        "created_from_flag".into(),
+        json!(matches!(kind, Kind::Flagged | Kind::ChatMessage)),
+    );
     d.insert("status".into(), json!(r.status));
     match kind {
         Kind::Flagged | Kind::Post => match &post {
@@ -824,6 +925,15 @@ async fn serialize(
             };
             d.insert("cooked".into(), json!(cooked));
         }
+        // target_attributes :cooked, when present.
+        Kind::ChatMessage => {
+            if let Some(cooked) = chat_target
+                .and_then(|m| m.cooked.as_deref())
+                .filter(|c| !c.trim().is_empty())
+            {
+                d.insert("cooked".into(), json!(cooked));
+            }
+        }
     }
     if topic.is_none() {
         d.insert("removed_topic_id".into(), json!(r.topic_id));
@@ -831,6 +941,9 @@ async fn serialize(
     // The target's id under a good name (`post_id`).
     if let Some(p) = &post {
         d.insert("post_id".into(), json!(p.id));
+    }
+    if let Some(m) = chat_target {
+        d.insert("chatmessage_id".into(), json!(m.id));
     }
     // payload_attributes, sliced in their order; raw_email for those who
     // may see raw emails.
@@ -846,6 +959,14 @@ async fn serialize(
                 payload.insert(key.into(), v.clone());
             }
         }
+        d.insert("payload".into(), Value::Object(payload));
+    }
+    if kind == Kind::ChatMessage {
+        let stored = r.payload.as_ref().and_then(Value::as_object);
+        let payload: Map<String, Value> = CHAT_MESSAGE_PAYLOAD
+            .iter()
+            .filter_map(|key| Some((key.to_string(), stored?.get(*key)?.clone())))
+            .collect();
         d.insert("payload".into(), Value::Object(payload));
     }
 
@@ -949,6 +1070,9 @@ async fn serialize(
             Some(_) => Vec::new(),
             None => return Err(Unsupported("a post review without its post").into()),
         },
+        Kind::ChatMessage => {
+            chat_actions(&mut *conn, ctx, guardian, &r, !penalties.is_empty(), out).await?
+        }
     };
     d.insert("bundled_action_ids".into(), json!(bundle_ids));
     // has_many :reviewable_notes, oldest first (ReviewableNoteSerializer,
@@ -1043,7 +1167,72 @@ async fn serialize(
             d.insert("claimed_by_id".into(), Value::Null);
         }
     }
+    // has_one :chat_channel (Chat::ChannelSerializer, embedded): the
+    // message's channel, unless trashed.
+    if kind == Kind::ChatMessage {
+        let channel: Option<crate::plugins::chat::channels::ChannelRow> = match &chat_message {
+            Some(m) => {
+                sqlx::query_as(&format!(
+                    "SELECT {} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL",
+                    crate::plugins::chat::channels::CHANNEL_COLUMNS
+                ))
+                .bind(m.chat_channel_id)
+                .fetch_optional(&mut *conn)
+                .await?
+            }
+            None => None,
+        };
+        let channel = match channel {
+            Some(c) => {
+                let mut chat = crate::plugins::chat::channels::Context {
+                    conn: &mut *conn,
+                    settings: s,
+                    i18n: ctx.i18n,
+                    guardian,
+                    base_path: ctx.config.globals.relative_url_root(),
+                    config: ctx.config,
+                };
+                chat.channel(&c, None, None, None).await?
+            }
+            None => Value::Null,
+        };
+        d.insert("chat_channel".into(), channel);
+    }
     Ok(Value::Object(d))
+}
+
+/// `Chat::ReviewableMessage#build_combined_actions` through
+/// `build_action` with the type's source (chat's translations); the
+/// bundles' ids.
+async fn chat_actions(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    r: &Reviewable,
+    has_penalties: bool,
+    out: &mut Out,
+) -> Result<Vec<String>, AppError> {
+    use crate::plugins::chat::review::{BUNDLES, Target, penalty_effect};
+    let target = Target::load(&mut *conn, r.id).await?;
+    let silenced_for = has_penalties && target.silenced_for_this_message(&mut *conn).await?;
+    let source = r
+        .type_source
+        .clone()
+        .unwrap_or_else(|| crate::reviewables::source_for(&r.kind).to_string());
+    let mut b = Actions::new(ctx, r);
+    let bundles: Vec<(&str, usize)> = BUNDLES
+        .iter()
+        .map(|(id, icon, label)| (*id, b.add_bundle(id, Some(icon), label)))
+        .collect();
+    for a in target.actions(guardian) {
+        let bundle = a
+            .bundle
+            .and_then(|name| bundles.iter().find(|(n, _)| *n == name).map(|(_, i)| *i));
+        let mut spec = ActionSpec::sourced(&source, a.id, a.icon, a.client_action);
+        spec.penalty_effect = has_penalties.then(|| penalty_effect(a.id, silenced_for));
+        b.push(a.id, spec, bundle, a.secondary);
+    }
+    Ok(b.finish(out))
 }
 
 /// The reviewable's scores (ReviewableScoreSerializer), newest first; their
@@ -1444,6 +1633,8 @@ struct ActionSpec {
     confirm_destructive: bool,
     client_action: Option<&'static str>,
     completed: Option<String>,
+    /// `penalty_effect_for(id)`, when the type works it out itself.
+    penalty_effect: Option<&'static str>,
 }
 
 impl ActionSpec {
@@ -1464,6 +1655,29 @@ impl ActionSpec {
             confirm_destructive: false,
             client_action,
             completed: Some(format!("{prefix}.complete")),
+            penalty_effect: None,
+        }
+    }
+
+    /// `build_action` for a type from `source`: a plugin's keys are under
+    /// `<source>.reviewables.actions.<id>`, core's as above.
+    fn sourced(
+        source: &str,
+        id: &str,
+        icon: &'static str,
+        client_action: Option<&'static str>,
+    ) -> Self {
+        if source == "core" {
+            return Self::core(id, icon, client_action, false);
+        }
+        let prefix = format!("{source}.reviewables.actions.{id}");
+        ActionSpec {
+            icon: Some(icon),
+            label: format!("{prefix}.title"),
+            description: Some(format!("{prefix}.description")),
+            client_action,
+            completed: Some(format!("{prefix}.complete")),
+            ..ActionSpec::default()
         }
     }
 }
@@ -1487,7 +1701,11 @@ impl<'a> Actions<'a> {
         Actions {
             ctx,
             reviewable_id: r.id,
-            target: (r.target_type.as_deref() == Some("Post")).then_some("post"),
+            target: match r.target_type.as_deref() {
+                Some("Post") => Some("post"),
+                Some("ChatMessage") => Some("chat_message"),
+                _ => None,
+            },
             bundles: Vec::new(),
             actions: Vec::new(),
             effects: None,
@@ -1566,7 +1784,9 @@ impl<'a> Actions<'a> {
             "completed_message".into(),
             json!(spec.completed.as_deref().and_then(|k| i18n.t(k))),
         );
-        if let Some(e) = &self.effects {
+        if let Some(e) = spec.penalty_effect {
+            a.insert("penalty_effect".into(), json!(e));
+        } else if let Some(e) = &self.effects {
             a.insert("penalty_effect".into(), json!(e.effect(id)));
         }
         self.actions.push(Value::Object(a));

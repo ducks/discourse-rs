@@ -1473,8 +1473,36 @@ def define_steps(run):
         expect_gone(page.locator(".flag-modal"), "the flag modal to close after flagging")
         run.leave("user0's flag (inappropriate) on that reply, and its review item")
 
-    @step(24, "Moderator", "review count in header and sidebar; /review, a note, agree with the flag", needs=[23])
+    @step(24, "Moderator", "review count in header and sidebar; /review, a note, agree with the flag; a chat flag deleted from /review",
+          needs=[23])
     def _(run, s):
+        # Member's message in #General, flagged by Second member from its menu.
+        member = run.persona("Member").use()
+        open_channel(run, member, "/chat/c/general/2", "#General for the message to flag")
+        flagged = f"{run.label} chat to flag"
+        send_chat(member.locator(".chat-channel"), flagged, "the message to flag")
+        run.leave(f"user1's chat message '{flagged}' in #General, deleted from /review")
+        second = run.persona("Second member").use()
+        open_channel(run, second, "/chat/c/general/2", "#General for Second member")
+        wait_until(second, "t => [...document.querySelectorAll('.chat-channel .chat-message-container[data-id]')]"
+                   ".some(m => m.innerText.includes(t) && /^\\d+$/.test(m.dataset.id))",
+                   flagged, "the message to flag in Second member's #General")
+        message = second.locator(".chat-channel .chat-message-container", has_text=flagged).first
+        # The message is drawn anew once processed, which can take it from
+        # under the pointer: point at it again.
+        for attempt in range(3):
+            try:
+                chat_message_action(message, "flag", "Flag in the message's menu")
+                break
+            except PlaywrightError:
+                if attempt == 2:
+                    raise
+                settle(second, 500)
+        modal = expect_visible(second.locator(".d-modal .flag-modal-body"), "the chat flag modal")
+        modal.locator("#radio_inappropriate").check()
+        second.locator(".flag-modal__create-flag").click()
+        expect_gone(second.locator(".d-modal .flag-modal-body"), "the chat flag modal to close after flagging")
+
         page = run.persona("Moderator").use()
         page.goto(run.base + "/latest")
         try:
@@ -1491,6 +1519,18 @@ def define_steps(run):
         item.locator("details summary", has_text=re.compile(r"^\s*Yes")).first.click()
         expect_visible(page.locator(".select-kit.is-expanded .select-kit-row", has_text=re.compile("Agree with flag", re.I)), "the agree choices").click()
         expect_visible(item.locator("*", has_text=re.compile(r"^\s*Flag approved\s*$")), "the flag shown approved")
+        # The chat flag beside it: Yes > Delete Message, then gone from #General.
+        chat = expect_visible(page.locator(".review-item.reviewable-chat-message").filter(has_text=flagged),
+                              "the flagged chat message in /review")
+        chat.locator("details summary", has_text=re.compile(r"^\s*Yes")).first.click()
+        expect_visible(page.locator(".select-kit.is-expanded .select-kit-row[data-value='chat_message-agree_and_delete']"),
+                       "Delete Message among the agree choices").click()
+        expect_visible(chat.locator(".review-item__status", has_text="Flag approved"), "the chat flag shown approved")
+        second = run.persona("Second member").use()
+        open_channel(run, second, "/chat/c/general/2", "#General after the chat flag")
+        expect_visible(second.locator(".chat-channel .chat-message-container").first, "#General's messages")
+        if second.locator(".chat-channel .chat-message-container", has_text=flagged).count():
+            raise StepFail("the deleted chat message still shows in #General")
 
     @step(25, "Admin", "watched word 'require approval'; Newcomer posts it; held; approve from /review")
     def _(run, s):

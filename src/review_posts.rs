@@ -46,8 +46,6 @@ const REGULAR: i32 = 1;
 const WHISPER: i32 = 4;
 /// `Group::AUTO_GROUPS[:staff]`
 const STAFF_GROUP: i32 = 3;
-/// `Jobs::TruncateUserFlagStats.truncate_to`
-const FLAG_STATS_TRUNCATE_TO: i64 = 100;
 
 /// The request's `additional_args` (ReviewableQueuedPost's revise ones).
 #[derive(Debug, Default, Clone)]
@@ -1262,16 +1260,7 @@ async fn reviewed(
         } else {
             "flags_disagreed"
         };
-        let total: Option<i64> = sqlx::query_scalar(&format!(
-            "UPDATE user_stats SET {stat} = {stat} + 1 WHERE user_id = $1 \
-             RETURNING (flags_agreed + flags_disagreed + flags_ignored)::int8"
-        ))
-        .bind(row.created_by_id)
-        .fetch_optional(&mut *conn)
-        .await?;
-        if total.is_some_and(|t| t > FLAG_STATS_TRUNCATE_TO) {
-            return Err(Unsupported("truncating flag stats (truncate_user_flag_stats)").into());
-        }
+        crate::reviewables::update_flag_stats(&mut *conn, stat, &[row.created_by_id]).await?;
     }
     if deferred.is_none() {
         let jobs = own

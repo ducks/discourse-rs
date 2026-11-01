@@ -424,12 +424,12 @@ async fn destroy_batch(
     // delete_flags: Chat::ReviewableMessage.where(target_id:).destroy_all
     for statement in [
         "DELETE FROM reviewable_histories WHERE reviewable_id IN \
-           (SELECT id FROM reviewables WHERE type = 'Chat::ReviewableMessage' AND target_id = ANY($1))",
+           (SELECT id FROM reviewables WHERE type = 'ReviewableChatMessage' AND target_id = ANY($1))",
         "DELETE FROM reviewable_scores WHERE reviewable_id IN \
-           (SELECT id FROM reviewables WHERE type = 'Chat::ReviewableMessage' AND target_id = ANY($1))",
+           (SELECT id FROM reviewables WHERE type = 'ReviewableChatMessage' AND target_id = ANY($1))",
         "DELETE FROM reviewable_notes WHERE reviewable_id IN \
-           (SELECT id FROM reviewables WHERE type = 'Chat::ReviewableMessage' AND target_id = ANY($1))",
-        "DELETE FROM reviewables WHERE type = 'Chat::ReviewableMessage' AND target_id = ANY($1)",
+           (SELECT id FROM reviewables WHERE type = 'ReviewableChatMessage' AND target_id = ANY($1))",
+        "DELETE FROM reviewables WHERE type = 'ReviewableChatMessage' AND target_id = ANY($1)",
     ] {
         sqlx::query(statement).bind(ids).execute(&mut *conn).await?;
     }

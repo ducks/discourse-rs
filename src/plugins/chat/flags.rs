@@ -4,12 +4,13 @@
 //! (Reviewable.needs_review!) and the flag's score, the auto silence a
 //! high enough score brings (chat_auto_silence_from_flags_duration over
 //! Chat::ReviewableMessage.score_to_silence_user), and publish_flag!: the
-//! flagger hears self_flagged, staff hear flag.
+//! flagger hears self_flagged, staff hear flag. A staff flag with
+//! take_action is agreed with at once (agree_and_delete, review.rs) and
+//! the deletion published instead.
 //!
 //! Not ported, and refused: the companion message a notify flag with a
 //! message sends, the transcript a direct message's flag sends the
-//! moderators, uploads in the payload, take_action (agree_and_delete) and
-//! queue_for_review.
+//! moderators, uploads in the payload and queue_for_review.
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -57,6 +58,7 @@ impl Context<'_> {
     /// Chat::FlagMessage, by the guardian's user.
     pub async fn flag_message(
         &mut self,
+        host: &crate::pretty_text::Host,
         bus: &pg_bus::Bus,
         p: &FlagParams,
     ) -> Result<Flagged, AppError> {
@@ -185,9 +187,6 @@ impl Context<'_> {
         if uploads {
             return Err(Unsupported("flags of chat messages with uploads").into());
         }
-        if p.take_action {
-            return Err(Unsupported("taking action on a chat flag (agree_and_delete)").into());
-        }
 
         let payload = json!({ "message_cooked": message.cooked });
         let reviewable = self
@@ -211,13 +210,54 @@ impl Context<'_> {
             &NewScore {
                 score_type: flag_type_id,
                 created_at,
-                take_action: false,
+                take_action: p.take_action,
                 reason: None,
                 context: None,
                 meta_topic_id: None,
             },
         )
         .await?;
+
+        if p.take_action {
+            // reviewable.perform(user, :agree_and_delete), then
+            // publish_delete!.
+            let ctx = crate::posting::Ctx {
+                host,
+                settings: self.settings,
+                config: self.config,
+                i18n: self.i18n,
+                bus,
+            };
+            let target = super::review::Target::load(&mut *self.conn, reviewable.id).await?;
+            if !target
+                .actions(self.guardian)
+                .iter()
+                .any(|a| a.id == "agree_and_delete")
+            {
+                return Err(Unsupported("a chat flag's agree_and_delete not offered").into());
+            }
+            super::review::run(
+                &mut *self.conn,
+                &ctx,
+                user.id,
+                &target,
+                "agree_and_delete",
+                None,
+            )
+            .await?;
+            crate::jobs::enqueue(
+                &mut *self.conn,
+                "notify_reviewable",
+                json!({
+                    "reviewable_id": reviewable.id,
+                    "performing_username": user.username,
+                    "updated_reviewable_ids": [reviewable.id],
+                }),
+            )
+            .await?;
+            super::publisher::publish_delete(self, bus, &channel, message.id).await?;
+            return Ok(Flagged::Done(None));
+        }
 
         // enforce_auto_silence_threshold, the silence itself left to the
         // caller once this commits.
@@ -349,7 +389,7 @@ impl Context<'_> {
                     potential_spam = COALESCE($3, reviewables.potential_spam) \
              FROM reviewables AS old_reviewables \
              WHERE reviewables.target_id = $2 AND reviewables.target_type = $4 \
-               AND reviewables.type = 'Chat::ReviewableMessage' AND old_reviewables.id = reviewables.id \
+               AND reviewables.type = 'ReviewableChatMessage' AND old_reviewables.id = reviewables.id \
              RETURNING reviewables.id, old_reviewables.status, old_reviewables.score",
         )
         .bind(reviewables::PENDING)
@@ -383,7 +423,7 @@ impl Context<'_> {
                                               reviewable_by_group_id, category_id, topic_id, score, potential_spam, \
                                               target_id, target_type, target_created_by_id, payload, version, \
                                               latest_score, force_review, potentially_illegal, created_at, updated_at) \
-                     VALUES ('Chat::ReviewableMessage', 'core', $1, $2, TRUE, NULL, NULL, NULL, 0, $3, $4, $5, $6, \
+                     VALUES ('ReviewableChatMessage', 'chat', $1, $2, TRUE, NULL, NULL, NULL, 0, $3, $4, $5, $6, \
                              $7::jsonb, 0, NULL, FALSE, FALSE, clock_timestamp(), clock_timestamp()) \
                      RETURNING id",
                 )

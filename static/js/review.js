@@ -291,15 +291,13 @@
     });
   }
 
-  // The reviewable as the server draws it now (store.find), with any
-  // other reviewables the action updated: the queue of its topic, every
-  // status.
+  // The reviewables as the server draws them now (store.find), the one
+  // acted on and any others the action updated: by id, every status.
   function redraw(item, ids) {
-    var data = reviewableData(item);
     var params = new URLSearchParams({ priority: "any", status: "all" });
-    if (data.topic_id) {
-      params.set("topic_id", data.topic_id);
-    }
+    ids.forEach(function (id) {
+      params.append("ids[]", id);
+    });
     return fetch(ui().base() + "/review?" + params.toString(), {
       credentials: "same-origin",
       headers: { Accept: "text/html" },
