@@ -1,19 +1,20 @@
-//! Chat::ReviewableMessage's actions from the review queue (PUT
-//! /review/:id/perform/:action_id, which review.rs hands this type):
-//! build_combined_actions as the check of the action asked, its aliases
+//! Chat::ReviewableMessage in the review queue: build_combined_actions
+//! (the queue's bundles and the check of an action asked), its aliases
 //! (agree_and_suspend, agree_and_silence, agree_and_keep_hidden and
-//! delete_and_agree are agree_and_delete), the perform methods (the
-//! message trashed or recovered, the author unsilenced), then
-//! Reviewable#perform's transition, flag stats and score.
+//! delete_and_agree are agree_and_delete), penalty_effect_for, and
+//! Reviewable#perform (PUT /review/:id/perform/:action_id, which review.rs
+//! hands this type) with the perform methods (the message trashed or
+//! recovered, the author unsilenced), the transition, flag stats and score.
 
+use chrono::NaiveDateTime;
 use serde_json::json;
 use sqlx::PgConnection;
 
+use crate::AppError;
 use crate::guardian::Guardian;
 use crate::posting::Ctx;
 use crate::review::Outcome;
 use crate::reviewables::{self, PENDING};
-use crate::{AppError, Unsupported};
 
 /// `Reviewable.statuses`
 const APPROVED: i32 = 1;
@@ -27,8 +28,6 @@ const SCORE_DISAGREED: i32 = 2;
 const SCORE_IGNORED: i32 = 3;
 /// `UserHistory.actions[:silence_user]`
 const SILENCE_USER: i32 = 30;
-/// `Jobs::TruncateUserFlagStats.truncate_to`
-const FLAG_STATS_TRUNCATE_TO: i64 = 100;
 
 /// `Chat::ReviewableMessage.action_aliases`
 fn alias(action: &str) -> &str {
@@ -41,6 +40,198 @@ fn alias(action: &str) -> &str {
     }
 }
 
+/// The flagged message (`chat_message`, with deleted).
+pub struct Message {
+    pub id: i64,
+    pub user_id: Option<i32>,
+    pub deleted: bool,
+}
+
+/// Its author (`chat_message_creator`).
+#[derive(sqlx::FromRow)]
+pub struct Creator {
+    pub id: i32,
+    pub admin: bool,
+    pub moderator: bool,
+    pub silenced_till: Option<NaiveDateTime>,
+}
+
+impl Creator {
+    /// `User#silenced?`
+    pub fn silenced(&self) -> bool {
+        self.silenced_till
+            .is_some_and(|t| t > crate::clock::now_naive())
+    }
+}
+
+/// A Chat::ReviewableMessage as its actions read it.
+pub struct Target {
+    pub id: i64,
+    pub status: i32,
+    pub message: Option<Message>,
+    pub creator: Option<Creator>,
+}
+
+/// One action build_combined_actions adds: its id and icon, its bundle
+/// (`agree` or `disagree`, else its own), client action and whether it
+/// is set apart (secondary).
+pub struct Built {
+    pub id: &'static str,
+    pub icon: &'static str,
+    pub bundle: Option<&'static str>,
+    pub client_action: Option<&'static str>,
+    pub secondary: bool,
+}
+
+/// The bundles the actions go in: id suffix, icon and label key.
+pub const BUNDLES: [(&str, &str, &str); 2] = [
+    ("agree", "thumbs-up", "reviewables.actions.agree.title"),
+    (
+        "disagree",
+        "far-eye",
+        "reviewables.actions.disagree_bundle.title",
+    ),
+];
+
+impl Target {
+    pub async fn load(conn: &mut PgConnection, reviewable_id: i64) -> Result<Target, AppError> {
+        let (status, target_id): (i32, Option<i32>) =
+            sqlx::query_as("SELECT status, target_id FROM reviewables WHERE id = $1")
+                .bind(reviewable_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        let message: Option<(i64, Option<i32>, bool)> =
+            match target_id {
+                Some(id) => sqlx::query_as(
+                    "SELECT id, user_id, deleted_at IS NOT NULL FROM chat_messages WHERE id = $1",
+                )
+                .bind(i64::from(id))
+                .fetch_optional(&mut *conn)
+                .await?,
+                None => None,
+            };
+        let message = message.map(|(id, user_id, deleted)| Message {
+            id,
+            user_id,
+            deleted,
+        });
+        let creator: Option<Creator> = match message.as_ref().and_then(|m| m.user_id) {
+            Some(id) => {
+                sqlx::query_as(
+                    "SELECT id, admin, moderator, silenced_till FROM users WHERE id = $1",
+                )
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+            }
+            None => None,
+        };
+        Ok(Target {
+            id: reviewable_id,
+            status,
+            message,
+            creator,
+        })
+    }
+
+    /// `build_combined_actions`, then `build_unsilence_action`.
+    pub fn actions(&self, guardian: &Guardian) -> Vec<Built> {
+        let mut out = Vec::new();
+        if self.status != PENDING {
+            return out;
+        }
+        let action = |id, icon, bundle, client_action| Built {
+            id,
+            icon,
+            bundle,
+            client_action,
+            secondary: false,
+        };
+        let Some(message) = &self.message else {
+            out.push(action("ignore", "up-right-from-square", None, None));
+            return out;
+        };
+        let agree = Some("agree");
+        if message.deleted {
+            out.push(action("agree_and_restore", "far-eye", agree, None));
+            out.push(action("agree_and_keep_deleted", "thumbs-up", agree, None));
+        } else {
+            out.push(action("agree_and_delete", "trash-can", agree, None));
+            out.push(action("agree_and_keep_message", "far-eye", agree, None));
+        }
+        // can_suspend?: staff, over a regular user.
+        if let Some(c) = &self.creator
+            && guardian.is_staff()
+            && !c.admin
+            && !c.moderator
+        {
+            out.push(action("agree_and_suspend", "ban", agree, Some("suspend")));
+            out.push(action(
+                "agree_and_silence",
+                "microphone-slash",
+                agree,
+                Some("silence"),
+            ));
+        }
+        let disagree = Some("disagree");
+        if message.deleted {
+            out.push(action("disagree_and_restore", "far-eye", disagree, None));
+        } else {
+            out.push(action("disagree", "far-eye", disagree, None));
+        }
+        out.push(action("ignore", "xmark", disagree, None));
+        if !message.deleted {
+            out.push(action("delete_and_agree", "trash-can", disagree, None));
+        }
+        // build_unsilence_action: can_unsilence_user?
+        if let Some(c) = &self.creator
+            && c.silenced()
+            && guardian.is_staff()
+            && (!(c.admin || c.moderator) || guardian.is_admin())
+        {
+            out.push(Built {
+                secondary: true,
+                ..action("unsilence_user", "microphone-slash", None, None)
+            });
+        }
+        out
+    }
+
+    /// `silenced_for_this_message?`: the author is silenced, by a silence
+    /// this reviewable brought.
+    pub async fn silenced_for_this_message(
+        &self,
+        conn: &mut PgConnection,
+    ) -> Result<bool, AppError> {
+        let Some(c) = self.creator.as_ref().filter(|c| c.silenced()) else {
+            return Ok(false);
+        };
+        let latest: Option<Option<i64>> = sqlx::query_scalar(
+            "SELECT reviewable_id FROM user_histories WHERE target_user_id = $1 AND action = $2 \
+             ORDER BY id DESC LIMIT 1",
+        )
+        .bind(c.id)
+        .bind(SILENCE_USER)
+        .fetch_optional(&mut *conn)
+        .await?;
+        Ok(latest.flatten() == Some(self.id))
+    }
+}
+
+/// `penalty_effect_for(action_id)` while the author has penalties.
+pub fn penalty_effect(action_id: &str, silenced_for_this_message: bool) -> &'static str {
+    let lifts = match action_id {
+        "disagree" | "disagree_and_restore" => silenced_for_this_message,
+        "unsilence_user" => true,
+        _ => false,
+    };
+    if lifts {
+        "lifts_penalty"
+    } else {
+        "retains_penalty"
+    }
+}
+
 /// The settled result: the reviewable's new status, the flaggers' stat
 /// and whether the score is recalculated.
 struct Settled {
@@ -49,6 +240,25 @@ struct Settled {
     stat: &'static str,
     recalculate: bool,
 }
+
+const AGREE: Settled = Settled {
+    status: APPROVED,
+    score_status: SCORE_AGREED,
+    stat: "flags_agreed",
+    recalculate: true,
+};
+const DISAGREE: Settled = Settled {
+    status: REJECTED,
+    score_status: SCORE_DISAGREED,
+    stat: "flags_disagreed",
+    recalculate: true,
+};
+const IGNORE: Settled = Settled {
+    status: IGNORED,
+    score_status: SCORE_IGNORED,
+    stat: "flags_ignored",
+    recalculate: false,
+};
 
 /// `Reviewable#perform` for a Chat::ReviewableMessage.
 pub async fn perform(
@@ -62,223 +272,27 @@ pub async fn perform(
     let Some(user) = guardian.user() else {
         return Ok(Outcome::Forbidden);
     };
-    let (status, target_id): (i32, Option<i32>) =
-        sqlx::query_as("SELECT status, target_id FROM reviewables WHERE id = $1")
-            .bind(reviewable_id)
-            .fetch_one(&mut *conn)
-            .await?;
-    // chat_message: with_deleted.
-    let message: Option<(i64, Option<i32>, bool)> = match target_id {
-        Some(id) => {
-            sqlx::query_as(
-                "SELECT id, user_id, deleted_at IS NOT NULL FROM chat_messages WHERE id = $1",
-            )
-            .bind(i64::from(id))
-            .fetch_optional(&mut *conn)
-            .await?
-        }
-        None => None,
-    };
-    let creator: Option<(i32, bool, bool, bool)> = match message.and_then(|m| m.1) {
-        Some(id) => sqlx::query_as(
-            "SELECT id, admin, moderator, silenced_till IS NOT NULL AND silenced_till > now() FROM users WHERE id = $1",
-        )
-        .bind(id)
-        .fetch_optional(&mut *conn)
-        .await?,
-        None => None,
-    };
-
-    // build_combined_actions: nothing unless pending.
-    let mut actions: Vec<&str> = Vec::new();
-    if status == PENDING {
-        match message {
-            None => actions.push("ignore"),
-            Some((_, _, deleted)) => {
-                if deleted {
-                    actions.extend(["agree_and_restore", "agree_and_keep_deleted"]);
-                } else {
-                    actions.extend(["agree_and_delete", "agree_and_keep_message"]);
-                }
-                // can_suspend?: staff, over a user who isn't an admin (nor
-                // staff, for a moderator).
-                if let Some((_, admin, moderator, _)) = creator
-                    && guardian.is_staff()
-                    && !admin
-                    && (guardian.is_admin() || !moderator)
-                {
-                    actions.extend(["agree_and_suspend", "agree_and_silence"]);
-                }
-                actions.push(if deleted {
-                    "disagree_and_restore"
-                } else {
-                    "disagree"
-                });
-                actions.push("ignore");
-                if !deleted {
-                    actions.push("delete_and_agree");
-                }
-                // build_unsilence_action: can_unsilence_user?
-                if let Some((_, admin, moderator, true)) = creator
-                    && guardian.is_staff()
-                    && (!(admin || moderator) || guardian.is_admin())
-                {
-                    actions.push("unsilence_user");
-                }
-            }
-        }
-    }
-    // validate_action!: the action or one of its aliases.
-    let method = alias(action_id);
-    let allowed = actions
+    let target = Target::load(&mut *conn, reviewable_id).await?;
+    // validate_action!: the action or one of its aliases' targets.
+    let built = target.actions(guardian);
+    let allowed = built
         .iter()
-        .any(|a| *a == action_id || (alias(a) == action_id && *a != action_id));
+        .any(|a| a.id == action_id || (alias(a.id) == action_id && a.id != action_id));
     if !allowed {
         return Ok(Outcome::Forbidden);
     }
-
-    // increment_version!
-    let bumped: Option<i32> = sqlx::query_scalar(
-        "UPDATE reviewables SET version = version + 1 WHERE id = $1 AND version = $2 RETURNING version",
-    )
-    .bind(reviewable_id)
-    .bind(version as i32)
-    .fetch_optional(&mut *conn)
-    .await?;
-    let Some(new_version) = bumped else {
+    let Some(new_version) =
+        run(conn, ctx, user.id, &target, alias(action_id), Some(version)).await?
+    else {
         return Ok(Outcome::Conflict);
     };
-
-    let message_id = message.map(|m| m.0);
-    let agree = Settled {
-        status: APPROVED,
-        score_status: SCORE_AGREED,
-        stat: "flags_agreed",
-        recalculate: true,
-    };
-    let disagree = Settled {
-        status: REJECTED,
-        score_status: SCORE_DISAGREED,
-        stat: "flags_disagreed",
-        recalculate: true,
-    };
-    let settled = match method {
-        "agree_and_keep_message" | "agree_and_keep_deleted" => Some(agree),
-        "agree_and_restore" => {
-            recover(&mut *conn, message_id).await?;
-            Some(agree)
-        }
-        "agree_and_delete" => {
-            trash(&mut *conn, message_id, user.id).await?;
-            Some(agree)
-        }
-        "disagree" | "disagree_and_restore" => {
-            if method == "disagree_and_restore" {
-                recover(&mut *conn, message_id).await?;
-            }
-            if silenced_for(&mut *conn, creator.map(|c| (c.0, c.3)), reviewable_id).await? {
-                let author = creator.map(|c| c.0).unwrap_or_default();
-                crate::user_penalties::lift_silence_for_reviewable(
-                    &mut *conn,
-                    ctx,
-                    user.id,
-                    author,
-                    reviewable_id,
-                )
-                .await?;
-            }
-            Some(disagree)
-        }
-        "ignore" => Some(Settled {
-            status: IGNORED,
-            score_status: SCORE_IGNORED,
-            stat: "flags_ignored",
-            recalculate: false,
-        }),
-        "unsilence_user" => {
-            let author = creator.map(|c| c.0).unwrap_or_default();
-            crate::user_penalties::lift_silence_for_reviewable(
-                &mut *conn,
-                ctx,
-                user.id,
-                author,
-                reviewable_id,
-            )
-            .await?;
-            None
-        }
-        _ => return Err(Unsupported("chat reviewable actions not ported").into()),
-    };
-
-    let hooks = crate::web_hooks::Payloads {
-        settings: ctx.settings,
-        i18n: ctx.i18n,
-        config: ctx.config,
-    };
-    let mut status_changed = false;
-    if let Some(settled) = &settled {
-        // transition_to: no topic to release a claim of.
-        sqlx::query(
-            "UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1",
-        )
-        .bind(reviewable_id)
-        .bind(settled.status)
-        .execute(&mut *conn)
-        .await?;
-        sqlx::query(
-            "INSERT INTO reviewable_histories (reviewable_id, reviewable_history_type, status, created_by_id, \
-                                               edited, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, NULL, clock_timestamp(), clock_timestamp())",
-        )
-        .bind(reviewable_id)
-        .bind(HISTORY_TRANSITIONED)
-        .bind(settled.status)
-        .bind(user.id)
-        .execute(&mut *conn)
-        .await?;
-        crate::web_hooks::enqueue_reviewable_hooks(
-            &mut *conn,
-            &hooks,
-            "reviewable_transitioned_to",
-            reviewable_id,
-        )
-        .await?;
-        sqlx::query(
-            "UPDATE reviewable_scores SET status = $2, reviewed_by_id = $3, reviewed_at = clock_timestamp() \
-             WHERE reviewable_id = $1 AND status IN ($4, $5)",
-        )
-        .bind(reviewable_id)
-        .bind(settled.score_status)
-        .bind(user.id)
-        .bind(PENDING)
-        .bind(SCORE_DISAGREED)
-        .execute(&mut *conn)
-        .await?;
-        status_changed = status == PENDING;
-        // update_flag_stats over the flaggers (flagged_by_user_ids).
-        let totals: Vec<i64> = sqlx::query_scalar(&format!(
-            "UPDATE user_stats SET {stat} = {stat} + 1 WHERE user_id IN \
-               (SELECT user_id FROM reviewable_scores WHERE reviewable_id = $1) \
-             RETURNING (flags_agreed + flags_disagreed + flags_ignored)::int8",
-            stat = settled.stat
-        ))
-        .bind(reviewable_id)
-        .fetch_all(&mut *conn)
-        .await?;
-        if totals.iter().any(|t| *t > FLAG_STATS_TRUNCATE_TO) {
-            return Err(Unsupported("truncating flag stats (truncate_user_flag_stats)").into());
-        }
-        if settled.recalculate {
-            reviewables::recalculate_score(&mut *conn, &hooks, reviewable_id).await?;
-        }
-    }
-    // An action that leaves it pending didn't resolve it.
-    let remove: Vec<i64> = if settled.is_some() {
+    let settled = alias(action_id) != "unsilence_user";
+    let remove: Vec<i64> = if settled {
         vec![reviewable_id]
     } else {
         Vec::new()
     };
-    if status_changed || !remove.is_empty() {
+    if settled {
         crate::jobs::enqueue(
             &mut *conn,
             "notify_reviewable",
@@ -302,25 +316,135 @@ pub async fn perform(
     })))
 }
 
-/// `silenced_for_this_message?`: the author is silenced, by a silence
-/// this reviewable brought.
-async fn silenced_for(
+/// The perform method (`method`, the alias resolved) inside
+/// Reviewable#perform's transaction: increment_version! (None when the
+/// version is stale), the method's work, the transition and its history,
+/// the scores settled, update_flag_stats and recalculate_score. The new
+/// version.
+pub async fn run(
     conn: &mut PgConnection,
-    creator: Option<(i32, bool)>,
-    reviewable_id: i64,
-) -> Result<bool, AppError> {
-    let Some((user_id, true)) = creator else {
-        return Ok(false);
-    };
-    let latest: Option<Option<i64>> = sqlx::query_scalar(
-        "SELECT reviewable_id FROM user_histories WHERE target_user_id = $1 AND action = $2 \
-         ORDER BY id DESC LIMIT 1",
+    ctx: &Ctx<'_>,
+    performer_id: i32,
+    target: &Target,
+    method: &str,
+    version: Option<i64>,
+) -> Result<Option<i64>, AppError> {
+    // increment_version!: a version given must match.
+    let bumped: Option<i32> = sqlx::query_scalar(
+        "UPDATE reviewables SET version = version + 1 WHERE id = $1 AND ($2::int IS NULL OR version = $2) \
+         RETURNING version",
     )
-    .bind(user_id)
-    .bind(SILENCE_USER)
+    .bind(target.id)
+    .bind(version.map(|v| v as i32))
     .fetch_optional(&mut *conn)
     .await?;
-    Ok(latest.flatten() == Some(reviewable_id))
+    let Some(new_version) = bumped else {
+        return Ok(None);
+    };
+
+    let message_id = target.message.as_ref().map(|m| m.id);
+    let author = target.creator.as_ref().map(|c| c.id).unwrap_or_default();
+    let settled = match method {
+        "agree_and_keep_message" | "agree_and_keep_deleted" => Some(AGREE),
+        "agree_and_restore" => {
+            recover(&mut *conn, message_id).await?;
+            Some(AGREE)
+        }
+        "agree_and_delete" => {
+            trash(&mut *conn, message_id, performer_id).await?;
+            Some(AGREE)
+        }
+        "disagree" | "disagree_and_restore" => {
+            if method == "disagree_and_restore" {
+                recover(&mut *conn, message_id).await?;
+            }
+            if target.silenced_for_this_message(&mut *conn).await? {
+                crate::user_penalties::lift_silence_for_reviewable(
+                    &mut *conn,
+                    ctx,
+                    performer_id,
+                    author,
+                    target.id,
+                )
+                .await?;
+            }
+            Some(DISAGREE)
+        }
+        "ignore" => Some(IGNORE),
+        "delete_and_ignore" => {
+            trash(&mut *conn, message_id, performer_id).await?;
+            Some(IGNORE)
+        }
+        "unsilence_user" => {
+            crate::user_penalties::lift_silence_for_reviewable(
+                &mut *conn,
+                ctx,
+                performer_id,
+                author,
+                target.id,
+            )
+            .await?;
+            None
+        }
+        _ => None,
+    };
+
+    if let Some(settled) = &settled {
+        let hooks = crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        };
+        // transition_to: no topic to release a claim of.
+        sqlx::query(
+            "UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(target.id)
+        .bind(settled.status)
+        .execute(&mut *conn)
+        .await?;
+        sqlx::query(
+            "INSERT INTO reviewable_histories (reviewable_id, reviewable_history_type, status, created_by_id, \
+                                               edited, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, NULL, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(target.id)
+        .bind(HISTORY_TRANSITIONED)
+        .bind(settled.status)
+        .bind(performer_id)
+        .execute(&mut *conn)
+        .await?;
+        crate::web_hooks::enqueue_reviewable_hooks(
+            &mut *conn,
+            &hooks,
+            "reviewable_transitioned_to",
+            target.id,
+        )
+        .await?;
+        sqlx::query(
+            "UPDATE reviewable_scores SET status = $2, reviewed_by_id = $3, reviewed_at = clock_timestamp() \
+             WHERE reviewable_id = $1 AND status IN ($4, $5)",
+        )
+        .bind(target.id)
+        .bind(settled.score_status)
+        .bind(performer_id)
+        .bind(PENDING)
+        .bind(SCORE_DISAGREED)
+        .execute(&mut *conn)
+        .await?;
+        // update_flag_stats over flagged_by_user_ids (`post` is nil, so
+        // no flag is a self-flag).
+        let flaggers: Vec<i32> =
+            sqlx::query_scalar("SELECT user_id FROM reviewable_scores WHERE reviewable_id = $1")
+                .bind(target.id)
+                .fetch_all(&mut *conn)
+                .await?;
+        reviewables::update_flag_stats(&mut *conn, settled.stat, &flaggers).await?;
+        if settled.recalculate {
+            reviewables::recalculate_score(&mut *conn, &hooks, target.id).await?;
+        }
+    }
+    Ok(Some(i64::from(new_version)))
 }
 
 /// `chat_message.trash!(performed_by)`

@@ -11,15 +11,48 @@ use crate::guardian::{Guardian, GuardianError};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
-/// `Reviewable.sti_names`: the core types, then the type chat registers
-/// on the reference.
-pub const STI_NAMES: [&str; 5] = [
-    "ReviewableFlaggedPost",
-    "ReviewableQueuedPost",
-    "ReviewableUser",
-    "ReviewablePost",
-    "Chat::ReviewableMessage",
+/// `Reviewable.types`, each class with its `sti_name` (the type column's
+/// value): the core types, then the one chat registers on the reference
+/// (`register_reviewable_type`), stored under Chat::ReviewableExtension's
+/// `ReviewableChatMessage`.
+const TYPES: [(&str, &str); 5] = [
+    ("ReviewableFlaggedPost", "ReviewableFlaggedPost"),
+    ("ReviewableQueuedPost", "ReviewableQueuedPost"),
+    ("ReviewableUser", "ReviewableUser"),
+    ("ReviewablePost", "ReviewablePost"),
+    ("Chat::ReviewableMessage", CHAT_MESSAGE),
 ];
+
+/// `Chat::ReviewableMessage.sti_name`
+pub const CHAT_MESSAGE: &str = "ReviewableChatMessage";
+
+/// The registered types, a plugin's while it is enabled (the filtered
+/// register): (class name, sti_name).
+pub fn types(s: &SiteSettings) -> Result<Vec<(&'static str, &'static str)>, AppError> {
+    let chat = s.get("chat_enabled")?.truthy();
+    Ok(TYPES
+        .into_iter()
+        .filter(|(_, sti)| chat || *sti != CHAT_MESSAGE)
+        .collect())
+}
+
+/// `Reviewable.sti_names` as a SQL list.
+pub fn sti_names_sql(s: &SiteSettings) -> Result<String, AppError> {
+    Ok(types(s)?
+        .iter()
+        .map(|(_, t)| format!("'{t}'"))
+        .collect::<Vec<_>>()
+        .join(","))
+}
+
+/// `Reviewable.source_for(type)`: the registering plugin, else core.
+pub fn source_for(sti_name: &str) -> &'static str {
+    if sti_name == CHAT_MESSAGE {
+        "chat"
+    } else {
+        "core"
+    }
+}
 
 /// `Reviewable.statuses[:pending]`, also `ReviewableScore.statuses[:pending]`
 pub const PENDING: i32 = 0;
@@ -294,11 +327,7 @@ async fn pending_list_for(
     guardian: &Guardian,
 ) -> Result<String, AppError> {
     let viewable = viewable_by(&mut *conn, s, guardian).await?;
-    let types = STI_NAMES
-        .iter()
-        .map(|t| format!("'{t}'"))
-        .collect::<Vec<_>>()
-        .join(",");
+    let types = sti_names_sql(s)?;
     let (joins, clause) = match &viewable {
         Some(v) => (v.joins, format!(" AND {}", v.clause)),
         None => ("", String::new()),
@@ -728,6 +757,94 @@ pub struct InReview {
     /// on the reviewable (not the topic), as on Rails.
     pub loaded_score: f64,
     pub topic_id: Option<i32>,
+}
+
+/// `Jobs::TruncateUserFlagStats.truncate_to`
+const FLAG_STATS_TRUNCATE_TO: i64 = 100;
+
+/// `Reviewable#update_flag_stats` once the self-flags are out: the
+/// flaggers' agreed, disagreed or ignored count (`stat` names the
+/// column), and truncate_user_flag_stats for those past the limit.
+pub async fn update_flag_stats(
+    conn: &mut PgConnection,
+    stat: &str,
+    user_ids: &[i32],
+) -> Result<(), AppError> {
+    if user_ids.is_empty() {
+        return Ok(());
+    }
+    let column = match stat {
+        "flags_agreed" | "flags_disagreed" | "flags_ignored" => stat,
+        _ => return Ok(()),
+    };
+    let rows: Vec<(i32, i64)> = sqlx::query_as(&format!(
+        "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = ANY($1) \
+         RETURNING user_id, (flags_agreed + flags_disagreed + flags_ignored)::int8 AS total"
+    ))
+    .bind(user_ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    let past: Vec<i32> = rows
+        .into_iter()
+        .filter(|(_, total)| *total > FLAG_STATS_TRUNCATE_TO)
+        .map(|(id, _)| id)
+        .collect();
+    if !past.is_empty() {
+        crate::jobs::enqueue(
+            &mut *conn,
+            "truncate_user_flag_stats",
+            json!({ "user_ids": past }),
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// `Jobs::TruncateUserFlagStats`: each user's flag stats recounted from
+/// their last hundred reviewed post flags (not their own posts').
+pub async fn truncate_user_flag_stats(
+    conn: &mut PgConnection,
+    args: &serde_json::Value,
+) -> Result<(), AppError> {
+    let ids: Vec<i64> = args["user_ids"]
+        .as_array()
+        .map(|ids| ids.iter().filter_map(serde_json::Value::as_i64).collect())
+        .unwrap_or_default();
+    if ids.is_empty() {
+        return Err(
+            Unsupported("truncate_user_flag_stats without user_ids (InvalidParameters)").into(),
+        );
+    }
+    for id in ids {
+        let totals: Option<i64> = sqlx::query_scalar(
+            "SELECT (flags_agreed + flags_disagreed + flags_ignored)::int8 FROM user_stats WHERE user_id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        if totals.is_none_or(|t| t < FLAG_STATS_TRUNCATE_TO) {
+            continue;
+        }
+        sqlx::query(
+            "UPDATE user_stats SET flags_agreed = x.agreed, flags_disagreed = x.disagreed, \
+                    flags_ignored = x.ignored \
+             FROM (SELECT COALESCE(SUM(CASE WHEN s.status = 1 THEN 1 ELSE 0 END), 0)::int AS agreed, \
+                          COALESCE(SUM(CASE WHEN s.status = 2 THEN 1 ELSE 0 END), 0)::int AS disagreed, \
+                          COALESCE(SUM(CASE WHEN s.status = 3 THEN 1 ELSE 0 END), 0)::int AS ignored \
+                   FROM (SELECT rs.status FROM reviewable_scores AS rs \
+                         INNER JOIN reviewables AS r ON r.id = rs.reviewable_id \
+                         INNER JOIN posts AS p ON p.id = r.target_id \
+                         WHERE rs.user_id = $1 AND r.type = 'ReviewableFlaggedPost' \
+                           AND rs.status IN (1, 2, 3) AND rs.user_id <> p.user_id \
+                         ORDER BY rs.created_at DESC LIMIT $2) AS s) AS x \
+             WHERE user_stats.user_id = $1",
+        )
+        .bind(id as i32)
+        .bind(FLAG_STATS_TRUNCATE_TO)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
 }
 
 /// `Reviewable#recalculate_score`: the pending and agreed scores' sum,

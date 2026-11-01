@@ -37,8 +37,6 @@ const FLAG_THRESHOLD_REACHED_AGAIN: i32 = 2;
 /// `Post.types`
 const REGULAR: i32 = 1;
 const WHISPER: i32 = 4;
-/// `Jobs::TruncateUserFlagStats.truncate_to`
-const FLAG_STATS_TRUNCATE_TO: i64 = 100;
 
 /// The ported perform methods of ReviewableFlaggedPost.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -259,7 +257,7 @@ pub async fn perform(
             json!({ "reviewable_perform_result": result }),
         ));
     }
-    if reviewable.kind == "Chat::ReviewableMessage" {
+    if reviewable.kind == reviewables::CHAT_MESSAGE {
         return crate::plugins::chat::review::perform(
             conn,
             ctx,
@@ -549,18 +547,7 @@ async fn run(
         .map(|(_, user_id, _, _)| *user_id)
         .filter(|id| Some(*id) != post.user_id)
         .collect();
-    if !flaggers.is_empty() {
-        let totals: Vec<i64> = sqlx::query_scalar(&format!(
-            "UPDATE user_stats SET {stat} = {stat} + 1 WHERE user_id = ANY($1) \
-             RETURNING (flags_agreed + flags_disagreed + flags_ignored)::int8"
-        ))
-        .bind(&flaggers)
-        .fetch_all(&mut *conn)
-        .await?;
-        if totals.iter().any(|t| *t > FLAG_STATS_TRUNCATE_TO) {
-            return Err(Unsupported("truncating flag stats (truncate_user_flag_stats)").into());
-        }
-    }
+    reviewables::update_flag_stats(&mut *conn, stat, &flaggers).await?;
 
     crate::jobs::enqueue(
         &mut *conn,

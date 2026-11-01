@@ -120,7 +120,10 @@ on the same 20,576-post corpus and the same PostgreSQL 18 server.
 27. Admin: activate the Newcomer's account from the admin users list.
 28. Second member flags a post as inappropriate.
 29. Moderator: the review count in the header and sidebar; open /review,
-    add a note, agree with the flag.
+    add a note, agree with the flag. Then Member sends a message in
+    #General and Second member flags it from the message's "..." menu
+    (Flag, inappropriate): in /review it sits beside the post flag with its
+    channel and author; Yes > Delete Message, and it is gone from #General.
 30. Admin: watched word with "require approval"; Newcomer posts with it;
     the post is held; approve it from /review. Type the post rather than
     pasting it: as in Discourse, a first post typed in under
@@ -225,9 +228,6 @@ Known gaps that refuse with a "not ported yet" error or misbehave:
 
 - New-user approval cards (`must_approve_users`, 148), editing a queued
   post (194e), the review queue's silence and suspend client actions.
-- Flagging a chat message: the flag is saved, but /review can't draw its
-  item, and while it is pending the review queue refuses to list (plugin
-  reviewables, 217 with 148), which breaks step 29.
 - Pinning from the topic wrench (194c) and most post admin actions (194d).
 - Site setting types beyond lists (164b-h): uploads, objects, regex,
   dates.

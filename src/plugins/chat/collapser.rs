@@ -85,7 +85,7 @@ fn js_number(n: f64) -> String {
 }
 
 /// ChatUpload
-fn upload_html(upload: &Value, o: &Opts) -> String {
+pub(crate) fn upload_html(upload: &Value, o: &Opts) -> String {
     let name = s(&upload["original_filename"]);
     if is_image(name) {
         // size: shrunk to fit, never blown up.

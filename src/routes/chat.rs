@@ -1626,14 +1626,14 @@ pub async fn flag_message(
         take_action: flag("take_action"),
         queue_for_review: flag("queue_for_review"),
     };
+    let host = crate::pretty_text::Host::from_state(&state);
     let outcome = context(&state, &mut tx, &settings, &guardian)
-        .flag_message(&state.bus, &params)
+        .flag_message(&host, &state.bus, &params)
         .await?;
     Ok(match outcome {
         Flagged::Done(silence) => {
             tx.commit().await?;
             if let Some((author_id, reviewable_id)) = silence {
-                let host = crate::pretty_text::Host::from_state(&state);
                 let ctx = crate::posting::Ctx {
                     host: &host,
                     settings: &settings,
