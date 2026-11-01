@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dress rehearsal of docs/demo-script.md in Chromium: walks the 38 steps as
+# Dress rehearsal of docs/demo-script.md in Chromium: walks the 43 steps as
 # the presenter does, one browser context per persona, and writes an HTML
 # report (index.html) and results.json to the output directory, which must
 # not exist yet. It writes to the site it is pointed at (posts, a topic,
