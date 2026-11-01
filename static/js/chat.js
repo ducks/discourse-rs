@@ -3001,8 +3001,9 @@
       });
   });
 
-  // ChatSubscriptionsManager's channel status and edits for the open
-  // channel (the status bar, the composer and the title drawn again), and
+  // ChatSubscriptionsManager's channel status, archive status and edits
+  // for the open channel (the status bar, the composer and the title
+  // drawn again), and
   // a kick from it (onKickFromChannel: back to /chat). Null for the
   // channel's own messages.
   function onChannelBus(channel, message) {
@@ -3018,7 +3019,11 @@
       link.click();
       return Promise.resolve();
     }
-    if (message.channel === "/chat/channel-status" || message.channel === "/chat/channel-edits") {
+    if (
+      message.channel === "/chat/channel-status" ||
+      message.channel === "/chat/channel-edits" ||
+      message.channel === "/chat/channel-archive-status"
+    ) {
       if (String(data.chat_channel_id) !== channel.dataset.id) {
         return Promise.resolve();
       }
@@ -3037,7 +3042,13 @@
       basePath() +
       "/bus/events?channels=" +
       encodeURIComponent(
-        ["/chat/" + channel.dataset.id, "/chat/channel-status", "/chat/channel-edits", "/chat/" + channel.dataset.id + "/kick"].join(",")
+        [
+          "/chat/" + channel.dataset.id,
+          "/chat/channel-status",
+          "/chat/channel-edits",
+          "/chat/channel-archive-status",
+          "/chat/" + channel.dataset.id + "/kick",
+        ].join(",")
       ) +
       (meta && meta.content ? "&position=" + encodeURIComponent(meta.content) : "");
     var source = new EventSource(url, { withCredentials: true });

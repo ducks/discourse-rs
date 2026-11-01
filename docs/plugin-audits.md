@@ -105,7 +105,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - POST /chat/api/channels (Chat::CreateCategoryChannel). Port: done (src/plugins/chat/channel_create.rs). [item 216]
 - DELETE /chat/api/channels/:channel_id (Chat::TrashChannel, Jobs::Chat::ChannelDelete). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
 - PUT /chat/api/channels/:channel_id/status (Chat::UpdateChannelStatus, the staff log and /chat/channel-status). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
-- POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: routed, Unsupported (needs TranscriptService). [item 216a]
+- POST /chat/api/channels/:channel_id/archives (ChannelArchiveService to a new or existing topic, Jobs::Chat::ChannelArchive, retry). Rails: routes.rb:27; lib/chat/channel_archive_service.rb:16. Port: src/plugins/chat/archive.rs (create, retry, the service, the job), transcripts in transcript.rs. [216a done]
 - POST /chat/api/channels/:channel_id/invites (InviteUsersToChannel, chat_invitation notifications). Port: done (src/plugins/chat/channel_settings.rs); nothing in the UI sends one yet (the mention warnings, 218). [item 215]
 - PUT /chat/api/channels/:channel_id/notifications-settings/me (muted, notification_level). Port: done (src/plugins/chat/channel_settings.rs). [item 215]
 - GET /chat/api/category-chatables/:id/permissions (staff). Port: done (src/plugins/chat/channel_create.rs). [item 216]
@@ -156,19 +156,19 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 
 **Jobs**
 - ~~Jobs::Chat::MarkAllChannelThreadsRead~~ (done, 160: src/plugins/chat/threads.rs).
-- Jobs::Chat::ChannelArchive. Rails: app/jobs/regular/chat/channel_archive.rb. Port: absent.
+- Jobs::Chat::ChannelArchive. Rails: app/jobs/regular/chat/channel_archive.rb. Port: src/plugins/chat/archive.rs (channel_archive_job). [216a]
 - Jobs::Chat::ChannelDelete. Rails: app/jobs/regular/chat/channel_delete.rb. Port: absent.
 - Jobs::Chat::ResumeWorkflowApproval, ResumeWorkflowApprovalInteraction. Port: absent. [item 202]
 - Jobs::Chat::PullHotlinkedImages. Port: absent. [item 161]
 
 **Models**
 - incoming_chat_webhooks (with chat_webhook_events writes for incoming hooks): unused. Rails: app/models/chat/incoming_webhook.rb. Port: absent.
-- chat_channel_archives written by archiving: only read (the channel serializer's archive status, src/plugins/chat/channels.rs).
+- chat_channel_archives: written by archiving (src/plugins/chat/archive.rs), read by the channel serializer (src/plugins/chat/channels.rs).
 - chat_message_interactions: only deleted by the destroyer (src/plugins/chat/scheduled.rs).
 - chat_channel_custom_fields, chat_message_custom_fields, chat_thread_custom_fields (HasCustomFields on the models): unused. Rails: app/models/chat/channel.rb, message.rb, thread.rb.
 
 **Settings**
-- Settings with no reader in the port: chat_archive_destination_topic_status (archiving), chat_debug_webhook_payloads (incoming hooks), needs_chat_seeded (seeder), allow_chat_in_anonymous_mode ([item 133]); chat_show_copy_button_on_codeblocks and enable_new_chat_reactions_popup are client-only (UI audit). Rails: plugins/chat/config/settings.yml.
+- Settings with no reader in the port: chat_debug_webhook_payloads (incoming hooks), needs_chat_seeded (seeder), allow_chat_in_anonymous_mode ([item 133]); chat_show_copy_button_on_codeblocks and enable_new_chat_reactions_popup are client-only (UI audit). Rails: plugins/chat/config/settings.yml.
 - Change handlers for chat_allowed_groups [item 164] and secure_uploads (above).
 
 **Locales**
@@ -250,7 +250,7 @@ Verdict: started (63 gaps)
 - User status in the author line and DM avatars. Rails: c/components/chat/message/info.gjs:152. Port: src/plugins/chat/channels.rs:654 (refusal "user status"). [item 130]
 - Threads in the pane: the thread indicator, the thread panel, the thread lists and the threads list button are done (160); left: the thread title prompt, the thread settings modal, message actions in the thread pane, the side panel resizer, the lists' paging and live updates (ROADMAP 160).
 - Uploads in the composer (picker, paste, drop zone, upload previews) and in messages (images, video, audio, collapser). Rails: c/components/chat-composer-uploads.gjs; c/components/chat-upload-drop-zone.gjs; c/components/chat-message-collapser.gjs. Port: page.rs:847 (the hidden field has no handler), page.rs:880,1315 (refusals). [item 161]
-- Archived channel status with progress and retry (ChatChannelArchiveStatus). Rails: c/components/chat-channel-archive-status.gjs. Port: absent. [item 162]
+- Archived channel status with progress and retry (ChatChannelArchiveStatus). Rails: c/components/chat-channel-archive-status.gjs. Port: src/plugins/chat/page.rs archive_status, the retry in static/js/chat.js, redrawn on /chat/channel-archive-status. [216a]
 
 **UI: message actions**
 - The bookmark button is drawn with its states but has no click (BookmarkModal on a chat message). Rails: c/lib/chat-message-interactor.js:357. Port: src/plugins/chat/actions_view.rs:90; no handler in chat.js. [item 161]
@@ -258,7 +258,7 @@ Verdict: started (63 gaps)
 - The mobile long-press sheet's bookmark button (chat bookmarks are not made from the page). Rails: c/components/chat-message-actions-mobile.gjs. Port: static/js/chat.js (openMobileActions).
 
 **UI: channel info and settings**
-- Channel settings (ChatRoutesChannelInfoSettings): edit name, slug and description modals, emoji, auto join, channel-wide mentions, threading toggle, desktop and mobile notification levels and mute (PUT .../notifications-settings/me unrouted), toggle open/closed (ToggleChannelStatus, PUT .../status unrouted), archive (ArchiveChannel, POST .../archives unrouted), delete (DeleteChannel, DELETE /chat/api/channels/:id unrouted), leave. Rails: c/components/chat/routes/channel-info-settings.gjs; c/components/chat/modal/edit-channel-name.gjs; c/components/chat/modal/edit-channel-description.gjs; c/components/chat/modal/toggle-channel-status.gjs; c/components/chat/modal/delete-channel.gjs; c/components/chat/modal/archive-channel.gjs. Port: absent. [archiving: item 162]
+- Channel settings (ChatRoutesChannelInfoSettings): edit name, slug and description modals, emoji, auto join, channel-wide mentions, threading toggle, desktop and mobile notification levels and mute (PUT .../notifications-settings/me unrouted), toggle open/closed (ToggleChannelStatus, PUT .../status unrouted), archive (ArchiveChannel: chat-channel-info.js, 216a), delete (DeleteChannel, DELETE /chat/api/channels/:id unrouted), leave. Rails: c/components/chat/routes/channel-info-settings.gjs; c/components/chat/modal/edit-channel-name.gjs; c/components/chat/modal/edit-channel-description.gjs; c/components/chat/modal/toggle-channel-status.gjs; c/components/chat/modal/delete-channel.gjs; c/components/chat/modal/archive-channel.gjs. Port: absent.
 - Channel members (ChatRoutesChannelInfoMembers): the list with its filter and paging, and add members through the message creator (the endpoints exist). Rails: c/components/chat/routes/channel-info-members.gjs; c/components/chat/message-creator/add-members.gjs. Port: absent.
 - Create channel modal (the browse page's New channel button is drawn inert, page.rs:1624): category chooser, permissions hint (GET /chat/api/category-chatables/:id/permissions unrouted), name, slug, description, auto join, threading (POST /chat/api/channels unrouted). Rails: c/components/chat/modal/create-channel.gjs; c/components/chat/navbar/new-channel-button.gjs. Port: absent.
 

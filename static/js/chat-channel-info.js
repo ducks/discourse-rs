@@ -6,7 +6,8 @@
 // the admin switches (auto join after its confirmation, channel-wide
 // mentions, threading: PUT /chat/api/channels/:id), closing and opening
 // (ChatModalToggleChannelStatus, PUT .../status), deleting
-// (ChatModalDeleteChannel, DELETE /chat/api/channels/:id) and leaving or
+// (ChatModalDeleteChannel, DELETE /chat/api/channels/:id), archiving
+// (ChatModalArchiveChannel, POST .../archives) and leaving or
 // joining (ToggleChannelMembershipButton). The members: the filter, the
 // next members as the list scrolls (the page's members/page route), a
 // member's profile and removing a member (DELETE .../memberships/:id).
@@ -557,6 +558,215 @@
     });
   }
 
+  // ChatModalArchiveChannel with its ChatToTopicSelector: a new topic
+  // (title, category from /site.json as a plain select, tags as a comma
+  // separated field) or an existing one (ChooseTopic over
+  // /search/query.json), then POST .../archives.
+  function archiveChannel() {
+    var s = strings();
+    var root = settingsRoot();
+    var minTitle = Number(root.dataset.minTitle) || 0;
+    var maxTitle = Number(root.dataset.maxTitle) || 255;
+    var minSearch = Number(root.dataset.minSearch) || 0;
+    var state = { selection: "new_topic", title: "", categoryId: null, tags: "", topicId: null, saving: false };
+    var bodyEl;
+    var button;
+    var searchTimer = null;
+
+    function disabled() {
+      if (state.saving) {
+        return true;
+      }
+      if (
+        state.selection === "new_topic" &&
+        (!state.title || state.title.length < minTitle || state.title.length > maxTitle)
+      ) {
+        return true;
+      }
+      return state.selection === "existing_topic" && !state.topicId;
+    }
+
+    function refresh() {
+      if (button) {
+        button.disabled = disabled();
+      }
+    }
+
+    function data() {
+      var d = { type: state.selection };
+      if (state.selection === "new_topic") {
+        d.title = state.title;
+        d.category_id = state.categoryId;
+        d.tags = state.tags
+          .split(",")
+          .map(function (t) {
+            return t.trim();
+          })
+          .filter(Boolean);
+      } else {
+        d.topic_id = state.topicId;
+      }
+      return d;
+    }
+
+    // ChooseTopic's search: a topic by title, url or id.
+    function search(term) {
+      var list = bodyEl.querySelector(".choose-topic-list");
+      clearTimeout(searchTimer);
+      state.topicId = null;
+      refresh();
+      if (term.length < minSearch) {
+        list.innerHTML = "";
+        return;
+      }
+      searchTimer = setTimeout(function () {
+        list.innerHTML = "<p>" + escapeHtml(s.loading) + "</p>";
+        var q =
+          "?term=" +
+          encodeURIComponent(term) +
+          "&type_filter=topic&search_for_id=true&restrict_to_archetype=regular";
+        fetch(basePath() + "/search/query.json" + q, { credentials: "same-origin", headers: headers(false) })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (body) {
+            var topics = (body && body.topics) || [];
+            if (!topics.length) {
+              list.innerHTML = "<p>" + escapeHtml(s.choose_topic_none) + "</p>";
+              return;
+            }
+            list.innerHTML = topics
+              .map(function (t) {
+                return (
+                  '<div class="controls existing-topic"><label class="radio"><input id="choose-topic-' +
+                  t.id +
+                  '" name="choose_topic_id" type="radio" value="' +
+                  t.id +
+                  '"><span class="topic-title">' +
+                  escapeHtml(t.title) +
+                  "</span></label></div>"
+                );
+              })
+              .join("");
+          })
+          .catch(function () {
+            list.innerHTML = "";
+          });
+      }, INPUT_DELAY);
+    }
+
+    Discourse.modal.show({
+      className: "chat-modal-archive-channel",
+      title: s.archive_title,
+      body: function (body) {
+        bodyEl = body;
+        var tags =
+          root.dataset.canCreateTag === "true"
+            ? "<label>" + escapeHtml(s.tags_label) + '</label><input class="tag-chooser" type="text">'
+            : "";
+        body.innerHTML =
+          '<p class="chat-modal-archive-channel__instructions"></p><div class="chat-to-topic-selector"><div class="radios">' +
+          '<label class="radio-label" for="move-to-new-topic"><input id="move-to-new-topic" name="move-to-entity" type="radio" value="new_topic" checked><b>' +
+          escapeHtml(s.new_topic_radio) +
+          '</b></label><label class="radio-label" for="move-to-existing-topic"><input id="move-to-existing-topic" name="move-to-entity" type="radio" value="existing_topic"><b>' +
+          escapeHtml(s.existing_topic_radio) +
+          '</b></label></div><div class="chat-to-topic-selector__new-topic"><p>' +
+          s.new_topic_instructions +
+          '</p><form><label for="split-topic-name">' +
+          escapeHtml(s.topic_name) +
+          '</label><input id="split-topic-name" type="text" placeholder="' +
+          escapeHtml(s.title_placeholder) +
+          '"><label>' +
+          escapeHtml(s.category_label) +
+          '</label><select class="small" id="new-topic-category-selector"><option value=""></option></select>' +
+          tags +
+          '</form></div><div class="chat-to-topic-selector__existing-topic" hidden><p>' +
+          s.existing_topic_instructions +
+          '</p><form><div class="choose-topic"><label for="choose-topic-title">' +
+          escapeHtml(s.choose_topic_search) +
+          '</label><input id="choose-topic-title" type="text" placeholder="' +
+          escapeHtml(s.choose_topic_placeholder) +
+          '"><div class="choose-topic-list" role="radiogroup"></div></div></form></div></div>';
+        // The instructions' own paragraphs inside it, as Glimmer inserts
+        // trusted HTML (parsing it as one string would close the outer p).
+        body.querySelector(".chat-modal-archive-channel__instructions").innerHTML = (
+          s.archive_instructions || ""
+        ).replace("%{channelTitle}", escapeHtml(root.dataset.title || ""));
+        body.querySelectorAll("form").forEach(function (form) {
+          form.addEventListener("submit", function (event) {
+            event.preventDefault();
+          });
+        });
+        body.querySelectorAll("input[name='move-to-entity']").forEach(function (radio) {
+          radio.addEventListener("change", function () {
+            state.selection = radio.value;
+            body.querySelector(".chat-to-topic-selector__new-topic").hidden = radio.value !== "new_topic";
+            body.querySelector(".chat-to-topic-selector__existing-topic").hidden = radio.value !== "existing_topic";
+            refresh();
+          });
+        });
+        body.querySelector("#split-topic-name").addEventListener("input", function (event) {
+          state.title = event.target.value;
+          refresh();
+        });
+        var select = body.querySelector("#new-topic-category-selector");
+        select.addEventListener("change", function () {
+          state.categoryId = select.value ? Number(select.value) : null;
+        });
+        var tagInput = body.querySelector(".tag-chooser");
+        if (tagInput) {
+          tagInput.addEventListener("input", function () {
+            state.tags = tagInput.value;
+          });
+        }
+        body.querySelector("#choose-topic-title").addEventListener("input", function (event) {
+          search(event.target.value.trim());
+        });
+        body.querySelector(".choose-topic-list").addEventListener("change", function (event) {
+          if (event.target.name === "choose_topic_id") {
+            state.topicId = Number(event.target.value);
+            refresh();
+          }
+        });
+        fetch(basePath() + "/site.json", { credentials: "same-origin", headers: headers(false) })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (site) {
+            (site.categories || []).forEach(function (c) {
+              var option = document.createElement("option");
+              option.value = c.id;
+              option.textContent = c.name;
+              select.appendChild(option);
+            });
+          })
+          .catch(function () {});
+      },
+      footer: function (footer, close) {
+        footer.innerHTML = footerButton("btn-primary", s.archive_title, ' id="chat-confirm-archive-channel"');
+        button = footer.querySelector("button");
+        refresh();
+        button.addEventListener("click", function () {
+          state.saving = true;
+          refresh();
+          api("POST", "/channels/" + channelId() + "/archives", { archive: data() })
+            .then(function () {
+              setFlash(bodyEl, s.archive_started, "success");
+              setTimeout(function () {
+                close();
+                redraw();
+              }, 3000);
+            })
+            .catch(popupError)
+            .finally(function () {
+              state.saving = false;
+              refresh();
+            });
+        });
+      },
+    });
+  }
+
   // The notification level ComboBox: its rows open under the header.
   function openCombo(details) {
     var body = details.querySelector(".select-kit-body");
@@ -623,6 +833,8 @@
       toggleStatus(true);
     } else if (hit(".delete-btn")) {
       deleteChannel();
+    } else if (hit(".archive-btn")) {
+      archiveChannel();
     } else if ((button = hit(".toggle-channel-membership-button"))) {
       button.disabled = true;
       var leaving = button.classList.contains("-leave");

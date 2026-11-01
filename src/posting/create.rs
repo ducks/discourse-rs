@@ -79,6 +79,10 @@ pub struct NewPost {
     /// `skip_bot:` discourse-narrative-bot's post_created handler leaves
     /// the post alone (the posts its advanced tutorial makes as the user).
     pub skip_bot: bool,
+    /// `import_mode:` a post a background process writes (chat's channel
+    /// archive): no topic tracking, author counts, auto close, publish,
+    /// events, alerts or badges; of the jobs only the post processing.
+    pub import_mode: bool,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -563,7 +567,8 @@ pub async fn create(
         if !can && !args.reviewed_queued_post {
             return Ok(Outcome::Invalid(vec![ctx.t("topic_not_found")]));
         }
-        if topic.closed {
+        // update_topic_auto_close's timers, which import mode skips.
+        if topic.closed && !args.import_mode {
             return Err(Unsupported("replying to closed topics as staff").into());
         }
     }
@@ -1158,22 +1163,26 @@ pub async fn create(
     )
     .await?;
     // track_topic
-    change_topic_user(
-        ctx.bus,
-        &mut tx,
-        user.id,
-        topic_id,
-        &[
-            TopicUserAttr::Posted(true),
-            TopicUserAttr::LastReadPostNumber(post_number),
-            TopicUserAttr::LastPostedAtNow,
-        ],
-    )
-    .await?;
-    record_timing(&mut tx, topic_id, user.id, post_number, 5000).await?;
+    if !args.import_mode {
+        change_topic_user(
+            ctx.bus,
+            &mut tx,
+            user.id,
+            topic_id,
+            &[
+                TopicUserAttr::Posted(true),
+                TopicUserAttr::LastReadPostNumber(post_number),
+                TopicUserAttr::LastPostedAtNow,
+            ],
+        )
+        .await?;
+        record_timing(&mut tx, topic_id, user.id, post_number, 5000).await?;
+    }
     // A staged user watches (auto_notification_for_staging); in a message
     // the level is left as the topic user was made.
-    if user.staged {
+    if args.import_mode {
+        // track_topic's levels too.
+    } else if user.staged {
         change_topic_user(
             ctx.bus,
             &mut tx,
@@ -1229,20 +1238,23 @@ pub async fn create(
     .bind(excerpt)
     .execute(&mut *tx)
     .await?;
-    crate::topic_timer::update_topic_auto_close(&mut tx, ctx, topic_id).await?;
+    if !args.import_mode {
+        crate::topic_timer::update_topic_auto_close(&mut tx, ctx, topic_id).await?;
+    }
     // update_user_counts
-    let first_post = sqlx::query(
-        "UPDATE user_stats SET first_post_created_at = $2 \
+    let first_post = !args.import_mode
+        && sqlx::query(
+            "UPDATE user_stats SET first_post_created_at = $2 \
          WHERE user_id = $1 AND first_post_created_at IS NULL",
-    )
-    .bind(user.id)
-    .bind(created_at)
-    .execute(&mut *tx)
-    .await?
-    .rows_affected()
-        > 0;
+        )
+        .bind(user.id)
+        .bind(created_at)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected()
+            > 0;
     // UserStat's and User's after_save: the user's badges, queued.
-    if first_post || !private_message {
+    if !args.import_mode && (first_post || !private_message) {
         crate::badge_granter::queue_user_change(&mut tx, s, user.id).await?;
     }
     let column = if new_topic {
@@ -1251,7 +1263,7 @@ pub async fn create(
         "post_count"
     };
     // UserStatCountUpdater.increment! and last_posted_at skip messages.
-    if !private_message {
+    if !private_message && !args.import_mode {
         sqlx::query(&format!(
             "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = $1"
         ))
@@ -1351,7 +1363,9 @@ pub async fn create(
     crate::tagging::enqueue_tag_created(&mut tx, &tag_hooks).await?;
     // PostCreator#publish: replies only (the first post's topic is news to
     // the topic list instead).
-    if post_number != 1 {
+    if args.import_mode {
+        // No publish, nor after_topic_create.
+    } else if post_number != 1 {
         crate::bus::publish_post_change(ctx, &mut tx, post_id, "created", Map::new(), false)
             .await?;
     } else {
@@ -1366,63 +1380,79 @@ pub async fn create(
     // trigger_after_events: topic_created, then post_created, to the web
     // hooks listening (their jobs come before PostJobsEnqueuer's).
     // Email::Receiver skips them and triggers both after the jobs.
-    if args.email.is_none() {
+    if args.email.is_none() && !args.import_mode {
         after_events(&mut tx, ctx, new_topic, topic_id, post_id).await?;
     }
-    // PostJobsEnqueuer#enqueue_jobs, committed with the post.
-    crate::jobs::enqueue(
-        &mut tx,
-        "post_alert",
-        json!({"post_id": post_id, "new_record": true, "options": args.post_alert_options}),
-    )
-    .await?;
-    crate::jobs::enqueue(
-        &mut tx,
-        "feature_topic_users",
-        json!({"topic_id": topic_id}),
-    )
-    .await?;
+    // PostJobsEnqueuer#enqueue_jobs, committed with the post (in import
+    // mode only trigger_post_post_process).
+    if !args.import_mode {
+        crate::jobs::enqueue(
+            &mut tx,
+            "post_alert",
+            json!({"post_id": post_id, "new_record": true, "options": args.post_alert_options}),
+        )
+        .await?;
+        crate::jobs::enqueue(
+            &mut tx,
+            "feature_topic_users",
+            json!({"topic_id": topic_id}),
+        )
+        .await?;
+    }
     crate::jobs::enqueue(
         &mut tx,
         "process_post",
         json!({"bypass_bump": false, "cooking_options": null, "new_post": true, "post_id": post_id, "skip_pull_hotlinked_images": false}),
     )
     .await?;
-    crate::jobs::enqueue(
-        &mut tx,
-        "post_update_topic_tracking_state",
-        json!({"post_id": post_id}),
-    )
-    .await?;
-    // after_post_create: mailing lists are not told about messages.
-    if !private_message {
-        crate::jobs::enqueue_in(
+    if !args.import_mode {
+        crate::jobs::enqueue(
             &mut tx,
-            s.get("email_time_window_mins")?.to_i() * 60,
-            "notify_mailing_list_subscribers",
+            "post_update_topic_tracking_state",
             json!({"post_id": post_id}),
         )
         .await?;
+        // after_post_create: mailing lists are not told about messages.
+        if !private_message {
+            crate::jobs::enqueue_in(
+                &mut tx,
+                s.get("email_time_window_mins")?.to_i() * 60,
+                "notify_mailing_list_subscribers",
+                json!({"post_id": post_id}),
+            )
+            .await?;
+        }
     }
     if args.email.is_some() {
         after_events(&mut tx, ctx, new_topic, topic_id, post_id).await?;
     }
-    crate::badge_granter::queue(
-        &mut tx,
-        s,
-        crate::badge_granter::Trigger::PostRevision,
-        &[post_id],
-    )
-    .await?;
+    if !args.import_mode {
+        crate::badge_granter::queue(
+            &mut tx,
+            s,
+            crate::badge_granter::Trigger::PostRevision,
+            &[post_id],
+        )
+        .await?;
+    }
     tx.commit().await?;
     performed.commit();
 
     // After the transaction: store_unique_post_key, track_latest_on_category,
     // auto_close, then the deferred search index.
     let mut conn = pool.acquire().await?;
-    super::validate::store_unique_post_key(&mut conn, s, user.id, private_message, &raw, post_id)
+    if !args.import_mode {
+        super::validate::store_unique_post_key(
+            &mut conn,
+            s,
+            user.id,
+            private_message,
+            &raw,
+            post_id,
+        )
         .await?;
-    if let Some(category_id) = category_id {
+    }
+    if let Some(category_id) = category_id.filter(|_| !args.import_mode) {
         if new_topic {
             sqlx::query(
                 "UPDATE categories SET latest_topic_id = $2, latest_post_id = $3 WHERE id = $1",
@@ -1440,20 +1470,22 @@ pub async fn create(
                 .await?;
         }
     }
-    // DiscourseEvent :post_created, to discourse-poll: a reply's polls.
-    if !new_polls.is_empty() {
-        crate::plugins::poll::publish_created(ctx, &mut conn, guardian, post_id).await?;
+    if !args.import_mode {
+        // DiscourseEvent :post_created, to discourse-poll: a reply's polls.
+        if !new_polls.is_empty() {
+            crate::plugins::poll::publish_created(ctx, &mut conn, guardian, post_id).await?;
+        }
+        // ... and to discourse-assign: auto assigning by mention.
+        crate::plugins::assign::lifecycle::post_saved(&mut conn, ctx, post_id).await?;
+        // ... and to discourse-narrative-bot: the author's reply.
+        crate::plugins::narrative_bot::post_created(&mut conn, s, post_id, args.skip_bot).await?;
     }
-    // ... and to discourse-assign: auto assigning by mention.
-    crate::plugins::assign::lifecycle::post_saved(&mut conn, ctx, post_id).await?;
-    // ... and to discourse-narrative-bot: the author's reply.
-    crate::plugins::narrative_bot::post_created(&mut conn, s, post_id, args.skip_bot).await?;
     let posts_count: i32 = sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
         .bind(topic_id)
         .fetch_one(&mut *conn)
         .await?;
     let auto_close = s.get("auto_close_topics_post_count")?.to_i();
-    if auto_close > 0 && auto_close <= i64::from(posts_count) {
+    if !args.import_mode && auto_close > 0 && auto_close <= i64::from(posts_count) {
         return Err(Unsupported("auto_close_topics_post_count").into());
     }
     let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(&format!(
@@ -1695,7 +1727,7 @@ pub(crate) async fn post_notice(
 
 /// TopicCreator#valid?'s tags: with a category the topic was given and a
 /// guardian that may tag it, `DiscourseTagging.validate_category_tags`.
-pub(super) async fn validate_topic_tags(
+pub(crate) async fn validate_topic_tags(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,

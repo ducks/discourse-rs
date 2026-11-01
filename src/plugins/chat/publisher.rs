@@ -547,3 +547,44 @@ pub async fn publish_kick_users(
     .await?;
     Ok(())
 }
+
+/// What `Chat::Publisher.publish_archive_status` reports.
+pub struct ArchiveStatus {
+    pub failed: bool,
+    pub archived_messages: i32,
+    pub archive_topic_id: Option<i32>,
+    pub total_messages: i32,
+}
+
+/// `Chat::Publisher.publish_archive_status`: the archive's outcome and
+/// progress on /chat/channel-archive-status, to the channel's audience.
+pub async fn publish_archive_status(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    channel: &ChannelRow,
+    status: &ArchiveStatus,
+) -> Result<(), AppError> {
+    let tags = audience(
+        &mut *conn,
+        settings,
+        &channel.chatable_type,
+        channel.chatable_id,
+    )
+    .await?;
+    bus.publish(
+        &mut *conn,
+        "/chat/channel-archive-status",
+        &json!({
+            "chat_channel_id": channel.id,
+            "archive_failed": status.failed,
+            "archive_completed": !status.failed,
+            "archived_messages": status.archived_messages,
+            "total_messages": status.total_messages,
+            "archive_topic_id": status.archive_topic_id,
+        }),
+        Some(&tags),
+    )
+    .await?;
+    Ok(())
+}

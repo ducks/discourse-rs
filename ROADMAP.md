@@ -4837,12 +4837,41 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     all saves the filter as all (Ember bypasses it for the session), the
     context menu reads the channel from GET /chat/api/channels/:id.
     Left, as 216a.
-    216a. `feat/chat-channel-archive` M: archiving (POST archives answers
-    Unsupported: ChannelArchiveService quotes messages into posts through
-    Chat::TranscriptService, now on main with 218; Jobs::Chat::ChannelArchive,
-    chat_archive_destination_topic_status, the archive modal and the
-    settings' archive row, info.rs refuses it while archiving is
-    allowed). 162's archived channel reads are done
+    216a. ~~`feat/chat-channel-archive`~~ (done) M: archiving answered
+    Unsupported. Now POST /chat/api/channels/:id/archives is
+    ChannelsArchivesController#create (src/plugins/chat/archive.rs: a
+    failed archive's retry under ensure_can_change_channel_status!, else
+    chat_allow_archiving_channels, params.require(:archive) and its type,
+    the destination checks, can_change_channel_status?(:read_only), then
+    create_archive_process: TopicCreator#valid? for a new topic as 400
+    errors, the channel made read only (logged, published), the
+    chat_channel_archives row, the job). ChannelArchiveService#execute:
+    the new topic by the system user with the archiver's guardian (its
+    first post, no excerpt), chat_archive_destination_topic_status for a
+    new topic only, find_in_batches over the live messages with threads
+    kept whole or split with the original message repeated and
+    calculate_thread_ranges, each batch a post (PostCreator in import
+    mode, without validations) then trashed and counted, the members
+    unfollowed, the channel archived, notify_archiver (archive_error, the
+    complete, failed and failed_no_topic system messages with the
+    channel's hashtag, /chat/channel-archive-status); Jobs::Chat::
+    ChannelArchive (a complete archive marked archived, the channel's
+    advisory lock, retry: false). transcript.rs is now the whole
+    TranscriptService: the messages' text and uploads (218 left them
+    out), noLink, reactions, threads (their replies' blocks, threadId,
+    threadTitle with its range), a lone original message expanded.
+    PostCreator gained import_mode (src/posting/create.rs) and TopicLink
+    recognizes /chat/ paths. The page: the settings' archive row and
+    ChatModalArchiveChannel with ChatToTopicSelector
+    (chat-channel-info.js), the channel page redrawn on
+    /chat/channel-archive-status (chat.js). Tests: tests/chat_archive.rs,
+    tests/browser/chat-archive.spec.js. Deviations: each batch's post
+    and its trashing are two transactions (PostCreator commits its own);
+    the category chooser is a plain select, the tag chooser a comma
+    separated field, ChooseTopic a plain radio list over
+    /search/query.json; tag watched words match the first post's text
+    too (the topic is made with it); a post PostCreator refuses fails
+    the archive where Rails trashes the batch anyway. Left: nothing.
 217. ~~`feat/chat-moderation`~~ (done, but the queue entries) L: chat
     messages could not be flagged, selected, deleted together or moved.
     Now src/plugins/chat/flags.rs ports POST .../messages/:id/flags

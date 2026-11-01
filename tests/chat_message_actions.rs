@@ -44,7 +44,7 @@ async fn the_selection_is_quoted_as_a_transcript() {
     assert_eq!(body["success"], "OK");
     assert_eq!(
         body["markdown"],
-        "[chat quote=\"user0;1;2026-10-01T10:00:00Z\" channel=\"General\" channelId=\"2\" multiQuote=\"true\" chained=\"true\"]\n[/chat]\n\n[chat quote=\"user1;3;2026-10-01T10:02:00Z\" chained=\"true\"]\n[/chat]\n"
+        "[chat quote=\"user0;1;2026-10-01T10:00:00Z\" channel=\"General\" channelId=\"2\" multiQuote=\"true\" chained=\"true\"]\nfirst\n\nsecond\n[/chat]\n\n[chat quote=\"user1;3;2026-10-01T10:02:00Z\" chained=\"true\"]\nthird\n[/chat]\n"
     );
     let (status, body) = user
         .request("POST", "/chat/2/quote", "message_ids[]=1")
@@ -52,7 +52,7 @@ async fn the_selection_is_quoted_as_a_transcript() {
     assert_eq!(status, 200);
     assert_eq!(
         body["markdown"],
-        "[chat quote=\"user0;1;2026-10-01T10:00:00Z\" channel=\"General\" channelId=\"2\"]\n[/chat]\n"
+        "[chat quote=\"user0;1;2026-10-01T10:00:00Z\" channel=\"General\" channelId=\"2\"]\nfirst\n[/chat]\n"
     );
     let (status, _) = user.request("POST", "/chat/2/quote", "").await;
     assert_eq!(status, 400);
