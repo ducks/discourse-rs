@@ -5,7 +5,7 @@
 // page, full page preferred loads full-page chat. chat-drawer-fixture.spec.js
 // drives the same script over a fixture app; this runs it against the
 // server's own pages, drawer route and history.
-const { test, expect, login } = require("./helpers");
+const { test, expect, login, topic, label } = require("./helpers");
 
 const CHANNEL = 2; // the seed's General channel
 
@@ -44,6 +44,40 @@ test("back and forward between forum pages restore them in place", async ({ page
   await expect(page).toHaveURL(topicUrl);
   await expect(page.locator("#topic-title h1")).toHaveAttribute("data-topic-id", id);
   await expect(page.locator(".topic-post").first()).toBeVisible();
+  await expectSameDocument(page);
+});
+
+// The topic's scroll tracker replaces the address with the post in view
+// half a second after scrolling stops. Back moves the address first and
+// the page it restores comes later; a replace landing in between must not
+// put the topic's URL back over the page being restored.
+test("a scroll's address update doesn't land after back left the topic", async ({ page, context, session }) => {
+  await login(context, "user1");
+  // Alternating repliers: Discourse refuses a fourth reply in a row.
+  const repliers = [await session("user0"), await session("user2")];
+  const body = (what) => label(what) + "\n\n" + "A paragraph to make the post tall.\n\n".repeat(30);
+  const title = label("History scroll topic");
+  await topic(context, title, body("first"), [1, 2, 3, 4].map((n) => ({ context: repliers[n % 2], raw: body("reply " + n) })));
+  await page.goto("/latest");
+  await markDocument(page);
+  await page.locator("#main-outlet .topic-list a.title", { hasText: title }).click();
+  await expect(page).toHaveURL(/\/t\/[^/]+\/\d+(\/\d+)?$/);
+  await expect(page.locator("#post_3")).toBeAttached();
+
+  let release;
+  const held = new Promise((resolve) => (release = resolve));
+  await page.route(/\/latest$/, async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.locator("#post_3").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(150);
+  await page.goBack({ waitUntil: "commit" });
+  // Past the tracker's 500ms, the restored page still on its way.
+  await page.waitForTimeout(1000);
+  release();
+  await expect(page.locator("#main-outlet .topic-list")).toBeVisible();
+  await expect(page).toHaveURL(/\/latest$/);
   await expectSameDocument(page);
 });
 
