@@ -316,6 +316,24 @@ test("the stop streaming button stops the message streaming", async ({ page, con
   await expect(streamed).not.toHaveClass(/-streaming/);
 });
 
+// Chat drafts are kept on the server: what a test leaves in user1's
+// General composer comes back in the next test that opens it (and the
+// typed message lands in front of it). Emptying the composer posts the
+// empty draft, which deletes it.
+async function dropDraft(composer) {
+  await composer.fill("");
+  await expect
+    .poll(
+      () =>
+        sql(
+          "SELECT count(*) FROM chat_drafts d JOIN users u ON u.id = d.user_id WHERE u.username = 'user1' AND d.chat_channel_id = :'p1'",
+          GENERAL,
+        ),
+      { timeout: 10_000 },
+    )
+    .toEqual([["0"]]);
+}
+
 test("the composer's + menu inserts a local date", async ({ page, context }) => {
   await login(context, "user1");
   await openChannel(page, `/chat/c/general/${GENERAL}`);
@@ -334,6 +352,7 @@ test("the composer's + menu inserts a local date", async ({ page, context }) => 
   await expect(modal).toHaveCount(0);
   await expect(composer).toHaveValue(/^meet at \[date=\d{4}-\d\d-\d\d/);
   await expect(composer).toBeFocused();
+  await dropDraft(composer);
 });
 
 test.describe("in the mobile view", () => {
@@ -352,6 +371,7 @@ test.describe("in the mobile view", () => {
     await picker.locator("input.filter-input").first().fill("tada");
     await picker.locator("img.emoji[data-emoji='tada']:visible").first().click();
     await expect(composer).toHaveValue("well :tada:");
+    await dropDraft(composer);
   });
 
   test("the arrow counts the new messages", async ({ page, context, session }) => {

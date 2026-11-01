@@ -14,7 +14,10 @@ const prefer = (page, mode) =>
 // A category channel of the test's own, with threading, which user0 and
 // user1 follow: user0's message and user1's reply in its thread (both
 // through the API, so the search index has them).
-async function channelWithThread(session) {
+// `replier` replies to user0's message, starting the thread. A member's
+// threads list shows their latest threads first, a page at a time, so a
+// spec reading it uses a member no other spec makes threads for.
+async function channelWithThread(session, replier = "user1") {
   const name = label("Drawer routes");
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const [[id]] = sql(
@@ -23,14 +26,15 @@ async function channelWithThread(session) {
     slug,
   );
   sql(
-    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, notification_level, created_at, updated_at) SELECT id, :'p1', true, 2, now(), now() FROM users WHERE username IN ('user0', 'user1')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, notification_level, created_at, updated_at) SELECT id, :'p1', true, 2, now(), now() FROM users WHERE username IN ('user0', :'p2')",
     id,
+    replier,
   );
   const original = label("original message");
   const reply = label("thread reply");
   await api(await session("user0"), "POST", `/chat/${id}.json`, { message: original, staged_id: label("staged") });
   const [[originalId]] = sql("SELECT id FROM chat_messages WHERE message = :'p1'", original);
-  await api(await session("user1"), "POST", `/chat/${id}.json`, {
+  await api(await session(replier), "POST", `/chat/${id}.json`, {
     message: reply,
     in_reply_to_id: originalId,
     staged_id: label("staged"),
@@ -208,8 +212,9 @@ test("the threads list opens a thread, its reply sent from the drawer, back to t
 });
 
 test("the footer's threads item lists the member's threads, a thread backs to them", async ({ page, context, session }) => {
-  const channel = await channelWithThread(session);
-  await login(context, "user1");
+  // The thread specs make user1 more than a page of threads.
+  const channel = await channelWithThread(session, "user2");
+  await login(context, "user2");
   const drawer = await openDrawer(page);
   await expect(drawer.locator(".c-drawer-routes.--channels")).toBeVisible();
 
