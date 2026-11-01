@@ -1093,7 +1093,7 @@ async fn the_threads_page_has_none_to_list() {
     let mut desktop = Client::logged_in(st, "user1").await;
     let html = desktop.page("/chat/threads").await;
     assert!(
-        html.contains("<div class=\"c-user-thread\" data-id=\"1\">"),
+        html.contains("<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\">"),
         "{html}"
     );
 }

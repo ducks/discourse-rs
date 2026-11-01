@@ -5,9 +5,11 @@
 //! GET /chat/api/me/channels gives (the preloaded channels).
 //!
 //! The sections' menus (channel list options, a channel's menu) are drawn
-//! as their buttons. Threads are refused upstream (channels.rs) until
-//! their slice, and only the "never" separate sidebar mode (chat's
-//! sections in the main sidebar) is drawn.
+//! as their buttons, and only the "never" separate sidebar mode (chat's
+//! sections in the main sidebar) is drawn. Unread threads count as the
+//! channel models count them (unreadThreadsCount and
+//! unreadThreadsCountSinceLastViewed, from unread_thread_overview), and
+//! "My threads" shows while the member has threads in a threaded channel.
 
 use std::cmp::Ordering;
 
@@ -69,14 +71,44 @@ struct SidebarChannel {
     watched_threads: i64,
     /// The last message's created_at, when there is one.
     last_activity: Option<String>,
+    /// threadingEnabled
+    threading: bool,
+    /// unreadThreadsCount: the channel's unread threads.
+    unread_threads: i64,
+    /// unreadThreadsCountSinceLastViewed: those replied to since the
+    /// member last viewed the channel.
+    unread_threads_since_viewed: i64,
+    /// lastUnreadThreadDate: the earliest unread thread's last reply.
+    last_unread_thread: Option<String>,
 }
 
 impl SidebarChannel {
-    fn from_json(c: &Value, tracking: &Value) -> Result<SidebarChannel, AppError> {
+    /// `overview`: me/channels' unread_thread_overview, each channel's
+    /// unread threads with their last reply's time.
+    fn from_json(
+        c: &Value,
+        tracking: &Value,
+        overview: &Value,
+    ) -> Result<SidebarChannel, AppError> {
         let id = c["id"].as_i64().unwrap_or(0);
         let t = &tracking[id.to_string()];
         let membership = &c["current_user_membership"];
         let last = &c["last_message"];
+        let threading = c["threading_enabled"] == true;
+        let replies: Vec<&str> = if threading {
+            overview[id.to_string()]
+                .as_object()
+                .into_iter()
+                .flat_map(|o| o.values())
+                .filter_map(Value::as_str)
+                .collect()
+        } else {
+            Vec::new()
+        };
+        let since_viewed = match membership["last_viewed_at"].as_str() {
+            Some(viewed) => replies.iter().filter(|at| **at >= viewed).count() as i64,
+            None => 0,
+        };
         Ok(SidebarChannel {
             id,
             title: c["title"].as_str().unwrap_or_default().to_string(),
@@ -105,12 +137,16 @@ impl SidebarChannel {
             last_activity: (last["id"].is_i64())
                 .then(|| last["created_at"].as_str().map(str::to_string))
                 .flatten(),
+            threading,
+            unread_threads: replies.len() as i64,
+            unread_threads_since_viewed: since_viewed,
+            last_unread_thread: replies.iter().min().map(|at| at.to_string()),
         })
     }
 
-    /// `#sidebarUnreadCount`, with no unread threads.
+    /// `#sidebarUnreadCount`
     fn unread_total(&self) -> i64 {
-        self.unread + self.mentions + self.watched_threads
+        self.unread + self.mentions + self.watched_threads + self.unread_threads_since_viewed
     }
 
     /// `#sidebarUrgentCount`
@@ -134,10 +170,10 @@ fn alphabetical(a: &SidebarChannel, b: &SidebarChannel) -> Ordering {
     a.sort_name().cmp(b.sort_name()).then(a.id.cmp(&b.id))
 }
 
-/// `#compareDirectMessageChannelsByActivity`, without unread threads
-/// (not ported): channels with a message first; urgent ones (any unread
-/// in a DM) before the rest, by count, both urgent by their last message;
-/// then by the last message.
+/// `#compareDirectMessageChannelsByActivity`: channels with a message
+/// first; urgent ones (any unread in a DM) before the rest, both urgent by
+/// their last message; then those with threads replied to since viewed,
+/// both by their earliest unread thread's reply; then by the last message.
 fn dm_activity(a: &SidebarChannel, b: &SidebarChannel) -> Ordering {
     let (Some(at_a), Some(at_b)) = (&a.last_activity, &b.last_activity) else {
         return match (&a.last_activity, &b.last_activity) {
@@ -148,9 +184,18 @@ fn dm_activity(a: &SidebarChannel, b: &SidebarChannel) -> Ordering {
     };
     let urgent = |c: &SidebarChannel| c.unread + c.mentions + c.watched_threads;
     let (ua, ub) = (urgent(a), urgent(b));
-    // Only one urgent: it first. Both or neither: the latest message.
-    if (ua > 0) != (ub > 0) {
+    if ua > 0 && ub > 0 {
+        return at_b.cmp(at_a);
+    }
+    if ua > 0 || ub > 0 {
         return ub.cmp(&ua);
+    }
+    let (ta, tb) = (a.unread_threads_since_viewed, b.unread_threads_since_viewed);
+    if ta > 0 && tb > 0 {
+        return b.last_unread_thread.cmp(&a.last_unread_thread);
+    }
+    if ta > 0 || tb > 0 {
+        return tb.cmp(&ta);
     }
     at_b.cmp(at_a)
 }
@@ -302,17 +347,21 @@ impl Context<'_> {
                 .as_array()
                 .into_iter()
                 .flatten()
-                .map(|c| SidebarChannel::from_json(c, tracking))
+                .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
                 .collect()
         };
         let channels = read("public_channels")?;
         let dms = read("direct_message_channels")?;
-        let full_page = matches!(active, Active::Chat | Active::ChatChannel(_));
+        let full_page = matches!(active, Active::Chat | Active::ChatChannel(_))
+            || *active == Active::Route("chat.threads".into());
 
         let header_icon = self.header_icon(&channels, &dms, &options, full_page)?;
+        // shouldShowMyThreads: threads in a threaded channel.
+        let my_threads =
+            me["has_threads"] == true && channels.iter().chain(&dms).any(|c| c.threading);
         let sidebar_sections = match sidebar {
             Some(cx) => {
-                self.sidebar_sections(&channels, &dms, &options, active, cx)
+                self.sidebar_sections(&channels, &dms, &options, active, my_threads, cx)
                     .await?
             }
             None => String::new(),
@@ -358,11 +407,11 @@ impl Context<'_> {
         let public = json("public_channels");
         let channels = public
             .iter()
-            .map(|c| SidebarChannel::from_json(c, tracking))
+            .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         let dms = json("direct_message_channels")
             .iter()
-            .map(|c| SidebarChannel::from_json(c, tracking))
+            .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
         let filtered_empty = list.is_empty();
@@ -434,18 +483,10 @@ impl Context<'_> {
             || super::user_can_direct_message(&mut *self.conn, settings, self.guardian).await?;
         let starred = channels.iter().chain(dms).any(|c| c.starred);
         let public = settings.get("enable_public_channels")?.truthy();
-        // includeThreads: chatChannelsManager.shouldShowMyThreads.
-        let threads =
-            settings.get("chat_threads_enabled")?.truthy() && self.has_viewable_threads().await?;
-        // UnreadThreadsIndicator: the watched threads' unread messages,
-        // else a dot while any thread is unread (hasUnreadThreads).
-        let unread_threads = threads && {
-            let ids: Vec<i64> = channels.iter().chain(dms).map(|c| c.id).collect();
-            self.unread_thread_overview(&ids)
-                .await?
-                .values()
-                .any(|t| t.as_object().is_some_and(|t| !t.is_empty()))
-        };
+        // includeThreads: shouldShowMyThreads while threads are on.
+        let threads = settings.get("chat_threads_enabled")?.truthy()
+            && channels.iter().chain(dms).any(|c| c.threading)
+            && self.has_viewable_threads().await?;
         let routes = [starred, threads, dms_enabled, public]
             .iter()
             .filter(|x| **x)
@@ -521,6 +562,8 @@ impl Context<'_> {
                 ));
             }
             if threads {
+                // UnreadThreadsIndicator: unread watched threads, else a
+                // dot for any unread thread.
                 out.push_str(&item(
                     "threads",
                     route == "threads",
@@ -530,7 +573,7 @@ impl Context<'_> {
                     "/chat/threads",
                     footer_indicator(
                         channels.iter().chain(dms).map(|c| c.watched_threads).sum(),
-                        i64::from(unread_threads),
+                        i64::from(channels.iter().chain(dms).any(|c| c.unread_threads > 0)),
                     ),
                 ));
             }
@@ -560,7 +603,7 @@ impl Context<'_> {
         let dm_json = json("direct_message_channels");
         let read = |list: &[Value]| -> Result<Vec<SidebarChannel>, AppError> {
             list.iter()
-                .map(|c| SidebarChannel::from_json(c, tracking))
+                .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
                 .collect()
         };
         Ok(Preloaded {
@@ -768,11 +811,11 @@ impl Context<'_> {
         let public = json("public_channels");
         let channels = public
             .iter()
-            .map(|c| SidebarChannel::from_json(c, tracking))
+            .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         let dms = json("direct_message_channels")
             .iter()
-            .map(|c| SidebarChannel::from_json(c, tracking))
+            .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         // chatChannelsManager.displayPublicChannels (has_joinable_public_
         // channels is the current user's: none without one)
@@ -923,11 +966,11 @@ impl Context<'_> {
         let dm_json = json("direct_message_channels");
         let channels = public
             .iter()
-            .map(|c| SidebarChannel::from_json(c, tracking))
+            .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         let dms = dm_json
             .iter()
-            .map(|c| SidebarChannel::from_json(c, tracking))
+            .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         let starred_prefs = prefs(
             options.chat_channel_list_filter_starred,
@@ -1057,15 +1100,19 @@ impl Context<'_> {
         online: &[i64],
         now: chrono::DateTime<chrono::Utc>,
     ) -> String {
-        // ChatChannelUnreadIndicator: a DM's unread messages are urgent.
+        // ChatChannelUnreadIndicator: a DM's unread messages are urgent;
+        // threads replied to since it was viewed show a dot.
         let urgent = channel.unread + channel.mentions + channel.watched_threads;
-        let indicator = if channel.unread + channel.mentions > 0 {
+        let indicator = if channel.unread + channel.mentions + channel.unread_threads_since_viewed
+            > 0
+        {
             format!(
-                "<div class=\"chat-channel-unread-indicator -urgent\"><div class=\"chat-channel-unread-indicator__number\">{}</div></div>",
-                if urgent > 99 {
-                    "99+".to_string()
-                } else {
-                    urgent.to_string()
+                "<div class=\"chat-channel-unread-indicator{}\"><div class=\"chat-channel-unread-indicator__number\">{}</div></div>",
+                if urgent > 0 { " -urgent" } else { "" },
+                match urgent {
+                    0 => "&nbsp;".to_string(),
+                    n if n > 99 => "99+".to_string(),
+                    n => n.to_string(),
                 }
             )
         } else {
@@ -1104,7 +1151,7 @@ impl Context<'_> {
         format!(
             "<a class=\"chat-channel-row{} can-leave{}\" tabindex=\"0\" data-chat-channel-id=\"{id}\" href=\"{}/chat/c/{}/{id}\"><div class=\"chat-channel-row__content is-dm\">{}<div class=\"chat-channel-row__info\"><div class=\"chat-channel-row__name-container\"><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div>{indicator}</div></div><div class=\"chat-channel__metadata\">{}</div>{tail}</div>{leave}</div></a>",
             if channel.muted { " muted" } else { "" },
-            if channel.unread > 0 {
+            if channel.unread > 0 || channel.unread_threads_since_viewed > 0 {
                 " has-unread"
             } else {
                 ""
@@ -1148,9 +1195,11 @@ impl Context<'_> {
         emojis: &crate::emojis::Emojis,
         now: chrono::DateTime<chrono::Utc>,
     ) -> String {
-        let has_unread = channel.unread > 0;
+        let has_unread = channel.unread > 0 || channel.unread_threads_since_viewed > 0;
         let urgent = channel.mentions + channel.watched_threads;
-        let indicator = if channel.unread + channel.mentions > 0 {
+        let indicator = if channel.unread + channel.mentions + channel.unread_threads_since_viewed
+            > 0
+        {
             format!(
                 "<div class=\"chat-channel-unread-indicator{}\"><div class=\"chat-channel-unread-indicator__number\">{}</div></div>",
                 if urgent > 0 { " -urgent" } else { "" },
@@ -1215,6 +1264,7 @@ impl Context<'_> {
         dms: &[SidebarChannel],
         options: &super::ChatOptions,
         active: &Active,
+        my_threads: bool,
         cx: &crate::sidebar::Context<'_>,
     ) -> Result<String, AppError> {
         let settings = self.settings;
@@ -1244,6 +1294,53 @@ impl Context<'_> {
                 None,
                 "",
                 &crate::sidebar::link_html(&link, cx),
+                cx,
+            ));
+        }
+
+        // SidebarChatMyThreadsSection: its link's dot while any channel has
+        // unread threads, urgent for unread watched ones.
+        if my_threads {
+            let all = || channels.iter().chain(dms);
+            let suffix_html = if all().any(|c| c.unread_threads > 0) {
+                format!(
+                    "<span class=\"sidebar-section-link-content-badge icon {}\">{}</span>",
+                    if all().any(|c| c.watched_threads > 0) {
+                        "urgent"
+                    } else {
+                        "unread"
+                    },
+                    d_icon("circle", None)
+                )
+            } else {
+                String::new()
+            };
+            let link = Link {
+                link_name: Some("user-threads".into()),
+                attributes: String::new(),
+                plain: false,
+                href: format!("{}/chat/threads", self.base_path),
+                title: Some(self.t("chat.my_threads.title")),
+                content: escape(&self.t("chat.my_threads.title")),
+                prefix: Prefix::Icon {
+                    name: "discourse-threads".into(),
+                    color: None,
+                },
+                prefix_badge: None,
+                active: *active == Active::Route("chat.threads".into()),
+                badge: None,
+                suffix: None,
+            };
+            let extra = LinkExtra {
+                classes: String::new(),
+                suffix_html,
+                hover: None,
+            };
+            out.push_str(&crate::sidebar::section_html_with(
+                "user-threads",
+                None,
+                "",
+                &crate::sidebar::link_html_with(&link, &extra, cx),
                 cx,
             ));
         }
@@ -1435,8 +1532,14 @@ impl Context<'_> {
                 None => self.category_link(c, is_active, list.as_ref()),
             };
             // ChatSidebarIndicators: urgent for mentions, watched threads
-            // and any unread in a DM.
-            let suffix_html = if c.unread_total() > 0 {
+            // and any unread in a DM; a public channel's unread threads
+            // count unless it is the active one.
+            let threads = if c.dm.is_none() && is_active {
+                0
+            } else {
+                c.unread_threads_since_viewed
+            };
+            let suffix_html = if c.unread + c.mentions + c.watched_threads + threads > 0 {
                 let urgent = c.urgent() > 0 || (c.dm.is_some() && c.unread > 0);
                 format!(
                     "<span class=\"sidebar-section-link-content-badge icon {}\">{}</span>",
@@ -1594,10 +1697,10 @@ fn raw_avatar_size(settings: &crate::site_settings::SiteSettings, size: i64) -> 
 /// `DIRECT_MESSAGE_CHANNELS_LIMIT`
 const DIRECT_MESSAGE_CHANNELS_LIMIT: usize = 50;
 
-/// ChatHeaderIconUnreadIndicator, without threads: a DM's unread messages
-/// are urgent; the unread dot counts public channels only. `exclude`
-/// leaves a channel out (the channel route's back button counts the other
-/// channels).
+/// ChatHeaderIconUnreadIndicator: a DM's unread messages are urgent; the
+/// unread dot counts public channels' messages and any channel's unread
+/// threads (hasUnreadThreads). `exclude` leaves a channel out (the channel
+/// route's back button counts the other channels).
 fn unread_indicator(
     channels: &[SidebarChannel],
     dms: &[SidebarChannel],
@@ -1626,6 +1729,11 @@ fn unread_indicator(
         .map(|c| c.mentions)
         .sum();
     let unread: i64 = channels.iter().filter(others).map(|c| c.unread).sum();
+    let unread_threads = channels
+        .iter()
+        .chain(dms)
+        .filter(others)
+        .any(|c| c.unread_threads > 0);
     let label = |n: i64| {
         if n > 99 {
             "99+".to_string()
@@ -1640,7 +1748,7 @@ fn unread_indicator(
     } else if preference != "never" {
         if urgent > 0 && (preference == "all_new" || preference == "dm_and_mentions") {
             return urgent_indicator(&label(urgent));
-        } else if unread > 0 && preference == "all_new" {
+        } else if (unread > 0 || unread_threads) && preference == "all_new" {
             return "<div class=\"chat-channel-unread-indicator\"></div>".into();
         }
     }

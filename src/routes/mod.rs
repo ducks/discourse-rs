@@ -224,6 +224,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/live/chat/{channel_id}/messages",
             get(chat_pages::live_messages),
         )
+        .route(
+            "/live/chat/{channel_id}/threads",
+            get(chat_pages::live_channel_threads),
+        )
+        .route("/live/chat/threads", get(chat_pages::live_user_threads))
         .route("/", cached!(get(list::root)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))

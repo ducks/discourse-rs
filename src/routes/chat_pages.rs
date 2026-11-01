@@ -806,7 +806,7 @@ pub async fn threads(
         &mut conn,
         &settings,
         &guardian,
-        Active::Chat,
+        Active::Route("chat.threads".into()),
         title,
         &content,
         true,
@@ -1016,6 +1016,9 @@ pub struct LiveMessagesParams {
     newest: Option<String>,
     /// fetchMessagesByDate's day: the page around it.
     target_date: Option<String>,
+    /// A thread's messages instead, as its pane draws them
+    /// (Context::thread_messages_page, for chat-thread.js).
+    thread_id: Option<String>,
 }
 
 /// GET /live/chat/:channel_id/messages: a page of the channel's messages
@@ -1042,20 +1045,35 @@ pub async fn live_messages(
             Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
         },
     };
+    let thread_id = match params.thread_id.as_deref() {
+        None | Some("") => None,
+        Some(id) => match id.parse::<i64>() {
+            Ok(id) => Some(id),
+            Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        },
+    };
     let mut conn = state.pool.acquire().await?;
     let settings = match gate(&state, &mut conn, &guardian, false).await? {
         Ok(settings) => settings,
         Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
     };
-    let page = context(&state, &mut conn, &settings, &guardian)
-        .messages_page_at(
-            channel_id,
-            target,
-            params.direction.as_deref(),
-            params.newest.as_deref() == Some("true"),
-            params.target_date.as_deref(),
-        )
-        .await?;
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    let page = match thread_id {
+        Some(thread_id) => {
+            cx.thread_messages_page(channel_id, thread_id, target, params.direction.as_deref())
+                .await?
+        }
+        None => {
+            cx.messages_page_at(
+                channel_id,
+                target,
+                params.direction.as_deref(),
+                params.newest.as_deref() == Some("true"),
+                params.target_date.as_deref(),
+            )
+            .await?
+        }
+    };
     let Some(page) = page else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
@@ -1077,6 +1095,76 @@ pub async fn live_messages(
         page.html,
     )
         .into_response())
+}
+
+#[derive(serde::Deserialize, Default)]
+pub struct LiveThreadsParams {
+    offset: Option<i64>,
+}
+
+/// A page of a threads list for chat-thread.js, with how many threads it
+/// has (x-chat-count): none left once it has none.
+fn threads_page(page: Option<(String, usize)>) -> Response {
+    match page {
+        Some((html, count)) => (
+            [
+                (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-cache, no-store"),
+            ],
+            [("x-chat-count", count.to_string())],
+            html,
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+/// GET /live/chat/:channel_id/threads: the channel's threads from
+/// `offset` as ChatThreadList draws them, for its load more and its live
+/// updates (ChatThreadList over GET /chat/api/channels/:id/threads).
+pub async fn live_channel_threads(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(channel_id): Path<String>,
+    axum::extract::Query(params): axum::extract::Query<LiveThreadsParams>,
+) -> Result<Response, AppError> {
+    let Ok(channel_id) = channel_id.parse::<i64>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    if guardian.is_anonymous() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let page = context(&state, &mut conn, &settings, &guardian)
+        .channel_threads_more(channel_id, params.offset.unwrap_or(0).max(0))
+        .await?;
+    Ok(threads_page(page))
+}
+
+/// GET /live/chat/threads: the member's threads from `offset` as
+/// UserThreads draws them (GET /chat/api/me/threads), for its load more
+/// and its live updates.
+pub async fn live_user_threads(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Query(params): axum::extract::Query<LiveThreadsParams>,
+) -> Result<Response, AppError> {
+    if guardian.is_anonymous() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let page = context(&state, &mut conn, &settings, &guardian)
+        .user_thread_items(params.offset.unwrap_or(0).max(0))
+        .await?;
+    Ok(threads_page(Some(page)))
 }
 
 /// Journey::Router::Utils.escape_path: a path keeps the unreserved

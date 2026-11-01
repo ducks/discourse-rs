@@ -217,7 +217,7 @@ async fn the_drawer_draws_a_channels_threads_and_a_thread() {
     );
     assert!(
         html.starts_with(&format!(
-            "<div class=\"c-drawer-routes --channel-threads\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"Return to channels list\" href=\"/chat/c/general/2\">{}</a><div class=\"c-navbar__title\" title=\"Threads - General\"><span class=\"c-navbar__title-text\">{}Threads - General</span></div><nav class=\"c-navbar__actions\">{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"chat-thread-list\"><div class=\"chat-thread-list__items\"><div class=\"chat-thread-list-item",
+            "<div class=\"c-drawer-routes --channel-threads\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"Return to channels list\" href=\"/chat/c/general/2\">{}</a><div class=\"c-navbar__title\" title=\"Threads - General\"><span class=\"c-navbar__title-text\">{}Threads - General</span></div><nav class=\"c-navbar__actions\">{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"chat-thread-list\" data-channel-id=\"2\"><div class=\"chat-thread-list__items\"><div class=\"chat-thread-list-item",
             icon("chevron-left"),
             icon("discourse-threads")
         )),
@@ -326,7 +326,7 @@ async fn the_drawer_lists_the_members_threads() {
     let mut user1 = Client::logged_in(st.clone(), "user1").await;
     let (_, _, _, html) = drawer(&mut user1, "url=/chat/threads").await;
     assert!(
-        html.contains("<div class=\"c-user-thread\" data-id=\"1\">"),
+        html.contains("<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\">"),
         "{html}"
     );
     assert!(html.contains("href=\"/chat/c/general/2/t/1\""), "{html}");

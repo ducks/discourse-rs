@@ -218,11 +218,16 @@ impl Context<'_> {
         } else {
             "<div class=\"c-routes --channel\">"
         });
-        // The channel's unread threads (threadsManager.unreadThreadCount).
+        // The channel's unread threads (threadsManager.unreadThreadCount),
+        // their count hidden in do not disturb.
         let threads_button = if beside_thread {
             None
         } else {
-            Some(self.unread_thread_count(channel).await?)
+            let dnd = match self.guardian.user_id() {
+                Some(id) => crate::notification_create::do_not_disturb(&mut *self.conn, id).await?,
+                None => false,
+            };
+            Some((self.unread_thread_count(channel).await?, dnd))
         };
         out.push_str(&self.navbar(
             &channel_json,
@@ -593,7 +598,7 @@ impl Context<'_> {
     /// canLoadMoreFuture), the message a near-message url targets (scrolled
     /// to and highlighted), the "all loaded" line and the error a page
     /// that can't load pops (its 404's: popupAjaxError).
-    fn pane_attrs(&self, listed: &Value, target: Option<i64>, loaded: bool) -> String {
+    pub(super) fn pane_attrs(&self, listed: &Value, target: Option<i64>, loaded: bool) -> String {
         let mut out = format!(
             " data-can-load-more-past=\"{}\" data-can-load-more-future=\"{}\" data-label-all-loaded=\"{}\" data-label-not-found=\"{}\"",
             listed["meta"]["can_load_more_past"],
@@ -856,7 +861,7 @@ impl Context<'_> {
         following: bool,
         online: &[i64],
         drawer: Option<&super::drawer::Nav<'_>>,
-        threads_button: Option<usize>,
+        threads_button: Option<(usize, bool)>,
     ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -942,7 +947,7 @@ impl Context<'_> {
         }
         // ChatNavbarThreadsListButton, with ThreadHeaderUnreadIndicator:
         // not on the threads or a thread route (`threads_button` None).
-        if let Some(unread) =
+        if let Some((unread, dnd)) =
             threads_button.filter(|_| c["threading_enabled"] == true && !collapsed)
         {
             out.push_str(&format!(
@@ -952,7 +957,11 @@ impl Context<'_> {
                 self.base_path,
                 escape(slug),
                 d_icon("discourse-threads", None),
-                thread_header_unread_indicator(self.i18n, unread)
+                if dnd {
+                    String::new()
+                } else {
+                    thread_header_unread_indicator(self.i18n, unread)
+                }
             ));
         }
         if let Some(nav) = drawer {
@@ -1635,7 +1644,7 @@ fn newest_id(channel_json: &Value, messages: &[Value]) -> Option<i64> {
 /// neighbours): of a run of deleted messages only the last is drawn,
 /// collapsed (shouldRender); expanding it (chat.js) draws the run from
 /// each one's expanded form.
-fn messages_html(
+pub(super) fn messages_html(
     view: &View,
     messages: &[Value],
     range: std::ops::Range<usize>,
@@ -2126,7 +2135,10 @@ fn thread_indicator_html(v: &View, m: &Value) -> String {
         v.channel["id"],
         m["thread"]["id"],
         preview["last_reply_id"],
-        user_avatar(last_user, 24, false, v),
+        // The last replier's avatar without its link: Ember nests
+        // ChatUserAvatar's link in the LinkTo, which the browser's parser
+        // would split out of the indicator into anchors of their own.
+        static_user_avatar(last_user, 24, &v.online),
         escape(s(&last_user["username"])),
         format_date_ago(
             v.i18n,
