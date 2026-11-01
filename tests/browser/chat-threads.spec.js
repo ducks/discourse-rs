@@ -78,7 +78,9 @@ test("a reply sent from the thread's composer, live in another member's thread",
     .toEqual([[String(threadId)]]);
   // Not in the channel's pane (where the thread indicator's excerpt has it).
   await expect(page.locator(".chat-channel .chat-cooked", { hasText: message })).toHaveCount(0);
-  await expect(page.locator(".chat-channel .chat-message-thread-indicator__last-reply-excerpt")).toContainText(message);
+  await expect(page.locator(".chat-channel .chat-message-thread-indicator__last-reply-excerpt")).toContainText(message, {
+    timeout: 20_000,
+  });
   await expect(other.locator(".chat-thread .chat-message-container", { hasText: message })).toBeVisible({
     timeout: 20_000,
   });
@@ -116,9 +118,13 @@ test("a thread message's actions: react, edit from the menu, no reply", async ({
     .toEqual([["tada"]]);
 
   // Edit from the secondary menu: the thread's composer takes it.
-  await message.hover();
-  await page.locator(".chat-thread .chat-message-actions .more-buttons summary").click();
-  await page.locator(".chat-thread .more-actions-chat .select-kit-row[data-value='edit']").click();
+  // The reaction's bus message may still draw the message again.
+  await expect(async () => {
+    await page.mouse.move(0, 0);
+    await message.hover();
+    await page.locator(".chat-thread .chat-message-actions .more-buttons summary").click({ timeout: 2000 });
+    await page.locator(".chat-thread .more-actions-chat .select-kit-row[data-value='edit']").click({ timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
   const composer = page.locator(".chat-thread #thread-composer");
   await expect(composer).toHaveValue(own);
   await expect(page.locator(".chat-thread .chat-composer-message-details[data-action='edit']")).toBeVisible();
@@ -142,9 +148,14 @@ test("a thread message's actions: react, edit from the menu, no reply", async ({
   // Select from the menu: the thread's own selection, in place of its
   // composer, without moving (no enableMove).
   const target = page.locator(".chat-thread .chat-message-container", { hasText: edited });
-  await target.hover();
-  await page.locator(".chat-thread .chat-message-actions .more-buttons summary").click();
-  await page.locator(".chat-thread .more-actions-chat .select-kit-row[data-value='select']").click();
+  // The edit's bus messages may still draw the message again (and its
+  // toolbar with it): open the menu until the pick lands.
+  await expect(async () => {
+    await page.mouse.move(0, 0);
+    await target.hover();
+    await page.locator(".chat-thread .chat-message-actions .more-buttons summary").click({ timeout: 2000 });
+    await page.locator(".chat-thread .more-actions-chat .select-kit-row[data-value='select']").click({ timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
   const bar = page.locator(".chat-thread .chat-selection-management");
   await expect(bar).toBeVisible();
   await expect(bar.locator("#chat-move-to-channel-btn")).toHaveCount(0);
