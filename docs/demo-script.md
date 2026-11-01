@@ -79,9 +79,9 @@ on the same 20,576-post corpus and the same PostgreSQL 18 server.
 19. Member: open the new channel from `/chat/browse` and join it; Reply on
     the admin's message starts a thread (the indicator appears under it);
     open the thread in the side panel and reply there (the indicator counts
-    two replies); back, then the channel's threads list (as in Discourse,
-    a thread is listed a few seconds after its first reply, once its reply
-    count is updated).
+    two replies); the thread's back button leads to the channel's threads
+    list (as in Discourse, a thread is listed a few seconds after its
+    first reply, once its reply count is updated).
 20. Moderator: join the new channel, then in #General select step 17's
     image message from its menu (Select), tick step 14's message too, and
     Move to Channel: the new channel opens on the moved messages.

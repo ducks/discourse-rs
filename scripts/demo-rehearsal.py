@@ -1369,8 +1369,14 @@ def define_steps(run):
         expect_visible(original.locator(".chat-message-thread-indicator__replies-count", has_text="2 replies"),
                        "the indicator counting two replies", timeout=LIVE_WAIT)
         run.leave("user1's thread of two replies in the new channel")
+        # The thread's back button goes to the threads list (ChatThreadHeader
+        # backLink: after the channel, on desktop), where the navbar has no
+        # threads list button; from the channel it is that button.
         page.locator(".c-navbar__back-button").first.click()
-        expect_visible(page.locator(".c-navbar__threads-list-button"), "the threads list button").click()
+        page.wait_for_url(re.compile(r"/chat/c/[^/]+/\d+(/t)?$"), timeout=WAIT)
+        if not re.search(r"/t$", page.url):
+            expect_visible(page.locator(".c-navbar__threads-list-button"), "the threads list button").click()
+            page.wait_for_url(re.compile(r"/t$"), timeout=WAIT)
         # The list counts a thread once its reply count is updated, a job
         # Discourse runs a few seconds after a reply; a presenter talking
         # gives it that, the rehearsal looks again.
