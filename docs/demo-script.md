@@ -82,61 +82,87 @@ on the same 20,576-post corpus and the same PostgreSQL 18 server.
     two replies); the thread's back button leads to the channel's threads
     list (as in Discourse, a thread is listed a few seconds after its
     first reply, once its reply count is updated).
-20. Moderator: join the new channel, then in #General select step 17's
+20. Member: in that thread's side panel, react to the second reply from
+    its hover toolbar (it has no Reply in a thread), then Edit it from its
+    "..." menu: the thread's composer takes the text, the edit is drawn in
+    place; a reload keeps both.
+21. Admin: open the thread, click its title in the panel's header (the
+    original message's author and admins can): the thread settings modal,
+    a title; the header shows it, and after a reload too.
+22. Member: from a forum page, open the drawer, the new channel, its
+    threads list button: the thread (by step 21's title), opened in the
+    drawer; reply there, back to the list and the channel. Click the
+    channel's title: its settings, then the Members tab; back. The page
+    never reloads and stays on the forum page.
+23. Moderator: join the new channel, then in #General select step 17's
     image message from its menu (Select), tick step 14's message too, and
     Move to Channel: the new channel opens on the moved messages.
-21. Admin: `/admin/plugins/chat`, Incoming webhooks, New: a name and the
+24. Admin: `/admin/plugins/chat`, Incoming webhooks, New: a name and the
     new channel; the edit page shows the webhook's URL, and a POST to it
     (`curl -d text=hello <url>`) posts in the channel.
+25. Member: in the new channel, mention `@user3` (who can see the channel
+    but hasn't joined it): a notice says so and offers to invite them;
+    Invite, "Invitation sent". Then the navbar's filter (the magnifier):
+    type `demo`, the admin's first message highlighted with its position
+    (1/1); Esc. Then click the "Today" date separator: the day's first
+    message highlighted, in place.
+26. Admin: turn on `chat_allow_archiving_channels` in the site settings;
+    the new channel's settings, Archive channel: a new topic's title, the
+    General category, Archive. The job quotes the messages into the
+    topic; the channel shows it is archived (no composer; the archive
+    unfollows its members, so a card says it can't be joined) with a link to
+    the topic, whose posts are the chat transcript, threads included. As
+    in Discourse, the retention reminder floats over that link: dismiss
+    it (its x) first; the link opens the topic in a new tab.
 
 ## Admin and moderation
 
-22. Admin: activate the Newcomer's account from the admin users list.
-23. Second member flags a post as inappropriate.
-24. Moderator: the review count in the header and sidebar; open /review,
+27. Admin: activate the Newcomer's account from the admin users list.
+28. Second member flags a post as inappropriate.
+29. Moderator: the review count in the header and sidebar; open /review,
     add a note, agree with the flag.
-25. Admin: watched word with "require approval"; Newcomer posts with it;
+30. Admin: watched word with "require approval"; Newcomer posts with it;
     the post is held; approve it from /review. Type the post rather than
     pasting it: as in Discourse, a first post typed in under
     fast_typing_threshold (3 seconds) is held and its author silenced
     (the card shows the silence, and approving the post lifts it).
-26. Admin: the topic admin wrench: close and reopen a topic, unlist it.
-27. Admin: the dashboard and a report, the staff action log showing the
+31. Admin: the topic admin wrench: close and reopen a topic, unlist it.
+32. Admin: the dashboard and a report, the staff action log showing the
     steps above.
-28. Admin: change a list setting (authorized extensions) and a plain one
+33. Admin: change a list setting (authorized extensions) and a plain one
     from the settings page; customize a color palette.
-29. Admin: silence a member and show the system message they receive;
+34. Admin: silence a member and show the system message they receive;
     unsilence.
 
 ## Plugins
 
 The bundled plugins are Rust in the same binary, switched on at runtime.
 Solved, Topic Voting, Reactions, Poll, Checklist and Templates are on by
-default as in Discourse; step 30 turns on the others the steps use.
+default as in Discourse; step 35 turns on the others the steps use.
 
-30. Admin: `/admin/plugins`, switch on Assign, Policy, User Notes and
+35. Admin: `/admin/plugins`, switch on Assign, Policy, User Notes and
     Gamification.
-31. Admin: New Category from `/categories` with the Support and Ideas
+36. Admin: New Category from `/categories` with the Support and Ideas
     types ticked (Solved and Topic Voting for that category); it opens
     with the Votes and My Votes lists.
-32. Member: a question in the new category; Second member votes for it
+37. Member: a question in the new category; Second member votes for it
     (the count goes to 1) and answers.
-33. Member: Solution on the answer; the title shows the solved status
+38. Member: Solution on the answer; the title shows the solved status
     without a reload.
-34. Second member: hover the question's heart and pick the clap from the
+39. Second member: hover the question's heart and pick the clap from the
     reaction picker.
-35. Admin: the question's footer Assign, to `user2`; the topic redraws in
+40. Admin: the question's footer Assign, to `user2`; the topic redraws in
     place with the assignee under the first post and the reassign menu.
-36. Admin: reply with a policy (`[policy group=trust_level_1 accept="I
+41. Admin: reply with a policy (`[policy group=trust_level_1 accept="I
     agree" revoke="Withdraw"]...[/policy]`); Second member clicks I agree
     and the accepted count goes to 1.
-37. Moderator: User notes on `user0`'s profile; add a note, staff only.
-38. Admin: `/admin/plugins/discourse-gamification/leaderboards`,
+42. Moderator: User notes on `user0`'s profile; add a note, staff only.
+43. Admin: `/admin/plugins/discourse-gamification/leaderboards`,
     Recalculate scores (last 10 days), then `/leaderboard` with its podium.
 
 ## Rehearsal
 
-`scripts/demo-rehearsal` walks the 38 steps in Chromium as the presenter
+`scripts/demo-rehearsal` walks the 43 steps in Chromium as the presenter
 does, by clicking and typing, one browser context per persona (Member and
 Second member stay open together for the live updates). Each step records
 ok, fail or skipped (a step that needs an earlier step's outcome), how long
@@ -169,8 +195,9 @@ refused; a job runs after its request, so its line can land in the next
 step. Warnings (4xx answers, the htmx SSE stream's `[object Event]`
 console error on every navigation away) are listed but don't fail a step.
 `--only 18,19` runs some steps; the rest are skipped, and a step that
-needs a skipped one (19 to 21 need 18's channel, 32 to 36 need 31's
-category and 32's question, 35 to 38 need 30's plugins) is skipped too.
+needs a skipped one (19 to 26 need 18's channel, 20 to 22 also 19's
+thread, 37 to 41 need 36's category and 37's question, 40 to 43 need 35's
+plugins) is skipped too.
 
 It can run again on the same database. What it makes is labelled
 "rehearsal <time>Z", the newcomer is `rh<timestamp>`, the watched word
@@ -179,13 +206,15 @@ category "Rehearsal ideas <timestamp>". It waits between a persona's posts
 as a presenter would (Discourse refuses a second topic within 15 seconds),
 and replies elsewhere when user1 already posted last in `/t/118`. At the
 end it deletes the watched word, the color palette, the incoming webhook
-and the chat channel it made through the admin, puts back the settings it
-changed, switches off the plugins step 30 switched on and unsilences
+and the chat channel it made through the admin (archived by step 26),
+puts back the settings it changed (`chat_allow_archiving_channels`
+included), switches off the plugins step 35 switched on and unsilences
 whoever it silenced; the report lists what it cleaned up and what it left
-behind: the replies, the topics (step 8's unlisted by step 26), the
-category, the like, reaction, vote, solution, assignment, policy and its
-acceptance, the user note, the bookmark, chat messages and reaction, the
-newcomer's account, the staff log's entries and the uploads. Step 38's
+behind: the replies, the topics (step 8's unlisted by step 31, step 26's
+archive topic), the category, the like, reaction, vote, solution,
+assignment, policy and its acceptance, the user note, the bookmark, chat
+messages, reactions and the thread's title, user3's chat invitation, the
+newcomer's account, the staff log's entries and the uploads. Step 43's
 recalculation counts against Gamification's five a day; past that the
 step shows the leaderboard as it is. Each run also spends logins against
 `max_logins_per_ip_per_hour`; a run that can't log in says so.
@@ -198,7 +227,7 @@ Known gaps that refuse with a "not ported yet" error or misbehave:
   post (194e), the review queue's silence and suspend client actions.
 - Flagging a chat message: the flag is saved, but /review can't draw its
   item, and while it is pending the review queue refuses to list (plugin
-  reviewables, 217 with 148), which breaks step 24.
+  reviewables, 217 with 148), which breaks step 29.
 - Pinning from the topic wrench (194c) and most post admin actions (194d).
 - Site setting types beyond lists (164b-h): uploads, objects, regex,
   dates.
@@ -206,9 +235,11 @@ Known gaps that refuse with a "not ported yet" error or misbehave:
   topic from the composer (discourse-post-voting's toggle), no Build Poll.
 - Category group moderation (149).
 - Full-page chat search: the sidebar's "Search chat" (`/chat/search`)
-  answers 405, only the API is ported (220). The drawer's routes for
-  threads, pins, members and search are being built (223c).
+  answers 405, only the API is ported (220); the drawer's search (223c)
+  works.
 - Pinned chat messages sit behind the hidden `chat_pinned_messages`
-  setting, off as in Discourse, which the admin can't switch.
+  setting, and My threads (the drawer footer's item, the sidebar's
+  section) behind the hidden `chat_threads_enabled`, both off as in
+  Discourse, which the admin can't switch.
 - An MP4 won't play in Playwright's Chromium (no H.264); real browsers
   play it.
