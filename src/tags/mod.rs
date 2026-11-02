@@ -2,6 +2,10 @@
 //! (lib/discourse_tagging.rb visible_tags / hidden_tags / staff_tag_names)
 //! and TagSerializer.
 
+pub mod groups;
+pub mod tagging;
+pub mod writes;
+
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
