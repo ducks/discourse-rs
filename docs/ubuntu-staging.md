@@ -6,11 +6,13 @@ with 1 vCPU and 2 GiB RAM. Nix supplies the tested runtime dependencies
 and PostgreSQL 16 with pgvector; systemd manages the services. Caddy and
 image/video tools are installed through Ubuntu packages.
 
-The deployed release is `1819a61f`, the build that passed the November 1
-44-step rehearsal. Its SHA-256 is
-`8440b5ebcc9ea74d26da68e8f1778f59e0e6397d9167fd3fe9df8ca09625686d`.
-The later admin source reorganization is merged locally but is not part
-of this deployed binary.
+The deployed release is `cbcb10a0`, containing the admin source
+reorganization and the Categories/Tags dropdown fix merged in `3feb1a92`.
+Its SHA-256 is
+`432816cf8dedc6d09439e7b3a95e0464d62a7d49208a0a73b7bee92900fa749e`.
+The November 2 local optimized build took 24 minutes, 10 seconds, including
+dependency compilation. All three focused category/dropdown browser tests
+passed. The previous `1819a61f` binary is retained for rollback.
 
 ## Access
 
@@ -43,7 +45,7 @@ systemctl restart discourse-rs
 ```
 
 All three services are enabled at boot. The binary is
-`/opt/discourse-rs/discourse-rs-1819a61f`, selected by
+`/opt/discourse-rs/discourse-rs-cbcb10a0`, selected by
 `/usr/local/bin/discourse-rs`. Nix GC roots under `/opt/discourse-rs/`
 retain its libraries, PostgreSQL, and the pinned stock images/fonts/emoji.
 
@@ -89,6 +91,14 @@ successful import preserved that ownership, omitted those comments, and
 restored application objects in one transaction as `discourse-rs`.
 
 ## Verification and follow-ups
+
+The November 2 guest-account browser check passed category filtering and
+navigation, returning to Latest, tag filtering and navigation, and clearing
+the tag filter after page swaps. No uncaught page errors were reported.
+The new binary passed its loopback health check. During activation the old
+process remained in `stop-sigterm` long enough for the first browser attempt
+to receive an HTTP failure; retrying after activation passed. Investigate
+bounded shutdown of long-lived connections before promising brief restarts.
 
 The deployed HTTPS browser check passed login as `jake`, browsing the
 large topic list, creating a topic through the composer, joining the
