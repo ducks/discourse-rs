@@ -4,7 +4,9 @@ Core JS and CSS are runtime files, not Rust compiler inputs. The ordered
 catalog is `static/manifest.json`; it preserves the original CSS concatenation
 and Ace bundle separators. `scripts/package-frontend` reads this catalog and
 writes an immutable package containing a manifest and content-addressed objects.
-It uses Python's standard library and never invokes Cargo.
+It uses Python's standard library and never invokes Cargo. Manifest entries
+are available through the `/assets/` fallback, so adding a JS/CSS file does
+not require adding a Rust route.
 
 The server validates and loads the entire package before listening. A missing
 file, invalid manifest or digest mismatch prevents startup. Asset URLs still
@@ -112,3 +114,15 @@ Local packaging measurements on November 2 were 0.067 seconds unchanged,
 including retaining the previous package's versions. These measure packaging
 only, not browser checks, transfer, service restart or a Rust build. No Cargo
 process was invoked by the packaging command.
+
+Final local checks passed: workspace/all-target clippy with warnings denied,
+four runtime asset tests, 36 database-backed integration tests across the moved
+domains and asset serving, and seven browser tests using the packaged frontend
+with `BROWSER_TEST_BINARY` (no server build in the browser harness).
+
+A direct `cargo check --lib` comparison after the final Rust change took
+75.756 seconds to check the application crate, with dependencies reused. The
+subsequent unchanged, JS-only and CSS-only cases took 0.190, 0.193 and 0.186
+seconds respectively, each reporting zero rebuilt crates. The temporary JS/CSS
+edits were restored. These are check timings, not optimized release build times;
+a fresh optimized build and the initial VPS upgrade remain separate work.

@@ -15,8 +15,7 @@ work, so the two together are the count of what is left.
 
 ## Next after the staging dropdown deploy: faster frontend delivery
 
-Implementation is on `feat/runtime-frontend-assets`; integration tests are in
-progress. See [frontend packages](docs/frontend-assets.md) for the package
+Implemented and locally validated on `feat/runtime-frontend-assets`. See [frontend packages](docs/frontend-assets.md) for the package
 format, deployment path, checks and measured packaging times. The live demo
 still uses the previous embedded-assets binary.
 
