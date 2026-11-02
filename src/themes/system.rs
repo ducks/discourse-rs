@@ -27,22 +27,22 @@ pub const SCREENSHOTS: [Screenshot; 4] = [
     Screenshot {
         theme_id: -1,
         field: "screenshot_light",
-        bytes: include_bytes!("../vendor/discourse/themes/foundation/screenshots/light.png"),
+        bytes: include_bytes!("../../vendor/discourse/themes/foundation/screenshots/light.png"),
     },
     Screenshot {
         theme_id: -1,
         field: "screenshot_dark",
-        bytes: include_bytes!("../vendor/discourse/themes/foundation/screenshots/dark.png"),
+        bytes: include_bytes!("../../vendor/discourse/themes/foundation/screenshots/dark.png"),
     },
     Screenshot {
         theme_id: -2,
         field: "screenshot_light",
-        bytes: include_bytes!("../vendor/discourse/themes/horizon/screenshots/light.png"),
+        bytes: include_bytes!("../../vendor/discourse/themes/horizon/screenshots/light.png"),
     },
     Screenshot {
         theme_id: -2,
         field: "screenshot_dark",
-        bytes: include_bytes!("../vendor/discourse/themes/horizon/screenshots/dark.png"),
+        bytes: include_bytes!("../../vendor/discourse/themes/horizon/screenshots/dark.png"),
     },
 ];
 
