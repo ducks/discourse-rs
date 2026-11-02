@@ -131,12 +131,10 @@ pub mod request_tracker;
 pub mod request_tracking;
 pub mod retrieve_title;
 pub mod review;
-pub mod review_list;
-pub mod review_posts;
-pub mod review_view;
-pub mod reviewable_claims;
-pub mod reviewable_user;
-pub mod reviewables;
+pub use review::{
+    claims as reviewable_claims, list as review_list, posts as review_posts, reviewables,
+    user as reviewable_user, view as review_view,
+};
 pub mod roles;
 pub mod routes;
 pub mod ruby;
