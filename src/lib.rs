@@ -93,10 +93,11 @@ pub mod multisite;
 pub mod mustache;
 pub mod new_features;
 pub mod not_found_page;
-pub mod notification_create;
-pub mod notification_emailer;
-pub mod notification_schedule;
 pub mod notifications;
+pub use notifications::{
+    create as notification_create, emailer as notification_emailer,
+    schedule as notification_schedule,
+};
 pub mod object_storage;
 pub mod onebox;
 pub mod optimized_images;
