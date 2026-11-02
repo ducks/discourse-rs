@@ -2,6 +2,10 @@
 //! the accessible-topic and disabled-badge filters, and
 //! NotificationSerializer.
 
+pub mod create;
+pub mod emailer;
+pub mod schedule;
+
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
