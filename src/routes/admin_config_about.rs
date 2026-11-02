@@ -347,7 +347,7 @@ pub async fn page(
         member_trust_level: None,
         settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
     };
-    let toolbar = crate::composer_view::toolbar(&list, None, None);
+    let toolbar = crate::composer::view::toolbar(&list, None, None);
     let default_locale = shell.settings.get("default_locale")?.to_s();
     // The language selector: the default locale and the supported ones,
     // named as available_locales names them.

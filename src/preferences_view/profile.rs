@@ -195,7 +195,7 @@ pub fn render(p: &Prefs, pr: &Profile) -> Result<(String, Map<String, Value>), A
             out.push_str(&format!(
                 "<div class=\"control-group pref-bio\" data-setting-name=\"user-bio\"><label class=\"control-label\">{}</label><div class=\"controls bio-composer input-xxlarge\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\" data-d-scroll-axis=\"horizontal\">{}</div></div><textarea autocomplete=\"off\" class=\"d-editor-input\" data-pref=\"bio_raw\">{}</textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\">{}</div></div></div></div></div></div>",
                 escape(&t(cx, "user.bio")),
-                crate::composer_view::toolbar(cx, None, None),
+                crate::composer::view::toolbar(cx, None, None),
                 escape(u["bio_raw"].as_str().unwrap_or_default()),
                 u["bio_cooked"].as_str().unwrap_or_default(),
             ));
