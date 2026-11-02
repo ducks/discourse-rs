@@ -1,12 +1,14 @@
 # Plugins
 
-How discourse-rs will be extended without writing Rust. Design, not yet
-built, and deferred until after writes (ROADMAP.md, milestone 5).
+Current implementation, 2026-11-01: bundled plugin ports are Rust in
+src/plugins/. The compile-time Plugin trait and the Wasmtime host have
+merged, including host hardening and HTML integration. See
+[plugin-wasm.md](docs/plugin-wasm.md) for the runtime and guest contract.
 
-Status, 2026-10-01: the hook shapes below (`serialize`, `modify`, `html`,
-`route`, `event`, `job`) and tier 0 stand. The subprocess transport and
-the plugin's own database connection do not; decisions 3 and 5 at the end
-replace them, and decision 6 is what is still open.
+The design discussion below is historical. Its subprocess transport was
+rejected, and references to an undecided runtime or Luau describe earlier
+work. Individual bundled plugins still have parity gaps, tracked in
+ROADMAP.md and docs/plugin-audits.md.
 
 ## The constraint
 

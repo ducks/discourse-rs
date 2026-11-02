@@ -13,7 +13,26 @@ backlog; the milestones below are the coarse one. Phase 9 groups the
 markers into branches and phase 10 holds the rest of the milestones'
 work, so the two together are the count of what is left.
 
-## State as of 2026-10-20
+## Current focus, 2026-11-01
+
+The next delivery is the demo: core forum, usable chat and admin, then
+bundled plugins, with a plain benchmark table at the end. The demo
+script and rehearsal now cover 44 steps. Chat flags in /review (148a),
+chat media and full-page search, and composer actions with the markdown
+poll builder (196a) have merged. The committed browser suite exercises
+these paths as well as navigation and live updates.
+
+Remaining chat follow-ups include thread tracking/live updates (160b),
+drawer details (223e), GIFs (224b) and further reviewable cases (148b).
+Performance item 285 is low priority. Full parity remains the long-term
+goal; the older counts below are a dated snapshot, not current totals.
+
+Plugin infrastructure has also advanced past the original milestone
+summary: the compile-time Plugin trait and Wasmtime host are on main.
+Bundled plugin ports remain Rust in src/plugins/. See docs/plugin-wasm.md
+and the latest plugin audit entries for implementation and remaining gaps.
+
+## Historical snapshot, 2026-10-20
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
@@ -6403,19 +6422,19 @@ Discourse's own clients keep working.
 After writes (moved 2026-10-01, was 3.5): the plugin API is mostly the
 write endpoints. The design and its open decisions are in PLUGINS.md.
 
-- [x] Decide the runtime (PLUGINS.md decision 6, 2026-10-08): bundled
-      plugins are Rust in src/plugins/ on lifecycle phases; third-party
-      plugins a sandboxed runtime later (Luau spike on
-      spike/plugin-runtime)
-- [ ] The bundled plugins: all sixteen started (crate::plugins::STARTED),
-      none done. The parity audit (210, docs/plugin-audits.md, 2026-10-17)
+- [x] Runtime: bundled plugins are Rust in src/plugins/ on lifecycle
+      phases. Compile-time plugins use plugin_api::Plugin; third-party
+      guests run in the merged Wasmtime host (docs/plugin-wasm.md).
+- [ ] The bundled plugins: 31 started (crate::plugins::STARTED), with
+      parity gaps still tracked per plugin. The original parity audit
+      (210, docs/plugin-audits.md, 2026-10-17), extended as ports land,
       lists every gap of chat, poll, reactions, solved, topic voting,
       presence, local dates, lazy videos, checklist, details, footnote,
       spoiler, LTI, OAuth2 basic, OpenID Connect and Apple against the
       reference plugin; the uncovered ones are 211-249, the rest earlier
       items (chat 160-162, solved 163, voting and reactions core's 143,
-      150, 188i4, 195, 197, the settings 164). Templates, narrative-bot's
-      tutorials and the plugins not started: 202
+      150, 188i4, 195, 197, the settings 164). Templates and narrative-bot
+      now have ports; their remaining gaps and other plugins stay in 202
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
       assets, i18n, the tables the plugin owns; `discourse-rs plugins`:
       203
