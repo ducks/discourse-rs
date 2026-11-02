@@ -23,10 +23,8 @@ use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
 /// `create_params` that this slice does not write: refused, not ignored.
-const UNPORTED_CREATE_PARAMS: [&str; 18] = [
+const UNPORTED_CREATE_PARAMS: [&str; 15] = [
     "target_usernames",
-    "whisper",
-    "no_bump",
     "shared_draft",
     "is_warning",
     "image_sizes",
@@ -35,7 +33,6 @@ const UNPORTED_CREATE_PARAMS: [&str; 18] = [
     "external_id",
     "auto_track",
     "visible",
-    "unlist_topic",
     "locale",
     "topic_custom_fields",
     "meta_data",
@@ -90,6 +87,22 @@ pub async fn create(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     drop(conn);
     let integer = |k: &str| params::integer(&p, k);
+    let boolean = |k: &str| crate::ruby::cast_boolean(params::string(&p, k).as_deref());
+    // create_params: no_bump for those who may skip the bump, whisper for
+    // whisperers, and the WordPress munging of unlist_topic into visible
+    // (any value but "false" unlists).
+    let no_bump = boolean("no_bump") == Some(true);
+    if no_bump && !guardian.can_skip_bump() {
+        return Ok(super::search::invalid_parameters(&state, "no_bump"));
+    }
+    let whisper = boolean("whisper") == Some(true);
+    if whisper && !guardian.is_whisperer(&settings)? {
+        return Ok(super::search::invalid_access_with(
+            &state,
+            "invalid_whisper_access",
+        ));
+    }
+    let visible = params::string(&p, "unlist_topic").map(|v| v == "false");
     let api = headers.contains_key(crate::session::api_key::HEADER_API_KEY);
     // archetype: a private message to target_recipients, split as
     // create_params does: the groups the user may message, then the rest
@@ -141,6 +154,9 @@ pub async fn create(
         },
         first_post_checks: !api,
         from_composer: true,
+        whisper,
+        no_bump,
+        visible,
         // discourse-post-voting's NewPostManager handler, on its permitted
         // create_as_post_voting param.
         subtype: if crate::plugins::post_voting::enabled(&settings)? {

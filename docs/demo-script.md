@@ -53,8 +53,10 @@ on the same 20,576-post corpus and the same PostgreSQL 18 server.
    lightbox once processed, and opening it shows the full image.
 7. Second member (another browser): the mention notification arrives;
    open it, like the reply.
-8. Member: new topic with a poll and a checklist; vote on the poll; tick a
-   checklist item.
+8. Member: new topic with a poll and a checklist: the poll from the
+   toolbar's options menu (the circled plus), Build poll, three options
+   (Enter adds the next), Insert Poll; vote on the poll; tick a checklist
+   item.
 9. Member: bookmark a post, then the bookmarks list in the user menu.
 10. Member: private message to Second member from their profile's Message
     button (the recipients chooser above the title); Second member replies.
@@ -147,8 +149,8 @@ The bundled plugins are Rust in the same binary, switched on at runtime.
 Solved, Topic Voting, Reactions, Poll, Checklist and Templates are on by
 default as in Discourse; step 35 turns on the others the steps use.
 
-35. Admin: `/admin/plugins`, switch on Assign, Policy, User Notes and
-    Gamification.
+35. Admin: `/admin/plugins`, switch on Assign, Policy, User Notes,
+    Gamification and Post Voting.
 36. Admin: New Category from `/categories` with the Support and Ideas
     types ticked (Solved and Topic Voting for that category); it opens
     with the Votes and My Votes lists.
@@ -166,10 +168,14 @@ default as in Discourse; step 35 turns on the others the steps use.
 42. Moderator: User notes on `user0`'s profile; add a note, staff only.
 43. Admin: `/admin/plugins/discourse-gamification/leaderboards`,
     Recalculate scores (last 10 days), then `/leaderboard` with its podium.
+44. Member: New Topic, the caret on the composer's title (the composer
+    actions menu), Toggle post voting: the title says Create post voting
+    topic; post it, and the question draws its vote controls; Reply
+    answers.
 
 ## Rehearsal
 
-`scripts/demo-rehearsal` walks the 43 steps in Chromium as the presenter
+`scripts/demo-rehearsal` walks the 44 steps in Chromium as the presenter
 does, by clicking and typing, one browser context per persona (Member and
 Second member stay open together for the live updates). Each step records
 ok, fail or skipped (a step that needs an earlier step's outcome), how long
@@ -203,7 +209,7 @@ step. Warnings (4xx answers, the htmx SSE stream's `[object Event]`
 console error on every navigation away) are listed but don't fail a step.
 `--only 18,19` runs some steps; the rest are skipped, and a step that
 needs a skipped one (19 to 26 need 18's channel, 20 to 22 also 19's
-thread, 37 to 41 need 36's category and 37's question, 40 to 43 need 35's
+thread, 37 to 41 need 36's category and 37's question, 40 to 44 need 35's
 plugins) is skipped too.
 
 It can run again on the same database. What it makes is labelled
@@ -235,8 +241,7 @@ Known gaps that refuse with a "not ported yet" error or misbehave:
 - Pinning from the topic wrench (194c) and most post admin actions (194d).
 - Site setting types beyond lists (164b-h): uploads, objects, regex,
   dates.
-- The composer's rich editor (196) and its actions menu: no post voting
-  topic from the composer (discourse-post-voting's toggle), no Build Poll.
+- The composer's rich editor (196).
 - Category group moderation (149).
 - Pinned chat messages sit behind the hidden `chat_pinned_messages`
   setting, and My threads (the drawer footer's item, the sidebar's

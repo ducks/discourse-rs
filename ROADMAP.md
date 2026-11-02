@@ -3554,6 +3554,15 @@ route table has been made, so this list may be short.
     Columns modal (74), BookmarkModal (editing a bookmark from the
     bookmarks tab, 193c), the ForgotPassword modal a password
     reset code opens (from the security tab, 193e). Split when started
+    196a. ~~`feat/composer-actions-menu`~~ (done): the composer's actions
+    menu switches between replies, linked topics and private messages,
+    with whisper, do-not-bump and unlisted toggles and post voting topics.
+    Posts#create handles those flags with the viewer's permissions and
+    keeps whispers out of public topic counts and bumps. The toolbar's
+    poll builder inserts regular, multiple, number and ranked-choice
+    polls. Tests: composer_actions.rs and browser/composer-actions.spec.js.
+    Rich text and the remaining client work stay in 196; poll builder
+    follow-ups stay in 229.
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
     status:solved and status:unsolved; the topic_ids and state list
@@ -5638,14 +5647,12 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     open with their confirm (toggleStatus, with the on_close refresh)
     and the breakdown modal over /polls/grouped_poll_results with
     per-group pies, poll-breakdown.scss (already in poll.css).
-229. `feat/poll-builder` M: the Build Poll modal from the composer's
-    options menu (composer_view.rs:280-285 marks it not ported): the type
-    tabs, title, options editor with its count help, min, max and step
-    validation, results visibility, public defaulting to
-    poll_default_public, bar or pie, the groups chooser, automatic close,
-    dynamic, Insert as BBCode; the menu's condition gains
-    pm_with_non_human_user (html.rs:1156). The rich editor's node view
-    follows 196
+229. `feat/poll-builder` M: the markdown builder shipped in 196a:
+    types, title, options and validation, min/max/step, results visibility,
+    public default, chart type, groups, automatic close, dynamic options
+    and BBCode insertion. Left: Discourse's shared group and date/time
+    widgets instead of native controls, the menu's pm_with_non_human_user
+    condition, and the rich editor's node view after 196.
 230. `feat/poll-rest` M: poll's server leftovers: reduce_cooked in emails
     (the options without ids, the link_to_poll link, polls of trashed
     posts dropped; email/notification.rs:901-945 passes the raw widget

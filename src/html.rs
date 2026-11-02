@@ -1371,6 +1371,61 @@ impl Site {
             crate::plugins::templates::view::add_popup_option(&mut popup_options);
         }
         let unported_popup = crate::composer_view::unported_popup_plugins(settings)?;
+        // discourse-post-voting's category defaults, for the categories the
+        // chooser lists.
+        let post_voting = if crate::plugins::post_voting::enabled(settings)? {
+            let fields = crate::plugins::post_voting::category_fields(&mut *conn, &allowed).await?;
+            let on = |id: i32, name: &str| {
+                fields
+                    .get(&(id, name.to_string()))
+                    .and_then(|v| crate::ruby::cast_boolean(v.as_deref()))
+                    == Some(true)
+            };
+            let pick = |name: &str| -> Vec<i64> {
+                allowed
+                    .iter()
+                    .filter(|id| on(**id, name))
+                    .map(|id| i64::from(*id))
+                    .collect()
+            };
+            Some((
+                pick(crate::plugins::post_voting::CREATE_AS_POST_VOTING_DEFAULT),
+                pick(crate::plugins::post_voting::ONLY_POST_VOTING_IN_THIS_CATEGORY),
+            ))
+        } else {
+            None
+        };
+        let actions = crate::composer_view::ActionsUi {
+            can_create_topic: self.chrome.can_create_topic,
+            can_send_private_messages: guardian.can_send_private_messages(settings)?,
+            staff: guardian.is_staff(),
+            can_skip_bump: guardian.can_skip_bump(),
+            whisperer: guardian.is_whisperer(settings)?,
+            // SiteSerializer#shared_drafts_category_id
+            shared_drafts: guardian.can_see_shared_draft(settings)?
+                && settings.get("shared_drafts_category")?.presence().is_some(),
+            prioritize_username: settings.get("prioritize_username_in_ux")?.truthy(),
+            post_voting,
+        };
+        // discourse-poll's builder, behind its options menu item.
+        let poll_builder = if popup_options.iter().any(|o| o.name == "poll") {
+            let visible = crate::groups::visible_groups_where(guardian, "groups");
+            let groups: Vec<String> = sqlx::query_scalar(&format!(
+                "SELECT name FROM groups WHERE id > 0 AND {visible} ORDER BY name ASC"
+            ))
+            .fetch_all(&mut *conn)
+            .await?;
+            Some(crate::composer_view::PollBuilderUi {
+                src: crate::assets::url(&self.base_path, "poll-builder.js"),
+                max_options: settings.get("poll_maximum_options")?.to_i(),
+                default_public: settings.get("poll_default_public")?.truthy(),
+                staff: guardian.is_staff(),
+                groups,
+                local_dates: crate::plugins::local_dates::enabled(settings)?,
+            })
+        } else {
+            None
+        };
         let html = crate::composer_view::render(
             &list,
             &chooser,
@@ -1409,6 +1464,8 @@ impl Site {
                     // site.can_tag_pms
                     can_tag_pms: guardian.can_tag_pms(settings)?,
                 },
+                actions,
+                poll_builder,
             },
         );
         self.categories = Some(categories);

@@ -6,9 +6,7 @@
 //! data attributes) and posts through /posts, with the tag chooser
 //! (MiniTagChooser) for a member who may tag topics.
 //!
-//! Not ported yet: the preview (Rust as WASM, next), drafts, uploads,
-//! the heading, emoji and options menus, the composer actions menu and the
-//! rich text editor.
+//! Not ported yet: the heading and emoji menus and the rich text editor.
 
 use std::collections::HashMap;
 
@@ -307,6 +305,7 @@ pub fn popup_options(
     }
     if on("poll_enabled")? && can_create_poll {
         out.push(PopupOption {
+            ported: true,
             named: false,
             ..option("poll", "chart-bar", "poll.ui_builder.title")
         });
@@ -482,6 +481,173 @@ pub struct RouteData {
     pub dialog_src: String,
     pub dialog_strings: String,
     pub pm: PmUi,
+    pub actions: ActionsUi,
+    /// discourse-poll's builder, when the options menu offers it.
+    pub poll_builder: Option<PollBuilderUi>,
+}
+
+/// What static/js/poll-builder.js (PollUiBuilderModal) is drawn with.
+pub struct PollBuilderUi {
+    pub src: String,
+    pub max_options: i64,
+    pub default_public: bool,
+    pub staff: bool,
+    /// `site.groups` but everyone, by name.
+    pub groups: Vec<String>,
+    /// discourse_local_dates_enabled: mod+Shift+. in an option.
+    pub local_dates: bool,
+}
+
+const POLL_BUILDER_STRINGS: &[&str] = &[
+    "poll.ui_builder.title",
+    "poll.ui_builder.insert",
+    "poll.ui_builder.help.options_min_count",
+    "poll.ui_builder.help.options_max_count",
+    "poll.ui_builder.help.invalid_min_value",
+    "poll.ui_builder.help.invalid_max_value",
+    "poll.ui_builder.help.invalid_values",
+    "poll.ui_builder.help.min_step_value",
+    "poll.ui_builder.poll_type.regular",
+    "poll.ui_builder.poll_type.multiple",
+    "poll.ui_builder.poll_type.ranked_choice",
+    "poll.ui_builder.poll_type.number",
+    "poll.ui_builder.poll_result.label",
+    "poll.ui_builder.poll_result.always",
+    "poll.ui_builder.poll_result.vote",
+    "poll.ui_builder.poll_result.closed",
+    "poll.ui_builder.poll_result.staff",
+    "poll.ui_builder.poll_groups.label",
+    "poll.ui_builder.poll_chart_type.label",
+    "poll.ui_builder.poll_chart_type.bar",
+    "poll.ui_builder.poll_chart_type.pie",
+    "poll.ui_builder.poll_config.max",
+    "poll.ui_builder.poll_config.min",
+    "poll.ui_builder.poll_config.step",
+    "poll.ui_builder.poll_public.label",
+    "poll.ui_builder.poll_dynamic.label",
+    "poll.ui_builder.poll_title.label",
+    "poll.ui_builder.poll_options.label",
+    "poll.ui_builder.poll_options.add",
+    "poll.ui_builder.automatic_close.label",
+    "advanced_mode_toggle.simple_mode",
+    "advanced_mode_toggle.advanced_mode",
+    "cancel",
+];
+
+/// `data-poll-builder` for composer.js.
+fn poll_builder_data(list: &ListContext, builder: &PollBuilderUi) -> String {
+    let strings: serde_json::Map<String, serde_json::Value> = POLL_BUILDER_STRINGS
+        .iter()
+        .map(|key| ((*key).to_string(), t(list, key).into()))
+        .collect();
+    let data = serde_json::json!({
+        "src": builder.src,
+        "maxOptions": builder.max_options,
+        "defaultPublic": builder.default_public,
+        "staff": builder.staff,
+        "groups": builder.groups,
+        "localDates": builder.local_dates,
+        "strings": strings,
+    });
+    format!(" data-poll-builder=\"{}\"", escape(&data.to_string()))
+}
+
+/// What the composer actions menu (ComposerActions, a DMenu on the
+/// composer's title, with ComposerActionItemBuilder's items) needs of the
+/// member and the site, and of discourse-post-voting's composer actions.
+pub struct ActionsUi {
+    pub can_create_topic: bool,
+    pub can_send_private_messages: bool,
+    pub staff: bool,
+    /// `canToggleNoBump`: staff or trust level 4.
+    pub can_skip_bump: bool,
+    /// `currentUser.whisperer`
+    pub whisperer: bool,
+    /// `site.shared_drafts_category_id` is sent to this member.
+    pub shared_drafts: bool,
+    /// prioritize_username_in_ux, for a post's display name.
+    pub prioritize_username: bool,
+    /// discourse-post-voting, when enabled: the categories whose new topics
+    /// default to post voting, and those that only allow it.
+    pub post_voting: Option<(Vec<i64>, Vec<i64>)>,
+}
+
+/// The strings composer.js draws the menu, its trigger and the whisper
+/// indicator with (js.* keys).
+const ACTIONS_STRINGS: &[&str] = &[
+    "composer.composer_actions.reply_to_post.label",
+    "composer.composer_actions.reply_to_post.desc",
+    "composer.composer_actions.reply_as_new_topic.label",
+    "composer.composer_actions.reply_as_new_topic.desc",
+    "composer.composer_actions.reply_as_new_topic.confirm",
+    "composer.composer_actions.reply_as_new_group_message.label",
+    "composer.composer_actions.reply_as_new_group_message.desc",
+    "composer.composer_actions.reply_to_topic.label",
+    "composer.composer_actions.reply_to_topic.desc",
+    "composer.composer_actions.reply_to_topic.trigger",
+    "composer.composer_actions.reply_to_message.label",
+    "composer.composer_actions.reply_to_message.desc",
+    "composer.composer_actions.reply_to_message.trigger",
+    "composer.composer_actions.toggle_whisper.label",
+    "composer.composer_actions.toggle_whisper.desc",
+    "composer.composer_actions.create_topic.label",
+    "composer.composer_actions.create_topic.desc",
+    "composer.composer_actions.create_personal_message.label",
+    "composer.composer_actions.create_personal_message.desc",
+    "composer.composer_actions.shared_draft.label",
+    "composer.composer_actions.shared_draft.desc",
+    "composer.composer_actions.toggle_topic_bump.label",
+    "composer.composer_actions.toggle_topic_bump.desc",
+    "composer.composer_actions.toggle_unlisted.label",
+    "composer.composer_actions.toggle_unlisted.desc",
+    "composer.composer_actions.no_actions_available",
+    "composer.composer_actions.unknown_user",
+    "composer.whisper_indicator.public",
+    "composer.whisper_indicator.whispering",
+    "composer.create_whisper",
+    "composer.ok_proceed",
+    "composer.unlist",
+    "post.continue_discussion",
+    "post.post_number",
+];
+
+/// discourse-post-voting's composer strings.
+const POST_VOTING_STRINGS: &[&str] = &[
+    "composer.create_post_voting.label",
+    "composer.composer_actions.create_as_post_voting.label",
+    "composer.composer_actions.create_as_post_voting.desc",
+    "composer.composer_actions.remove_as_post_voting.label",
+    "composer.composer_actions.remove_as_post_voting.desc",
+    "post_voting.topic.answer.label",
+];
+
+/// The menu's data for composer.js (`data-composer-actions`).
+fn actions_data(list: &ListContext, actions: &ActionsUi) -> String {
+    let mut strings = serde_json::Map::new();
+    let keys = ACTIONS_STRINGS.iter().chain(
+        actions
+            .post_voting
+            .as_ref()
+            .map_or(&[][..], |_| POST_VOTING_STRINGS)
+            .iter(),
+    );
+    for key in keys {
+        strings.insert((*key).to_string(), t(list, key).into());
+    }
+    let data = serde_json::json!({
+        "canCreateTopic": actions.can_create_topic,
+        "canSendPrivateMessages": actions.can_send_private_messages,
+        "staff": actions.staff,
+        "canSkipBump": actions.can_skip_bump,
+        "whisperer": actions.whisperer,
+        "sharedDrafts": actions.shared_drafts,
+        "prioritizeUsername": actions.prioritize_username,
+        "postVoting": actions.post_voting.as_ref().map(|(default, only)| {
+            serde_json::json!({ "defaultCategories": default, "onlyCategories": only })
+        }),
+        "strings": strings,
+    });
+    escape(&data.to_string())
 }
 
 /// What the message composer (the composer's privateMessage action) needs
@@ -737,7 +903,11 @@ pub fn render(
             escape(&t(list, "composer.details_text")),
             escape(&t(list, "footnote.title")),
             escape(&t(list, "composer.spoiler_text")),
-        )
+        ) + &route
+            .poll_builder
+            .as_ref()
+            .map(|b| poll_builder_data(list, b))
+            .unwrap_or_default()
     } else {
         String::new()
     };
@@ -770,7 +940,7 @@ pub fn render(
         ),
     );
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data}{route_data}{pm_data}{save_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" data-pointer-drag=\"none\" data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\">{user_selector}<div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data}{route_data}{pm_data}{save_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" data-pointer-drag=\"none\" data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger composer-actions-trigger btn-flat btn-icon-text composer-actions\" data-trigger=\"\" type=\"button\" data-composer-actions=\"{actions_data}\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\">{user_selector}<div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -828,6 +998,7 @@ pub fn render(
             .map(|t| tag_chooser(list, t, selected.map(|c| c.id)))
             .unwrap_or_default(),
         user_selector = user_selector(list, &route.pm),
+        actions_data = actions_data(list, &route.actions),
     )
 }
 

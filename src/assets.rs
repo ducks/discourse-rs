@@ -515,6 +515,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("poll.js", JS, include_str!("../static/js/poll.js")),
     (
+        "poll-builder.js",
+        JS,
+        include_str!("../static/js/poll-builder.js"),
+    ),
+    (
         "checklist.js",
         JS,
         include_str!("../static/js/checklist.js"),
