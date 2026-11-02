@@ -10,6 +10,10 @@ bundled plugins. Each step names its persona. scripts/demo-rehearsal walks
 the same steps in Chromium and reports any step that errors, so run it
 before showing.
 
+Before the walkthrough, set `max_oneboxes_per_post` to 5 in the admin
+site settings. The benchmark snapshot sets it to 0, which disables the
+chat link preview shown in step 17.
+
 | Persona | Login | Role |
 |---|---|---|
 | Visitor | none | anonymous |
@@ -205,7 +209,7 @@ nix-shell --run '
 # UNICORN_PORT 8099, TMP_DIR and PUBLIC_DIR in a scratch directory and a
 # DISCOURSE_SECRET_KEY_BASE of its own, logging to a file.
 make rehearsal RS_URL=http://127.0.0.1:8099 SERVER_LOG=/path/to/server.log
-# or: scripts/demo-rehearsal --url http://127.0.0.1:8099 --out <new dir> [--server-log <file>]
+# or: scripts/demo-rehearsal --url http://127.0.0.1:8099 --out <new dir> [--server-log <file>] [--build <commit-or-sha256>]
 ```
 
 With `--server-log` each step also lists the server's request errors (the
