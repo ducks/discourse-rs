@@ -34,6 +34,7 @@ help:
 	@echo "  make release VERSION=20260125.0.0  - Release with specific version"
 	@echo "  make release-push                  - Push main and its release tag (after a failed push)"
 	@echo "  make build                         - Build release binary"
+	@echo "  make frontend FRONTEND_OUTPUT=DIR  - Package JS/CSS into a new directory without Cargo"
 	@echo "  make test                          - Run tests (needs make db-test once)"
 	@echo "  make parity-test                   - Run the Rails comparison tests (slow)"
 	@echo "  make browser-test                  - Run the Playwright suite in tests/browser (not in lint)"

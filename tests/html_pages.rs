@@ -368,6 +368,25 @@ async fn every_asset_is_served() {
     }
 }
 
+#[tokio::test]
+async fn manifest_assets_do_not_need_individual_rust_routes() {
+    let db = TestDb::new().await;
+    // This asset has an explicit /plugins route, but no explicit /assets route.
+    let (status, content_type, body) = get(
+        &db.pool,
+        "/assets/plugins/discourse-graphviz/javascripts/viz-3.0.1.js",
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(content_type, "text/javascript; charset=utf-8");
+    assert_eq!(
+        body,
+        discourse_rs::assets::text("plugins/discourse-graphviz/javascripts/viz-3.0.1.js")
+    );
+    let (status, _, _) = get(&db.pool, "/assets/not-in-the-manifest.js").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
 /// Each page says where its live updates start, as a pg-bus position, and
 /// polling from there delivers what changed after the page was read.
 #[tokio::test(flavor = "multi_thread")]

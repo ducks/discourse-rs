@@ -50,7 +50,7 @@
             playwright = import ./nix/playwright.nix { inherit pkgs; };
           in
           pkgs.mkShell {
-            buildInputs = playwright.buildInputs;
+            buildInputs = playwright.buildInputs ++ [ pkgs.python3 ];
             shellHook = playwright.shellHook;
           };
       });
