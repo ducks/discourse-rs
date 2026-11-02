@@ -11,9 +11,9 @@ the SSRF guard refuses.
 
 Both sites allow video and audio uploads: `authorized_extensions` adds
 `mp4|mov|webm|mp3|m4a|ogg` to the defaults (a stock Discourse refuses
-them). The admin's site settings can't save a list setting yet (164), so
-it was written to `site_settings` directly, typed as Rails stores a list
-(data_type 8):
+them). These values were originally written to `site_settings` directly,
+typed as Rails stores a list (data_type 8). The admin list editor now
+supports saving them too:
 
 ```bash
 nix-shell --run "psql -d discourse_rs_demo -c \"INSERT INTO site_settings

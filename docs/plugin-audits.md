@@ -327,7 +327,7 @@ checks its rendered result; this does not close the rest of the poll audit.
 - Jobs: ClosePoll as the system user, quiet refusals (src/jobs/handlers.rs:63,1209).
 - Events: `merging_users` (src/user_merger.rs:700-709), User `has_many :poll_votes, dependent: :delete_all` (src/plugins/mod.rs:239), `reduce_excerpt`, gated by `poll_enabled` (src/excerpt.rs:238-246), `in:polls` advanced filter and its search-menu suggestion (src/search/advanced.rs:185; src/search_menu_view.rs:1067).
 - Settings: all nine from plugin_settings.yml; none has a change handler in Rails. Admin plugin icon `chart-bar` (src/admin_view.rs:175). English server and client locales loaded (src/i18n.rs:25-27,75-76).
-- Composer options menu lists "Build Poll" for staff or poll_create_allowed_groups (src/composer_view.rs:280-285; src/html.rs:1118), but as unported (see UI).
+- Composer options menu lists "Build Poll" for staff or poll_create_allowed_groups (src/composer/view.rs:280-285; src/html.rs:1118), but as unported (see UI).
 
 ### Gaps
 **plugin.rb**
@@ -371,7 +371,7 @@ checks its rendered result; this does not close the rest of the poll audit.
 - Export results to CSV through discourse-data-explorer's `/admin/plugins/discourse-data-explorer/queries/:id/run.csv` with `poll_export_data_explorer_query_id` / `poll_export_ranked_choice_data_explorer_query_id` (admin, data explorer on, voters > 0). Rails: components/poll.gjs:868-900. Port: absent; data explorer is unported. [item 202]
 - Live updates: the topic controller subscribes to `/polls/<topic_id>` and swaps the post's polls; the port publishes but nothing subscribes. Rails: initializers/extend-for-poll.gjs:63-92. Port: absent.
 - Anonymous click: deferAnonymousAction("vote_poll") for single choice, login modal for multiple/ranked. Rails: components/poll.gjs:595-609. Port: absent (see plugin.rb gap).
-- Poll builder modal from the composer's options menu: type tabs (regular, multiple, number, ranked choice), title, options editor with add/remove and min/max count help, min/max/step with validation help, results visibility (always, on vote, on close, staff), public toggle defaulting to `poll_default_public`, chart type bar/pie, groups chooser, automatic close date-time, dynamic toggle, Insert (BBCode into the composer). The menu item is marked unported, so the options menu treats it as not ported; its condition also lacks `composer.model.topic.pm_with_non_human_user`. Rails: components/modal/poll-ui-builder.gjs (762 lines); initializers/add-poll-ui-builder.js:6-22. Port: src/composer_view.rs:280-285 (PopupOption with `ported` false), src/html.rs:1118-1120.
+- Poll builder modal from the composer's options menu: type tabs (regular, multiple, number, ranked choice), title, options editor with add/remove and min/max count help, min/max/step with validation help, results visibility (always, on vote, on close, staff), public toggle defaulting to `poll_default_public`, chart type bar/pie, groups chooser, automatic close date-time, dynamic toggle, Insert (BBCode into the composer). The menu item is marked unported, so the options menu treats it as not ported; its condition also lacks `composer.model.topic.pm_with_non_human_user`. Rails: components/modal/poll-ui-builder.gjs (762 lines); initializers/add-poll-ui-builder.js:6-22. Port: src/composer/view.rs:280-285 (PopupOption with `ported` false), src/html.rs:1118-1120.
 - Rich editor (ProseMirror) poll extension and node view (edit an existing poll in the builder). Rails: lib/rich-editor-extension.js; components/poll-node-view.gjs. Port: absent. [item 196]
 - Poll stylesheets: poll.scss, poll-ui-builder.scss (common and desktop), poll-breakdown.scss. Rails: plugins/poll/assets/stylesheets/*. Port: static/css/cooked.css:109 (one emoji rule only).
 
@@ -659,7 +659,7 @@ Verdict: started (3 gaps)
 ### What the port has
 - Channel configs for all four prefixes (`reply`, `whisper` with the shared-draft branch, `edit` with locked/whisper/wiki/edit_all/category moderation, `translate`), matching plugin.rb's rules: src/plugins/presence/mod.rs:147-480.
 - Registered under the `discourse-presence` prefix and gated by `presence_enabled`: src/presence.rs:98-100.
-- ComposerPresenceDisplay (`before-composer-controls` outlet), TopicPresenceDisplay (`topic-above-footer-buttons` outlet, members only, `--avatar-min-height: 24px`) and ComposerPresenceManager (enter while replyDirty, KEEP_ALIVE 10s, hide_presence respected): static/js/topic-presence.js; outlets in src/composer_view.rs:476-482 and src/post_view.rs:2046-2050; composer state from static/js/composer.js:538-552.
+- ComposerPresenceDisplay (`before-composer-controls` outlet), TopicPresenceDisplay (`topic-above-footer-buttons` outlet, members only, `--avatar-min-height: 24px`) and ComposerPresenceManager (enter while replyDirty, KEEP_ALIVE 10s, hide_presence respected): static/js/topic-presence.js; outlets in src/composer/view.rs:476-482 and src/post_view.rs:2046-2050; composer state from static/js/composer.js:538-552.
 - Settings `presence_enabled`, `presence_max_users_shown` (slice in the composer display) and the strings: src/html.rs:1070-1092.
 - Admin plugin entry with the `eye` icon: src/admin_view.rs:757-763.
 - Core presence client and /presence/get, /presence/update: static/js/presence.js (SPEC_COVERAGE lists both controller actions covered).
@@ -689,7 +689,7 @@ Verdict: started (5 gaps)
 - `reduce_cooked` for emails (text becomes data-email-preview), gated: src/plugins/local_dates.rs:158-216, src/email/notification.rs:852-856.
 - `reduce_excerpt` " (UTC)", gated: src/excerpt.rs:247-254.
 - Client: applyLocalDates in posts, composer preview and chat, ranges and same-day, tooltip previews, Add to calendar with ics and the download-calendar modal, data-title default: static/js/local-dates.js.
-- Insert date modal (from/to, Pikaday, timezone combo, advanced mode with recurrence, timezones, format list from `discourse_local_dates_default_formats`, preview) and Ctrl/Cmd+Shift+. current-date shortcut: static/js/local-dates-create.js; options menu item with `far-clock` and always-visible shortcut: src/composer_view.rs:264-271; static/js/composer.js:1612-1628.
+- Insert date modal (from/to, Pikaday, timezone combo, advanced mode with recurrence, timezones, format list from `discourse_local_dates_default_formats`, preview) and Ctrl/Cmd+Shift+. current-date shortcut: static/js/local-dates-create.js; options menu item with `far-clock` and always-visible shortcut: src/composer/view.rs:264-271; static/js/composer.js:1612-1628.
 - Admin plugin entry with `far-clock`: src/admin_view.rs:674-679.
 
 ### Gaps
@@ -778,7 +778,7 @@ Verdict: started (2 gaps)
 - Markdown `[details]` with `open`, summary, the allow list: crates/markdown/src/render/bbcode.rs:261 (cooks byte-equal on the corpus per ROADMAP milestone 4).
 - Email::Styles plugin style (elided details removed, details replaced by their summary as `p`): src/email/styles.rs:378-404.
 - `reduce_cooked` (summary text plus "(click for more details)" link to the post or the site): src/email/notification.rs:833-851.
-- Options menu item (`angle-right`, `details.title`, Shift+D, applySurround with `composer.details_title` and `details_text`): src/composer_view.rs:250-256; static/js/composer.js:1598-1605.
+- Options menu item (`angle-right`, `details.title`, Shift+D, applySurround with `composer.details_title` and `details_text`): src/composer/view.rs:250-256; static/js/composer.js:1598-1605.
 - Stylesheet: static/css/discourse-details.css.
 
 ### Gaps
@@ -803,7 +803,7 @@ Verdict: started (1 gap, left to 196)
 - markdown-it-footnote port: inline `^[...]`, labelled refs, the list, allow list with the `fn`/`fnref` id rule, gated by `enable_markdown_footnotes`: crates/markdown/src/render/footnotes.rs; src/pretty_text/mod.rs:546.
 - `before_post_process_cooked` (243): back references, references and list items renamed to `footnote-ref-<post>-<n>` / `footnote-<post>-<n>` with the plugin's slicing and `to_i`, gated by `enable_markdown_footnotes`, run inside the post processor on its document: src/plugins/footnote.rs; src/pretty_text/cooked_post_processor.rs. Recorded against Rails: parity/writes/footnote/edit_post_scoped_ids.
 - Inline footnotes (DTooltip `inline-footnote`, `.inline-footnotes`), loaded when the plugin and `display_footnotes_inline` are on: static/js/inline-footnotes.js; src/html.rs:743-744.
-- Options menu item (`asterisk`, `footnote.add`, inserts `^[` + `footnote.title` + `]`, unnamed): src/composer_view.rs:257-263,632; static/js/composer.js:1606-1608.
+- Options menu item (`asterisk`, `footnote.add`, inserts `^[` + `footnote.title` + `]`, unnamed): src/composer/view.rs:257-263,632; static/js/composer.js:1606-1608.
 - Admin plugin entry with `asterisk`: src/admin_view.rs:646-651. Stylesheet: static/css/footnote.css.
 
 ### Gaps
@@ -824,7 +824,7 @@ Verdict: started (2 gaps)
 ### What the port has
 - Markdown `[spoiler]` inline and block, gated by `spoiler_enabled`: crates/markdown/src/render/bbcode.rs:262,548,849.
 - The decorator (`.spoiler` to `.spoiled`, blurred state, aria attributes, `spoiler.label.show`, click and Enter toggling, interactive-element and selection checks): static/js/spoiler-alert.js.
-- Options menu item (`wand-magic`, `spoiler.title`, show-active icon, applySurround in block mode with `composer.spoiler_text`): src/composer_view.rs:272-279; static/js/composer.js:1609-1611.
+- Options menu item (`wand-magic`, `spoiler.title`, show-active icon, applySurround in block mode with `composer.spoiler_text`): src/composer/view.rs:272-279; static/js/composer.js:1609-1611.
 - `reduce_excerpt` removes `.spoiler`, gated by `spoiler_enabled`: src/excerpt.rs:233-237. Stylesheet: static/css/spoiler-alert.css.
 
 ### Gaps
@@ -1517,7 +1517,7 @@ tooling files).
 - CheckPolicy every 6 hours (reminder notifications, the policy email for those who asked, renewals by days and intervals, expiry): src/plugins/policy/check.rs; src/jobs/mod.rs.
 - UserNotifications#policy_email with its views and unsubscribe key, user_email's path for it, PolicyEmailUnsubscriber and the unsubscribe_options connector: src/plugins/policy/email.rs; src/jobs/user_email.rs; src/email/unsubscribe.rs.
 - Report `unaccepted-policies`: src/plugins/policy/mod.rs (`report`); src/reports/mod.rs.
-- UI: the PostPolicy component in the post (accept and revoke, the user lists and their toggle, load more, settings button), the composer preview's header, the builder modal (insert from the options menu, edit from the settings button), the email preferences connector, the stylesheets: src/plugins/policy/view.rs; static/js/policy.js; static/css/discourse-policy.css; src/composer_view.rs; src/preferences_view/emails.rs. Locales are the vendored plugin yml.
+- UI: the PostPolicy component in the post (accept and revoke, the user lists and their toggle, load more, settings button), the composer preview's header, the builder modal (insert from the options menu, edit from the settings button), the email preferences connector, the stylesheets: src/plugins/policy/view.rs; static/js/policy.js; static/css/discourse-policy.css; src/composer/view.rs; src/preferences_view/emails.rs. Locales are the vendored plugin yml.
 - Tests: tests/policy.rs.
 
 ### Gaps
@@ -1710,7 +1710,7 @@ tests/plugin_graphviz.rs.
   static/vendor/viz, src/assets.rs.
 - The composer's Insert Graphviz graph (`diagram-project`, the sample graph around the
   selection); the options menu no longer refuses to open while the plugin is on:
-  src/composer_view.rs, static/js/composer.js.
+  src/composer/view.rs, static/js/composer.js.
 - Stylesheet: static/css/graphviz.css. Admin plugin entry and icon: src/admin_view.rs
   (already there).
 
@@ -1953,7 +1953,7 @@ tests/plugin_math.rs.
   htmx swaps in, through cooked.js), the composer preview and chat messages. The settings
   ride on the script tag: src/plugins/math.rs, templates/layout.html.
 - The composer's Insert Math (`square-root-variable`, Shift+M), block mode at a line's start,
-  the modal with its block toggle and required field: src/composer_view.rs,
+  the modal with its block toggle and required field: src/composer/view.rs,
   static/js/composer.js, static/js/discourse-math.js. The options menu no longer refuses
   to open while the plugin is on.
 - Stylesheets (common and chat): static/css/discourse-math.css.
