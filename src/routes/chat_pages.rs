@@ -814,6 +814,46 @@ pub async fn threads(
     .await
 }
 
+/// GET /chat/search: ChatSearchRoute (ChatRoutesSearch), its query the
+/// `q` param; with chat_search_enabled off it goes to /chat.
+pub async fn search(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(response) => return Ok(response),
+    };
+    if !settings.get("chat_search_enabled")?.truthy() {
+        return Ok(redirect(format!(
+            "{}/chat",
+            state.config.globals.relative_url_root()
+        )));
+    }
+    let query = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+        .find(|(k, _)| k == "q")
+        .map(|(_, v)| v.into_owned());
+    let content = context(&state, &mut conn, &settings, &guardian)
+        .search_route(query.as_deref())
+        .await?;
+    let title = format!("{} - ", chat_title(&state));
+    render(
+        &state,
+        &headers,
+        &mut conn,
+        &settings,
+        &guardian,
+        Active::Route("chat.search".into()),
+        title,
+        &content,
+        true,
+    )
+    .await
+}
+
 /// GET /chat/disabled
 pub async fn disabled(
     State(state): State<AppState>,

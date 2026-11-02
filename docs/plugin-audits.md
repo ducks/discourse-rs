@@ -150,7 +150,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - Direct message channels without their direct_message row, multi-valued user custom fields in DM user serialization. Port: src/plugins/chat/direct_messages.rs:63,319.
 - The channels list without a membership or without user options (src/plugins/chat/view.rs:319,322); a chat page for a message it can't load (src/plugins/chat/page.rs:126); reactions whose emoji has no image (src/plugins/chat/page.rs:1478); a web hook for a message gone before it fires (src/plugins/chat/web_hooks.rs:37); a site without its system user (src/plugins/chat/dm_groups.rs:323). Rails answers each (empty list, redirect, fallback). Port: refusals as listed.
 - Messages of deleted users (processing, editing, the summary line, reactions, replies; the notification jobs are ported), anonymous access, the separate sidebar, filtered list empty states. Webhook messages, blocks, bot changes, archive reads, slug changes, the mobile starred route and the sound preview are ported. [item 162]
-- Oneboxes, hotlinked images, lightboxes and video placeholders in messages (the rest of Chat::MessageProcessor), Jobs::Chat::PullHotlinkedImages. Rails: lib/chat/message_processor.rb; app/jobs/regular/chat/pull_hotlinked_images.rb. Port: src/plugins/chat/create.rs:816 (refusal). Message uploads are ported (create.rs, modify.rs, messages.rs, collapser.rs). [item 161]
+- ~~Oneboxes, hotlinked images, lightboxes and video placeholders in messages (the rest of Chat::MessageProcessor), Jobs::Chat::PullHotlinkedImages~~ (done, feat/chat-media-and-search: src/plugins/chat/processor.rs; the uploads' optimized_video in messages.rs). Left: downloading a hotlinked image (HotlinkedMedia.download, refused as for posts), a hotlinked upload's dominant color calculated when missing, secure uploads and a CDN in the processor (refused as in the post processor), lazy videos in the collapser (collapser.rs, the discourse-lazy-videos client is unported).
 - ~~Threads everywhere~~ (done, 160): creation, memberships, tracking, publisher targets, notifications, the summary email.
 - User status in chat serializers. [item 130]
 
@@ -176,7 +176,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 
 **Markdown**
 - [chat quote=...] transcripts in posts (chat-transcript.js) refused. Rails: plugins/chat/assets/javascripts/lib/discourse-markdown/chat-transcript.js. Port: crates/markdown/src/render/bbcode.rs:268. [item 161]
-- Oneboxes in cooked chat messages (Oneboxer cache). Port: src/plugins/chat/create.rs:747; src/plugins/chat/cook.rs header. [item 161]
+- ~~Oneboxes in cooked chat messages~~ (done, feat/chat-media-and-search: the processor oneboxes them, src/plugins/chat/processor.rs).
 
 **Emails and notifications**
 - chat_invitation notifications (invites route above). Rails: app/services/chat/invite_users_to_channel.rb. Port: absent.
@@ -221,7 +221,7 @@ Verdict: started (63 gaps)
 **UI: routes**
 - /chat/direct-messages and /chat/threads index routes, and chat_preferred_index other than channels. Rails: c/chat-route-map.js:19,22; c/routes/chat/direct-messages.js; c/routes/chat/threads.js. Port: src/routes/chat_pages.rs:200 (refusal "chat's direct messages and threads indexes"). [item 160]
 - ~~Thread routes /chat/c/:slug/:id/t, /t/:thread_id, /t/:thread_id/:message_id and /:message_id/t/:thread_id~~ (done, 160: src/routes/chat_pages.rs channel_thread; src/plugins/chat/thread_view.rs).
-- /chat/starred-channels and /chat/search routes (the mobile footer's and the sidebar's search link go there). Rails: c/chat-route-map.js:5,21; c/routes/chat/search.js; c/components/chat/routes/search.gjs. Port: the drawer draws chat.search (view.rs drawer_search_route, search_view.rs) [223c]; the full-page /chat/search is absent. [item 162]
+- /chat/starred-channels and /chat/search routes (the mobile footer's and the sidebar's search link go there). Rails: c/chat-route-map.js:5,21; c/routes/chat/search.js; c/components/chat/routes/search.gjs. Port: the drawer draws chat.search (view.rs drawer_search_route, search_view.rs) [223c]; the full-page /chat/search done (feat/chat-media-and-search: src/routes/chat_pages.rs search, view.rs search_route); /chat/starred-channels is drawn (chat_pages.rs starred_channels).
 - /chat/new-message route (the sidebar's "start a new DM" link, view.rs:681). Rails: c/chat-route-map.js:24; c/routes/chat/new-message.js. Port: absent.
 - /chat/c/:slug/:id/info, /info/members, /info/settings (the navbar title links to it, page.rs:544; browse cards link members, page.rs:1791). Rails: c/chat-route-map.js:26-33; c/components/chat/routes/channel-info*.gjs; config/routes.rb:121-123. Port: absent (404).
 - /chat/message/:messageId (ChatMessageRoute, finds the channel and redirects). Rails: c/chat-route-map.js:41; c/routes/chat-channel-legacy.js. Port: absent.
@@ -243,7 +243,7 @@ Verdict: started (63 gaps)
 - ~~Chat notices (mention_without_membership with its "invite" action).~~ (done, 224a: ChatNotices and MentionWithoutMembership in static/js/chat.js; the invite sends no message_id, as Ember's notice.data.messageId is undefined)
 - Composer mention warnings parse mentions with a word match, not the cooked message (ChatMessage#parseMentions). Rails: c/services/chat-composer-warnings-tracker.js. Port: static/js/chat.js (composerMentions).
 - The composer dropdown's GIFs button (enable_gifs, GifsModal): core's GIF picker isn't ported. Rails: c/initializers/chat-setup.js:132. Port: absent. (upload done, 161; local dates and the mobile emoji button done, 224a)
-- Message decorators missing from chat.js: GitHub onebox body and scrolling, lightbox, transcript dates. Rails: c/initializers/chat-decorators.js:18-90. Port: static/js/chat.js decorateLinks. (spoiler, hashtag icons and code block buttons done, 224a) [lightbox, oneboxes and transcripts: item 161]
+- Message decorators missing from chat.js: GitHub onebox body and scrolling (core's decorateGithubOneboxBody isn't ported for posts either), transcript dates. Rails: c/initializers/chat-decorators.js:18-90. Port: static/js/chat.js decorateLinks. (spoiler, hashtag icons and code block buttons done, 224a; lightbox done, feat/chat-media-and-search) [transcripts: item 161]
 - Webhook and bot messages (bot indicator, message blocks and their interactions, POST .../interactions unrouted). Rails: c/components/chat/message/info.gjs:115-128; c/components/chat-message/blocks/*.gjs. Port: absent. [item 162]
 - Reactions without an emoji image refuse the page. Rails: c/components/chat-message-reaction.gjs. Port: src/plugins/chat/page.rs:1478 (refusal "chat reactions without an emoji image").
 - The reaction users popover on mobile (a held reaction opening it as a modal). Rails: c/components/chat-message-reaction.gjs:40. Port: static/js/chat.js opens it on hover only.
@@ -299,7 +299,6 @@ Verdict: started (63 gaps)
 New (ROADMAP Phase 11): 215 `feat/chat-channel-settings` M, 216 `feat/chat-channel-create` M, 217 `feat/chat-moderation` L, 218 `feat/chat-message-actions` M, 219 `feat/chat-pins` S, 221 `feat/chat-admin` M, 222 `feat/chat-new-message` M, 223 `feat/chat-drawer` L, 224 `feat/chat-pane` M, 225 `feat/chat-notify-client` S. The channel list options menu and the row swipe and long press, which done item 99 left without an owner, are in 216 and 218. Earlier items: 160, 161, 162, 130, 194, 196.
 
 ### Couldn't determine
-- Whether the GitHub onebox and lightbox decorators belong to 161 (oneboxes and images in messages are refused there, so they can't show yet) or need their own work once 161 lands; listed under 161.
 - Whether 162's "the mobile footer's search and starred routes" means the full chat search (ChatSearch, GET /chat/api/search, results and filters) or only the two routes; listed under 162 for the routes, with the in-channel filter button under feat/chat-pane.
 - Whether the styleguide sections (c/components/styleguide/*.gjs, api.addStyleguideSection) matter: they need core's styleguide, which the port doesn't seem to have.
 - Whether the chat.css bundle matches every selector of the reference scss: it says it was compiled from common and desktop. Confirming that means diffing against Rails' compiled CSS, which needs a running Rails.

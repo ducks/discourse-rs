@@ -72,7 +72,11 @@ on the same 20,576-post corpus and the same PostgreSQL 18 server.
     typo, fix it from the message's "..." menu (Edit), then delete it from
     the same menu.
 17. Member: attach an image from the composer's + menu and send it; the
-    message shows it, and clicking it opens the lightbox.
+    message shows it, and clicking it opens the lightbox. Then send a
+    topic's link on a line of its own: a moment later the message redraws
+    with the topic's onebox (Second member sees it too). The sidebar's
+    "Search chat" opens full-page search: type a word from that message,
+    and its result opens the message in #General.
 18. Admin: `/chat/browse`, New channel: a name (the slug fills in), the
     General category, Enable threading; send a first message, then click
     the channel's title for its settings page (threading shown on).
@@ -205,9 +209,6 @@ Known gaps that refuse with a "not ported yet" error or misbehave:
 - The composer's rich editor (196) and its actions menu: no post voting
   topic from the composer (discourse-post-voting's toggle), no Build Poll.
 - Category group moderation (149).
-- Full-page chat search: the sidebar's "Search chat" (`/chat/search`)
-  answers 405, only the API is ported (220). The drawer's routes for
-  threads, pins, members and search are being built (223c).
 - Pinned chat messages sit behind the hidden `chat_pinned_messages`
   setting, off as in Discourse, which the admin can't switch.
 - An MP4 won't play in Playwright's Chromium (no H.264); real browsers

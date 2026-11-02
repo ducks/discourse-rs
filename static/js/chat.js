@@ -5153,6 +5153,7 @@
   var hashtagsDone = new WeakSet();
   var codeblocksDone = new WeakSet();
   var spoilersDone = new WeakSet();
+  var lightboxesDone = new WeakSet();
 
   function decorateMessages(root) {
     var codeblocks = extras(root.closest(".chat-channel[data-id]") || root).codeblockButtons === "true";
@@ -5174,6 +5175,12 @@
       if (Discourse.applySpoilers && !spoilersDone.has(cooked)) {
         spoilersDone.add(cooked);
         Discourse.applySpoilers(cooked);
+      }
+      // chat-decorators' lightbox: the images Chat::MessageProcessor
+      // marked (lightbox.js).
+      if (Discourse.lightbox && !lightboxesDone.has(cooked) && cooked.querySelector(".lightbox")) {
+        lightboxesDone.add(cooked);
+        Discourse.lightbox(cooked);
       }
     });
   }

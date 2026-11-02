@@ -2503,14 +2503,29 @@ have handlers now.
     sent to /uploads.json (upload_type chat-composer) with each upload's
     progress, removing one, sending (upload_ids[]) and editing with
     them, the staged message drawing them; tests/chat_uploads.rs and the
-    collapser's unit tests. Left refused: an upload's optimized video
-    (plugins/chat/messages.rs:370; plugins/chat/create.rs:930), a nil
+    collapser's unit tests. Left refused: ~~an upload's optimized video
+    (plugins/chat/messages.rs:370; plugins/chat/create.rs:930)~~ (done,
+    feat/chat-media-and-search), a nil
     message with upload_ids, a 500 in Rails (create.rs:289; modify.rs:345),
     lazy videos in the collapser (collapser.rs:309, they only come from
-    oneboxes)), oneboxes, images and videos in messages: the rest of
+    oneboxes)), ~~oneboxes, images and videos in messages: the rest of
     Chat::MessageProcessor (oneboxes, hotlinked images and
     Jobs::Chat::PullHotlinkedImages, lightboxes on cooked images, video
-    placeholders; plugins/chat/create.rs:816),
+    placeholders; plugins/chat/create.rs:816)~~ (done,
+    feat/chat-media-and-search: plugins/chat/processor.rs ports
+    Chat::MessageProcessor over crate::onebox::post_process (block and
+    inline oneboxes, invalidate_oneboxes), the tracked hotlinked images
+    localized and the stale rows swept, process_thumbnails,
+    post_process_videos with the optimized videos' references, and
+    add_lightbox_to_images; the job's pull-job enqueue and
+    skip_notifications as Rails nests it; Jobs::Chat::PullHotlinkedImages
+    (downloading refused as for posts); the uploads' optimized_video in
+    the serializer; chat.js lightboxing the cooked's marked images;
+    tests/chat_processor.rs and tests/browser/chat-media-search.spec.js.
+    Left: lazy videos in the collapser (discourse-lazy-videos' LazyVideo
+    and LazyIframe client, unported for posts too), chat's own local
+    oneboxes of channels and messages (Chat::OneboxHandler, refused in
+    onebox/mod.rs), HotlinkedMedia.download),
     ~~chat message bookmarks~~ (done, fix/chat-bookmarks: chat's registered
     bookmarkable, Chat::MessageBookmarkable, in plugins/chat/bookmarks.rs:
     its list query and search on /u/:username/bookmarks.json, the
@@ -5278,8 +5293,14 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     DConditionalLoadingSpinner's markup (core's frontend isn't in the
     vendored ref: drawn as a sentinel div and loading-container), the
     "chat.deleted_user" label core's locale lacks, the thread pane's
-    plugin outlet (chat-thread-navbar-actions), and the full-page
-    /chat/search route (162)
+    plugin outlet (chat-thread-navbar-actions), and ~~the full-page
+    /chat/search route (162)~~ (done, feat/chat-media-and-search:
+    ChatSearchRoute and ChatRoutesSearch in chat_pages::search and
+    view.rs search_route, ChatSearch with enableQueryParams, its `q`
+    param kept in the address by chat-search.js, a result opening its
+    message full page, the sidebar link active, chat_search_enabled off
+    going to /chat; tests/chat_search.rs and
+    tests/browser/chat-media-search.spec.js)
     223d. ~~`fix/chat-drawer-history`~~ (done) S: the browser's back and
     forward run the chat route's beforeModel, activate and deactivate in
     chat-drawer.js on htmx:historyCacheMiss (the restore skips

@@ -122,7 +122,7 @@ async fn pull(
 
 /// `Discourse.base_url`, `Discourse.asset_host` and external_emoji_url,
 /// normalized: the prefixes of media this site serves.
-fn local_bases(state: &AppState, s: &SiteSettings) -> Result<Vec<String>, AppError> {
+pub(crate) fn local_bases(state: &AppState, s: &SiteSettings) -> Result<Vec<String>, AppError> {
     let urls = Urls {
         config: &state.config,
         settings: s,
@@ -195,7 +195,7 @@ async fn should_download_image(
 /// `Upload.secure_uploads_url?(url)`: a path the uploads#show_secure
 /// route (or its deprecated secure-media-uploads form) takes, of a
 /// supported media file.
-fn secure_uploads_url(url: &str) -> bool {
+pub(crate) fn secure_uploads_url(url: &str) -> bool {
     let Some(uri) = RubyUri::parse(url) else {
         return false;
     };
@@ -207,7 +207,7 @@ fn secure_uploads_url(url: &str) -> bool {
 /// images, under download_remote_images_threshold percent of the
 /// uploads' disk free turns the downloads off, logged by the system user,
 /// and the site contact is told. Whether it did.
-async fn disable_if_low_on_disk_space(
+pub(crate) async fn disable_if_low_on_disk_space(
     state: &AppState,
     conn: &mut PgConnection,
     s: &SiteSettings,

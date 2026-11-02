@@ -1387,6 +1387,50 @@ pub fn has_oneboxes(html: &str, max_oneboxes: i64) -> bool {
     false
 }
 
+/// `invalidate_oneboxes: true` for the links `post_process_oneboxes`
+/// would onebox (within the limit): Oneboxer.onebox's `invalidate(url)`
+/// for a block onebox, and for an inline one the cached title
+/// InlineOneboxer.lookup's `invalidate:` reads past and writes again.
+pub async fn invalidate_marked(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    html: &str,
+) -> Result<(), AppError> {
+    let (links, existing): (Vec<(Option<String>, bool)>, i64) = {
+        let dom = parse(html);
+        let (links, existing) = marked_links(&dom);
+        let links = links
+            .iter()
+            .map(|e| {
+                (
+                    attr(e, "href").filter(|h| !h.is_empty()),
+                    attr(e, "class").as_deref() == Some("onebox"),
+                )
+            })
+            .collect();
+        (links, existing)
+    };
+    let locale = onebox_locale(settings)?;
+    let mut limit = settings.get("max_oneboxes_per_post")?.to_i() - existing;
+    let mut seen: Vec<(String, bool)> = Vec::new();
+    for (href, is_onebox) in links {
+        let Some(url) = href else { continue };
+        let key = (url, is_onebox);
+        if limit <= 0 && !seen.contains(&key) {
+            continue;
+        }
+        limit -= 1;
+        if is_onebox {
+            external::invalidate(conn, &key.0).await?;
+        } else {
+            crate::owned_schema::cached_del(conn, &format!("inline_onebox:{locale}:{}", key.0))
+                .await?;
+        }
+        seen.push(key);
+    }
+    Ok(())
+}
+
 /// `post_process_oneboxes` up to the image pass: each marked link,
 /// within `max_oneboxes_per_post`.
 pub async fn post_process(
