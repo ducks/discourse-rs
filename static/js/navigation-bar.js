@@ -130,7 +130,11 @@
       retry.type = "button";
       retry.className = "btn";
       retry.textContent = "Retry";
-      retry.addEventListener("click", function () { loadBreadcrumb(drop); });
+      retry.addEventListener("click", function (event) {
+        // Loading replaces this button before the outside-click handler runs.
+        event.stopPropagation();
+        loadBreadcrumb(drop);
+      });
       body.appendChild(retry);
     } finally {
       delete drop.dataset.loading;
