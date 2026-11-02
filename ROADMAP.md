@@ -22,6 +22,14 @@ chat media and full-page search, and composer actions with the markdown
 poll builder (196a) have merged. The committed browser suite exercises
 these paths as well as navigation and live updates.
 
+The November 1 integration passed 5,386 Rust tests (5 existing skips) and
+70 browser tests. A subsequent chat attachment focus fix passed 14 focused
+browser tests, including a new regression through the file picker and
+lightbox. The final debug and optimized builds both passed all 44 demo
+rehearsal steps with no failures or skips. Runtime source is at 1819a61f;
+the local release report is
+`tmp/rehearsal/release-20261101-focus/report/index.html`.
+
 Remaining chat follow-ups include thread tracking/live updates (160b),
 drawer details (223e), GIFs (224b) and further reviewable cases (148b).
 Performance item 285 is low priority. Full parity remains the long-term
