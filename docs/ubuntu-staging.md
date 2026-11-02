@@ -14,17 +14,20 @@ of this deployed binary.
 
 ## Access
 
-Caddy requires HTTP Basic authentication before any forum request. The
-forum additionally requires login and is invite-only. HTTPS is automatic;
+The extra Caddy password prompt was removed at Jake's request. The forum
+requires login and is invite-only. HTTPS is automatic;
 only SSH and the web proxy listen publicly. The app binds to
 127.0.0.1:8080 and PostgreSQL uses a local Unix socket.
 
 The local credential file is
 `~/.local/state/discourse-rs/staging-credentials.json` (0600). It contains
-the staging gate credentials and the dedicated `jake` administrator's
-credentials. The server copy is
+the dedicated `jake` administrator's credentials. The server copy is
 `/root/discourse-rs-staging-credentials.json`. Keep both out of Git.
-The seeded test users remain available behind the staging gate.
+A regular `guest` account is active at trust level 1, has no admin or
+moderator privileges, and follows the three seeded chat channels. Its
+credentials are in `~/.local/state/discourse-rs/guest-credentials.json`
+(0600); the server copy is `/root/discourse-rs-guest-credentials.json`.
+The seeded test users also remain available.
 
 The Name.com A record for `discourse.gnarlyvoid.com` is 265960772, TTL 300.
 Its previous value was 159.223.206.131. Other DNS records, `yapper.forum`,
@@ -57,7 +60,7 @@ Staging request limits are 1,000 per IP per 10 seconds and 3,000 per minute,
 with the separate asset burst limit set to 2,000 per 10 seconds.
 The defaults rejected ordinary page loads because static asset and avatar
 requests count toward the limit. Asset handling deserves a separate
-production follow-up; staging retains the access gate and rate limiting.
+production follow-up; staging retains forum login requirements and rate limiting.
 
 ## Data
 
@@ -91,11 +94,13 @@ The deployed HTTPS browser check passed login as `jake`, browsing the
 large topic list, creating a topic through the composer, joining the
 seeded channels, a chat message arriving live in a second user's browser,
 a two-way direct conversation, and opening admin. No uncaught page errors
-were reported. Public requests without the staging credentials return 401,
-and certificate verification succeeds.
+were reported. After removing the extra gate, `/login` returns 200 and anonymous
+`/latest.json` returns 403. Certificate verification succeeds.
 
 The logged-out login page's SVG sprite request is incorrectly gated by
 the app and redirected to an HTTP login URL, which the browser blocks.
 Login itself and the authenticated workflows passed. Follow up on the
-SVG route's login exemption and scheme-aware redirects before removing
-the staging gate or treating this as production hosting.
+SVG route's login exemption and scheme-aware redirects before treating
+this as production hosting. The same login gate currently blocks anonymous
+invite redemption. Guest provisioning used the account CLI followed by the
+normal admin-revocation endpoint, and its regular-user login was verified.
