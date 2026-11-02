@@ -97,11 +97,8 @@
     }
     title.placeholder = pm ? data.labelTitleMessage : titlePlaceholder;
     title.setAttribute("aria-label", title.placeholder);
-    // A reply in a message: the action names the message and saves as one
-    // (saveLabel and saveIcon).
-    var inMessage = mode === "reply" && document.body.classList.contains("archetype-private_message");
-    actionButton.innerHTML = inMessage ? data.actionReplyMessage : data["action" + modeName(mode)];
-    submit.innerHTML = inMessage ? data.submitPrivateMessage : data["submit" + modeName(mode)];
+    // The actions trigger and the save button (saveLabel and saveIcon).
+    renderActions();
   }
 
   // The mode as the data attributes name it.
@@ -182,6 +179,9 @@
       }
     } else {
       d.reply_to_post_number = s.replyTo ? parseInt(s.replyTo, 10) : null;
+      if (s.whisper !== undefined) {
+        d.whisper = !!s.whisper;
+      }
     }
     return d;
   }
@@ -465,6 +465,10 @@
       } else if ("reply_to_post_number" in draft) {
         s.replyTo = draft.reply_to_post_number;
       }
+      if (s.mode === "reply" && typeof draft.whisper === "boolean") {
+        s.whisper = draft.whisper;
+        renderActions();
+      }
       return Promise.resolve(draft.reply || "");
     }
     return Promise.resolve("");
@@ -507,12 +511,15 @@
       var where = document.querySelector('template.reply-where-topic[data-topic-id="' + opts.topicId + '"]');
       s.whereHtml = where ? where.innerHTML : null;
     }
+    // The actions menu's model: the topic and post (loaded for a reply),
+    // what the composer was switched from (the snapshot) and the toggles.
+    s.actionTopic = opts.actionTopic || null;
+    s.actionPost = opts.actionPost || null;
+    s.snapshot = opts.snapshot || null;
+    s.noBump = !!opts.noBump;
+    s.unlistTopic = !!opts.unlistTopic;
     setMode(opts.mode);
     applyDiscardIcon(opts.mode);
-    if (opts.mode === "reply" && opts.replyToUsername) {
-      actionButton.querySelector(".d-button-label").textContent =
-        opts.replyToUsername;
-    }
     textarea.value = "";
     title.value = "";
     showError("");
@@ -552,20 +559,37 @@
     } else if (opts.mode === "private-message") {
       s.draftKey = opts.draftKey || "new_private_message_" + Date.now();
     } else {
-      s.draftKey = "topic_" + opts.topicId;
+      s.draftKey = (opts.carry && opts.draftKey) || "topic_" + opts.topicId;
     }
     s.draftSequence = opts.draftSequence || 0;
     s.loading = true;
     textarea.disabled = true;
     announce();
-    // A new topic's key is new: there is no draft to look up.
-    var lookup = creating && !resuming ? Promise.resolve(null) : fetchDraft(s.draftKey);
+    loadActionContext(s);
+    // A new topic's key is new: there is no draft to look up. A composer
+    // switched from another (the actions menu) carries its text, and
+    // takes only the key's sequence.
+    var lookup =
+      creating && !resuming
+        ? Promise.resolve(null)
+        : fetchDraft(s.draftKey).catch(function (e) {
+            if (opts.carry) {
+              return null;
+            }
+            throw e;
+          });
     var prefilled = creating && !resuming && Boolean(opts.title || opts.body);
     // Editing a first post: the topic's title, category and tags, as
     // the topic model holds them in Ember.
     var topicLoad = s.firstPost ? loadTopic(s) : Promise.resolve();
     Promise.all([lookup, topicLoad])
       .then(function (results) {
+        if (opts.carry) {
+          if (results[0]) {
+            s.draftSequence = results[0].sequence;
+          }
+          return opts.reply || "";
+        }
         // The new-topic route's topicBody.
         if (creating && !resuming && opts.body) {
           return opts.body;
@@ -627,6 +651,7 @@
     root.style.removeProperty("--composer-height");
     syncPreviewClass();
     state = null;
+    renderActions();
     announce();
   }
 
@@ -1578,6 +1603,12 @@
     chooser.querySelectorAll(".category-row").forEach(function (r) {
       r.classList.toggle("is-selected", r === row);
     });
+    // discourse-post-voting's createAsPostVoting resets to the category's
+    // default.
+    if (state && state.mode === "create-topic") {
+      state.createAsPostVoting = postVotingDefault(state);
+      renderActions();
+    }
   }
 
   // A topic's category that isn't among those the chooser lists (one
@@ -2212,6 +2243,25 @@
         if (state.replyTo) {
           pairs.push(["reply_to_post_number", state.replyTo]);
         }
+        // _create_serializer's whisper and no_bump.
+        if (state.whisper) {
+          pairs.push(["whisper", "true"]);
+        }
+        if (state.noBump) {
+          pairs.push(["no_bump", "true"]);
+        }
+      }
+      if (state.mode === "create-topic") {
+        // unlist_topic, and discourse-post-voting's serializeOnCreate
+        // fields.
+        if (state.unlistTopic) {
+          pairs.push(["unlist_topic", "true"]);
+        }
+        if (actionsOpts.postVoting) {
+          var only = postVotingOnly(state);
+          pairs.push(["create_as_post_voting", String(!!state.createAsPostVoting || only)]);
+          pairs.push(["only_post_voting_in_this_category", String(only)]);
+        }
       }
       // _create_serializer's typingTime and composerTime.
       pairs.push(["typing_duration_msecs", state.typingTime || 0]);
@@ -2385,6 +2435,841 @@
       },
     });
   }
+
+  // The composer actions menu: ComposerActions, a DMenu on the composer's
+  // title whose items are ComposerActionItemBuilder's for the action
+  // (reply, create topic, message), its toggles (whisper, do not bump,
+  // unlisted) and discourse-post-voting's toggle; the reply target link
+  // and the whisper indicator beside it. What the items do is
+  // ComposerActionStateService's: the topic and post the composer was
+  // opened on are kept (its snapshot) across the switches.
+  var actionsOpts = {};
+  try {
+    actionsOpts = JSON.parse(actionButton.dataset.composerActions || "{}");
+  } catch (_) {}
+  var actionStrings = actionsOpts.strings || {};
+  var actionsMenu = null;
+  var WHISPER = 4;
+
+  function at(key, vars) {
+    var s = actionStrings[key] || key;
+    Object.keys(vars || {}).forEach(function (k) {
+      s = s.split("%{" + k + "}").join(vars[k]);
+    });
+    return s;
+  }
+
+  function mobileView() {
+    return root.classList.contains("mobile-view");
+  }
+
+  // The topic the composer replies in, as the menu reads it (the topic
+  // model in Ember).
+  function loadActionTopic(topicId) {
+    return fetchJson("/t/" + topicId + ".json")
+      .then(function (t) {
+        var details = t.details || {};
+        return {
+          id: t.id,
+          title: t.title,
+          url: base + "/t/" + (t.slug || "topic") + "/" + t.id,
+          categoryId: t.category_id,
+          privateMessage: t.archetype === "private_message",
+          postVoting: !!t.is_post_voting,
+          slowMode: (t.slow_mode_seconds || 0) > 0,
+          allowedUsers: (details.allowed_users || []).map(function (u) {
+            return u.username;
+          }),
+          allowedGroups: (details.allowed_groups || []).map(function (g) {
+            return g.name;
+          }),
+        };
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  // The post replied to.
+  function loadActionPost(topicId, postNumber) {
+    return fetchJson("/posts/by_number/" + topicId + "/" + postNumber)
+      .then(function (p) {
+        return {
+          id: p.id,
+          postNumber: p.post_number,
+          username: p.username,
+          name: p.name,
+          postType: p.post_type,
+        };
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  // Post#url (postUrl): the topic's, with the number past the first post.
+  function actionPostUrl(topic, post) {
+    return topic.url + (post.postNumber > 1 ? "/" + post.postNumber : "");
+  }
+
+  // prioritizeNameFallback
+  function postDisplayName(post) {
+    if (!post) {
+      return at("composer.composer_actions.unknown_user");
+    }
+    if (!actionsOpts.prioritizeUsername && post.name) {
+      return post.name;
+    }
+    return post.username || post.name || at("composer.composer_actions.unknown_user");
+  }
+
+  // ComposerActionStateService#remember
+  function rememberActions(s) {
+    var snap = s.snapshot || (s.snapshot = { topic: null, post: null });
+    var topic = s.actionTopic;
+    var post = s.actionPost;
+    if (topic && (!snap.topic || topic.id !== snap.topic.id)) {
+      snap.topic = topic;
+      snap.post = post;
+    }
+    if (post && (!snap.post || post.id !== snap.post.id)) {
+      snap.post = post;
+    }
+  }
+
+  // The topic and post the menu needs, loaded when a reply opens.
+  function loadActionContext(s) {
+    if (s.mode !== "reply" || !s.topicId) {
+      s.actionContext = Promise.resolve();
+      return;
+    }
+    var postNumber = parseInt(s.replyTo, 10);
+    var topic = s.actionTopic ? Promise.resolve(s.actionTopic) : loadActionTopic(s.topicId);
+    var post =
+      s.actionPost || !(postNumber > 1) ? Promise.resolve(s.actionPost || null) : loadActionPost(s.topicId, postNumber);
+    s.actionContext = Promise.all([topic, post]).then(function (found) {
+      if (state !== s) {
+        return;
+      }
+      s.actionTopic = found[0];
+      s.actionPost = found[1];
+      // Composer#open: replying to a whisper whispers.
+      if (s.whisper === undefined && s.actionPost && s.actionPost.postType === WHISPER) {
+        s.whisper = true;
+      }
+      rememberActions(s);
+      renderActions();
+    });
+  }
+
+  function postVotingOnly(s) {
+    var pv = actionsOpts.postVoting;
+    var category = chooser.querySelector("summary").dataset.value;
+    return (
+      !!pv &&
+      s.mode === "create-topic" &&
+      !!category &&
+      pv.onlyCategories.indexOf(parseInt(category, 10)) !== -1
+    );
+  }
+
+  // createAsPostVoting's defaultValue, reset when the category changes.
+  function postVotingDefault(s) {
+    var pv = actionsOpts.postVoting;
+    var category = parseInt(chooser.querySelector("summary").dataset.value, 10);
+    return (
+      !!pv && s.mode === "create-topic" && (postVotingOnly(s) || pv.defaultCategories.indexOf(category) !== -1)
+    );
+  }
+
+  function inPrivateMessage(s) {
+    if (s.mode === "private-message") {
+      return true;
+    }
+    if (s.actionTopic) {
+      return s.actionTopic.privateMessage;
+    }
+    return s.mode === "reply" && document.body.classList.contains("archetype-private_message");
+  }
+
+  // composer.canToggleWhisper, canToggleNoBump and canUnlistTopic
+  function canToggleWhisper(s) {
+    return (
+      !!actionsOpts.whisperer && s.mode === "reply" && !(s.actionPost && s.actionPost.postType === WHISPER)
+    );
+  }
+
+  function canToggleNoBump(s) {
+    return s.mode === "reply" && !!actionsOpts.canSkipBump;
+  }
+
+  function canUnlistTopic(s) {
+    return s.mode === "create-topic" && !!actionsOpts.staff;
+  }
+
+  // composer.isWhispering
+  function isWhispering(s) {
+    return (s.mode === "reply" && !!s.actionPost && s.actionPost.postType === WHISPER) || !!s.whisper;
+  }
+
+  function menuItem(id, icon, key) {
+    return {
+      id: id,
+      icon: icon,
+      name: at("composer.composer_actions." + key + ".label"),
+      description: at("composer.composer_actions." + key + ".desc"),
+    };
+  }
+
+  function toggleItem(id, cls, key, on) {
+    return {
+      id: id,
+      isToggle: true,
+      class: cls,
+      label: at("composer.composer_actions." + key + ".label"),
+      description: at("composer.composer_actions." + key + ".desc"),
+      state: !!on,
+    };
+  }
+
+  // ComposerActionItemBuilder#build, then discourse-post-voting's
+  // composer-actions-content transformer.
+  function actionItems(s) {
+    var items = [];
+    if (s.mode === "edit") {
+      return items;
+    }
+    var topic = s.actionTopic;
+    var post = s.actionPost;
+    var snap = s.snapshot || {};
+    var reply = s.mode === "reply";
+    if (s.mode === "create-topic" && actionsOpts.sharedDrafts) {
+      items.push(menuItem("shared_draft", "far-clipboard", "shared_draft"));
+    }
+    if (s.mode === "private-message" && actionsOpts.canCreateTopic) {
+      items.push(menuItem("create_topic", "far-pen-to-square", "create_topic"));
+    }
+    // replyToTopic: from a reply to a post, or a message started from a
+    // topic.
+    var replyTopic = (reply && post && topic) || (s.mode === "private-message" && snap.topic) ? topic || snap.topic : null;
+    if (replyTopic) {
+      items.push(menuItem("reply_to_topic", "share", replyTopic.privateMessage ? "reply_to_message" : "reply_to_topic"));
+    }
+    if (reply && topic) {
+      // replyToPost: back to the post after replying to the topic.
+      if (!post && snap.post && snap.topic && snap.topic.id === topic.id) {
+        items.push(
+          Object.assign(menuItem("reply_to_post", "share", "reply_to_post"), {
+            name: at("composer.composer_actions.reply_to_post.label", { postUsername: postDisplayName(snap.post) }),
+          })
+        );
+      }
+      if (!topic.privateMessage && actionsOpts.canCreateTopic) {
+        items.push(menuItem("reply_as_new_topic", "far-pen-to-square", "reply_as_new_topic"));
+      }
+      if (topic.privateMessage && (topic.allowedUsers.length > 1 || topic.allowedGroups.length > 0)) {
+        items.push(menuItem("reply_as_new_group_message", "plus", "reply_as_new_group_message"));
+      }
+    }
+    if (s.mode === "create-topic") {
+      if (snap.post && snap.topic) {
+        items.push(
+          Object.assign(menuItem("reply_to_post", "share", "reply_to_post"), {
+            name: at("composer.composer_actions.reply_to_post.label", { postUsername: postDisplayName(snap.post) }),
+          })
+        );
+      }
+      if (snap.topic) {
+        items.push(
+          menuItem("reply_to_topic", "share", snap.topic.privateMessage ? "reply_to_message" : "reply_to_topic")
+        );
+      }
+      if (actionsOpts.canSendPrivateMessages) {
+        items.push(menuItem("create_private_message", "envelope", "create_personal_message"));
+      }
+    }
+    if (canToggleWhisper(s)) {
+      items.push(toggleItem("toggle_whisper", "composer-toggle-whisper", "toggle_whisper", s.whisper));
+    }
+    if (canToggleNoBump(s)) {
+      items.push(toggleItem("toggle_topic_bump", "composer-toggle-no-bump", "toggle_topic_bump", s.noBump));
+    }
+    if (canUnlistTopic(s)) {
+      items.push(toggleItem("toggle_unlisted", "composer-toggle-unlisted", "toggle_unlisted", s.unlistTopic));
+    }
+    if (actionsOpts.postVoting && s.mode === "create-topic" && !postVotingOnly(s)) {
+      items.push(
+        menuItem("togglePostVoting", "plus", s.createAsPostVoting ? "remove_as_post_voting" : "create_as_post_voting")
+      );
+    }
+    return items;
+  }
+
+  function hasToggles(s) {
+    return canToggleWhisper(s) || canToggleNoBump(s) || canUnlistTopic(s);
+  }
+
+  // The trigger's label: discourse-post-voting's actionTitle, else the
+  // action's.
+  function actionLabel(s) {
+    if (actionsOpts.postVoting) {
+      if (s.mode === "create-topic" && (s.createAsPostVoting || postVotingOnly(s))) {
+        return at("composer.create_post_voting.label");
+      }
+      if (s.mode === "reply" && s.actionTopic && s.actionTopic.postVoting) {
+        return at("post_voting.topic.answer.label");
+      }
+    }
+    if (s.mode === "create-topic") {
+      return at("composer.composer_actions.create_topic.label");
+    }
+    if (s.mode === "private-message") {
+      return at("composer.composer_actions.create_personal_message.label");
+    }
+    if (s.actionPost || (s.replyTo && parseInt(s.replyTo, 10) > 1 && s.replyToUsername)) {
+      return s.actionPost ? postDisplayName(s.actionPost) : s.replyToUsername;
+    }
+    return inPrivateMessage(s)
+      ? at("composer.composer_actions.reply_to_message.trigger")
+      : at("composer.composer_actions.reply_to_topic.trigger");
+  }
+
+  function actionIcon(s) {
+    if (s.mode === "create-topic") {
+      return "far-pen-to-square";
+    }
+    if (s.mode === "private-message") {
+      return "envelope";
+    }
+    if (s.actionTopic && s.actionTopic.slowMode) {
+      return "hourglass-start";
+    }
+    if (s.mode === "reply" && s.whisper) {
+      return "far-eye-slash";
+    }
+    return "share";
+  }
+
+  // The save button: discourse-post-voting's saveLabel, a whisper's, a
+  // reply in a message's, else the action's (saveLabel and saveIcon).
+  function syncSubmit() {
+    var s = state;
+    if (!s) {
+      return;
+    }
+    var inMessage = s.mode === "reply" && inPrivateMessage(s);
+    var holder = document.createElement("span");
+    holder.innerHTML = inMessage ? data.submitPrivateMessage : data["submit" + modeName(s.mode)];
+    var iconEl = holder.querySelector("svg");
+    var labelEl = holder.querySelector(".d-button-label");
+    var label = null;
+    if (actionsOpts.postVoting) {
+      if (s.mode === "create-topic" && (s.createAsPostVoting || postVotingOnly(s))) {
+        label = at("composer.create_post_voting.label");
+      } else if (s.mode === "reply" && s.actionTopic && s.actionTopic.postVoting) {
+        label = at("post_voting.topic.answer.label");
+      }
+    }
+    if (isWhispering(s) && s.mode === "reply") {
+      label = label || at("composer.create_whisper");
+      if (iconEl) {
+        iconEl.outerHTML = svg("far-eye-slash");
+      }
+    }
+    if (label && labelEl) {
+      labelEl.textContent = label;
+    }
+    submit.innerHTML = holder.innerHTML;
+  }
+
+  // composer-container's indicators beside the title: unlisted, and do
+  // not bump while whispering (on a phone, by the save button).
+  function syncIndicators(s) {
+    var replyTo = control.querySelector(".reply-to");
+    replyTo.querySelectorAll(":scope > .unlist, :scope > .no-bump").forEach(function (el) {
+      el.remove();
+    });
+    var panel = control.querySelector(".submit-panel");
+    panel.querySelectorAll(":scope > .no-bump").forEach(function (el) {
+      el.remove();
+    });
+    if (!s) {
+      return;
+    }
+    var after = replyTo.querySelector(".composer-action-title");
+    if (mobileView()) {
+      if (s.noBump && s.mode === "reply") {
+        var bump = document.createElement("span");
+        bump.className = "no-bump";
+        bump.innerHTML = svg("anchor");
+        var draft = panel.querySelector("#draft-status, #file-uploading, .composer-error");
+        panel.insertBefore(bump, draft);
+      }
+      return;
+    }
+    if (s.unlistTopic && s.mode === "create-topic") {
+      var unlist = document.createElement("span");
+      unlist.className = "unlist";
+      unlist.textContent = "(" + at("composer.unlist") + ")";
+      after.after(unlist);
+      after = unlist;
+    }
+    if (isWhispering(s) && s.noBump && s.mode === "reply") {
+      var noBump = document.createElement("span");
+      noBump.className = "no-bump";
+      noBump.innerHTML = svg("anchor");
+      after.after(noBump);
+    }
+  }
+
+  // Whether the post replied to is on the screen (an IntersectionObserver,
+  // as ComposerActions watches its article).
+  var replyTargetObserver = null;
+  var replyTargetVisible = false;
+  function watchReplyTarget(s) {
+    if (replyTargetObserver) {
+      replyTargetObserver.disconnect();
+      replyTargetObserver = null;
+    }
+    replyTargetVisible = false;
+    var page = document.querySelector("#topic[data-topic-id]");
+    if (!s || !s.actionPost || !page || String(page.dataset.topicId) !== String(s.topicId)) {
+      return;
+    }
+    var article = document.querySelector('article[data-post-id="' + s.actionPost.id + '"]');
+    if (!article || !window.IntersectionObserver) {
+      return;
+    }
+    replyTargetObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        replyTargetVisible = entry.isIntersecting;
+      });
+      if (state === s) {
+        renderReplyTarget(s);
+      }
+    });
+    replyTargetObserver.observe(article);
+  }
+
+  // The reply target link: to the post (when it is not on the screen) or
+  // the topic (from another page) replied to.
+  function renderReplyTarget(s) {
+    var holder = actionButton.parentNode;
+    var old = holder.querySelector(".composer-actions-reply-target-link");
+    if (old) {
+      old.remove();
+    }
+    if (!s || s.mode !== "reply" || !s.actionTopic) {
+      return;
+    }
+    var topic = s.actionTopic;
+    var post = s.actionPost;
+    var page = document.querySelector("#topic[data-topic-id]");
+    var onTopic = !!page && String(page.dataset.topicId) === String(topic.id);
+    var show = mobileView() || (post ? !replyTargetVisible : !onTopic);
+    if (!show) {
+      return;
+    }
+    var label = post
+      ? at("post.post_number", { number: post.postNumber })
+      : onTopic && !mobileView()
+        ? null
+        : topic.title;
+    var titleText = post
+      ? at("composer.composer_actions.reply_to_post.label", { postUsername: postDisplayName(post) })
+      : at(
+          topic.privateMessage
+            ? "composer.composer_actions.reply_to_message.label"
+            : "composer.composer_actions.reply_to_topic.label"
+        );
+    var link = document.createElement("a");
+    link.className =
+      "composer-actions-reply-target-link btn btn-transparent " +
+      (label ? "btn-icon-text" : "btn-icon no-text") +
+      (mobileView() ? " btn-small" : "");
+    link.href = post ? topic.url + "/" + post.postNumber : topic.url;
+    link.title = titleText;
+    link.setAttribute("aria-label", titleText);
+    link.innerHTML = svg("link");
+    if (label) {
+      var span = document.createElement("span");
+      span.className = "d-button-label composer-actions-reply-target-link__label";
+      span.textContent = label;
+      link.appendChild(span);
+    }
+    actionButton.after(link);
+  }
+
+  // The whisper indicator: visible or whispering, a toggle of its own.
+  function renderWhisperIndicator(s) {
+    var holder = actionButton.parentNode;
+    var old = holder.querySelector(".composer-whisper-indicator");
+    if (old) {
+      old.remove();
+    }
+    if (!s || !canToggleWhisper(s)) {
+      return;
+    }
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className =
+      "btn btn-icon-text composer-whisper-indicator btn-transparent " +
+      (s.whisper ? "--whispering" : "--public") +
+      (mobileView() ? " btn-small" : "");
+    button.innerHTML =
+      svg(s.whisper ? "far-eye-slash" : "far-eye") +
+      '<span class="d-button-label"></span>';
+    button.querySelector(".d-button-label").textContent = at(
+      s.whisper ? "composer.whisper_indicator.whispering" : "composer.whisper_indicator.public"
+    );
+    button.addEventListener("click", function () {
+      if (state === s) {
+        s.whisper = !s.whisper;
+        renderActions();
+        scheduleDraft();
+      }
+    });
+    holder.appendChild(button);
+  }
+
+  // Everything the action and its toggles draw: the trigger, the reply
+  // target link, the whisper indicator, the indicators and the save
+  // button.
+  function renderActions() {
+    var s = state;
+    if (actionsMenu && actionsMenu.expanded && (!s || actionsMenu.state !== s)) {
+      actionsMenu.close({ focusTrigger: false });
+      actionsMenu = null;
+    }
+    if (!s) {
+      renderReplyTarget(null);
+      renderWhisperIndicator(null);
+      syncIndicators(null);
+      watchReplyTarget(null);
+      return;
+    }
+    if (s.mode === "edit") {
+      actionButton.innerHTML = data.actionEdit;
+    } else {
+      var content = actionItems(s).length > 0 || hasToggles(s);
+      actionButton.innerHTML =
+        svg(actionIcon(s)) +
+        '<span class="d-button-label"></span>' +
+        (content ? svg("angle-down", "composer-actions-caret") : "");
+      actionButton.querySelector(".d-button-label").textContent = actionLabel(s);
+    }
+    if (actionsMenu && actionsMenu.expanded && actionsMenu.content) {
+      var shown = actionsMenu.content.querySelector("ul.dropdown-menu");
+      if (shown) {
+        shown.outerHTML = actionsMenuHtml(s);
+      }
+    }
+    watchReplyTarget(s);
+    renderReplyTarget(s);
+    renderWhisperIndicator(s);
+    syncIndicators(s);
+    syncSubmit();
+  }
+
+  function actionsMenuHtml(s) {
+    var items = actionItems(s);
+    var html = '<ul class="dropdown-menu">';
+    items
+      .filter(function (i) {
+        return !i.isToggle;
+      })
+      .forEach(function (i) {
+        html +=
+          '<li class="dropdown-menu__item"><button class="btn no-text composer-actions-btn' +
+          (i.description ? " --with-description" : "") +
+          '" data-action-id="' + escapeHtml(i.id) + '" type="button"><div class="composer-actions-btn__icons">' +
+          svg(i.icon) +
+          '</div><div class="composer-actions-btn__texts"><span class="composer-actions-btn__label">' +
+          escapeHtml(i.name) +
+          '</span><span class="composer-actions-btn__description">' +
+          escapeHtml(i.description || "") +
+          "</span></div></button></li>";
+      });
+    var toggles = items.filter(function (i) {
+      return i.isToggle;
+    });
+    if (!items.length) {
+      html +=
+        '<div class="composer-actions-btn">' + escapeHtml(at("composer.composer_actions.no_actions_available")) + "</div>";
+    }
+    if (toggles.length) {
+      html += '<li><hr class="dropdown-menu__divider"></li><div class="composer-actions-toggles">';
+      toggles.forEach(function (i) {
+        html +=
+          '<li class="dropdown-menu__item"><div class="' + i.class +
+          ' composer-toggle-item --with-description btn" data-toggle-id="' + escapeHtml(i.id) +
+          '"><div class="composer-toggle-item__icons"><div class="d-toggle-switch"><label class="d-toggle-switch__label"><button aria-checked="' +
+          i.state + '" aria-label="' + escapeHtml(i.label) +
+          '" class="d-toggle-switch__checkbox" role="switch" type="button"></button><span class="d-toggle-switch__checkbox-slider">' +
+          (i.state ? svg("check") : "") +
+          '</span></label></div></div><div class="composer-toggle-item__texts"><span class="composer-toggle-item__label">' +
+          escapeHtml(i.label) + '</span><span class="composer-toggle-item__description">' +
+          escapeHtml(i.description) + "</span></div></div></li>";
+      });
+      html += "</div>";
+    }
+    return html + "</ul>";
+  }
+
+  // ComposerActionStateService's clearUnsupportedToggles and
+  // reapplyToggles: the toggles go with the composer the new action
+  // supports.
+  function carriedToggles(opts, from) {
+    opts.whisper = opts.mode === "reply" && from.whisper ? true : undefined;
+    opts.noBump = opts.mode === "reply" && !!from.noBump;
+    opts.unlistTopic = opts.mode === "create-topic" && !!from.unlistTopic;
+    return opts;
+  }
+
+  // _continuedFromText
+  function continuedFromText(post, topic) {
+    var url = post && topic ? actionPostUrl(topic, post) : topic && topic.url;
+    if (!url || !topic || !topic.title) {
+      return null;
+    }
+    var link = "[" + escapeExpression(topic.title) + "](" + location.protocol + "//" + location.host + url + ")";
+    return at("post.continue_discussion", { postLink: link });
+  }
+
+  // Composer#prependText with new_line, unless the text has it already.
+  function prepended(text, reply) {
+    if (!text || reply.indexOf(text) !== -1) {
+      return reply;
+    }
+    return (reply.length > 0 ? text.trim() + "\n\n" : text) + reply;
+  }
+
+  // #openComposer: the composer closed (its draft kept) and opened again
+  // on the new action with what was written.
+  function switchComposer(opts, s) {
+    var snapshot = s.snapshot;
+    carriedToggles(opts, s);
+    close();
+    opts.snapshot = snapshot;
+    open(opts);
+  }
+
+  // #replyFromExisting: the draft destroyed, then a new composer with the
+  // text, continuing from the topic or post.
+  function replyFromExisting(opts, s) {
+    var snapshot = s.snapshot || {};
+    var reply = textarea.value;
+    carriedToggles(opts, s);
+    destroyDraft(s)
+      .catch(function () {})
+      .then(function () {
+        if (state !== s) {
+          return;
+        }
+        close();
+        opts.snapshot = snapshot;
+        opts.carry = true;
+        opts.reply = prepended(continuedFromText(snapshot.post, snapshot.topic), reply);
+        open(opts);
+      });
+  }
+
+  // #switchCreate: the category, title and tags go along.
+  function switchCreate(mode, s) {
+    var category = chooser.querySelector("summary").dataset.value;
+    var max = parseInt(data.maxTitleLength, 10);
+    switchComposer(
+      {
+        mode: mode,
+        carry: true,
+        draftKey: s.draftKey,
+        draftSequence: s.draftSequence,
+        reply: textarea.value,
+        category: mode === "create-topic" ? category || null : null,
+        title: title.value.length <= max ? title.value : "",
+        tags: serializedTags().map(function (t) {
+          return t.name;
+        }),
+      },
+      s
+    );
+  }
+
+  function selectAction(id) {
+    var s = state;
+    if (!s) {
+      return;
+    }
+    rememberActions(s);
+    var snap = s.snapshot || {};
+    switch (id) {
+      case "reply_as_new_group_message":
+        replyFromExisting(
+          {
+            mode: "private-message",
+            draftKey: s.draftKey,
+            draftSequence: s.draftSequence,
+            recipients: snap.topic.allowedUsers.concat(snap.topic.allowedGroups).join(","),
+          },
+          s
+        );
+        return;
+      case "reply_as_new_topic":
+        // Draft.get("new_topic"): a saved new topic draft is overwritten.
+        fetchDraft("new_topic")
+          .catch(function () {
+            return null;
+          })
+          .then(function (found) {
+            var go = function () {
+              replyFromExisting(
+                {
+                  mode: "create-topic",
+                  draftKey: "new_topic_" + Date.now(),
+                  category: s.actionTopic && s.actionTopic.categoryId,
+                },
+                s
+              );
+            };
+            if (found && found.draft) {
+              withDialog(
+                function () {
+                  Discourse.dialog.confirm({
+                    message: at("composer.composer_actions.reply_as_new_topic.confirm"),
+                    confirmLabel: at("composer.ok_proceed"),
+                    didConfirm: go,
+                  });
+                },
+                function () {
+                  if (window.confirm(at("composer.composer_actions.reply_as_new_topic.confirm"))) {
+                    go();
+                  }
+                }
+              );
+            } else {
+              go();
+            }
+          });
+        return;
+      case "reply_to_post":
+        switchComposer(
+          {
+            mode: "reply",
+            carry: true,
+            draftKey: s.draftKey,
+            draftSequence: s.draftSequence,
+            reply: textarea.value,
+            topicId: snap.topic.id,
+            replyTo: snap.post.postNumber,
+            actionTopic: snap.topic,
+            actionPost: snap.post,
+          },
+          s
+        );
+        return;
+      case "reply_to_topic":
+        switchComposer(
+          {
+            mode: "reply",
+            carry: true,
+            draftKey: s.draftKey,
+            draftSequence: s.draftSequence,
+            reply: textarea.value,
+            topicId: snap.topic.id,
+            actionTopic: snap.topic,
+            actionPost: null,
+          },
+          s
+        );
+        return;
+      case "shared_draft":
+        unported("creating a shared draft");
+        return;
+      case "create_topic":
+        switchCreate("create-topic", s);
+        return;
+      case "create_private_message":
+        switchCreate("private-message", s);
+        return;
+      case "togglePostVoting":
+        // discourse-post-voting's composer-actions-on-select.
+        s.createAsPostVoting = !s.createAsPostVoting;
+        renderActions();
+        return;
+    }
+  }
+
+  function toggleAction(id) {
+    var s = state;
+    if (!s) {
+      return;
+    }
+    if (id === "toggle_whisper") {
+      s.whisper = !s.whisper;
+    } else if (id === "toggle_topic_bump") {
+      s.noBump = !s.noBump;
+    } else if (id === "toggle_unlisted") {
+      s.unlistTopic = !s.unlistTopic;
+    }
+    renderActions();
+    scheduleDraft();
+  }
+
+  // A press on the trigger of the open menu closes it (the menu's click
+  // outside), and the click that follows does not open it again.
+  var closingByTrigger = false;
+  actionButton.addEventListener("pointerdown", function () {
+    closingByTrigger = !!(actionsMenu && actionsMenu.expanded);
+  });
+
+  actionButton.addEventListener("click", function (event) {
+    var s = state;
+    if (!s || s.mode === "edit" || control.classList.contains("draft") || !window.Discourse || !Discourse.float) {
+      return;
+    }
+    event.stopPropagation();
+    if (closingByTrigger) {
+      closingByTrigger = false;
+      actionsMenu = null;
+      return;
+    }
+    if (actionsMenu && actionsMenu.expanded) {
+      actionsMenu.close({ focusTrigger: false });
+      actionsMenu = null;
+      return;
+    }
+    (s.actionContext || Promise.resolve()).then(function () {
+      if (state !== s || !(actionItems(s).length > 0 || hasToggles(s))) {
+        return;
+      }
+      var menu = Discourse.float.menu(actionButton, {
+        mainClass: "composer-actions composer-actions-dropdown",
+        placement: "bottom-start",
+        modalForMobile: true,
+        content: actionsMenuHtml(s),
+      });
+      menu.state = s;
+      actionsMenu = menu;
+      var content = menu.content;
+      if (!content) {
+        return;
+      }
+      content.addEventListener("click", function (e) {
+        var toggle = e.target.closest("[data-toggle-id]");
+        if (toggle) {
+          e.preventDefault();
+          toggleAction(toggle.dataset.toggleId);
+          return;
+        }
+        var item = e.target.closest("[data-action-id]");
+        if (item) {
+          menu.close({ focusTrigger: true });
+          actionsMenu = null;
+          selectAction(item.dataset.actionId);
+        }
+      });
+    });
+  });
 
   // The toolbar's options menu (ToolbarPopupMenuOptions over
   // Composer#popupMenuOptions): the items the server listed for the
@@ -2572,6 +3457,12 @@
         Discourse.mathInsert.show(textarea.value.slice(0, textarea.selectionStart), addText);
       }
     },
+    // discourse-poll's builder (static/js/poll-builder.js), loaded the
+    // first time, once the menu has closed (and given the focus back to
+    // its trigger).
+    poll: function (closing) {
+      (closing || Promise.resolve()).then(showPollBuilder);
+    },
     // discourse-policy's builder (static/js/policy.js).
     policy: function () {
       if (Discourse.policyBuilder) {
@@ -2585,6 +3476,32 @@
       }
     },
   };
+
+  function showPollBuilder() {
+    var config = {};
+    try {
+      config = JSON.parse(data.pollBuilder || "{}");
+    } catch (_) {}
+    var showBuilder = function () {
+      Discourse.pollBuilder.show(config, {
+        getText: function () {
+          return textarea.value;
+        },
+        addText: addText,
+      });
+    };
+    if (Discourse.pollBuilder) {
+      showBuilder();
+      return;
+    }
+    var script = document.createElement("script");
+    script.src = config.src;
+    script.onload = showBuilder;
+    script.onerror = function () {
+      showError("Could not load the poll builder.");
+    };
+    document.head.appendChild(script);
+  }
 
   // The options' shortcuts in the editor (mod+Shift+D, mod+Shift+.):
   // the option's shortcutAction, else its action.
@@ -2600,10 +3517,10 @@
     },
   };
 
-  function runPopupAction(item, viaShortcut) {
+  function runPopupAction(item, viaShortcut, closing) {
     var action = (viaShortcut && popupShortcuts[item.name]) || popupActions[item.name];
     if (item.ported && action) {
-      action();
+      action(closing);
     } else {
       showError(data.labelUnported + " " + item.label);
     }
@@ -2637,9 +3554,9 @@
             button
           );
           var item = popup.items.filter(popupItemShown)[index];
-          menu.close();
+          var closing = menu.close();
           if (item) {
-            runPopupAction(item, false);
+            runPopupAction(item, false, closing);
           }
         });
       }
@@ -2792,7 +3709,7 @@
     submit.disabled = saving;
     previewToggle = control.querySelector(".toggle-preview");
     if (state) {
-      submit.innerHTML = data["submit" + modeName(state.mode)];
+      renderActions();
       applyDiscardIcon(state.mode);
     }
     var toolbar = control.querySelector(".toggle-toolbar");

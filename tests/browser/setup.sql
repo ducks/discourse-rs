@@ -12,7 +12,11 @@ VALUES
   -- Chat threads: the drawer's threads route and the footer's item
   -- (223c), the thread specs' threaded channels (160a); a hidden
   -- setting the admin can't save.
-  ('chat_threads_enabled', 5, 't', now(), now())
+  ('chat_threads_enabled', 5, 't', now(), now()),
+  -- The composer actions menu's whisper toggle (staff whisper) and
+  -- discourse-post-voting's toggle.
+  ('whispers_allowed_groups', 20, '3', now(), now()),
+  ('post_voting_enabled', 5, 't', now(), now())
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
 -- user1 writes in the markdown editor (composition_mode 0), so the

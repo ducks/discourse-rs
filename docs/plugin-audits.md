@@ -309,6 +309,14 @@ New (ROADMAP Phase 11): 215 `feat/chat-channel-settings` M, 216 `feat/chat-chann
 
 Verdict: started (27 gaps)
 
+Update, 2026-11-01: the markdown composer's Build poll modal is now
+implemented by static/js/poll-builder.js (196a), including type, options,
+validation, advanced settings and BBCode insertion. The original audit
+below predates this work. Remaining builder differences include the native
+group and date/time controls in place of Discourse's shared widgets, and
+editing polls in the rich editor. Browser coverage posts a built poll and
+checks its rendered result; this does not close the rest of the poll audit.
+
 ### What the port has
 - Cooking: `[poll]` BBCode with all 13 ALLOWED_ATTRIBUTES, title heading, generated number-poll options, md5 option ids, nested polls left plain, poll-info stub, allow list (crates/markdown/src/render/poll.rs:26,117-229,231); `poll_enabled`, `poll_maximum_options` and the `js.poll.voters` label fed in (src/pretty_text/mod.rs:547-550).
 - Extract and validate on create: `Poll.extract` (outside blockquotes), PollsValidator (arguments, numbers, unique names and options, blank and missing options, maximum, multiple-choice bounds), PostValidator incl. `pm_with_non_human_user?` (src/plugins/poll/mod.rs:100-375; src/posting/create.rs:247-249,619,629).

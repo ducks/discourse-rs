@@ -150,6 +150,11 @@ impl Guardian {
             .is_some_and(|u| u.admin || u.moderator || u.staged || u.trust_level >= level)
     }
 
+    /// `can_skip_bump?`
+    pub fn can_skip_bump(&self) -> bool {
+        self.is_staff() || self.has_trust_level(4)
+    }
+
     pub fn group_ids(&self) -> &[i64] {
         self.user
             .as_ref()

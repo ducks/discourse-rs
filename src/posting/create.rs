@@ -83,6 +83,12 @@ pub struct NewPost {
     /// archive): no topic tracking, author counts, auto close, publish,
     /// events, alerts or badges; of the jobs only the post processing.
     pub import_mode: bool,
+    /// `post_type: whisper` (the composer's whisper toggle).
+    pub whisper: bool,
+    /// `no_bump`: the reply leaves the topic's bumped_at alone.
+    pub no_bump: bool,
+    /// `visible` (`unlist_topic`): a new topic created unlisted when false.
+    pub visible: Option<bool>,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -167,6 +173,8 @@ struct TopicPlan {
     tags: Option<crate::tagging::TagsParam>,
     tag_category_id: Option<i32>,
     tag_text: String,
+    /// `visible`: false for an unlisted topic.
+    visible: bool,
 }
 
 /// `BrowserDetection.device(user_agent)`
@@ -230,6 +238,7 @@ async fn regular_topic_plan(
         tags: None,
         tag_category_id: None,
         tag_text: String::new(),
+        visible: true,
     })
 }
 
@@ -270,6 +279,9 @@ pub async fn create(
     // A new private message: no category (find_category drops it), and no
     // can_create?(Topic) check (the recipients are checked instead).
     let new_pm = new_topic && args.pm_recipients.is_some();
+    if new_topic && args.whisper {
+        return Err(Unsupported("a whisper as a topic's first post").into());
+    }
 
     // TopicCreator#setup_topic_params: the category, and the guardian's
     // can_create?(Topic, category).
@@ -381,6 +393,13 @@ pub async fn create(
             )
             .await?;
             if let Some(reason) = approval.reason {
+                // The queued post's payload would carry them.
+                if args.whisper || args.no_bump || args.visible == Some(false) {
+                    return Err(Unsupported(
+                        "queueing a post with whisper, no_bump or unlist_topic",
+                    )
+                    .into());
+                }
                 if forbidden {
                     // can_create_topic_on_category? fails with
                     // js.errors.reasons.forbidden, a client string.
@@ -490,6 +509,14 @@ pub async fn create(
             },
         )
         .await?;
+        // validate_visibility: can_create_unlisted_topic? (no embed here).
+        if args.visible == Some(false)
+            && !args.skip_validations
+            && !(guardian.can_moderate(true)
+                || guardian.can_perform_action_available_to_group_moderators(s, true)?)
+        {
+            errors.push(ctx.t("activerecord.errors.models.topic.attributes.base.unable_to_unlist"));
+        }
         if !args.skip_validations {
             let names = match &args.tags {
                 Some(param) => crate::tagging::names_for_validation(&mut conn, param).await?,
@@ -524,6 +551,7 @@ pub async fn create(
                 tags: None,
                 tag_category_id: None,
                 tag_text: String::new(),
+                visible: true,
             });
         } else {
             let mut regular = regular_topic_plan(&mut conn, s, title, category_id).await?;
@@ -536,6 +564,7 @@ pub async fn create(
             plan.tags = args.tags.clone().filter(|t| !t.is_empty());
             plan.tag_category_id = category_id;
             plan.tag_text = format!("{} {}", args.title.as_deref().unwrap_or(""), args.raw);
+            plan.visible = args.visible.unwrap_or(true);
         }
     }
     if !new_topic {
@@ -973,6 +1002,7 @@ pub async fn create(
 
     // save_post: before_create_tasks (reply info, word count, post number
     // through Topic.next_post_number, cook, sort order).
+    let mut whisper = args.whisper;
     let reply_to_user_id: Option<i32> = match reply_to_post_number {
         Some(n) => {
             let reply: Option<(Option<i32>, i32)> = sqlx::query_as(
@@ -982,8 +1012,16 @@ pub async fn create(
             .bind(n)
             .fetch_optional(&mut *tx)
             .await?;
+            // set_reply_info: a reply to a whisper is one, by a whisperer;
+            // anyone else's save is aborted.
             if reply.is_some_and(|(_, t)| t == post_types::WHISPER) {
-                return Err(Unsupported("replies to whispers").into());
+                if guardian.is_whisperer(s)? {
+                    whisper = true;
+                } else {
+                    tx.rollback().await?;
+                    performed.undo().await?;
+                    return Ok(Outcome::Invalid(vec![ctx.t("topic_not_found")]));
+                }
             }
             reply.and_then(|(u, _)| u)
         }
@@ -995,19 +1033,36 @@ pub async fn create(
             .bind(topic_id)
             .fetch_one(&mut *tx)
             .await?;
-    let reply_sql = if reply_to_post_number.is_some() {
-        ", reply_count = reply_count + 1"
+    // Topic.next_post_number: a whisper moves only the staff count.
+    let post_number: i32 = if whisper {
+        sqlx::query_scalar(
+            "UPDATE topics SET highest_staff_post_number = $1 + 1 WHERE id = $2 \
+             RETURNING highest_staff_post_number",
+        )
+        .bind(highest)
+        .bind(topic_id)
+        .fetch_one(&mut *tx)
+        .await?
     } else {
-        ""
+        let reply_sql = if reply_to_post_number.is_some() {
+            ", reply_count = reply_count + 1"
+        } else {
+            ""
+        };
+        sqlx::query_scalar(&format!(
+            "UPDATE topics SET highest_staff_post_number = $1 + 1, highest_post_number = $1 + 1{reply_sql}, \
+             posts_count = posts_count + 1 WHERE id = $2 RETURNING highest_post_number"
+        ))
+        .bind(highest)
+        .bind(topic_id)
+        .fetch_one(&mut *tx)
+        .await?
     };
-    let post_number: i32 = sqlx::query_scalar(&format!(
-        "UPDATE topics SET highest_staff_post_number = $1 + 1, highest_post_number = $1 + 1{reply_sql}, \
-         posts_count = posts_count + 1 WHERE id = $2 RETURNING highest_post_number"
-    ))
-    .bind(highest)
-    .bind(topic_id)
-    .fetch_one(&mut *tx)
-    .await?;
+    let post_type = if whisper {
+        post_types::WHISPER
+    } else {
+        post_types::REGULAR
+    };
     if s.get("generate_topic_og_image")?.truthy() {
         return Err(Unsupported("generate_topic_og_image").into());
     }
@@ -1031,9 +1086,9 @@ pub async fn create(
         "INSERT INTO posts (user_id, topic_id, post_number, raw, cooked, created_at, updated_at, \
                             reply_to_post_number, reply_to_user_id, last_editor_id, word_count, \
                             sort_order, last_version_at, baked_at, baked_version, wiki, quote_count, \
-                            via_email, raw_email) \
+                            via_email, raw_email, post_type) \
          VALUES ($1, $2, $3, $4, $5, COALESCE($11, clock_timestamp()), clock_timestamp(), $6, $7, $1, $8, $3, \
-                 clock_timestamp(), clock_timestamp(), $9, $10, $14, $12, $13) \
+                 clock_timestamp(), clock_timestamp(), $9, $10, $14, $12, $13, $15) \
          RETURNING id, created_at",
     )
     .bind(user.id)
@@ -1050,6 +1105,7 @@ pub async fn create(
     .bind(args.email.is_some())
     .bind(args.email.as_ref().map(|e| e.raw_email.as_str()))
     .bind(quoted.len() as i32)
+    .bind(post_type)
     .fetch_one(&mut *tx)
     .await?;
     // Post's after_create: its limits.
@@ -1134,24 +1190,26 @@ pub async fn create(
             .await?;
         }
     }
-    // extract_links: TopicLink, then QuotedPost.
+    // extract_links: TopicLink (which skips whispers), then QuotedPost.
     let hostname = urls.current_hostname()?;
-    links::extract_from(
-        &mut tx,
-        &links::Site {
-            hostname: &hostname,
-            base_path: &base_path,
-            base_url_no_prefix: &urls.base_url_no_prefix()?,
-            settings: s,
-        },
-        &LinkPost {
-            id: post_id,
-            user_id: user.id,
-            topic_id,
-            cooked: &cooked,
-        },
-    )
-    .await?;
+    if !whisper {
+        links::extract_from(
+            &mut tx,
+            &links::Site {
+                hostname: &hostname,
+                base_path: &base_path,
+                base_url_no_prefix: &urls.base_url_no_prefix()?,
+                settings: s,
+            },
+            &LinkPost {
+                id: post_id,
+                user_id: user.id,
+                topic_id,
+                cooked: &cooked,
+            },
+        )
+        .await?;
+    }
     super::rebake::extract_quoted_posts(
         &mut tx,
         post_id,
@@ -1227,17 +1285,27 @@ pub async fn create(
     } else {
         None
     };
-    sqlx::query(
-        "UPDATE topics SET updated_at = clock_timestamp(), last_posted_at = $2, last_post_user_id = $3, \
-                word_count = $4, bumped_at = $2, excerpt = COALESCE($5, excerpt) WHERE id = $1",
-    )
-    .bind(topic_id)
-    .bind(created_at)
-    .bind(user.id)
-    .bind(topic_word_count + words)
-    .bind(excerpt)
-    .execute(&mut *tx)
-    .await?;
+    // A whisper touches only updated_at; no_bump leaves bumped_at.
+    if whisper {
+        sqlx::query("UPDATE topics SET updated_at = clock_timestamp() WHERE id = $1")
+            .bind(topic_id)
+            .execute(&mut *tx)
+            .await?;
+    } else {
+        sqlx::query(
+            "UPDATE topics SET updated_at = clock_timestamp(), last_posted_at = $2, last_post_user_id = $3, \
+                    word_count = $4, bumped_at = CASE WHEN $6 THEN bumped_at ELSE $2 END, \
+                    excerpt = COALESCE($5, excerpt) WHERE id = $1",
+        )
+        .bind(topic_id)
+        .bind(created_at)
+        .bind(user.id)
+        .bind(topic_word_count + words)
+        .bind(excerpt)
+        .bind(args.no_bump)
+        .execute(&mut *tx)
+        .await?;
+    }
     if !args.import_mode {
         crate::topic_timer::update_topic_auto_close(&mut tx, ctx, topic_id).await?;
     }
@@ -1254,7 +1322,7 @@ pub async fn create(
         .rows_affected()
             > 0;
     // UserStat's and User's after_save: the user's badges, queued.
-    if !args.import_mode && (first_post || !private_message) {
+    if !args.import_mode && (first_post || (!private_message && !whisper)) {
         crate::badge_granter::queue_user_change(&mut tx, s, user.id).await?;
     }
     let column = if new_topic {
@@ -1262,8 +1330,9 @@ pub async fn create(
     } else {
         "post_count"
     };
-    // UserStatCountUpdater.increment! and last_posted_at skip messages.
-    if !private_message && !args.import_mode {
+    // UserStatCountUpdater.increment! and last_posted_at skip messages
+    // (and the count a whisper, which is not a regular post).
+    if !private_message && !whisper && !args.import_mode {
         sqlx::query(&format!(
             "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = $1"
         ))
@@ -1323,7 +1392,14 @@ pub async fn create(
     )
     .await?;
     if private_message {
-        message_posted(&mut tx, ctx, topic_id, user.id, guardian.is_staff()).await?;
+        message_posted(
+            &mut tx,
+            ctx,
+            topic_id,
+            user.id,
+            guardian.is_staff() && !whisper,
+        )
+        .await?;
     }
     // DraftSequence.next!(user, draft_key) when the composer asked
     // (advance_draft).
@@ -1335,7 +1411,7 @@ pub async fn create(
         super::quotes::ReplyingPost {
             id: post_id,
             topic_id,
-            post_type: post_types::REGULAR,
+            post_type,
             reply_to_post_number,
             deleted: false,
         },
@@ -1368,8 +1444,8 @@ pub async fn create(
     } else if post_number != 1 {
         crate::bus::publish_post_change(ctx, &mut tx, post_id, "created", Map::new(), false)
             .await?;
-    } else {
-        // PostJobsEnqueuer#after_topic_create
+    } else if plan.as_ref().is_some_and(|p| p.visible) {
+        // PostJobsEnqueuer#after_topic_create, not for an invisible topic.
         if private_message {
             crate::pm_tracking_state::publish_new(ctx.bus, &mut tx, topic_id).await?;
         } else {
@@ -1891,7 +1967,7 @@ async fn create_topic(
     let (topic_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, visible, category_id, \
                              archetype, subtype, bumped_at, created_at, updated_at, slow_mode_seconds) \
-         VALUES ($1, $2, $3, $4, $4, TRUE, $5, $7, $8, clock_timestamp(), clock_timestamp(), \
+         VALUES ($1, $2, $3, $4, $4, $9, $5, $7, $8, clock_timestamp(), clock_timestamp(), \
                  clock_timestamp(), COALESCE($6, 0)) \
          RETURNING id, created_at",
     )
@@ -1907,6 +1983,7 @@ async fn create_topic(
     } else {
         plan.subtype.as_deref()
     })
+    .bind(plan.visible)
     .fetch_one(&mut *conn)
     .await?;
     // HasCustomFields: the topic's custom fields, saved with it.

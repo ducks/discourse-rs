@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dress rehearsal of docs/demo-script.md: the 38 demo steps in Chromium.
+"""Dress rehearsal of docs/demo-script.md: the 39 demo steps in Chromium.
 
 Each step clicks and types as the presenter does, as its persona, one
 browser context per persona (Member and Second member stay open together
@@ -41,7 +41,8 @@ LONG_TOPIC = 118
 SEARCH_TERM = "discourse"
 # Bundled plugins step 30 turns on (off on the demo database, as in
 # Discourse) and those the plugin steps need that are on by default.
-PLUGINS_TO_TURN_ON = ["assign_enabled", "policy_enabled", "user_notes_enabled", "discourse_gamification_enabled"]
+PLUGINS_TO_TURN_ON = ["assign_enabled", "policy_enabled", "user_notes_enabled", "discourse_gamification_enabled",
+                      "post_voting_enabled"]
 PLUGINS_ON_BY_DEFAULT = ["solved_enabled", "topic_voting_enabled", "discourse_reactions_enabled"]
 VISIBLE_ERRORS = re.compile(r"not ported yet[^\n]*|Something went wrong[^\n]*", re.I)
 # Waits for an outcome. Live updates get longer: they ride the message bus.
@@ -852,11 +853,11 @@ def define_steps(run):
         editor = type_in_composer(page, f"**{marker}** with _formatting_ for @user0 ", delay=20)
         settle(page, 600)
         close_menus(page)
-        editor.press("End")
+        editor.press("Control+End")
         editor.press_sequentially(":tada: ", delay=20)
         settle(page, 300)
         close_menus(page)
-        editor.press("End")
+        editor.press("Control+End")
         editor.press("Enter")
         upload_in_composer(page, run.files["png"], "image")
         submit_composer(page)
@@ -927,10 +928,24 @@ def define_steps(run):
         title.press_sequentially(topic_title, delay=10)
         # Labelled: Discourse refuses a body the member posted within
         # unique_posts_mins, so a second run soon after would be refused.
-        body = (f"A topic for the demo {run.label}.\n\n"
-                "[poll type=regular results=always]\n* Rust\n* Ruby\n* Both\n[/poll]\n\n"
-                "[ ] write the demo script\n[ ] rehearse it\n")
-        type_in_composer(page, body)
+        editor = type_in_composer(page, f"A topic for the demo {run.label}.\n\n")
+        # The poll from the toolbar's options menu: Build poll.
+        page.locator("#reply-control .toolbar-menu__options-trigger").click()
+        expect_visible(page.locator(".toolbar-menu__options-content button[title='Build poll']"),
+                       "Build poll in the options menu").click()
+        builder = expect_visible(page.locator(".d-modal.poll-ui-builder"), "the poll builder")
+        for i, option in enumerate(["Rust", "Ruby", "Both"]):
+            field = builder.locator(".poll-option-value input").nth(i)
+            field.press_sequentially(option, delay=10)
+            if i < 2:
+                field.press("Enter")
+        builder.locator(".insert-poll").click()
+        expect_gone(builder, "the poll builder to close")
+        wait_until(page, "() => /\\[poll [^\\]]*\\]\\n\\* Rust\\n\\* Ruby\\n\\* Both\\n\\[\\/poll\\]/"
+                   ".test(document.querySelector('#reply-control .d-editor-input').value)",
+                   None, "the built poll in the composer")
+        editor.press("Control+End")
+        editor.press_sequentially("\n[ ] write the demo script\n[ ] rehearse it\n", delay=5)
         submit_composer(page)
         page.wait_for_url("**/t/**", timeout=WAIT)
         expect_visible(page.locator("h1 .fancy-title, #topic-title h1, .title-wrapper h1").filter(has_text="poll and checklist"),
@@ -1080,7 +1095,7 @@ def define_steps(run):
         marker = f"{run.label} video"
         open_composer_reply(page)
         editor = type_in_composer(page, f"{marker}\n\n", delay=5)
-        editor.press("End")
+        editor.press("Control+End")
         upload_in_composer(page, run.files["webm"], "video")
         submit_composer(page)
         post = expect_visible(post_with(page, marker), "the video reply", timeout=LIVE_WAIT)
@@ -1723,7 +1738,7 @@ def define_steps(run):
         expect_visible(page.locator(".silence-user"), "the user unsilenced")
         run.state["silenced"] = None
 
-    @step(30, "Admin", "/admin/plugins: turn on Assign, Policy, User Notes and Gamification")
+    @step(30, "Admin", "/admin/plugins: turn on Assign, Policy, User Notes, Gamification and Post Voting")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/latest")
@@ -1924,6 +1939,34 @@ def define_steps(run):
         names = page.locator(".podium .winner__name").all_inner_texts()
         s.notes.append("podium: " + ", ".join(n.strip() for n in names))
 
+    @step(39, "Member", "a post voting topic from the composer's actions menu; its vote controls", needs=[30])
+    def _(run, s):
+        page = run.persona("Member").use()
+        page.goto(run.base + "/latest")
+        page.locator("#create-topic").click()
+        expect_visible(page.locator("#reply-title"), "the new topic composer")
+        # The caret on the composer's title: Toggle post voting.
+        page.locator("#reply-control .composer-actions-trigger").click()
+        expect_visible(page.locator(".composer-actions-dropdown [data-action-id='togglePostVoting']"),
+                       "Toggle post voting in the actions menu").click()
+        # The menu closes and gives the focus back to its trigger first.
+        expect_gone(page.locator(".composer-actions-dropdown"), "the actions menu to close")
+        settle(page)
+        expect_visible(page.locator("#reply-control .composer-actions-trigger", has_text="Create post voting topic"),
+                       "the composer's title saying Create post voting topic")
+        topic_title = f"{run.label} which language for the demo"
+        page.locator("#reply-title").press_sequentially(topic_title, delay=10)
+        type_in_composer(page, f"Vote for the answers you agree with, {run.label}.")
+        submit_composer(page)
+        page.wait_for_url("**/t/**", timeout=WAIT)
+        expect_visible(page.locator("#topic-title h1").filter(has_text="which language"), "the post voting topic")
+        run.leave(f"post voting topic '{topic_title}' by user1 at {topic_url(page.url)}")
+        expect_visible(page.locator(".topic-post").first.locator(".post-voting-post"), "the question's vote controls")
+        open_composer_reply(page)
+        expect_visible(page.locator("#reply-control .composer-actions-trigger", has_text="Answer"),
+                       "the reply composer answering")
+        page.locator("#reply-control .toggle-save-and-close").click()
+
 
 def cleanup(run):
     """What the UI allows: the watched word, a silence or setting left in place, the palette, the chat webhook and channel, the plugins turned on."""
@@ -2033,6 +2076,15 @@ def cleanup(run):
             expect_visible(page.locator(".admin-plugins-list__row"), "the plugins list")
             for setting in run.state["plugins_turned_on"]:
                 toggle_plugin(page, setting, False)
+            # The last switch's save can still be on its way when the run
+            # ends: a reload shows what was saved.
+            page.wait_for_timeout(1000)
+            page.reload()
+            expect_visible(page.locator(".admin-plugins-list__row"), "the plugins list after a reload")
+            still = [setting for setting in run.state["plugins_turned_on"]
+                     if page.locator(f"[data-enabled-setting='{setting}']").first.get_attribute("aria-checked") == "true"]
+            if still:
+                raise StepFail("still on after a reload: " + ", ".join(still))
         attempt("turned off " + ", ".join(run.state["plugins_turned_on"]), plugins,
                 "plugins left on: " + ", ".join(run.state["plugins_turned_on"]))
 
