@@ -162,26 +162,16 @@ default as in Discourse; step 35 turns on the others the steps use.
 
 ## Benchmark table (end of the demo)
 
-Recorded October 24, release v20261024.0.0 and Rails bf55a44, on the
-same 20,576-post corpus and PostgreSQL 18 server. These are measurements
-of that release, not a benchmark of the current demo build.
+Open the [combined Rust vs Rails table](../BENCH.md) at the end of the
+walkthrough. It puts HTTP throughput and latency, browser readiness,
+memory, and startup in one table from the October 24 paired run.
 
-| Measurement | Rust | Rails |
-|---|---:|---:|
-| Latest JSON, uncached req/s | 2,173 | 122 |
-| Categories JSON, uncached req/s | 845 | 203 |
-| Twenty-post topic JSON, uncached req/s | 1,051 | 112 |
-| Topic HTML, uncached req/s | 490 | 74 |
-| Search, common term, uncached req/s | 125 | 65 |
-| Search, selective term, uncached req/s | 504 | 172 |
-| Startup to first response | 87 ms | 9.8 s |
-
-One laptop ran the client, servers and database; anonymous requests,
-no keep-alive, and a small corpus. Core response fields matched. See
-[the recorded comparison](bench-20261024.md) and [BENCH.md](../BENCH.md)
-for the protocol, memory measurements and October 30 Rust rerun. That
-rerun measured 113 ms startup and identified rate-limiter contention
-under artificially raised search limits; item 285 remains low priority.
+State the date and conditions: release v20261024.0.0 versus production
+Rails bf55a44, the same 20,576-post corpus, and one shared laptop. These
+are recorded measurements of that release, not the current VPS or demo
+build. Keep cached and uncached rows distinct, and explain the summed
+Rails worker RSS alongside PSS. The October 30 Rust-only rerun is linked
+separately rather than mixed with the paired results.
 
 ## Rehearsal
 

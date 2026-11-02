@@ -1,176 +1,92 @@
-# Benchmarks
+# Rust vs Rails benchmarks
 
-The latest run is the [v20261024.0.0 release benchmark](docs/bench-20261024.md):
-release Rust `85672018` against production Rails `bf55a44` on the cleaned public
-Meta corpus (1,089 topics, 20,576 posts, 220 users), separate copies of the same
-snapshot on **one PostgreSQL 18.6 instance**, the same protocol as October 19.
-Uncached anonymous req/s, Rust / Rails: latest JSON 2,173 / 122, categories
-845 / 203, twenty-post topic JSON 1,051 / 112, topic HTML 490 / 74, and search
-125 / 65 (common term), 504 / 172 (selective), 1,661 / 691 (no match). Zero
-errors in all 96 samples; core response fields matched. It also records the
-first browser comparison (a cold Latest visit is content-ready in 169 ms vs
-753 ms) and memory: 50 MB idle and about 210 MB under load for Rust, 5.0 GiB
-summed RSS idle and 6.3 GiB under load for Rails' eight workers. This is still a
-small forum on one shared laptop, not a production-capacity test.
+One comparison table from the October 24, 2026 paired run: release Rust
+`85672018` (v20261024.0.0) against production Rails `bf55a44`. Both used
+separate copies of the same 1,089-topic, 20,576-post corpus on one
+PostgreSQL 18.6 instance. These are historical measurements on a shared
+laptop, not measurements of the current VPS or current demo build.
 
-Against the October 19
-[cleaned corpus rerun](docs/bench-public-meta-20261019.md#cleaned-corpus-rerun)
-(Rust 127 / 570 / 1,653 search, latest 2,012), the unchanged Rails side drifted
-up to about 7%; Rust is within that band except topic HTML, about 9% slower
-after a week of topic-page work. The original small-corpus baseline is retained
-below.
+HTTP cells show **throughput; p50 / p99 latency**. Higher req/s is better;
+lower latency and memory are better. HTTP results are medians of three
+runs at concurrency 16. Browser cells show **median / p95 content-ready
+time**, from 20 samples. First-request rows are single requests after a
+process restart with warm database and OS caches.
 
-## Rust rerun, October 30
-
-Rust only, main `1e057a14` (release), the October 24 protocol unchanged:
-`meta_rust` on the same PostgreSQL 18.6 container (system identifier verified),
-`scripts/bench-corpus` with the same fixture, five seconds per row, concurrency
-16, three rounds, server on 8091 with the October 24 environment. Load average
-1.26 at the start; the desktop session idle. Rails is unchanged since October 24,
-so its numbers above still stand. Zero errors in all samples.
-
-| Uncached req/s, median of 3 | Oct 24 | Oct 30 |
-|---|---:|---:|
-| Latest JSON | 2,173 | 2,177 |
-| Categories JSON | 845 | 826 |
-| Short topic JSON | 1,245 | 1,181 |
-| Twenty-post topic JSON | 1,051 | 1,018 |
-| Topic HTML | 490 | 535 |
-| Search, common term | 125 | 122 |
-| Search, selective | 504 | 496 |
-| Search, no match | 1,661 | 988 |
-
-Within the October 24 rounds' spread except topic HTML, 9% faster after the
-topic-page work. Startup (five runs, medians): the binary grew from 185 to
-268 MB (about 30 MB of vendored math assets, the rest the chat round and
-plugins), exec to first 200 from 87 to 113 ms, RSS 50 to 56 MB idle and 80
-to 89 MB after the warm-up.
-
-**Uncached search here partly measures the rate limiter.** The snapshot raises
-the four anonymous search limits to 1,000,000, and every search runs
-`discourse_rs.rate_limit_perform`, which rewrites the key's list of stamps under
-its row lock: the longer the list, the slower each search, and every anonymous
-search queues on the global key. Search rows fall round over round on both
-dates (no match 1,677 / 1,661 / 1,038 on October 24, 1,658 / 988 / 674 now), a
-server restart doesn't help, and `pg_stat_activity` under load shows every
-connection waiting on that function's row locks. Rails keeps the list in Redis,
-where a push costs the same however long it is. Stamps more than a window old
-are now dropped (exactly Rails' answers), which stops the growth across rounds,
-but a minute's window at these rates is still about 21,500 stamps; ROADMAP 285
-stores them as per-second counts. At Rails' default limits (150 a minute at
-most for search) the lists stay small. Raw output and the investigation:
-`bench/20261030-rust/` of the main checkout (`summary.md`).
-
-The earlier search term `Discourse` matched almost every generated post because
-copied attribution URLs contained `meta.discourse.org`. Those footers have now
-been removed and the posts recooked/reindexed. Source URLs remain in a separate
-manifest. The earlier search row is superseded; see the
-[profile and corpus artifact](docs/bench-public-meta-20261019.md#search-profile-and-corpus-artifact).
-
-See the [public corpus baseline](docs/bench-public-meta-20261019.md) for setup,
-correctness checks, first-pass latency, and import timing. Older tables, profiles,
-and experiment notes are in the [benchmark history](docs/bench-history.md).
-
-## Reading the results
-
-- Compare rows from the same run. Hardware load, code, settings, and datasets
-  changed between sessions; gains from separate runs cannot be multiplied.
-- Use a release Rust build and production-mode Rails with the same data.
-  Historical `rails-dev` results include development overhead and should not be
-  used to claim a speedup over deployed Discourse.
-- Separate anonymous cache hits, cache misses, and logged-in requests. Both
-  implementations now have an anonymous cache; older runs predate the Rust
-  implementation. Historical `cached` and `uncached` labels refer to Rails.
-- Check `non-2xx` before throughput. Rate-limited search rows measure rejection
-  throughput, not successful searches. Loopback requests can also be exempt from
-  address-based limits even when rate limiting is enabled.
-- HTML requests do different work: Rust renders the page; Rails serves an Ember
-  shell that fetches topic data afterwards. HTTP latency is not a browser
-  page-load comparison.
-- These were local tests: client, servers, and PostgreSQL shared one machine,
-  with HTTP keep-alive disabled. Several optimization runs competed with builds.
-
-## Public corpus baseline, October 19
-
-Release Rust `ef9eec98` and production Rails `bf55a44`, anonymous requests,
-concurrency 16, three five-second rounds. The table gives median throughput with
-response caching bypassed on **both** servers. All 72 measured rows, including
-cache-eligible requests, had zero HTTP or connection errors.
-
-| Endpoint | Rust req/s | Rails req/s | Rust p50, ms | Rails p50, ms |
-|---|---:|---:|---:|---:|
-| Latest JSON | 2,238 | 124 | 7.1 | 130.9 |
-| Categories JSON | 1,277 | 239 | 12.6 | 63.5 |
-| One-post topic JSON | 1,392 | 136 | 11.5 | 117.3 |
-| Twenty-post topic JSON | 1,109 | 105 | 14.6 | 153.9 |
-| Search JSON | 276 | 112 | 57.9 | 145.4 |
-
-That is about 2.5x to 18x the Rails throughput on these JSON endpoints. The selected
-core response fields matched. Both database connections were verified against the
-same PostgreSQL 18.6 instance, settings, locale, and TCP endpoint. This remains a
-local deployment comparison: the applications have different runtime/worker
-architectures. No compression or keep-alive; no logged-in or mixed-traffic workload.
-
-Both implementations served verified anonymous cache hits much faster:
-roughly 15,000–16,000 JSON req/s for Rust and 3,000–4,000 for Rails. Those numbers
-mostly describe response-cache delivery. See the
-[full results](docs/bench-public-meta-20261019.md) for per-round data, p99,
-HTML results, setup limitations, and first-pass latency.
-
-## Historical production Rails comparison
-
-October 13: discourse-rs `eafbcea`, release build, production mode, fresh parity
-seed. The Rails reference was unchanged from the October 9 setup: Discourse
-`bf55a44`, precompiled assets, eight Pitchfork workers, and nginx.
-
-Each row ran for five seconds at concurrency 16, logged in as `user1` on both
-sides, without anonymous caching. Rust rate limiting was enabled, although the
-loopback address was exempt from request limits. These selected JSON endpoints
-all returned zero non-2xx responses:
-
-| Endpoint | Rust req/s | Rails req/s | Rust p50, ms | Rails p50, ms |
-|---|---:|---:|---:|---:|
-| `/site.json` | 2,481 | 309 | 6.1 | 50.8 |
-| `/latest.json` | 2,769 | 188 | 5.5 | 84.8 |
-| `/categories.json` | 2,357 | 266 | 6.4 | 59.7 |
-| `/t/welcome-to-discourse/5.json` | 1,021 | 100 | 15.6 | 162.0 |
-| `/u/system.json` | 3,680 | 227 | 4.0 | 70.4 |
-
-These are historical endpoint measurements, not results for today's build.
-Later features added overhead: the October 15 Rust comparison recorded
-`/latest.json` falling from 2,645 to 2,419 req/s and topic HTML from 153 to 106
-req/s. October 16 addressed specific costs; it was not a new Rails comparison.
-
-See the [October 13 full run](docs/bench-history.md#2026-10-13-after-messages-and-chat-dms-rate-limits-on)
-for anonymous-cache results, p99 latency, errors, and the limiter investigation.
-
-## Latest optimization results
-
-October 16 investigated logged-in HTML topic pages. The page used 114 distinct
-statements, exceeding SQLx's default cache of 100 per connection. Repeated query
-planning dominated PostgreSQL's work. An inline SVG sprite also added 116 KB to
-each HTML response and increased compression work.
-
-Each row below summarizes its own comparison. All used the parity seed and
-concurrency 16; the machine was shared with other builds.
-
-| Change | Measurement | Before | After |
+| Area | Measurement | Rust | Rails |
 |---|---|---:|---:|
-| Batch page and navigation queries | Queries for a five-post topic page | 187 | 145 |
-| Raise statement cache to 1,000 per connection | Topic HTML req/s, repeated-run median | 81 | 216 |
-| Serve a cacheable SVG sprite | Topic HTML req/s, three-run median | 351 | 409 |
-| Same sprite change | Topic HTML size, raw / Brotli | 204 / 50 KB | 88 / 16 KB |
+| HTTP uncached | Latest JSON | 2,173 req/s; 7.4 / 9.9 ms | 122 req/s; 124.2 / 159.0 ms |
+| HTTP uncached | Categories JSON | 845 req/s; 19.1 / 23.9 ms | 203 req/s; 79.0 / 97.8 ms |
+| HTTP uncached | One-post topic JSON | 1,245 req/s; 12.9 / 17.1 ms | 151 req/s; 106.9 / 129.7 ms |
+| HTTP uncached | Twenty-post topic JSON | 1,051 req/s; 15.4 / 20.0 ms | 112 req/s; 146.3 / 192.5 ms |
+| HTTP uncached | Twenty-post topic HTML | 490 req/s; 33.3 / 41.6 ms | 74 req/s; 211.6 / 439.6 ms |
+| HTTP uncached | Search: Discourse | 125 req/s; 135.0 / 163.9 ms | 65 req/s; 240.8 / 367.7 ms |
+| HTTP uncached | Search: postgres | 504 req/s; 31.3 / 42.7 ms | 172 req/s; 94.3 / 110.3 ms |
+| HTTP uncached | Search: no matches | 1,661 req/s; 9.4 / 14.5 ms | 691 req/s; 22.6 / 30.7 ms |
+| HTTP cached | Latest JSON | 15,665 req/s; 0.9 / 2.3 ms | 3,716 req/s; 3.9 / 10.1 ms |
+| HTTP cached | Categories JSON | 16,406 req/s; 0.9 / 2.2 ms | 4,170 req/s; 3.7 / 6.2 ms |
+| HTTP cached | One-post topic JSON | 17,187 req/s; 0.8 / 2.1 ms | 4,429 req/s; 3.5 / 5.2 ms |
+| HTTP cached | Twenty-post topic JSON | 16,336 req/s; 0.9 / 2.2 ms | 3,926 req/s; 3.9 / 6.0 ms |
+| HTTP cached | Twenty-post topic HTML | 14,345 req/s; 1.0 / 2.5 ms | 2,154 req/s; 6.1 / 18.4 ms |
+| HTTP cached | Search: Discourse | 16,335 req/s; 0.9 / 2.2 ms | 3,650 req/s; 4.0 / 10.0 ms |
+| HTTP cached | Search: postgres | 15,577 req/s; 0.9 / 2.3 ms | 3,633 req/s; 4.3 / 6.1 ms |
+| HTTP cached | Search: no matches | 15,943 req/s; 0.9 / 2.2 ms | 3,923 req/s; 3.9 / 6.1 ms |
+| First request | Latest JSON | 15.2 ms | 157.2 ms |
+| First request | Categories JSON | 9.9 ms | 34.1 ms |
+| First request | One-post topic JSON | 15.4 ms | 54.9 ms |
+| First request | Twenty-post topic JSON | 10.1 ms | 53.3 ms |
+| First request | Twenty-post topic HTML | 45.0 ms | 296.0 ms |
+| First request | Search: Discourse | 83.2 ms | 99.7 ms |
+| First request | Search: postgres | 16.1 ms | 32.8 ms |
+| First request | Search: no matches | 4.9 ms | 9.5 ms |
+| Browser ready | Latest, cold | 169 / 185 ms | 753 / 806 ms |
+| Browser ready | Latest, warm | 104 / 105 ms | 712 / 759 ms |
+| Browser ready | One-post topic, cold | 143 / 154 ms | 670 / 718 ms |
+| Browser ready | One-post topic, warm | 88 / 104 ms | 641 / 683 ms |
+| Browser ready | Twenty-post topic, cold | 170 / 186 ms | 859 / 919 ms |
+| Browser ready | Twenty-post topic, warm | 104 / 136 ms | 819 / 897 ms |
+| Browser ready | Search, cold | 184 / 256 ms | 719 / 832 ms |
+| Browser ready | Search, warm | 122 / 188 ms | 690 / 789 ms |
+| Browser ready | Latest to topic, click | 108 / 126 ms | 191 / 256 ms |
+| Browser ready | Topic to latest, click | 73 / 91 ms | 188 / 192 ms |
+| Memory | Idle RSS | 50 MiB | 5,144 MiB |
+| Memory | Idle PSS | 48 MiB | 872 MiB |
+| Memory | Median RSS under load | 210 MiB | 6,488 MiB |
+| Memory | Peak RSS under load | 216 MiB | 7,296 MiB |
+| Memory | After run, RSS / PSS | 216 / 214 MiB | 6,611 / 3,289 MiB |
+| Startup | Exec to first HTTP 200 | 87 ms (median of five) | 9.8 s (one observation) |
+| Startup | All workers ready | One process | 17.2 s |
+| Distribution | Binary size | 185 MiB; 161 MiB stripped | Ruby application; no comparable single binary |
 
-Reducing query count alone barely helped while the statement cache was thrashing.
-The larger cache produced the biggest improvement in this investigation. After
-that, query reductions and smaller HTML responses provided further gains.
+The [full run report](docs/bench-20261024.md) records the protocol, raw
+artifacts, browser transfer and script timings, and response spot checks.
+All 96 HTTP samples had zero non-2xx responses or connection errors,
+excluding duration-deadline cancellations. Selected core response fields
+matched; that check is not full serializer parity.
 
-The sprite run found unchanged first contentful paint with a warm cache and
-roughly 20 ms extra on a first visit. These are separate experiments, not one
-combined before/after result.
+Read the table with these differences in mind:
 
-See the [October 16 profiles and tables](docs/bench-history.md#2026-10-16-the-topic-pages-queries-and-where-its-time-goes)
-for revisions, load conditions, latency, and excluded noisy measurements.
+- Cache hits measure cached response delivery. Keep them separate from
+  uncached application work.
+- Rust renders topic HTML; Rails serves an Ember shell that then loads
+  the page. The browser content-ready rows cover more of that work.
+- Rails used eight workers. Its RSS sums all 11 Pitchfork processes and
+  double-counts shared pages; PSS apportions them. Neither application's
+  footprint includes PostgreSQL, Redis, the browser, or the OS.
+- Browser “cold” means a fresh browser context, not a cold server. Rails'
+  early splash-screen paint is not content-ready time. Rails served its
+  own precompiled assets without nginx; compression also differed.
+- Search used artificially raised limits. Rust's timestamp-list rate
+  limiter accumulated contention during sustained search; these rows
+  include that cost. They are not a production capacity estimate.
+
+A Rust-only October 30 rerun is recorded in
+[the rerun notes](docs/bench-rust-20261030.md). It measured 113 ms startup,
+56 MiB idle RSS, and 89 MiB after warm-up. No fresh Rails run accompanied
+it, so those figures are not mixed into the paired table above.
+
+Earlier datasets and optimization experiments remain in the
+[benchmark history](docs/bench-history.md) and
+[public corpus report](docs/bench-public-meta-20261019.md).
 
 ## Reproduce a comparison
 
@@ -209,23 +125,3 @@ make bench-startup
 `127.0.0.1:8090` by default and stops it afterwards. It measures server startup,
 not database provisioning or browser page load. Old build/test timings in the
 history describe much smaller versions of the project.
-
-## Next useful measurement
-
-Profile search on the expanded corpus: uncached throughput fell substantially
-on both implementations. Add logged-in traffic and mixed endpoint loads; measure
-browser navigation separately. The original endpoint set still selects a
-twenty-post topic, so benchmark the generated hundred-post threads separately.
-
-The measured 1,000-post generation batch on PostgreSQL 18.6 took 102.0 seconds
-through Rails cooking and indexing. At that rate, 20,000 posts would take about
-34 minutes and 200,000 about 5.7 hours. Those are extrapolations, with background
-jobs skipped.
-
-Search profiling found 164 SQL queries for 48 results, including 48 tag queries,
-48 solved-state queries, and 48 category-field queries. Calling the topic
-serializer's existing batch-prefetch method reduced this to 26 queries. A separate
-three-round before/after run measured median uncached search throughput of
-283 → 408 req/s (+45%), with p50 latency of 56.7 → 38.7 ms. Responses matched
-apart from search-log IDs, with zero errors. The baseline tables above remain
-unchanged; see the [follow-up measurements](docs/bench-public-meta-20261019.md#search-prefetch-follow-up).
