@@ -41,6 +41,8 @@ fn echo_wasm() -> Vec<u8> {
             "echo-wasm",
         ])
         .current_dir(root().join("plugins"))
+        // Build where the guest is read below, independently of the host target.
+        .env("CARGO_TARGET_DIR", root().join("plugins/target"))
         .env_remove("RUSTFLAGS")
         .status()
         .expect("cargo runs");
