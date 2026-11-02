@@ -15,6 +15,11 @@ work, so the two together are the count of what is left.
 
 ## Next after the staging dropdown deploy: faster frontend delivery
 
+Implementation is on `feat/runtime-frontend-assets`; integration tests are in
+progress. See [frontend packages](docs/frontend-assets.md) for the package
+format, deployment path, checks and measured packaging times. The live demo
+still uses the previous embedded-assets binary.
+
 The November 2 Categories/Tags fix required rebuilding the Rust application
 because `src/assets.rs` embeds JavaScript and CSS. The release target also
 had to compile dependencies. Fix this workflow before the next feature slice.
@@ -72,7 +77,8 @@ goal; the older counts below are a dated snapshot, not current totals.
 Source organization: composer lives under `src/composer/`; administration
 data loading, views and handlers now live under `src/admin/`, with central
 route registration retained in `src/routes/mod.rs`. These are structural
-moves with no intended behavior changes.
+moves with no intended behavior changes. Categories, groups and review now
+also have domain directories, with root aliases preserving existing imports.
 
 Plugin infrastructure has also advanced past the original milestone
 summary: the compile-time Plugin trait and Wasmtime host are on main.

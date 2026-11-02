@@ -50,7 +50,9 @@ def package(source, destination, previous=None):
     destination.parent.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix='.frontend-', dir=destination.parent))
     try:
-        (work / 'objects').mkdir()
+        work.chmod(0o755)
+        (work / 'objects').mkdir(mode=0o755)
+        (work / 'objects').chmod(0o755)
         manifest = {'version': 1, 'assets': [], 'history': []}
         included = set()
         for root, historical in [(source, False)] + ([(previous, True)] if previous else []):
@@ -61,9 +63,11 @@ def package(source, destination, previous=None):
                 included.add(key)
                 file = f'objects/{checksum}'
                 (work / file).write_bytes(body)
+                (work / file).chmod(0o644)
                 entry = {'name': name, 'content_type': content_type, 'files': [file], 'digest': checksum}
                 manifest['history' if historical or not current else 'assets'].append(entry)
         (work / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        (work / 'manifest.json').chmod(0o644)
         work.rename(destination)
     except BaseException:
         shutil.rmtree(work)

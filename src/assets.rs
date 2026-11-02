@@ -1,9 +1,9 @@
 //! Runtime-packaged stylesheets and scripts, served under
 //! /assets/<name> with the browser cache in mind, as Discourse serves its
 //! digested assets: each carries a digest of its content, pages link it as
-//! `/assets/<name>?v=<digest>` (`url`), and a request for the current
-//! digest is cached for good (`immutable`). Any other request (an old page,
-//! no `v`) gets `no-cache`, and every response an ETag, so a browser holding
+//! `/assets/<name>?v=<digest>` (`url`), and a request for a retained
+//! digest is cached for good (`immutable`). Unknown versions and requests
+//! without `v` get `no-cache`, and every response an ETag, so a browser holding
 //! the file revalidates for a 304 instead of fetching it again.
 
 use std::collections::HashMap;
@@ -133,16 +133,16 @@ impl Store {
     }
 
     fn asset(&self, name: &str, query: Option<&str>) -> Option<(&Asset, bool)> {
-        let current = self.current.get(name)?;
         let requested = query
             .into_iter()
             .flat_map(|q| q.split('&'))
             .find_map(|pair| pair.strip_prefix("v="));
-        if let Some(digest) = requested {
-            if let Some(asset) = self.versions.get(&(name.to_owned(), digest.to_owned())) {
-                return Some((asset, true));
-            }
+        if let Some(digest) = requested
+            && let Some(asset) = self.versions.get(&(name.to_owned(), digest.to_owned()))
+        {
+            return Some((asset, true));
         }
+        let current = self.current.get(name)?;
         self.versions
             .get(&(name.to_owned(), current.clone()))
             .map(|a| (a, false))
@@ -168,12 +168,12 @@ fn default_directory() -> std::path::PathBuf {
     if let Some(path) = std::env::var_os("DISCOURSE_FRONTEND_DIR") {
         return path.into();
     }
-    if let Ok(executable) = std::env::current_exe() {
-        if let Some(prefix) = executable.parent().and_then(|bin| bin.parent()) {
-            let installed = prefix.join("share/discourse-rs/frontend");
-            if installed.join("manifest.json").is_file() {
-                return installed;
-            }
+    if let Ok(executable) = std::env::current_exe()
+        && let Some(prefix) = executable.parent().and_then(|bin| bin.parent())
+    {
+        let installed = prefix.join("share/discourse-rs/frontend");
+        if installed.join("manifest.json").is_file() {
+            return installed;
         }
     }
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("static")
@@ -371,6 +371,27 @@ mod tests {
         assert_eq!(before.current["topic.js"], old_digest);
         std::fs::write(fixture.0.join("new.js"), "corrupt").unwrap();
         assert!(Store::load(&fixture.0).is_err());
+    }
+
+    #[test]
+    fn removed_assets_are_still_served_by_their_retained_digest() {
+        let fixture = Fixture::new();
+        std::fs::write(fixture.0.join("script.js"), "script").unwrap();
+        let digest = digest_of(b"script");
+        fixture.manifest(serde_json::json!({"version":1,
+            "assets":[{"name":"new.js","content_type":"js","files":["script.js"]}],
+            "history":[{"name":"old.js","content_type":"js","files":["script.js"],"digest":digest}]}));
+        let store = Store::load(&fixture.0).unwrap();
+        assert_eq!(
+            store
+                .serve("old.js", Some(&format!("v={digest}")), &HeaderMap::new())
+                .status(),
+            StatusCode::OK
+        );
+        assert_eq!(
+            store.serve("old.js", None, &HeaderMap::new()).status(),
+            StatusCode::NOT_FOUND
+        );
     }
 
     #[test]

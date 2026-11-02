@@ -161,7 +161,7 @@ install-hooks:
 # The binary, unit, service account and /etc/discourse-rs/env (kept if it
 # exists). Does not build: run `make build` first, as yourself.
 install:
-	deploy/install target/release/discourse-rs "$(FRONTEND_OUTPUT)"
+	deploy/install "$$(scripts/release-build --print-binary)" "$(FRONTEND_OUTPUT)"
 
 emoji-assets:
 	deploy/install-emoji "$(PUBLIC_DIR)"

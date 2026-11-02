@@ -88,3 +88,27 @@ compilation. That run had no release binary in the selected target directory;
 the underlying reason previous artifacts were absent has not been established.
 Do not label it a Cargo cache-invalidation bug without evidence. Measure clean,
 unchanged, JS-only, CSS-only and Rust-only builds separately.
+
+## Validation of the split
+
+An independent standalone Rust program evaluated the former embedded constants
+with Rust's own `include_str!` and `concat!`. All 137 existing assets, totaling
+7,234,249 bytes, matched the package byte-for-byte and MIME type. The additional
+LTI submit script also matches its original source.
+
+Packaging regression tests cover concatenation, changed digests, retained
+history, corrupt/missing inputs, path escapes and immutable destination handling.
+Installer checks under `umask 077` verified readable asset permissions, atomic
+symlink replacement, old-release retention and environment-file preservation.
+
+Nix evaluation confirmed that edits to JS, CSS, `site.css` and the manifest
+change the frontend/wrapper derivations without changing the core Rust source
+or derivation. A frontend-only Nix build passed and all 138 digests survived
+fixup. This check used local Nixpkgs 25.05 with the pinned Rust overlay; the
+flake's Nixpkgs 26.05 VM build has not been run for this change.
+
+Local packaging measurements on November 2 were 0.067 seconds unchanged,
+0.071 seconds after a JS-only edit and 0.074 seconds after a CSS-only edit,
+including retaining the previous package's versions. These measure packaging
+only, not browser checks, transfer, service restart or a Rust build. No Cargo
+process was invoked by the packaging command.

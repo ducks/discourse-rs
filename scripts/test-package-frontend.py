@@ -23,6 +23,8 @@ class PackageTests(unittest.TestCase):
             manifest = {'version': 1, 'assets': [{'name': 'bundle.js', 'content_type': 'js', 'files': ['a.js', 'b.js'], 'separator': '\n'}]}
             (source / 'manifest.json').write_text(json.dumps(manifest))
             pack.package(source, root / 'first')
+            self.assertEqual((root / 'first').stat().st_mode & 0o777, 0o755)
+            self.assertEqual((root / 'first' / 'manifest.json').stat().st_mode & 0o777, 0o644)
             old = list(pack.entries(root / 'first'))
             self.assertEqual(old[0][3], b'old script\nsecond part')
             (source / 'a.js').write_text('new script')

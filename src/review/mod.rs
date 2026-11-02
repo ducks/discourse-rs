@@ -21,10 +21,10 @@ pub mod view;
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
+use self::reviewables::PENDING;
 use crate::guardian::Guardian;
 use crate::post_actions::ActionTypes;
 use crate::posting::Ctx;
-use crate::reviewables::{self, PENDING};
 use crate::{AppError, Unsupported};
 
 /// `Reviewable.statuses`
