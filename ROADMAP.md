@@ -13,6 +13,40 @@ backlog; the milestones below are the coarse one. Phase 9 groups the
 markers into branches and phase 10 holds the rest of the milestones'
 work, so the two together are the count of what is left.
 
+## Next after the staging dropdown deploy: faster frontend delivery
+
+The November 2 Categories/Tags fix required rebuilding the Rust application
+because `src/assets.rs` embeds JavaScript and CSS. The release target also
+had to compile dependencies. Fix this workflow before the next feature slice.
+
+1. Measure clean, unchanged, JavaScript-only, CSS-only and Rust-only builds.
+   Record toolchain, Cargo profile, flags, target directory and timings.
+   Establish why the previous release artifacts were unavailable; do not
+   assume every dependency rebuild is a Cargo cache invalidation problem.
+2. Package frontend assets separately from the server. Start with the core
+   JavaScript and CSS in `src/assets.rs`, preserving CSS ordering, content
+   digests, versioned URLs, ETags and conditional responses. Load a validated
+   asset manifest from an explicit release directory. Asset-only changes
+   must not change Rust compiler inputs. Audit `build.rs`'s generated asset
+   lists and markdown WASM separately before expanding the scope.
+3. Deploy versioned asset directories with the existing server binary.
+   Activate a matching manifest atomically, retain the previous release for
+   rollback and keep older versioned assets available to already-open pages.
+   A short service restart is acceptable initially; Rust compilation is not
+   required for a JavaScript/CSS-only release.
+4. Standardize release builds on the pinned Nix toolchain, consistent flags
+   and a persistent target directory across worktrees. Keep test and release
+   profiles distinct. Reuse the tested artifact for deployment rather than
+   rebuilding it. Preserve the nested markdown WASM cache where valid.
+5. Verify asset lookup, MIME types, missing files, digest changes, 304s and
+   rollback behavior. Run focused browser tests against the packaged assets
+   and repeat the guest-account staging check after deployment.
+
+Done means a JavaScript/CSS-only edit can be tested and deployed without
+invoking rustc, an unchanged release build compiles no crates, and a small
+Rust-only edit reuses unchanged dependencies. Publish measured before/after
+times rather than promising a build duration before measuring it.
+
 ## Current focus, 2026-11-01
 
 The next delivery is the demo: core forum, usable chat and admin, then
