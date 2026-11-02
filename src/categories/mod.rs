@@ -7,6 +7,16 @@
 //! content localization, and category descriptions with markup beyond
 //! plain paragraphs (ExcerptParser), which are refused.
 
+pub mod badge;
+pub mod edit_view;
+pub mod list;
+pub mod model;
+pub mod serializer;
+pub mod type_config;
+pub mod types;
+pub mod view;
+pub mod writes;
+
 use std::collections::HashMap;
 
 use serde_json::{Map, Value, json};

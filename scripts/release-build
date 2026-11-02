@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Stable cache across this repository's worktrees; explicit overrides win.
+set -euo pipefail
+root=$(git rev-parse --show-toplevel)
+common=$(git rev-parse --path-format=absolute --git-common-dir)
+export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-$(dirname "$common")/target}
+cd "$root"
+if [[ ${1:-} == --print-binary ]]; then
+  printf '%s/release/discourse-rs\n' "$(realpath -m "$CARGO_TARGET_DIR")"
+  exit 0
+fi
+cargo build --release --locked --bin discourse-rs "$@"

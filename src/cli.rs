@@ -265,6 +265,7 @@ async fn admin_create(
 
 async fn serve() -> Result<(), Box<dyn Error>> {
     init_tracing();
+    crate::assets::initialize()?;
 
     let config = Config::from_env()?;
     crate::readonly::force_from_globals(&config.globals);

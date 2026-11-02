@@ -53,6 +53,7 @@ jobs:
           name="discourse-rs-$TAG-x86_64-linux"
           mkdir "$name"
           cp "target/$TARGET/release/discourse-rs" README.md "$name/"
+          python3 scripts/package-frontend "$name/frontend"
           # deploy/install finds the binary next to its directory.
           cp -r deploy "$name/"
           tar -czf "$name.tar.gz" "$name"

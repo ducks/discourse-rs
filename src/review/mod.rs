@@ -2,23 +2,29 @@
 //! ReviewableFlaggedPost (agree and keep, agree and hide, disagree,
 //! ignore), with the flag actions it settles, the transition, the flaggers'
 //! stats, and `Post#hide!`; ReviewableUser's delete actions
-//! (reviewable_user.rs) and the queued and reviewed posts' actions
-//! (review_posts.rs).
+//! (user.rs) and the queued and reviewed posts' actions (posts.rs).
 //!
 //! Refused for flagged posts: posts that are deleted or hidden (restoring
 //! and unhiding), deleting posts, silencing or suspending from the queue,
 //! editing, deleting users, flags with a message (their moderator
 //! replies); for every type, category group moderation. The claim check
 //! (claim_error?) and the manual claim released at the transition are
-//! reviewable_claims.rs's.
+//! claims.rs's.
+
+pub mod claims;
+pub mod list;
+pub mod posts;
+pub mod reviewables;
+pub mod user;
+pub mod view;
 
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
+use self::reviewables::PENDING;
 use crate::guardian::Guardian;
 use crate::post_actions::ActionTypes;
 use crate::posting::Ctx;
-use crate::reviewables::{self, PENDING};
 use crate::{AppError, Unsupported};
 
 /// `Reviewable.statuses`

@@ -134,7 +134,7 @@ use crate::AppState;
 /// database down); the chrome loads the site's sprite (crate::svg_sprite).
 pub const ICONS_SVG: &str = include_str!("../../static/vendor/icons.svg");
 
-/// GET /assets/<name>: the embedded stylesheets and scripts (crate::assets).
+/// GET /assets/<name>: the runtime stylesheets and scripts (crate::assets).
 async fn asset(uri: axum::http::Uri, headers: axum::http::HeaderMap) -> axum::response::Response {
     let name = uri
         .path()
@@ -3033,6 +3033,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/assets/moment-locale/{name}",
             get(crate::moment_locale::serve),
         )
+        .route("/assets/{*path}", get(asset))
         .route("/assets/htmx.min.js", get(asset))
         .route("/assets/htmx-ext-sse.js", get(asset))
         .route("/assets/page.js", get(asset))
@@ -3122,6 +3123,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-problem-checks.js", get(asset))
         .route("/assets/admin-badges.js", get(asset))
         .route("/assets/admin-plugins.js", get(asset))
+        .route("/assets/submit-on-load-lti.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))

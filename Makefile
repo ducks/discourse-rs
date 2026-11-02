@@ -1,7 +1,7 @@
 .PHONY: help version-bump release release-push build test parity-test browser-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv snapshot-clean reset-reference \
 	record-pretty-text \
-	bench bench-startup release-build install emoji-assets rehearsal wasm-plugins
+	bench bench-startup release-build frontend install emoji-assets rehearsal wasm-plugins
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -34,6 +34,7 @@ help:
 	@echo "  make release VERSION=20260125.0.0  - Release with specific version"
 	@echo "  make release-push                  - Push main and its release tag (after a failed push)"
 	@echo "  make build                         - Build release binary"
+	@echo "  make frontend FRONTEND_OUTPUT=DIR  - Package JS/CSS into a new directory without Cargo"
 	@echo "  make test                          - Run tests (needs make db-test once)"
 	@echo "  make parity-test                   - Run the Rails comparison tests (slow)"
 	@echo "  make browser-test                  - Run the Playwright suite in tests/browser (not in lint)"
@@ -106,12 +107,12 @@ release-push:
 	echo "Released $$tag"
 
 # Build release binary
-build:
-	cargo build --release
+build: release-build
 
 # Integration tests read TEST_DATABASE_URL (set by shell.nix); run
 # `make db-test` once, and again after vendoring a new schema.
 test:
+	python3 scripts/test-package-frontend.py
 	cargo nextest run --workspace
 	scripts/drop-stale-test-dbs
 
@@ -161,7 +162,7 @@ install-hooks:
 # The binary, unit, service account and /etc/discourse-rs/env (kept if it
 # exists). Does not build: run `make build` first, as yourself.
 install:
-	deploy/install target/release/discourse-rs
+	deploy/install "$$(scripts/release-build --print-binary)" "$(FRONTEND_OUTPUT)"
 
 emoji-assets:
 	deploy/install-emoji "$(PUBLIC_DIR)"
@@ -221,7 +222,11 @@ record-pretty-text:
 	scripts/record-pretty-text $(AGENT)
 
 release-build:
-	cargo build --release
+	scripts/release-build
+
+FRONTEND_OUTPUT ?= tmp/frontend
+frontend:
+	python3 scripts/package-frontend "$(FRONTEND_OUTPUT)"
 
 # e.g. make bench TARGETS="rs=http://127.0.0.1:8090 rails=http://127.0.0.1:3043" BENCH_ARGS="-d 10s -c 16"
 bench:

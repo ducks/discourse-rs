@@ -14,7 +14,6 @@ use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
 /// The JS that submits the resubmit page's form on load.
-pub const SUBMIT_ON_LOAD_JS: &str = include_str!("../../static/js/submit-on-load-lti.js");
 pub const SUBMIT_ON_LOAD_PATH: &str = "/plugins/discourse-lti/javascripts/submit-on-load-lti.js";
 /// `DiscourseLti::CUSTOM_DATA_CLAIM`
 const CUSTOM_DATA_CLAIM: &str = "https://purl.imsglobal.org/spec/lti/claim/custom";

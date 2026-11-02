@@ -18,15 +18,11 @@ pub mod browser_pageviews;
 pub mod bulk_invite;
 pub mod bus;
 pub mod categories;
-pub mod categories_view;
-pub mod category;
-pub mod category_badge;
-pub mod category_edit_view;
-pub mod category_list;
-pub mod category_serializer;
-pub mod category_type_config;
-pub mod category_types;
-pub mod category_writes;
+pub use categories::{
+    badge as category_badge, edit_view as category_edit_view, list as category_list,
+    model as category, serializer as category_serializer, type_config as category_type_config,
+    types as category_types, view as categories_view, writes as category_writes,
+};
 pub mod cli;
 pub mod clock;
 pub mod color_mode;
@@ -61,11 +57,10 @@ pub mod final_destination;
 pub mod flag_modal_view;
 pub mod flags;
 pub mod form_templates;
-pub mod group_manager;
-pub mod group_message;
-pub mod group_writes;
 pub mod groups;
-pub mod groups_view;
+pub use groups::{
+    manager as group_manager, message as group_message, view as groups_view, writes as group_writes,
+};
 pub mod guardian;
 pub mod hashtag_decorator;
 pub mod hashtags;
@@ -136,12 +131,10 @@ pub mod request_tracker;
 pub mod request_tracking;
 pub mod retrieve_title;
 pub mod review;
-pub mod review_list;
-pub mod review_posts;
-pub mod review_view;
-pub mod reviewable_claims;
-pub mod reviewable_user;
-pub mod reviewables;
+pub use review::{
+    claims as reviewable_claims, list as review_list, posts as review_posts, reviewables,
+    user as reviewable_user, view as review_view,
+};
 pub mod roles;
 pub mod routes;
 pub mod ruby;
