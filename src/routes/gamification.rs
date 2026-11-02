@@ -346,8 +346,8 @@ pub async fn admin_index(
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
-    if super::admin_email::html_request(&uri, &headers) {
-        return super::admin_plugins::show(
+    if crate::admin::routes::email::html_request(&uri, &headers) {
+        return crate::admin::routes::plugins::show(
             State(state),
             auth,
             Path(vec![("plugin_id".into(), "gamification".into())]),
@@ -375,7 +375,7 @@ pub async fn admin_leaderboards(
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings = load_settings(&state, &mut conn).await?;
-    if !super::admin_email::html_request(&uri, &headers) {
+    if !crate::admin::routes::email::html_request(&uri, &headers) {
         if let Some(r) = admin_gate(&state, &guardian, &settings).await? {
             return Ok(r);
         }
@@ -393,7 +393,7 @@ pub async fn admin_leaderboards(
         Vec::new()
     };
     let remaining = jobs::recalculate_limiter().remaining(&state.pool).await?;
-    let content = |cx: &crate::admin_view::AdminCx| {
+    let content = |cx: &crate::admin::view::AdminCx| {
         admin_view::leaderboards(
             cx,
             &leaderboards,
@@ -415,7 +415,7 @@ pub async fn admin_leaderboard(
     let (id, _) = strip_format(&id);
     let mut conn = state.pool.acquire().await?;
     let settings = load_settings(&state, &mut conn).await?;
-    let html = super::admin_email::html_request(&uri, &headers);
+    let html = crate::admin::routes::email::html_request(&uri, &headers);
     if html {
         if !guardian.is_staff() || !plugin::enabled(&settings)? {
             return Ok(super::topics::not_found_response(&state));
@@ -443,7 +443,8 @@ pub async fn admin_leaderboard(
         sqlx::query_as("SELECT id::bigint, name FROM categories ORDER BY position, id")
             .fetch_all(&mut *conn)
             .await?;
-    let content = |cx: &crate::admin_view::AdminCx| admin_view::edit(cx, &lb, &groups, &categories);
+    let content =
+        |cx: &crate::admin::view::AdminCx| admin_view::edit(cx, &lb, &groups, &categories);
     admin_page(&state, &mut conn, &guardian, &headers, &uri, true, content).await
 }
 
@@ -455,16 +456,16 @@ async fn admin_page(
     headers: &HeaderMap,
     uri: &Uri,
     leaderboards_tab: bool,
-    content: impl FnOnce(&crate::admin_view::AdminCx) -> String,
+    content: impl FnOnce(&crate::admin::view::AdminCx) -> String,
 ) -> Result<Response, AppError> {
-    let Some(plugin) = crate::admin_plugins::find(
+    let Some(plugin) = crate::admin::plugins::find(
         &SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?,
         "discourse-gamification",
     )?
     else {
         return Ok(super::topics::not_found_response(state));
     };
-    let shell = super::admin_pages::Shell::load(
+    let shell = crate::admin::routes::pages::Shell::load(
         conn,
         state,
         guardian,
@@ -474,7 +475,7 @@ async fn admin_page(
     .await?;
     let cx = shell.cx(state);
     let crumb = admin_view::crumb(&cx);
-    let page = crate::admin_plugins_view::config_page(
+    let page = crate::admin::plugins_view::config_page(
         &cx,
         &plugin,
         (crumb.clone(), admin_view::LEADERBOARDS_PATH),
@@ -484,13 +485,13 @@ async fn admin_page(
     let main = format!(
         "{}{}",
         admin_view::strings(&cx),
-        crate::admin_plugins_view::render(&page)
+        crate::admin::plugins_view::render(&page)
     );
-    let main = crate::admin_ui::contents("admin-plugins discourse-gamification", "", &main);
+    let main = crate::admin::ui::contents("admin-plugins discourse-gamification", "", &main);
     let title = format!(
         "{crumb} - {} - {}",
-        crate::admin_plugins_view::name_titleized(&cx, &plugin),
-        crate::admin_view::t(&state.i18n, "admin.plugins.title"),
+        crate::admin::plugins_view::name_titleized(&cx, &plugin),
+        crate::admin::view::t(&state.i18n, "admin.plugins.title"),
     );
     shell.render(state, uri, &title, main, "gamification.js", StatusCode::OK)
 }

@@ -343,7 +343,7 @@ pub(crate) async fn basic_user(cx: &mut Context<'_>, user_id: i32) -> Result<Val
     let Some((username, name, avatar)) = row else {
         return Ok(Value::Null);
     };
-    let logo = crate::admin_users::logo_small_url(&mut *cx.conn, cx.settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut *cx.conn, cx.settings).await?;
     let urls = crate::url::Urls {
         config: cx.config,
         settings: cx.settings,

@@ -264,30 +264,35 @@ async fn admin_page(
     headers: &HeaderMap,
     uri: &Uri,
     crumb: (String, String),
-    content: impl FnOnce(&crate::admin_view::AdminCx) -> String,
+    content: impl FnOnce(&crate::admin::view::AdminCx) -> String,
 ) -> Result<Response, AppError> {
     let settings = load_settings(state, conn).await?;
-    let Some(plugin) = crate::admin_plugins::find(&settings, admin_view::PLUGIN_ID)? else {
+    let Some(plugin) = crate::admin::plugins::find(&settings, admin_view::PLUGIN_ID)? else {
         return Ok(super::topics::not_found_response(state));
     };
-    let shell =
-        super::admin_pages::Shell::load(conn, state, guardian, headers, "admin_plugin_chat")
-            .await?;
+    let shell = crate::admin::routes::pages::Shell::load(
+        conn,
+        state,
+        guardian,
+        headers,
+        "admin_plugin_chat",
+    )
+    .await?;
     let cx = shell.cx(state);
-    let page = crate::admin_plugins_view::config_page(
+    let page = crate::admin::plugins_view::config_page(
         &cx,
         &plugin,
         (crumb.0.clone(), &crumb.1),
         Some(admin_view::config_nav(&cx, true)),
         &content(&cx),
     );
-    let main = crate::admin_plugins_view::render(&page);
-    let main = crate::admin_ui::contents("admin-plugins chat", "", &main);
+    let main = crate::admin::plugins_view::render(&page);
+    let main = crate::admin::ui::contents("admin-plugins chat", "", &main);
     let title = format!(
         "{} - {} - {}",
         crumb.0,
-        crate::admin_plugins_view::name_titleized(&cx, &plugin),
-        crate::admin_view::t(&state.i18n, "admin.plugins.title"),
+        crate::admin::plugins_view::name_titleized(&cx, &plugin),
+        crate::admin::view::t(&state.i18n, "admin.plugins.title"),
     );
     shell.render(state, uri, &title, main, "chat-admin.js", StatusCode::OK)
 }
@@ -326,7 +331,7 @@ pub async fn index(
     for w in hooks::all(&mut *cx.conn).await? {
         webhooks.push(cx.webhook_json(&w, &base).await?);
     }
-    if !super::admin_email::html_request(&uri, &headers) {
+    if !crate::admin::routes::email::html_request(&uri, &headers) {
         return Ok(Json(json!({
             "chat_channels": channels,
             "incoming_chat_webhooks": webhooks,
@@ -345,7 +350,7 @@ pub async fn index(
             )
         })
         .collect();
-    let crumb = crate::admin_view::t(&state.i18n, "chat.incoming_webhooks.title");
+    let crumb = crate::admin::view::t(&state.i18n, "chat.incoming_webhooks.title");
     admin_page(
         &state,
         &mut conn,
@@ -373,11 +378,11 @@ pub async fn new(
     }
     let mut cx = context(&state, &mut conn, &settings, &guardian);
     let channels = cx.admin_public_channels().await?;
-    if !super::admin_email::html_request(&uri, &headers) {
+    if !crate::admin::routes::email::html_request(&uri, &headers) {
         return Ok(Json(json!({ "chat_channels": channels })).into_response());
     }
     let choices = channel_choices(&mut cx, &channels).await;
-    let crumb = crate::admin_view::t(&state.i18n, "chat.incoming_webhooks.title");
+    let crumb = crate::admin::view::t(&state.i18n, "chat.incoming_webhooks.title");
     admin_page(
         &state,
         &mut conn,
@@ -411,11 +416,11 @@ pub async fn edit(
     let mut cx = context(&state, &mut conn, &settings, &guardian);
     let channels = cx.admin_public_channels().await?;
     let webhook = cx.webhook_json(&webhook, &base).await?;
-    if !super::admin_email::html_request(&uri, &headers) {
+    if !crate::admin::routes::email::html_request(&uri, &headers) {
         return Ok(Json(json!({ "chat_channels": channels, "webhook": webhook })).into_response());
     }
     let choices = channel_choices(&mut cx, &channels).await;
-    let crumb = crate::admin_view::t(&state.i18n, "chat.incoming_webhooks.title");
+    let crumb = crate::admin::view::t(&state.i18n, "chat.incoming_webhooks.title");
     admin_page(
         &state,
         &mut conn,

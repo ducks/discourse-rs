@@ -71,7 +71,7 @@ pub struct QueryParams {
 }
 
 /// `Discourse::InvalidParameters` as JSON.
-pub(super) fn invalid_parameters(state: &AppState, message: &str) -> Response {
+pub(crate) fn invalid_parameters(state: &AppState, message: &str) -> Response {
     let text = state
         .i18n
         .t_with("invalid_params", &[("message", message)])
@@ -882,7 +882,7 @@ fn valid_search_term(term: &str, settings: &SiteSettings) -> Result<bool, AppErr
 /// The advanced filters' data: the site's categories by activity with
 /// their chooser rows (CategoryRow) and header labels, and the options
 /// the viewer and plugins bring.
-pub(super) async fn advanced_panel(
+pub(crate) async fn advanced_panel(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,

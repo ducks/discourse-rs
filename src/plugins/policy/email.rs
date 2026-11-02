@@ -106,7 +106,7 @@ pub async fn build(
             html_escape(&t("system_messages.contents_hidden", &[])?)
         )
     } else {
-        let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
+        let logo_small = crate::admin::users::logo_small_url(&mut *conn, s).await?;
         let partial = crate::email::notification::post_partial(
             &mut *conn,
             ctx,

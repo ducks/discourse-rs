@@ -211,7 +211,7 @@ pub async fn merge(
             settings: s,
         };
         let logo = if target == SYSTEM_USER_ID {
-            crate::admin_users::logo_small_url(&mut *conn, s).await?
+            crate::admin::users::logo_small_url(&mut *conn, s).await?
         } else {
             None
         };
@@ -651,9 +651,9 @@ async fn update_site_settings(
         config: ctx.config,
         settings: s,
     };
-    crate::admin_site_settings::fix_upload_dimensions(
+    crate::admin::site_settings::fix_upload_dimensions(
         &mut *conn,
-        &crate::admin_site_settings::Context {
+        &crate::admin::site_settings::Context {
             defs: &ctx.host.site_setting_defs,
             settings: s,
             i18n: ctx.i18n,
@@ -898,7 +898,7 @@ pub async fn merge_user_job(state: &AppState, args: &Value) -> Result<(), AppErr
         .await?
         .ok_or(Unsupported("merge_user's acting user vanished"))?;
     let guardian = Guardian::for_user(&mut tx, &session).await?;
-    let cx = crate::admin_user_show::Context {
+    let cx = crate::admin::user_show::Context {
         settings: &s,
         defs: &state.site_setting_defs,
         i18n: &state.i18n,
@@ -906,12 +906,12 @@ pub async fn merge_user_job(state: &AppState, args: &Value) -> Result<(), AppErr
         globals: &state.config.globals,
         development: state.config.rails_env == crate::config::RailsEnv::Development,
     };
-    let user = crate::admin_user_show::show(
+    let user = crate::admin::user_show::show(
         &mut tx,
         &cx,
         &guardian,
         target,
-        crate::admin_user_show::ShowOptions {
+        crate::admin::user_show::ShowOptions {
             show: false,
             detailed: true,
         },

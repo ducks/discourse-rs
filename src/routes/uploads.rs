@@ -16,13 +16,13 @@ use crate::{AppError, AppState, Unsupported};
 
 /// The form's fields: text values, and the file's name and bytes.
 #[derive(Default)]
-pub(super) struct Form {
-    pub(super) fields: Vec<(String, String)>,
-    pub(super) file: Option<(String, Vec<u8>)>,
+pub(crate) struct Form {
+    pub(crate) fields: Vec<(String, String)>,
+    pub(crate) file: Option<(String, Vec<u8>)>,
 }
 
 impl Form {
-    pub(super) fn get(&self, key: &str) -> Option<&str> {
+    pub(crate) fn get(&self, key: &str) -> Option<&str> {
         self.fields
             .iter()
             .find(|(k, _)| k == key)
@@ -30,7 +30,7 @@ impl Form {
     }
 }
 
-pub(super) async fn read_form(request: Request, state: &AppState) -> Result<Form, AppError> {
+pub(crate) async fn read_form(request: Request, state: &AppState) -> Result<Form, AppError> {
     let mut form = Form::default();
     if let Some(query) = request.uri().query() {
         for (k, v) in form_urlencoded::parse(query.as_bytes()) {

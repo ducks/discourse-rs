@@ -103,12 +103,12 @@ fn handler<'a>(
         super::badges::BACKFILL_BADGE => {
             Box::pin(async move { super::badges::backfill_badge(state, &job.args).await })
         }
-        crate::admin_badges::MASS_AWARD_BADGE => {
-            Box::pin(async move { crate::admin_badges::mass_award_badge(state, &job.args).await })
+        crate::admin::badges::MASS_AWARD_BADGE => {
+            Box::pin(async move { crate::admin::badges::mass_award_badge(state, &job.args).await })
         }
-        crate::admin_badges::BULK_USER_TITLE_UPDATE => {
+        crate::admin::badges::BULK_USER_TITLE_UPDATE => {
             Box::pin(
-                async move { crate::admin_badges::bulk_user_title_update(state, &job.args).await },
+                async move { crate::admin::badges::bulk_user_title_update(state, &job.args).await },
             )
         }
         crate::sidebar_backfill::JOB => {

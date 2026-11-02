@@ -1133,7 +1133,7 @@ impl Context<'_> {
             enable_names: settings.get("enable_names")?.truthy(),
             pinned_setting: settings.get("chat_pinned_messages")?.truthy(),
             max_mentions: settings.get("max_mentions_per_chat_message")?.to_i(),
-            logo_small_url: crate::admin_users::logo_small_url(&mut *self.conn, settings).await?,
+            logo_small_url: crate::admin::users::logo_small_url(&mut *self.conn, settings).await?,
             deleted_username: self
                 .i18n
                 .t("chat.deleted_chat_username")

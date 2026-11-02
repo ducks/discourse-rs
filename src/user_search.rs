@@ -468,7 +468,7 @@ pub async fn found_users(
     let settings = urls.settings;
     let names = settings.get("enable_names")?.truthy();
     let statuses = settings.get("enable_user_status")?.truthy();
-    let logo = crate::admin_users::logo_small_url(&mut *conn, settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut *conn, settings).await?;
     let mut out = Vec::new();
     for id in ids {
         let Some(row) = rows.iter().find(|r| r.id == *id) else {

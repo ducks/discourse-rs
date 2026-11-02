@@ -517,7 +517,7 @@ pub async fn link_tags(
                 "<link href=\"{root}/stylesheets/{target}_{}_{digest}.css?__ws={host}\" media=\"{media}\" rel=\"stylesheet\" data-target=\"{target}\" data-theme-id=\"{}\" data-theme-name=\"{}\"/>",
                 theme.id,
                 theme.id,
-                crate::admin_site_settings::escape_html(&theme.name.to_lowercase())
+                crate::admin::site_settings::escape_html(&theme.name.to_lowercase())
             ));
         }
     }

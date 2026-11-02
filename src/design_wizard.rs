@@ -63,7 +63,7 @@ async fn homepage(conn: &mut PgConnection, cx: &Cx<'_>) -> Result<String, AppErr
 
 /// `HomepageSiteSetting.choices`
 async fn homepage_choices(conn: &mut PgConnection, cx: &Cx<'_>) -> Result<Vec<String>, AppError> {
-    let admin_cx = crate::admin_site_settings::Context {
+    let admin_cx = crate::admin::site_settings::Context {
         defs: cx.defs,
         settings: cx.settings(),
         i18n: cx.themes.i18n,

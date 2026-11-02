@@ -1070,7 +1070,7 @@ pub(crate) async fn invited_doc(
                 config: &state.config,
                 settings: &s,
             };
-            let logo_small = crate::admin_users::logo_small_url(&mut conn, &s).await?;
+            let logo_small = crate::admin::users::logo_small_url(&mut conn, &s).await?;
             for row in rows {
                 let user = match row.user_id {
                     Some(id) => crate::users::User::find_by_id(&mut conn, id).await?,
@@ -1217,7 +1217,7 @@ pub async fn upload_csv(
     let Some((_, bytes)) = form.file else {
         return Err(Unsupported("upload_csv without a file (a 500 in Rails)").into());
     };
-    let Some(rows) = crate::admin_badges::csv_rows(&bytes)? else {
+    let Some(rows) = crate::admin::badges::csv_rows(&bytes)? else {
         return Err(Unsupported("a malformed invites CSV (CSV::MalformedCSVError)").into());
     };
     let mut conn = state.pool.acquire().await?;

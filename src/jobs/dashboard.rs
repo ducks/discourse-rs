@@ -44,7 +44,7 @@ pub async fn warm_dashboard_reports(state: &AppState) -> Result<(), AppError> {
     // report_specs: the KPI reports (highlights' then engagement's, each
     // once) with the previous period, and the trust level pipeline.
     let mut kpi_reports = vec!["signups", "dau_by_mau", "new_contributors"];
-    if crate::admin_dashboard::solved_kpi_on(&mut conn, &cx).await? {
+    if crate::admin::dashboard::solved_kpi_on(&mut conn, &cx).await? {
         kpi_reports.push("accepted_solutions");
     }
     for r in ["dau_by_mau", "daily_engaged_users", "signups"] {

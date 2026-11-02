@@ -116,9 +116,9 @@ pub async fn index(
     }
     if !uri.path().ends_with(".json") && !super::wants_json(uri.query(), &headers) {
         let tab = if uri.path().trim_end_matches('/').ends_with("/settings") {
-            crate::admin_backups_view::Tab::Settings
+            crate::admin::backups_view::Tab::Settings
         } else {
-            crate::admin_backups_view::Tab::Files
+            crate::admin::backups_view::Tab::Files
         };
         return page(&state, &guardian, &headers, &uri, tab).await;
     }
@@ -149,7 +149,7 @@ pub async fn logs(
         &guardian,
         &headers,
         &uri,
-        crate::admin_backups_view::Tab::Logs,
+        crate::admin::backups_view::Tab::Logs,
     )
     .await
 }
@@ -163,13 +163,18 @@ async fn page(
     guardian: &Guardian,
     headers: &HeaderMap,
     uri: &Uri,
-    tab: crate::admin_backups_view::Tab,
+    tab: crate::admin::backups_view::Tab,
 ) -> Result<Response, AppError> {
-    use crate::admin_backups_view::{Status, Tab};
+    use crate::admin::backups_view::{Status, Tab};
     let mut conn = state.pool.acquire().await?;
-    let shell =
-        super::admin_pages::Shell::load(&mut conn, state, guardian, headers, "admin_backups")
-            .await?;
+    let shell = crate::admin::routes::pages::Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_backups",
+    )
+    .await?;
     let mut status = Status::from_json(
         &backup_restore::operations_status(state, &mut conn, &shell.settings).await?,
     );
@@ -187,15 +192,15 @@ async fn page(
                 .iter()
                 .map(store::BackupFile::json)
                 .collect();
-            crate::admin_backups_view::index(&cx, &status, &files)
+            crate::admin::backups_view::index(&cx, &status, &files)
         }
         Tab::Logs => {
             let user_id = guardian.user_id().unwrap_or_default();
             let logs = backup_restore::logs(state, &mut conn, user_id).await?;
-            crate::admin_backups_view::logs(&cx, &status, &logs)
+            crate::admin::backups_view::logs(&cx, &status, &logs)
         }
         Tab::Settings => {
-            super::admin_advanced::area_settings(
+            crate::admin::routes::advanced::area_settings(
                 &mut conn,
                 state,
                 &shell,
@@ -209,8 +214,8 @@ async fn page(
     // one dialog.js finds.
     let mut main = format!(
         "{}{}",
-        crate::admin_backups_view::strings(&cx),
-        crate::admin_backups_view::render(&cx, tab, &status, &content)
+        crate::admin::backups_view::strings(&cx),
+        crate::admin::backups_view::render(&cx, tab, &status, &content)
     );
     let (classes, title, script) = match tab {
         Tab::Files => ("backups", "admin.backups.title", "admin-backups.js"),
@@ -244,12 +249,12 @@ async fn page(
         s3_uploads && !include_s3,
         !s3_uploads || include_s3
     );
-    let main = crate::admin_ui::contents(classes, &attrs, &main);
-    let mut title = crate::admin_view::t(&state.i18n, title);
+    let main = crate::admin::ui::contents(classes, &attrs, &main);
+    let mut title = crate::admin::view::t(&state.i18n, title);
     if tab != Tab::Files {
         title = format!(
             "{title} - {}",
-            crate::admin_view::t(&state.i18n, "admin.backups.title")
+            crate::admin::view::t(&state.i18n, "admin.backups.title")
         );
     }
     shell.render(state, uri, &title, main, script, StatusCode::OK)

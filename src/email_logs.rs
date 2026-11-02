@@ -15,7 +15,7 @@ use crate::i18n::I18n;
 use crate::{AppError, Unsupported};
 
 pub struct Context<'a> {
-    pub user_cx: &'a crate::admin_user_show::Context<'a>,
+    pub user_cx: &'a crate::admin::user_show::Context<'a>,
     pub i18n: &'a I18n,
 }
 
@@ -112,7 +112,7 @@ pub async fn list(
     f: &Filters,
 ) -> Result<Value, AppError> {
     let offset = f.offset.as_deref().map_or(0, crate::ruby::to_i).max(0);
-    let logo = crate::admin_users::logo_small_url(conn, cx.user_cx.settings).await?;
+    let logo = crate::admin::users::logo_small_url(conn, cx.user_cx.settings).await?;
     let mut w = Where::default();
     let (table, base) = match which {
         List::Sent | List::Bounced => ("email_logs", "email_logs"),
@@ -230,7 +230,7 @@ async fn mixin(
             o.insert("post_description".into(), json!(d));
         }
     }
-    let user = crate::admin_user_show::basic_user(conn, cx.user_cx, user_id, logo).await?;
+    let user = crate::admin::user_show::basic_user(conn, cx.user_cx, user_id, logo).await?;
     o.insert("user".into(), user);
     Ok(())
 }
@@ -431,7 +431,7 @@ async fn incoming_item(
     if let Some((url, _)) = post_fields(conn, r.post_id).await? {
         o.insert("post_url".into(), json!(url));
     }
-    let user = crate::admin_user_show::basic_user(conn, cx.user_cx, r.user_id, logo).await?;
+    let user = crate::admin::user_show::basic_user(conn, cx.user_cx, r.user_id, logo).await?;
     o.insert("user".into(), user);
     Ok(Value::Object(o))
 }

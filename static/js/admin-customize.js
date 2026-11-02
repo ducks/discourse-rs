@@ -1,4 +1,4 @@
-// The customize admin pages in the browser (src/admin_customize_view.rs
+// The customize admin pages in the browser (src/admin/customize_view.rs
 // draws them). The watched words: the filter (the route's query param),
 // the action nav's menu in the mobile view, the regular expression
 // errors, WatchedWordForm (the creatable WatchedWords and TagChooser
@@ -42,7 +42,7 @@
 
   // --- select-kit choosers --------------------------------------------------
   //
-  // details.multi-select[data-chooser] (src/admin_customize_kit.rs chooser):
+  // details.multi-select[data-chooser] (src/admin/customize_kit.rs chooser):
   // the selection in data-chosen; data-creatable offers the typed text
   // (WatchedWords, TagChooser's allowAny), data-search the tags' or the
   // users' results, data-maximum stops at that many. `change` fires on
@@ -2579,7 +2579,7 @@
 
   // --- AceEditor -------------------------------------------------------------
   //
-  // div.ace[data-ace-mode] (src/admin_code_view.rs ace_editor): Ace loaded
+  // div.ace[data-ace-mode] (src/admin/code_view.rs ace_editor): Ace loaded
   // from the bundle once, the editor made as AceEditor's setupAce makes it,
   // its value the element's text. A change fires `ace-change` on the
   // element (detail: the value); the editor is the element's aceEditor.
@@ -3672,7 +3672,7 @@
 
   // --- a theme's page ---------------------------------------------------------
   //
-  // .admin-customize-themes-show (src/admin_theme_view.rs show): the
+  // .admin-customize-themes-show (src/admin/theme_view.rs show): the
   // controller's actions on the theme from #theme-data. A save is the
   // Theme model's saveChanges, a JSON PUT of the changed attributes;
   // what Ember re-renders from the saved model is the page fetched again
@@ -4128,7 +4128,7 @@
 
   // --- a theme's code editor --------------------------------------------------
   //
-  // .admin-customize-themes.edit (src/admin_theme_view.rs edit): the
+  // .admin-customize-themes.edit (src/admin/theme_view.rs edit): the
   // field's value in Ace; its edits go into the theme kept for the page
   // (Discourse.themeEditor, which the editor's other fields, swapped in
   // with replace, share as Ember's model does) until Save sends every

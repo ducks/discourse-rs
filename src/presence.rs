@@ -349,7 +349,7 @@ async fn basic_users(
     .fetch_all(&mut *conn)
     .await?;
     let names = urls.settings.get("enable_names")?.truthy();
-    let logo = crate::admin_users::logo_small_url(&mut *conn, urls.settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut *conn, urls.settings).await?;
     let mut out = Vec::new();
     for (id, username, name, avatar) in rows {
         let mut user = Map::new();

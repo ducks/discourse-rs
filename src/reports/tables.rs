@@ -1419,7 +1419,7 @@ pub async fn reactions(
     r.modes = vec!["table".into()];
     let emoji = |name: &str| {
         crate::topic_list_view::unescape_emoji(
-            &crate::admin_site_settings::escape_html(&format!(":{name}:")),
+            &crate::admin::site_settings::escape_html(&format!(":{name}:")),
             cx.settings.emojis(),
             cx.base_path(),
         )

@@ -9,7 +9,7 @@
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::admin_flags::Flag;
+use crate::admin::flags::Flag;
 use crate::html::HtmlError;
 use crate::i18n::I18n;
 use crate::site_settings::SiteSettings;
@@ -86,7 +86,7 @@ async fn flag_types(
     Ok(Value::Array(
         flags
             .iter()
-            .map(|f| crate::admin_flags::serialize(i18n, base_path, f, target, false))
+            .map(|f| crate::admin::flags::serialize(i18n, base_path, f, target, false))
             .collect(),
     ))
 }
@@ -114,7 +114,7 @@ pub async fn chat_config(
         keys.push(format!("chat.flags.{flag}"));
     }
     for key in keys {
-        extra.insert(key.clone(), json!(crate::admin_view::t(i18n, &key)));
+        extra.insert(key.clone(), json!(crate::admin::view::t(i18n, &key)));
     }
     config_with(conn, i18n, settings, base_path, &json!({}), staff, extra).await
 }
@@ -142,12 +142,12 @@ async fn config_with(
 ) -> Result<String, HtmlError> {
     let mut strings = extra;
     for key in KEYS {
-        strings.insert(key.to_string(), json!(crate::admin_view::t(i18n, key)));
+        strings.insert(key.to_string(), json!(crate::admin::view::t(i18n, key)));
     }
     for key in COUNT_KEYS {
         for form in ["one", "other"] {
             let full = format!("{key}.{form}");
-            strings.insert(full.clone(), json!(crate::admin_view::t(i18n, &full)));
+            strings.insert(full.clone(), json!(crate::admin::view::t(i18n, &full)));
         }
     }
     let config = json!({

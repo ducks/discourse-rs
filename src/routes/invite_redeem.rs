@@ -260,10 +260,10 @@ async fn redeem_in(
             crate::roles::GRANT_MODERATION,
         )
         .await?;
-        if crate::admin_confirmation::can_grant_admin(&mut *conn, invite.invited_by_id, user_id)
+        if crate::admin::confirmation::can_grant_admin(&mut *conn, invite.invited_by_id, user_id)
             .await?
         {
-            crate::admin_confirmation::create(&mut *conn, user_id, invite.invited_by_id).await?;
+            crate::admin::confirmation::create(&mut *conn, user_id, invite.invited_by_id).await?;
         }
     }
     Ok(Ok(Redeemed::User {
@@ -1299,7 +1299,7 @@ pub(crate) async fn show_info(
             .bind(inviter.id)
             .fetch_one(&mut *conn)
             .await?;
-    let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
+    let logo_small = crate::admin::users::logo_small_url(&mut *conn, s).await?;
     let mut invited_by = Map::new();
     invited_by.insert("id".into(), json!(inviter.id));
     invited_by.insert("username".into(), json!(inviter.username));

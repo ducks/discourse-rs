@@ -3052,7 +3052,7 @@ async fn remove_site_settings(
         config: &cx.host.config,
         settings: cx.settings,
     };
-    let acx = crate::admin_site_settings::Context {
+    let acx = crate::admin::site_settings::Context {
         defs: &cx.host.site_setting_defs,
         settings: cx.settings,
         i18n: &cx.host.i18n,
@@ -3060,11 +3060,11 @@ async fn remove_site_settings(
         base_path: cx.host.config.globals.relative_url_root(),
         urls: &urls,
     };
-    crate::admin_site_settings::fix_upload_dimensions(&mut *conn, &acx, false).await?;
+    crate::admin::site_settings::fix_upload_dimensions(&mut *conn, &acx, false).await?;
     let mut names = Vec::new();
     for def in cx.host.site_setting_defs.iter() {
         if !matches!(def.data_type, crate::site_settings::DataType::Category)
-            || crate::admin_site_settings::is_hidden(&acx, def)?
+            || crate::admin::site_settings::is_hidden(&acx, def)?
         {
             continue;
         }

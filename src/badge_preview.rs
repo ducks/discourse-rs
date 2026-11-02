@@ -10,7 +10,7 @@ use serde_json::{Map, Value, json};
 use sqlx::postgres::{PgDatabaseError, PgErrorPosition, PgRow};
 use sqlx::{Column, PgConnection, Row, TypeInfo, ValueRef};
 
-use crate::admin_badges::contract_checks;
+use crate::admin::badges::contract_checks;
 use crate::{AppError, Unsupported};
 
 /// What a preview failed on: the message the response's `errors` shows.

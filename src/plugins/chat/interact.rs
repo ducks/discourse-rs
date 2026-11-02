@@ -71,7 +71,7 @@ impl Context<'_> {
             config: self.config,
             settings: self.settings,
         };
-        let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+        let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
         let mut users = Vec::new();
         for (uid, username, name, avatar, reaction) in rows {
             let mut u = Map::new();

@@ -174,12 +174,12 @@ pub async fn build(
     // parse_date: Time.zone.parse(value)&.beginning_of_day, nil when it
     // raises; the defaults are 30 days ago and the end of today.
     let now = crate::clock::now_naive();
-    let start = crate::admin_dashboard::zone_parse(start)?
+    let start = crate::admin::dashboard::zone_parse(start)?
         .map(crate::reports::beginning_of_day)
         .unwrap_or_else(|| {
             crate::reports::beginning_of_day((now - chrono::Duration::days(30)).date())
         });
-    let end = crate::admin_dashboard::zone_parse(end)?
+    let end = crate::admin::dashboard::zone_parse(end)?
         .map(crate::reports::end_of_day)
         .unwrap_or_else(|| crate::reports::end_of_day(now.date()));
     let requested = requested_ids(category_ids)?;

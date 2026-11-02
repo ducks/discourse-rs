@@ -1,4 +1,4 @@
-// The admin email pages in the browser (src/admin_email_view.rs draws
+// The admin email pages in the browser (src/admin/email_view.rs draws
 // them): the server settings' test email, the summary preview (the date
 // picker, the user, Refresh, the html and text toggle, sending it), the
 // advanced test's run, and the templates' filter and overridden toggle.

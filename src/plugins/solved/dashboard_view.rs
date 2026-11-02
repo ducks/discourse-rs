@@ -7,10 +7,10 @@
 
 use serde_json::Value;
 
-use crate::admin_dashboard_view::{
+use crate::admin::dashboard_view::{
     Dashboard, category_slug_for, enc, js_number, js_round, section as dashboard_section, tooltip,
 };
-use crate::admin_view::{t, t_with};
+use crate::admin::view::{t, t_with};
 use crate::topic_list_view::escape;
 use crate::{AppError, user_profile_view};
 

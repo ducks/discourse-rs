@@ -1,4 +1,4 @@
-// The admin badges pages in the browser (src/admin_badges_view.rs draws
+// The admin badges pages in the browser (src/admin/badges_view.rs draws
 // them): AdminBadgesList's filter, Group settings' EditBadgeGroupings
 // modal, AdminBadgesShow's form (the live name, the icon or image
 // choice, DIconGridPicker, the badge image's upload, the grouping menu,

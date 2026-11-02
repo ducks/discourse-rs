@@ -1,4 +1,4 @@
-// The MCP server pages in the browser (src/admin_mcp_view.rs draws them):
+// The MCP server pages in the browser (src/admin/mcp_view.rs draws them):
 // AdminMcp's actions for each section. The overview's endpoint copy; the
 // access rules' delete and their form (GroupChooser, the scopes'
 // DMultiSelect, save); the capabilities' filters, groups, visible

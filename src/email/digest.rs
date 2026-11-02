@@ -847,7 +847,7 @@ pub async fn build(
 
     // The views' per-topic and per-post values.
     let enable_names = s.get("enable_names")?.truthy();
-    let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
+    let logo_small = crate::admin::users::logo_small_url(&mut *conn, s).await?;
     let mut posters: std::collections::HashMap<i32, Poster> = std::collections::HashMap::new();
     let poster_ids: Vec<i32> = topics
         .iter()

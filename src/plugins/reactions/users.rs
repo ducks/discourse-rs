@@ -85,7 +85,7 @@ impl Reader<'_> {
         uploaded_avatar_id: Option<i32>,
     ) -> Result<String, AppError> {
         let logo = if id == avatar::SYSTEM_USER_ID {
-            crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?
+            crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?
         } else {
             None
         };

@@ -1,0 +1,674 @@
+//! GET /admin/logs/staff_action_logs(.json): Admin::StaffActionLogsController#index.
+
+use axum::Json;
+use axum::body::Bytes;
+use axum::extract::{Path, State};
+use axum::http::{HeaderMap, StatusCode, Uri};
+use axum::response::{IntoResponse, Response};
+
+use serde_json::json;
+
+use crate::session::current::AuthGuardian;
+use crate::site_settings::SiteSettings;
+use crate::staff_action_logs::{self, Outcome, Params, STAFF_FILTERS};
+use crate::{AppError, AppState};
+
+/// Staff only (StaffConstraint, others 404).
+pub async fn staff_action_logs(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if !guardian.is_staff() {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    if !super::pages::wants_json(&uri, &headers) {
+        // adminLogs.index sends /admin/logs on to the staff action logs.
+        if uri.path().trim_end_matches('/').ends_with("/admin/logs") {
+            let base = state.config.globals.relative_url_root();
+            return Ok(axum::response::Redirect::to(&format!(
+                "{base}/admin/logs/staff_action_logs"
+            ))
+            .into_response());
+        }
+        return super::pages::staff_action_logs_page(state, guardian, headers, uri).await;
+    }
+    // Query and body params, as Rails merges them; a repeated query
+    // param is already its last value.
+    let params = crate::params::parse(uri.query(), &headers, &body);
+    let mut query: Vec<(String, String)> = Vec::new();
+    for (k, v) in &params {
+        match crate::params::scalar(v) {
+            Some(v) => query.push((k.clone(), v)),
+            None if v.is_null() => {}
+            None => {
+                return Err(
+                    crate::Unsupported("staff action log params that are lists or hashes").into(),
+                );
+            }
+        }
+    }
+    let get = |k: &str| {
+        query
+            .iter()
+            .find(|(key, _)| key == k)
+            .map(|(_, v)| v.clone())
+    };
+    let mut permitted: Vec<(String, String)> = Vec::new();
+    for (k, _) in &query {
+        if STAFF_FILTERS.contains(&k.as_str()) && !permitted.iter().any(|(p, _)| p == k) {
+            permitted.push((k.clone(), get(k).unwrap_or_default()));
+        }
+    }
+    let p = Params {
+        action_id: get("action_id"),
+        custom_type: get("custom_type"),
+        acting_user: get("acting_user"),
+        target_user: get("target_user"),
+        subject: get("subject"),
+        action_name: get("action_name"),
+        start_date: get("start_date"),
+        end_date: get("end_date"),
+        page: get("page"),
+        limit: get("limit"),
+        permitted,
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let user_cx = crate::admin::user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let cx = staff_action_logs::Context {
+        settings: &settings,
+        user_cx: &user_cx,
+        base_path: state.config.globals.relative_url_root(),
+    };
+    Ok(
+        match staff_action_logs::index(&mut conn, &cx, &guardian, &p).await? {
+            Outcome::Json(body) => Json(body).into_response(),
+            Outcome::InvalidParameter(key) => {
+                crate::routes::search::invalid_parameters(&state, key)
+            }
+        },
+    )
+}
+
+/// Admin::StaffController: staff, others 404.
+fn staff_only(state: &AppState, guardian: &crate::guardian::Guardian) -> Option<Response> {
+    (!guardian.is_staff()).then(|| crate::routes::topics::not_found_response(state))
+}
+
+fn can_see_ip(guardian: &crate::guardian::Guardian, s: &SiteSettings) -> Result<bool, AppError> {
+    Ok(guardian.is_admin() || (guardian.is_moderator() && s.get("moderators_view_ips")?.truthy()))
+}
+
+/// GET /admin/logs/screened_emails(.json), for those who can see emails.
+pub async fn screened_emails(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let page = !super::pages::wants_json(&uri, &headers);
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !guardian.is_admin()
+        && !(s.get("moderators_view_emails")?.truthy() && guardian.is_moderator())
+    {
+        return Ok(crate::routes::search::invalid_access(&state));
+    }
+    let see_ip = can_see_ip(&guardian, &s)?;
+    let doc = crate::screened::emails(&mut conn, see_ip).await?;
+    if page {
+        return super::pages::screened_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin::logs_view::Tab::ScreenedEmails,
+            &doc,
+            "",
+        )
+        .await;
+    }
+    Ok(Json(doc).into_response())
+}
+
+/// DELETE /admin/logs/screened_emails/:id(.json)
+pub async fn destroy_screened_email(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !crate::routes::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "DELETE") {
+        return Ok(crate::routes::session::bad_csrf());
+    }
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !guardian.is_admin()
+        && !(s.get("moderators_view_emails")?.truthy() && guardian.is_moderator())
+    {
+        return Ok(crate::routes::search::invalid_access(&state));
+    }
+    // ScreenedEmail.find(params[:id].to_i)
+    let id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id)) as i32;
+    let deleted = sqlx::query("DELETE FROM screened_emails WHERE id = $1")
+        .bind(id)
+        .execute(&mut *conn)
+        .await?;
+    if deleted.rows_affected() == 0 {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}
+
+/// GET /admin/logs/screened_urls(.json)
+pub async fn screened_urls(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let mut conn = state.pool.acquire().await?;
+    let doc = crate::screened::urls(&mut conn).await?;
+    if !super::pages::wants_json(&uri, &headers) {
+        return super::pages::screened_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin::logs_view::Tab::ScreenedUrls,
+            &doc,
+            "",
+        )
+        .await;
+    }
+    Ok(Json(doc).into_response())
+}
+
+/// GET /admin/logs/screened_ip_addresses(.json), for those who can see
+/// IPs.
+pub async fn screened_ip_addresses(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if !can_see_ip(&guardian, &s)? {
+        return Ok(crate::routes::search::invalid_access(&state));
+    }
+    let filter = crate::params::string(&p, "filter");
+    let doc = crate::screened::ip_addresses(&mut conn, filter.as_deref()).await?;
+    if !super::pages::wants_json(&uri, &headers) {
+        return super::pages::screened_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            crate::admin::logs_view::Tab::ScreenedIps,
+            &doc,
+            filter.as_deref().unwrap_or_default(),
+        )
+        .await;
+    }
+    Ok(Json(doc).into_response())
+}
+
+/// POST /admin/logs/screened_ip_addresses(.json)
+pub async fn create_screened_ip(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    screened_ip_write(state, guardian, None, headers, uri, body, "POST").await
+}
+
+/// PUT /admin/logs/screened_ip_addresses/:id(.json)
+pub async fn update_screened_ip(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    screened_ip_write(state, guardian, Some(id), headers, uri, body, "PUT").await
+}
+
+/// DELETE /admin/logs/screened_ip_addresses/:id(.json)
+pub async fn destroy_screened_ip(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    screened_ip_write(state, guardian, Some(id), headers, uri, body, "DELETE").await
+}
+
+fn pairs(map: &serde_json::Map<String, serde_json::Value>) -> Vec<(String, String)> {
+    map.iter()
+        .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
+        .collect()
+}
+
+/// #create, #update and #destroy after the before_actions: can_see_ip,
+/// the record (404), only admins touching allow_admin rules (403).
+async fn screened_ip_write(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    id: Option<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+    method: &str,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !crate::routes::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), method) {
+        return Ok(crate::routes::session::bad_csrf());
+    }
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let mut tx = state.pool.begin().await?;
+    let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    if !can_see_ip(&guardian, &s)? {
+        return Ok(crate::routes::search::invalid_access(&state));
+    }
+    let id = match id {
+        Some(id) => {
+            let Ok(id) = id.strip_suffix(".json").unwrap_or(&id).parse::<i32>() else {
+                return Ok(crate::routes::topics::not_found_response(&state));
+            };
+            let action: Option<i32> =
+                sqlx::query_scalar("SELECT action_type FROM screened_ip_addresses WHERE id = $1")
+                    .bind(id)
+                    .fetch_optional(&mut *tx)
+                    .await?;
+            let Some(action) = action else {
+                return Ok(crate::routes::topics::not_found_response(&state));
+            };
+            if !guardian.is_admin() && action == crate::screened::ALLOW_ADMIN {
+                return Ok(crate::routes::search::invalid_access(&state));
+            }
+            Some(id)
+        }
+        None => None,
+    };
+    let action_name = crate::params::string(&p, "action_name");
+    if !guardian.is_admin() && action_name.as_deref() == Some("allow_admin") {
+        return Ok(crate::routes::search::invalid_access(&state));
+    }
+    if method == "DELETE" {
+        sqlx::query("DELETE FROM screened_ip_addresses WHERE id = $1")
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        return Ok(Json(json!({ "success": "OK" })).into_response());
+    }
+    // allowed_params: params.require(:ip_address), a known action_name.
+    let ip = crate::params::string(&p, "ip_address").filter(|v| !crate::ruby::is_blank(v));
+    let Some(ip) = ip else {
+        return Ok((
+            StatusCode::BAD_REQUEST,
+            Json(json!({
+                "errors": ["param is missing or the value is empty or invalid: ip_address"]
+            })),
+        )
+            .into_response());
+    };
+    let action = match action_name.filter(|a| !crate::ruby::is_blank(a)) {
+        None => None,
+        Some(a) => match crate::screened::action_type(&a) {
+            Some(t) => Some(t),
+            None => {
+                return Ok(crate::routes::search::invalid_parameters(
+                    &state,
+                    "action_name",
+                ));
+            }
+        },
+    };
+    Ok(
+        match crate::screened::save_ip(&mut tx, id, &ip, action).await? {
+            crate::screened::Saved::Ok(row) => {
+                tx.commit().await?;
+                Json(json!({ "screened_ip_address": row })).into_response()
+            }
+            crate::screened::Saved::Invalid(errors) => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                Json(json!({ "errors": errors })),
+            )
+                .into_response(),
+            crate::screened::Saved::NotFound => crate::routes::topics::not_found_response(&state),
+        },
+    )
+}
+
+/// GET /admin/logs/search_logs(.json): staff.
+pub async fn search_logs(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let page = !super::pages::wants_json(&uri, &headers);
+    // The page's own params: `period` (yearly by default) and
+    // `searchType`, as the route sends them.
+    let period = crate::params::string(&p, "period")
+        .unwrap_or_else(|| if page { "yearly" } else { "all" }.into());
+    let search_type = crate::params::string(&p, if page { "searchType" } else { "search_type" })
+        .unwrap_or_else(|| "all".into());
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let doc = crate::search_logs::trending(&mut conn, &settings, &period, &search_type).await?;
+    if page {
+        drop(conn);
+        return super::pages::search_logs_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            &doc,
+            &period,
+            &search_type,
+        )
+        .await;
+    }
+    Ok(Json(doc).into_response())
+}
+
+/// GET /admin/logs/search_logs/term(.json)?term=: staff. The details
+/// always exist (never the NotFound), with `Search.execute(term,
+/// guardian:)`'s results: no search type, so header limits and no log.
+pub async fn search_log_term(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    crate::routes::search::Peer(peer): crate::routes::search::Peer,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    super::pages::refuse_page(&uri, &headers, "the search log term page")?;
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let Some(term) = crate::params::string(&p, "term").filter(|t| !t.is_empty()) else {
+        return Ok(crate::routes::accounts::param_missing("term"));
+    };
+    let period = crate::params::string(&p, "period").unwrap_or_else(|| "quarterly".into());
+    let search_type = crate::params::string(&p, "search_type").unwrap_or_else(|| "all".into());
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let mut details = crate::search_logs::term_details(
+        &mut conn,
+        &settings,
+        &state.i18n,
+        &term,
+        &period,
+        &search_type,
+    )
+    .await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let args = crate::search::SearchArgs {
+        term,
+        type_filter: None,
+        full_page: false,
+        page: 1,
+        blurb_length: crate::search::BLURB_LENGTH,
+        ip_address: crate::remote_ip::remote_ip(&headers, peer)?,
+        user_agent: None,
+        session_id: None,
+        log: false,
+        context: None,
+        search_for_id: false,
+        restrict_to_archetype: None,
+    };
+    let mut search = crate::search::Search {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        base_path: state.config.globals.relative_url_root(),
+        log_cache: &state.search_log_cache,
+    };
+    let result = search
+        .execute(&args)
+        .await?
+        .unwrap_or_else(|| json!({ "grouped_search_result": null }));
+    details.insert("search_result".into(), result);
+    Ok(Json(json!({ "term": details })).into_response())
+}
+
+/// GET /admin/email-logs/{sent,bounced,skipped,received,rejected}(.json):
+/// admins (AdminConstraint, others 404).
+pub async fn email_logs(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(kind): Path<String>,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use crate::email_logs::List;
+    let which = match kind.strip_suffix(".json").unwrap_or(&kind) {
+        "sent" => List::Sent,
+        "bounced" => List::Bounced,
+        "skipped" => List::Skipped,
+        "received" => List::Received,
+        "rejected" => List::Rejected,
+        _ => return Ok(crate::routes::topics::not_found_response(&state)),
+    };
+    if !guardian.is_admin() {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    let page = !super::pages::wants_json(&uri, &headers);
+    // The sent tab's page is /admin/email-logs: /sent serves only JSON.
+    if page && which == List::Sent {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let get = |k: &str| crate::params::string(&p, k);
+    let filters = crate::email_logs::Filters {
+        offset: get("offset"),
+        user: get("user"),
+        address: get("address"),
+        email_type: get("type"),
+        smtp_transaction_response: get("smtp_transaction_response"),
+        reply_key: get("reply_key"),
+        from: get("from"),
+        to: get("to"),
+        subject: get("subject"),
+        error: get("error"),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let user_cx = crate::admin::user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let cx = crate::email_logs::Context {
+        user_cx: &user_cx,
+        i18n: &state.i18n,
+    };
+    let doc = crate::email_logs::list(&mut conn, &cx, which, &filters).await?;
+    if page {
+        drop(conn);
+        let tab = match which {
+            List::Sent => crate::admin::logs_view::EmailTab::Sent,
+            List::Skipped => crate::admin::logs_view::EmailTab::Skipped,
+            List::Bounced => crate::admin::logs_view::EmailTab::Bounced,
+            List::Received => crate::admin::logs_view::EmailTab::Received,
+            List::Rejected => crate::admin::logs_view::EmailTab::Rejected,
+        };
+        return super::pages::email_logs_page(&state, &guardian, &headers, &uri, tab, &doc).await;
+    }
+    Ok(Json(doc).into_response())
+}
+
+/// GET /admin/email-logs: the sent tab's page (its JSON has no index
+/// action).
+pub async fn email_logs_index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() || super::pages::wants_json(&uri, &headers) {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let get = |k: &str| crate::params::string(&p, k);
+    let filters = crate::email_logs::Filters {
+        offset: get("offset"),
+        user: get("user"),
+        address: get("address"),
+        email_type: get("type"),
+        smtp_transaction_response: None,
+        reply_key: get("reply_key"),
+        from: None,
+        to: None,
+        subject: None,
+        error: None,
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let user_cx = crate::admin::user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let cx = crate::email_logs::Context {
+        user_cx: &user_cx,
+        i18n: &state.i18n,
+    };
+    let doc =
+        crate::email_logs::list(&mut conn, &cx, crate::email_logs::List::Sent, &filters).await?;
+    drop(conn);
+    super::pages::email_logs_page(
+        &state,
+        &guardian,
+        &headers,
+        &uri,
+        crate::admin::logs_view::EmailTab::Sent,
+        &doc,
+    )
+    .await
+}
+
+/// GET /admin/email-logs/incoming/:id(.json): admins.
+pub async fn incoming_email(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    // IncomingEmail.find(params[:id].to_i)
+    let id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id));
+    let mut conn = state.pool.acquire().await?;
+    Ok(
+        match crate::email_logs::incoming(&mut conn, &state.i18n, id).await? {
+            Some(details) => Json(details).into_response(),
+            None => crate::routes::topics::not_found_response(&state),
+        },
+    )
+}
+
+/// GET /admin/email-logs/incoming_from_bounced/:id(.json): admins; any
+/// failure is a 404 with the exception's message.
+pub async fn incoming_from_bounced(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    if !guardian.is_admin() {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    }
+    let id = crate::ruby::to_i(id.strip_suffix(".json").unwrap_or(&id));
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    use crate::email_logs::NotBounced;
+    Ok(
+        match crate::email_logs::incoming_from_bounced(&mut conn, &settings, &state.i18n, id)
+            .await?
+        {
+            Ok(details) => Json(details).into_response(),
+            Err(e) => {
+                let message = match e {
+                    NotBounced::InvalidParameters => "Discourse::InvalidParameters",
+                    NotBounced::NotFound => "Discourse::NotFound",
+                };
+                (StatusCode::NOT_FOUND, Json(json!({ "errors": [message] }))).into_response()
+            }
+        },
+    )
+}
