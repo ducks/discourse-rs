@@ -25,6 +25,10 @@ nix-shell --run "psql -d discourse_rs_demo -c \"INSERT INTO site_settings
 
 (and the same for `discourse_rs_meta_public`), then restart the units.
 
+Set `max_oneboxes_per_post` to 5 for the walkthrough. The benchmark
+snapshot has it set to 0, so otherwise chat links stay plain links even
+with message processing enabled.
+
 | Port | Database | Data |
 |---|---|---|
 | 8080 | `discourse_rs_demo` | the cleaned large corpus: 1,089 topics, 20,576 posts, 220 users |

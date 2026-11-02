@@ -15,7 +15,6 @@ import base64
 from datetime import datetime, timezone
 import html
 import json
-import os
 from pathlib import Path
 import re
 import sys
@@ -275,6 +274,7 @@ class Run:
         self.base = args.url.rstrip("/")
         self.out = Path(args.out)
         self.server_log = Path(args.server_log) if args.server_log else None
+        self.build_label = args.build
         self.started = datetime.now(timezone.utc)
         self.stamp = self.started.strftime("%Y%m%d%H%M%S")
         self.label = f"rehearsal {self.started.strftime('%Y-%m-%d %H:%M:%S')}Z"
@@ -446,11 +446,11 @@ class Run:
             version = about.get("about", {}).get("version")
         except Exception:
             version = None
-        binary = Path.home() / "dev/discourse-rs/tmp/demo/discourse-rs"
-        target = os.readlink(binary) if binary.is_symlink() else None
         parts = []
-        if target:
-            parts.append(f"binary {target} (tmp/demo/discourse-rs symlink; the server doesn't expose its build)")
+        if self.build_label:
+            parts.append(self.build_label)
+        else:
+            parts.append("server build unknown (pass --build to identify the tested binary)")
         if version:
             parts.append(f"reports Discourse version {version}")
         return "; ".join(parts) or "unknown"
@@ -1770,6 +1770,11 @@ def define_steps(run):
         open_channel(run, member, "/chat/c/general/2", "#General for the message to flag")
         flagged = f"{run.label} chat to flag"
         send_chat(member.locator(".chat-channel"), flagged, "the message to flag")
+        # The sender draws a staged message before the POST finishes.
+        # Open the other member's channel after the message is saved.
+        wait_until(member, "t => [...document.querySelectorAll('.chat-channel .chat-message-container[data-id]')]"
+                   ".some(m => m.innerText.includes(t) && Number(m.dataset.id) > 0)",
+                   flagged, "the message to flag saved")
         run.leave(f"user1's chat message '{flagged}' in #General, deleted from /review")
         second = run.persona("Second member").use()
         open_channel(run, second, "/chat/c/general/2", "#General for Second member")
@@ -2417,6 +2422,7 @@ def main():
     parser.add_argument("--url", default="http://127.0.0.1:8080")
     parser.add_argument("--out", required=True, help="output directory, must not exist")
     parser.add_argument("--server-log", help="the server's log file, to attach its request errors to each step")
+    parser.add_argument("--build", help="identity of the tested server binary, such as its commit or SHA-256")
     parser.add_argument("--only", help="comma-separated step numbers to run (the rest are skipped)")
     parser.add_argument("--headed", action="store_true")
     args = parser.parse_args()
