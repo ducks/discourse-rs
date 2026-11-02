@@ -171,14 +171,13 @@ pub mod stylesheet;
 pub mod svg_sprite;
 pub mod svg_sprite_xml;
 pub mod system_message;
-pub mod system_themes;
 pub mod tags;
 pub use tags::{groups as tag_groups, tagging, writes as tag_writes};
-pub mod theme_cache;
-pub mod theme_html;
-pub mod theme_import;
-pub mod theme_writes;
 pub mod themes;
+pub use themes::{
+    cache as theme_cache, html as theme_html, import as theme_import, system as system_themes,
+    writes as theme_writes,
+};
 pub mod topic_converter;
 pub mod topic_guardian;
 pub mod topic_list;
