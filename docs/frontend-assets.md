@@ -125,4 +125,11 @@ A direct `cargo check --lib` comparison after the final Rust change took
 subsequent unchanged, JS-only and CSS-only cases took 0.190, 0.193 and 0.186
 seconds respectively, each reporting zero rebuilt crates. The temporary JS/CSS
 edits were restored. These are check timings, not optimized release build times;
-a fresh optimized build and the initial VPS upgrade remain separate work.
+the initial VPS upgrade remains separate work.
+
+The optimized release subsequently built successfully in 15m 25s, compiling
+only the application crate. An unchanged repeat finished in 0.18 seconds with
+no compilation. All seven focused browser tests passed against that optimized
+binary and the packaged frontend (15.6 seconds). The tested binary and package
+are retained locally under `tmp/releases/frontend-cc83d3bc/`; their source is
+`cc83d3bc` (later commits only update these validation notes).

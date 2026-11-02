@@ -15,7 +15,8 @@ work, so the two together are the count of what is left.
 
 ## Next after the staging dropdown deploy: faster frontend delivery
 
-Implemented and locally validated on `feat/runtime-frontend-assets`. See [frontend packages](docs/frontend-assets.md) for the package
+Implemented and locally validated, including an optimized release build and
+its focused browser checks. See [frontend packages](docs/frontend-assets.md) for the package
 format, deployment path, checks and measured packaging times. The live demo
 still uses the previous embedded-assets binary.
 
