@@ -57,11 +57,10 @@ pub mod final_destination;
 pub mod flag_modal_view;
 pub mod flags;
 pub mod form_templates;
-pub mod group_manager;
-pub mod group_message;
-pub mod group_writes;
 pub mod groups;
-pub mod groups_view;
+pub use groups::{
+    manager as group_manager, message as group_message, view as groups_view, writes as group_writes,
+};
 pub mod guardian;
 pub mod hashtag_decorator;
 pub mod hashtags;
