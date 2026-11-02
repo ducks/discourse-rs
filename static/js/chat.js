@@ -5817,7 +5817,8 @@
         var picked = buttons.filter(function (b) {
           return b.id === button.dataset.id;
         })[0];
-        menu.close();
+        // The action can focus the composer or a modal before closing finishes.
+        menu.close({ focusTrigger: false });
         if (picked) {
           picked.action(context, textarea);
         }

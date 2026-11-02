@@ -15,6 +15,32 @@ const CHANNEL = 2; // the seed's General channel
 const prefer = (page, mode) =>
   page.evaluate((mode) => localStorage.setItem("discourse_chat_preferred_mode", JSON.stringify(mode)), mode);
 
+test("attaching an image keeps the caption focused when the composer menu finishes closing", async ({ page, context }) => {
+  await login(context, "user1");
+  await page.goto(`/chat/c/general/${CHANNEL}`);
+  // Keep the close animation pending while the file picker returns.
+  await page.addStyleTag({ content: ".fk-d-menu.-closing { animation-name: none !important; animation-duration: 2s !important; }" });
+  await page.locator(".chat-composer-dropdown__trigger-btn").click();
+  const chooser = page.waitForEvent("filechooser");
+  await page.locator("button[data-id='chat-upload-btn']").click();
+  await (await chooser).setFiles({
+    name: "caption.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64"),
+  });
+  const composer = page.locator(".full-page-chat .chat-composer__input");
+  await composer.fill(label("image caption"));
+  const caption = await composer.inputValue();
+  await expect(page.locator(".chat-composer-dropdown__list")).toHaveCount(0);
+  await expect(composer).toBeFocused();
+  await expect(page.locator(".chat-composer-button.-send")).toBeEnabled();
+  await composer.press("Enter");
+  const sent = page.locator(".chat-message-container", { hasText: caption });
+  await expect(sent.locator(".chat-uploads img.chat-img-upload")).toBeVisible();
+  await sent.locator(".chat-uploads img.chat-img-upload").click();
+  await expect(page.locator(".pswp")).toBeVisible();
+});
+
 test("a topic link draws its onebox once processed, live in another member's chat", async ({
   page,
   context,
