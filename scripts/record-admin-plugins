@@ -2,7 +2,7 @@
 # Record what /admin/plugins.json says of the bundled plugins (apart from
 # `enabled`) from a reference agent into vendor/discourse/config/
 # admin_plugins.json, for the installed plugins pages
-# (src/admin_plugins.rs). Run after vendoring, from an agent at the
+# (src/admin/plugins.rs). Run after vendoring, from an agent at the
 # vendored commit with the bundled plugins.
 #
 # Usage: scripts/record-admin-plugins <agent-name>

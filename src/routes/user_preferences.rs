@@ -716,7 +716,7 @@ pub async fn page(
                 }
             }
             let site_logo_small_url =
-                crate::admin_users::logo_small_url(&mut conn, &settings).await?;
+                crate::admin::users::logo_small_url(&mut conn, &settings).await?;
             view::account(
                 &p,
                 &view::Account {

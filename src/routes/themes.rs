@@ -145,7 +145,10 @@ pub async fn config_themes(
         json!({ "themes": list })
     });
     if page {
-        return super::admin_customize::themes_page(&state, &guardian, &headers, &uri, &doc).await;
+        return crate::admin::routes::customize::themes_page(
+            &state, &guardian, &headers, &uri, &doc,
+        )
+        .await;
     }
     Ok(Json(doc).into_response())
 }
@@ -220,8 +223,10 @@ pub async fn config_components(
         json!({ "has_more": has_more, "components": out })
     });
     if page_request {
-        return super::admin_customize::components_page(&state, &guardian, &headers, &uri, &doc)
-            .await;
+        return crate::admin::routes::customize::components_page(
+            &state, &guardian, &headers, &uri, &doc,
+        )
+        .await;
     }
     Ok(Json(doc).into_response())
 }
@@ -266,7 +271,7 @@ pub async fn config_theme_site_settings(
         })
     });
     if page {
-        return super::admin_customize::theme_site_settings_page(
+        return crate::admin::routes::customize::theme_site_settings_page(
             &state, &guardian, &headers, &uri, &doc,
         )
         .await;
@@ -311,7 +316,7 @@ pub async fn welcome_banner_themes(
     AuthGuardian(guardian): AuthGuardian,
 ) -> Result<Response, AppError> {
     // Admin::Config behind StaffConstraint: InvalidAccess for a moderator.
-    if let Some(r) = super::admin_config_branding::admin_only(&state, &guardian) {
+    if let Some(r) = crate::admin::routes::config_branding::admin_only(&state, &guardian) {
         return Ok(r);
     }
     let mut conn = state.pool.acquire().await?;
@@ -321,7 +326,7 @@ pub async fn welcome_banner_themes(
 
 /// The default theme and the user selectable ones, each with its
 /// enable_welcome_banner.
-pub(super) async fn welcome_banner_theme_list(
+pub(crate) async fn welcome_banner_theme_list(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
 ) -> Result<Vec<serde_json::Value>, AppError> {
@@ -439,7 +444,10 @@ pub async fn config_colors(
     });
     if page {
         // adminConfig.colorPalettes.index, over the same document.
-        return super::admin_customize::colors_page(&state, &guardian, &headers, &uri, &doc).await;
+        return crate::admin::routes::customize::colors_page(
+            &state, &guardian, &headers, &uri, &doc,
+        )
+        .await;
     }
     Ok(Json(doc).into_response())
 }
@@ -1333,7 +1341,7 @@ async fn update_one_setting(
 /// Themes::Action::HorizonHighContextTopicCardsToggled: Horizon's
 /// `topic_card_high_context` follows the upcoming change, when the theme
 /// has the setting and it differs; then the theme saved.
-pub(super) async fn horizon_high_context_toggled(
+pub(crate) async fn horizon_high_context_toggled(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
     enabled: bool,

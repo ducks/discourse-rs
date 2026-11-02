@@ -6,8 +6,8 @@
 
 use serde_json::Value;
 
-use crate::admin_ui::{Action, Button};
-use crate::admin_view::{AdminCx, t};
+use crate::admin::ui::{Action, Button};
+use crate::admin::view::{AdminCx, t};
 use crate::topic_list_view::{escape, icon};
 
 pub const PLUGIN_ID: &str = "chat";
@@ -20,7 +20,7 @@ fn s(v: &Value) -> &str {
 
 /// addAdminPluginConfigurationNav: the settings, then the webhooks.
 pub fn config_nav(cx: &AdminCx, hooks: bool) -> String {
-    crate::admin_ui::tabs(
+    crate::admin::ui::tabs(
         cx,
         &[
             (
@@ -42,7 +42,7 @@ pub fn header_actions(cx: &AdminCx) -> String {
     // With chat-admin.js and its strings, on every chat admin page.
     format!(
         "{}{}<script src=\"{}\"></script>",
-        crate::admin_ui::actions(
+        crate::admin::ui::actions(
             cx,
             "d-page-header",
             &[Action::Primary(Button {
@@ -60,7 +60,7 @@ pub fn header_actions(cx: &AdminCx) -> String {
 
 /// The strings chat-admin.js shows.
 pub fn strings(cx: &AdminCx) -> String {
-    crate::admin_ui::strings(
+    crate::admin::ui::strings(
         cx,
         "chat-admin-strings",
         &[
@@ -79,7 +79,7 @@ pub fn strings(cx: &AdminCx) -> String {
 /// The webhooks route: DPageSubheader with New incoming webhook, then the
 /// list (by updated_at, newest first) or None yet.
 pub fn hooks_index(cx: &AdminCx, webhooks: &[Value], channel_titles: &[String]) -> String {
-    let new = crate::admin_ui::actions(
+    let new = crate::admin::ui::actions(
         cx,
         "d-page-subheader",
         &[Action::Primary(Button {
@@ -92,7 +92,7 @@ pub fn hooks_index(cx: &AdminCx, webhooks: &[Value], channel_titles: &[String]) 
         })],
     );
     let mut out = String::from("<div class=\"discourse-chat-incoming-webhooks admin-detail\">");
-    out.push_str(&crate::admin_ui::subheader(
+    out.push_str(&crate::admin::ui::subheader(
         &t(cx.i18n, "chat.incoming_webhooks.title"),
         &new,
         Some(&t(cx.i18n, "chat.incoming_webhooks.instructions")),
@@ -147,7 +147,7 @@ pub fn hooks_index(cx: &AdminCx, webhooks: &[Value], channel_titles: &[String]) 
 /// The new and edit routes: BackButton and ChatIncomingWebhookEditForm.
 /// `channels` the public channels (id, title) ChatChannelChooser lists.
 pub fn hooks_form(cx: &AdminCx, webhook: Option<&Value>, channels: &[(i64, String)]) -> String {
-    use crate::admin_form_kit::{Field, form, input, submit, textarea};
+    use crate::admin::form_kit::{Field, form, input, submit, textarea};
     let w = webhook.cloned().unwrap_or(Value::Null);
     let label = |key: &str| t(cx.i18n, &format!("chat.incoming_webhooks.{key}"));
     let mut fields = String::new();
@@ -257,7 +257,7 @@ pub fn hooks_form(cx: &AdminCx, webhook: Option<&Value>, channels: &[(i64, Strin
     let picker_t = |key: &str| t(cx.i18n, key);
     format!(
         "<div class=\"admin-detail discourse-chat-incoming-webhooks\">{}<div class=\"chat-incoming-webhook-form\" data-webhook-id=\"{}\">{}</div></div>{}<script src=\"{}\"></script>",
-        crate::admin_ui::back_button(cx, HOOKS_PATH, "chat.incoming_webhooks.back"),
+        crate::admin::ui::back_button(cx, HOOKS_PATH, "chat.incoming_webhooks.back"),
         w["id"]
             .as_i64()
             .map(|id| id.to_string())
@@ -280,7 +280,7 @@ pub fn category_tab(
     channels: &[Value],
 ) -> String {
     let t = |key: &str| {
-        escape(&crate::admin_view::t(
+        escape(&crate::admin::view::t(
             i18n,
             &format!("chat.edit_category.{key}"),
         ))
@@ -292,7 +292,7 @@ pub fn category_tab(
         out.push_str(&format!(
             "<div class=\"empty-state__container\"><div class=\"empty-state\"><span class=\"empty-state__title\">{}</span><div class=\"empty-state__body\"><p>{}</p></div></div></div>",
             t("no_channels"),
-            crate::admin_view::t(i18n, "chat.edit_category.no_channels_body")
+            crate::admin::view::t(i18n, "chat.edit_category.no_channels_body")
                 .replace("%{chatBrowseUrl}", &format!("{base_path}/chat/browse/open"))
         ));
         out.push_str("</section>");

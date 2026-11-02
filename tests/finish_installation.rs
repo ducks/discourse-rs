@@ -13,7 +13,7 @@ use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};
 use common::{TestDb, config, set_setting, state, test_database_url};
 use discourse_rs::AppState;
-use discourse_rs::admin_create::{AdminCreateError, NewAdmin, Outcome};
+use discourse_rs::admin::create::{AdminCreateError, NewAdmin, Outcome};
 use discourse_rs::config::RailsEnv;
 use discourse_rs::setup::SetupError;
 use discourse_rs::site_settings::Definitions;
@@ -270,7 +270,7 @@ async fn admin_create_makes_an_active_admin() {
     login_hint_on(&db.pool).await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let password = "correct horse battery staple";
-    let outcome = discourse_rs::admin_create::create(
+    let outcome = discourse_rs::admin::create::create(
         &st,
         &NewAdmin {
             email: " New.Admin@Example.org ",
@@ -356,7 +356,7 @@ async fn admin_create_checks_passwords_as_rails_does() {
         username: None,
     };
     // Under min_password_length.
-    match discourse_rs::admin_create::create(&st, &short("short@example.org", "ninechars"))
+    match discourse_rs::admin::create::create(&st, &short("short@example.org", "ninechars"))
         .await
         .unwrap_err()
     {
@@ -367,7 +367,7 @@ async fn admin_create_checks_passwords_as_rails_does() {
         other => panic!("{other:?}"),
     }
     // A developer email: under min_admin_password_length.
-    match discourse_rs::admin_create::create(&st, &short("dev@example.org", "elevenchars"))
+    match discourse_rs::admin::create::create(&st, &short("dev@example.org", "elevenchars"))
         .await
         .unwrap_err()
     {
@@ -387,7 +387,7 @@ async fn admin_create_checks_passwords_as_rails_does() {
         assert!(!exists, "{email}");
     }
     // Eleven characters is enough for any other email.
-    discourse_rs::admin_create::create(&st, &short("plain@example.org", "elevenchars"))
+    discourse_rs::admin::create::create(&st, &short("plain@example.org", "elevenchars"))
         .await
         .unwrap();
 }
@@ -396,7 +396,7 @@ async fn admin_create_checks_passwords_as_rails_does() {
 async fn admin_create_takes_a_username() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
-    let outcome = discourse_rs::admin_create::create(
+    let outcome = discourse_rs::admin::create::create(
         &st,
         &NewAdmin {
             email: "named@example.org",
@@ -409,10 +409,10 @@ async fn admin_create_takes_a_username() {
     .unwrap();
     assert!(matches!(
         outcome,
-        discourse_rs::admin_create::Outcome::Created { ref username } if username == "siteowner"
+        discourse_rs::admin::create::Outcome::Created { ref username } if username == "siteowner"
     ));
     // A taken username is refused as a signup's would be.
-    match discourse_rs::admin_create::create(
+    match discourse_rs::admin::create::create(
         &st,
         &NewAdmin {
             email: "other@example.org",
@@ -431,7 +431,7 @@ async fn admin_create_takes_a_username() {
     }
     // An existing account keeps its own.
     assert!(matches!(
-        discourse_rs::admin_create::create(
+        discourse_rs::admin::create::create(
             &st,
             &NewAdmin {
                 email: "named@example.org",
@@ -449,7 +449,7 @@ async fn admin_create_takes_a_username() {
 async fn admin_create_promotes_an_existing_account() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
-    let outcome = discourse_rs::admin_create::create(
+    let outcome = discourse_rs::admin::create::create(
         &st,
         &NewAdmin {
             email: "USER0@example.com",

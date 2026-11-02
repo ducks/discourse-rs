@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use serde_json::{Map, Value, json};
 
-use crate::admin_view::AdminCx;
+use crate::admin::view::AdminCx;
 use crate::topic_list_view::{ListContext, escape, icon, t, t_with};
 
 /// Reviewable statuses (models/reviewable.js).
@@ -67,7 +67,7 @@ fn id_key(v: &Value) -> Option<String> {
 }
 
 fn time(v: &Value) -> Option<DateTime<Utc>> {
-    crate::admin_ui::time(v)
+    crate::admin::ui::time(v)
 }
 
 /// The side-loaded records by type and id.
@@ -329,7 +329,7 @@ pub fn render(p: &Page) -> String {
         .replace('<', "\\u003c")
     ));
     // The dialog's strings and admin-ui.js, which review.js uses.
-    out.push_str(&crate::admin_ui::strings(
+    out.push_str(&crate::admin::ui::strings(
         p.acx,
         "review-strings",
         &["generic_error"],
@@ -423,7 +423,7 @@ fn combo(
     value: Option<&str>,
     none: Option<&str>,
 ) -> String {
-    let html = crate::admin_ui::combo_box(p.acx, class, rows, value, none)
+    let html = crate::admin::ui::combo_box(p.acx, class, rows, value, none)
         .replacen("combo-box  has-selection", "combo-box has-selection", 1)
         .replacen("combo-box \"", "combo-box\"", 1);
     match value.filter(|v| rows.iter().any(|(id, _)| id == v)) {
@@ -483,7 +483,7 @@ fn filters(p: &Page) -> String {
                     let ty = s(ty);
                     (
                         ty.to_string(),
-                        crate::admin_view::t(
+                        crate::admin::view::t(
                             cx.i18n,
                             &format!("review.types.{}.title", type_key(ty)),
                         ),
@@ -528,7 +528,7 @@ fn filters(p: &Page) -> String {
 
 /// EmailGroupUserChooser for one user (admin-ui.js opens it).
 fn user_chooser(p: &Page, extra_class: &str, value: Option<&str>) -> String {
-    let none = crate::admin_view::t(p.cx.i18n, "select_kit.default_header_text");
+    let none = crate::admin::view::t(p.cx.i18n, "select_kit.default_header_text");
     let u = value.map(escape).unwrap_or_default();
     format!(
         "<details class=\"select-kit multi-select user-chooser email-group-user-chooser full-width-wrap{}{}\" data-value=\"{u}\" data-placeholder=\"{}\" data-caret=\"plus\"{}><summary class=\"select-kit-header multi-select-header\" data-name=\"{u}\" tabindex=\"0\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details>",
@@ -542,11 +542,11 @@ fn user_chooser(p: &Page, extra_class: &str, value: Option<&str>) -> String {
         } else {
             ""
         },
-        escape(&crate::admin_view::t(
+        escape(&crate::admin::view::t(
             p.cx.i18n,
             "select_kit.filter_placeholder"
         )),
-        crate::admin_ui::chooser_labels(p.acx),
+        crate::admin::ui::chooser_labels(p.acx),
         if value.is_some() {
             u.clone()
         } else {
@@ -670,7 +670,7 @@ fn expanded_filters_template(p: &Page) -> String {
     out.push_str(&filter(
         &t(cx, "review.date_filter"),
         "date-range",
-        &crate::admin_logs_view::date_range(
+        &crate::admin::logs_view::date_range(
             p.acx,
             meta_value(p, "from_date").as_deref(),
             meta_value(p, "to_date").as_deref(),

@@ -2,7 +2,7 @@
 # Record the site settings' Ruby-computed values (enum classes, choices
 # expressions) from a reference agent into
 # vendor/discourse/config/setting_enums.json, for the admin site settings
-# list (src/admin_site_settings.rs). Run after vendoring, from an agent at
+# list (src/admin/site_settings.rs). Run after vendoring, from an agent at
 # the vendored commit with the bundled plugins.
 #
 # Usage: scripts/record-setting-enums <agent-name>

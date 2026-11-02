@@ -269,7 +269,7 @@ pub async fn user_name(
     let Some((username, name, avatar, title)) = row else {
         return Ok(Value::Null);
     };
-    let logo_small = crate::admin_users::logo_small_url(&mut *conn, cx.settings).await?;
+    let logo_small = crate::admin::users::logo_small_url(&mut *conn, cx.settings).await?;
     let avatar_template =
         crate::avatar::avatar_template(cx.urls, user_id, &username, avatar, logo_small.as_deref())?;
     Ok(json!({
@@ -998,7 +998,7 @@ async fn settings_json(
         e.insert("setting".into(), json!(s.name));
         e.insert(
             "humanized_name".into(),
-            json!(crate::admin_site_settings::humanized_name(&s.name)),
+            json!(crate::admin::site_settings::humanized_name(&s.name)),
         );
         e.insert("type".into(), json!(s.type_name));
         e.insert(
@@ -1117,7 +1117,7 @@ pub fn site_setting_metadata(cx: &Ctx<'_>, name: &str) -> Result<Map<String, Val
         other => json!(other.to_s()),
     };
     e.insert("default".into(), default);
-    let admin_cx = crate::admin_site_settings::Context {
+    let admin_cx = crate::admin::site_settings::Context {
         defs: cx.defs,
         settings: cx.settings,
         i18n: cx.i18n,
@@ -1125,7 +1125,7 @@ pub fn site_setting_metadata(cx: &Ctx<'_>, name: &str) -> Result<Map<String, Val
         base_path: cx.urls.config.globals.relative_url_root(),
         urls: cx.urls,
     };
-    let meta = crate::admin_site_settings::setting_meta(&admin_cx, name)
+    let meta = crate::admin::site_settings::setting_meta(&admin_cx, name)
         .ok_or(Unsupported("a themeable setting without metadata"))?;
     e.insert("description".into(), json!(meta.description));
     e.insert("humanized_name".into(), json!(meta.humanized_name));

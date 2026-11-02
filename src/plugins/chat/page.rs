@@ -401,7 +401,7 @@ impl Context<'_> {
         .bind(user_id)
         .fetch_one(&mut *self.conn)
         .await?;
-        let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+        let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
         let urls = crate::url::Urls {
             config: self.config,
             settings: self.settings,
@@ -1330,7 +1330,7 @@ impl Context<'_> {
                     .bind(user_id)
                     .fetch_one(&mut *self.conn)
                     .await?;
-            let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+            let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
             let urls = crate::url::Urls {
                 config: self.config,
                 settings: self.settings,

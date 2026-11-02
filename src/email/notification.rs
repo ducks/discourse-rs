@@ -494,7 +494,7 @@ pub async fn build(
     } else {
         "highlight"
     };
-    let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
+    let logo_small = crate::admin::users::logo_small_url(&mut *conn, s).await?;
     let post_html = post_partial(
         &mut *conn,
         ctx,

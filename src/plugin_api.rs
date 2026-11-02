@@ -317,7 +317,7 @@ impl PageHead {
 }
 
 fn escape(value: &str) -> String {
-    crate::admin_site_settings::escape_html(value)
+    crate::admin::site_settings::escape_html(value)
 }
 
 static REGISTERED: OnceLock<Vec<Arc<dyn Plugin>>> = OnceLock::new();

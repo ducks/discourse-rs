@@ -35,6 +35,11 @@ drawer details (223e), GIFs (224b) and further reviewable cases (148b).
 Performance item 285 is low priority. Full parity remains the long-term
 goal; the older counts below are a dated snapshot, not current totals.
 
+Source organization: composer lives under `src/composer/`; administration
+data loading, views and handlers now live under `src/admin/`, with central
+route registration retained in `src/routes/mod.rs`. These are structural
+moves with no intended behavior changes.
+
 Plugin infrastructure has also advanced past the original milestone
 summary: the compile-time Plugin trait and Wasmtime host are on main.
 Bundled plugin ports remain Rust in src/plugins/. See docs/plugin-wasm.md
@@ -1358,7 +1363,7 @@ then by what running a forum needs (milestone 6). Briefs:
     the upcoming changes, the dashboard's site advice): each
     `{{setting:name}}` link goes to its plugin's settings page or the
     page of its area or category (the admin search's settingPageMap,
-    crate::admin_setting_links), the JSON keeping the server's link.
+    crate::admin::setting_links), the JSON keeping the server's link.
     Then feat/admin-whats-new: /admin/whats-new (the page and its JSON,
     /admin/dashboard/whats-new too) and /admin/toggle-feature;
     DiscourseUpdates' new features in crate::new_features: the meta feed

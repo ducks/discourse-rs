@@ -106,7 +106,7 @@ pub async fn certificate(
         .bind(crate::plugins::narrative_bot::BOT_USER_ID)
         .fetch_one(&mut *conn)
         .await?;
-    let logo = match crate::admin_users::logo_small_url(&mut conn, &settings).await? {
+    let logo = match crate::admin::users::logo_small_url(&mut conn, &settings).await? {
         Some(url) => urls.full_cdn_url(&url)?,
         None => String::new(),
     };

@@ -223,7 +223,7 @@ pub async fn page(
         }
     }
     let names = settings.get("enable_names")?.truthy();
-    let logo = crate::admin_users::logo_small_url(&mut *conn, settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut *conn, settings).await?;
     let mut users = Vec::with_capacity(rows.len());
     for r in rows {
         let mut u = Map::new();

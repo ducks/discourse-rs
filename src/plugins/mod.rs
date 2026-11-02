@@ -586,7 +586,7 @@ pub async fn admin_dashboard_section_setting(
 /// from its data: None when no plugin registers one for the id (the
 /// dashboard then draws nothing for it).
 pub fn admin_dashboard_section_html(
-    dashboard: &crate::admin_dashboard_view::Dashboard<'_>,
+    dashboard: &crate::admin::dashboard_view::Dashboard<'_>,
     id: &str,
     data: &serde_json::Value,
     error: bool,
@@ -601,7 +601,7 @@ pub fn admin_dashboard_section_html(
 
 /// The header actions a plugin registers on its admin pages
 /// (registerPluginHeaderActionComponent): chat's Create export.
-pub fn admin_plugin_actions(cx: &crate::admin_view::AdminCx, plugin_name: &str) -> String {
+pub fn admin_plugin_actions(cx: &crate::admin::view::AdminCx, plugin_name: &str) -> String {
     match plugin_name {
         chat::admin_view::PLUGIN_ID => chat::admin_view::header_actions(cx),
         _ => String::new(),
@@ -611,7 +611,7 @@ pub fn admin_plugin_actions(cx: &crate::admin_view::AdminCx, plugin_name: &str) 
 /// A plugin's configuration nav (`addAdminPluginConfigurationNav`) as its
 /// settings page's tabs; None for a plugin whose own admin pages the port
 /// doesn't draw.
-pub fn admin_config_nav(cx: &crate::admin_view::AdminCx, plugin_id: &str) -> Option<String> {
+pub fn admin_config_nav(cx: &crate::admin::view::AdminCx, plugin_id: &str) -> Option<String> {
     match plugin_id {
         "discourse-gamification" => Some(gamification::admin_view::config_nav(cx, false)),
         chat::admin_view::PLUGIN_ID => Some(chat::admin_view::config_nav(cx, false)),
@@ -623,7 +623,7 @@ pub fn admin_config_nav(cx: &crate::admin_view::AdminCx, plugin_id: &str) -> Opt
 /// (`registerAdminReportRelatedItemsRenderer`), drawn after the related
 /// users: discourse-solved's solved topics for accepted_solutions.
 pub fn admin_report_related_items_html(
-    cx: &crate::admin_view::AdminCx,
+    cx: &crate::admin::view::AdminCx,
     list: &crate::topic_list_view::ListContext,
     report_type: &str,
     report: &serde_json::Value,

@@ -408,7 +408,7 @@ pub async fn call(
                     format!(
                         "<li><a href=\"{}/admin/customize/themes/{id}\">{}</a></li>",
                         env.base_path(),
-                        crate::admin_site_settings::escape_html(name)
+                        crate::admin::site_settings::escape_html(name)
                     )
                 })
                 .collect();
@@ -604,7 +604,7 @@ fn upcoming_change_opted_out(env: &Env<'_>, target: &str) -> Result<Option<Probl
     }
     Ok(problem(&[(
         "upcoming_change",
-        json!(crate::admin_site_settings::humanized_name(target)),
+        json!(crate::admin::site_settings::humanized_name(target)),
     )]))
 }
 
@@ -997,7 +997,7 @@ pub fn message(
         (None, None) => None,
     }
     .ok_or(Unsupported("an admin notice without its translation"))?;
-    let cx = crate::admin_site_settings::Context {
+    let cx = crate::admin::site_settings::Context {
         defs: env.defs,
         settings: env.settings,
         i18n: env.i18n,
@@ -1005,7 +1005,7 @@ pub fn message(
         base_path: env.base_path(),
         urls,
     };
-    let expanded = crate::admin_site_settings::expand_setting_links(&cx, &translated);
+    let expanded = crate::admin::site_settings::expand_setting_links(&cx, &translated);
     Ok(sanitize_notice(&expanded)?)
 }
 

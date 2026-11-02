@@ -336,7 +336,7 @@ pub fn builder(
     v: &BuilderValues,
     edit_raw_url: Option<&str>,
 ) -> String {
-    use crate::admin_form_kit::{Field, checkbox, input, select};
+    use crate::admin::form_kit::{Field, checkbox, input, select};
     let insert = edit_raw_url.is_none();
     let label = |key: &str| t(cx, &format!("discourse_policy.builder.{key}.label"));
     let tip = |key: &str| {
@@ -463,7 +463,7 @@ pub fn builder(
         escape(&t(cx, "discourse_policy.accept_policy_template")),
         escape(&t(cx, "discourse_policy.edit_reason")),
         escape(edit_raw_url.unwrap_or_default()),
-        crate::admin_form_kit::form("policy-builder-form", &fields),
+        crate::admin::form_kit::form("policy-builder-form", &fields),
         escape(&button)
     )
 }

@@ -9,7 +9,7 @@ use std::sync::OnceLock;
 use serde_json::{Value as Json, json};
 use sqlx::PgConnection;
 
-use crate::admin_site_settings::Context;
+use crate::admin::site_settings::Context;
 use crate::{AppError, Unsupported};
 
 const RECORDED: &str = include_str!("../vendor/discourse/config/setting_enums.json");

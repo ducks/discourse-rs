@@ -562,7 +562,7 @@ impl Context<'_> {
             && super::can_chat(&mut *self.conn, settings, self.guardian).await?;
         let enable_names = settings.get("enable_names")?.truthy();
         let status = settings.get("enable_user_status")?.truthy();
-        let logo = crate::admin_users::logo_small_url(&mut *self.conn, settings).await?;
+        let logo = crate::admin::users::logo_small_url(&mut *self.conn, settings).await?;
         let urls = crate::url::Urls {
             config: self.config,
             settings,

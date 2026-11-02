@@ -1,4 +1,4 @@
-// The installed plugins list in the browser (src/admin_plugins_view.rs
+// The installed plugins list in the browser (src/admin/plugins_view.rs
 // draws it): DFilterControls' text filter (name, author, about; kept in
 // the URL's filter) and status dropdown, and a plugin's enabled switch,
 // which saves its enabled setting as SiteSetting.update does.

@@ -1,0 +1,37 @@
+//! Admin HTTP handlers; endpoint registration remains in crate::routes.
+
+pub(crate) mod advanced;
+pub(crate) mod api_keys;
+pub(crate) mod badges;
+pub(crate) mod badges_pages;
+pub(crate) mod config;
+pub(crate) mod config_about;
+pub(crate) mod config_branding;
+pub(crate) mod config_category_management;
+pub(crate) mod config_mcp;
+pub(crate) mod config_upcoming_changes;
+pub(crate) mod customize;
+pub(crate) mod dashboard;
+pub(crate) mod dashboard_sections;
+pub(crate) mod email;
+pub(crate) mod email_pages;
+pub(crate) mod email_style;
+pub(crate) mod email_templates;
+pub(crate) mod embedding;
+pub(crate) mod emoji;
+pub(crate) mod flags;
+pub(crate) mod form_templates;
+pub(crate) mod groups;
+pub(crate) mod logs;
+pub(crate) mod mcp;
+pub(crate) mod mcp_clients;
+pub(crate) mod pages;
+pub(crate) mod plugins;
+pub(crate) mod reports;
+pub(crate) mod search;
+pub(crate) mod site_settings;
+pub(crate) mod user_fields;
+pub(crate) mod users;
+pub(crate) mod watched_words;
+pub(crate) mod web_hooks;
+pub(crate) mod whats_new;

@@ -1,4 +1,4 @@
-// The /admin/config areas' pages in the browser (src/admin_config_view.rs
+// The /admin/config areas' pages in the browser (src/admin/config_view.rs
 // draws them): the flags list (AdminFlagItem's toggle, edit, and its menu
 // moving or deleting a flag, the page drawn again after) and
 // AdminFlagsForm (FormKit's validation, its character counters, the

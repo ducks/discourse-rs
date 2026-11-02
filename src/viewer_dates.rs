@@ -40,7 +40,7 @@ impl DateContext for ListContext<'_> {
     }
 }
 
-impl DateContext for crate::admin_view::AdminCx<'_> {
+impl DateContext for crate::admin::view::AdminCx<'_> {
     fn i18n(&self) -> &I18n {
         self.i18n
     }

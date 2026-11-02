@@ -1,4 +1,4 @@
-// The emoji pages in the browser (src/admin_emoji_view.rs draws them):
+// The emoji pages in the browser (src/admin/emoji_view.rs draws them):
 // AdminConfigAreasEmojisList's DFilterControls (the name filter, the
 // group dropdown, reset, no results), selecting emojis to export and the
 // export's zip, deleting an emoji; EmojiUploader (the group ComboBox with

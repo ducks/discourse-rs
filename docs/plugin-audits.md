@@ -91,7 +91,7 @@ Scope: server side only (plugin.rb, routes and every controller action, services
 - Routes ported (src/routes/mod.rs:284-380, 2492): POST /chat/:id (create message), GET /chat/api/channels, /me/channels, /chatables, GET and PUT /channels/:id, memberships index/create/destroy, memberships/me POST/PUT/DELETE and /me/follows DELETE, PUT /channels/read and /channels/:id/read, POST drafts, GET messages, PUT and DELETE messages/:id, PUT messages/:id/restore, POST direct-message-channels, GET /chat/direct_messages, PUT /chat/:id/react/:message_id, PUT /chat/:id/:message_id/rebake, POST /chat/dismiss-retention-reminder; full pages /chat, /chat/channels, /chat/disabled, /chat/browse/*, /chat/c/:slug/:id(/:message_id), the /chat/channel/... redirects (src/routes/chat_pages.rs); the pane's pages of messages for chat.js, GET /live/chat/:channel_id/messages (plugins/chat/page.rs messages_page).
 - Services: CreateMessage with ProcessMessage, mentions (direct, group, here, all) and Notifier (src/plugins/chat/create.rs, mentions.rs, notify.rs), UpdateMessage, TrashMessage, RestoreMessage, RebakeMessage (modify.rs), UpsertDraft, memberships, follows, read tracking (membership.rs), CreateDirectMessageChannel and DM group edits (dm_create.rs, dm_groups.rs), UpdateChannel with its slug and its validation errors (dm_groups.rs), SearchChatable (chatables.rs), channel listing and fetcher (channels.rs, view.rs), MessageRateLimiter with auto silence (routes/chat.rs:539-603), Chat::Publisher (publisher.rs), auto join and leave (auto_join.rs, scheduled.rs).
 - Jobs: ProcessMessage, NotifyMentioned, NotifyWatching, UpdateThreadReplyCount, UpdateChannelUserCount, DeleteUserMessages, KickUsersFromChannel, scheduled EmailNotifications, PeriodicalUpdates, AutoJoinUsers, DeleteOldMessages (src/jobs/handlers.rs:28-141; src/jobs/mod.rs:231-299,587-599).
-- plugin.rb: current_user keys (can_chat, can_direct_message, has_chat_enabled, chat_sound, retention reminders, has_joinable_public_channels, chat_drafts) and last_chat_channel_id custom field (src/plugins/chat/mod.rs:409-479; src/current_user.rs:446-476), user_option and current_user_option keys (mod.rs:~330-405; src/user_private.rs:919), UserUpdater option attrs (src/user_updater.rs:215-249), can_chat_user on user card and hidden profile (mod.rs:483; src/users.rs:500,672), category has_chat_enabled / has_chat_channels (src/category_serializer.rs:37,192), retention site_setting_changed handler (src/plugins/mod.rs:310-337), user_added_to_group / user_removed_from_group / group_destroyed / category_updated auto join and leave (src/plugins/mod.rs:342-380; category_writes), user deletion callbacks (src/plugins/mod.rs:237,272), upload_in_use (mod.rs:575), search index of messages (src/posting/search_index.rs:624-660; src/jobs/search_jobs.rs:153), outgoing chat_message_* web hooks (src/plugins/chat/web_hooks.rs), about stats chat_messages/chat_users/chat_channels (src/about.rs:167-187), presence prefixes chat and chat-reply (src/plugins/chat/presence.rs), hashtag channel data source (src/hashtags.rs:82,334,655), email dark-mode styles (src/email/styles.rs:374), flag applies_to Chat::Message (src/admin_flags.rs:20), reviewable sti name (src/reviewables.rs:20), notification types (src/notifications.rs:44-55).
+- plugin.rb: current_user keys (can_chat, can_direct_message, has_chat_enabled, chat_sound, retention reminders, has_joinable_public_channels, chat_drafts) and last_chat_channel_id custom field (src/plugins/chat/mod.rs:409-479; src/current_user.rs:446-476), user_option and current_user_option keys (mod.rs:~330-405; src/user_private.rs:919), UserUpdater option attrs (src/user_updater.rs:215-249), can_chat_user on user card and hidden profile (mod.rs:483; src/users.rs:500,672), category has_chat_enabled / has_chat_channels (src/category_serializer.rs:37,192), retention site_setting_changed handler (src/plugins/mod.rs:310-337), user_added_to_group / user_removed_from_group / group_destroyed / category_updated auto join and leave (src/plugins/mod.rs:342-380; category_writes), user deletion callbacks (src/plugins/mod.rs:237,272), upload_in_use (mod.rs:575), search index of messages (src/posting/search_index.rs:624-660; src/jobs/search_jobs.rs:153), outgoing chat_message_* web hooks (src/plugins/chat/web_hooks.rs), about stats chat_messages/chat_users/chat_channels (src/about.rs:167-187), presence prefixes chat and chat-reply (src/plugins/chat/presence.rs), hashtag channel data source (src/hashtags.rs:82,334,655), email dark-mode styles (src/email/styles.rs:374), flag applies_to Chat::Message (src/admin/flags.rs:20), reviewable sti name (src/reviewables.rs:20), notification types (src/notifications.rs:44-55).
 - Emails: chat summary (src/plugins/chat/summary_email.rs; src/jobs/user_email.rs:88).
 - Message actions: POST /chat/:id/quote (TranscriptService, src/plugins/chat/transcript.rs), GET /chat/:id/:message_id/reactions-users, DELETE .../streaming, POST .../interactions, GET /chat/api/mentions/groups (src/plugins/chat/interact.rs), the DuplicateMessageValidator exemptions (create.rs, modify.rs), target dates through Date._parse (messages.rs), ONPDiff's limit as a 500 (modify.rs). Refused: transcripts of threaded channels.
 - Moderation: POST .../messages/:id/flags (Chat::FlagMessage and ReviewQueue#flag_message: Chat::ReviewableMessage.needs_review!, the score, can_flag_again?, auto silence from flags, publish_flag!; src/plugins/chat/flags.rs), Chat::ReviewableMessage's perform actions (src/plugins/chat/review.rs, from src/review.rs), DELETE .../messages (Chat::TrashMessages, src/plugins/chat/modify.rs), POST .../messages/moves (Chat::MessageMover, src/plugins/chat/mover.rs). take_action agrees at once (agree_and_delete, 148a). Refused: notify flags with a message (companion PMs), the DM transcript, queue_for_review, flagging uploads (148b), moving threads.
@@ -284,7 +284,7 @@ Verdict: started (63 gaps)
 - Keyboard shortcuts: Alt+Up/Down and Alt+Shift+Up/Down to switch channels, Cmd/Ctrl+B, I, E and L in the composer, "-" to toggle the drawer, Esc to close it, Shift+Esc to mark all channels read, and the chat section of the keyboard shortcuts help. Rails: c/initializers/chat-keyboard-shortcuts.js:156-300. Port: Alt+Up/Down, Alt+Shift+Up/Down, Cmd/Ctrl+B, I and E, and Shift+Esc in static/js/chat-drawer.js [225a]; "-" and Esc [223a]; Cmd/Ctrl+K [222]. Left: Cmd/Ctrl+L (the insert link modal) and the help section (core's keyboard shortcuts help is refused). [225b]
 
 **UI: admin and category**
-- The admin plugin page for chat with its configuration nav (settings, incoming webhooks). Rails: plugin.rb:35; admin/assets/javascripts/discourse/initializers/chat-admin-plugin-configuration-nav.js. Port: src/routes/admin_plugins.rs:110 (refusal "a plugin's own admin pages (its configuration nav)").
+- The admin plugin page for chat with its configuration nav (settings, incoming webhooks). Rails: plugin.rb:35; admin/assets/javascripts/discourse/initializers/chat-admin-plugin-configuration-nav.js. Port: src/admin/routes/plugins.rs:110 (refusal "a plugin's own admin pages (its configuration nav)").
 - Incoming webhooks admin: list, new, edit (name, description, channel, username, emoji or icon), delete, and the endpoints /admin/plugins/chat/hooks (index, create, update, new, edit, destroy, unrouted). Rails: admin/assets/javascripts/discourse/admin-chat-route-map.js; admin/assets/javascripts/admin/components/admin-chat-incoming-webhooks-list.gjs; admin/assets/javascripts/admin/components/chat-incoming-webhook-edit-form.gjs; plugin.rb:538-551. Port: absent.
 - The admin page's "export chat messages" action (POST /chat/api/admin/export/messages, unrouted). Rails: admin/assets/javascripts/admin/components/chat-admin-plugin-actions.gjs; config/routes.rb:71. Port: absent.
 - The category editor's Chat tab (the category's channels, include subcategories). Rails: c/initializers/chat-category-tab.js:10; c/components/upsert-category/chat.gjs. Port: absent (src/category_edit_view.rs:369 tab list has no chat tab).
@@ -326,7 +326,7 @@ checks its rendered result; this does not close the rest of the poll audit.
 - `can_create_poll` on the current user (src/current_user.rs:889-891; src/plugins/poll/mod.rs:622).
 - Jobs: ClosePoll as the system user, quiet refusals (src/jobs/handlers.rs:63,1209).
 - Events: `merging_users` (src/user_merger.rs:700-709), User `has_many :poll_votes, dependent: :delete_all` (src/plugins/mod.rs:239), `reduce_excerpt`, gated by `poll_enabled` (src/excerpt.rs:238-246), `in:polls` advanced filter and its search-menu suggestion (src/search/advanced.rs:185; src/search_menu_view.rs:1067).
-- Settings: all nine from plugin_settings.yml; none has a change handler in Rails. Admin plugin icon `chart-bar` (src/admin_view.rs:175). English server and client locales loaded (src/i18n.rs:25-27,75-76).
+- Settings: all nine from plugin_settings.yml; none has a change handler in Rails. Admin plugin icon `chart-bar` (src/admin/view.rs:175). English server and client locales loaded (src/i18n.rs:25-27,75-76).
 - Composer options menu lists "Build Poll" for staff or poll_create_allowed_groups (src/composer/view.rs:280-285; src/html.rs:1118), but as unported (see UI).
 
 ### Gaps
@@ -403,7 +403,7 @@ Verdict: started (23 gaps)
 - Notification type `reaction` (25): src/site.rs:53, src/notifications.rs:40; reacted_by_two_users and consolidated_reactions plans: src/notification_create.rs:219-384; PostAlerterExtension should_notify_previous: src/jobs/post_alert.rs:815; user menu renderer (title, href to reactions-received/likes-received, icon, 2-user/multi-user labels): src/user_menu_view.rs:965-1011; reactions in the Likes tab of the user menu: src/user_menu_view.rs:155.
 - `reactions` admin report: src/reports/tables.rs:1407, src/reports/mod.rs:176.
 - user_action_stream_builder modifier (shadow likes hidden from likes streams): src/users.rs:1806, src/plugins/reactions/mod.rs:363.
-- ReactionForLikeSiteSettingEnum values: src/setting_enums.rs:91. Admin plugin entry with the discourse-emojis icon: src/admin_view.rs:765.
+- ReactionForLikeSiteSettingEnum values: src/setting_enums.rs:91. Admin plugin entry with the discourse-emojis icon: src/admin/view.rs:765.
 - "First Reaction" badge seeded: seed/fresh_install.sql:749.
 - UI: post menu reaction button in the like slot, picker, counter + reactions list, users menu with per-reaction filter tabs and paging over reactions-users-list, hidden-post suppression, desaturated panel, like icon: src/plugins/reactions/view.rs, src/post_view.rs:947-1041, static/js/discourse-reactions.js, static/css/discourse-reactions.css. Activity tab "Reactions" (user-activity-bottom connector) and its PostList with the reaction emoji: src/user_profile_view.rs:802,1327, src/routes/users.rs:733. Notifications tab "Reactions" (user-notifications-bottom connector) and reactions-received page: src/user_notifications_view.rs:143,279, src/routes/user_notifications.rs:138.
 - Locales: English client and server yml loaded through vendor/discourse/config/locales/plugin_{client,server}.en.yml (src/i18n.rs:22-28); other locales are refused port-wide.
@@ -449,7 +449,7 @@ Verdict: started (23 gaps)
 - reactions-received page ignores `acting_username` and `include_likes` query params, which the reaction notification link always sends. Rails: plugins/discourse-reactions/assets/javascripts/discourse/routes/user-notifications/reactions-received.js:11. Port: src/routes/user_notifications.rs:148-153 (hard-coded None/false; link built at src/user_menu_view.rs:975).
 - User nav sidebar links `activity-reactions` and `notifications-reactions` (addUserNavSidebarLink). Rails: plugins/discourse-reactions/assets/javascripts/discourse/initializers/discourse-reactions.gjs:18. Port: absent (core's user nav sidebar panel is absent too).
 - Keyboard shortcut `l` toggling the selected post's reaction button. Rails: plugins/discourse-reactions/assets/javascripts/discourse/initializers/discourse-reactions.gjs:39. Port: absent.
-- Admin emoji-value-list override for `discourse_reactions_enabled_reactions`: the like reaction prepended when absent and locked from editing. Rails: plugins/discourse-reactions/assets/javascripts/discourse/initializers/discourse-reactions.gjs:60. Port: src/admin_site_settings_view.rs:1486 | absent.
+- Admin emoji-value-list override for `discourse_reactions_enabled_reactions`: the like reaction prepended when absent and locked from editing. Rails: plugins/discourse-reactions/assets/javascripts/discourse/initializers/discourse-reactions.gjs:60. Port: src/admin/site_settings_view.rs:1486 | absent.
 - Touch long-press to open the picker, vibration, and the reaction animations. Rails: plugins/discourse-reactions/assets/javascripts/discourse/components/discourse-reactions-actions.gjs:234-300,345,566. Port: static/js/discourse-reactions.js:7 ("not ported").
 - Mobile: users menu as a modal (`modalForMobile`) and the mobile stylesheet. Rails: plugins/discourse-reactions/assets/javascripts/discourse/components/discourse-reactions-counter.gjs:73, plugins/discourse-reactions/assets/stylesheets/mobile/discourse-reactions.scss. Port: static/css/discourse-reactions.css:1 (common and desktop only) | absent.
 
@@ -495,7 +495,7 @@ Verdict: started (30 gaps)
 - PostMoverExtension: moving accepted answers to another topic neither re-homes the topic answers (target allows answers and has room) nor unaccepts them, and the emptied solved row is not destroyed. Rails: plugins/discourse-solved/lib/discourse_solved/post_mover_extension.rb:8. Port: absent (src/post_mover.rs has no solved handling).
 - ComposerMessagesFinder#check_topic_is_solved (education message on replying to a solved topic, disable_solved_education_message). Rails: plugins/discourse-solved/plugin.rb:453. Port: absent (core GET /composer_messages is not routed at all; src/routes/mod.rs).
 - Crawler and page schema markup: topic_crawler_container_schema / main_entity_schema / post_schema / skip_post modifiers, the server:topic-main-entity-meta-crawler and server:topic-show-crawler-post-end builders, the QAPage JSON-LD in before-head-close and before-head-close-crawler (BuildSchemaMarkup, QuestionSchemaSerializer, AnswerSchemaSerializer, SchemaUtils), solved_add_schema_markup. Rails: plugins/discourse-solved/plugin.rb:113-164; app/services/discourse_solved/build_schema_markup.rb:1. Port: absent (no schema output in routes/topics.rs:675-699 or templates). [item 163]
-- Admin dashboard Support section (register_admin_dashboard_section "support", AdminDashboardSupport.build, its categories setting). Rails: plugins/discourse-solved/plugin.rb:295; lib/discourse_solved/admin_dashboard_support.rb:21. Port: src/admin_dashboard.rs:290 (refusal "discourse-solved's support section settings"), :1350 (refusal "discourse-solved's support section"). [item 163]
+- Admin dashboard Support section (register_admin_dashboard_section "support", AdminDashboardSupport.build, its categories setting). Rails: plugins/discourse-solved/plugin.rb:295; lib/discourse_solved/admin_dashboard_support.rb:21. Port: src/admin/dashboard.rs:290 (refusal "discourse-solved's support section settings"), :1350 (refusal "discourse-solved's support section"). [item 163]
 - accepted_solutions related items computed without a viewer. Rails: plugins/discourse-solved/plugin.rb:218. Port: src/reports/counts.rs:1144 (refusal "accepted solutions' related items without a viewer"). [item 163]
 - SeedAdminDashboardReports: the accepted_solutions AdminDashboardReport row seeded once solved is in use, and discourse_solved_admin_dashboard_seeded. Rails: plugins/discourse-solved/db/fixtures/700_admin_dashboard_reports.rb:1; lib/discourse_solved/seed_admin_dashboard_reports.rb:7. Port: absent.
 - register_custom_filter_by_status solved/unsolved and the topics_filter_options entries (status:solved, status:unsolved) for /filter. Rails: plugins/discourse-solved/lib/discourse_solved/register_filters.rb:46-61. Port: absent (/filter not routed). [item 197, not named there]
@@ -661,7 +661,7 @@ Verdict: started (3 gaps)
 - Registered under the `discourse-presence` prefix and gated by `presence_enabled`: src/presence.rs:98-100.
 - ComposerPresenceDisplay (`before-composer-controls` outlet), TopicPresenceDisplay (`topic-above-footer-buttons` outlet, members only, `--avatar-min-height: 24px`) and ComposerPresenceManager (enter while replyDirty, KEEP_ALIVE 10s, hide_presence respected): static/js/topic-presence.js; outlets in src/composer/view.rs:476-482 and src/post_view.rs:2046-2050; composer state from static/js/composer.js:538-552.
 - Settings `presence_enabled`, `presence_max_users_shown` (slice in the composer display) and the strings: src/html.rs:1070-1092.
-- Admin plugin entry with the `eye` icon: src/admin_view.rs:757-763.
+- Admin plugin entry with the `eye` icon: src/admin/view.rs:757-763.
 - Core presence client and /presence/get, /presence/update: static/js/presence.js (SPEC_COVERAGE lists both controller actions covered).
 
 ### Gaps
@@ -690,7 +690,7 @@ Verdict: started (5 gaps)
 - `reduce_excerpt` " (UTC)", gated: src/excerpt.rs:247-254.
 - Client: applyLocalDates in posts, composer preview and chat, ranges and same-day, tooltip previews, Add to calendar with ics and the download-calendar modal, data-title default: static/js/local-dates.js.
 - Insert date modal (from/to, Pikaday, timezone combo, advanced mode with recurrence, timezones, format list from `discourse_local_dates_default_formats`, preview) and Ctrl/Cmd+Shift+. current-date shortcut: static/js/local-dates-create.js; options menu item with `far-clock` and always-visible shortcut: src/composer/view.rs:264-271; static/js/composer.js:1612-1628.
-- Admin plugin entry with `far-clock`: src/admin_view.rs:674-679.
+- Admin plugin entry with `far-clock`: src/admin/view.rs:674-679.
 
 ### Gaps
 **Markdown**
@@ -718,7 +718,7 @@ Verdict: started (5 gaps)
 
 ### What the port has
 - The YouTube, Vimeo and TikTok onebox overrides (`to_html` with the maxresdefault thumbnail check and fallback, unlisted Vimeo ids from the iframe, TikTok's embed_product_id), gated by `lazy_videos_enabled` and the per-provider settings: src/plugins/lazy_videos.rs:9-49; src/onebox/embed_engines.rs:1324-1460; src/onebox/engines.rs:45-71.
-- Admin plugin entry with the `bed` icon: src/admin_view.rs:667-672.
+- Admin plugin entry with the `bed` icon: src/admin/view.rs:667-672.
 
 ### Gaps
 **UI**
@@ -804,7 +804,7 @@ Verdict: started (1 gap, left to 196)
 - `before_post_process_cooked` (243): back references, references and list items renamed to `footnote-ref-<post>-<n>` / `footnote-<post>-<n>` with the plugin's slicing and `to_i`, gated by `enable_markdown_footnotes`, run inside the post processor on its document: src/plugins/footnote.rs; src/pretty_text/cooked_post_processor.rs. Recorded against Rails: parity/writes/footnote/edit_post_scoped_ids.
 - Inline footnotes (DTooltip `inline-footnote`, `.inline-footnotes`), loaded when the plugin and `display_footnotes_inline` are on: static/js/inline-footnotes.js; src/html.rs:743-744.
 - Options menu item (`asterisk`, `footnote.add`, inserts `^[` + `footnote.title` + `]`, unnamed): src/composer/view.rs:257-263,632; static/js/composer.js:1606-1608.
-- Admin plugin entry with `asterisk`: src/admin_view.rs:646-651. Stylesheet: static/css/footnote.css.
+- Admin plugin entry with `asterisk`: src/admin/view.rs:646-651. Stylesheet: static/css/footnote.css.
 
 ### Gaps
 **UI**
@@ -900,7 +900,7 @@ Verdict: started (3 gaps)
   as a reconnect (src/plugins/lti.rs:350-384; src/routes/omniauth.rs:1536-1582).
 - UI: LTI login button hidden on the login page (src/routes/login_required.rs:291-294); connect
   button hidden on the account preferences (src/preferences_view/mod.rs:457-458); revoke allowed.
-- Admin plugin entry with the graduation-cap icon (src/admin_view.rs:694-700); STARTED
+- Admin plugin entry with the graduation-cap icon (src/admin/view.rs:694-700); STARTED
   (src/plugins/mod.rs:292).
 - Parity case parity/writes/external_auth/lti_flow.case.json.
 
@@ -954,7 +954,7 @@ Verdict: started (13 gaps)
   (src/plugins/oauth2_basic.rs:385-489; src/auth/managed.rs:901).
 - Token request failures (timeout and connection errors) as `oauth2_basic_request_failed`
   (src/routes/omniauth.rs:1118-1123); expired token refresh (:1129-1138).
-- Admin plugin entry with the key icon (src/admin_view.rs:680-686).
+- Admin plugin entry with the key icon (src/admin/view.rs:680-686).
 - Parity cases parity/writes/external_auth/oauth2_*.case.json (new user, existing user, expired
   token, linked groups, override email, overrides/groups/fields, suspended user, IP allowlist).
 
@@ -973,7 +973,7 @@ Verdict: started (13 gaps)
   admin sidebar link (`admin_login_oauth2`), so the `oauth2` area's settings have no page.
   Rails: plugins/discourse-oauth2-basic/plugin.rb:18-19; config/locales/client.en.yml
   (admin.config.login.sub_pages.oauth2); frontend/discourse/app/lib/sidebar/admin-sidebar.js:424.
-  Port: src/site.rs:505-506 (always `[]`), src/routes/admin_config.rs:669-707 (comment: not here).
+  Port: src/site.rs:505-506 (always `[]`), src/admin/routes/config.rs:669-707 (comment: not here).
 
 **Routes and controllers**
 - `oauth2_debug_auth` is never read: no OAuth2FaradayFormatter request/response logs with
@@ -1063,7 +1063,7 @@ Verdict: started (10 gaps)
 - RP-initiated logout on session destroy with id_token_hint, optional client_id,
   post_logout_redirect_uri and state (src/plugins/openid_connect.rs:593-656;
   src/routes/session.rs:709-729).
-- Admin plugin entry with the id-card icon (src/admin_view.rs:722-728).
+- Admin plugin entry with the id-card icon (src/admin/view.rs:722-728).
 - Parity case parity/writes/external_auth/oidc_nonce_mismatch.case.json.
 
 ### Gaps
@@ -1074,7 +1074,7 @@ Verdict: started (10 gaps)
 - `register_site_setting_area("oidc")` / `register_admin_config_login_route("oidc")`: no OIDC tab,
   no `admin_config_login_routes` entry, no sidebar link. Rails:
   plugins/discourse-openid-connect/plugin.rb:20-21; config/locales/client.en.yml
-  (admin.config.login.sub_pages.oidc). Port: src/site.rs:505-506, src/routes/admin_config.rs:669.
+  (admin.config.login.sub_pages.oidc). Port: src/site.rs:505-506, src/admin/routes/config.rs:669.
 
 **Routes and controllers**
 - mTLS client authentication (`openid_connect_mtls_client_cert`, `_key`, `_key_passcode`): the
@@ -1142,7 +1142,7 @@ server drawn preferences and cover the login against Amazon's endpoints stubbed 
 - Settings from the vendored plugin_settings.yml (client id and secret, scope `profile`,
   overrides email, hidden email verified `true`, user can connect and revoke), area
   authenticators; "discourse-login-with-amazon" in `plugins::STARTED`; admin plugin entry
-  (src/admin_view.rs).
+  (src/admin/view.rs).
 - OmniAuth::Strategies::Amazon: client on https://www.amazon.com/ with /ap/oa and
   https://api.amazon.com/auth/o2/token, credentials in a Basic header; the scope setting as the
   only authorize param (it replaces the strategy's `profile postal_code`); `callback_url` from
@@ -1201,7 +1201,7 @@ Verdict: started (2 gaps)
   raw_info with id_token_info and id_token (src/plugins/apple.rs:236-301); every email verified,
   match by email (src/routes/omniauth.rs:1223-1247).
 - Settings area `authenticators` shown on the login config's Authenticators tab
-  (src/routes/admin_config.rs:691-697); admin plugin entry with fab-apple (src/admin_view.rs:582-587).
+  (src/admin/routes/config.rs:691-697); admin plugin entry with fab-apple (src/admin/view.rs:582-587).
 - Parity case parity/writes/external_auth/apple_login.case.json.
 
 ### Gaps
@@ -1241,7 +1241,7 @@ port spec/integration/microsoft_auth_spec.rb and spec/lib/microsoft_auth_revoker
 - Settings from the vendored plugin_settings.yml (`microsoft_auth_enabled`, `_client_id`,
   `_client_secret` secret, `_email_verified`, `_tenant_id` default `common`), area authenticators;
   "discourse-microsoft-auth" in `plugins::STARTED`; admin plugin entry with fab-microsoft
-  (src/admin_view.rs).
+  (src/admin/view.rs).
 - OmniAuth::Strategies::MicrosoftOffice365: client on https://login.microsoftonline.com with the
   tenant's `/{tenant}/oauth2/v2.0/authorize` and `/token` paths, credentials in a Basic header;
   authorize params `display`, `score`, `auth_type` from the request, then the default scope
@@ -1356,7 +1356,7 @@ loopback.
 - Settings from the vendored plugin_settings.yml (`discourse_captcha_enabled`, the
   `discourse_captcha_provider` enum hcaptcha/recaptcha/none, both providers' site and secret
   keys); "discourse-captcha" in `plugins::STARTED` (it has no enable validator, so admins can
-  turn it on); admin plugin entry with the hand icon (src/admin_view.rs).
+  turn it on); admin plugin entry with the hand icon (src/admin/view.rs).
 - CaptchaController, HcaptchaController, RecaptchaController: POST /captcha/hcaptcha/create and
   /captcha/recaptcha/create (with `.json`): the CSRF check, requires_plugin and another provider
   selected as 404s, a blank token as InvalidParameters (400), the token kept in the server session
@@ -1432,7 +1432,7 @@ and spec/system/cakeday_user_summary_spec.rb.
 ### What the port has
 - Settings `cakeday_enabled` (the enabled setting), `cakeday_emoji`, `cakeday_birthday_enabled`,
   `cakeday_birthday_emoji`, from the vendored plugin_settings.yml; "discourse-cakeday" in
-  `plugins::STARTED`; admin plugin entry with `cake-candles` (src/admin_view.rs); the icon is in
+  `plugins::STARTED`; admin plugin entry with `cake-candles` (src/admin/view.rs); the icon is in
   the recorded sprite's plugin icons.
 - Serializer keys: `cakedate` and `birthdate` on UserSerializer and UserCardSerializer (after
   chat's, before discourse-solved's), `user_cakedate` and `user_birthdate` on PostSerializer
@@ -1563,7 +1563,7 @@ URI and query quirks) and tests/pretty_text.rs
   rebuilt as Ruby's URI does (host case kept, scheme downcased, default port dropped,
   unparsable urls and bad percent escapes kept as they are).
 - Settings and the admin plugin entry with `handshake`: vendored plugin_settings.yml,
-  src/admin_view.rs (already there).
+  src/admin/view.rs (already there).
 
 ### Gaps
 - `on(:post_process_localized_cooked)`: localized posts are not ported (no
@@ -1588,7 +1588,7 @@ source and is not read by the reference, nor by the port.
 - Settings: `discourse_gamification_enabled`, `scorable_categories`, the fifteen
   `<source>_score_value` weights and `score_ranking_strategy`, from the vendored
   plugin_settings.yml; "discourse-gamification" in `plugins::STARTED`; the admin plugin entry
-  with `trophy` (src/admin_view.rs).
+  with `trophy` (src/admin/view.rs).
 - Score sources (lib/discourse_gamification/scorables): day visited, flag created, like given
   and received, post created, post read, solutions, time read, topic created, user invited,
   reaction given and received (discourse-reactions on), chat reaction given and received and
@@ -1644,8 +1644,8 @@ source and is not read by the reference, nor by the port.
   form, Recalculate with its modal (ranges, custom date, the result through the message bus),
   delete with its confirmation, the empty state, and the edit form (name, dates, period filter,
   default period, groups, scorable categories, the fifteen weights) in
-  src/plugins/gamification/admin_view.rs, src/admin_plugins_view.rs (`config_page`),
-  src/routes/admin_plugins.rs; the stylesheets in static/css/gamification.css.
+  src/plugins/gamification/admin_view.rs, src/admin/plugins_view.rs (`config_page`),
+  src/admin/routes/plugins.rs; the stylesheets in static/css/gamification.css.
 - Locales: English client and server strings through the vendored plugin locales.
 - Tests: tests/plugin_gamification.rs.
 
@@ -1711,7 +1711,7 @@ tests/plugin_graphviz.rs.
 - The composer's Insert Graphviz graph (`diagram-project`, the sample graph around the
   selection); the options menu no longer refuses to open while the plugin is on:
   src/composer/view.rs, static/js/composer.js.
-- Stylesheet: static/css/graphviz.css. Admin plugin entry and icon: src/admin_view.rs
+- Stylesheet: static/css/graphviz.css. Admin plugin entry and icon: src/admin/view.rs
   (already there).
 
 ### Gaps
@@ -1737,7 +1737,7 @@ in src/plugins/narrative_bot/certificate.rs).
 ### What the port has
 - Settings from the vendored plugin_settings.yml (`discourse_narrative_bot_enabled` and the six
   others, `send_welcome_message` taken over), "discourse-narrative-bot" in `plugins::STARTED`,
-  the admin plugin entry with its `robot` icon (src/admin_view.rs), discobot (user -2, its email,
+  the admin plugin entry with its `robot` icon (src/admin/view.rs), discobot (user -2, its email,
   options, profile and bio) and the Certified and Licensed badges from the clean seed, the
   stylesheet (static/css/discourse-narrative-bot.css).
 - The Store (PluginStore rows under the plugin's name, keyed by user id):
@@ -1893,7 +1893,7 @@ equivalent.
   the SCSS samples and the 13 steps), Buttons (every DButton size and state card and
   DToggleSwitch, with the port's button markup), Colors (every swatch card), Icons (the
   site sprite's symbols), Forms (Input, Toggle, Textarea, Select, CheckboxGroup, Alert with
-  the port's FormKit markup, src/admin_form_kit.rs), Spinners.
+  the port's FormKit markup, src/admin/form_kit.rs), Spinners.
 - The plugin's stylesheet, on its pages only (the asset filter's effect, with
   `data-target="styleguide"`): static/css/styleguide.css.
 - Setting `styleguide_admin_only` (hidden) and the migration to
@@ -1957,7 +1957,7 @@ tests/plugin_math.rs.
   static/js/composer.js, static/js/discourse-math.js. The options menu no longer refuses
   to open while the plugin is on.
 - Stylesheets (common and chat): static/css/discourse-math.css.
-- Admin plugin entry with its icon: src/admin_view.rs (already there).
+- Admin plugin entry with its icon: src/admin/view.rs (already there).
 - The renderers: the discourse_math_bundle gem 1.0.1 (MathJax 4.1.0, KaTeX 0.16.27)
   vendored verbatim in static/vendor/discourse-math-bundle, embedded by build.rs and served
   at BundlePaths' /plugins/discourse-math/1.0.1/{mathjax,katex}/... with nginx.sample.conf's

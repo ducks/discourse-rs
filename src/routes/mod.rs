@@ -1,40 +1,7 @@
+use crate::admin::routes as admin;
+
 mod about;
 pub(crate) mod accounts;
-mod admin_advanced;
-mod admin_api_keys;
-mod admin_badges;
-mod admin_badges_pages;
-mod admin_config;
-mod admin_config_about;
-mod admin_config_branding;
-mod admin_config_category_management;
-mod admin_config_mcp;
-mod admin_config_upcoming_changes;
-mod admin_customize;
-mod admin_dashboard;
-mod admin_dashboard_sections;
-mod admin_email;
-mod admin_email_pages;
-mod admin_email_style;
-mod admin_email_templates;
-mod admin_embedding;
-mod admin_emoji;
-mod admin_flags;
-mod admin_form_templates;
-mod admin_groups;
-mod admin_logs;
-mod admin_mcp;
-mod admin_mcp_clients;
-mod admin_pages;
-mod admin_plugins;
-mod admin_reports;
-mod admin_search;
-mod admin_site_settings;
-mod admin_user_fields;
-mod admin_users;
-mod admin_watched_words;
-mod admin_web_hooks;
-mod admin_whats_new;
 mod archive_message;
 mod assign;
 mod backups;
@@ -52,18 +19,18 @@ mod discourse_connect;
 mod discourse_templates;
 mod do_not_disturb;
 mod drafts;
-mod email;
+pub(crate) mod email;
 mod emojis;
 mod external_uploads;
 mod finish_installation;
 mod gamification;
 mod group_membership;
-mod groups;
+pub(crate) mod groups;
 mod hashtags;
 mod highlight_js;
 mod list;
 mod live;
-mod login_required;
+pub(crate) mod login_required;
 mod messages;
 mod new_topic;
 mod not_found;
@@ -81,10 +48,10 @@ mod recent_searches;
 mod review;
 mod review_claims;
 mod robots;
-mod search;
+pub(crate) mod search;
 mod search_menu;
 mod styleguide;
-mod uploads;
+pub(crate) mod uploads;
 pub(crate) use search::{invalid_access, invalid_access_at};
 pub(crate) use session::{csrf_ok, viewer_state};
 pub(crate) use sitemap::regenerate_sitemaps;
@@ -95,7 +62,7 @@ mod chat;
 mod chat_admin;
 mod chat_pages;
 mod checklist;
-mod color_schemes;
+pub(crate) mod color_schemes;
 mod impersonate;
 mod invite_redeem;
 pub(crate) use invite_redeem::create_staged_user;
@@ -106,13 +73,13 @@ mod policy;
 mod polls;
 mod reactions;
 mod required_fields;
-mod session;
+pub(crate) mod session;
 pub(crate) use session::bad_csrf;
 mod session_2fa;
 mod session_passkey;
 mod sidebar_sections;
 mod site;
-mod site_texts;
+pub(crate) mod site_texts;
 mod sitemap;
 mod slugs;
 mod solved;
@@ -124,7 +91,7 @@ mod tag_admin;
 mod tag_groups;
 mod tag_search;
 mod tags;
-mod themes;
+pub(crate) mod themes;
 mod topic_convert;
 mod topic_excerpts;
 mod topic_move;
@@ -134,7 +101,7 @@ mod topic_status;
 mod topic_timer;
 mod topic_update;
 mod topic_voting;
-mod topics;
+pub(crate) mod topics;
 mod topics_bulk;
 mod user_activity;
 mod user_api_key_auth;
@@ -1299,381 +1266,396 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/news.xml", get(sitemap::news))
         .route(
             "/admin/config/emoji",
-            get(admin_emoji::index).post(admin_emoji::create),
+            get(admin::emoji::index).post(admin::emoji::create),
         )
         .route(
             "/admin/config/emoji.json",
-            get(admin_emoji::index).post(admin_emoji::create),
+            get(admin::emoji::index).post(admin::emoji::create),
         )
-        .route("/admin/config/emoji/new", get(admin_emoji::page))
-        .route("/admin/config/emoji/settings", get(admin_emoji::page))
-        .route("/admin/config/emoji/export", post(admin_emoji::export))
-        .route("/admin/config/emoji/export.json", post(admin_emoji::export))
+        .route("/admin/config/emoji/new", get(admin::emoji::page))
+        .route("/admin/config/emoji/settings", get(admin::emoji::page))
+        .route("/admin/config/emoji/export", post(admin::emoji::export))
+        .route(
+            "/admin/config/emoji/export.json",
+            post(admin::emoji::export),
+        )
         .route(
             "/admin/config/emoji/import_preview",
-            post(admin_emoji::import_preview),
+            post(admin::emoji::import_preview),
         )
         .route(
             "/admin/config/emoji/import_preview.json",
-            post(admin_emoji::import_preview),
+            post(admin::emoji::import_preview),
         )
         .route(
             "/admin/config/emoji/import_confirm",
-            post(admin_emoji::import_confirm),
+            post(admin::emoji::import_confirm),
         )
         .route(
             "/admin/config/emoji/import_confirm.json",
-            post(admin_emoji::import_confirm),
+            post(admin::emoji::import_confirm),
         )
-        .route("/admin/config/emoji/import", get(admin_emoji::page))
-        .route("/admin/config/emoji/{id}", delete(admin_emoji::destroy))
+        .route("/admin/config/emoji/import", get(admin::emoji::page))
+        .route("/admin/config/emoji/{id}", delete(admin::emoji::destroy))
         .route(
             "/admin/config/user_fields",
-            get(admin_user_fields::index).post(admin_user_fields::create),
+            get(admin::user_fields::index).post(admin::user_fields::create),
         )
         .route(
             "/admin/config/user_fields.json",
-            get(admin_user_fields::index).post(admin_user_fields::create),
+            get(admin::user_fields::index).post(admin::user_fields::create),
         )
         .route(
             "/admin/config/user_fields/{id}",
-            get(admin_user_fields::show)
-                .put(admin_user_fields::update)
-                .delete(admin_user_fields::destroy),
+            get(admin::user_fields::show)
+                .put(admin::user_fields::update)
+                .delete(admin::user_fields::destroy),
         )
         .route(
             "/admin/config/user_fields/{id}/edit",
-            get(admin_user_fields::edit),
+            get(admin::user_fields::edit),
         )
         .route(
             "/admin/config/user_fields/{id}/edit.json",
-            get(admin_user_fields::edit),
+            get(admin::user_fields::edit),
         )
         .route(
             "/admin/config/user-fields",
-            get(admin_user_fields::index_alias),
+            get(admin::user_fields::index_alias),
         )
         .route(
             "/admin/config/user-fields.json",
-            get(admin_user_fields::index_alias),
+            get(admin::user_fields::index_alias),
         )
         .route(
             "/admin/config/user-fields/{id}",
-            get(admin_user_fields::show),
+            get(admin::user_fields::show),
         )
         .route(
             "/admin/config/user-fields/{id}/edit",
-            get(admin_user_fields::edit),
+            get(admin::user_fields::edit),
         )
         .route(
             "/admin/config/user-fields/{id}/edit.json",
-            get(admin_user_fields::edit),
+            get(admin::user_fields::edit),
         )
         .route(
             "/admin/config/flags",
-            get(admin_flags::empty).post(admin_flags::create),
+            get(admin::flags::empty).post(admin::flags::create),
         )
         .route(
             "/admin/config/flags.json",
-            get(admin_flags::empty).post(admin_flags::create),
+            get(admin::flags::empty).post(admin::flags::create),
         )
         .route(
             "/admin/config/flags/{id}",
-            get(admin_flags::empty_member)
-                .put(admin_flags::update)
-                .delete(admin_flags::destroy),
+            get(admin::flags::empty_member)
+                .put(admin::flags::update)
+                .delete(admin::flags::destroy),
         )
         .route(
             "/admin/config/flags/{flag_id}/toggle",
-            put(admin_flags::toggle),
+            put(admin::flags::toggle),
         )
         .route(
             "/admin/config/flags/{flag_id}/toggle.json",
-            put(admin_flags::toggle),
+            put(admin::flags::toggle),
         )
         .route(
             "/admin/config/flags/{flag_id}/reorder/{direction}",
-            put(admin_flags::reorder),
+            put(admin::flags::reorder),
         )
         .route(
             "/admin/customize/embedding",
-            get(admin_embedding::show).put(admin_embedding::update),
+            get(admin::embedding::show).put(admin::embedding::update),
         )
         .route(
             "/admin/customize/embedding.json",
-            get(admin_embedding::show).put(admin_embedding::update),
+            get(admin::embedding::show).put(admin::embedding::update),
         )
         .route(
             "/admin/customize/embedding/{id}",
-            get(admin_embedding::edit),
+            get(admin::embedding::edit),
         )
-        .route("/admin/embeddable_hosts", post(admin_embedding::create))
+        .route("/admin/embeddable_hosts", post(admin::embedding::create))
         .route(
             "/admin/embeddable_hosts.json",
-            post(admin_embedding::create),
+            post(admin::embedding::create),
         )
         .route(
             "/admin/embeddable_hosts/{id}",
-            put(admin_embedding::update_host).delete(admin_embedding::destroy_host),
+            put(admin::embedding::update_host).delete(admin::embedding::destroy_host),
         )
         .route(
             "/admin/customize/form-templates",
-            get(admin_form_templates::index).post(admin_form_templates::create),
+            get(admin::form_templates::index).post(admin::form_templates::create),
         )
         .route(
             "/admin/customize/form-templates.json",
-            get(admin_form_templates::index).post(admin_form_templates::create),
+            get(admin::form_templates::index).post(admin::form_templates::create),
         )
         .route(
             "/admin/customize/form-templates/{id}",
-            get(admin_form_templates::show)
-                .put(admin_form_templates::update)
-                .delete(admin_form_templates::destroy),
+            get(admin::form_templates::show)
+                .put(admin::form_templates::update)
+                .delete(admin::form_templates::destroy),
         )
         .route(
             "/admin/customize/form-templates/{id}/edit",
-            get(admin_form_templates::edit),
+            get(admin::form_templates::edit),
         )
         .route(
             "/admin/customize/form-templates/{id}/edit.json",
-            get(admin_form_templates::edit),
+            get(admin::form_templates::edit),
         )
-        .route("/form-templates", get(admin_form_templates::public_index))
+        .route("/form-templates", get(admin::form_templates::public_index))
         .route(
             "/form-templates.json",
-            get(admin_form_templates::public_index),
+            get(admin::form_templates::public_index),
         )
         .route(
             "/form-templates/{id}",
-            get(admin_form_templates::public_show),
+            get(admin::form_templates::public_show),
         )
-        .route("/site/emoji", get(admin_emoji::site_emoji))
-        .route("/site/emoji.json", get(admin_emoji::site_emoji))
+        .route("/site/emoji", get(admin::emoji::site_emoji))
+        .route("/site/emoji.json", get(admin::emoji::site_emoji))
         .route(
             "/admin/badges",
-            get(admin_badges::index).post(admin_badges::create),
+            get(admin::badges::index).post(admin::badges::create),
         )
         .route(
             "/admin/badges.json",
-            get(admin_badges::index).post(admin_badges::create),
+            get(admin::badges::index).post(admin::badges::create),
         )
-        .route("/admin/badges/types", get(admin_badges::badge_types))
-        .route("/admin/badges/types.json", get(admin_badges::badge_types))
+        .route("/admin/badges/types", get(admin::badges::badge_types))
+        .route("/admin/badges/types.json", get(admin::badges::badge_types))
         .route(
             "/admin/badges/badge_groupings",
-            post(admin_badges::save_badge_groupings),
+            post(admin::badges::save_badge_groupings),
         )
         .route(
             "/admin/badges/badge_groupings.json",
-            post(admin_badges::save_badge_groupings),
+            post(admin::badges::save_badge_groupings),
         )
-        .route("/admin/badges/preview", post(admin_badges::preview))
-        .route("/admin/badges/preview.json", post(admin_badges::preview))
+        .route("/admin/badges/preview", post(admin::badges::preview))
+        .route("/admin/badges/preview.json", post(admin::badges::preview))
         .route(
             "/admin/badges/award/{badge_id}",
-            get(admin_badges::page).post(admin_badges::mass_award),
+            get(admin::badges::page).post(admin::badges::mass_award),
         )
         .route(
             "/admin/badges/{id}",
-            get(admin_badges::page)
-                .put(admin_badges::update)
-                .delete(admin_badges::destroy),
+            get(admin::badges::page)
+                .put(admin::badges::update)
+                .delete(admin::badges::destroy),
         )
-        .route("/admin/site_settings", get(admin_pages::site_settings_root))
+        .route(
+            "/admin/site_settings",
+            get(admin::pages::site_settings_root),
+        )
         .route(
             "/admin/config/site_settings",
-            get(admin_site_settings::config_index),
+            get(admin::site_settings::config_index),
         )
         .route(
             "/admin/config/site_settings.json",
-            get(admin_site_settings::config_index),
+            get(admin::site_settings::config_index),
         )
         .route(
             "/admin/site_settings/category/{category}",
-            get(admin_pages::site_settings_category),
+            get(admin::pages::site_settings_category),
         )
-        .route("/admin/site_settings.json", get(admin_site_settings::index))
+        .route(
+            "/admin/site_settings.json",
+            get(admin::site_settings::index),
+        )
         .route(
             "/admin/site_settings/{id}",
-            put(admin_site_settings::update),
+            put(admin::site_settings::update),
         )
         .route(
             "/admin/site_settings/{id}/user_count",
-            put(admin_site_settings::user_count),
+            put(admin::site_settings::user_count),
         )
         .route(
             "/admin/site_settings/{id}/user_count.json",
-            put(admin_site_settings::user_count),
+            put(admin::site_settings::user_count),
         )
         .route(
             "/admin/logs/screened_emails",
-            get(admin_logs::screened_emails),
+            get(admin::logs::screened_emails),
         )
         .route(
             "/admin/logs/screened_emails.json",
-            get(admin_logs::screened_emails),
+            get(admin::logs::screened_emails),
         )
         .route(
             "/admin/logs/screened_emails/{id}",
-            delete(admin_logs::destroy_screened_email),
+            delete(admin::logs::destroy_screened_email),
         )
-        .route("/admin/email-logs", get(admin_logs::email_logs_index))
-        .route("/admin/email-logs/{kind}", get(admin_logs::email_logs))
+        .route("/admin/email-logs", get(admin::logs::email_logs_index))
+        .route("/admin/email-logs/{kind}", get(admin::logs::email_logs))
         .route(
             "/admin/email-logs/incoming/{id}",
-            get(admin_logs::incoming_email),
+            get(admin::logs::incoming_email),
         )
         .route(
             "/admin/email-logs/incoming_from_bounced/{id}",
-            get(admin_logs::incoming_from_bounced),
+            get(admin::logs::incoming_from_bounced),
         )
-        .route("/admin/logs/search_logs", get(admin_logs::search_logs))
-        .route("/admin/logs/search_logs.json", get(admin_logs::search_logs))
+        .route("/admin/logs/search_logs", get(admin::logs::search_logs))
+        .route(
+            "/admin/logs/search_logs.json",
+            get(admin::logs::search_logs),
+        )
         .route(
             "/admin/logs/search_logs/term",
-            get(admin_logs::search_log_term),
+            get(admin::logs::search_log_term),
         )
         .route(
             "/admin/logs/search_logs/term.json",
-            get(admin_logs::search_log_term),
+            get(admin::logs::search_log_term),
         )
-        .route("/admin/logs/screened_urls", get(admin_logs::screened_urls))
+        .route("/admin/logs/screened_urls", get(admin::logs::screened_urls))
         .route(
             "/admin/logs/screened_urls.json",
-            get(admin_logs::screened_urls),
+            get(admin::logs::screened_urls),
         )
         .route(
             "/admin/logs/screened_ip_addresses",
-            get(admin_logs::screened_ip_addresses).post(admin_logs::create_screened_ip),
+            get(admin::logs::screened_ip_addresses).post(admin::logs::create_screened_ip),
         )
         .route(
             "/admin/logs/screened_ip_addresses.json",
-            get(admin_logs::screened_ip_addresses).post(admin_logs::create_screened_ip),
+            get(admin::logs::screened_ip_addresses).post(admin::logs::create_screened_ip),
         )
         .route(
             "/admin/logs/screened_ip_addresses/{id}",
-            put(admin_logs::update_screened_ip).delete(admin_logs::destroy_screened_ip),
+            put(admin::logs::update_screened_ip).delete(admin::logs::destroy_screened_ip),
         )
         .route(
             "/admin/customize/watched_words",
-            get(admin_watched_words::index).post(admin_watched_words::create),
+            get(admin::watched_words::index).post(admin::watched_words::create),
         )
         .route(
             "/admin/customize/watched_words.json",
-            get(admin_watched_words::index).post(admin_watched_words::create),
+            get(admin::watched_words::index).post(admin::watched_words::create),
         )
         .route(
             "/admin/customize/watched_words/upload",
-            post(admin_watched_words::upload),
+            post(admin::watched_words::upload),
         )
         .route(
             "/admin/customize/watched_words/{id}",
-            delete(admin_watched_words::destroy),
+            delete(admin::watched_words::destroy),
         )
         .route(
             "/admin/customize/watched_words/action/{id}",
-            get(admin_watched_words::index_action).delete(admin_watched_words::clear_all),
+            get(admin::watched_words::index_action).delete(admin::watched_words::clear_all),
         )
         .route(
             "/admin/customize/watched_words/action/{id}/download",
-            get(admin_watched_words::download),
+            get(admin::watched_words::download),
         )
-        .route("/admin/reports", get(admin_pages::reports_index))
-        .route("/admin/reports.json", get(admin_reports::index))
-        .route("/admin/reports/bulk", get(admin_reports::bulk))
-        .route("/admin/reports/bulk.json", get(admin_reports::bulk))
-        .route("/admin/reports/{kind}", get(admin_reports::show))
-        .route("/admin", get(admin_pages::dashboard))
-        .route("/admin/dashboard", get(admin_dashboard_sections::index))
+        .route("/admin/reports", get(admin::pages::reports_index))
+        .route("/admin/reports.json", get(admin::reports::index))
+        .route("/admin/reports/bulk", get(admin::reports::bulk))
+        .route("/admin/reports/bulk.json", get(admin::reports::bulk))
+        .route("/admin/reports/{kind}", get(admin::reports::show))
+        .route("/admin", get(admin::pages::dashboard))
+        .route("/admin/dashboard", get(admin::dashboard_sections::index))
         .route(
             "/admin/dashboard.json",
-            get(admin_dashboard_sections::index),
+            get(admin::dashboard_sections::index),
         )
         .route(
             "/admin/dashboard/general",
-            get(admin_dashboard_sections::general),
+            get(admin::dashboard_sections::general),
         )
         .route(
             "/admin/dashboard/general.json",
-            get(admin_dashboard_sections::general),
+            get(admin::dashboard_sections::general),
         )
         .route(
             "/admin/dashboard/moderation",
-            get(admin_dashboard_sections::empty),
+            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/moderation.json",
-            get(admin_dashboard_sections::empty),
+            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/security",
-            get(admin_dashboard_sections::empty),
+            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/security.json",
-            get(admin_dashboard_sections::empty),
+            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/reports",
-            get(admin_dashboard_sections::empty),
+            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/reports.json",
-            get(admin_dashboard_sections::empty),
+            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/configuration",
-            put(admin_dashboard_sections::update_configuration),
+            put(admin::dashboard_sections::update_configuration),
         )
         .route(
             "/admin/dashboard/configuration.json",
-            put(admin_dashboard_sections::update_configuration),
+            put(admin::dashboard_sections::update_configuration),
         )
         .route(
             "/admin/dashboard/sections/{section_id}/settings/{setting_key}",
-            put(admin_dashboard_sections::update_section_settings),
+            put(admin::dashboard_sections::update_section_settings),
         )
         .route(
             "/admin/dashboard/reports/available",
-            get(admin_dashboard_sections::available_reports),
+            get(admin::dashboard_sections::available_reports),
         )
         .route(
             "/admin/dashboard/reports/available.json",
-            get(admin_dashboard_sections::available_reports),
+            get(admin::dashboard_sections::available_reports),
         )
         .route(
             "/admin/dashboard/reports/layout",
-            put(admin_dashboard_sections::update_reports_layout),
+            put(admin::dashboard_sections::update_reports_layout),
         )
         .route(
             "/admin/dashboard/reports/layout.json",
-            put(admin_dashboard_sections::update_reports_layout),
+            put(admin::dashboard_sections::update_reports_layout),
         )
         .route(
             "/admin/dashboard/reports/bulk",
-            post(admin_dashboard_sections::bulk_reports),
+            post(admin::dashboard_sections::bulk_reports),
         )
         .route(
             "/admin/dashboard/reports/bulk.json",
-            post(admin_dashboard_sections::bulk_reports),
+            post(admin::dashboard_sections::bulk_reports),
         )
         .route(
             "/admin/dashboard/site-traffic-explorer",
-            get(admin_dashboard_sections::traffic),
+            get(admin::dashboard_sections::traffic),
         )
         .route(
             "/admin/dashboard/site-traffic-explorer.json",
-            get(admin_dashboard_sections::traffic),
+            get(admin::dashboard_sections::traffic),
         )
-        .route("/admin/dashboard/problems", post(admin_dashboard::problems))
+        .route(
+            "/admin/dashboard/problems",
+            post(admin::dashboard::problems),
+        )
         .route(
             "/admin/dashboard/problems.json",
-            post(admin_dashboard::problems),
+            post(admin::dashboard::problems),
         )
-        .route("/admin/problem-checks", get(admin_dashboard::index))
-        .route("/admin/problem-checks.json", get(admin_dashboard::index))
-        .route("/admin/plugins", get(admin_plugins::index))
-        .route("/admin/plugins.json", get(admin_plugins::index))
+        .route("/admin/problem-checks", get(admin::dashboard::index))
+        .route("/admin/problem-checks.json", get(admin::dashboard::index))
+        .route("/admin/plugins", get(admin::plugins::index))
+        .route("/admin/plugins.json", get(admin::plugins::index))
         .route(
             "/admin/plugins/solved/dashboard-support",
             get(solved::dashboard_support),
@@ -1682,120 +1664,120 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/plugins/solved/dashboard-support.json",
             get(solved::dashboard_support),
         )
-        .route("/admin/plugins/{plugin_id}", get(admin_plugins::show))
+        .route("/admin/plugins/{plugin_id}", get(admin::plugins::show))
         .route(
             "/admin/plugins/{plugin_id}/settings",
-            get(admin_plugins::show),
+            get(admin::plugins::show),
         )
-        .route("/admin/problem_checks", get(admin_dashboard::index))
-        .route("/admin/problem_checks.json", get(admin_dashboard::index))
+        .route("/admin/problem_checks", get(admin::dashboard::index))
+        .route("/admin/problem_checks.json", get(admin::dashboard::index))
         .route(
             "/admin/problem_checks/{id}/ignore",
-            put(admin_dashboard::ignore),
+            put(admin::dashboard::ignore),
         )
         .route(
             "/admin/problem_checks/{id}/ignore.json",
-            put(admin_dashboard::ignore),
+            put(admin::dashboard::ignore),
         )
         .route(
             "/admin/problem_checks/{id}/watch",
-            put(admin_dashboard::watch),
+            put(admin::dashboard::watch),
         )
         .route(
             "/admin/problem_checks/{id}/watch.json",
-            put(admin_dashboard::watch),
+            put(admin::dashboard::watch),
         )
         .route(
             "/admin/admin_notices/{id}",
-            delete(admin_dashboard::dismiss),
+            delete(admin::dashboard::dismiss),
         )
-        .route("/admin/logs", get(admin_logs::staff_action_logs))
-        .route("/admin/logs.json", get(admin_logs::staff_action_logs))
+        .route("/admin/logs", get(admin::logs::staff_action_logs))
+        .route("/admin/logs.json", get(admin::logs::staff_action_logs))
         .route(
             "/admin/logs/staff_action_logs",
-            get(admin_logs::staff_action_logs),
+            get(admin::logs::staff_action_logs),
         )
         .route(
             "/admin/logs/staff_action_logs.json",
-            get(admin_logs::staff_action_logs),
+            get(admin::logs::staff_action_logs),
         )
-        .route("/admin/users", get(admin_pages::users_root))
-        .route("/admin/users.json", get(admin_pages::users_root))
-        .route("/admin/users/list", get(admin_pages::users_root))
-        .route("/admin/users/list.json", get(admin_users::index))
-        .route("/admin/users/list/{query}", get(admin_pages::users_list))
-        .route("/admin/users/settings", get(admin_pages::users_settings))
+        .route("/admin/users", get(admin::pages::users_root))
+        .route("/admin/users.json", get(admin::pages::users_root))
+        .route("/admin/users/list", get(admin::pages::users_root))
+        .route("/admin/users/list.json", get(admin::users::index))
+        .route("/admin/users/list/{query}", get(admin::pages::users_list))
+        .route("/admin/users/settings", get(admin::pages::users_settings))
         .route(
             "/admin/users/{user_id}/{username}",
-            get(admin_pages::user_show),
+            get(admin::pages::user_show),
         )
         .route(
             "/admin/users/{user_id}/{username}/badges",
-            get(admin_pages::user_subpage),
+            get(admin::pages::user_subpage),
         )
         .route(
             "/admin/users/{user_id}/{username}/tl3_requirements",
-            get(admin_pages::user_subpage),
+            get(admin::pages::user_subpage),
         )
         .route(
             "/admin/users/{user_id}",
-            get(admin_users::show).delete(admin_users::destroy),
+            get(admin::users::show).delete(admin::users::destroy),
         )
         .route(
             "/admin/users/destroy-bulk",
-            delete(admin_users::destroy_bulk),
+            delete(admin::users::destroy_bulk),
         )
         .route(
             "/admin/users/delete-others-with-same-ip",
-            delete(admin_users::delete_others_with_same_ip),
+            delete(admin::users::delete_others_with_same_ip),
         )
         .route(
             "/admin/users/delete-others-with-same-ip.json",
-            delete(admin_users::delete_others_with_same_ip),
+            delete(admin::users::delete_others_with_same_ip),
         )
         .route(
             "/admin/users/destroy-bulk.json",
-            delete(admin_users::destroy_bulk),
+            delete(admin::users::destroy_bulk),
         )
         .route(
             "/admin/users/{user_id}/grant_moderation",
-            put(admin_users::grant_moderation),
+            put(admin::users::grant_moderation),
         )
         .route(
             "/admin/users/{user_id}/revoke_moderation",
-            put(admin_users::revoke_moderation),
+            put(admin::users::revoke_moderation),
         )
         .route(
             "/admin/users/{user_id}/revoke_admin",
-            put(admin_users::revoke_admin),
+            put(admin::users::revoke_admin),
         )
         .route(
             "/admin/users/{user_id}/grant_moderation.json",
-            put(admin_users::grant_moderation),
+            put(admin::users::grant_moderation),
         )
         .route(
             "/admin/users/{user_id}/revoke_moderation.json",
-            put(admin_users::revoke_moderation),
+            put(admin::users::revoke_moderation),
         )
         .route(
             "/admin/users/{user_id}/revoke_admin.json",
-            put(admin_users::revoke_admin),
+            put(admin::users::revoke_admin),
         )
         .route(
             "/admin/users/{user_id}/trust_level",
-            put(admin_users::trust_level),
+            put(admin::users::trust_level),
         )
         .route(
             "/admin/users/{user_id}/trust_level.json",
-            put(admin_users::trust_level),
+            put(admin::users::trust_level),
         )
         .route(
             "/admin/users/{user_id}/trust_level_lock",
-            put(admin_users::trust_level_lock),
+            put(admin::users::trust_level_lock),
         )
         .route(
             "/admin/users/{user_id}/trust_level_lock.json",
-            put(admin_users::trust_level_lock),
+            put(admin::users::trust_level_lock),
         )
         .route(
             "/admin/users/{user_id}/sso_record",
@@ -1818,77 +1800,80 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/sync_sso.json",
             post(discourse_connect::sync_sso),
         )
-        .route("/admin/users/{user_id}/log_out", post(admin_users::log_out))
+        .route(
+            "/admin/users/{user_id}/log_out",
+            post(admin::users::log_out),
+        )
         .route(
             "/admin/users/{user_id}/log_out.json",
-            post(admin_users::log_out),
+            post(admin::users::log_out),
         )
         .route(
             "/admin/users/{user_id}/activate",
-            put(admin_users::activate),
+            put(admin::users::activate),
         )
         .route(
             "/admin/users/{user_id}/activate.json",
-            put(admin_users::activate),
+            put(admin::users::activate),
         )
         .route(
             "/admin/users/{user_id}/deactivate",
-            put(admin_users::deactivate),
+            put(admin::users::deactivate),
         )
         .route(
             "/admin/users/{user_id}/deactivate.json",
-            put(admin_users::deactivate),
+            put(admin::users::deactivate),
         )
         .route(
             "/admin/users/{user_id}/groups",
-            post(admin_users::add_group),
+            post(admin::users::add_group),
         )
         .route(
             "/admin/users/{user_id}/groups/{group_id}",
-            delete(admin_users::remove_group),
+            delete(admin::users::remove_group),
         )
         .route(
             "/admin/users/{user_id}/primary_group",
-            put(admin_users::primary_group),
+            put(admin::users::primary_group),
         )
         .route(
             "/admin/users/{user_id}/groups.json",
-            post(admin_users::add_group),
+            post(admin::users::add_group),
         )
         .route(
             "/admin/users/{user_id}/primary_group.json",
-            put(admin_users::primary_group),
+            put(admin::users::primary_group),
         )
-        .route("/admin/users/{user_id}/approve", put(admin_users::approve))
+        .route("/admin/users/{user_id}/approve", put(admin::users::approve))
         .route(
             "/admin/users/{user_id}/approve.json",
-            put(admin_users::approve),
+            put(admin::users::approve),
         )
-        .route("/admin/users/{user_id}/suspend", put(admin_users::suspend))
+        .route("/admin/users/{user_id}/suspend", put(admin::users::suspend))
         .route(
             "/admin/users/{user_id}/suspend.json",
-            put(admin_users::suspend),
+            put(admin::users::suspend),
         )
         .route(
             "/admin/users/{user_id}/unsuspend",
-            put(admin_users::unsuspend),
+            put(admin::users::unsuspend),
         )
         .route(
             "/admin/users/{user_id}/unsuspend.json",
-            put(admin_users::unsuspend),
+            put(admin::users::unsuspend),
         )
-        .route("/admin/users/{user_id}/silence", put(admin_users::silence))
+        .route("/admin/users/{user_id}/silence", put(admin::users::silence))
         .route(
             "/admin/users/{user_id}/silence.json",
-            put(admin_users::silence),
+            put(admin::users::silence),
         )
         .route(
             "/admin/users/{user_id}/unsilence",
-            put(admin_users::unsilence),
+            put(admin::users::unsilence),
         )
         .route(
             "/admin/users/{user_id}/unsilence.json",
-            put(admin_users::unsilence),
+            put(admin::users::unsilence),
         )
         .route(
             "/admin/impersonate",
@@ -1904,41 +1889,41 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/admin/users/{user_id}/grant_admin",
-            put(admin_users::grant_admin),
+            put(admin::users::grant_admin),
         )
         .route(
             "/admin/users/{user_id}/grant_admin.json",
-            put(admin_users::grant_admin),
+            put(admin::users::grant_admin),
         )
-        .route("/admin/users/suspend-bulk", put(admin_users::suspend_bulk))
+        .route("/admin/users/suspend-bulk", put(admin::users::suspend_bulk))
         .route(
             "/admin/users/suspend-bulk.json",
-            put(admin_users::suspend_bulk),
+            put(admin::users::suspend_bulk),
         )
         .route(
             "/admin/users/{user_id}/penalty_history",
-            delete(admin_users::penalty_history),
+            delete(admin::users::penalty_history),
         )
         .route(
             "/admin/users/{user_id}/penalty_history.json",
-            delete(admin_users::penalty_history),
+            delete(admin::users::penalty_history),
         )
         .route(
             "/admin/users/{user_id}/similar-users.json",
-            get(admin_users::similar_users),
+            get(admin::users::similar_users),
         )
         .route(
             "/admin/users/{user_id}/anonymize",
-            put(admin_users::anonymize),
+            put(admin::users::anonymize),
         )
         .route(
             "/admin/users/{user_id}/anonymize.json",
-            put(admin_users::anonymize),
+            put(admin::users::anonymize),
         )
-        .route("/admin/users/{user_id}/merge", post(admin_users::merge))
+        .route("/admin/users/{user_id}/merge", post(admin::users::merge))
         .route(
             "/admin/users/{user_id}/merge.json",
-            post(admin_users::merge),
+            post(admin::users::merge),
         )
         .route("/admin/themes", get(themes::index).post(themes::create))
         .route(
@@ -1985,27 +1970,27 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/themes/{id}/source.json", put(themes::update_source))
         .route(
             "/admin/customize/themes/{id}",
-            get(admin_customize::theme_page),
+            get(admin::customize::theme_page),
         )
         .route(
             "/admin/customize/components/{id}",
-            get(admin_customize::theme_page),
+            get(admin::customize::theme_page),
         )
         .route(
             "/admin/customize/themes/{id}/{target}/{field_name}/edit",
-            get(admin_customize::theme_edit_page),
+            get(admin::customize::theme_edit_page),
         )
         .route(
             "/admin/customize/components/{id}/{target}/{field_name}/edit",
-            get(admin_customize::theme_edit_page),
+            get(admin::customize::theme_edit_page),
         )
         .route(
             "/admin/customize/themes/{id}/schema/{setting_name}",
-            get(admin_customize::theme_schema_page),
+            get(admin::customize::theme_schema_page),
         )
         .route(
             "/admin/customize/components/{id}/schema/{setting_name}",
-            get(admin_customize::theme_schema_page),
+            get(admin::customize::theme_schema_page),
         )
         .route("/admin/customize/themes/{id}/export", get(themes::export))
         .route(
@@ -2045,30 +2030,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
             put(themes::update_site_setting),
         )
         .route("/admin/config/customize/themes", get(themes::config_themes))
-        .route("/admin/customize", get(admin_customize::customize_themes))
+        .route("/admin/customize", get(admin::customize::customize_themes))
         .route(
             "/admin/customize.json",
-            get(admin_customize::customize_themes),
+            get(admin::customize::customize_themes),
         )
         .route(
             "/admin/customize/themes",
-            get(admin_customize::customize_themes),
+            get(admin::customize::customize_themes),
         )
         .route(
             "/admin/customize/themes.json",
-            get(admin_customize::customize_themes),
+            get(admin::customize::customize_themes),
         )
         .route(
             "/admin/customize/components",
-            get(admin_customize::customize_themes),
+            get(admin::customize::customize_themes),
         )
         .route(
             "/admin/customize/theme-components",
-            get(admin_customize::customize_themes),
+            get(admin::customize::customize_themes),
         )
         .route(
             "/admin/config/customize",
-            get(admin_customize::customize_themes),
+            get(admin::customize::customize_themes),
         )
         .route(
             "/admin/config/customize/themes.json",
@@ -2178,11 +2163,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/config/colors/{id}", get(color_schemes::show))
         .route(
             "/admin/customize/colors",
-            get(admin_customize::customize_colors),
+            get(admin::customize::customize_colors),
         )
         .route(
             "/admin/customize/colors/{id}",
-            get(admin_customize::customize_colors),
+            get(admin::customize::customize_colors),
         )
         .route("/admin/customize/site_texts", get(site_texts::index))
         .route("/admin/customize/site_texts.json", get(site_texts::index))
@@ -2210,58 +2195,61 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/admin/api/web_hooks",
-            get(admin_web_hooks::index).post(admin_web_hooks::create),
+            get(admin::web_hooks::index).post(admin::web_hooks::create),
         )
         .route(
             "/admin/api/web_hooks.json",
-            get(admin_web_hooks::index).post(admin_web_hooks::create),
+            get(admin::web_hooks::index).post(admin::web_hooks::create),
         )
         .route(
             "/admin/api/web_hooks/{id}",
-            get(admin_web_hooks::show)
-                .put(admin_web_hooks::update)
-                .delete(admin_web_hooks::destroy),
+            get(admin::web_hooks::show)
+                .put(admin::web_hooks::update)
+                .delete(admin::web_hooks::destroy),
         )
-        .route("/admin/api/web_hooks/{id}/edit", get(admin_web_hooks::edit))
+        .route(
+            "/admin/api/web_hooks/{id}/edit",
+            get(admin::web_hooks::edit),
+        )
         .route(
             "/admin/api/web_hooks/{id}/edit.json",
-            get(admin_web_hooks::edit),
+            get(admin::web_hooks::edit),
         )
         .route(
             "/admin/api/web_hook_events/{id}",
-            get(admin_web_hooks::list_events),
+            get(admin::web_hooks::list_events),
         )
         .route(
             "/admin/api/web_hooks/{id}/events/bulk",
-            get(admin_web_hooks::bulk_events),
+            get(admin::web_hooks::bulk_events),
         )
         .route(
             "/admin/api/web_hooks/{id}/events/bulk.json",
-            get(admin_web_hooks::bulk_events),
+            get(admin::web_hooks::bulk_events),
         )
         .route(
             "/admin/api/web_hooks/{id}/events/{event_id}/redeliver",
-            post(admin_web_hooks::redeliver_event),
+            post(admin::web_hooks::redeliver_event),
         )
         .route(
             "/admin/api/web_hooks/{id}/events/{event_id}/redeliver.json",
-            post(admin_web_hooks::redeliver_event),
+            post(admin::web_hooks::redeliver_event),
         )
         .route(
             "/admin/api/web_hooks/{id}/events/failed_redeliver",
-            post(admin_web_hooks::redeliver_failed_events),
+            post(admin::web_hooks::redeliver_failed_events),
         )
         .route(
             "/admin/api/web_hooks/{id}/events/failed_redeliver.json",
-            post(admin_web_hooks::redeliver_failed_events),
+            post(admin::web_hooks::redeliver_failed_events),
         )
         .route(
             "/admin/api/web_hooks/{id}/ping",
-            post(admin_web_hooks::ping),
+            post(admin::web_hooks::ping),
         )
         .route(
             "/admin/api/web_hooks/{id}/ping.json",
-            post(admin_web_hooks::ping),
+            post(admin::web_hooks::ping),
         )
         .route(
             "/admin/permalinks",
@@ -2376,105 +2364,105 @@ pub fn router(state: &AppState) -> Router<AppState> {
                 .delete(backups::destroy),
         )
         // Admin::ApiController
-        .route("/admin/api", get(admin_api_keys::index))
-        .route("/admin/api.json", get(admin_api_keys::index))
+        .route("/admin/api", get(admin::api_keys::index))
+        .route("/admin/api.json", get(admin::api_keys::index))
         .route(
             "/admin/api/keys",
-            get(admin_api_keys::index).post(admin_api_keys::create),
+            get(admin::api_keys::index).post(admin::api_keys::create),
         )
         .route(
             "/admin/api/keys.json",
-            get(admin_api_keys::index).post(admin_api_keys::create),
+            get(admin::api_keys::index).post(admin::api_keys::create),
         )
-        .route("/admin/api/keys/scopes", get(admin_api_keys::scopes))
-        .route("/admin/api/keys/scopes.json", get(admin_api_keys::scopes))
+        .route("/admin/api/keys/scopes", get(admin::api_keys::scopes))
+        .route("/admin/api/keys/scopes.json", get(admin::api_keys::scopes))
         .route(
             "/admin/api/keys/{id}",
-            get(admin_api_keys::show)
-                .put(admin_api_keys::update)
-                .delete(admin_api_keys::destroy),
+            get(admin::api_keys::show)
+                .put(admin::api_keys::update)
+                .delete(admin::api_keys::destroy),
         )
-        .route("/admin/api/keys/{id}/revoke", post(admin_api_keys::revoke))
+        .route("/admin/api/keys/{id}/revoke", post(admin::api_keys::revoke))
         .route(
             "/admin/api/keys/{id}/revoke.json",
-            post(admin_api_keys::revoke),
+            post(admin::api_keys::revoke),
         )
         .route(
             "/admin/api/keys/{id}/undo-revoke",
-            post(admin_api_keys::undo_revoke),
+            post(admin::api_keys::undo_revoke),
         )
         .route(
             "/admin/api/keys/{id}/undo-revoke.json",
-            post(admin_api_keys::undo_revoke),
+            post(admin::api_keys::undo_revoke),
         )
-        .route("/admin/email/handle_mail", post(admin_email::handle_mail))
+        .route("/admin/email/handle_mail", post(admin::email::handle_mail))
         .route(
             "/admin/email/preview-digest",
-            get(admin_email::preview_digest),
+            get(admin::email::preview_digest),
         )
         .route(
             "/admin/email/preview-digest.json",
-            get(admin_email::preview_digest),
+            get(admin::email::preview_digest),
         )
-        .route("/admin/email/send-digest", post(admin_email::send_digest))
+        .route("/admin/email/send-digest", post(admin::email::send_digest))
         .route(
             "/admin/email/send-digest.json",
-            post(admin_email::send_digest),
+            post(admin::email::send_digest),
         )
         .route(
             "/admin/email/handle_mail.json",
-            post(admin_email::handle_mail),
+            post(admin::email::handle_mail),
         )
-        .route("/admin/email", get(admin_email::index))
-        .route("/admin/email.json", get(admin_email::index))
+        .route("/admin/email", get(admin::email::index))
+        .route("/admin/email.json", get(admin::email::index))
         .route(
             "/admin/email/server-settings",
-            get(admin_email::server_settings),
+            get(admin::email::server_settings),
         )
         .route(
             "/admin/email/server-settings.json",
-            get(admin_email::server_settings),
+            get(admin::email::server_settings),
         )
         .route(
             "/admin/email/smtp_should_reject",
-            get(admin_email::smtp_should_reject),
+            get(admin::email::smtp_should_reject),
         )
         .route(
             "/admin/email/smtp_should_reject.json",
-            get(admin_email::smtp_should_reject),
+            get(admin::email::smtp_should_reject),
         )
-        .route("/admin/email/test", post(admin_email::test))
-        .route("/admin/email/test.json", post(admin_email::test))
+        .route("/admin/email/test", post(admin::email::test))
+        .route("/admin/email/test.json", post(admin::email::test))
         .route(
             "/admin/email/advanced-test",
-            get(admin_email::advanced_test_get).post(admin_email::advanced_test),
+            get(admin::email::advanced_test_get).post(admin::email::advanced_test),
         )
         .route(
             "/admin/email/advanced-test.json",
-            get(admin_email::advanced_test_get).post(admin_email::advanced_test),
+            get(admin::email::advanced_test_get).post(admin::email::advanced_test),
         )
-        .route("/admin/email/templates", get(admin_email_templates::index))
+        .route("/admin/email/templates", get(admin::email_templates::index))
         .route(
             "/admin/email/templates.json",
-            get(admin_email_templates::index),
+            get(admin::email_templates::index),
         )
         .route(
             "/admin/email/templates/{id}",
-            get(admin_email_templates::show)
-                .put(admin_email_templates::update)
-                .delete(admin_email_templates::revert),
+            get(admin::email_templates::show)
+                .put(admin::email_templates::update)
+                .delete(admin::email_templates::revert),
         )
         .route(
             "/admin/customize/email_style",
-            get(admin_email_style::show).put(admin_email_style::update),
+            get(admin::email_style::show).put(admin::email_style::update),
         )
         .route(
             "/admin/customize/email_style.json",
-            get(admin_email_style::show).put(admin_email_style::update),
+            get(admin::email_style::show).put(admin::email_style::update),
         )
         .route(
             "/admin/customize/email_style/{field}",
-            get(admin_email_style::show_field),
+            get(admin::email_style::show_field),
         )
         .route("/session/hp", get(accounts::honeypot))
         .route("/session/hp.json", get(accounts::honeypot))
@@ -2678,11 +2666,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/session/passkey/auth.json", post(session_passkey::login))
         .route(
             "/u/confirm-admin/{token}",
-            get(admin_users::confirm_admin).post(admin_users::confirm_admin),
+            get(admin::users::confirm_admin).post(admin::users::confirm_admin),
         )
         .route(
             "/users/confirm-admin/{token}",
-            get(admin_users::confirm_admin).post(admin_users::confirm_admin),
+            get(admin::users::confirm_admin).post(admin::users::confirm_admin),
         )
         .route(
             "/auth/{provider}",
@@ -2826,13 +2814,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/g/by-id/{id}", get(groups::show_by_id))
         .route(
             "/groups/{name}",
-            get(groups::show).put(admin_groups::update),
+            get(groups::show).put(admin::groups::update),
         )
-        .route("/g/{name}", get(groups::show).put(admin_groups::update))
-        .route("/groups/{name}/owners", put(admin_groups::add_owners))
-        .route("/groups/{name}/owners.json", put(admin_groups::add_owners))
-        .route("/g/{name}/owners", put(admin_groups::add_owners))
-        .route("/g/{name}/owners.json", put(admin_groups::add_owners))
+        .route("/g/{name}", get(groups::show).put(admin::groups::update))
+        .route("/groups/{name}/owners", put(admin::groups::add_owners))
+        .route("/groups/{name}/owners.json", put(admin::groups::add_owners))
+        .route("/g/{name}/owners", put(admin::groups::add_owners))
+        .route("/g/{name}/owners.json", put(admin::groups::add_owners))
         .route("/groups/{name}/join", put(group_membership::join))
         .route("/groups/{name}/leave", delete(group_membership::leave))
         .route(
@@ -2891,72 +2879,75 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/admin/groups",
-            get(admin_pages::groups_index).post(admin_groups::create),
+            get(admin::pages::groups_index).post(admin::groups::create),
         )
         .route(
             "/admin/groups.json",
-            get(admin_pages::groups_index).post(admin_groups::create),
+            get(admin::pages::groups_index).post(admin::groups::create),
         )
-        .route("/admin/groups/settings", get(admin_pages::groups_settings))
+        .route("/admin/groups/settings", get(admin::pages::groups_settings))
         .route(
             "/admin/groups/settings.json",
-            get(admin_pages::groups_settings),
+            get(admin::pages::groups_settings),
         )
         .route(
             "/admin/groups/automatic_membership_count",
-            put(admin_groups::automatic_membership_count),
+            put(admin::groups::automatic_membership_count),
         )
         .route(
             "/admin/groups/automatic_membership_count.json",
-            put(admin_groups::automatic_membership_count),
+            put(admin::groups::automatic_membership_count),
         )
-        .route("/admin/groups/{id}", delete(admin_groups::destroy))
+        .route("/admin/groups/{id}", delete(admin::groups::destroy))
         .route(
             "/admin/groups/{id}/owners",
-            delete(admin_groups::remove_owner),
+            delete(admin::groups::remove_owner),
         )
         .route(
             "/admin/groups/{id}/owners.json",
-            delete(admin_groups::remove_owner),
+            delete(admin::groups::remove_owner),
         )
-        .route("/admin/groups/{id}/primary", put(admin_groups::set_primary))
+        .route(
+            "/admin/groups/{id}/primary",
+            put(admin::groups::set_primary),
+        )
         .route(
             "/admin/groups/{id}/primary.json",
-            put(admin_groups::set_primary),
+            put(admin::groups::set_primary),
         )
         .route(
             "/admin/groups/{id}/members",
-            put(admin_groups::add_members).delete(admin_groups::remove_member),
+            put(admin::groups::add_members).delete(admin::groups::remove_member),
         )
         .route(
             "/admin/groups/{id}/members.json",
-            put(admin_groups::add_members).delete(admin_groups::remove_member),
+            put(admin::groups::add_members).delete(admin::groups::remove_member),
         )
         .route("/groups/{name}/{*tab}", get(groups::show_tab))
         .route("/g/{name}/{*tab}", get(groups::show_tab))
         .route(
             "/groups/{name}/members",
             get(groups::members)
-                .put(admin_groups::add_members)
-                .delete(admin_groups::remove_member),
+                .put(admin::groups::add_members)
+                .delete(admin::groups::remove_member),
         )
         .route(
             "/groups/{name}/members.json",
             get(groups::members)
-                .put(admin_groups::add_members)
-                .delete(admin_groups::remove_member),
+                .put(admin::groups::add_members)
+                .delete(admin::groups::remove_member),
         )
         .route(
             "/g/{name}/members",
             get(groups::members)
-                .put(admin_groups::add_members)
-                .delete(admin_groups::remove_member),
+                .put(admin::groups::add_members)
+                .delete(admin::groups::remove_member),
         )
         .route(
             "/g/{name}/members.json",
             get(groups::members)
-                .put(admin_groups::add_members)
-                .delete(admin_groups::remove_member),
+                .put(admin::groups::add_members)
+                .delete(admin::groups::remove_member),
         )
         .route("/groups/{name}/logs", get(groups::histories))
         .route("/groups/{name}/logs.json", get(groups::histories))
@@ -3271,16 +3262,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
                 .delete(user_security::calendar_subscriptions),
         );
     }
-    router = admin_config::routes(router);
-    router = admin_config_branding::routes(router);
-    router = admin_config_about::routes(router);
-    router = admin_config_category_management::routes(router);
-    router = admin_config_mcp::routes(router);
-    router = admin_config_upcoming_changes::routes(router);
-    router = admin_search::routes(router);
-    router = admin_whats_new::routes(router);
-    router = admin_mcp::routes(router);
-    router = admin_mcp_clients::routes(router);
+    router = admin::config::routes(router);
+    router = admin::config_branding::routes(router);
+    router = admin::config_about::routes(router);
+    router = admin::config_category_management::routes(router);
+    router = admin::config_mcp::routes(router);
+    router = admin::config_upcoming_changes::routes(router);
+    router = admin::search::routes(router);
+    router = admin::whats_new::routes(router);
+    router = admin::mcp::routes(router);
+    router = admin::mcp_clients::routes(router);
     // The push notifications' icons (app/assets/images/push-notifications),
     // undigested.
     if let Some(src) = &config.discourse_src {

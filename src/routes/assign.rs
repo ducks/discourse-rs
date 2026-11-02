@@ -473,7 +473,7 @@ pub async fn group_members(
         config: &state.config,
         settings: &settings,
     };
-    let logo = crate::admin_users::logo_small_url(&mut conn, &settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut conn, &settings).await?;
     let cx = crate::plugins::assign::keys::Cx {
         settings: &settings,
         urls: &urls,

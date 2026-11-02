@@ -6,7 +6,7 @@
 
 use serde_json::Value;
 
-use crate::admin_view::{AdminCx, t, t_with};
+use crate::admin::view::{AdminCx, t, t_with};
 use crate::topic_list_view::{ListContext, escape};
 
 /// The report the renderer is registered for.

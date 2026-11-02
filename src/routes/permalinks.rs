@@ -241,12 +241,12 @@ pub async fn index(
     }
     if !json_request(&headers, &uri) {
         if uri.path().starts_with("/admin/config/") {
-            return super::admin_config::permalinks_page(
+            return crate::admin::routes::config::permalinks_page(
                 &state,
                 &guardian,
                 &headers,
                 &uri,
-                super::admin_config::PermalinksPage::List,
+                crate::admin::routes::config::PermalinksPage::List,
             )
             .await;
         }
@@ -299,14 +299,16 @@ pub async fn show_admin(
     }
     if !json_request(&headers, &uri) {
         if uri.path().starts_with("/admin/config/") {
-            use super::admin_config::PermalinksPage;
+            use crate::admin::routes::config::PermalinksPage;
             let page = match id.as_str() {
                 "new" => PermalinksPage::New,
                 "settings" => PermalinksPage::Settings,
                 other => PermalinksPage::Edit(id_of(other)),
             };
-            return super::admin_config::permalinks_page(&state, &guardian, &headers, &uri, page)
-                .await;
+            return crate::admin::routes::config::permalinks_page(
+                &state, &guardian, &headers, &uri, page,
+            )
+            .await;
         }
         return Err(Unsupported("the admin permalinks page").into());
     }

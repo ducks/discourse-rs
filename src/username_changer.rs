@@ -161,7 +161,7 @@ async fn avatar_template_url(
         settings: ctx.settings,
     };
     let logo = if user_id == SYSTEM_USER_ID {
-        crate::admin_users::logo_small_url(conn, ctx.settings).await?
+        crate::admin::users::logo_small_url(conn, ctx.settings).await?
     } else {
         None
     };

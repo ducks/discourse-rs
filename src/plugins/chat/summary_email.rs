@@ -422,7 +422,7 @@ pub async fn build(
         .unwrap_or(chrono_tz::UTC);
     let prioritize_username = s.get("prioritize_username_in_ux")?.truthy();
     let enable_names = s.get("enable_names")?.truthy();
-    let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
+    let logo_small = crate::admin::users::logo_small_url(&mut *conn, s).await?;
     for (channel, messages) in channels.iter().chain(dms.iter()) {
         let other = messages.len() as i64 - 2;
         html.push_str("      <table class=\"chat-summary-content\" style=\"padding:1em;margin-top:20px;width:100%;min-width:100%;background-color:#f7f7f7;\">\n        <tbody>\n          <tr>\n            <td colspan=\"100%\">\n              <h5 style=\"margin:0.5em 0 0.5em 0;font-size:0.9em;\">\n");

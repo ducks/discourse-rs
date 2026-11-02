@@ -2401,7 +2401,7 @@ async fn penalty_value(
         v.insert("expires_at".into(), json!(p.expires_at.map(time_json)));
     }
     let h = p.history.as_ref();
-    let reason = crate::admin_users::format_penalty_reason(h.map(|h| &h.details))?;
+    let reason = crate::admin::users::format_penalty_reason(h.map(|h| &h.details))?;
     if !reason.is_null() {
         v.insert("reason".into(), reason);
     }
@@ -2596,7 +2596,7 @@ async fn flagged_user(
     v["can_be_deleted"] = json!(can_delete_user(&mut *conn, ctx, guardian, u, &stats).await?);
     v["post_count"] = json!(post_count);
     v["topic_count"] = json!(topic_count);
-    if crate::admin_users::can_see_ip(s, guardian)? {
+    if crate::admin::users::can_see_ip(s, guardian)? {
         v["ip_address"] = json!(u.ip_address);
     }
     // can_check_emails?(scope.user)
@@ -2662,7 +2662,7 @@ async fn flagged_user(
         .bind(action)
         .fetch_optional(&mut *conn)
         .await?;
-        let reason = crate::admin_users::format_penalty_reason(details.as_ref())?;
+        let reason = crate::admin::users::format_penalty_reason(details.as_ref())?;
         if !reason.is_null() {
             v[reason_key] = reason;
         }

@@ -10,7 +10,7 @@
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::admin_site_settings::{self, Context};
+use crate::admin::site_settings::{self as admin_site_settings, Context};
 use crate::guardian::Guardian;
 use crate::{AppError, Unsupported};
 

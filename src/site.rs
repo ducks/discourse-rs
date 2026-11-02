@@ -594,7 +594,7 @@ impl Site<'_> {
             config: self.config,
             settings: self.settings,
         };
-        let cx = crate::admin_site_settings::Context {
+        let cx = crate::admin::site_settings::Context {
             defs: self.defs,
             settings: self.settings,
             i18n: self.i18n,
@@ -844,7 +844,7 @@ impl Site<'_> {
     }
 
     fn serialize_flag(&self, flag: &Flag, target: &str, used: &[i64]) -> Value {
-        crate::admin_flags::serialize(
+        crate::admin::flags::serialize(
             self.i18n,
             self.base_path(),
             flag,
@@ -1352,7 +1352,7 @@ impl Site<'_> {
     }
 }
 
-use crate::admin_flags::Flag;
+use crate::admin::flags::Flag;
 
 impl From<CategoriesError> for SiteError {
     fn from(e: CategoriesError) -> Self {

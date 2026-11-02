@@ -8,7 +8,7 @@
 
 use serde_json::Value;
 
-use crate::admin_dashboard_view::to_number;
+use crate::admin::dashboard_view::to_number;
 use crate::topic_list_view::{ListContext, escape, icon, t};
 
 /// What the score connectors read: the site's
@@ -230,7 +230,7 @@ pub fn page(cx: &ListContext, p: &Page) -> String {
         "<div class=\"leaderboard\"><div class=\"page__header\"><h1 class=\"page__title\">{}</h1>",
         escape(lb["name"].as_str().unwrap_or_default())
     );
-    let info = crate::admin_ui::Button {
+    let info = crate::admin::ui::Button {
         class: "-ghost leaderboard-info",
         icon: Some("circle-info"),
         label: (!mobile).then(|| t(cx, "gamification.leaderboard.info")),
@@ -253,7 +253,7 @@ pub fn page(cx: &ListContext, p: &Page) -> String {
     }
     out.push_str("</div>");
     if let Some(reason) = p.doc["reason"].as_str() {
-        let refresh = crate::admin_ui::Button {
+        let refresh = crate::admin::ui::Button {
             class: "btn-primary refresh",
             icon: Some("arrows-rotate"),
             label: Some(t(cx, "gamification.leaderboard.refresh")),

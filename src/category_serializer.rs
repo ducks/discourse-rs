@@ -886,7 +886,7 @@ pub async fn with_registry<T>(
         config: cx.config,
         settings: s,
     };
-    let acx = crate::admin_site_settings::Context {
+    let acx = crate::admin::site_settings::Context {
         defs: cx.defs,
         settings: s,
         i18n: cx.i18n,

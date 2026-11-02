@@ -44,9 +44,16 @@ rendered composer. Posting and draft persistence remain in their existing
 modules. `src/posting/` and `src/plugins/chat/` are other established
 feature directories.
 
+`src/admin/` contains administration data loading, views and shared UI
+helpers. Its `routes/` directory holds the admin HTTP handlers;
+`src/routes/mod.rs` registers them through `admin::` alongside the other
+endpoints. Admin module filenames omit the redundant `admin_` prefix.
+
 Keep module moves separate from behavior changes and retain the existing
 integration and browser tests. The remaining flat modules can move one
-feature at a time, starting with admin subfeatures and categories.
+feature at a time. Admin subfeatures can be grouped further within their
+directory as they grow; categories and review remain candidates for the
+next feature moves.
 
 ## Setup
 

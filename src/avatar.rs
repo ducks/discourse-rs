@@ -110,7 +110,7 @@ pub async fn template_for(
         return Ok(None);
     };
     let logo = if user_id == SYSTEM_USER_ID {
-        crate::admin_users::logo_small_url(&mut *conn, urls.settings).await?
+        crate::admin::users::logo_small_url(&mut *conn, urls.settings).await?
     } else {
         None
     };
