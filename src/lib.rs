@@ -18,15 +18,11 @@ pub mod browser_pageviews;
 pub mod bulk_invite;
 pub mod bus;
 pub mod categories;
-pub mod categories_view;
-pub mod category;
-pub mod category_badge;
-pub mod category_edit_view;
-pub mod category_list;
-pub mod category_serializer;
-pub mod category_type_config;
-pub mod category_types;
-pub mod category_writes;
+pub use categories::{
+    badge as category_badge, edit_view as category_edit_view, list as category_list,
+    model as category, serializer as category_serializer, type_config as category_type_config,
+    types as category_types, view as categories_view, writes as category_writes,
+};
 pub mod cli;
 pub mod clock;
 pub mod color_mode;
