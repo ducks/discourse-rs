@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Stable cache across this repository's worktrees; explicit overrides win.
+set -euo pipefail
+root=$(git rev-parse --show-toplevel)
+common=$(git rev-parse --path-format=absolute --git-common-dir)
+export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-$(dirname "$common")/target}
+cd "$root"
+cargo build --release --locked --bin discourse-rs "$@"

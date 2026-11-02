@@ -10,7 +10,7 @@
 # DESTDIR stages the files under another root without touching the
 # running system (no account, no daemon-reload).
 #
-# Usage: deploy/install [path-to-binary]
+# Usage: deploy/install [path-to-binary] [path-to-frontend-package]
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -28,12 +28,29 @@ if [ -z "$bin" ] || [ ! -f "$bin" ]; then
   exit 1
 fi
 
+frontend=${2:-$here/../frontend}
+if [[ ! -f $frontend/manifest.json ]]; then
+  echo "install: pass a packaged frontend directory as the second argument" >&2
+  exit 1
+fi
+
 dest="${DESTDIR:-}"
 if [ -z "$dest" ] && [ "$(id -u)" -ne 0 ]; then
   echo "install: must run as root (or set DESTDIR to stage)" >&2
   exit 1
 fi
 
+share="$dest/usr/local/share/discourse-rs"
+install -dm755 "$share"
+if [[ -e $share/frontend && ! -L $share/frontend ]]; then
+  echo "install: $share/frontend must be a symlink for atomic activation" >&2
+  exit 1
+fi
+release=$(mktemp -d "$share/frontend.XXXXXXXX")
+chmod 755 "$release"
+cp -a "$frontend/." "$release/"
+ln -s "$(basename "$release")" "$share/frontend.next"
+mv -Tf "$share/frontend.next" "$share/frontend"
 install -Dm755 "$bin" "$dest/usr/local/bin/discourse-rs"
 install -Dm644 "$here/discourse-rs.service" "$dest/etc/systemd/system/discourse-rs.service"
 install -Dm644 "$here/discourse-rs.sysusers" "$dest/etc/sysusers.d/discourse-rs.conf"

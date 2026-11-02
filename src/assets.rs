@@ -1,4 +1,4 @@
-//! The stylesheets and scripts embedded in the binary, served under
+//! Runtime-packaged stylesheets and scripts, served under
 //! /assets/<name> with the browser cache in mind, as Discourse serves its
 //! digested assets: each carries a digest of its content, pages link it as
 //! `/assets/<name>?v=<digest>` (`url`), and a request for the current
@@ -13,711 +13,6 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use sha2::{Digest, Sha256};
 
-/// The ported stylesheets (static/css), in the order Discourse's common
-/// stylesheet imports their sources, after normalize.css.
-const DISCOURSE_CSS: &str = concat!(
-    include_str!("../static/vendor/normalize.css"),
-    include_str!("../static/css/foundation.css"),
-    include_str!("../static/css/select-kit.css"),
-    include_str!("../static/css/ace-editor.css"),
-    include_str!("../static/css/buttons.css"),
-    include_str!("../static/css/d-icon.css"),
-    include_str!("../static/css/header.css"),
-    include_str!("../static/css/menu-panel.css"),
-    include_str!("../static/css/navs.css"),
-    include_str!("../static/css/welcome-banner.css"),
-    include_str!("../static/css/topic-list.css"),
-    include_str!("../static/css/categories.css"),
-    include_str!("../static/css/sidebar.css"),
-    include_str!("../static/css/cooked.css"),
-    include_str!("../static/css/lightbox.css"),
-    include_str!("../static/css/onebox.css"),
-    include_str!("../static/css/personal-message.css"),
-    include_str!("../static/css/topic.css"),
-    include_str!("../static/css/user.css"),
-    include_str!("../static/css/preferences.css"),
-    include_str!("../static/css/user-notifications.css"),
-    include_str!("../static/css/user-activity.css"),
-    include_str!("../static/css/badges.css"),
-    include_str!("../static/css/user-stream.css"),
-    include_str!("../static/css/user-card.css"),
-    include_str!("../static/css/composer.css"),
-    include_str!("../static/css/kit.css"),
-    include_str!("../static/css/modal.css"),
-    include_str!("../static/css/date-picker.css"),
-    include_str!("../static/css/form-kit.css"),
-    include_str!("../static/css/design-wizard.css"),
-    include_str!("../static/css/d-multi-select.css"),
-    include_str!("../static/css/menus.css"),
-    include_str!("../static/css/directory.css"),
-    include_str!("../static/css/groups.css"),
-    include_str!("../static/css/search.css"),
-    include_str!("../static/css/search-menu.css"),
-    include_str!("../static/css/tooltip.css"),
-    include_str!("../static/css/filter-controls.css"),
-    include_str!("../static/css/theme-card.css"),
-    include_str!("../static/css/not-found.css"),
-    include_str!("../static/css/about.css"),
-    include_str!("../static/css/d-page-header.css"),
-    include_str!("../static/css/admin-kit.css"),
-    include_str!("../static/css/preferences-more.css"),
-    include_str!("../static/css/preferences-security.css"),
-    include_str!("../static/css/file-uploader.css"),
-    include_str!("../static/css/date-time-input.css"),
-    include_str!("../static/css/segmented-control.css"),
-    include_str!("../static/css/powered-by.css"),
-    include_str!("../static/css/review.css"),
-    // The bundled plugins' stylesheets, after core's.
-    include_str!("../static/css/topic-voting.css"),
-    include_str!("../static/css/discourse-reactions.css"),
-    include_str!("../static/css/discourse-solved.css"),
-    include_str!("../static/css/discourse-assign.css"),
-    include_str!("../static/css/post-voting.css"),
-    include_str!("../static/css/discourse-presence.css"),
-    include_str!("../static/css/chat.css"),
-    include_str!("../static/css/checklist.css"),
-    include_str!("../static/css/cakeday.css"),
-    include_str!("../static/css/gamification.css"),
-    include_str!("../static/css/discourse-details.css"),
-    include_str!("../static/css/discourse-local-dates.css"),
-    include_str!("../static/css/discourse-narrative-bot.css"),
-    include_str!("../static/css/discourse-policy.css"),
-    include_str!("../static/css/graphviz.css"),
-    include_str!("../static/css/discourse-math.css"),
-    include_str!("../static/css/discourse-templates.css"),
-    include_str!("../static/css/footnote.css"),
-    include_str!("../static/css/poll.css"),
-    include_str!("../static/css/spoiler-alert.css"),
-    include_str!("../static/css/user-notes.css"),
-    include_str!("../static/css/invites.css"),
-    // The mobile view's rules, last as each follows its base rule.
-    include_str!("../static/css/mobile.css"),
-    // common/base/_mcp.scss compiles after table-layout.scss, whose mobile
-    // rules its own (the access table's controls) override.
-    include_str!("../static/css/admin-mcp.css"),
-);
-
-const CSS: &str = "text/css; charset=utf-8";
-const JS: &str = "text/javascript; charset=utf-8";
-
-/// Every embedded asset: its name under /assets, type and content.
-const ASSETS: &[(&str, &str, &str)] = &[
-    ("discourse.css", CSS, DISCOURSE_CSS),
-    // The styleguide plugin's stylesheet, on its pages only.
-    (
-        "styleguide.css",
-        CSS,
-        include_str!("../static/css/styleguide.css"),
-    ),
-    ("site.css", CSS, include_str!("../static/site.css")),
-    // htmx and its SSE extension, vendored from npm (static/vendor/README).
-    (
-        "htmx.min.js",
-        JS,
-        include_str!("../static/vendor/htmx.min.js"),
-    ),
-    (
-        "htmx-ext-sse.js",
-        JS,
-        include_str!("../static/vendor/htmx-ext-sse.js"),
-    ),
-    // Ace, as Discourse's ace-editor-bundle imports it (static/vendor/README):
-    // the editor, the modes and themes the admin's code editors use, search.
-    (
-        "ace-editor-bundle.js",
-        JS,
-        concat!(
-            include_str!("../static/vendor/ace/ace.js"),
-            "\n",
-            include_str!("../static/vendor/ace/mode-scss.js"),
-            "\n",
-            include_str!("../static/vendor/ace/mode-html.js"),
-            "\n",
-            include_str!("../static/vendor/ace/mode-yaml.js"),
-            "\n",
-            include_str!("../static/vendor/ace/mode-sql.js"),
-            "\n",
-            include_str!("../static/vendor/ace/mode-javascript.js"),
-            "\n",
-            include_str!("../static/vendor/ace/mode-text.js"),
-            "\n",
-            include_str!("../static/vendor/ace/theme-chaos.js"),
-            "\n",
-            include_str!("../static/vendor/ace/theme-chrome.js"),
-            "\n",
-            include_str!("../static/vendor/ace/ext-searchbox.js"),
-        ),
-    ),
-    // @floating-ui/dom, which float-kit positions with (static/vendor/README).
-    (
-        "floating-ui.core.umd.min.js",
-        JS,
-        include_str!("../static/vendor/floating-ui.core.umd.min.js"),
-    ),
-    (
-        "floating-ui.dom.umd.min.js",
-        JS,
-        include_str!("../static/vendor/floating-ui.dom.umd.min.js"),
-    ),
-    ("page.js", JS, include_str!("../static/js/page.js")),
-    ("dates.js", JS, include_str!("../static/js/dates.js")),
-    ("avatars.js", JS, include_str!("../static/js/avatars.js")),
-    ("float.js", JS, include_str!("../static/js/float.js")),
-    (
-        "interface-color.js",
-        JS,
-        include_str!("../static/js/interface-color.js"),
-    ),
-    (
-        "auth-complete.js",
-        JS,
-        include_str!("../static/js/auth-complete.js"),
-    ),
-    (
-        "user-card.js",
-        JS,
-        include_str!("../static/js/user-card.js"),
-    ),
-    (
-        "inline-footnotes.js",
-        JS,
-        include_str!("../static/js/inline-footnotes.js"),
-    ),
-    (
-        "local-dates.js",
-        JS,
-        include_str!("../static/js/local-dates.js"),
-    ),
-    (
-        "local-dates-create.js",
-        JS,
-        include_str!("../static/js/local-dates-create.js"),
-    ),
-    // Pikaday as Discourse patches it (static/vendor/README), which
-    // local-dates-create.js loads for its calendar.
-    (
-        "pikaday.js",
-        JS,
-        include_str!("../static/vendor/pikaday/pikaday.js"),
-    ),
-    // moment and moment-timezone as Discourse builds them in
-    // (static/vendor/README), which local-dates.js loads when a page has a
-    // date.
-    (
-        "moment.min.js",
-        JS,
-        include_str!("../static/vendor/moment/moment.min.js"),
-    ),
-    (
-        "moment-timezone-with-data-10-year-range.min.js",
-        JS,
-        include_str!("../static/vendor/moment/moment-timezone-with-data-10-year-range.min.js"),
-    ),
-    ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
-    ("tag-info.js", JS, include_str!("../static/js/tag-info.js")),
-    (
-        "welcome-banner.js",
-        JS,
-        include_str!("../static/js/welcome-banner.js"),
-    ),
-    (
-        "top-period.js",
-        JS,
-        include_str!("../static/js/top-period.js"),
-    ),
-    (
-        "empty-topic-filter.js",
-        JS,
-        include_str!("../static/js/empty-topic-filter.js"),
-    ),
-    (
-        "topic-dismiss.js",
-        JS,
-        include_str!("../static/js/topic-dismiss.js"),
-    ),
-    ("oneboxes.js", JS, include_str!("../static/js/oneboxes.js")),
-    ("cooked.js", JS, include_str!("../static/js/cooked.js")),
-    ("lightbox.js", JS, include_str!("../static/js/lightbox.js")),
-    // PhotoSwipe's ES modules, vendored from npm (static/vendor/README),
-    // which lightbox.js imports when a post has lightboxes.
-    (
-        "photoswipe-lightbox.esm.min.js",
-        JS,
-        include_str!("../static/vendor/photoswipe-lightbox.esm.min.js"),
-    ),
-    (
-        "photoswipe.esm.min.js",
-        JS,
-        include_str!("../static/vendor/photoswipe.esm.min.js"),
-    ),
-    (
-        "highlight-syntax.js",
-        JS,
-        include_str!("../static/js/highlight-syntax.js"),
-    ),
-    // highlight.js's core as an ES module, which highlight-syntax.js
-    // imports (static/vendor/README).
-    (
-        "highlightjs-core.min.js",
-        JS,
-        include_str!("../static/vendor/highlightjs/core.min.js"),
-    ),
-    ("modal.js", JS, include_str!("../static/js/modal.js")),
-    (
-        "spoiler-alert.js",
-        JS,
-        include_str!("../static/js/spoiler-alert.js"),
-    ),
-    (
-        "post-decorations.js",
-        JS,
-        include_str!("../static/js/post-decorations.js"),
-    ),
-    (
-        "codeblock-buttons.js",
-        JS,
-        include_str!("../static/js/codeblock-buttons.js"),
-    ),
-    (
-        "quote-controls.js",
-        JS,
-        include_str!("../static/js/quote-controls.js"),
-    ),
-    (
-        "quote-button.js",
-        JS,
-        include_str!("../static/js/quote-button.js"),
-    ),
-    ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
-    ("invite.js", JS, include_str!("../static/js/invite.js")),
-    ("login.js", JS, include_str!("../static/js/login.js")),
-    (
-        "user-invited.js",
-        JS,
-        include_str!("../static/js/user-invited.js"),
-    ),
-    // The admin pages: Rails' compiled admin stylesheet, which it serves to
-    // staff (static/vendor/README), the admin shell's and the dashboard's
-    // scripts, and Chart.js with its moment adapter, which Discourse's
-    // chart-js-bundle loads for the dashboard's charts.
-    ("admin.css", CSS, include_str!("../static/vendor/admin.css")),
-    // The wizard stylesheet's own rules, which the finish installation
-    // page takes (static/vendor/README); its fonts are wizard_fonts.css.
-    (
-        "wizard.css",
-        CSS,
-        include_str!("../static/vendor/wizard.css"),
-    ),
-    // discourse-solved's admin stylesheet (static/vendor/README).
-    (
-        "discourse-solved-admin.css",
-        CSS,
-        include_str!("../static/vendor/discourse-solved-admin.css"),
-    ),
-    ("admin.js", JS, include_str!("../static/js/admin.js")),
-    (
-        "admin-dashboard.js",
-        JS,
-        include_str!("../static/js/admin-dashboard.js"),
-    ),
-    (
-        "admin-users.js",
-        JS,
-        include_str!("../static/js/admin-users.js"),
-    ),
-    (
-        "admin-user.js",
-        JS,
-        include_str!("../static/js/admin-user.js"),
-    ),
-    (
-        "penalize-user.js",
-        JS,
-        include_str!("../static/js/penalize-user.js"),
-    ),
-    (
-        "flag-modal.js",
-        JS,
-        include_str!("../static/js/flag-modal.js"),
-    ),
-    (
-        "site-settings.js",
-        JS,
-        include_str!("../static/js/site-settings.js"),
-    ),
-    (
-        "admin-reports.js",
-        JS,
-        include_str!("../static/js/admin-reports.js"),
-    ),
-    (
-        "admin-logs.js",
-        JS,
-        include_str!("../static/js/admin-logs.js"),
-    ),
-    ("admin-ui.js", JS, include_str!("../static/js/admin-ui.js")),
-    (
-        "admin-backups.js",
-        JS,
-        include_str!("../static/js/admin-backups.js"),
-    ),
-    (
-        "admin-api-keys.js",
-        JS,
-        include_str!("../static/js/admin-api-keys.js"),
-    ),
-    (
-        "admin-report-charts.js",
-        JS,
-        include_str!("../static/js/admin-report-charts.js"),
-    ),
-    (
-        "admin-report.js",
-        JS,
-        include_str!("../static/js/admin-report.js"),
-    ),
-    (
-        "admin-config.js",
-        JS,
-        include_str!("../static/js/admin-config.js"),
-    ),
-    (
-        "admin-emoji.js",
-        JS,
-        include_str!("../static/js/admin-emoji.js"),
-    ),
-    (
-        "admin-branding.js",
-        JS,
-        include_str!("../static/js/admin-branding.js"),
-    ),
-    (
-        "popular-themes.js",
-        JS,
-        include_str!("../static/js/popular-themes.js"),
-    ),
-    (
-        "admin-customize.js",
-        JS,
-        include_str!("../static/js/admin-customize.js"),
-    ),
-    (
-        "admin-category-management.js",
-        JS,
-        include_str!("../static/js/admin-category-management.js"),
-    ),
-    (
-        "date-range-picker.js",
-        JS,
-        include_str!("../static/js/date-range-picker.js"),
-    ),
-    (
-        "admin-mcp.js",
-        JS,
-        include_str!("../static/js/admin-mcp.js"),
-    ),
-    (
-        "admin-search.js",
-        JS,
-        include_str!("../static/js/admin-search.js"),
-    ),
-    (
-        "admin-upcoming-changes.js",
-        JS,
-        include_str!("../static/js/admin-upcoming-changes.js"),
-    ),
-    (
-        "admin-whats-new.js",
-        JS,
-        include_str!("../static/js/admin-whats-new.js"),
-    ),
-    (
-        "admin-web-hooks.js",
-        JS,
-        include_str!("../static/js/admin-web-hooks.js"),
-    ),
-    (
-        "admin-email.js",
-        JS,
-        include_str!("../static/js/admin-email.js"),
-    ),
-    (
-        "admin-problem-checks.js",
-        JS,
-        include_str!("../static/js/admin-problem-checks.js"),
-    ),
-    (
-        "admin-badges.js",
-        JS,
-        include_str!("../static/js/admin-badges.js"),
-    ),
-    (
-        "admin-plugins.js",
-        JS,
-        include_str!("../static/js/admin-plugins.js"),
-    ),
-    ("dialog.js", JS, include_str!("../static/js/dialog.js")),
-    (
-        "chart.umd.min.js",
-        JS,
-        include_str!("../static/vendor/chart.umd.min.js"),
-    ),
-    (
-        "chartjs-adapter-moment.min.js",
-        JS,
-        include_str!("../static/vendor/chartjs-adapter-moment.min.js"),
-    ),
-    (
-        "navigation-bar.js",
-        JS,
-        include_str!("../static/js/navigation-bar.js"),
-    ),
-    ("topic.js", JS, include_str!("../static/js/topic.js")),
-    (
-        "post-stream.js",
-        JS,
-        include_str!("../static/js/post-stream.js"),
-    ),
-    (
-        "discovery-topic-list.js",
-        JS,
-        include_str!("../static/js/discovery-topic-list.js"),
-    ),
-    (
-        "topic-admin-menu.js",
-        JS,
-        include_str!("../static/js/topic-admin-menu.js"),
-    ),
-    (
-        "add-pm-participants.js",
-        JS,
-        include_str!("../static/js/add-pm-participants.js"),
-    ),
-    (
-        "header-topic-info.js",
-        JS,
-        include_str!("../static/js/header-topic-info.js"),
-    ),
-    (
-        "discourse-reactions.js",
-        JS,
-        include_str!("../static/js/discourse-reactions.js"),
-    ),
-    (
-        "discourse-solved.js",
-        JS,
-        include_str!("../static/js/discourse-solved.js"),
-    ),
-    (
-        "discourse-assign.js",
-        JS,
-        include_str!("../static/js/discourse-assign.js"),
-    ),
-    ("poll.js", JS, include_str!("../static/js/poll.js")),
-    (
-        "poll-builder.js",
-        JS,
-        include_str!("../static/js/poll-builder.js"),
-    ),
-    (
-        "checklist.js",
-        JS,
-        include_str!("../static/js/checklist.js"),
-    ),
-    ("cakeday.js", JS, include_str!("../static/js/cakeday.js")),
-    (
-        "discourse-captcha.js",
-        JS,
-        include_str!("../static/js/discourse-captcha.js"),
-    ),
-    (
-        "gamification.js",
-        JS,
-        include_str!("../static/js/gamification.js"),
-    ),
-    ("policy.js", JS, include_str!("../static/js/policy.js")),
-    ("graphviz.js", JS, include_str!("../static/js/graphviz.js")),
-    // discourse-graphviz's viz.js (static/vendor/README), at the path
-    // Rails serves it from.
-    (
-        "plugins/discourse-graphviz/javascripts/viz-3.0.1.js",
-        JS,
-        include_str!("../static/vendor/viz/viz-3.0.1.js"),
-    ),
-    (
-        "discourse-math.js",
-        JS,
-        include_str!("../static/js/discourse-math.js"),
-    ),
-    (
-        "templates.js",
-        JS,
-        include_str!("../static/js/templates.js"),
-    ),
-    ("chat.js", JS, include_str!("../static/js/chat.js")),
-    (
-        "chat-thread.js",
-        JS,
-        include_str!("../static/js/chat-thread.js"),
-    ),
-    (
-        "chat-drawer.js",
-        JS,
-        include_str!("../static/js/chat-drawer.js"),
-    ),
-    (
-        "chat-new-message.js",
-        JS,
-        include_str!("../static/js/chat-new-message.js"),
-    ),
-    (
-        "chat-channel-menus.js",
-        JS,
-        include_str!("../static/js/chat-channel-menus.js"),
-    ),
-    (
-        "chat-channel-info.js",
-        JS,
-        include_str!("../static/js/chat-channel-info.js"),
-    ),
-    (
-        "chat-search.js",
-        JS,
-        include_str!("../static/js/chat-search.js"),
-    ),
-    (
-        "chat-admin.js",
-        JS,
-        include_str!("../static/js/chat-admin.js"),
-    ),
-    (
-        "emoji-picker.js",
-        JS,
-        include_str!("../static/js/emoji-picker.js"),
-    ),
-    (
-        "autocomplete.js",
-        JS,
-        include_str!("../static/js/autocomplete.js"),
-    ),
-    ("presence.js", JS, include_str!("../static/js/presence.js")),
-    (
-        "topic-presence.js",
-        JS,
-        include_str!("../static/js/topic-presence.js"),
-    ),
-    (
-        "post-voting.js",
-        JS,
-        include_str!("../static/js/post-voting.js"),
-    ),
-    (
-        "topic-voting.js",
-        JS,
-        include_str!("../static/js/topic-voting.js"),
-    ),
-    (
-        "user-notes.js",
-        JS,
-        include_str!("../static/js/user-notes.js"),
-    ),
-    (
-        "tracking-menu.js",
-        JS,
-        include_str!("../static/js/tracking-menu.js"),
-    ),
-    (
-        "messages-dropdown.js",
-        JS,
-        include_str!("../static/js/messages-dropdown.js"),
-    ),
-    (
-        "users-directory.js",
-        JS,
-        include_str!("../static/js/users-directory.js"),
-    ),
-    (
-        "user-menu.js",
-        JS,
-        include_str!("../static/js/user-menu.js"),
-    ),
-    (
-        "user-notifications.js",
-        JS,
-        include_str!("../static/js/user-notifications.js"),
-    ),
-    (
-        "preferences.js",
-        JS,
-        include_str!("../static/js/preferences.js"),
-    ),
-    (
-        "prefs-choosers.js",
-        JS,
-        include_str!("../static/js/prefs-choosers.js"),
-    ),
-    (
-        "prefs-security.js",
-        JS,
-        include_str!("../static/js/prefs-security.js"),
-    ),
-    (
-        "notifications-page.js",
-        JS,
-        include_str!("../static/js/notifications-page.js"),
-    ),
-    ("review.js", JS, include_str!("../static/js/review.js")),
-    (
-        "user-activity.js",
-        JS,
-        include_str!("../static/js/user-activity.js"),
-    ),
-    (
-        "overflow-controls.js",
-        JS,
-        include_str!("../static/js/overflow-controls.js"),
-    ),
-    ("groups.js", JS, include_str!("../static/js/groups.js")),
-    (
-        "category-edit.js",
-        JS,
-        include_str!("../static/js/category-edit.js"),
-    ),
-    (
-        "search-page.js",
-        JS,
-        include_str!("../static/js/search-page.js"),
-    ),
-    (
-        "search-advanced.js",
-        JS,
-        include_str!("../static/js/search-advanced.js"),
-    ),
-    (
-        "search-menu.js",
-        JS,
-        include_str!("../static/js/search-menu.js"),
-    ),
-    (
-        "email-group-user-chooser.js",
-        JS,
-        include_str!("../static/js/email-group-user-chooser.js"),
-    ),
-    ("composer.js", JS, include_str!("../static/js/composer.js")),
-    (
-        "screen-track.js",
-        JS,
-        include_str!("../static/js/screen-track.js"),
-    ),
-    // Discourse's frontend/discourse/scripts/js/onpopstate-handler.js
-    // (GPL-2.0), which the not-found page loads under Rails' path.
-    (
-        "js/onpopstate-handler.js",
-        JS,
-        include_str!("../static/js/onpopstate-handler.js"),
-    ),
-];
-
 /// The first 16 hex digits of a body's SHA-256.
 pub fn digest_of(body: &[u8]) -> String {
     Sha256::digest(body)
@@ -727,22 +22,192 @@ pub fn digest_of(body: &[u8]) -> String {
         .collect()
 }
 
-fn digests() -> &'static HashMap<&'static str, String> {
-    static DIGESTS: OnceLock<HashMap<&'static str, String>> = OnceLock::new();
-    DIGESTS.get_or_init(|| {
-        ASSETS
-            .iter()
-            .map(|(name, _, body)| (*name, digest_of(body.as_bytes())))
-            .collect()
-    })
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Manifest {
+    version: u32,
+    assets: Vec<Entry>,
+    #[serde(default)]
+    history: Vec<Entry>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Entry {
+    name: String,
+    content_type: String,
+    files: Vec<String>,
+    #[serde(default)]
+    separator: String,
+    digest: Option<String>,
+}
+
+struct Asset {
+    content_type: &'static str,
+    body: axum::body::Bytes,
+    digest: String,
+}
+
+struct Store {
+    current: HashMap<String, String>,
+    versions: HashMap<(String, String), Asset>,
+}
+
+impl Store {
+    fn load(root: &std::path::Path) -> Result<Self, Box<dyn std::error::Error>> {
+        use std::path::{Component, Path};
+        let root = root.canonicalize()?;
+        let manifest: Manifest =
+            serde_json::from_slice(&std::fs::read(root.join("manifest.json"))?)?;
+        if manifest.version != 1 || manifest.assets.is_empty() {
+            return Err("unsupported or empty frontend asset manifest".into());
+        }
+        let mut store = Self {
+            current: HashMap::new(),
+            versions: HashMap::new(),
+        };
+        for (entries, current) in [(manifest.assets, true), (manifest.history, false)] {
+            for entry in entries {
+                if entry.name.is_empty()
+                    || !Path::new(&entry.name)
+                        .components()
+                        .all(|c| matches!(c, Component::Normal(_)))
+                    || entry.name.contains('\\')
+                    || entry.files.is_empty()
+                {
+                    return Err(format!("invalid asset name or files: {}", entry.name).into());
+                }
+                let content_type = match entry.content_type.as_str() {
+                    "css" => "text/css; charset=utf-8",
+                    "js" => "text/javascript; charset=utf-8",
+                    _ => return Err(format!("invalid content type: {}", entry.name).into()),
+                };
+                let mut body = Vec::new();
+                for (index, file) in entry.files.iter().enumerate() {
+                    if !Path::new(file)
+                        .components()
+                        .all(|c| matches!(c, Component::Normal(_)))
+                    {
+                        return Err(format!("invalid asset path: {file}").into());
+                    }
+                    let path = root.join(file).canonicalize()?;
+                    if !path.starts_with(&root) {
+                        return Err(format!("asset escapes package: {file}").into());
+                    }
+                    if index > 0 {
+                        body.extend_from_slice(entry.separator.as_bytes());
+                    }
+                    body.extend_from_slice(&std::fs::read(path)?);
+                }
+                std::str::from_utf8(&body)?;
+                let digest = digest_of(&body);
+                if entry
+                    .digest
+                    .as_ref()
+                    .is_some_and(|expected| expected != &digest)
+                {
+                    return Err(format!("asset digest mismatch: {}", entry.name).into());
+                }
+                if !current && entry.digest.is_none() {
+                    return Err("historical assets require a digest".into());
+                }
+                if current
+                    && store
+                        .current
+                        .insert(entry.name.clone(), digest.clone())
+                        .is_some()
+                {
+                    return Err(format!("duplicate asset: {}", entry.name).into());
+                }
+                store.versions.insert(
+                    (entry.name, digest.clone()),
+                    Asset {
+                        content_type,
+                        body: body.into(),
+                        digest,
+                    },
+                );
+            }
+        }
+        Ok(store)
+    }
+
+    fn asset(&self, name: &str, query: Option<&str>) -> Option<(&Asset, bool)> {
+        let current = self.current.get(name)?;
+        let requested = query
+            .into_iter()
+            .flat_map(|q| q.split('&'))
+            .find_map(|pair| pair.strip_prefix("v="));
+        if let Some(digest) = requested {
+            if let Some(asset) = self.versions.get(&(name.to_owned(), digest.to_owned())) {
+                return Some((asset, true));
+            }
+        }
+        self.versions
+            .get(&(name.to_owned(), current.clone()))
+            .map(|a| (a, false))
+    }
+
+    fn serve(&self, name: &str, query: Option<&str>, headers: &HeaderMap) -> Response {
+        match self.asset(name, query) {
+            Some((asset, immutable)) => cached(
+                headers,
+                asset.content_type,
+                asset.body.clone(),
+                &asset.digest,
+                immutable,
+            ),
+            None => StatusCode::NOT_FOUND.into_response(),
+        }
+    }
+}
+
+static STORE: OnceLock<Store> = OnceLock::new();
+
+fn default_directory() -> std::path::PathBuf {
+    if let Some(path) = std::env::var_os("DISCOURSE_FRONTEND_DIR") {
+        return path.into();
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(prefix) = executable.parent().and_then(|bin| bin.parent()) {
+            let installed = prefix.join("share/discourse-rs/frontend");
+            if installed.join("manifest.json").is_file() {
+                return installed;
+            }
+        }
+    }
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("static")
+}
+
+/// Validate all assets before listening. A restart activates a new package.
+pub fn initialize() -> Result<(), Box<dyn std::error::Error>> {
+    if STORE.get().is_none() {
+        let directory = default_directory();
+        let store = Store::load(&directory)
+            .map_err(|e| format!("frontend assets at {}: {e}", directory.display()))?;
+        let _ = STORE.set(store);
+    }
+    Ok(())
+}
+
+fn store() -> &'static Store {
+    // Library users and tests don't necessarily enter through cli::serve.
+    initialize().expect("valid frontend asset package");
+    STORE.get().expect("frontend assets initialized")
 }
 
 /// An asset's url with its digest, for a page to link.
 pub fn url(base_path: &str, name: &str) -> String {
-    match digests().get(name) {
+    match store().current.get(name) {
         Some(digest) => format!("{base_path}/assets/{name}?v={digest}"),
         None => format!("{base_path}/assets/{name}"),
     }
+}
+
+/// Inline script consumers share the same validated package.
+pub fn text(name: &str) -> &'static str {
+    let (asset, _) = store().asset(name, None).expect("known frontend asset");
+    std::str::from_utf8(&asset.body).expect("asset UTF-8 validated at startup")
 }
 
 /// The request names this digest in `If-None-Match`.
@@ -789,20 +254,12 @@ pub fn cached(
 
 /// Every asset's name; each needs its /assets/<name> route.
 pub fn names() -> impl Iterator<Item = &'static str> {
-    ASSETS.iter().map(|(name, _, _)| *name)
+    store().current.keys().map(String::as_str)
 }
 
 /// GET /assets/<name>
 pub fn serve(name: &str, query: Option<&str>, headers: &HeaderMap) -> Response {
-    let Some((_, content_type, body)) = ASSETS.iter().find(|(n, _, _)| *n == name) else {
-        return StatusCode::NOT_FOUND.into_response();
-    };
-    let digest = &digests()[name];
-    let current = query
-        .into_iter()
-        .flat_map(|q| q.split('&'))
-        .any(|pair| pair == format!("v={digest}"));
-    cached(headers, content_type, *body, digest, current)
+    store().serve(name, query, headers)
 }
 
 #[cfg(test)]
@@ -835,5 +292,95 @@ mod tests {
             serve("nope.js", None, &headers).status(),
             StatusCode::NOT_FOUND
         );
+    }
+
+    struct Fixture(std::path::PathBuf);
+    impl Fixture {
+        fn new() -> Self {
+            static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+            let root = std::env::temp_dir().join(format!(
+                "drs-assets-{}-{}",
+                std::process::id(),
+                NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            ));
+            std::fs::create_dir(&root).unwrap();
+            Self(root)
+        }
+        fn manifest(&self, value: serde_json::Value) {
+            std::fs::write(
+                self.0.join("manifest.json"),
+                serde_json::to_vec(&value).unwrap(),
+            )
+            .unwrap();
+        }
+    }
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn packaged_versions_keep_old_pages_working_and_support_rollback() {
+        let fixture = Fixture::new();
+        std::fs::write(fixture.0.join("old.js"), "old script").unwrap();
+        std::fs::write(fixture.0.join("new.js"), "new script").unwrap();
+        let old_digest = digest_of(b"old script");
+        let new_digest = digest_of(b"new script");
+        let old = serde_json::json!({"name":"topic.js", "content_type":"js", "files":["old.js"], "digest":old_digest});
+        let new = serde_json::json!({"name":"topic.js", "content_type":"js", "files":["new.js"], "digest":new_digest});
+        fixture.manifest(serde_json::json!({"version":1,"assets":[old.clone()]}));
+        let before = Store::load(&fixture.0).unwrap();
+        fixture.manifest(serde_json::json!({"version":1,"assets":[new],"history":[old]}));
+        let after = Store::load(&fixture.0).unwrap();
+        for (store, query, expected) in [
+            (&before, None, "old script"),
+            (&after, None, "new script"),
+            (&after, Some(format!("v={old_digest}")), "old script"),
+        ] {
+            let response = store.serve("topic.js", query.as_deref(), &HeaderMap::new());
+            assert_eq!(
+                response.headers()[header::CONTENT_TYPE],
+                "text/javascript; charset=utf-8"
+            );
+            if query.is_some() {
+                assert!(
+                    response.headers()[header::CACHE_CONTROL]
+                        .to_str()
+                        .unwrap()
+                        .contains("immutable")
+                );
+            }
+            let body = axum::body::to_bytes(response.into_body(), 100)
+                .await
+                .unwrap();
+            assert_eq!(body.as_ref(), expected.as_bytes());
+        }
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::IF_NONE_MATCH,
+            format!("W/\"{old_digest}\"").parse().unwrap(),
+        );
+        assert_eq!(
+            after
+                .serve("topic.js", Some(&format!("v={old_digest}")), &headers)
+                .status(),
+            StatusCode::NOT_MODIFIED
+        );
+        assert_eq!(after.current["topic.js"], new_digest);
+        assert_eq!(before.current["topic.js"], old_digest);
+        std::fs::write(fixture.0.join("new.js"), "corrupt").unwrap();
+        assert!(Store::load(&fixture.0).is_err());
+    }
+
+    #[test]
+    fn missing_files_invalid_manifests_and_path_escapes_fail_at_load() {
+        let fixture = Fixture::new();
+        for file in ["missing.js", "../outside.js", "/etc/passwd"] {
+            fixture.manifest(serde_json::json!({"version":1,"assets":[{"name":"topic.js","content_type":"js","files":[file]}]}));
+            assert!(Store::load(&fixture.0).is_err(), "{file}");
+        }
+        fixture.manifest(serde_json::json!({"version":2,"assets":[]}));
+        assert!(Store::load(&fixture.0).is_err());
     }
 }

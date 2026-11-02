@@ -30,6 +30,7 @@ pkgs.mkShell {
     rust
     # `make test`: tests across binaries in parallel
     cargo-nextest
+    python3
 
     pkg-config
     openssl

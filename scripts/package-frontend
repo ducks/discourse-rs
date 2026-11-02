@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Package frontend assets without invoking Cargo. Destination must be new."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import tempfile
+
+
+def digest(body):
+    return hashlib.sha256(body).hexdigest()[:16]
+
+
+def entries(root):
+    root = root.resolve()
+    manifest = json.loads((root / 'manifest.json').read_text())
+    if manifest['version'] != 1 or not manifest['assets']:
+        raise ValueError('unsupported or empty frontend manifest')
+    for current, items in [(True, manifest['assets']), (False, manifest.get('history', []))]:
+        seen = set()
+        for entry in items:
+            name = entry['name']
+            if not name or Path(name).is_absolute() or '..' in Path(name).parts or '\\' in name or not entry['files']:
+                raise ValueError(f'invalid asset: {name}')
+            if current and name in seen:
+                raise ValueError(f'duplicate asset: {name}')
+            seen.add(name)
+            if entry['content_type'] not in ('css', 'js'):
+                raise ValueError(f'invalid content type: {name}')
+            parts = []
+            for file in entry['files']:
+                path = root / file
+                if Path(file).is_absolute() or '..' in Path(file).parts or not path.resolve().is_relative_to(root):
+                    raise ValueError(f'asset escapes package: {file}')
+                parts.append(path.read_bytes())
+            body = entry.get('separator', '').encode().join(parts)
+            body.decode('utf-8')
+            actual = digest(body)
+            if entry.get('digest', actual) != actual:
+                raise ValueError(f'asset digest mismatch: {name}')
+            if not current and 'digest' not in entry:
+                raise ValueError(f'historical asset lacks digest: {name}')
+            yield current, name, entry['content_type'], body, actual
+
+
+def package(source, destination, previous=None):
+    if destination.exists():
+        raise ValueError(f'destination already exists: {destination}')
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    work = Path(tempfile.mkdtemp(prefix='.frontend-', dir=destination.parent))
+    try:
+        (work / 'objects').mkdir()
+        manifest = {'version': 1, 'assets': [], 'history': []}
+        included = set()
+        for root, historical in [(source, False)] + ([(previous, True)] if previous else []):
+            for current, name, content_type, body, checksum in entries(root):
+                key = (name, checksum)
+                if key in included:
+                    continue
+                included.add(key)
+                file = f'objects/{checksum}'
+                (work / file).write_bytes(body)
+                entry = {'name': name, 'content_type': content_type, 'files': [file], 'digest': checksum}
+                manifest['history' if historical or not current else 'assets'].append(entry)
+        (work / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        work.rename(destination)
+    except BaseException:
+        shutil.rmtree(work)
+        raise
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('destination', type=Path)
+    parser.add_argument('--source', type=Path, default=Path(__file__).resolve().parent.parent / 'static')
+    parser.add_argument('--previous', type=Path, help='retain previous versions for already-open pages')
+    args = parser.parse_args()
+    package(args.source, args.destination, args.previous)
+    print(f'Packaged frontend assets: {args.destination}')

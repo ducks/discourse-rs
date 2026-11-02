@@ -1,0 +1,90 @@
+# Frontend packages and build caching
+
+Core JS and CSS are runtime files, not Rust compiler inputs. The ordered
+catalog is `static/manifest.json`; it preserves the original CSS concatenation
+and Ace bundle separators. `scripts/package-frontend` reads this catalog and
+writes an immutable package containing a manifest and content-addressed objects.
+It uses Python's standard library and never invokes Cargo.
+
+The server validates and loads the entire package before listening. A missing
+file, invalid manifest or digest mismatch prevents startup. Asset URLs still
+use `?v=<digest>`, ETags and immutable caching for known versions. Unknown
+versions retain the existing revalidation behavior. Historical versions supplied
+with `--previous` remain available to tabs opened before the update.
+
+## Local development and browser tests
+
+Without an override, a checkout reads `static/manifest.json` and its source
+files at startup. Edit JS/CSS and restart the existing binary; no compilation
+is needed. Templates, Rust-rendered HTML, and the generated vendor bundles in
+`build.rs` still require a Rust build.
+
+The browser harness packages the frontend into its scratch directory. To test
+frontend-only changes against a previously built compatible server:
+
+```bash
+BROWSER_TEST_BINARY="$PWD/target-gate/debug/discourse-rs" \
+  scripts/browser-test categories.spec.js
+```
+
+Without `BROWSER_TEST_BINARY`, the harness builds the server as before. Only
+skip that step when Rust sources have not changed since that binary was built.
+
+## Release packages
+
+Inside `nix-shell`:
+
+```bash
+make release-build
+python3 scripts/package-frontend tmp/frontend-20261102
+# For an update, retain the previous package's versions:
+python3 scripts/package-frontend tmp/frontend-next --previous tmp/frontend-20261102
+```
+
+Destinations must not already exist. Package creation happens in a temporary
+directory and publishes only after all inputs validate. Activate complete
+packages rather than overwriting files in the active directory.
+
+`DISCOURSE_FRONTEND_DIR` selects a package explicitly. Otherwise installed
+binaries look under `../share/discourse-rs/frontend` relative to their bin
+directory, then fall back to the build checkout's `static` directory. Explicit
+paths that are invalid fail startup rather than silently falling back.
+
+Release tarballs include `frontend/`. `deploy/install BINARY FRONTEND` installs
+a versioned copy and atomically switches its frontend symlink. It retains old
+copies and does not restart the service. Packages should include `--previous`
+when old tabs need assets from earlier versions. Nix builds the frontend as a
+separate derivation and supplies its directory through the executable wrapper.
+
+## Asset-only staging update
+
+The currently deployed embedded-assets binary needs one server upgrade before
+it supports this workflow. After that upgrade, configure the service with
+`DISCOURSE_FRONTEND_DIR=/opt/discourse-rs/frontend-current` and use:
+
+1. Package the new sources with `--previous` pointing to the currently deployed
+   package. Copy the complete package into a new directory on the VPS.
+2. Record the current symlink target, then switch `frontend-current` atomically
+   using a temporary symlink and `mv -Tf` on the same filesystem.
+3. Restart the service, check `/srv/status`, then run focused live browser checks.
+   If validation fails, restore the previous symlink and restart.
+4. Retain the old binary and asset directory together for rollback. Historical
+   objects accumulate deliberately; remove old versions only when retiring the
+   corresponding browser-cache compatibility window.
+
+The app loads assets once, so changing a symlink requires a restart. This does
+not yet fix the long shutdown observed with live connections on staging.
+
+## Release cache
+
+`scripts/release-build` uses the primary checkout's `target` directory for all
+worktrees, unless `CARGO_TARGET_DIR` is explicitly supplied. It builds the
+locked dependency graph with the pinned toolchain when run inside `nix-shell`.
+Use consistent flags and profiles; avoid `cargo clean` for routine deployments.
+Build once, test that artifact, and copy it rather than rebuilding for deployment.
+
+The November 2 embedded-assets release took 24m 10s, including dependency
+compilation. That run had no release binary in the selected target directory;
+the underlying reason previous artifacts were absent has not been established.
+Do not label it a Cargo cache-invalidation bug without evidence. Measure clean,
+unchanged, JS-only, CSS-only and Rust-only builds separately.

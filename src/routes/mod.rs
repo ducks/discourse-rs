@@ -3122,6 +3122,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/admin-problem-checks.js", get(asset))
         .route("/assets/admin-badges.js", get(asset))
         .route("/assets/admin-plugins.js", get(asset))
+        .route("/assets/submit-on-load-lti.js", get(asset))
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))
