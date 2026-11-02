@@ -79,7 +79,7 @@ pub mod cli;
 pub mod clock;
 pub mod color_mode;
 pub mod color_scheme;
-pub mod composer_view;
+pub mod composer;
 pub mod config;
 pub mod cose;
 pub mod current_user;

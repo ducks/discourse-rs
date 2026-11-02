@@ -248,9 +248,9 @@ async fn page(
                     .bind(&allowed)
                     .fetch_all(&mut *conn)
                     .await?;
-            let chooser: Vec<crate::composer_view::ChooserCategory> = rows
+            let chooser: Vec<crate::composer::view::ChooserCategory> = rows
                 .into_iter()
-                .map(|(id, topic_count)| crate::composer_view::ChooserCategory {
+                .map(|(id, topic_count)| crate::composer::view::ChooserCategory {
                     id: i64::from(id),
                     topic_count: i64::from(topic_count),
                     description_text: None,

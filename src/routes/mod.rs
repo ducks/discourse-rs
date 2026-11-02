@@ -45,7 +45,6 @@ mod bus;
 mod cakeday;
 mod captcha;
 mod change_owner;
-pub(crate) mod composer;
 mod deleted_posts;
 mod directory;
 mod directory_columns;
@@ -3192,10 +3191,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
         .route("/assets/js/onpopstate-handler.js", get(asset))
-        .route("/assets/markdown.wasm", get(composer::markdown_wasm))
+        .route(
+            "/assets/markdown.wasm",
+            get(crate::composer::preview::markdown_wasm),
+        )
         .route(
             "/assets/markdown-settings.json",
-            get(composer::markdown_settings),
+            get(crate::composer::preview::markdown_settings),
         )
         // The local store's files (FileStore::Local): what nginx serves in a
         // Rails deployment. A remote store's urls point elsewhere.

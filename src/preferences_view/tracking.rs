@@ -8,7 +8,7 @@ use serde_json::{Map, Value, json};
 
 use super::{Combo, Prefs, checkbox, combo, save_attrs, save_controls, value_string};
 use crate::AppError;
-use crate::composer_view::{ChooserCategory, chooser_order};
+use crate::composer::view::{ChooserCategory, chooser_order};
 use crate::topic_list_view::{ListContext, escape, icon, t};
 
 /// A multi-select chooser's header (MultiSelectHeader), for a chooser
@@ -63,7 +63,7 @@ pub fn category_rows(cx: &ListContext, site: &SiteCategories) -> String {
                 description_text: None,
                 minimum_required_tags: 0,
             };
-            Some(crate::composer_view::row(cx, &without_desc, category))
+            Some(crate::composer::view::row(cx, &without_desc, category))
         })
         .collect();
     format!("<template id=\"prefs-category-rows\">{rows}</template>")

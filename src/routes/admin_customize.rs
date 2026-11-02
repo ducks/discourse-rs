@@ -911,7 +911,7 @@ pub(super) async fn email_template_page(
             "preview_wasm": format!(
                 "{}/assets/markdown.wasm?v={}",
                 shell.site.base_path,
-                super::composer::MARKDOWN_WASM_VERSION
+                crate::composer::preview::MARKDOWN_WASM_VERSION
             ),
             "preview_settings": format!("{}/assets/markdown-settings.json", shell.site.base_path),
         })

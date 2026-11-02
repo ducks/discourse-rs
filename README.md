@@ -34,6 +34,20 @@ Ember running), desktop and mobile:
 
 axum, tokio, sqlx (Postgres 16 + pgvector), clap, serde.
 
+## Source layout
+
+Group feature code under its own `src/<feature>/` module as it is
+reorganized. `src/composer/` keeps the member's data loading (`load.rs`),
+markup (`view.rs`) and preview endpoints (`preview.rs`) together;
+`src/routes/mod.rs` wires the endpoints and `src/html.rs` consumes the
+rendered composer. Posting and draft persistence remain in their existing
+modules. `src/posting/` and `src/plugins/chat/` are other established
+feature directories.
+
+Keep module moves separate from behavior changes and retain the existing
+integration and browser tests. The remaining flat modules can move one
+feature at a time, starting with admin subfeatures and categories.
+
 ## Setup
 
 ```bash
