@@ -1328,7 +1328,7 @@ def define_steps(run):
             raise StepFail("the deleted message is back after a reload")
         run.leave(f"user1's deleted chat message '{fixed}' in #General (trashed, kept for staff)")
 
-    @step(17, "Member", "an image in a chat message; it opens in the lightbox")
+    @step(17, "Member", "an image in a chat message opens in the lightbox; a link's onebox; full-page chat search")
     def _(run, s):
         page = run.persona("Member").use()
         channel = page.locator(".chat-channel")
@@ -1352,6 +1352,43 @@ def define_steps(run):
         settle(page, 800)
         page.keyboard.press("Escape")
         expect_gone(page.locator(".pswp"), "the lightbox to close")
+
+        # A topic's link on a line of its own: the message redrawn with the
+        # topic's onebox once processed, in Second member's #General too.
+        page.goto(run.base + "/latest")
+        first = expect_visible(page.locator(".topic-list a.title").first, "a topic in the list")
+        href = first.get_attribute("href")
+        second = run.persona("Second member").use()
+        open_channel(run, second, "/chat/c/general/2", "#General in Second member's full-page chat")
+        page = run.persona("Member").use()
+        open_channel(run, page, "/chat/c/general/2", "#General again")
+        word = f"rhlink{run.stamp}"
+        link = href if href.startswith("http") else run.base + href
+        composer = channel.locator(".chat-composer__input").first
+        composer.fill(f"{run.label} {word}\n\n{link}")
+        composer.press("Enter")
+        linked = expect_visible(channel.locator(".chat-message-container", has_text=word), "the message with the link")
+        expect_visible(linked.locator(".chat-cooked aside.quote, .chat-cooked aside.onebox").first,
+                       "the topic's onebox in the message", timeout=LIVE_WAIT)
+        run.leave(f"chat message '{run.label} {word}' with a topic link by user1 in #General")
+        arrived = run.persona("Second member").use().locator(".chat-message-container", has_text=word)
+        try:
+            expect_visible(arrived.locator(".chat-cooked aside.quote, .chat-cooked aside.onebox").first,
+                           "the onebox in Second member's chat", timeout=LIVE_WAIT)
+        except StepFail:
+            s.miss("Second member didn't see the link's onebox arrive without a reload")
+        page = run.persona("Member").use()
+
+        # Search chat from the sidebar, full page: the message found, opened.
+        expect_visible(page.locator("#d-sidebar a[href$='/chat/search']"), "Search chat in the sidebar").click()
+        page.wait_for_url("**/chat/search**", timeout=WAIT)
+        box = expect_visible(page.locator(".c-routes.--search .c-search .filter-input"), "full-page chat search")
+        box.fill(word)
+        entry = expect_visible(page.locator(".chat-message-search-entry", has_text=word), "the message in the results",
+                               timeout=LIVE_WAIT)
+        entry.click()
+        page.wait_for_url("**/chat/c/**", timeout=WAIT)
+        expect_visible(page.locator(".chat-channel .chat-message-container", has_text=word), "the message opened from search")
 
     @step(18, "Admin", "a new channel with threading from the browse page; its settings")
     def _(run, s):

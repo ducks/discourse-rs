@@ -2,8 +2,8 @@
 //! chat's markdown options (its features and markdown-it rules, quotes
 //! always linked, hashtags in the chat composer's context), its slash
 //! commands applied: /me as an action naming the author, /shrug and
-//! /tableflip appending their faces. Oneboxes come from the cache Rails
-//! applies them from, which the port does not keep, so links stay links.
+//! /tableflip appending their faces. The links marked for oneboxes are
+//! oneboxed by Chat::MessageProcessor (processor.rs).
 
 use crate::pretty_text::cleanup::{element_name, fragment_root, parse};
 use crate::pretty_text::{CookError, Host, MarkdownOptions};

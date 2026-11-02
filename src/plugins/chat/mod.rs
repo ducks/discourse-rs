@@ -38,6 +38,7 @@ pub mod notify;
 pub mod page;
 pub mod pins;
 pub mod presence;
+pub mod processor;
 pub mod publisher;
 pub mod review;
 pub mod scheduled;

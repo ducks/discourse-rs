@@ -1,15 +1,17 @@
 //! Sending a chat message (POST /chat/:chat_channel_id): Chat::CreateMessage,
-//! and the job it enqueues, Jobs::Chat::ProcessMessage (the message cooked
-//! again, its mentions upserted, its links extracted, Chat::Notifier's
-//! mention and watching jobs enqueued, and the processed message published).
+//! and the job it enqueues, Jobs::Chat::ProcessMessage (the message
+//! through Chat::MessageProcessor, processor.rs: its oneboxes, images and
+//! videos; its mentions upserted, its links extracted, Chat::Notifier's
+//! mention and watching jobs enqueued, the processed message published,
+//! and its hotlinked images handed to the pull job).
 //!
 //! A reply makes (or joins) the replied-to message's thread, as Rails does
 //! in channels without threading too: the thread stays hidden there, and
 //! its messages are the channel's. With threading on (or in a forced
 //! thread) a message in a thread is the thread's: the channel's last
 //! message and the sender's last read stay as they were. Not ported yet,
-//! and refused: blocks, bots, group and channel-wide mentions,
-//! oneboxes and images in a message. The controller's
+//! and refused: blocks, bots, group and channel-wide mentions. The
+//! controller's
 //! Chat::MessageRateLimiter is in the route.
 
 use chrono::NaiveDateTime;
@@ -803,6 +805,12 @@ pub async fn process_message(
     let Some(message_id) = args["chat_message_id"].as_i64() else {
         return Ok(());
     };
+    // DistributedMutex "jobs_chat_process_message_<id>", held by the job's
+    // transaction.
+    sqlx::query("SELECT pg_advisory_xact_lock(hashtext($1))")
+        .bind(format!("jobs_chat_process_message_{message_id}"))
+        .execute(&mut *conn)
+        .await?;
     #[derive(sqlx::FromRow)]
     struct Row {
         chat_channel_id: i64,
@@ -837,30 +845,22 @@ pub async fn process_message(
         .bind(user_id)
         .fetch_one(&mut *conn)
         .await?;
-    // Chat::MessageProcessor: cooked again, then the post processors,
-    // which only change what holds oneboxes, images or videos.
-    let host = crate::pretty_text::Host::from_state(state);
-    let cooked = super::cook::cook(
-        &host,
-        message.as_deref().unwrap_or_default(),
-        editor_id,
-        &username,
+    // Chat::MessageProcessor
+    let processed = super::processor::run(
+        state,
+        conn,
+        settings,
+        &super::processor::Message {
+            id: message_id,
+            user_id,
+            last_editor_id: editor_id,
+            username,
+            message: message.unwrap_or_default(),
+        },
+        args["invalidate_oneboxes"].as_bool().unwrap_or(false),
     )
     .await?;
-    if cooked.contains("class=\"onebox\"")
-        || has_processed_images(
-            &cooked,
-            &crate::url::Urls {
-                config: &state.config,
-                settings,
-            }
-            .current_hostname_with_port()?,
-        )
-        || cooked.contains("<video")
-    {
-        return Err(Unsupported("oneboxes, images and videos in chat messages").into());
-    }
-    process_thumbnails(conn, settings, &state.config, message_id).await?;
+    let cooked = processed.html.clone();
     if stored_cooked.as_deref() != Some(cooked.as_str()) {
         sqlx::query("UPDATE chat_messages SET cooked = $2, cooked_version = $3, updated_at = $4 WHERE id = $1")
             .bind(message_id)
@@ -870,6 +870,22 @@ pub async fn process_message(
             .execute(&mut *conn)
             .await?;
     }
+    if !processed.stale_hotlinked_media_ids.is_empty() {
+        sqlx::query(
+            "DELETE FROM chat_message_hotlinked_media WHERE chat_message_id = $1 AND id = ANY($2)",
+        )
+        .bind(message_id)
+        .bind(&processed.stale_hotlinked_media_ids)
+        .execute(&mut *conn)
+        .await?;
+    }
+    // The pull job's own re-cook comes back with skip_pull set.
+    let hotlinked_media_pending = !args["skip_pull_hotlinked_images"]
+        .as_bool()
+        .unwrap_or(false)
+        && processed
+            .hotlinked_media_pending(state, conn, settings)
+            .await?;
 
     // upsert_mentions
     let parsed = super::mentions::parse(&cooked);
@@ -904,14 +920,16 @@ pub async fn process_message(
         author: &author,
         parsed: &parsed,
     };
-    if let Some(timestamp) = args.get("edit_timestamp") {
-        let timestamp = match timestamp {
-            Value::String(s) => s.clone(),
-            other => other.to_string(),
-        };
-        notifier.notify_edit(conn, &timestamp).await?;
-    } else if !args["skip_notifications"].as_bool().unwrap_or(false) {
-        notifier.notify_new(conn, created_at).await?;
+    if !args["skip_notifications"].as_bool().unwrap_or(false) {
+        if let Some(timestamp) = args.get("edit_timestamp") {
+            let timestamp = match timestamp {
+                Value::String(s) => s.clone(),
+                other => other.to_string(),
+            };
+            notifier.notify_edit(conn, &timestamp).await?;
+        } else {
+            notifier.notify_new(conn, created_at).await?;
+        }
     }
 
     // Chat::Publisher.publish_processed!
@@ -928,130 +946,19 @@ pub async fn process_message(
         super::publisher::publish_message(&mut cx, &state.bus, &channel, message_id, "processed")
             .await?;
     }
-    Ok(())
-}
 
-/// `Chat::MessageProcessor::IMG_FILETYPES`
-const IMG_FILETYPES: [&str; 7] = ["jpg", "jpeg", "gif", "png", "heic", "heif", "webp"];
-
-/// `Chat::MessageProcessor#process_thumbnails`: each image upload larger
-/// than max_image_width by max_image_height gets its thumbnail and the
-/// responsive ones, until the first that isn't (Rails returns there). The
-/// optimized videos post_process_videos references are refused.
-async fn process_thumbnails(
-    conn: &mut sqlx::PgConnection,
-    settings: &crate::site_settings::SiteSettings,
-    config: &crate::config::Config,
-    message_id: i64,
-) -> Result<(), AppError> {
-    #[derive(sqlx::FromRow)]
-    struct Row {
-        #[sqlx(flatten)]
-        upload: crate::optimized_images::Upload,
-        thumbnail_width: Option<i32>,
-        thumbnail_height: Option<i32>,
-        optimized_video: bool,
-    }
-    let rows: Vec<Row> = sqlx::query_as(
-        "SELECT u.id, u.url, u.sha1, u.extension, u.original_filename, u.filesize, u.width, u.height, \
-                u.animated, u.dominant_color, u.thumbnail_width, u.thumbnail_height, \
-                EXISTS (SELECT 1 FROM optimized_videos v WHERE v.upload_id = u.id) AS optimized_video \
-         FROM upload_references ur JOIN uploads u ON u.id = ur.upload_id \
-         WHERE ur.target_type = 'ChatMessage' AND ur.target_id = $1 ORDER BY ur.id",
-    )
-    .bind(message_id)
-    .fetch_all(&mut *conn)
-    .await?;
-    let video = |name: &str| {
-        let lower = name.to_lowercase();
-        ["mov", "mp4", "webm", "ogv", "m4v", "3gp", "avi", "mpeg"]
-            .iter()
-            .any(|e| lower.ends_with(&format!(".{e}")))
-    };
-    if rows
-        .iter()
-        .any(|r| r.optimized_video && video(&r.upload.original_filename))
+    if hotlinked_media_pending
+        && settings.get("download_remote_images_to_local")?.truthy()
+        && settings.get("chat_allow_uploads")?.truthy()
     {
-        return Err(Unsupported("optimized videos of chat message uploads").into());
-    }
-    if !settings.get("create_thumbnails")?.truthy() {
-        return Ok(());
-    }
-    let store = crate::file_store::FileStore::for_site(config, settings)?;
-    let max_width = settings.get("max_image_width")?.to_i();
-    let max_height = settings.get("max_image_height")?.to_i();
-    let min_ratio_to_crop = settings.get("min_ratio_to_crop")?.to_f();
-    // each_responsive_ratio
-    let mut ratios: Vec<f64> = settings
-        .get("responsive_post_image_sizes")?
-        .to_s()
-        .split('|')
-        .map(|r| r.trim().parse::<f64>().unwrap_or(0.0))
-        .collect();
-    ratios.sort_by(|a, b| a.total_cmp(b));
-    for r in rows {
-        let ext = r
-            .upload
-            .extension
-            .clone()
-            .unwrap_or_default()
-            .to_lowercase();
-        if !IMG_FILETYPES.contains(&ext.as_str()) {
-            continue;
-        }
-        let (Some(width), Some(height)) = (r.upload.width, r.upload.height) else {
-            return Err(Unsupported("a chat image upload without its dimensions").into());
-        };
-        if i64::from(width) <= max_width && i64::from(height) <= max_height {
-            return Ok(());
-        }
-        let (Some(tw), Some(th)) = (r.thumbnail_width, r.thumbnail_height) else {
-            return Err(Unsupported("a chat image upload without its thumbnail size").into());
-        };
-        let crop =
-            min_ratio_to_crop > 0.0 && f64::from(width) / f64::from(height) < min_ratio_to_crop;
-        crate::optimized_images::create_thumbnail(conn, settings, &store, &r.upload, tw, th, crop)
-            .await?;
-        for ratio in ratios.iter().filter(|r| **r > 1.0) {
-            let (rw, rh) = (
-                (f64::from(tw) * ratio) as i32,
-                (f64::from(th) * ratio) as i32,
-            );
-            if rw <= width {
-                crate::optimized_images::create_thumbnail(
-                    conn, settings, &store, &r.upload, rw, rh, crop,
-                )
-                .await?;
-            }
-        }
+        crate::jobs::enqueue(
+            &mut *conn,
+            super::processor::PULL_HOTLINKED_IMAGES_JOB,
+            json!({ "chat_message_id": message_id }),
+        )
+        .await?;
     }
     Ok(())
-}
-
-/// Whether the message processor would change an image: an upload's
-/// (data-base62-sha1, its lightbox) or one from another host than the
-/// site's (hotlinked media). Emoji, data: images and the site's own, a
-/// quote's avatar, it leaves as they are.
-fn has_processed_images(cooked: &str, host: &str) -> bool {
-    let dom = crate::pretty_text::cleanup::parse(cooked);
-    crate::pretty_text::cleanup::all_elements(&dom)
-        .iter()
-        .any(|e| {
-            if crate::pretty_text::cleanup::element_name(e) != Some("img")
-                || crate::pretty_text::cleanup::has_class(e, "emoji")
-            {
-                return false;
-            }
-            let src = crate::pretty_text::cleanup::attr(e, "src").unwrap_or_default();
-            let remote = src
-                .strip_prefix("https:")
-                .or_else(|| src.strip_prefix("http:"))
-                .unwrap_or(&src)
-                .strip_prefix("//")
-                .and_then(|rest| rest.split('/').next())
-                .is_some_and(|h| !h.eq_ignore_ascii_case(host));
-            crate::pretty_text::cleanup::attr(e, "data-base62-sha1").is_some() || remote
-        })
 }
 
 /// `Chat::MessageLink.extract_from`

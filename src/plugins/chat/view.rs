@@ -1068,6 +1068,30 @@ impl Context<'_> {
         ))
     }
 
+    /// The full-page search route (ChatRoutesSearch): its navbar (the open
+    /// drawer button), then ChatSearch with `query` (the `q` param) kept
+    /// in the address; in the mobile view the footer (FOOTER_NAV_ROUTES).
+    pub async fn search_route(&mut self, query: Option<&str>) -> Result<String, AppError> {
+        let mut out = format!(
+            "<div class=\"c-routes --search\">{}{}</div>",
+            self.route_navbar(&self.t("chat.search.title"), &self.open_drawer_button()),
+            super::search_view::chat_search_with(
+                self.i18n,
+                self.base_path,
+                Some(query.unwrap_or(""))
+            )
+        );
+        if crate::mobile::mobile_view() {
+            let Preloaded { channels, dms, .. } = self.preloaded().await?;
+            out.push_str(&self.footer("search", &channels, &dms).await?);
+        }
+        out.push_str(&format!(
+            "<script src=\"{}\"></script>",
+            crate::assets::url(self.base_path, "chat-search.js")
+        ));
+        Ok(out)
+    }
+
     /// The drawer's search route (ChatDrawerRoutesSearch): its navbar,
     /// then while expanded ChatSearch without query params (chat-search.js
     /// keeps chatSearchQuery's query across routes) and the footer.
@@ -1285,7 +1309,7 @@ impl Context<'_> {
                     color: None,
                 },
                 prefix_badge: None,
-                active: false,
+                active: *active == Active::Route("chat.search".into()),
                 badge: None,
                 suffix: None,
             };

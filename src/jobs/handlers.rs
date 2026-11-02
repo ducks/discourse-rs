@@ -226,6 +226,9 @@ fn handler<'a>(
         crate::plugins::chat::create::PROCESS_MESSAGE_JOB => {
             Box::pin(async move { chat_process_message(state, &job.args).await })
         }
+        crate::plugins::chat::processor::PULL_HOTLINKED_IMAGES_JOB => Box::pin(async move {
+            crate::plugins::chat::processor::pull_hotlinked_images(state, &job.args).await
+        }),
         crate::plugins::chat::create::UPDATE_THREAD_REPLY_COUNT_JOB => {
             Box::pin(async move { chat_update_thread_reply_count(state, &job.args).await })
         }

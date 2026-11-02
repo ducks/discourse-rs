@@ -21,6 +21,17 @@ pub const LIMIT: i64 = 20;
 /// what chat-search.js draws the results into, and the result list's
 /// and empty alert's templates.
 pub fn chat_search(i18n: &crate::i18n::I18n, base_path: &str) -> String {
+    chat_search_with(i18n, base_path, None)
+}
+
+/// ChatSearch, `full_page` the full page's query (its `q` param) when
+/// it keeps the query in the address (enableQueryParams), as the filter's
+/// value.
+pub fn chat_search_with(
+    i18n: &crate::i18n::I18n,
+    base_path: &str,
+    full_page: Option<&str>,
+) -> String {
     let t = |key: &str| js(i18n, key);
     let sort = |value: &str| {
         format!(
@@ -29,10 +40,16 @@ pub fn chat_search(i18n: &crate::i18n::I18n, base_path: &str) -> String {
         )
     };
     format!(
-        "<div class=\"c-search\" data-url=\"{}/live/chat/search\" data-limit=\"{LIMIT}\"><div class=\"chat-search__filters\"><div class=\"filter-input-container\">{}<input autocapitalize=\"none\" autocomplete=\"off\" autocorrect=\"off\" class=\"filter-input no-blur\" placeholder=\"{}\" type=\"text\" value=\"\"></div><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger search-sort-options-trigger btn-default\" data-identifier=\"search-sort-options\" data-trigger=\"\" type=\"button\" data-sort=\"relevance\">{}<span class=\"d-button-label\">{}</span></button><template class=\"search-sort-options-template\"><ul class=\"dropdown-menu\">{}{}</ul></template></div><template class=\"chat-search__results-template\"><div class=\"sr-only\" id=\"chat-search-instructions\">{}</div><ul aria-label=\"{}\" class=\"chat-message-search-entries\" role=\"listbox\"></ul><div class=\"chat-search-loading\"><div class=\"loading-container\"></div></div><br></template><template class=\"chat-search__empty-template\"><div class=\"alert alert-info\">{}</div></template></div>",
+        "<div class=\"c-search\" data-url=\"{}/live/chat/search\" data-limit=\"{LIMIT}\"{}><div class=\"chat-search__filters\"><div class=\"filter-input-container\">{}<input autocapitalize=\"none\" autocomplete=\"off\" autocorrect=\"off\" class=\"filter-input no-blur\" placeholder=\"{}\" type=\"text\" value=\"{}\"></div><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger search-sort-options-trigger btn-default\" data-identifier=\"search-sort-options\" data-trigger=\"\" type=\"button\" data-sort=\"relevance\">{}<span class=\"d-button-label\">{}</span></button><template class=\"search-sort-options-template\"><ul class=\"dropdown-menu\">{}{}</ul></template></div><template class=\"chat-search__results-template\"><div class=\"sr-only\" id=\"chat-search-instructions\">{}</div><ul aria-label=\"{}\" class=\"chat-message-search-entries\" role=\"listbox\"></ul><div class=\"chat-search-loading\"><div class=\"loading-container\"></div></div><br></template><template class=\"chat-search__empty-template\"><div class=\"alert alert-info\">{}</div></template></div>",
         escape(base_path),
+        if full_page.is_some() {
+            " data-query-params=\"true\""
+        } else {
+            ""
+        },
         d_icon("magnifying-glass", Some("-left")),
         escape(&t("chat.search_view.filter_placeholder")),
+        escape(full_page.unwrap_or_default()),
         d_icon("sort", None),
         escape(&t("chat.search.sort.relevance")),
         sort("relevance"),
