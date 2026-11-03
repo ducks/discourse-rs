@@ -177,17 +177,13 @@ pub use themes::{
     cache as theme_cache, html as theme_html, import as theme_import, system as system_themes,
     writes as theme_writes,
 };
-pub mod topic_converter;
-pub mod topic_guardian;
-pub mod topic_list;
-pub mod topic_list_view;
-pub mod topic_query;
-pub mod topic_status;
-pub mod topic_timer;
-pub mod topic_tracking_report;
-pub mod topic_tracking_state;
-pub mod topic_view;
-pub mod topics_bulk;
+pub mod topics;
+pub use topics::{
+    bulk as topics_bulk, converter as topic_converter, guardian as topic_guardian,
+    list as topic_list, list_view as topic_list_view, query as topic_query, status as topic_status,
+    timer as topic_timer, tracking_report as topic_tracking_report,
+    tracking_state as topic_tracking_state, view as topic_view,
+};
 pub mod upcoming_changes;
 pub mod upload_references;
 pub mod uploads;
