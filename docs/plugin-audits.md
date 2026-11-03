@@ -325,7 +325,7 @@ checks its rendered result; this does not close the rest of the poll audit.
 - PollSerializer and PollOptionSerializer keys incl. `preloaded_voters`, `ranked_choice_outcome` (RankedChoice ported with tests), `closed_by` skipping the system user; post `polls` and `polls_votes` in the topic view and single-post serializers (src/plugins/poll/serializer.rs:206-310,453-570; src/topic_view.rs:1577,1968).
 - `can_create_poll` on the current user (src/current_user.rs:889-891; src/plugins/poll/mod.rs:622).
 - Jobs: ClosePoll as the system user, quiet refusals (src/jobs/handlers.rs:63,1209).
-- Events: `merging_users` (src/user_merger.rs:700-709), User `has_many :poll_votes, dependent: :delete_all` (src/plugins/mod.rs:239), `reduce_excerpt`, gated by `poll_enabled` (src/excerpt.rs:238-246), `in:polls` advanced filter and its search-menu suggestion (src/search/advanced.rs:185; src/search_menu_view.rs:1067).
+- Events: `merging_users` (src/user_merger.rs:700-709), User `has_many :poll_votes, dependent: :delete_all` (src/plugins/mod.rs:239), `reduce_excerpt`, gated by `poll_enabled` (src/excerpt.rs:238-246), `in:polls` advanced filter and its search-menu suggestion (src/search/advanced.rs:185; src/search/menu_view.rs:1067).
 - Settings: all nine from plugin_settings.yml; none has a change handler in Rails. Admin plugin icon `chart-bar` (src/admin/view.rs:175). English server and client locales loaded (src/i18n.rs:25-27,75-76).
 - Composer options menu lists "Build Poll" for staff or poll_create_allowed_groups (src/composer/view.rs:280-285; src/html.rs:1118), but as unported (see UI).
 
@@ -582,7 +582,7 @@ Verdict: started (16 gaps)
 
 **UI**
 - header-topic-info__before connector: the vote box in the docked topic header. Rails: plugins/discourse-topic-voting/assets/javascripts/discourse/connectors/header-topic-info__before/header-topic-voting.gjs:1. Port: absent (core's docked header topic info is not ported either; no item names it, only the milestone 5 bullet).
-- Full-page search sort order "Most Votes" (sortOrders push, term order:votes). Rails: plugins/discourse-topic-voting/assets/javascripts/discourse/initializers/discourse-topic-voting.js:57-64. Port: src/search_view.rs:45 and static/js/search-page.js:16 (core's six orders only).
+- Full-page search sort order "Most Votes" (sortOrders push, term order:votes). Rails: plugins/discourse-topic-voting/assets/javascripts/discourse/initializers/discourse-topic-voting.js:57-64. Port: src/search/view.rs:45 and static/js/search-page.js:16 (core's six orders only).
 - category-available-views "votes" and addCategorySortCriteria("votes") in the category editor. Rails: plugins/discourse-topic-voting/assets/javascripts/discourse/initializers/discourse-topic-voting.js:95; pre-initializers/extend-category-for-voting.js:72. Port: src/category_edit_view.rs:307-308 (sort_order and default_view are free text inputs, no choices).
 - replaceIcon("topic_voting.voting_closed", "lock"): the port maps it to far-envelope. Rails: plugins/discourse-topic-voting/assets/javascripts/discourse/initializers/discourse-topic-voting.js:19. Port: src/user_menu_view.rs:611.
 - VoteCount's voters list as a modal on mobile (`@modalForMobile`). Rails: plugins/discourse-topic-voting/assets/javascripts/discourse/components/vote-count.gjs:89. Port: static/js/topic-voting.js (menu only).

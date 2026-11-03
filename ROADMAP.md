@@ -79,11 +79,20 @@ data loading, views and handlers now live under `src/admin/`, with central
 route registration retained in `src/routes/mod.rs`. These are structural
 moves with no intended behavior changes. Categories, groups and review now
 also have domain directories, with root aliases preserving existing imports.
-The next batch adds `src/tags/`, `src/themes/` and `src/notifications/`: 14
+The second batch added `src/tags/`, `src/themes/` and `src/notifications/`: 14
 implementation files moved, with only module declarations and four relative
 screenshot include paths adjusted. Combined validation passed all-target
 workspace clippy, 21 domain unit tests, 25 integration tests and three dropdown
 browser tests. Routes and runtime behavior are unchanged.
+
+The third batch groups badges and invitations under `src/badges/` and
+`src/invites/`, and collects search views and logs under `src/search/`.
+Twelve implementations moved, with compatibility aliases and one relative
+SVG include path adjusted. Validation passed all-target workspace clippy,
+33 focused unit tests, 15 integration tests and 313 badge/invite write
+parity cases. Use nextest's parity profile for those cases: concurrent
+`cargo test --test writes` cases share the process-wide clock and can
+interfere with session rotation and notification timing.
 
 Plugin infrastructure has also advanced past the original milestone
 summary: the compile-time Plugin trait and Wasmtime host are on main.
