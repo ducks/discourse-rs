@@ -372,15 +372,28 @@ async fn the_worker_runs_a_plugins_jobs() {
     assert_eq!(discourse_rs::jobs::drain(&st).await.unwrap(), 1);
     assert_eq!(*JOB_ARGS.lock().unwrap(), vec![json!({"n": 1})]);
 
-    // Scheduled ones only while it is on.
-    let run_worker = |st: AppState| async move {
-        let stop = tokio::time::sleep(Duration::from_millis(1500));
-        discourse_rs::jobs::work(st, stop, Duration::ZERO).await;
-    };
-    run_worker(st.clone()).await;
-    assert_eq!(SCHEDULED_RUNS.load(Ordering::SeqCst), 0);
+    // Scheduled ones only while it is on. On, the worker's first pass runs
+    // it: stopped once it has, and timed, so the pass with it off gets
+    // ample time to reach it (the worker stops between scheduled jobs).
     set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
-    run_worker(st).await;
+    let started = std::time::Instant::now();
+    let ran = async {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(60);
+        while SCHEDULED_RUNS.load(Ordering::SeqCst) == 0 {
+            assert!(
+                tokio::time::Instant::now() < deadline,
+                "the scheduled job never ran"
+            );
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    };
+    discourse_rs::jobs::work(st.clone(), ran, Duration::ZERO).await;
+    assert_eq!(SCHEDULED_RUNS.load(Ordering::SeqCst), 1);
+    let to_reach_it = started.elapsed();
+
+    set_setting(&db.pool, "echo_enabled", BOOL, "f").await;
+    let stop = tokio::time::sleep(to_reach_it * 3 + Duration::from_secs(1));
+    discourse_rs::jobs::work(st, stop, Duration::ZERO).await;
     assert_eq!(SCHEDULED_RUNS.load(Ordering::SeqCst), 1);
 }
 
