@@ -15,7 +15,6 @@ pub mod badges_view;
 pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod browser_pageviews;
-pub mod bulk_invite;
 pub mod bus;
 pub mod categories;
 pub use categories::{
@@ -75,9 +74,8 @@ pub mod i18n;
 pub mod images;
 pub mod impersonation;
 pub mod incoming_link;
-pub mod invite_mailer;
-pub mod invite_page_view;
 pub mod invites;
+pub use invites::{bulk as bulk_invite, mailer as invite_mailer, view as invite_page_view};
 pub mod jobs;
 pub mod letter_avatar;
 pub mod likes;
