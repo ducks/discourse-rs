@@ -110,12 +110,12 @@ pub mod plugins;
 pub mod pm_invite;
 pub mod pm_lists;
 pub mod pm_tracking_state;
-pub mod post_actions;
-pub mod post_destroyer;
-pub mod post_mover;
-pub mod post_owner_changer;
-pub mod post_view;
 pub mod posting;
+pub mod posts;
+pub use posts::{
+    actions as post_actions, destroyer as post_destroyer, mover as post_mover,
+    owner_changer as post_owner_changer, view as post_view,
+};
 pub mod preferences_view;
 pub mod presence;
 pub mod pretty_text;
