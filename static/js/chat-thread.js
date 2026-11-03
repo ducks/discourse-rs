@@ -152,13 +152,14 @@
       updateArrow(pane);
       return Promise.resolve();
     }
-    var bottom = atBottom(pane);
     var all = items(container);
     var previous = staged ? all[all.indexOf(staged) - 1] || null : all[all.length - 1] || null;
     return fetchMessage(pane, id, previous).then(function (html) {
       if (!html || find(container, id)) {
         return;
       }
+      // Where the view is once the message is fetched (chat.js onSent).
+      var bottom = atBottom(pane);
       var node = fragment(html);
       if (staged && staged.isConnected) {
         staged.replaceWith(node);
