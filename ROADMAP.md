@@ -103,6 +103,15 @@ Validation passed all-target workspace clippy, 34 focused unit tests,
 67 integration tests and 592 isolated write parity cases covering messages,
 posts, topics, post actions and topic timers.
 
+User code now lives under `src/users/`: profile data and helpers at the
+domain root, rendering under `views/`, and account updates, renaming,
+merging, anonymization and deletion under `operations/`. All 21 moved
+implementations are byte-identical; public user types and existing root
+module imports are preserved. Routes and administration stay unchanged.
+Validation passed all-target workspace clippy, 21 user unit tests,
+60 integration tests and 422 isolated write parity cases covering users,
+admin users, custom fields, avatars, user API keys and user search.
+
 Plugin infrastructure has also advanced past the original milestone
 summary: the compile-time Plugin trait and Wasmtime host are on main.
 Bundled plugin ports remain Rust in src/plugins/. See docs/plugin-wasm.md
