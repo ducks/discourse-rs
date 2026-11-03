@@ -188,27 +188,21 @@ pub mod upcoming_changes;
 pub mod upload_references;
 pub mod uploads;
 pub mod url;
-pub mod user_activity_view;
-pub mod user_anonymizer;
-pub mod user_api_key_crypto;
-pub mod user_avatar;
-pub mod user_card_view;
-pub mod user_comm_screener;
-pub mod user_destroyer;
-pub mod user_fields;
-pub mod user_info_view;
-pub mod user_menu_view;
-pub mod user_merger;
-pub mod user_name_suggester;
-pub mod user_notifications_view;
-pub mod user_option_defaults;
-pub mod user_penalties;
-pub mod user_private;
-pub mod user_profile_view;
-pub mod user_search;
-pub mod user_updater;
-pub mod username_changer;
 pub mod users;
+pub use users::operations::{
+    anonymizer as user_anonymizer, destroyer as user_destroyer, merger as user_merger,
+    updater as user_updater, username_changer,
+};
+pub use users::views::{
+    activity as user_activity_view, card as user_card_view, info as user_info_view,
+    menu as user_menu_view, notifications as user_notifications_view, profile as user_profile_view,
+};
+pub use users::{
+    api_key_crypto as user_api_key_crypto, avatar as user_avatar,
+    comm_screener as user_comm_screener, fields as user_fields,
+    name_suggester as user_name_suggester, option_defaults as user_option_defaults,
+    penalties as user_penalties, private as user_private, search as user_search,
+};
 pub mod viewer_dates;
 pub mod watched_words;
 pub mod web_hooks;
