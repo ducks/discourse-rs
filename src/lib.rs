@@ -4,7 +4,6 @@ pub mod accounts;
 pub mod admin;
 pub mod age_words;
 pub mod anonymous_cache;
-pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod backup_restore;
@@ -83,7 +82,11 @@ pub mod login_page_view;
 pub mod mcp;
 pub mod mcp_clients;
 pub mod message_format;
-pub mod messages_view;
+pub mod messages;
+pub use messages::{
+    archive as archived_messages, invite as pm_invite, lists as pm_lists,
+    tracking as pm_tracking_state, view as messages_view,
+};
 pub mod mobile;
 pub mod modifications;
 pub mod moment_locale;
@@ -107,9 +110,6 @@ pub mod permalinks;
 pub mod plugin_api;
 pub mod plugin_wasm;
 pub mod plugins;
-pub mod pm_invite;
-pub mod pm_lists;
-pub mod pm_tracking_state;
 pub mod posting;
 pub mod posts;
 pub use posts::{
