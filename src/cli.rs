@@ -266,6 +266,7 @@ async fn admin_create(
 async fn serve() -> Result<(), Box<dyn Error>> {
     init_tracing();
     crate::assets::initialize()?;
+    let shutdown = shutdown_signal()?;
 
     let config = Config::from_env()?;
     crate::readonly::force_from_globals(&config.globals);
@@ -313,7 +314,7 @@ async fn serve() -> Result<(), Box<dyn Error>> {
                 .map(|(i, state)| {
                     tokio::spawn(crate::jobs::work(
                         state.clone(),
-                        shutdown_signal(),
+                        stopped(shutdown.clone()),
                         STAGGER * i as u32,
                     ))
                 })
@@ -327,7 +328,7 @@ async fn serve() -> Result<(), Box<dyn Error>> {
             .clone()
             .into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
-    .with_graceful_shutdown(shutdown_signal())
+    .with_graceful_shutdown(stopped(shutdown))
     .await?;
     // The tracker's deferred work, then each site's lists and counts,
     // which Redis would keep.
@@ -372,23 +373,28 @@ async fn secret_key_base(config: &Config) -> Result<String, Box<dyn Error>> {
     }
 }
 
-/// Resolves on SIGINT (ctrl-c) or SIGTERM (what `systemctl stop` sends),
-/// so in-flight requests finish before the process exits.
-async fn shutdown_signal() {
+/// Set on SIGINT (ctrl-c) or SIGTERM (what `systemctl stop` sends), so
+/// in-flight requests finish and the workers stop before the process
+/// exits. The handlers are installed here, before the server and workers
+/// start: one installed when its future is first polled missed a signal
+/// sent while a worker was still on its first pass.
+fn shutdown_signal() -> std::io::Result<tokio::sync::watch::Receiver<bool>> {
     use tokio::signal::unix::{SignalKind, signal};
-    let mut term = match signal(SignalKind::terminate()) {
-        Ok(term) => term,
-        Err(e) => {
-            tracing::error!("installing SIGTERM handler: {e}");
-            return std::future::pending().await;
+    let mut term = signal(SignalKind::terminate())?;
+    let mut int = signal(SignalKind::interrupt())?;
+    let (tx, rx) = tokio::sync::watch::channel(false);
+    tokio::spawn(async move {
+        tokio::select! {
+            _ = term.recv() => {}
+            _ = int.recv() => {}
         }
-    };
-    tokio::select! {
-        result = tokio::signal::ctrl_c() => {
-            if let Err(e) = result {
-                tracing::error!("installing ctrl-c handler: {e}");
-            }
-        }
-        _ = term.recv() => {}
-    }
+        tx.send_replace(true);
+    });
+    Ok(rx)
+}
+
+/// Resolves once `shutdown_signal` is set.
+async fn stopped(mut shutdown: tokio::sync::watch::Receiver<bool>) {
+    // An error is the sender gone, which it is only after setting it.
+    let _ = shutdown.wait_for(|stop| *stop).await;
 }

@@ -927,12 +927,28 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>, 
             }
             continue;
         }
-        if let Err(e) = drain(&state).await {
-            tracing::error!("job queue: {e}");
+        // Job by job rather than `drain`, so a stop waits for the running
+        // job only: a seeded site's backlog outlasted systemd's 90 s.
+        loop {
+            if requested(&mut stop).await {
+                return;
+            }
+            let result = match claim(&state.pool).await {
+                Ok(Some(job)) => perform(&state, job).await,
+                Ok(None) => break,
+                Err(e) => Err(e),
+            };
+            if let Err(e) = result {
+                tracing::error!("job queue: {e}");
+                break;
+            }
         }
         for (i, (name, every)) in SCHEDULED.iter().enumerate() {
             if std::time::Instant::now() < scheduled_from {
                 break;
+            }
+            if requested(&mut stop).await {
+                return;
             }
             if last_run[i].is_some_and(|at| at.elapsed() < *every) {
                 continue;
@@ -953,6 +969,9 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>, 
             if plugin_last_run[i].is_some_and(|at| at.elapsed() < *every) {
                 continue;
             }
+            if requested(&mut stop).await {
+                return;
+            }
             plugin_last_run[i] = Some(std::time::Instant::now());
             if let Err(e) = run_plugin_scheduled(&state, plugin.as_ref(), name).await {
                 tracing::error!("scheduled job {name}: {e}");
@@ -962,6 +981,15 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>, 
             _ = &mut stop => return,
             _ = tokio::time::sleep(Duration::from_secs(1)) => {}
         }
+    }
+}
+
+/// Whether `stop` has resolved, without waiting for it.
+async fn requested<F: std::future::Future<Output = ()>>(stop: &mut std::pin::Pin<&mut F>) -> bool {
+    tokio::select! {
+        biased;
+        _ = stop.as_mut() => true,
+        _ = std::future::ready(()) => false,
     }
 }
 

@@ -47,6 +47,30 @@ async fn due_jobs_run_and_unported_ones_fail_with_the_reason() {
     assert!(!rows[1].2, "the delayed job waits");
 }
 
+/// A stop leaves the queue where it is: the worker checks for it before
+/// each job, so a backlog doesn't hold the process past systemd's kill.
+#[tokio::test]
+async fn a_stopped_worker_claims_no_more_jobs() {
+    let db = TestDb::new().await;
+    let app = state(db.pool.clone(), recorded_config()).await;
+    let mut conn = db.pool.acquire().await.unwrap();
+    for _ in 0..2 {
+        jobs::enqueue(&mut conn, "no_such_job", json!({}))
+            .await
+            .unwrap();
+    }
+    drop(conn);
+
+    jobs::work(app, std::future::ready(()), std::time::Duration::ZERO).await;
+
+    let attempts: Vec<i32> =
+        sqlx::query_scalar("SELECT attempts FROM discourse_rs.jobs ORDER BY id")
+            .fetch_all(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(attempts, vec![0, 0]);
+}
+
 /// CreateRecentPostSearchIndexes can't be recorded (Rails' recorder runs
 /// jobs in a transaction, where CREATE INDEX CONCURRENTLY can't run): past
 /// the enable size, the offset is the search_recent_posts_size'th newest
