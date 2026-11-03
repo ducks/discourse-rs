@@ -94,6 +94,15 @@ parity cases. Use nextest's parity profile for those cases: concurrent
 `cargo test --test writes` cases share the process-wide clock and can
 interfere with session rotation and notification timing.
 
+The fourth batch groups topic queries, permissions, lists, timers and
+tracking under `src/topics/`; post operations and rendering under
+`src/posts/`; and private-message lists, invitations, archives and tracking
+under `src/messages/`. All 22 moved source files are byte-identical, with
+root aliases preserving imports and central route registration unchanged.
+Validation passed all-target workspace clippy, 34 focused unit tests,
+67 integration tests and 592 isolated write parity cases covering messages,
+posts, topics, post actions and topic timers.
+
 Plugin infrastructure has also advanced past the original milestone
 summary: the compile-time Plugin trait and Wasmtime host are on main.
 Bundled plugin ports remain Rust in src/plugins/. See docs/plugin-wasm.md

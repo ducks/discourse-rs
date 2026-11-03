@@ -4,7 +4,6 @@ pub mod accounts;
 pub mod admin;
 pub mod age_words;
 pub mod anonymous_cache;
-pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod backup_restore;
@@ -83,7 +82,11 @@ pub mod login_page_view;
 pub mod mcp;
 pub mod mcp_clients;
 pub mod message_format;
-pub mod messages_view;
+pub mod messages;
+pub use messages::{
+    archive as archived_messages, invite as pm_invite, lists as pm_lists,
+    tracking as pm_tracking_state, view as messages_view,
+};
 pub mod mobile;
 pub mod modifications;
 pub mod moment_locale;
@@ -107,15 +110,12 @@ pub mod permalinks;
 pub mod plugin_api;
 pub mod plugin_wasm;
 pub mod plugins;
-pub mod pm_invite;
-pub mod pm_lists;
-pub mod pm_tracking_state;
-pub mod post_actions;
-pub mod post_destroyer;
-pub mod post_mover;
-pub mod post_owner_changer;
-pub mod post_view;
 pub mod posting;
+pub mod posts;
+pub use posts::{
+    actions as post_actions, destroyer as post_destroyer, mover as post_mover,
+    owner_changer as post_owner_changer, view as post_view,
+};
 pub mod preferences_view;
 pub mod presence;
 pub mod pretty_text;
@@ -177,17 +177,13 @@ pub use themes::{
     cache as theme_cache, html as theme_html, import as theme_import, system as system_themes,
     writes as theme_writes,
 };
-pub mod topic_converter;
-pub mod topic_guardian;
-pub mod topic_list;
-pub mod topic_list_view;
-pub mod topic_query;
-pub mod topic_status;
-pub mod topic_timer;
-pub mod topic_tracking_report;
-pub mod topic_tracking_state;
-pub mod topic_view;
-pub mod topics_bulk;
+pub mod topics;
+pub use topics::{
+    bulk as topics_bulk, converter as topic_converter, guardian as topic_guardian,
+    list as topic_list, list_view as topic_list_view, query as topic_query, status as topic_status,
+    timer as topic_timer, tracking_report as topic_tracking_report,
+    tracking_state as topic_tracking_state, view as topic_view,
+};
 pub mod upcoming_changes;
 pub mod upload_references;
 pub mod uploads;

@@ -13,7 +13,7 @@ What is here:
 
 - `src/plugin_wasm.rs`: the host (registry, manifest, ABI, host calls,
   limits) and the topic list's three phases;
-- `src/topic_list.rs`: the phases wired into the topic list next to the
+- `src/topics/list.rs`: the phases wired into the topic list next to the
   bundled plugins', on every route that serializes a topic list;
 - `plugins/sdk`: the guest side of the ABI for Rust (`discourse-plugin`);
 - `plugins/discourse-solved`: the Luau spike's solved port, in Rust,
