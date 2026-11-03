@@ -284,7 +284,29 @@ pub fn app(state: AppState) -> Router {
             state,
             request_tracker::layer,
         ))
+        // Outside every layer that scopes task-local state to the request.
+        .layer(axum::middleware::from_fn(run_to_completion))
         .layer(TraceLayer::new_for_http())
+}
+
+/// Runs the request in a task of its own, so a client that goes away
+/// does not drop the handler halfway, as a Rails request finishes either
+/// way. A dropped handler can leave writes half done, and a connection
+/// dropped inside `begin()` goes back to the pool in a transaction block
+/// (tests/request_cancellation.rs). The response body still stops with
+/// the client.
+pub async fn run_to_completion(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    use tracing::Instrument;
+    let handler = tokio::spawn(next.run(request).in_current_span());
+    match handler.await {
+        Ok(response) => response,
+        Err(e) if e.is_panic() => std::panic::resume_unwind(e.into_panic()),
+        // The runtime shutting down cancelled it.
+        Err(_) => StatusCode::SERVICE_UNAVAILABLE.into_response(),
+    }
 }
 
 /// The site texts as of this request: the translation overrides read again
