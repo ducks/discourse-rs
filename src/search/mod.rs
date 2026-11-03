@@ -4,11 +4,15 @@
 //! others are refused.
 
 pub mod advanced;
+pub mod advanced_view;
 pub mod blurb;
 mod dates;
 mod filters;
+pub mod logs;
+pub mod menu_view;
 mod posts_query;
 pub(crate) mod uri;
+pub mod view;
 
 use std::collections::HashMap;
 use std::sync::Mutex;

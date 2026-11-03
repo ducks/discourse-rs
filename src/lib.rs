@@ -8,14 +8,13 @@ pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod backup_restore;
-pub mod badge_granter;
-pub mod badge_preview;
-pub mod badges_page;
-pub mod badges_view;
+pub mod badges;
+pub use badges::{
+    granter as badge_granter, page as badges_page, preview as badge_preview, view as badges_view,
+};
 pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod browser_pageviews;
-pub mod bulk_invite;
 pub mod bus;
 pub mod categories;
 pub use categories::{
@@ -75,9 +74,8 @@ pub mod i18n;
 pub mod images;
 pub mod impersonation;
 pub mod incoming_link;
-pub mod invite_mailer;
-pub mod invite_page_view;
 pub mod invites;
+pub use invites::{bulk as bulk_invite, mailer as invite_mailer, view as invite_page_view};
 pub mod jobs;
 pub mod letter_avatar;
 pub mod likes;
@@ -146,10 +144,10 @@ pub mod schema;
 pub mod schema_objects;
 pub mod screened;
 pub mod search;
-pub mod search_advanced_view;
-pub mod search_logs;
-pub mod search_menu_view;
-pub mod search_view;
+pub use search::{
+    advanced_view as search_advanced_view, logs as search_logs, menu_view as search_menu_view,
+    view as search_view,
+};
 pub mod second_factor;
 pub mod second_factor_auth;
 pub mod seed_topics;

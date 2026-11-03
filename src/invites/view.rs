@@ -264,7 +264,7 @@ pub struct InvitedView<'a> {
     pub search: &'a str,
 }
 
-const ENVELOPE_ZERO: &str = include_str!("../templates/empty_states/envelope_zero.svg");
+const ENVELOPE_ZERO: &str = include_str!("../../templates/empty_states/envelope_zero.svg");
 
 fn icon(name: &str) -> String {
     format!(
