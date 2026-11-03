@@ -8,10 +8,10 @@ pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod backup_restore;
-pub mod badge_granter;
-pub mod badge_preview;
-pub mod badges_page;
-pub mod badges_view;
+pub mod badges;
+pub use badges::{
+    granter as badge_granter, page as badges_page, preview as badge_preview, view as badges_view,
+};
 pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod browser_pageviews;
