@@ -71,7 +71,7 @@ pub struct QueryParams {
 }
 
 /// `Discourse::InvalidParameters` as JSON.
-pub(super) fn invalid_parameters(state: &AppState, message: &str) -> Response {
+pub(crate) fn invalid_parameters(state: &AppState, message: &str) -> Response {
     let text = state
         .i18n
         .t_with("invalid_params", &[("message", message)])
@@ -882,7 +882,7 @@ fn valid_search_term(term: &str, settings: &SiteSettings) -> Result<bool, AppErr
 /// The advanced filters' data: the site's categories by activity with
 /// their chooser rows (CategoryRow) and header labels, and the options
 /// the viewer and plugins bring.
-pub(super) async fn advanced_panel(
+pub(crate) async fn advanced_panel(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
@@ -924,7 +924,7 @@ pub(super) async fn advanced_panel(
             .iter()
             .find(|(id, _)| i64::from(*id) == category.id)
             .map_or(0, |(_, n)| i64::from(*n));
-        let chooser = crate::composer_view::ChooserCategory {
+        let chooser = crate::composer::view::ChooserCategory {
             id: category.id,
             topic_count,
             description_text: None,
@@ -932,7 +932,7 @@ pub(super) async fn advanced_panel(
         };
         let parent = category.parent_id.and_then(|id| all.get(&id));
         // categoryBadgeHTML with its ancestors and hideParent.
-        let own = crate::composer_view::badge_span(&cx, category, "")
+        let own = crate::composer::view::badge_span(&cx, category, "")
             .replacen(" --has-parent", "", 1)
             .replacen(
                 &format!(
@@ -943,7 +943,7 @@ pub(super) async fn advanced_panel(
                 1,
             );
         let label = match parent {
-            Some(p) => format!("{}{own}", crate::composer_view::badge_span(&cx, p, "")),
+            Some(p) => format!("{}{own}", crate::composer::view::badge_span(&cx, p, "")),
             None => own,
         };
         categories.push(PanelCategory {
@@ -951,7 +951,7 @@ pub(super) async fn advanced_panel(
             slug: category.slug.clone(),
             parent_slug: parent.map(|p| p.slug.clone()),
             name: category.name.clone(),
-            row: crate::composer_view::row(&cx, &chooser, category),
+            row: crate::composer::view::row(&cx, &chooser, category),
             label,
         });
     }

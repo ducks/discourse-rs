@@ -1,4 +1,6 @@
 // Chat search in the browser (ChatSearch), in the drawer's search route
+// and the full page at /chat/search (ChatRoutesSearch, whose query is
+// the `q` param, kept in the address as it changes; replace: true)
 // (plugins/chat/search_view.rs draws it empty):
 //
 //   - the filter: what is typed becomes the query (chatSearchQuery, kept
@@ -174,13 +176,40 @@
     }
   }
 
+  // The full page's search, which keeps the query in the address.
+  function fullPage() {
+    return current && current.root.dataset.queryParams === "true";
+  }
+
   function visitMessage(entry) {
     var url = withoutPrefix(entry.dataset.url);
-    if (Discourse.chatDrawer && Discourse.chatDrawer.transitionTo) {
+    if (fullPage()) {
+      // DiscourseURL.routeTo in the app.
+      var link = document.createElement("a");
+      link.href = basePath() + url;
+      link.hidden = true;
+      document.body.appendChild(link);
+      if (window.htmx) {
+        window.htmx.process(link);
+      }
+      link.click();
+    } else if (Discourse.chatDrawer && Discourse.chatDrawer.transitionTo) {
       Discourse.chatDrawer.transitionTo(url);
     } else {
       window.location.assign(basePath() + url);
     }
+  }
+
+  // router.replaceWith({ queryParams: { q } }): no q without a query.
+  function replaceQueryParam() {
+    var params = new URLSearchParams(location.search);
+    if (query) {
+      params.set("q", query);
+    } else {
+      params.delete("q");
+    }
+    var search = params.toString();
+    history.replaceState(history.state, "", location.pathname + (search ? "?" + search : "") + location.hash);
   }
 
   // The sort menu (DMenu): its items floated under the trigger.
@@ -235,6 +264,9 @@
       // debounceFilterChange
       query = value === "" ? null : value;
       if (current) {
+        if (fullPage()) {
+          replaceQueryParam();
+        }
         checkQueryChange();
       }
     }, INPUT_DELAY);
@@ -314,6 +346,10 @@
           }
         })
       : { observe: function () {}, unobserve: function () {}, disconnect: function () {} };
+    // The full page's @query is its q param.
+    if (root.dataset.queryParams === "true") {
+      query = new URLSearchParams(location.search).get("q") || null;
+    }
     // @value={{@query}} and dAutoFocus.
     var input = root.querySelector(".filter-input");
     input.value = query || "";
@@ -335,4 +371,13 @@
 
   // For chat-drawer.js: its search route drawn, or gone.
   Discourse.chatSearch = { mount: mount, unmount: unmount };
+
+  // The full page's search, on each page that has it.
+  Discourse.onPage(function () {
+    if (!document.querySelector(".c-search[data-url][data-query-params='true']")) {
+      return null;
+    }
+    mount();
+    return unmount;
+  });
 })();

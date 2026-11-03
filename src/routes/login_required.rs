@@ -288,7 +288,7 @@ pub(super) struct NotLoggedIn;
 
 /// `rescue_discourse_actions(:not_logged_in, 403)`. (topics#show's extras
 /// are added by the login_required gate, the one place it raises this.)
-pub(super) fn not_logged_in(state: &AppState) -> Response {
+pub(crate) fn not_logged_in(state: &AppState) -> Response {
     let i18n = &state.i18n;
     let mut body = serde_json::Map::new();
     body.insert(

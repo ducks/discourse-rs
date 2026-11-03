@@ -71,11 +71,16 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-echo "browser-test: building the server"
-cargo build --quiet --bin discourse-rs
+echo "browser-test: packaging the frontend"
+python3 scripts/package-frontend "$work/frontend"
+export DISCOURSE_FRONTEND_DIR="$work/frontend"
+if [[ -z ${BROWSER_TEST_BINARY:-} ]]; then
+  echo "browser-test: building the server"
+  cargo build --quiet --bin discourse-rs
+fi
 # The target directory may be shared with other checkouts: run a copy of
 # this build, not whatever lands at the path next.
-cp "${CARGO_TARGET_DIR:-$root/target}/debug/discourse-rs" "$work/discourse-rs"
+cp "${BROWSER_TEST_BINARY:-${CARGO_TARGET_DIR:-$root/target}/debug/discourse-rs}" "$work/discourse-rs"
 
 psql -X -q -v ON_ERROR_STOP=1 "$admin" -c "CREATE DATABASE \"$copy\" TEMPLATE \"$template\""
 copied=1

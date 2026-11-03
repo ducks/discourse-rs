@@ -1,7 +1,7 @@
 //! Admin::SiteTextsController: the site texts (translation overrides and
 //! theme translations) under /admin/customize/site_texts, and the reseed
 //! options. A page request for the index or a site text is the Ember
-//! page (crate::routes::admin_customize).
+//! page (crate::admin::routes::customize).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -156,13 +156,14 @@ pub async fn index(
         return Ok(r);
     }
     if !json_request(&headers, &uri) {
-        return super::admin_customize::site_texts_page(&state, &guardian, &headers, &uri).await;
+        return crate::admin::routes::customize::site_texts_page(&state, &guardian, &headers, &uri)
+            .await;
     }
     index_json(state, uri).await
 }
 
 /// The index's document (what the page asks for too).
-pub(super) async fn index_json(state: AppState, uri: Uri) -> Result<Response, AppError> {
+pub(crate) async fn index_json(state: AppState, uri: Uri) -> Result<Response, AppError> {
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
     let flag = |k: &str| crate::params::string(&query, k).as_deref() == Some("true");
     let overridden = flag("overridden");
@@ -475,14 +476,16 @@ pub async fn show(
         return Ok(super::topics::not_found_response(&state));
     };
     if !json_request(&headers, &uri) {
-        return super::admin_customize::site_text_page(&state, &guardian, &headers, &uri, &id)
-            .await;
+        return crate::admin::routes::customize::site_text_page(
+            &state, &guardian, &headers, &uri, &id,
+        )
+        .await;
     }
     show_json(state, id, uri).await
 }
 
 /// A site text's document (what the edit page asks for too).
-pub(super) async fn show_json(state: AppState, id: String, uri: Uri) -> Result<Response, AppError> {
+pub(crate) async fn show_json(state: AppState, id: String, uri: Uri) -> Result<Response, AppError> {
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
     let locale = match fetch_locale(&state, crate::params::string(&query, "locale").as_deref())? {
         Ok(l) => l,
@@ -516,7 +519,7 @@ async fn site_text_response(
 }
 
 /// `StaffActionLogger#log_site_text_change`
-pub(super) async fn log_change(
+pub(crate) async fn log_change(
     conn: &mut PgConnection,
     acting_user_id: i32,
     subject: &str,
@@ -627,7 +630,7 @@ pub async fn update(
     {
         crate::jobs::enqueue(
             &mut tx,
-            crate::admin_badges::BULK_USER_TITLE_UPDATE,
+            crate::admin::badges::BULK_USER_TITLE_UPDATE,
             json!({"new_title": value, "granted_badge_id": badge_id, "action": "update"}),
         )
         .await?;
@@ -787,7 +790,7 @@ pub async fn revert(
     if let Some(badge_id) = site_texts::system_badge_id(&id) {
         crate::jobs::enqueue(
             &mut tx,
-            crate::admin_badges::BULK_USER_TITLE_UPDATE,
+            crate::admin::badges::BULK_USER_TITLE_UPDATE,
             json!({"granted_badge_id": badge_id, "action": "reset"}),
         )
         .await?;
@@ -935,7 +938,7 @@ pub async fn reseed() -> Result<Response, AppError> {
 /// `TranslationOverride.upsert!(locale, key, value)`: the sanitized value
 /// written over the key (the default its original), or the record's
 /// validation errors as full messages, nothing written.
-pub(super) async fn upsert_override(
+pub(crate) async fn upsert_override(
     conn: &mut PgConnection,
     i18n: &crate::i18n::I18n,
     locale: &str,

@@ -7,7 +7,7 @@
 //! say so.
 
 use super::{Section, all_categories};
-use crate::admin_form_kit as fk;
+use crate::admin::form_kit as fk;
 use crate::i18n::I18n;
 use crate::topic_list_view::{escape, icon};
 

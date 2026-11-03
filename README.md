@@ -34,6 +34,27 @@ Ember running), desktop and mobile:
 
 axum, tokio, sqlx (Postgres 16 + pgvector), clap, serde.
 
+## Source layout
+
+Group feature code under its own `src/<feature>/` module as it is
+reorganized. `src/composer/` keeps the member's data loading (`load.rs`),
+markup (`view.rs`) and preview endpoints (`preview.rs`) together;
+`src/routes/mod.rs` wires the endpoints and `src/html.rs` consumes the
+rendered composer. Posting and draft persistence remain in their existing
+modules. `src/posting/` and `src/plugins/chat/` are other established
+feature directories.
+
+`src/admin/` contains administration data loading, views and shared UI
+helpers. Its `routes/` directory holds the admin HTTP handlers;
+`src/routes/mod.rs` registers them through `admin::` alongside the other
+endpoints. Admin module filenames omit the redundant `admin_` prefix.
+
+Keep module moves separate from behavior changes and retain the existing
+integration and browser tests. The remaining flat modules can move one
+feature at a time. Admin subfeatures can be grouped further within their
+directory as they grow; categories and review remain candidates for the
+next feature moves.
+
 ## Setup
 
 ```bash
@@ -488,19 +509,21 @@ up as [docs/demo-servers.md](docs/demo-servers.md) describes.
 
 One host, systemd, Postgres 16 with pgvector, Caddy in front. Every
 release has a static x86_64 Linux binary attached, and its tarball carries
-`deploy/`, so the host needs no toolchain:
+`deploy/` and a versioned `frontend/` package, so the host needs no toolchain:
 
 ```bash
 tar xzf discourse-rs-v<version>-x86_64-linux.tar.gz
 cd discourse-rs-v<version>-x86_64-linux
-sudo deploy/install        # from a checkout: make build && sudo make install
+sudo deploy/install        # checkout: make build frontend && sudo make install
 sudo deploy/install-emoji /var/lib/discourse-rs/public
 ```
 
 That installs `/usr/local/bin/discourse-rs`, `discourse-rs.service`, the
 `discourse-rs` account (systemd-sysusers) and `/etc/discourse-rs/env` from
 `deploy/env.example`. Running it again upgrades the binary and keeps the
-env file. Then fill in `/etc/discourse-rs/env`: `DATABASE_URL`,
+env file. Core JS/CSS can be packaged separately without rebuilding Rust;
+see [frontend packages and build caching](docs/frontend-assets.md) for asset-only
+updates, browser testing and rollback. Then fill in `/etc/discourse-rs/env`: `DATABASE_URL`,
 `DISCOURSE_HOSTNAME` and `DISCOURSE_SECRET_KEY_BASE` (`openssl rand -hex
 64`; without one the server generates one and keeps it in the database,
 as Rails keeps it in Redis) and the `DISCOURSE_SMTP_*` relay.

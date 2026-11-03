@@ -104,7 +104,7 @@ async fn index_doc(
         config: &state.config,
         settings: &settings,
     };
-    let logo = crate::admin_users::logo_small_url(&mut conn, &settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut conn, &settings).await?;
     let cx = Cx {
         settings: &settings,
         urls: &urls,
@@ -176,7 +176,7 @@ pub async fn create(
         config: &state.config,
         settings: &settings,
     };
-    let logo = crate::admin_users::logo_small_url(&mut tx, &settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut tx, &settings).await?;
     let cx = Cx {
         settings: &settings,
         urls: &urls,

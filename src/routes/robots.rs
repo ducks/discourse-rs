@@ -197,9 +197,12 @@ pub async fn admin_show(
     }
     let mut conn = state.pool.acquire().await?;
     let doc = admin_document(&mut conn, &state, &headers).await?;
-    if !super::admin_pages::wants_json(&uri, &headers) {
+    if !crate::admin::routes::pages::wants_json(&uri, &headers) {
         drop(conn);
-        return super::admin_customize::robots_page(&state, &guardian, &headers, &uri, &doc).await;
+        return crate::admin::routes::customize::robots_page(
+            &state, &guardian, &headers, &uri, &doc,
+        )
+        .await;
     }
     Ok(Json(doc).into_response())
 }

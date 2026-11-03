@@ -250,7 +250,7 @@ enum Bind {
 
 pub struct Context<'a> {
     pub settings: &'a SiteSettings,
-    pub user_cx: &'a crate::admin_user_show::Context<'a>,
+    pub user_cx: &'a crate::admin::user_show::Context<'a>,
     pub base_path: &'a str,
 }
 
@@ -373,7 +373,7 @@ pub async fn index(
 
     let can_see_ip =
         guardian.is_admin() || (guardian.is_moderator() && s.get("moderators_view_ips")?.truthy());
-    let logo = crate::admin_users::logo_small_url(conn, s).await?;
+    let logo = crate::admin::users::logo_small_url(conn, s).await?;
     let json_actions: Vec<i32> = JSON_VALUE_ACTIONS
         .iter()
         .filter_map(|a| action_id(a))
@@ -462,7 +462,7 @@ pub async fn index(
             ("target_user", r.target_user_id),
         ] {
             let user =
-                crate::admin_user_show::basic_user(conn, cx.user_cx, id, logo.as_deref()).await?;
+                crate::admin::user_show::basic_user(conn, cx.user_cx, id, logo.as_deref()).await?;
             o.insert(key.into(), user);
         }
         logs.push(Value::Object(o));

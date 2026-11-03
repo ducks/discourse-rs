@@ -259,6 +259,27 @@
   line-height: var(--line-height-large);
 }
 
+.category-breadcrumb .select-kit.is-expanded .select-kit-body {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 240px;
+  max-width: min(420px, 85vw);
+  align-items: stretch;
+  padding: .5em;
+}
+.category-breadcrumb .select-kit-collection {
+  max-height: 320px;
+  overflow-y: auto;
+  margin: .5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+.category-breadcrumb .select-kit-row:focus-visible {
+  outline: 2px solid var(--tertiary);
+  outline-offset: -2px;
+}
+
 /* select-kit/category-drop.scss: the breadcrumbs' category drops (the
    rows and footer of an open drop with them) */
 .select-kit.combo-box.category-drop {

@@ -9,11 +9,18 @@ ported fails at once and logs why. The scheduled check_new_features
 fetches development's `http://localhost:3000/new-features.json`, which
 the SSRF guard refuses.
 
+Validated November 1, 2026: both units run the release binary built from
+1819a61f, after all 44 demo rehearsal steps passed on a fresh copy of the
+8080 database. The binary is `tmp/demo/discourse-rs-1819a61f`; its SHA-256
+is `8440b5ebcc9ea74d26da68e8f1778f59e0e6397d9167fd3fe9df8ca09625686d`.
+The local report is `tmp/rehearsal/release-20261101-focus/report/index.html`.
+The previous `discourse-rs-v20261024.0.1` binary is retained for rollback.
+
 Both sites allow video and audio uploads: `authorized_extensions` adds
 `mp4|mov|webm|mp3|m4a|ogg` to the defaults (a stock Discourse refuses
-them). The admin's site settings can't save a list setting yet (164), so
-it was written to `site_settings` directly, typed as Rails stores a list
-(data_type 8):
+them). These values were originally written to `site_settings` directly,
+typed as Rails stores a list (data_type 8). The admin list editor now
+supports saving them too:
 
 ```bash
 nix-shell --run "psql -d discourse_rs_demo -c \"INSERT INTO site_settings
@@ -24,6 +31,10 @@ nix-shell --run "psql -d discourse_rs_demo -c \"INSERT INTO site_settings
 ```
 
 (and the same for `discourse_rs_meta_public`), then restart the units.
+
+Set `max_oneboxes_per_post` to 5 for the walkthrough. The benchmark
+snapshot has it set to 0, so otherwise chat links stay plain links even
+with message processing enabled.
 
 | Port | Database | Data |
 |---|---|---|

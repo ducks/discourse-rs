@@ -685,7 +685,7 @@ pub async fn discourse_id_revoke(
 pub async fn lti_submit_on_load_js() -> Response {
     (
         [(header::CONTENT_TYPE, "application/javascript")],
-        crate::plugins::lti::SUBMIT_ON_LOAD_JS,
+        crate::assets::text("submit-on-load-lti.js"),
     )
         .into_response()
 }

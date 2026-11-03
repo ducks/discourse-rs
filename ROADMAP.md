@@ -13,7 +13,111 @@ backlog; the milestones below are the coarse one. Phase 9 groups the
 markers into branches and phase 10 holds the rest of the milestones'
 work, so the two together are the count of what is left.
 
-## State as of 2026-10-20
+## Next after the staging dropdown deploy: faster frontend delivery
+
+Implemented and locally validated, including an optimized release build and
+its focused browser checks. See [frontend packages](docs/frontend-assets.md) for the package
+format, deployment path, checks and measured packaging times. The live demo
+still uses the previous embedded-assets binary.
+
+The November 2 Categories/Tags fix required rebuilding the Rust application
+because `src/assets.rs` embeds JavaScript and CSS. The release target also
+had to compile dependencies. Fix this workflow before the next feature slice.
+
+1. Measure clean, unchanged, JavaScript-only, CSS-only and Rust-only builds.
+   Record toolchain, Cargo profile, flags, target directory and timings.
+   Establish why the previous release artifacts were unavailable; do not
+   assume every dependency rebuild is a Cargo cache invalidation problem.
+2. Package frontend assets separately from the server. Start with the core
+   JavaScript and CSS in `src/assets.rs`, preserving CSS ordering, content
+   digests, versioned URLs, ETags and conditional responses. Load a validated
+   asset manifest from an explicit release directory. Asset-only changes
+   must not change Rust compiler inputs. Audit `build.rs`'s generated asset
+   lists and markdown WASM separately before expanding the scope.
+3. Deploy versioned asset directories with the existing server binary.
+   Activate a matching manifest atomically, retain the previous release for
+   rollback and keep older versioned assets available to already-open pages.
+   A short service restart is acceptable initially; Rust compilation is not
+   required for a JavaScript/CSS-only release.
+4. Standardize release builds on the pinned Nix toolchain, consistent flags
+   and a persistent target directory across worktrees. Keep test and release
+   profiles distinct. Reuse the tested artifact for deployment rather than
+   rebuilding it. Preserve the nested markdown WASM cache where valid.
+5. Verify asset lookup, MIME types, missing files, digest changes, 304s and
+   rollback behavior. Run focused browser tests against the packaged assets
+   and repeat the guest-account staging check after deployment.
+
+Done means a JavaScript/CSS-only edit can be tested and deployed without
+invoking rustc, an unchanged release build compiles no crates, and a small
+Rust-only edit reuses unchanged dependencies. Publish measured before/after
+times rather than promising a build duration before measuring it.
+
+## Current focus, 2026-11-01
+
+The next delivery is the demo: core forum, usable chat and admin, then
+bundled plugins, with a plain benchmark table at the end. The demo
+script and rehearsal now cover 44 steps. Chat flags in /review (148a),
+chat media and full-page search, and composer actions with the markdown
+poll builder (196a) have merged. The committed browser suite exercises
+these paths as well as navigation and live updates.
+
+The November 1 integration passed 5,386 Rust tests (5 existing skips) and
+70 browser tests. A subsequent chat attachment focus fix passed 14 focused
+browser tests, including a new regression through the file picker and
+lightbox. The final debug and optimized builds both passed all 44 demo
+rehearsal steps with no failures or skips. Runtime source is at 1819a61f;
+the local release report is
+`tmp/rehearsal/release-20261101-focus/report/index.html`.
+
+Remaining chat follow-ups include thread tracking/live updates (160b),
+drawer details (223e), GIFs (224b) and further reviewable cases (148b).
+Performance item 285 is low priority. Full parity remains the long-term
+goal; the older counts below are a dated snapshot, not current totals.
+
+Source organization: composer lives under `src/composer/`; administration
+data loading, views and handlers now live under `src/admin/`, with central
+route registration retained in `src/routes/mod.rs`. These are structural
+moves with no intended behavior changes. Categories, groups and review now
+also have domain directories, with root aliases preserving existing imports.
+The second batch added `src/tags/`, `src/themes/` and `src/notifications/`: 14
+implementation files moved, with only module declarations and four relative
+screenshot include paths adjusted. Combined validation passed all-target
+workspace clippy, 21 domain unit tests, 25 integration tests and three dropdown
+browser tests. Routes and runtime behavior are unchanged.
+
+The third batch groups badges and invitations under `src/badges/` and
+`src/invites/`, and collects search views and logs under `src/search/`.
+Twelve implementations moved, with compatibility aliases and one relative
+SVG include path adjusted. Validation passed all-target workspace clippy,
+33 focused unit tests, 15 integration tests and 313 badge/invite write
+parity cases. Use nextest's parity profile for those cases: concurrent
+`cargo test --test writes` cases share the process-wide clock and can
+interfere with session rotation and notification timing.
+
+The fourth batch groups topic queries, permissions, lists, timers and
+tracking under `src/topics/`; post operations and rendering under
+`src/posts/`; and private-message lists, invitations, archives and tracking
+under `src/messages/`. All 22 moved source files are byte-identical, with
+root aliases preserving imports and central route registration unchanged.
+Validation passed all-target workspace clippy, 34 focused unit tests,
+67 integration tests and 592 isolated write parity cases covering messages,
+posts, topics, post actions and topic timers.
+
+User code now lives under `src/users/`: profile data and helpers at the
+domain root, rendering under `views/`, and account updates, renaming,
+merging, anonymization and deletion under `operations/`. All 21 moved
+implementations are byte-identical; public user types and existing root
+module imports are preserved. Routes and administration stay unchanged.
+Validation passed all-target workspace clippy, 21 user unit tests,
+60 integration tests and 422 isolated write parity cases covering users,
+admin users, custom fields, avatars, user API keys and user search.
+
+Plugin infrastructure has also advanced past the original milestone
+summary: the compile-time Plugin trait and Wasmtime host are on main.
+Bundled plugin ports remain Rust in src/plugins/. See docs/plugin-wasm.md
+and the latest plugin audit entries for implementation and remaining gaps.
+
+## Historical snapshot, 2026-10-20
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
@@ -1331,7 +1435,7 @@ then by what running a forum needs (milestone 6). Briefs:
     the upcoming changes, the dashboard's site advice): each
     `{{setting:name}}` link goes to its plugin's settings page or the
     page of its area or category (the admin search's settingPageMap,
-    crate::admin_setting_links), the JSON keeping the server's link.
+    crate::admin::setting_links), the JSON keeping the server's link.
     Then feat/admin-whats-new: /admin/whats-new (the page and its JSON,
     /admin/dashboard/whats-new too) and /admin/toggle-feature;
     DiscourseUpdates' new features in crate::new_features: the meta feed
@@ -2218,7 +2322,7 @@ have handlers now.
     or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
     first or last post (:698), claims and notes (review_posts.rs:257;
     reviewable_user.rs:195,272,446), the other reviewable types
-    (review.rs:247; review_posts.rs:211), user and plugin reviewables in
+    (review.rs:247; review_posts.rs:211), user reviewables in
     the list (review_list.rs:594,599: ReviewableUserSerializer, the
     user.gjs card with its reject reason modal, approve_user), queued
     posts approved into closed or
@@ -2228,11 +2332,43 @@ have handlers now.
     invite-only sites or with an uploaded avatar and their rejection
     email (reviewable_user.rs:52,82,316), score conversations and types,
     reasons whose text the restricted cook would change, watched word
-    scores without their words, the ids, date and additional filters
+    scores without their words, the date and additional filters
     (review_list.rs:205,208,216,1047,1100,1246,1266), reviewable web hook
     payloads (review_list.rs:602,2196,2233,2278 and `web_hooks::refuse` for
-    the reviewable events), truncate_user_flag_stats (review.rs:534;
-    review_posts.rs:1236)
+    the reviewable events), the single reviewable page (review.show,
+    ReviewablesController#show: GET /review/:id is the permalink route),
+    the /reviewable_action publish (Reviewable#notify_users), the page's
+    warning of unknown reviewable types (meta has the list). Plugin
+    reviewables are 148a's and 148b's
+148a. ~~`feat/plugin-reviewables`~~ (done) M: plugin reviewables in the
+    queue, chat's first. Chat::ReviewableMessage is stored as Rails stores
+    it (type `ReviewableChatMessage`, type_source `chat`;
+    `reviewables::types` maps the class names meta and the type filter use
+    to the stored names, chat's while chat_enabled), listed and drawn
+    (Chat::ReviewableMessageSerializer: the live message's cooked and
+    chatmessage_id, the payload's message_cooked, message_uploads and
+    transcript_topic_id, the embedded chat_channel; chat's
+    reviewable/chat-message.gjs with the channel title linking to the
+    message, the author, uploads and the transcript link; "Chat flagged
+    as"), with build_combined_actions under chat's translations and
+    penalty_effect_for, shared with perform (src/plugins/chat/review.rs,
+    delete_and_ignore too); a staff flag's take_action agrees at once
+    (agree_and_delete, publish_delete!); update_flag_stats enqueues
+    Jobs::TruncateUserFlagStats, ported, for post and chat flags alike;
+    the ids filter, which review.js now redraws acted on items with;
+    meta's unknown_reviewable_types_and_sources. discourse-post-voting
+    creates no reviewables in the port (its comment flag is refused,
+    plugins/post_voting/comments.rs). tests/chat_reviewables.rs,
+    tests/browser/review-chat.spec.js. The rest is 148b
+148b. `feat/plugin-reviewables-rest` M: the companion message a chat
+    notify flag with a message sends (plugins/chat/flags.rs) and the score
+    conversation its meta_topic_id brings
+    (ReviewableScoreSerializer#reviewable_conversation, refused for post
+    flags with a message too, review_list.rs "score conversations"), the
+    transcript a direct message's flag sends, flags of messages with
+    uploads (the payload's message_uploads), queue_for_review, and
+    discourse-post-voting's ReviewablePostVotingComment with the comment
+    flag that makes it (plugins/post_voting/comments.rs)
 149. `feat/category-group-moderation` M: enable_category_group_moderation
     (topic_guardian.rs:214; posting/validate.rs:449; review.rs:172;
     routes/review.rs:147,285,413; routes/review_claims.rs:215;
@@ -2503,14 +2639,29 @@ have handlers now.
     sent to /uploads.json (upload_type chat-composer) with each upload's
     progress, removing one, sending (upload_ids[]) and editing with
     them, the staged message drawing them; tests/chat_uploads.rs and the
-    collapser's unit tests. Left refused: an upload's optimized video
-    (plugins/chat/messages.rs:370; plugins/chat/create.rs:930), a nil
+    collapser's unit tests. Left refused: ~~an upload's optimized video
+    (plugins/chat/messages.rs:370; plugins/chat/create.rs:930)~~ (done,
+    feat/chat-media-and-search), a nil
     message with upload_ids, a 500 in Rails (create.rs:289; modify.rs:345),
     lazy videos in the collapser (collapser.rs:309, they only come from
-    oneboxes)), oneboxes, images and videos in messages: the rest of
+    oneboxes)), ~~oneboxes, images and videos in messages: the rest of
     Chat::MessageProcessor (oneboxes, hotlinked images and
     Jobs::Chat::PullHotlinkedImages, lightboxes on cooked images, video
-    placeholders; plugins/chat/create.rs:816),
+    placeholders; plugins/chat/create.rs:816)~~ (done,
+    feat/chat-media-and-search: plugins/chat/processor.rs ports
+    Chat::MessageProcessor over crate::onebox::post_process (block and
+    inline oneboxes, invalidate_oneboxes), the tracked hotlinked images
+    localized and the stale rows swept, process_thumbnails,
+    post_process_videos with the optimized videos' references, and
+    add_lightbox_to_images; the job's pull-job enqueue and
+    skip_notifications as Rails nests it; Jobs::Chat::PullHotlinkedImages
+    (downloading refused as for posts); the uploads' optimized_video in
+    the serializer; chat.js lightboxing the cooked's marked images;
+    tests/chat_processor.rs and tests/browser/chat-media-search.spec.js.
+    Left: lazy videos in the collapser (discourse-lazy-videos' LazyVideo
+    and LazyIframe client, unported for posts too), chat's own local
+    oneboxes of channels and messages (Chat::OneboxHandler, refused in
+    onebox/mod.rs), HotlinkedMedia.download),
     ~~chat message bookmarks~~ (done, fix/chat-bookmarks: chat's registered
     bookmarkable, Chat::MessageBookmarkable, in plugins/chat/bookmarks.rs:
     its list query and search on /u/:username/bookmarks.json, the
@@ -4958,12 +5109,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the composer's place with its delete count, DeleteMessagesConfirm,
     ChatModalMoveMessageToChannel over the member's other public
     channels, as a plain select, then the first moved message).
-    tests/chat_moderation.rs. Left: the review queue's entries and page
-    for chat reviewables (Chat::ReviewableMessageSerializer; the queue
-    refuses plugin types, review_list.rs:603, with 148). Refused: notify
-    flags with a message (the companion PM), the transcript a DM flag
-    sends, take_action, queue_for_review, flagging messages with
-    uploads, moving threads. Select mode's quote and copy are 218's
+    tests/chat_moderation.rs. The review queue's entries and page for
+    chat reviewables and take_action are 148a's. Refused: notify flags
+    with a message (the companion PM), the transcript a DM flag sends,
+    queue_for_review, flagging messages with uploads (148b), moving
+    threads. Select mode's quote and copy are 218's
 218. ~~`feat/chat-message-actions`~~ (done, stacked on
     feat/chat-moderation) M: the message actions left after 217. Now
     POST /chat/:id/quote is ChatController#quote_messages over
@@ -5287,8 +5437,14 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     DConditionalLoadingSpinner's markup (core's frontend isn't in the
     vendored ref: drawn as a sentinel div and loading-container), the
     "chat.deleted_user" label core's locale lacks, the thread pane's
-    plugin outlet (chat-thread-navbar-actions), and the full-page
-    /chat/search route (162)
+    plugin outlet (chat-thread-navbar-actions), and ~~the full-page
+    /chat/search route (162)~~ (done, feat/chat-media-and-search:
+    ChatSearchRoute and ChatRoutesSearch in chat_pages::search and
+    view.rs search_route, ChatSearch with enableQueryParams, its `q`
+    param kept in the address by chat-search.js, a result opening its
+    message full page, the sidebar link active, chat_search_enabled off
+    going to /chat; tests/chat_search.rs and
+    tests/browser/chat-media-search.spec.js)
     223d. ~~`fix/chat-drawer-history`~~ (done) S: the browser's back and
     forward run the chat route's beforeModel, activate and deactivate in
     chat-drawer.js on htmx:historyCacheMiss (the restore skips
@@ -6351,19 +6507,19 @@ Discourse's own clients keep working.
 After writes (moved 2026-10-01, was 3.5): the plugin API is mostly the
 write endpoints. The design and its open decisions are in PLUGINS.md.
 
-- [x] Decide the runtime (PLUGINS.md decision 6, 2026-10-08): bundled
-      plugins are Rust in src/plugins/ on lifecycle phases; third-party
-      plugins a sandboxed runtime later (Luau spike on
-      spike/plugin-runtime)
-- [ ] The bundled plugins: all sixteen started (crate::plugins::STARTED),
-      none done. The parity audit (210, docs/plugin-audits.md, 2026-10-17)
+- [x] Runtime: bundled plugins are Rust in src/plugins/ on lifecycle
+      phases. Compile-time plugins use plugin_api::Plugin; third-party
+      guests run in the merged Wasmtime host (docs/plugin-wasm.md).
+- [ ] The bundled plugins: 31 started (crate::plugins::STARTED), with
+      parity gaps still tracked per plugin. The original parity audit
+      (210, docs/plugin-audits.md, 2026-10-17), extended as ports land,
       lists every gap of chat, poll, reactions, solved, topic voting,
       presence, local dates, lazy videos, checklist, details, footnote,
       spoiler, LTI, OAuth2 basic, OpenID Connect and Apple against the
       reference plugin; the uncovered ones are 211-249, the rest earlier
       items (chat 160-162, solved 163, voting and reactions core's 143,
-      150, 188i4, 195, 197, the settings 164). Templates, narrative-bot's
-      tutorials and the plugins not started: 202
+      150, 188i4, 195, 197, the settings 164). Templates and narrative-bot
+      now have ports; their remaining gaps and other plugins stay in 202
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
       assets, i18n, the tables the plugin owns; `discourse-rs plugins`:
       203

@@ -401,7 +401,7 @@ impl Context<'_> {
         .bind(user_id)
         .fetch_one(&mut *self.conn)
         .await?;
-        let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+        let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
         let urls = crate::url::Urls {
             config: self.config,
             settings: self.settings,
@@ -441,7 +441,7 @@ impl Context<'_> {
         Ok(format!(
             "<template class=\"chat-staged-template\" data-variant=\"info\" data-wasm=\"{}/assets/markdown.wasm?v={}\" data-settings=\"{}/assets/markdown-settings.json?chat=1\" data-label-network-error=\"{}\" data-label-send-again=\"{}\"><template class=\"chat-retry-icon\">{}</template>{}</template><template class=\"chat-staged-template\" data-variant=\"hidden\">{}</template>",
             self.base_path,
-            crate::routes::composer::MARKDOWN_WASM_VERSION,
+            crate::composer::preview::MARKDOWN_WASM_VERSION,
             self.base_path,
             escape(&(view.t)("chat.retry_staged_message.title")),
             escape(&(view.t)("chat.retry_staged_message.action")),
@@ -1330,7 +1330,7 @@ impl Context<'_> {
                     .bind(user_id)
                     .fetch_one(&mut *self.conn)
                     .await?;
-            let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+            let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
             let urls = crate::url::Urls {
                 config: self.config,
                 settings: self.settings,

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Record the admin sidebar's nav map (admin-nav-map.js) from a reference
 # agent into vendor/discourse/config/admin_nav_map.json, for the admin
-# search (src/admin_search.rs). Run after vendoring, from an agent at the
+# search (src/admin/search.rs). Run after vendoring, from an agent at the
 # vendored commit.
 #
 # Usage: scripts/record-admin-nav-map <agent-name>

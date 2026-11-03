@@ -3,8 +3,7 @@
 //! by Chat::MessagesSerializer and Chat::MessageSerializer; a thread's
 //! (Chat::ListChannelThreadMessages) over the same query.
 //!
-//! Refused as Unsupported until their slices port them: optimized videos
-//! of uploads, and user status.
+//! Refused as Unsupported until their slices port them: user status.
 //! The two writes Rails defers (Scheduler::Defer) to after the response,
 //! the membership's last_viewed_at and the user's last chat channel, are
 //! made before it.
@@ -449,10 +448,67 @@ impl Context<'_> {
         first_upload_filename(&mut *self.conn, message_id).await
     }
 
+    /// UploadSerializer's `has_one :optimized_video` (OptimizedVideoSerializer)
+    /// with video_conversion_enabled: the upload's first optimized video,
+    /// the queries preloading it, its attributes the optimized upload's.
+    async fn add_optimized_video(
+        &mut self,
+        json: &mut Value,
+        upload_id: i64,
+        urls: &crate::url::Urls<'_>,
+    ) -> Result<(), AppError> {
+        #[derive(sqlx::FromRow)]
+        struct Optimized {
+            id: i64,
+            upload_id: i32,
+            url: String,
+            extension: Option<String>,
+            filesize: Option<i64>,
+            sha1: Option<String>,
+            original_filename: String,
+        }
+        let optimized: Option<Optimized> = sqlx::query_as(
+            "SELECT v.id, v.upload_id, u.url, u.extension, u.filesize::int8 AS filesize, u.sha1, \
+                    u.original_filename \
+             FROM optimized_videos v JOIN uploads u ON u.id = v.optimized_upload_id \
+             WHERE v.upload_id = $1 ORDER BY v.id LIMIT 1",
+        )
+        .bind(upload_id as i32)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let Some(o) = optimized else {
+            return Ok(());
+        };
+        if self.settings.get("secure_uploads")?.truthy() {
+            return Err(Unsupported("secure optimized videos of chat message uploads").into());
+        }
+        let store = crate::file_store::FileStore::for_site(self.config, self.settings)?;
+        let url = crate::pretty_text::cooked_post_processor::cook_url(
+            &o.url,
+            urls,
+            self.config.globals.relative_url_root(),
+            &store,
+        )?;
+        if let Value::Object(map) = json {
+            map.insert(
+                "optimized_video".into(),
+                json!({
+                    "id": o.id,
+                    "upload_id": o.upload_id,
+                    "url": url,
+                    "extension": o.extension,
+                    "filesize": o.filesize,
+                    "sha1": o.sha1,
+                    "original_filename": o.original_filename,
+                }),
+            );
+        }
+        Ok(())
+    }
+
     /// The messages' uploads (`has_many :uploads, through:
     /// :upload_references`) by message, each in the order it was attached,
-    /// through UploadSerializer. An upload's optimized_video, which the
-    /// serializer adds when video_conversion_enabled, is refused.
+    /// through UploadSerializer, with its optimized video.
     pub(crate) async fn message_uploads(
         &mut self,
         ids: &[i64],
@@ -470,26 +526,19 @@ impl Context<'_> {
         if refs.is_empty() {
             return Ok(out);
         }
-        if self.settings.get("video_conversion_enabled")?.truthy() {
-            let upload_ids: Vec<i64> = refs.iter().map(|r| r.1).collect();
-            let optimized: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM optimized_videos WHERE upload_id::int8 = ANY($1))",
-            )
-            .bind(&upload_ids)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if optimized {
-                return Err(Unsupported("optimized videos of chat message uploads").into());
-            }
-        }
+        let video_conversion = self.settings.get("video_conversion_enabled")?.truthy();
         let urls = crate::url::Urls {
             config: self.config,
             settings: self.settings,
         };
         for (message_id, upload_id, original_filename) in refs {
-            let json =
+            let mut json =
                 crate::uploads::serialize(&mut *self.conn, self.settings, &urls, upload_id as i32)
                     .await?;
+            if video_conversion {
+                self.add_optimized_video(&mut json, upload_id, &urls)
+                    .await?;
+            }
             out.entry(message_id).or_default().push(MessageUpload {
                 original_filename,
                 json,
@@ -1084,7 +1133,7 @@ impl Context<'_> {
             enable_names: settings.get("enable_names")?.truthy(),
             pinned_setting: settings.get("chat_pinned_messages")?.truthy(),
             max_mentions: settings.get("max_mentions_per_chat_message")?.to_i(),
-            logo_small_url: crate::admin_users::logo_small_url(&mut *self.conn, settings).await?,
+            logo_small_url: crate::admin::users::logo_small_url(&mut *self.conn, settings).await?,
             deleted_username: self
                 .i18n
                 .t("chat.deleted_chat_username")

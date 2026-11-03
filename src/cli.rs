@@ -242,9 +242,9 @@ async fn admin_create(
         global_rate_limits: Default::default(),
     };
     let state = multisite::connect_task(&shared, config).await?;
-    let outcome = crate::admin_create::create(
+    let outcome = crate::admin::create::create(
         &state,
-        &crate::admin_create::NewAdmin {
+        &crate::admin::create::NewAdmin {
             email,
             password: &password,
             name,
@@ -253,10 +253,10 @@ async fn admin_create(
     )
     .await?;
     match outcome {
-        crate::admin_create::Outcome::Created { username } => {
+        crate::admin::create::Outcome::Created { username } => {
             println!("Account created successfully with username {username}; it is an admin.")
         }
-        crate::admin_create::Outcome::Updated { username } => {
+        crate::admin::create::Outcome::Updated { username } => {
             println!("Account {username} updated successfully; it is an admin.")
         }
     }
@@ -265,6 +265,7 @@ async fn admin_create(
 
 async fn serve() -> Result<(), Box<dyn Error>> {
     init_tracing();
+    crate::assets::initialize()?;
 
     let config = Config::from_env()?;
     crate::readonly::force_from_globals(&config.globals);

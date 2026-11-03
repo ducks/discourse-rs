@@ -82,6 +82,33 @@ impl Client {
     async fn get(&mut self, path: &str) -> (u16, Value) {
         self.request("GET", path, "").await
     }
+
+    /// A page as the browser loads it: its status, body and Location.
+    async fn page(&mut self, path: &str) -> (u16, String, Option<String>) {
+        let cookie: Vec<String> = self
+            .cookies
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect();
+        let request = Request::get(path)
+            .header(header::HOST, "test.localhost")
+            .header(header::COOKIE, cookie.join("; "));
+        let response = discourse_rs::app(self.state.clone())
+            .oneshot(request.body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let status = response.status().as_u16();
+        let location = response
+            .headers()
+            .get(header::LOCATION)
+            .map(|v| v.to_str().unwrap().to_string());
+        let bytes = response.into_body().collect().await.unwrap().to_bytes();
+        (
+            status,
+            String::from_utf8_lossy(&bytes).into_owned(),
+            location,
+        )
+    }
 }
 
 /// Messages in General (2) and staff (1), indexed as the indexer does.
@@ -212,4 +239,52 @@ async fn results_page_and_the_contract_is_checked() {
     set_setting(&db.pool, "chat_search_enabled", 5, "f").await;
     let (status, _) = c.get("/chat/api/search?query=brown").await;
     assert_eq!(status, 404);
+}
+
+/// The full page (ChatRoutesSearch): its navbar, ChatSearch keeping its
+/// query in the address (the `q` param as the filter's value), the
+/// sidebar's Search chat link active, and chat-search.js loaded; with
+/// chat search off it goes to /chat.
+#[tokio::test]
+async fn the_full_page_search_route_draws_chat_search() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    messages(&db).await;
+    let mut c = Client::logged_in(st, "user1").await;
+    let (status, page, _) = c.page("/chat/search?q=brown%20%26%20fox").await;
+    assert_eq!(status, 200, "{page}");
+    assert!(page.contains("<div class=\"main-chat-outlet chat-view\" id=\"main-chat-outlet\"><div class=\"c-routes --search\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"Search chat\"><span class=\"c-navbar__title-text\">Search chat</span></div>"), "{page}");
+    assert!(page.contains("<div class=\"c-search\" data-url=\"/live/chat/search\" data-limit=\"20\" data-query-params=\"true\"><div class=\"chat-search__filters\">"), "{page}");
+    assert!(
+        page.contains("placeholder=\"Search messages\" type=\"text\" value=\"brown &amp; fox\">"),
+        "{page}"
+    );
+    assert!(
+        page.contains("<script src=\"/assets/chat-search.js"),
+        "{page}"
+    );
+    let link = page.split("data-link-name=\"chat-search\"").next().unwrap();
+    let link = &link[link.rfind("<a ").unwrap()..];
+    assert!(
+        link.starts_with("<a class=\"active sidebar-section-link"),
+        "{link}"
+    );
+
+    // The results it asks for.
+    let (status, results, _) = c
+        .page("/live/chat/search?q=brown&sort=latest&offset=0")
+        .await;
+    assert_eq!(status, 200);
+    assert_eq!(
+        results
+            .matches("class=\"chat-message-search-entry\"")
+            .count(),
+        2
+    );
+    assert!(results.contains("data-url=\"/chat/c/-/2/2\""), "{results}");
+
+    set_setting(&db.pool, "chat_search_enabled", 5, "f").await;
+    let (status, _, location) = c.page("/chat/search").await;
+    assert_eq!(status, 302);
+    assert_eq!(location.as_deref(), Some("/chat"));
 }

@@ -388,8 +388,8 @@ pub async fn topic_page_controls(
 
 /// The composer options menu item (addComposerToolbarPopupMenuOption,
 /// unnamed), before core's wrap toggle.
-pub fn add_popup_option(options: &mut Vec<crate::composer_view::PopupOption>) {
-    let item = crate::composer_view::PopupOption {
+pub fn add_popup_option(options: &mut Vec<crate::composer::view::PopupOption>) {
+    let item = crate::composer::view::PopupOption {
         name: "discourse-templates",
         icon: "far-clipboard",
         label: "templates.insert_template",

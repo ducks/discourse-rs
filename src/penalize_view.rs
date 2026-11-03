@@ -121,12 +121,12 @@ pub fn config(
 ) -> String {
     let mut strings = Map::new();
     for key in KEYS {
-        strings.insert(key.to_string(), json!(crate::admin_view::t(i18n, key)));
+        strings.insert(key.to_string(), json!(crate::admin::view::t(i18n, key)));
     }
     for key in COUNT_KEYS {
         for form in ["one", "other"] {
             let full = format!("{key}.{form}");
-            strings.insert(full.clone(), json!(crate::admin_view::t(i18n, &full)));
+            strings.insert(full.clone(), json!(crate::admin::view::t(i18n, &full)));
         }
     }
     let setting = |name: &str| settings.get(name).map(|v| v.truthy()).unwrap_or(false);

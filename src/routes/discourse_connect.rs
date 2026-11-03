@@ -972,7 +972,7 @@ pub async fn sync_sso(
         config: &state.config,
         settings: &settings,
     };
-    let show = crate::admin_user_show::Context {
+    let show = crate::admin::user_show::Context {
         settings: &settings,
         defs: &state.site_setting_defs,
         i18n: &state.i18n,
@@ -980,12 +980,12 @@ pub async fn sync_sso(
         globals: &state.config.globals,
         development: state.config.rails_env == crate::config::RailsEnv::Development,
     };
-    let doc = crate::admin_user_show::show(
+    let doc = crate::admin::user_show::show(
         &mut tx,
         &show,
         &guardian,
         user_id,
-        crate::admin_user_show::ShowOptions {
+        crate::admin::user_show::ShowOptions {
             show: false,
             detailed: true,
         },

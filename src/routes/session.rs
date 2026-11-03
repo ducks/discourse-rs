@@ -174,7 +174,7 @@ pub async fn csrf(State(state): State<AppState>, headers: HeaderMap) -> Result<R
 /// A masked CSRF token for an anonymous visitor's form, and the
 /// `_forum_session` cookie to set when minting it created the session. Only
 /// for pages that are never cached, such as the login page.
-pub(super) fn anonymous_csrf(
+pub(crate) fn anonymous_csrf(
     state: &AppState,
     headers: &HeaderMap,
     settings: &SiteSettings,

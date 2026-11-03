@@ -10,7 +10,7 @@ use serde_yaml_ng::Value as Yaml;
 use sqlx::PgConnection;
 
 use crate::AppError;
-use crate::admin_site_settings::Context;
+use crate::admin::site_settings::Context;
 use crate::site_settings::{ChangeStatus, Definition, Definitions, SiteSettings, Value};
 
 /// `Group::AUTO_GROUPS[:staff]`
@@ -277,7 +277,7 @@ fn enabled_for_with_groups(
 
 /// The plugin's humanized name, as `Discourse.plugins_by_name` has it.
 fn plugin_humanized_name(plugin: &str) -> String {
-    crate::admin_plugins::humanized_name(plugin).unwrap_or_else(|| plugin.to_string())
+    crate::admin::plugins::humanized_name(plugin).unwrap_or_else(|| plugin.to_string())
 }
 
 /// `UpcomingChanges.image_data`: the recorded image of the change, its
@@ -336,11 +336,11 @@ pub async fn list(
         entry.insert("setting".into(), json!(name));
         entry.insert(
             "humanized_name".into(),
-            json!(crate::admin_site_settings::humanized_name(name)),
+            json!(crate::admin::site_settings::humanized_name(name)),
         );
         entry.insert(
             "description".into(),
-            json!(crate::admin_site_settings::description(cx, name)),
+            json!(crate::admin::site_settings::description(cx, name)),
         );
         entry.insert("value".into(), json!(value));
         entry.insert("upcoming_change".into(), Json::Object(change));
@@ -353,7 +353,7 @@ pub async fn list(
             json!(
                 def.depends_on
                     .iter()
-                    .map(|d| crate::admin_site_settings::humanized_name(d))
+                    .map(|d| crate::admin::site_settings::humanized_name(d))
                     .collect::<Vec<_>>()
             ),
         );

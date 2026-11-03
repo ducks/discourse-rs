@@ -1,4 +1,4 @@
-// The logo and fonts pages in the browser (src/admin_branding_view.rs
+// The logo and fonts pages in the browser (src/admin/branding_view.rs
 // draws them). AdminLogoForm: each image field's upload (POST /uploads,
 // type branding) and delete, the lightbox, the dark logos' toggles, the
 // collapsed sections, the manifest screenshots' SimpleList, the save

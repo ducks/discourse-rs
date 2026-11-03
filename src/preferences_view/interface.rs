@@ -599,7 +599,7 @@ fn color_schemes(p: &Prefs, i: &Interface, themes: &[ListedTheme]) -> Palettes {
                 let preview = schemes
                     .iter()
                     .find(|s| s.id.to_string() == value)
-                    .map(|s| crate::admin_colors_view::preview_style(&s.preview))
+                    .map(|s| crate::admin::colors_view::preview_style(&s.preview))
                     .unwrap_or_default();
                 format!(
                     "{}<div style=\"{}\" class=\"color-palette-picker-row__preview\">{}</div><div class=\"color-palette-picker-row__name\">{}</div>",
@@ -609,7 +609,7 @@ fn color_schemes(p: &Prefs, i: &Interface, themes: &[ListedTheme]) -> Palettes {
                         String::new()
                     },
                     escape(&preview),
-                    crate::admin_colors_view::PLACEHOLDER,
+                    crate::admin::colors_view::PLACEHOLDER,
                     escape(name)
                 )
             },

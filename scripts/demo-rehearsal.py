@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dress rehearsal of docs/demo-script.md: the 39 demo steps in Chromium.
+"""Dress rehearsal of docs/demo-script.md: the 44 demo steps in Chromium.
 
 Each step clicks and types as the presenter does, as its persona, one
 browser context per persona (Member and Second member stay open together
@@ -15,7 +15,6 @@ import base64
 from datetime import datetime, timezone
 import html
 import json
-import os
 from pathlib import Path
 import re
 import sys
@@ -39,7 +38,10 @@ PERSONAS = {
 # A topic the demo opens in step 2 (docs/demo-script.md).
 LONG_TOPIC = 118
 SEARCH_TERM = "discourse"
-# Bundled plugins step 30 turns on (off on the demo database, as in
+# Can see the chat channels in General's category but follows none: step
+# 25's mention of them brings the invite notice.
+NOT_A_MEMBER = "user3"
+# Bundled plugins step 35 turns on (off on the demo database, as in
 # Discourse) and those the plugin steps need that are on by default.
 PLUGINS_TO_TURN_ON = ["assign_enabled", "policy_enabled", "user_notes_enabled", "discourse_gamification_enabled",
                       "post_voting_enabled"]
@@ -272,6 +274,7 @@ class Run:
         self.base = args.url.rstrip("/")
         self.out = Path(args.out)
         self.server_log = Path(args.server_log) if args.server_log else None
+        self.build_label = args.build
         self.started = datetime.now(timezone.utc)
         self.stamp = self.started.strftime("%Y%m%d%H%M%S")
         self.label = f"rehearsal {self.started.strftime('%Y-%m-%d %H:%M:%S')}Z"
@@ -443,11 +446,11 @@ class Run:
             version = about.get("about", {}).get("version")
         except Exception:
             version = None
-        binary = Path.home() / "dev/discourse-rs/tmp/demo/discourse-rs"
-        target = os.readlink(binary) if binary.is_symlink() else None
         parts = []
-        if target:
-            parts.append(f"binary {target} (tmp/demo/discourse-rs symlink; the server doesn't expose its build)")
+        if self.build_label:
+            parts.append(self.build_label)
+        else:
+            parts.append("server build unknown (pass --build to identify the tested binary)")
         if version:
             parts.append(f"reports Discourse version {version}")
         return "; ".join(parts) or "unknown"
@@ -661,6 +664,60 @@ def send_chat(scope, text, what):
     composer.press_sequentially(text, delay=10)
     composer.press("Enter")
     return expect_visible(scope.locator(".chat-message-container", has_text=text), what)
+
+
+def pick_emoji(page, name):
+    """An emoji from the open picker, by its search box, else the first one in view."""
+    picker = expect_visible(page.locator(".emoji-picker"), "the emoji picker")
+    try:
+        picker.locator("input.filter-input, input[type=search]").first.press_sequentially(name, delay=40, timeout=3000)
+        picker.locator(f"img.emoji[data-emoji='{name}']").first.click(timeout=3000)
+    except PlaywrightTimeout:
+        # The search box is out of reach: the first emoji fully in view.
+        index = page.evaluate("""() => [...document.querySelectorAll('.emoji-picker .emoji-picker__sections img.emoji')]
+          .findIndex(e => { const r = e.getBoundingClientRect(); return r.top > 60 && r.bottom < innerHeight; })""")
+        if index < 0:
+            raise StepFail("no emoji in the picker within reach") from None
+        picker.locator(".emoji-picker__sections img.emoji").nth(index).click()
+
+
+def open_thread(run, page):
+    """Step 19's thread in the new channel's side panel, from the indicator
+    under the admin's message; the panel."""
+    open_channel(run, page, run.state["channel_path"], "the new channel")
+    original = expect_visible(page.locator(".chat-channel .chat-message-container", has_text=run.state["thread_starter"]),
+                              "the admin's message")
+    expect_visible(original.locator(".chat-message-thread-indicator"), "the thread indicator under it").click()
+    page.wait_for_url(re.compile(r"/t/\d+"), timeout=WAIT)
+    return expect_visible(page.locator(".chat-side-panel .chat-thread"), "the thread in the side panel")
+
+
+def open_drawer(page):
+    """The chat drawer from the header's icon. A persona last in full-page
+    chat gets that instead, whose button opens the drawer."""
+    page.locator(".d-header .chat-header-icon a, .d-header .chat-header-icon button").first.click()
+    drawer = page.locator(".chat-drawer")
+    full = page.locator(".full-page-chat .c-navbar__open-drawer-button")
+    expect_visible(drawer.or_(full), "the chat drawer")
+    if not drawer.first.is_visible():
+        full.first.click()
+    return expect_visible(drawer, "the chat drawer")
+
+
+def drawer_channels(drawer):
+    """The drawer's channels list, from whichever route it reopened on."""
+    rows = drawer.locator(".c-drawer-routes.--channels")
+    for _ in range(4):
+        if rows.count() and rows.first.is_visible():
+            return
+        back = drawer.locator(".c-navbar__back-button")
+        tab = drawer.locator("#c-footer-channels")
+        if back.count() and back.first.is_visible():
+            back.first.click()
+        elif tab.count() and tab.first.is_visible():
+            tab.first.click()
+        settle(drawer.page, 500)
+    expect_visible(rows, "the drawer's channels list")
 
 
 def chat_message_action(message, value, what):
@@ -952,7 +1009,7 @@ def define_steps(run):
                        "the new topic")
         run.state["new_topic"] = topic_url(page.url)
         run.state["new_topic_title"] = topic_title
-        run.leave(f"topic '{topic_title}' by user1 at {run.state['new_topic']} (step 26 unlists it)")
+        run.leave(f"topic '{topic_title}' by user1 at {run.state['new_topic']} (step 31 unlists it)")
         poll = expect_visible(page.locator(".poll"), "the poll drawn in the topic")
         poll.locator("li[data-poll-option-id]").first.click()
         voted = poll.locator(".results, .poll-results, li.chosen, .d-icon-circle-check")
@@ -1248,16 +1305,7 @@ def define_steps(run):
         box = picker.bounding_box()
         if box and box["y"] < 0:
             s.problem("layout", f"the emoji picker opens partly above the viewport (top at {box['y']:.0f}px)", page.url, warning=True)
-        try:
-            picker.locator("input.filter-input, input[type=search]").first.press_sequentially("tada", delay=40, timeout=3000)
-            picker.locator("img.emoji[data-emoji='tada']").first.click(timeout=3000)
-        except PlaywrightTimeout:
-            # The search box is out of reach: the first emoji fully in view.
-            index = page.evaluate("""() => [...document.querySelectorAll('.emoji-picker .emoji-picker__sections img.emoji')]
-              .findIndex(e => { const r = e.getBoundingClientRect(); return r.top > 60 && r.bottom < innerHeight; })""")
-            if index < 0:
-                raise StepFail("no emoji in the picker within reach") from None
-            picker.locator(".emoji-picker__sections img.emoji").nth(index).click()
+        pick_emoji(page, "tada")
         expect_visible(sent.locator(".chat-message-reaction"), "the reaction on the message")
         run.leave("user1's chat reaction")
         expect_visible(drawer.locator(".c-navbar__full-page-button"), "the full-page chat button").click()
@@ -1295,7 +1343,7 @@ def define_steps(run):
             raise StepFail("the deleted message is back after a reload")
         run.leave(f"user1's deleted chat message '{fixed}' in #General (trashed, kept for staff)")
 
-    @step(17, "Member", "an image in a chat message; it opens in the lightbox")
+    @step(17, "Member", "an image in a chat message opens in the lightbox; a link's onebox; full-page chat search")
     def _(run, s):
         page = run.persona("Member").use()
         channel = page.locator(".chat-channel")
@@ -1313,12 +1361,49 @@ def define_steps(run):
         message = send_chat(channel, text, "the message with the image")
         image = expect_visible(message.locator(".chat-uploads img.chat-img-upload"), "the image in the message", timeout=LIVE_WAIT)
         run.state["chat_image_message"] = text
-        run.leave(f"chat message '{text}' with an uploaded image by user1 in #General (step 20 moves it)")
+        run.leave(f"chat message '{text}' with an uploaded image by user1 in #General (step 23 moves it)")
         image.click()
         expect_visible(page.locator(".pswp"), "the lightbox to open")
         settle(page, 800)
         page.keyboard.press("Escape")
         expect_gone(page.locator(".pswp"), "the lightbox to close")
+
+        # A topic's link on a line of its own: the message redrawn with the
+        # topic's onebox once processed, in Second member's #General too.
+        page.goto(run.base + "/latest")
+        first = expect_visible(page.locator(".topic-list a.title").first, "a topic in the list")
+        href = first.get_attribute("href")
+        second = run.persona("Second member").use()
+        open_channel(run, second, "/chat/c/general/2", "#General in Second member's full-page chat")
+        page = run.persona("Member").use()
+        open_channel(run, page, "/chat/c/general/2", "#General again")
+        word = f"rhlink{run.stamp}"
+        link = href if href.startswith("http") else run.base + href
+        composer = channel.locator(".chat-composer__input").first
+        composer.fill(f"{run.label} {word}\n\n{link}")
+        composer.press("Enter")
+        linked = expect_visible(channel.locator(".chat-message-container", has_text=word), "the message with the link")
+        expect_visible(linked.locator(".chat-cooked aside.quote, .chat-cooked aside.onebox").first,
+                       "the topic's onebox in the message", timeout=LIVE_WAIT)
+        run.leave(f"chat message '{run.label} {word}' with a topic link by user1 in #General")
+        arrived = run.persona("Second member").use().locator(".chat-message-container", has_text=word)
+        try:
+            expect_visible(arrived.locator(".chat-cooked aside.quote, .chat-cooked aside.onebox").first,
+                           "the onebox in Second member's chat", timeout=LIVE_WAIT)
+        except StepFail:
+            s.miss("Second member didn't see the link's onebox arrive without a reload")
+        page = run.persona("Member").use()
+
+        # Search chat from the sidebar, full page: the message found, opened.
+        expect_visible(page.locator("#d-sidebar a[href$='/chat/search']"), "Search chat in the sidebar").click()
+        page.wait_for_url("**/chat/search**", timeout=WAIT)
+        box = expect_visible(page.locator(".c-routes.--search .c-search .filter-input"), "full-page chat search")
+        box.fill(word)
+        entry = expect_visible(page.locator(".chat-message-search-entry", has_text=word), "the message in the results",
+                               timeout=LIVE_WAIT)
+        entry.click()
+        page.wait_for_url("**/chat/c/**", timeout=WAIT)
+        expect_visible(page.locator(".chat-channel .chat-message-container", has_text=word), "the message opened from search")
 
     @step(18, "Admin", "a new channel with threading from the browse page; its settings")
     def _(run, s):
@@ -1404,7 +1489,97 @@ def define_steps(run):
                 page.reload()
         expect_visible(item, "the thread in the channel's threads list")
 
-    @step(20, "Moderator", "select chat messages in #General and move them to the new channel", needs=[17, 18])
+    @step(20, "Member", "in the thread's side panel: react to a reply and edit it; both kept after a reload", needs=[19])
+    def _(run, s):
+        page = run.persona("Member").use()
+        panel = open_thread(run, page)
+        second = f"{run.label} second reply in the thread"
+        reply = expect_visible(panel.locator(".chat-message-container", has_text=second), "step 19's second reply in the thread")
+        reply.hover()
+        actions = expect_visible(panel.locator(".chat-message-actions"), "the reply's actions on hover")
+        if actions.locator(".reply-btn").count():
+            raise StepFail("a thread message offers Reply (canReply is off in a thread)")
+        actions.locator(".react-btn").click()
+        pick_emoji(page, "tada")
+        expect_visible(reply.locator(".chat-message-reaction"), "the reaction on the thread reply", timeout=LIVE_WAIT)
+        run.leave("user1's reaction on a thread reply in the new channel")
+        chat_message_action(reply, "edit", "Edit in the thread reply's menu")
+        composer = panel.locator("#thread-composer")
+        wait_until(page, "t => document.querySelector('.chat-thread #thread-composer').value === t", second,
+                   "the reply's text in the thread's composer")
+        edited = f"{run.label} second reply, edited in the thread"
+        composer.fill(edited)
+        composer.press("Enter")
+        expect_visible(panel.locator(".chat-message-container", has_text=edited), "the edited reply in the thread", timeout=LIVE_WAIT)
+        run.state["thread_reply_edited"] = edited
+        page.reload()
+        panel = expect_visible(page.locator(".chat-side-panel .chat-thread"), "the thread after a reload")
+        kept = expect_visible(panel.locator(".chat-message-container", has_text=edited), "the edited reply after a reload")
+        if not kept.locator(".chat-message-reaction").count():
+            raise StepFail("the reaction was gone after a reload")
+
+    @step(21, "Admin", "the thread's settings: give it a title, shown in its header and kept after a reload", needs=[19])
+    def _(run, s):
+        page = run.persona("Admin").use()
+        open_thread(run, page)
+        # The title's click, for admins and the original message's author.
+        header = page.locator(".c-routes.--channel-thread")
+        expect_visible(header.locator(".c-navbar__title.clickable"), "the thread's clickable title").click()
+        modal = expect_visible(page.locator(".chat-modal-thread-settings"), "the thread settings modal")
+        title = f"Next demo ideas {run.stamp}"
+        modal.locator(".chat-modal-thread-settings__title-input").fill(title)
+        expect_visible(modal.locator(".thread-title-length span", has_text=str(len(title))), "the title's length counted")
+        modal.locator(".btn-primary").first.click()
+        expect_gone(modal, "the modal to close after saving")
+        expect_visible(header.locator(".c-navbar__title-text", has_text=title), "the title in the thread's header")
+        run.state["thread_title"] = title
+        run.leave(f"the thread title '{title}' in the new channel")
+        page.reload()
+        expect_visible(header.locator(".c-navbar__title-text", has_text=title), "the title after a reload")
+
+    @step(22, "Member", "the drawer: a thread from the threads list, a reply there; the channel's settings and members", needs=[19])
+    def _(run, s):
+        page = run.persona("Member").use()
+        page.goto(run.base + "/latest")
+        drawer = open_drawer(page)
+        # The drawer's routes are drawn in place: no page load from here on.
+        page.evaluate("() => (window.__rehearsalSamePage = true)")
+        name = run.state["channel_name"]
+        drawer_channels(drawer)
+        expect_visible(drawer.locator(".chat-channel-row", has_text=name), "the new channel in the drawer").click()
+        expect_visible(drawer.locator(".c-drawer-routes.--channel .chat-composer__input"), "the channel in the drawer")
+        drawer.locator(".c-navbar__threads-list-button").click()
+        threads = drawer.locator(".c-drawer-routes.--channel-threads")
+        # Step 21's title names the thread; without it, its first message does.
+        label = run.state.get("thread_title") or run.state["thread_starter"][:30]
+        item = expect_visible(threads.locator(".chat-thread-list-item", has_text=label), "the thread in the drawer's threads list")
+        item.locator(".chat-thread-list-item__open-button").click()
+        thread = drawer.locator(".c-drawer-routes.--channel-thread")
+        earlier = run.state.get("thread_reply_edited") or f"{run.label} second reply in the thread"
+        expect_visible(thread.locator(".chat-message-container", has_text=earlier), "the thread's replies in the drawer")
+        reply = f"{run.label} reply from the drawer"
+        send_chat(thread, reply, "the reply in the drawer's thread")
+        run.leave("user1's reply from the drawer in the new channel's thread")
+        thread.locator(".c-navbar__back-button").click()
+        expect_visible(drawer.locator(".c-drawer-routes.--channel-threads .chat-thread-list-item", has_text=label),
+                       "back on the threads list")
+        drawer.locator(".c-drawer-routes.--channel-threads .c-navbar__back-button").click()
+        expect_visible(drawer.locator(".c-drawer-routes.--channel .chat-composer__input"), "back on the channel")
+        # The channel's title: its settings, then the Members tab.
+        drawer.locator(".c-navbar__channel-title").click()
+        expect_visible(drawer.locator(".c-drawer-routes.--channel-info-settings .c-channel-settings"),
+                       "the channel's settings in the drawer")
+        drawer.locator(".c-channel-info__nav a", has_text="Members").click()
+        members = drawer.locator(".c-drawer-routes.--channel-info-members")
+        for who in ("admin", "user1"):
+            expect_visible(members.locator(f".c-channel-members__list-item.-member[data-username='{who}']"),
+                           f"{who} in the channel's members")
+        members.locator(".c-navbar__back-button").click()
+        expect_visible(drawer.locator(".c-drawer-routes.--channel .chat-composer__input"), "back on the channel from its members")
+        if urlparse(page.url).path != "/latest" or not page.evaluate("() => window.__rehearsalSamePage === true"):
+            raise StepFail(f"the drawer's routes loaded a page (now at {urlparse(page.url).path})")
+
+    @step(23, "Moderator", "select chat messages in #General and move them to the new channel", needs=[17, 18])
     def _(run, s):
         page = run.persona("Moderator").use()
         # The move lists the moderator's own public channels.
@@ -1439,7 +1614,7 @@ def define_steps(run):
             expect_visible(by_text(moved[0]), "step 14's message moved into the new channel")
         run.leave(f"{len(moved)} messages moved from #General to the new channel, and the move's notice in #General")
 
-    @step(21, "Admin", "chat's admin page: an incoming webhook posts to the new channel", needs=[18])
+    @step(24, "Admin", "chat's admin page: an incoming webhook posts to the new channel", needs=[18])
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/admin/plugins/chat")
@@ -1463,14 +1638,113 @@ def define_steps(run):
         expect_visible(page.locator(".chat-channel .chat-message-container", has_text=text), "the webhook's message in the channel",
                        timeout=LIVE_WAIT)
 
-    @step(22, "Admin", "activate the Newcomer from the admin users list", needs=[13])
+    @step(25, "Member", "in the new channel: a mention's invite notice; the navbar filter; a date separator's jump", needs=[18])
+    def _(run, s):
+        page = run.persona("Member").use()
+        open_channel(run, page, run.state["channel_path"], "the new channel")
+        channel = page.locator(".chat-channel")
+        # NOT_A_MEMBER can see the channel but hasn't joined it.
+        text = f"@{NOT_A_MEMBER} {run.label} have a look"
+        composer = channel.locator(".chat-composer__input").first
+        composer.click()
+        composer.press_sequentially(text, delay=10)
+        composer.press("Enter")
+        notice = expect_visible(channel.locator(".chat-notices .chat-notices__notice", has_text=NOT_A_MEMBER),
+                                f"the notice that {NOT_A_MEMBER} isn't in the channel", timeout=LIVE_WAIT)
+        run.leave(f"user1's message mentioning {NOT_A_MEMBER} in the new channel")
+        notice.locator(".mention-without-membership-notice__body__link").click()
+        # The notices are drawn again: the sent one names no one.
+        expect_visible(channel.locator(".chat-notices .mention-without-membership-notice__invitation-sent"), "Invitation sent")
+        run.leave(f"{NOT_A_MEMBER}'s invitation notification to the new channel")
+        # The navbar's filter: a word of the admin's first message.
+        page.evaluate("() => (window.__rehearsalSamePage = true)")
+        page.locator(".c-navbar__filter").click()
+        bar = expect_visible(channel.locator(".chat-channel__filter-bar"), "the filter bar")
+        bar.locator(".filter-input").press_sequentially("demo", delay=40)
+        position = expect_visible(bar.locator(".chat-channel__filter-position"), "the filter's position (n/m)")
+        highlighted = ("t => [...document.querySelectorAll('.chat-channel .chat-message-container.-highlighted')]"
+                       ".some(m => m.innerText.includes(t))")
+        wait_until(page, highlighted, run.state["thread_starter"], "the admin's message highlighted by the filter")
+        s.notes.append("filter position: " + position.inner_text().strip())
+        bar.locator(".filter-input").press("Escape")
+        expect_gone(channel.locator(".chat-channel__filter-bar"), "the filter bar closed by Esc")
+        # The day's separator: its first message highlighted in place.
+        wait_until(page, "() => !document.querySelector('.chat-channel .chat-message-container.-highlighted')", None,
+                   "the filter's highlight to fade")
+        channel.locator(".chat-messages-scroller").evaluate("s => (s.scrollTop = 0)")
+        separator = expect_visible(channel.locator(".chat-message-separator-date .chat-message-separator__text"), "a date separator")
+        separator.dispatch_event("click")
+        wait_until(page, highlighted, run.state["thread_starter"], "the day's first message highlighted")
+        if not page.evaluate("() => window.__rehearsalSamePage === true"):
+            raise StepFail("the filter or the separator's jump loaded a page")
+
+    @step(26, "Admin", "archive the new channel into a new topic from its settings; the topic shows the transcript", needs=[18])
+    def _(run, s):
+        page = run.persona("Admin").use()
+        page.goto(run.base + "/admin/site_settings?filter=chat_allow_archiving_channels")
+        row = expect_visible(page.locator(".row.setting[data-setting='chat_allow_archiving_channels']"), "the archiving setting")
+        box = row.locator("input[type=checkbox]").first
+        if not box.is_checked():
+            # The input is drawn under its checkmark: the label takes the click.
+            row.locator("label.form-kit__control-checkbox-label").first.click()
+            run.state["archiving_turned_on"] = True
+            expect_visible(row.locator(".setting-controls__ok"), "the setting's save button").click()
+            expect_gone(row.locator(".setting-controls__ok"), "the archiving setting saved")
+        path = run.state["channel_path"]
+        page.goto(run.base + path + "/info/settings")
+        expect_visible(page.locator(".c-channel-settings .archive-btn"), "Archive channel in the channel's settings").click()
+        modal = expect_visible(page.locator(".chat-modal-archive-channel"), "the archive modal")
+        title = f"Archive of {run.state['channel_name']} ({run.label})"
+        modal.locator("#split-topic-name").fill(title)
+        modal.locator("#new-topic-category-selector").select_option(label="General")
+        wait_until(page, "() => !document.querySelector('#chat-confirm-archive-channel').disabled", None, "Archive enabled")
+        page.locator("#chat-confirm-archive-channel").click()
+        expect_visible(page.locator(".d-modal__flash.alert-success"), "the archive started")
+        expect_gone(modal, "the modal to close", timeout=LIVE_WAIT)
+        run.leave(f"topic '{title}' with the channel's transcript, and the archive's system message to admin")
+        # The job runs; the channel says it is archived and links the topic.
+        page.goto(run.base + path)
+        link = page.locator(".chat-channel-archive-status a")
+        for attempt in range(6):
+            try:
+                link.first.wait_for(state="visible", timeout=5000)
+                break
+            except PlaywrightTimeout:
+                page.reload()
+        expect_visible(link, "the channel's archived status linking the topic")
+        if page.locator(".chat-channel .chat-composer__input:not([disabled])").count():
+            raise StepFail("the archived channel still offers its composer")
+        # As in Discourse, the notices float over the status bar (full width,
+        # 2rem down): the retention reminder covers the link until dismissed.
+        reminder = page.locator(".chat-notices .chat-retention-reminder .dismiss-btn")
+        if reminder.count() and reminder.first.is_visible():
+            reminder.first.click()
+            expect_gone(page.locator(".chat-notices .chat-retention-reminder"), "the retention reminder dismissed")
+            run.leave("admin's dismissal of the chat retention reminder (public channels)")
+        # The link opens the topic in a new tab (target=_blank, as in Discourse).
+        with page.context.expect_page() as opened:
+            link.first.click()
+        topic = opened.value
+        run.persona("Admin").watch(topic)
+        try:
+            topic.wait_for_url(re.compile(r"/t/[^/]+/\d+"), timeout=WAIT)
+            expect_visible(topic.locator("#topic-title", has_text=title[:40]), "the archive topic")
+            expect_visible(topic.locator(".cooked .chat-transcript"), "the transcript in the topic")
+            expect_visible(topic.locator(".cooked .chat-transcript", has_text=run.state["thread_starter"]),
+                           "the admin's first message in the transcript")
+            s.notes.append(f"{topic.locator('.cooked .chat-transcript').count()} transcript blocks at {urlparse(topic.url).path}")
+            topic.screenshot(path=str(run.out / f"step-{s.number:02}-topic.png"))
+        finally:
+            topic.close()
+
+    @step(27, "Admin", "activate the Newcomer from the admin users list", needs=[13])
     def _(run, s):
         page = run.persona("Admin").use()
         admin_user_page(run, page, run.newcomer, listing="new")
         expect_visible(page.locator("#main-outlet button", has_text=re.compile(r"^\s*Activate Account")), "Activate Account").click()
         expect_visible(page.locator("#main-outlet button", has_text=re.compile(r"Deactivate Account")), "the account activated")
 
-    @step(23, "Second member", "flags a post as inappropriate", needs=[6])
+    @step(28, "Second member", "flags a post as inappropriate", needs=[6])
     def _(run, s):
         page = run.persona("Second member").use()
         page.goto(run.state["reply_url"])
@@ -1488,8 +1762,41 @@ def define_steps(run):
         expect_gone(page.locator(".flag-modal"), "the flag modal to close after flagging")
         run.leave("user0's flag (inappropriate) on that reply, and its review item")
 
-    @step(24, "Moderator", "review count in header and sidebar; /review, a note, agree with the flag", needs=[23])
+    @step(29, "Moderator", "review count in header and sidebar; /review, a note, agree with the flag; a chat flag deleted from /review",
+          needs=[28])
     def _(run, s):
+        # Member's message in #General, flagged by Second member from its menu.
+        member = run.persona("Member").use()
+        open_channel(run, member, "/chat/c/general/2", "#General for the message to flag")
+        flagged = f"{run.label} chat to flag"
+        send_chat(member.locator(".chat-channel"), flagged, "the message to flag")
+        # The sender draws a staged message before the POST finishes.
+        # Open the other member's channel after the message is saved.
+        wait_until(member, "t => [...document.querySelectorAll('.chat-channel .chat-message-container[data-id]')]"
+                   ".some(m => m.innerText.includes(t) && Number(m.dataset.id) > 0)",
+                   flagged, "the message to flag saved")
+        run.leave(f"user1's chat message '{flagged}' in #General, deleted from /review")
+        second = run.persona("Second member").use()
+        open_channel(run, second, "/chat/c/general/2", "#General for Second member")
+        wait_until(second, "t => [...document.querySelectorAll('.chat-channel .chat-message-container[data-id]')]"
+                   ".some(m => m.innerText.includes(t) && /^\\d+$/.test(m.dataset.id))",
+                   flagged, "the message to flag in Second member's #General")
+        message = second.locator(".chat-channel .chat-message-container", has_text=flagged).first
+        # The message is drawn anew once processed, which can take it from
+        # under the pointer: point at it again.
+        for attempt in range(3):
+            try:
+                chat_message_action(message, "flag", "Flag in the message's menu")
+                break
+            except PlaywrightError:
+                if attempt == 2:
+                    raise
+                settle(second, 500)
+        modal = expect_visible(second.locator(".d-modal .flag-modal-body"), "the chat flag modal")
+        modal.locator("#radio_inappropriate").check()
+        second.locator(".flag-modal__create-flag").click()
+        expect_gone(second.locator(".d-modal .flag-modal-body"), "the chat flag modal to close after flagging")
+
         page = run.persona("Moderator").use()
         page.goto(run.base + "/latest")
         try:
@@ -1506,8 +1813,20 @@ def define_steps(run):
         item.locator("details summary", has_text=re.compile(r"^\s*Yes")).first.click()
         expect_visible(page.locator(".select-kit.is-expanded .select-kit-row", has_text=re.compile("Agree with flag", re.I)), "the agree choices").click()
         expect_visible(item.locator("*", has_text=re.compile(r"^\s*Flag approved\s*$")), "the flag shown approved")
+        # The chat flag beside it: Yes > Delete Message, then gone from #General.
+        chat = expect_visible(page.locator(".review-item.reviewable-chat-message").filter(has_text=flagged),
+                              "the flagged chat message in /review")
+        chat.locator("details summary", has_text=re.compile(r"^\s*Yes")).first.click()
+        expect_visible(page.locator(".select-kit.is-expanded .select-kit-row[data-value='chat_message-agree_and_delete']"),
+                       "Delete Message among the agree choices").click()
+        expect_visible(chat.locator(".review-item__status", has_text="Flag approved"), "the chat flag shown approved")
+        second = run.persona("Second member").use()
+        open_channel(run, second, "/chat/c/general/2", "#General after the chat flag")
+        expect_visible(second.locator(".chat-channel .chat-message-container").first, "#General's messages")
+        if second.locator(".chat-channel .chat-message-container", has_text=flagged).count():
+            raise StepFail("the deleted chat message still shows in #General")
 
-    @step(25, "Admin", "watched word 'require approval'; Newcomer posts it; held; approve from /review")
+    @step(30, "Admin", "watched word 'require approval'; Newcomer posts it; held; approve from /review")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/admin/customize/watched_words/action/require_approval")
@@ -1527,7 +1846,7 @@ def define_steps(run):
             pass
         expect_visible(page.locator(".watched-word", has_text=run.watched_word), "the watched word listed")
         run.state["watched_word_added"] = True
-        missing = [n for n in (13, 22) if not run.by_number(n).achieved]
+        missing = [n for n in (13, 27) if not run.by_number(n).achieved]
         if missing:
             s.miss("watched word added; the Newcomer's held post is skipped (needs "
                    + ", ".join(map(str, missing)) + ")")
@@ -1555,7 +1874,7 @@ def define_steps(run):
         # The status badge (statuses.approved_post: "Post approved").
         expect_visible(item.locator(".review-item__status.--approved"), "the held post shown approved")
 
-    @step(26, "Admin", "topic admin wrench: close, reopen, unlist", needs=[8])
+    @step(31, "Admin", "topic admin wrench: close, reopen, unlist", needs=[8])
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + run.state["new_topic"])
@@ -1574,7 +1893,7 @@ def define_steps(run):
         expect_visible(page.locator(".topic-statuses .d-icon-far-eye-slash, .topic-status .unlisted, .small-action", has_text=re.compile("unlisted", re.I)),
                        "the topic shown unlisted")
 
-    @step(27, "Admin", "dashboard, a report, the staff action log")
+    @step(32, "Admin", "dashboard, a report, the staff action log")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/latest")
@@ -1591,17 +1910,17 @@ def define_steps(run):
         expect_visible(page.locator("#main-outlet table tbody tr"), "the staff action log")
         text = page.locator("#main-outlet").inner_text().lower()
         expected = {}
-        if run.by_number(26).achieved:
-            expected["close"] = "step 26's close"
+        if run.by_number(31).achieved:
+            expected["close"] = "step 31's close"
         if run.state.get("watched_word_added"):
-            expected["watched"] = "step 25's watched word"
-        if run.by_number(22).achieved:
-            expected["activate"] = "step 22's activation"
+            expected["watched"] = "step 30's watched word"
+        if run.by_number(27).achieved:
+            expected["activate"] = "step 27's activation"
         absent = [what for word, what in expected.items() if word not in text]
         if absent:
             s.miss("the staff action log doesn't show " + ", ".join(absent))
 
-    @step(28, "Admin", "a list setting (authorized extensions), a plain one; customize a color palette")
+    @step(33, "Admin", "a list setting (authorized extensions), a plain one; customize a color palette")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/admin/site_settings?filter=authorized_extensions")
@@ -1680,10 +1999,10 @@ def define_steps(run):
         if saved.input_value().lower() != "cc3366":
             raise StepFail(f"the changed color didn't save (it reads {saved.input_value()})")
 
-    @step(29, "Admin", "silence a member, show their system message; unsilence")
+    @step(34, "Admin", "silence a member, show their system message; unsilence")
     def _(run, s):
         page = run.persona("Admin").use()
-        target = "Newcomer" if run.by_number(22).achieved else "Second member"
+        target = "Newcomer" if run.by_number(27).achieved else "Second member"
         username = run.persona(target).username
         s.notes.append(f"silencing {target} ({username})")
         admin_user_page(run, page, username)
@@ -1738,7 +2057,7 @@ def define_steps(run):
         expect_visible(page.locator(".silence-user"), "the user unsilenced")
         run.state["silenced"] = None
 
-    @step(30, "Admin", "/admin/plugins: turn on Assign, Policy, User Notes, Gamification and Post Voting")
+    @step(35, "Admin", "/admin/plugins: turn on Assign, Policy, User Notes, Gamification and Post Voting")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/latest")
@@ -1763,7 +2082,7 @@ def define_steps(run):
         if not_kept:
             raise StepFail("switched on but off after a reload: " + ", ".join(not_kept))
 
-    @step(31, "Admin", "a new category with the Support and Ideas types (Solved, Topic Voting)")
+    @step(36, "Admin", "a new category with the Support and Ideas types (Solved, Topic Voting)")
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/categories")
@@ -1784,7 +2103,7 @@ def define_steps(run):
         expect_visible(page.locator("#navigation-bar").get_by_text(re.compile(r"^\s*Votes\s*$")),
                        "the category's Votes list in its navigation")
 
-    @step(32, "Member", "ask in that category; Second member votes for it and answers", needs=[31])
+    @step(37, "Member", "ask in that category; Second member votes for it and answers", needs=[36])
     def _(run, s):
         page = run.persona("Member").use()
         page.goto(run.base + run.state["category_path"])
@@ -1818,7 +2137,7 @@ def define_steps(run):
         if voted.get_attribute("data-user-voted") != "true":
             raise StepFail("the vote wasn't kept after a reload")
 
-    @step(33, "Member", "accept the answer as the solution; the title shows it solved", needs=[32])
+    @step(38, "Member", "accept the answer as the solution; the title shows it solved", needs=[37])
     def _(run, s):
         page = run.persona("Member").use()
         page.goto(run.base + run.state["question"])
@@ -1835,7 +2154,7 @@ def define_steps(run):
         page.reload()
         expect_visible(page.locator("#topic-title .topic-status.--solved"), "the solved status after a reload")
 
-    @step(34, "Second member", "a reaction other than a like, from the reaction picker", needs=[32])
+    @step(39, "Second member", "a reaction other than a like, from the reaction picker", needs=[37])
     def _(run, s):
         page = run.persona("Second member").use()
         page.goto(run.base + run.state["question"])
@@ -1850,7 +2169,7 @@ def define_steps(run):
         expect_visible(page.locator(f"#discourse-reactions-list-emoji-{post_id}-clap"), "the clap in the post's reactions")
         run.leave("user0's clap reaction on the question")
 
-    @step(35, "Admin", "assign the question to the Moderator from the footer; it redraws in place", needs=[30, 32])
+    @step(40, "Admin", "assign the question to the Moderator from the footer; it redraws in place", needs=[35, 37])
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + run.state["question"])
@@ -1868,7 +2187,7 @@ def define_steps(run):
             raise StepFail("the page reloaded to show the assignment")
         run.leave(f"the question assigned to {PERSONAS['Moderator']}")
 
-    @step(36, "Admin", "a policy in a reply; Second member accepts it", needs=[30, 32])
+    @step(41, "Admin", "a policy in a reply; Second member accepts it", needs=[35, 37])
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + run.state["question"])
@@ -1899,7 +2218,7 @@ def define_steps(run):
         expect_visible(policy.locator(".toggle-accepted .user-count", has_text=re.compile(r"^\s*1\s*$")), "one acceptance counted")
         run.leave("user0's acceptance of the policy")
 
-    @step(37, "Moderator", "a staff note on Second member from their profile", needs=[30])
+    @step(42, "Moderator", "a staff note on Second member from their profile", needs=[35])
     def _(run, s):
         page = run.persona("Moderator").use()
         page.goto(run.base + f"/u/{PERSONAS['Second member']}/summary")
@@ -1917,7 +2236,7 @@ def define_steps(run):
         expect_visible(page.locator(".d-modal .user-note", has_text=note), "the note kept after a reload")
         page.keyboard.press("Escape")
 
-    @step(38, "Admin", "Gamification: recalculate the scores, then the leaderboard", needs=[30])
+    @step(43, "Admin", "Gamification: recalculate the scores, then the leaderboard", needs=[35])
     def _(run, s):
         page = run.persona("Admin").use()
         page.goto(run.base + "/admin/plugins/discourse-gamification/leaderboards")
@@ -1939,7 +2258,7 @@ def define_steps(run):
         names = page.locator(".podium .winner__name").all_inner_texts()
         s.notes.append("podium: " + ", ".join(n.strip() for n in names))
 
-    @step(39, "Member", "a post voting topic from the composer's actions menu; its vote controls", needs=[30])
+    @step(44, "Member", "a post voting topic from the composer's actions menu; its vote controls", needs=[35])
     def _(run, s):
         page = run.persona("Member").use()
         page.goto(run.base + "/latest")
@@ -1969,7 +2288,7 @@ def define_steps(run):
 
 
 def cleanup(run):
-    """What the UI allows: the watched word, a silence or setting left in place, the palette, the chat webhook and channel, the plugins turned on."""
+    """What the UI allows: the watched word, a silence or setting left in place, the palette, the chat webhook and channel, chat archiving, the plugins turned on."""
     admin = run.personas.get("Admin")
     if not admin or not admin.page:
         return
@@ -2070,6 +2389,15 @@ def cleanup(run):
             run.left_behind[:] = [x for x in run.left_behind if not x.startswith(f"chat channel '{name}'")]
             run.leave(f"the deleted channel '{name}' (trashed) with its messages")
         attempt(f"deleted the chat channel {name}", channel, f"chat channel '{name}' at {path}")
+    if run.state.get("archiving_turned_on"):
+        def archiving():
+            page.goto(run.base + "/admin/site_settings?filter=chat_allow_archiving_channels")
+            row = expect_visible(page.locator(".row.setting[data-setting='chat_allow_archiving_channels']"), "the archiving setting")
+            if row.locator("input[type=checkbox]").first.is_checked():
+                row.locator("label.form-kit__control-checkbox-label").first.click()
+            expect_visible(row.locator(".setting-controls__ok"), "the setting's save button").click()
+            expect_gone(row.locator(".setting-controls__ok"), "the archiving setting saved")
+        attempt("switched chat_allow_archiving_channels back off", archiving, "chat_allow_archiving_channels left on")
     if run.state.get("plugins_turned_on"):
         def plugins():
             page.goto(run.base + "/admin/plugins")
@@ -2094,6 +2422,7 @@ def main():
     parser.add_argument("--url", default="http://127.0.0.1:8080")
     parser.add_argument("--out", required=True, help="output directory, must not exist")
     parser.add_argument("--server-log", help="the server's log file, to attach its request errors to each step")
+    parser.add_argument("--build", help="identity of the tested server binary, such as its commit or SHA-256")
     parser.add_argument("--only", help="comma-separated step numbers to run (the rest are skipped)")
     parser.add_argument("--headed", action="store_true")
     args = parser.parse_args()

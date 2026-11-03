@@ -63,7 +63,7 @@ pub async fn assigned_topics(
     let assignees = Assignees::load(&mut *conn, &refs).await?;
     let authors: Vec<i32> = rows.iter().filter_map(|r| r.user_id).collect();
     let authors = Assignees::load_ids(&mut *conn, &authors, &[]).await?;
-    let logo = crate::admin_users::logo_small_url(&mut *conn, settings).await?;
+    let logo = crate::admin::users::logo_small_url(&mut *conn, settings).await?;
     let cx = Cx {
         settings,
         urls,

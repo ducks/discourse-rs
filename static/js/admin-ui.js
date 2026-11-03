@@ -1,5 +1,5 @@
 // What the advanced and customize admin pages' scripts share
-// (src/admin_ui.rs draws their markup), and the review queue's filters:
+// (src/admin/ui.rs draws their markup), and the review queue's filters:
 //
 //   Discourse.adminUi.t(key, args)      the page's strings (a JSON block
 //                                       read by strings(id)), `%{name}`
@@ -281,7 +281,7 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ComboBox (src/admin_ui.rs combo_box): its rows drawn as it opens; a
+  // ComboBox (src/admin/ui.rs combo_box): its rows drawn as it opens; a
   // row chosen becomes the header's and fires `change` on the details,
   // its value in data-value.
   document.addEventListener(
@@ -458,7 +458,7 @@
     chooser.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
-  // DMultiSelect (src/admin_ui.rs multi_select_trigger): the menu with its
+  // DMultiSelect (src/admin/ui.rs multi_select_trigger): the menu with its
   // search and results from the loader the page registers for the
   // trigger's class; a result chosen joins the selection, a selected item
   // clicked leaves it. `change` fires on the trigger.

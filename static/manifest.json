@@ -1,0 +1,1055 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "name": "discourse.css",
+      "content_type": "css",
+      "files": [
+        "vendor/normalize.css",
+        "css/foundation.css",
+        "css/select-kit.css",
+        "css/ace-editor.css",
+        "css/buttons.css",
+        "css/d-icon.css",
+        "css/header.css",
+        "css/menu-panel.css",
+        "css/navs.css",
+        "css/welcome-banner.css",
+        "css/topic-list.css",
+        "css/categories.css",
+        "css/sidebar.css",
+        "css/cooked.css",
+        "css/lightbox.css",
+        "css/onebox.css",
+        "css/personal-message.css",
+        "css/topic.css",
+        "css/user.css",
+        "css/preferences.css",
+        "css/user-notifications.css",
+        "css/user-activity.css",
+        "css/badges.css",
+        "css/user-stream.css",
+        "css/user-card.css",
+        "css/composer.css",
+        "css/kit.css",
+        "css/modal.css",
+        "css/date-picker.css",
+        "css/form-kit.css",
+        "css/design-wizard.css",
+        "css/d-multi-select.css",
+        "css/menus.css",
+        "css/directory.css",
+        "css/groups.css",
+        "css/search.css",
+        "css/search-menu.css",
+        "css/tooltip.css",
+        "css/filter-controls.css",
+        "css/theme-card.css",
+        "css/not-found.css",
+        "css/about.css",
+        "css/d-page-header.css",
+        "css/admin-kit.css",
+        "css/preferences-more.css",
+        "css/preferences-security.css",
+        "css/file-uploader.css",
+        "css/date-time-input.css",
+        "css/segmented-control.css",
+        "css/powered-by.css",
+        "css/review.css",
+        "css/topic-voting.css",
+        "css/discourse-reactions.css",
+        "css/discourse-solved.css",
+        "css/discourse-assign.css",
+        "css/post-voting.css",
+        "css/discourse-presence.css",
+        "css/chat.css",
+        "css/checklist.css",
+        "css/cakeday.css",
+        "css/gamification.css",
+        "css/discourse-details.css",
+        "css/discourse-local-dates.css",
+        "css/discourse-narrative-bot.css",
+        "css/discourse-policy.css",
+        "css/graphviz.css",
+        "css/discourse-math.css",
+        "css/discourse-templates.css",
+        "css/footnote.css",
+        "css/poll.css",
+        "css/spoiler-alert.css",
+        "css/user-notes.css",
+        "css/invites.css",
+        "css/mobile.css",
+        "css/admin-mcp.css"
+      ]
+    },
+    {
+      "name": "styleguide.css",
+      "content_type": "css",
+      "files": [
+        "css/styleguide.css"
+      ]
+    },
+    {
+      "name": "site.css",
+      "content_type": "css",
+      "files": [
+        "site.css"
+      ]
+    },
+    {
+      "name": "htmx.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/htmx.min.js"
+      ]
+    },
+    {
+      "name": "htmx-ext-sse.js",
+      "content_type": "js",
+      "files": [
+        "vendor/htmx-ext-sse.js"
+      ]
+    },
+    {
+      "name": "ace-editor-bundle.js",
+      "content_type": "js",
+      "files": [
+        "vendor/ace/ace.js",
+        "vendor/ace/mode-scss.js",
+        "vendor/ace/mode-html.js",
+        "vendor/ace/mode-yaml.js",
+        "vendor/ace/mode-sql.js",
+        "vendor/ace/mode-javascript.js",
+        "vendor/ace/mode-text.js",
+        "vendor/ace/theme-chaos.js",
+        "vendor/ace/theme-chrome.js",
+        "vendor/ace/ext-searchbox.js"
+      ],
+      "separator": "\n"
+    },
+    {
+      "name": "floating-ui.core.umd.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/floating-ui.core.umd.min.js"
+      ]
+    },
+    {
+      "name": "floating-ui.dom.umd.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/floating-ui.dom.umd.min.js"
+      ]
+    },
+    {
+      "name": "page.js",
+      "content_type": "js",
+      "files": [
+        "js/page.js"
+      ]
+    },
+    {
+      "name": "dates.js",
+      "content_type": "js",
+      "files": [
+        "js/dates.js"
+      ]
+    },
+    {
+      "name": "avatars.js",
+      "content_type": "js",
+      "files": [
+        "js/avatars.js"
+      ]
+    },
+    {
+      "name": "float.js",
+      "content_type": "js",
+      "files": [
+        "js/float.js"
+      ]
+    },
+    {
+      "name": "interface-color.js",
+      "content_type": "js",
+      "files": [
+        "js/interface-color.js"
+      ]
+    },
+    {
+      "name": "auth-complete.js",
+      "content_type": "js",
+      "files": [
+        "js/auth-complete.js"
+      ]
+    },
+    {
+      "name": "user-card.js",
+      "content_type": "js",
+      "files": [
+        "js/user-card.js"
+      ]
+    },
+    {
+      "name": "inline-footnotes.js",
+      "content_type": "js",
+      "files": [
+        "js/inline-footnotes.js"
+      ]
+    },
+    {
+      "name": "local-dates.js",
+      "content_type": "js",
+      "files": [
+        "js/local-dates.js"
+      ]
+    },
+    {
+      "name": "local-dates-create.js",
+      "content_type": "js",
+      "files": [
+        "js/local-dates-create.js"
+      ]
+    },
+    {
+      "name": "pikaday.js",
+      "content_type": "js",
+      "files": [
+        "vendor/pikaday/pikaday.js"
+      ]
+    },
+    {
+      "name": "moment.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/moment/moment.min.js"
+      ]
+    },
+    {
+      "name": "moment-timezone-with-data-10-year-range.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/moment/moment-timezone-with-data-10-year-range.min.js"
+      ]
+    },
+    {
+      "name": "hashtags.js",
+      "content_type": "js",
+      "files": [
+        "js/hashtags.js"
+      ]
+    },
+    {
+      "name": "tag-info.js",
+      "content_type": "js",
+      "files": [
+        "js/tag-info.js"
+      ]
+    },
+    {
+      "name": "welcome-banner.js",
+      "content_type": "js",
+      "files": [
+        "js/welcome-banner.js"
+      ]
+    },
+    {
+      "name": "top-period.js",
+      "content_type": "js",
+      "files": [
+        "js/top-period.js"
+      ]
+    },
+    {
+      "name": "empty-topic-filter.js",
+      "content_type": "js",
+      "files": [
+        "js/empty-topic-filter.js"
+      ]
+    },
+    {
+      "name": "topic-dismiss.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-dismiss.js"
+      ]
+    },
+    {
+      "name": "oneboxes.js",
+      "content_type": "js",
+      "files": [
+        "js/oneboxes.js"
+      ]
+    },
+    {
+      "name": "cooked.js",
+      "content_type": "js",
+      "files": [
+        "js/cooked.js"
+      ]
+    },
+    {
+      "name": "lightbox.js",
+      "content_type": "js",
+      "files": [
+        "js/lightbox.js"
+      ]
+    },
+    {
+      "name": "photoswipe-lightbox.esm.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/photoswipe-lightbox.esm.min.js"
+      ]
+    },
+    {
+      "name": "photoswipe.esm.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/photoswipe.esm.min.js"
+      ]
+    },
+    {
+      "name": "highlight-syntax.js",
+      "content_type": "js",
+      "files": [
+        "js/highlight-syntax.js"
+      ]
+    },
+    {
+      "name": "highlightjs-core.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/highlightjs/core.min.js"
+      ]
+    },
+    {
+      "name": "modal.js",
+      "content_type": "js",
+      "files": [
+        "js/modal.js"
+      ]
+    },
+    {
+      "name": "spoiler-alert.js",
+      "content_type": "js",
+      "files": [
+        "js/spoiler-alert.js"
+      ]
+    },
+    {
+      "name": "post-decorations.js",
+      "content_type": "js",
+      "files": [
+        "js/post-decorations.js"
+      ]
+    },
+    {
+      "name": "codeblock-buttons.js",
+      "content_type": "js",
+      "files": [
+        "js/codeblock-buttons.js"
+      ]
+    },
+    {
+      "name": "quote-controls.js",
+      "content_type": "js",
+      "files": [
+        "js/quote-controls.js"
+      ]
+    },
+    {
+      "name": "quote-button.js",
+      "content_type": "js",
+      "files": [
+        "js/quote-button.js"
+      ]
+    },
+    {
+      "name": "sidebar.js",
+      "content_type": "js",
+      "files": [
+        "js/sidebar.js"
+      ]
+    },
+    {
+      "name": "invite.js",
+      "content_type": "js",
+      "files": [
+        "js/invite.js"
+      ]
+    },
+    {
+      "name": "login.js",
+      "content_type": "js",
+      "files": [
+        "js/login.js"
+      ]
+    },
+    {
+      "name": "user-invited.js",
+      "content_type": "js",
+      "files": [
+        "js/user-invited.js"
+      ]
+    },
+    {
+      "name": "admin.css",
+      "content_type": "css",
+      "files": [
+        "vendor/admin.css"
+      ]
+    },
+    {
+      "name": "wizard.css",
+      "content_type": "css",
+      "files": [
+        "vendor/wizard.css"
+      ]
+    },
+    {
+      "name": "discourse-solved-admin.css",
+      "content_type": "css",
+      "files": [
+        "vendor/discourse-solved-admin.css"
+      ]
+    },
+    {
+      "name": "admin.js",
+      "content_type": "js",
+      "files": [
+        "js/admin.js"
+      ]
+    },
+    {
+      "name": "admin-dashboard.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-dashboard.js"
+      ]
+    },
+    {
+      "name": "admin-users.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-users.js"
+      ]
+    },
+    {
+      "name": "admin-user.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-user.js"
+      ]
+    },
+    {
+      "name": "penalize-user.js",
+      "content_type": "js",
+      "files": [
+        "js/penalize-user.js"
+      ]
+    },
+    {
+      "name": "flag-modal.js",
+      "content_type": "js",
+      "files": [
+        "js/flag-modal.js"
+      ]
+    },
+    {
+      "name": "site-settings.js",
+      "content_type": "js",
+      "files": [
+        "js/site-settings.js"
+      ]
+    },
+    {
+      "name": "admin-reports.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-reports.js"
+      ]
+    },
+    {
+      "name": "admin-logs.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-logs.js"
+      ]
+    },
+    {
+      "name": "admin-ui.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-ui.js"
+      ]
+    },
+    {
+      "name": "admin-backups.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-backups.js"
+      ]
+    },
+    {
+      "name": "admin-api-keys.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-api-keys.js"
+      ]
+    },
+    {
+      "name": "admin-report-charts.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-report-charts.js"
+      ]
+    },
+    {
+      "name": "admin-report.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-report.js"
+      ]
+    },
+    {
+      "name": "admin-config.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-config.js"
+      ]
+    },
+    {
+      "name": "admin-emoji.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-emoji.js"
+      ]
+    },
+    {
+      "name": "admin-branding.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-branding.js"
+      ]
+    },
+    {
+      "name": "popular-themes.js",
+      "content_type": "js",
+      "files": [
+        "js/popular-themes.js"
+      ]
+    },
+    {
+      "name": "admin-customize.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-customize.js"
+      ]
+    },
+    {
+      "name": "admin-category-management.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-category-management.js"
+      ]
+    },
+    {
+      "name": "date-range-picker.js",
+      "content_type": "js",
+      "files": [
+        "js/date-range-picker.js"
+      ]
+    },
+    {
+      "name": "admin-mcp.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-mcp.js"
+      ]
+    },
+    {
+      "name": "admin-search.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-search.js"
+      ]
+    },
+    {
+      "name": "admin-upcoming-changes.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-upcoming-changes.js"
+      ]
+    },
+    {
+      "name": "admin-whats-new.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-whats-new.js"
+      ]
+    },
+    {
+      "name": "admin-web-hooks.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-web-hooks.js"
+      ]
+    },
+    {
+      "name": "admin-email.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-email.js"
+      ]
+    },
+    {
+      "name": "admin-problem-checks.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-problem-checks.js"
+      ]
+    },
+    {
+      "name": "admin-badges.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-badges.js"
+      ]
+    },
+    {
+      "name": "admin-plugins.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-plugins.js"
+      ]
+    },
+    {
+      "name": "dialog.js",
+      "content_type": "js",
+      "files": [
+        "js/dialog.js"
+      ]
+    },
+    {
+      "name": "chart.umd.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/chart.umd.min.js"
+      ]
+    },
+    {
+      "name": "chartjs-adapter-moment.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/chartjs-adapter-moment.min.js"
+      ]
+    },
+    {
+      "name": "navigation-bar.js",
+      "content_type": "js",
+      "files": [
+        "js/navigation-bar.js"
+      ]
+    },
+    {
+      "name": "topic.js",
+      "content_type": "js",
+      "files": [
+        "js/topic.js"
+      ]
+    },
+    {
+      "name": "post-stream.js",
+      "content_type": "js",
+      "files": [
+        "js/post-stream.js"
+      ]
+    },
+    {
+      "name": "discovery-topic-list.js",
+      "content_type": "js",
+      "files": [
+        "js/discovery-topic-list.js"
+      ]
+    },
+    {
+      "name": "topic-admin-menu.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-admin-menu.js"
+      ]
+    },
+    {
+      "name": "add-pm-participants.js",
+      "content_type": "js",
+      "files": [
+        "js/add-pm-participants.js"
+      ]
+    },
+    {
+      "name": "header-topic-info.js",
+      "content_type": "js",
+      "files": [
+        "js/header-topic-info.js"
+      ]
+    },
+    {
+      "name": "discourse-reactions.js",
+      "content_type": "js",
+      "files": [
+        "js/discourse-reactions.js"
+      ]
+    },
+    {
+      "name": "discourse-solved.js",
+      "content_type": "js",
+      "files": [
+        "js/discourse-solved.js"
+      ]
+    },
+    {
+      "name": "discourse-assign.js",
+      "content_type": "js",
+      "files": [
+        "js/discourse-assign.js"
+      ]
+    },
+    {
+      "name": "poll.js",
+      "content_type": "js",
+      "files": [
+        "js/poll.js"
+      ]
+    },
+    {
+      "name": "poll-builder.js",
+      "content_type": "js",
+      "files": [
+        "js/poll-builder.js"
+      ]
+    },
+    {
+      "name": "checklist.js",
+      "content_type": "js",
+      "files": [
+        "js/checklist.js"
+      ]
+    },
+    {
+      "name": "cakeday.js",
+      "content_type": "js",
+      "files": [
+        "js/cakeday.js"
+      ]
+    },
+    {
+      "name": "discourse-captcha.js",
+      "content_type": "js",
+      "files": [
+        "js/discourse-captcha.js"
+      ]
+    },
+    {
+      "name": "gamification.js",
+      "content_type": "js",
+      "files": [
+        "js/gamification.js"
+      ]
+    },
+    {
+      "name": "policy.js",
+      "content_type": "js",
+      "files": [
+        "js/policy.js"
+      ]
+    },
+    {
+      "name": "graphviz.js",
+      "content_type": "js",
+      "files": [
+        "js/graphviz.js"
+      ]
+    },
+    {
+      "name": "plugins/discourse-graphviz/javascripts/viz-3.0.1.js",
+      "content_type": "js",
+      "files": [
+        "vendor/viz/viz-3.0.1.js"
+      ]
+    },
+    {
+      "name": "discourse-math.js",
+      "content_type": "js",
+      "files": [
+        "js/discourse-math.js"
+      ]
+    },
+    {
+      "name": "templates.js",
+      "content_type": "js",
+      "files": [
+        "js/templates.js"
+      ]
+    },
+    {
+      "name": "chat.js",
+      "content_type": "js",
+      "files": [
+        "js/chat.js"
+      ]
+    },
+    {
+      "name": "chat-thread.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-thread.js"
+      ]
+    },
+    {
+      "name": "chat-drawer.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-drawer.js"
+      ]
+    },
+    {
+      "name": "chat-new-message.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-new-message.js"
+      ]
+    },
+    {
+      "name": "chat-channel-menus.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-channel-menus.js"
+      ]
+    },
+    {
+      "name": "chat-channel-info.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-channel-info.js"
+      ]
+    },
+    {
+      "name": "chat-search.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-search.js"
+      ]
+    },
+    {
+      "name": "chat-admin.js",
+      "content_type": "js",
+      "files": [
+        "js/chat-admin.js"
+      ]
+    },
+    {
+      "name": "emoji-picker.js",
+      "content_type": "js",
+      "files": [
+        "js/emoji-picker.js"
+      ]
+    },
+    {
+      "name": "autocomplete.js",
+      "content_type": "js",
+      "files": [
+        "js/autocomplete.js"
+      ]
+    },
+    {
+      "name": "presence.js",
+      "content_type": "js",
+      "files": [
+        "js/presence.js"
+      ]
+    },
+    {
+      "name": "topic-presence.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-presence.js"
+      ]
+    },
+    {
+      "name": "post-voting.js",
+      "content_type": "js",
+      "files": [
+        "js/post-voting.js"
+      ]
+    },
+    {
+      "name": "topic-voting.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-voting.js"
+      ]
+    },
+    {
+      "name": "user-notes.js",
+      "content_type": "js",
+      "files": [
+        "js/user-notes.js"
+      ]
+    },
+    {
+      "name": "tracking-menu.js",
+      "content_type": "js",
+      "files": [
+        "js/tracking-menu.js"
+      ]
+    },
+    {
+      "name": "messages-dropdown.js",
+      "content_type": "js",
+      "files": [
+        "js/messages-dropdown.js"
+      ]
+    },
+    {
+      "name": "users-directory.js",
+      "content_type": "js",
+      "files": [
+        "js/users-directory.js"
+      ]
+    },
+    {
+      "name": "user-menu.js",
+      "content_type": "js",
+      "files": [
+        "js/user-menu.js"
+      ]
+    },
+    {
+      "name": "user-notifications.js",
+      "content_type": "js",
+      "files": [
+        "js/user-notifications.js"
+      ]
+    },
+    {
+      "name": "preferences.js",
+      "content_type": "js",
+      "files": [
+        "js/preferences.js"
+      ]
+    },
+    {
+      "name": "prefs-choosers.js",
+      "content_type": "js",
+      "files": [
+        "js/prefs-choosers.js"
+      ]
+    },
+    {
+      "name": "prefs-security.js",
+      "content_type": "js",
+      "files": [
+        "js/prefs-security.js"
+      ]
+    },
+    {
+      "name": "notifications-page.js",
+      "content_type": "js",
+      "files": [
+        "js/notifications-page.js"
+      ]
+    },
+    {
+      "name": "review.js",
+      "content_type": "js",
+      "files": [
+        "js/review.js"
+      ]
+    },
+    {
+      "name": "user-activity.js",
+      "content_type": "js",
+      "files": [
+        "js/user-activity.js"
+      ]
+    },
+    {
+      "name": "overflow-controls.js",
+      "content_type": "js",
+      "files": [
+        "js/overflow-controls.js"
+      ]
+    },
+    {
+      "name": "groups.js",
+      "content_type": "js",
+      "files": [
+        "js/groups.js"
+      ]
+    },
+    {
+      "name": "category-edit.js",
+      "content_type": "js",
+      "files": [
+        "js/category-edit.js"
+      ]
+    },
+    {
+      "name": "search-page.js",
+      "content_type": "js",
+      "files": [
+        "js/search-page.js"
+      ]
+    },
+    {
+      "name": "search-advanced.js",
+      "content_type": "js",
+      "files": [
+        "js/search-advanced.js"
+      ]
+    },
+    {
+      "name": "search-menu.js",
+      "content_type": "js",
+      "files": [
+        "js/search-menu.js"
+      ]
+    },
+    {
+      "name": "email-group-user-chooser.js",
+      "content_type": "js",
+      "files": [
+        "js/email-group-user-chooser.js"
+      ]
+    },
+    {
+      "name": "composer.js",
+      "content_type": "js",
+      "files": [
+        "js/composer.js"
+      ]
+    },
+    {
+      "name": "screen-track.js",
+      "content_type": "js",
+      "files": [
+        "js/screen-track.js"
+      ]
+    },
+    {
+      "name": "js/onpopstate-handler.js",
+      "content_type": "js",
+      "files": [
+        "js/onpopstate-handler.js"
+      ]
+    },
+    {
+      "name": "submit-on-load-lti.js",
+      "content_type": "js",
+      "files": [
+        "js/submit-on-load-lti.js"
+      ]
+    }
+  ]
+}

@@ -68,7 +68,7 @@ pub async fn tl_met(
         1 => "tl1",
         2 => "tl2",
         3 => {
-            let (met, _) = crate::admin_user_show::tl3_met_lost(conn, s, user_id).await?;
+            let (met, _) = crate::admin::user_show::tl3_met_lost(conn, s, user_id).await?;
             return Ok(Some(met));
         }
         _ => return Ok(None),
@@ -130,7 +130,7 @@ pub async fn tl3_lost(
     s: &SiteSettings,
     user_id: i32,
 ) -> Result<bool, AppError> {
-    Ok(crate::admin_user_show::tl3_met_lost(conn, s, user_id)
+    Ok(crate::admin::user_show::tl3_met_lost(conn, s, user_id)
         .await?
         .1)
 }

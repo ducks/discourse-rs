@@ -133,7 +133,7 @@ impl Context<'_> {
         }
         let can_chat = super::enabled(self.settings)?
             && super::can_chat(&mut *self.conn, self.settings, self.guardian).await?;
-        let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+        let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
         let urls = crate::url::Urls {
             config: self.config,
             settings: self.settings,

@@ -1121,7 +1121,7 @@ pub async fn publish_topic_assignment(
             config: ctx.config,
             settings: ctx.settings,
         };
-        let logo = crate::admin_users::logo_small_url(&mut *conn, ctx.settings).await?;
+        let logo = crate::admin::users::logo_small_url(&mut *conn, ctx.settings).await?;
         Cx {
             settings: ctx.settings,
             urls: &urls,

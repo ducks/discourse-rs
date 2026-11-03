@@ -55,7 +55,7 @@ fn host(headers: &HeaderMap) -> &str {
 }
 
 /// The page in the no_ember layout, with the viewer's headers.
-pub(super) async fn render_page(
+pub(crate) async fn render_page(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,

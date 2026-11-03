@@ -11,9 +11,9 @@
 use chrono::{Datelike, Duration, NaiveDate, TimeZone, Utc};
 
 use super::{Leaderboard, PERIODS};
-use crate::admin_form_kit as fk;
-use crate::admin_ui::{Action, Button};
-use crate::admin_view::{AdminCx, t, t_count};
+use crate::admin::form_kit as fk;
+use crate::admin::ui::{Action, Button};
+use crate::admin::view::{AdminCx, t, t_count};
 use crate::topic_list_view::escape;
 
 /// The plugin's admin show route.
@@ -43,7 +43,7 @@ const FORM_KEYS: [&str; 15] = [
 /// The configuration nav as the plugin page's tabs: the settings, then
 /// the leaderboards (`addAdminPluginConfigurationNav`).
 pub fn config_nav(cx: &AdminCx, leaderboards: bool) -> String {
-    crate::admin_ui::tabs(
+    crate::admin::ui::tabs(
         cx,
         &[
             (
@@ -64,7 +64,7 @@ pub fn config_nav(cx: &AdminCx, leaderboards: bool) -> String {
 
 /// The strings gamification.js shows on the admin pages.
 pub fn strings(cx: &AdminCx) -> String {
-    crate::admin_ui::strings(
+    crate::admin::ui::strings(
         cx,
         "gamification-admin-strings",
         &[
@@ -96,7 +96,7 @@ fn format_day(d: NaiveDate, pattern: &str) -> String {
 fn period_cell(cx: &AdminCx, lb: &Leaderboard) -> String {
     let date = |d: Option<NaiveDate>| {
         d.map(|d| {
-            crate::admin_ui::format_date(
+            crate::admin::ui::format_date(
                 cx,
                 Utc.from_utc_datetime(&d.and_hms_opt(0, 0, 0).unwrap_or_default()),
                 false,
@@ -250,7 +250,7 @@ pub fn leaderboards(
     let actions = if leaderboards.is_empty() {
         String::new()
     } else {
-        crate::admin_ui::actions(
+        crate::admin::ui::actions(
             cx,
             "d-page-subheader",
             &[
@@ -270,7 +270,7 @@ pub fn leaderboards(
         )
     };
     let mut out = String::from("<div class=\"discourse-gamification__leaderboards admin-detail\">");
-    out.push_str(&crate::admin_ui::subheader(
+    out.push_str(&crate::admin::ui::subheader(
         &t(cx.i18n, "gamification.leaderboard.title"),
         &actions,
         None,
@@ -540,7 +540,7 @@ pub fn edit(
     f.push_str(&fk::submit("", &tr("submit")));
     format!(
         "<div class=\"admin-detail\">{}{}</div>",
-        crate::admin_ui::back_button(cx, LEADERBOARDS_PATH, "gamification.back"),
+        crate::admin::ui::back_button(cx, LEADERBOARDS_PATH, "gamification.back"),
         fk::form("edit-create-leaderboard-form", &f).replacen(
             "<form ",
             &format!("<form data-leaderboard-id=\"{}\" ", lb.id),

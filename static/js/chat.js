@@ -5153,6 +5153,7 @@
   var hashtagsDone = new WeakSet();
   var codeblocksDone = new WeakSet();
   var spoilersDone = new WeakSet();
+  var lightboxesDone = new WeakSet();
 
   function decorateMessages(root) {
     var codeblocks = extras(root.closest(".chat-channel[data-id]") || root).codeblockButtons === "true";
@@ -5174,6 +5175,12 @@
       if (Discourse.applySpoilers && !spoilersDone.has(cooked)) {
         spoilersDone.add(cooked);
         Discourse.applySpoilers(cooked);
+      }
+      // chat-decorators' lightbox: the images Chat::MessageProcessor
+      // marked (lightbox.js).
+      if (Discourse.lightbox && !lightboxesDone.has(cooked) && cooked.querySelector(".lightbox")) {
+        lightboxesDone.add(cooked);
+        Discourse.lightbox(cooked);
       }
     });
   }
@@ -5810,7 +5817,8 @@
         var picked = buttons.filter(function (b) {
           return b.id === button.dataset.id;
         })[0];
-        menu.close();
+        // The action can focus the composer or a modal before closing finishes.
+        menu.close({ focusTrigger: false });
         if (picked) {
           picked.action(context, textarea);
         }

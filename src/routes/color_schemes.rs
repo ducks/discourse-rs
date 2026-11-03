@@ -164,7 +164,7 @@ pub async fn show(
         // the route back to the list.
         return match found {
             Some(scheme) => {
-                super::admin_customize::color_palette_page(
+                crate::admin::routes::customize::color_palette_page(
                     &state,
                     &guardian,
                     &headers,

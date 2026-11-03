@@ -224,7 +224,7 @@ impl Context<'_> {
                     config: self.config,
                     settings: s,
                 };
-                let logo = crate::admin_users::logo_small_url(&mut *self.conn, s).await?;
+                let logo = crate::admin::users::logo_small_url(&mut *self.conn, s).await?;
                 out.insert(
                     "avatar_template".into(),
                     json!(crate::avatar::avatar_template(

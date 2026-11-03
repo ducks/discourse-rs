@@ -65,7 +65,7 @@ async fn a_flag_opens_a_reviewable_and_tells_the_flagger_and_staff() {
     .fetch_one(&db.pool)
     .await
     .unwrap();
-    assert_eq!(kind, "Chat::ReviewableMessage");
+    assert_eq!(kind, "ReviewableChatMessage");
     assert_eq!(target_type, "ChatMessage");
     assert_eq!((by, target_by, spam_flag), (3, Some(2), true));
     assert_eq!(payload, json!({"message_cooked": "<p>buy stuff</p>"}));

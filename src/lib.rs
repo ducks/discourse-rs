@@ -1,85 +1,31 @@
 pub mod about;
 pub mod about_view;
 pub mod accounts;
-pub mod admin_about_view;
-pub mod admin_api_keys_view;
-pub mod admin_backups_view;
-pub mod admin_badges;
-pub mod admin_badges_view;
-pub mod admin_branding_view;
-pub mod admin_category_management_view;
-pub mod admin_code_view;
-pub mod admin_colors_view;
-pub mod admin_config_view;
-pub mod admin_confirmation;
-pub mod admin_create;
-pub mod admin_customize_kit;
-pub mod admin_customize_view;
-pub mod admin_dashboard;
-pub mod admin_dashboard_headlines;
-pub mod admin_dashboard_traffic;
-pub mod admin_dashboard_view;
-pub mod admin_email_view;
-pub mod admin_embedding_view;
-pub mod admin_emoji_view;
-pub mod admin_flags;
-pub mod admin_form_kit;
-pub mod admin_groups_view;
-pub mod admin_logs_view;
-pub mod admin_mcp_view;
-pub mod admin_plugins;
-pub mod admin_plugins_view;
-pub mod admin_problem_checks_view;
-pub mod admin_report_view;
-pub mod admin_reports_view;
-pub mod admin_search;
-pub mod admin_search_view;
-pub mod admin_setting_links;
-pub mod admin_site_settings;
-pub mod admin_site_settings_view;
-pub mod admin_site_texts_view;
-pub mod admin_theme_view;
-pub mod admin_themes_view;
-pub mod admin_traffic_explorer;
-pub mod admin_ui;
-pub mod admin_upcoming_changes_view;
-pub mod admin_user_show;
-pub mod admin_user_view;
-pub mod admin_users;
-pub mod admin_users_view;
-pub mod admin_view;
-pub mod admin_web_hooks_view;
-pub mod admin_whats_new_view;
+pub mod admin;
 pub mod age_words;
 pub mod anonymous_cache;
-pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod backup_restore;
-pub mod badge_granter;
-pub mod badge_preview;
-pub mod badges_page;
-pub mod badges_view;
+pub mod badges;
+pub use badges::{
+    granter as badge_granter, page as badges_page, preview as badge_preview, view as badges_view,
+};
 pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod browser_pageviews;
-pub mod bulk_invite;
 pub mod bus;
 pub mod categories;
-pub mod categories_view;
-pub mod category;
-pub mod category_badge;
-pub mod category_edit_view;
-pub mod category_list;
-pub mod category_serializer;
-pub mod category_type_config;
-pub mod category_types;
-pub mod category_writes;
+pub use categories::{
+    badge as category_badge, edit_view as category_edit_view, list as category_list,
+    model as category, serializer as category_serializer, type_config as category_type_config,
+    types as category_types, view as categories_view, writes as category_writes,
+};
 pub mod cli;
 pub mod clock;
 pub mod color_mode;
 pub mod color_scheme;
-pub mod composer_view;
+pub mod composer;
 pub mod config;
 pub mod cose;
 pub mod current_user;
@@ -109,11 +55,10 @@ pub mod final_destination;
 pub mod flag_modal_view;
 pub mod flags;
 pub mod form_templates;
-pub mod group_manager;
-pub mod group_message;
-pub mod group_writes;
 pub mod groups;
-pub mod groups_view;
+pub use groups::{
+    manager as group_manager, message as group_message, view as groups_view, writes as group_writes,
+};
 pub mod guardian;
 pub mod hashtag_decorator;
 pub mod hashtags;
@@ -128,9 +73,8 @@ pub mod i18n;
 pub mod images;
 pub mod impersonation;
 pub mod incoming_link;
-pub mod invite_mailer;
-pub mod invite_page_view;
 pub mod invites;
+pub use invites::{bulk as bulk_invite, mailer as invite_mailer, view as invite_page_view};
 pub mod jobs;
 pub mod letter_avatar;
 pub mod likes;
@@ -138,7 +82,11 @@ pub mod login_page_view;
 pub mod mcp;
 pub mod mcp_clients;
 pub mod message_format;
-pub mod messages_view;
+pub mod messages;
+pub use messages::{
+    archive as archived_messages, invite as pm_invite, lists as pm_lists,
+    tracking as pm_tracking_state, view as messages_view,
+};
 pub mod mobile;
 pub mod modifications;
 pub mod moment_locale;
@@ -146,10 +94,11 @@ pub mod multisite;
 pub mod mustache;
 pub mod new_features;
 pub mod not_found_page;
-pub mod notification_create;
-pub mod notification_emailer;
-pub mod notification_schedule;
 pub mod notifications;
+pub use notifications::{
+    create as notification_create, emailer as notification_emailer,
+    schedule as notification_schedule,
+};
 pub mod object_storage;
 pub mod onebox;
 pub mod optimized_images;
@@ -161,15 +110,12 @@ pub mod permalinks;
 pub mod plugin_api;
 pub mod plugin_wasm;
 pub mod plugins;
-pub mod pm_invite;
-pub mod pm_lists;
-pub mod pm_tracking_state;
-pub mod post_actions;
-pub mod post_destroyer;
-pub mod post_mover;
-pub mod post_owner_changer;
-pub mod post_view;
 pub mod posting;
+pub mod posts;
+pub use posts::{
+    actions as post_actions, destroyer as post_destroyer, mover as post_mover,
+    owner_changer as post_owner_changer, view as post_view,
+};
 pub mod preferences_view;
 pub mod presence;
 pub mod pretty_text;
@@ -184,12 +130,10 @@ pub mod request_tracker;
 pub mod request_tracking;
 pub mod retrieve_title;
 pub mod review;
-pub mod review_list;
-pub mod review_posts;
-pub mod review_view;
-pub mod reviewable_claims;
-pub mod reviewable_user;
-pub mod reviewables;
+pub use review::{
+    claims as reviewable_claims, list as review_list, posts as review_posts, reviewables,
+    user as reviewable_user, view as review_view,
+};
 pub mod roles;
 pub mod routes;
 pub mod ruby;
@@ -200,10 +144,10 @@ pub mod schema;
 pub mod schema_objects;
 pub mod screened;
 pub mod search;
-pub mod search_advanced_view;
-pub mod search_logs;
-pub mod search_menu_view;
-pub mod search_view;
+pub use search::{
+    advanced_view as search_advanced_view, logs as search_logs, menu_view as search_menu_view,
+    view as search_view,
+};
 pub mod second_factor;
 pub mod second_factor_auth;
 pub mod seed_topics;
@@ -226,52 +170,39 @@ pub mod stylesheet;
 pub mod svg_sprite;
 pub mod svg_sprite_xml;
 pub mod system_message;
-pub mod system_themes;
-pub mod tag_groups;
-pub mod tag_writes;
-pub mod tagging;
 pub mod tags;
-pub mod theme_cache;
-pub mod theme_html;
-pub mod theme_import;
-pub mod theme_writes;
+pub use tags::{groups as tag_groups, tagging, writes as tag_writes};
 pub mod themes;
-pub mod topic_converter;
-pub mod topic_guardian;
-pub mod topic_list;
-pub mod topic_list_view;
-pub mod topic_query;
-pub mod topic_status;
-pub mod topic_timer;
-pub mod topic_tracking_report;
-pub mod topic_tracking_state;
-pub mod topic_view;
-pub mod topics_bulk;
+pub use themes::{
+    cache as theme_cache, html as theme_html, import as theme_import, system as system_themes,
+    writes as theme_writes,
+};
+pub mod topics;
+pub use topics::{
+    bulk as topics_bulk, converter as topic_converter, guardian as topic_guardian,
+    list as topic_list, list_view as topic_list_view, query as topic_query, status as topic_status,
+    timer as topic_timer, tracking_report as topic_tracking_report,
+    tracking_state as topic_tracking_state, view as topic_view,
+};
 pub mod upcoming_changes;
 pub mod upload_references;
 pub mod uploads;
 pub mod url;
-pub mod user_activity_view;
-pub mod user_anonymizer;
-pub mod user_api_key_crypto;
-pub mod user_avatar;
-pub mod user_card_view;
-pub mod user_comm_screener;
-pub mod user_destroyer;
-pub mod user_fields;
-pub mod user_info_view;
-pub mod user_menu_view;
-pub mod user_merger;
-pub mod user_name_suggester;
-pub mod user_notifications_view;
-pub mod user_option_defaults;
-pub mod user_penalties;
-pub mod user_private;
-pub mod user_profile_view;
-pub mod user_search;
-pub mod user_updater;
-pub mod username_changer;
 pub mod users;
+pub use users::operations::{
+    anonymizer as user_anonymizer, destroyer as user_destroyer, merger as user_merger,
+    updater as user_updater, username_changer,
+};
+pub use users::views::{
+    activity as user_activity_view, card as user_card_view, info as user_info_view,
+    menu as user_menu_view, notifications as user_notifications_view, profile as user_profile_view,
+};
+pub use users::{
+    api_key_crypto as user_api_key_crypto, avatar as user_avatar,
+    comm_screener as user_comm_screener, fields as user_fields,
+    name_suggester as user_name_suggester, option_defaults as user_option_defaults,
+    penalties as user_penalties, private as user_private, search as user_search,
+};
 pub mod viewer_dates;
 pub mod watched_words;
 pub mod web_hooks;

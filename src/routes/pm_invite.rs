@@ -69,7 +69,7 @@ async fn basic_user(
         config: &state.config,
         settings,
     };
-    let logo_small = crate::admin_users::logo_small_url(&mut *conn, settings).await?;
+    let logo_small = crate::admin::users::logo_small_url(&mut *conn, settings).await?;
     let mut out = Map::new();
     out.insert("id".into(), json!(user_id));
     out.insert("username".into(), json!(username));

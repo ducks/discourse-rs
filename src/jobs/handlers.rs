@@ -30,6 +30,10 @@ fn handler<'a>(
         "refresh_users_reviewable_counts" => {
             Box::pin(async move { reviewable_counts_job(state, &job.args, true).await })
         }
+        "truncate_user_flag_stats" => Box::pin(async move {
+            let mut conn = state.pool.acquire().await?;
+            crate::reviewables::truncate_user_flag_stats(&mut conn, &job.args).await
+        }),
         "cleanup_acls_for_deleted" => {
             Box::pin(async move { cleanup_acls_for_deleted(state, &job.args).await })
         }
@@ -99,12 +103,12 @@ fn handler<'a>(
         super::badges::BACKFILL_BADGE => {
             Box::pin(async move { super::badges::backfill_badge(state, &job.args).await })
         }
-        crate::admin_badges::MASS_AWARD_BADGE => {
-            Box::pin(async move { crate::admin_badges::mass_award_badge(state, &job.args).await })
+        crate::admin::badges::MASS_AWARD_BADGE => {
+            Box::pin(async move { crate::admin::badges::mass_award_badge(state, &job.args).await })
         }
-        crate::admin_badges::BULK_USER_TITLE_UPDATE => {
+        crate::admin::badges::BULK_USER_TITLE_UPDATE => {
             Box::pin(
-                async move { crate::admin_badges::bulk_user_title_update(state, &job.args).await },
+                async move { crate::admin::badges::bulk_user_title_update(state, &job.args).await },
             )
         }
         crate::sidebar_backfill::JOB => {
@@ -222,6 +226,9 @@ fn handler<'a>(
         crate::plugins::chat::create::PROCESS_MESSAGE_JOB => {
             Box::pin(async move { chat_process_message(state, &job.args).await })
         }
+        crate::plugins::chat::processor::PULL_HOTLINKED_IMAGES_JOB => Box::pin(async move {
+            crate::plugins::chat::processor::pull_hotlinked_images(state, &job.args).await
+        }),
         crate::plugins::chat::create::UPDATE_THREAD_REPLY_COUNT_JOB => {
             Box::pin(async move { chat_update_thread_reply_count(state, &job.args).await })
         }

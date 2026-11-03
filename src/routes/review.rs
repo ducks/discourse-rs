@@ -288,10 +288,15 @@ pub async fn page(
     }
     let listed = if guardian.is_staff() {
         let host = Host::from_state(&state);
-        let p: Map<String, Value> = pairs
+        let mut p: Map<String, Value> = pairs
             .iter()
             .map(|(k, v)| (k.clone(), Value::String(v.clone())))
             .collect();
+        // Not one of the route's params: review.js redraws the reviewables
+        // an action touched by id (store.find's stand-in).
+        if let Some(ids) = q.get("ids") {
+            p.insert("ids".into(), ids.clone());
+        }
         Some(
             crate::review_list::index(
                 &mut tx,
@@ -334,12 +339,12 @@ pub async fn page(
     };
     let (main, page_title) = match &listed {
         Some(Listed::Page(doc)) => {
-            let viewer = crate::admin_view::AdminViewer::from_current_user(&json!({
+            let viewer = crate::admin::view::AdminViewer::from_current_user(&json!({
                 "admin": guardian.is_admin(),
                 "staff": guardian.is_staff(),
                 "id": guardian.user_id(),
             }));
-            let acx = crate::admin_view::AdminCx {
+            let acx = crate::admin::view::AdminCx {
                 i18n: &state.i18n,
                 settings: &settings,
                 base_path: &base_path,

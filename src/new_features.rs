@@ -120,7 +120,7 @@ pub async fn feed(conn: &mut PgConnection) -> Result<Vec<Map<String, Value>>, Ap
             let valid_plugin = match item.get("plugin_name") {
                 None | Some(Value::Null) => true,
                 Some(Value::String(name)) if name.trim().is_empty() => true,
-                Some(Value::String(name)) => crate::admin_plugins::exists(name),
+                Some(Value::String(name)) => crate::admin::plugins::exists(name),
                 Some(_) => false,
             };
             valid_version && valid_plugin
@@ -153,7 +153,7 @@ async fn permanent_changes(
         config: &state.config,
         settings: &settings,
     };
-    let cx = crate::admin_site_settings::Context {
+    let cx = crate::admin::site_settings::Context {
         defs: &state.site_setting_defs,
         settings: &settings,
         i18n: &state.i18n,
