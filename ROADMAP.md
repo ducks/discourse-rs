@@ -79,6 +79,11 @@ data loading, views and handlers now live under `src/admin/`, with central
 route registration retained in `src/routes/mod.rs`. These are structural
 moves with no intended behavior changes. Categories, groups and review now
 also have domain directories, with root aliases preserving existing imports.
+The next batch adds `src/tags/`, `src/themes/` and `src/notifications/`: 14
+implementation files moved, with only module declarations and four relative
+screenshot include paths adjusted. Combined validation passed all-target
+workspace clippy, 21 domain unit tests, 25 integration tests and three dropdown
+browser tests. Routes and runtime behavior are unchanged.
 
 Plugin infrastructure has also advanced past the original milestone
 summary: the compile-time Plugin trait and Wasmtime host are on main.
