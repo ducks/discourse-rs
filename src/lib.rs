@@ -144,10 +144,10 @@ pub mod schema;
 pub mod schema_objects;
 pub mod screened;
 pub mod search;
-pub mod search_advanced_view;
-pub mod search_logs;
-pub mod search_menu_view;
-pub mod search_view;
+pub use search::{
+    advanced_view as search_advanced_view, logs as search_logs, menu_view as search_menu_view,
+    view as search_view,
+};
 pub mod second_factor;
 pub mod second_factor_auth;
 pub mod seed_topics;
