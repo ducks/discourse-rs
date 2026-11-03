@@ -2889,11 +2889,14 @@
     countUnread(channel, data);
     var items = listItems(list);
     var previous = items[items.length - 1] || null;
-    var bottom = followsLive(channel, data);
     return fetchMessage(channel.dataset.id, id, previous).then(function (html) {
       if (!html || findMessage(list, id)) {
         return;
       }
+      // Ember draws the message as the bus delivers it; here it is drawn
+      // once fetched, so where the view is then decides (an arrow click
+      // meanwhile brought it to the live edge).
+      var bottom = followsLive(channel, data);
       var added = fragment(html);
       var scroller = channel.querySelector(".chat-messages-scroller");
       var before = { top: scroller.scrollTop, height: scroller.scrollHeight };

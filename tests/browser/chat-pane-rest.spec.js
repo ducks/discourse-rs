@@ -400,6 +400,35 @@ test.describe("in the mobile view", () => {
       )
       .toBe("0");
   });
+
+  test("a message still loading when the arrow is clicked follows to the bottom", async ({ page, context, session }) => {
+    const channel = await filledChannel(session, 40);
+    await login(context, "user1");
+    await openChannel(page, channel.url);
+    const arrow = page.locator(".chat-scroll-to-bottom__button");
+    await page.evaluate((s) => (document.querySelector(s).scrollTop = -600), SCROLLER);
+    await expect(arrow).toHaveClass(/visible/);
+
+    // The new message's html held until the arrow has been clicked.
+    let release;
+    const held = new Promise((resolve) => (release = resolve));
+    let fetching;
+    const fetched = new Promise((resolve) => (fetching = resolve));
+    await page.route(new RegExp(`/live/chat/${channel.id}/\\d+`), async (route) => {
+      fetching();
+      await held;
+      await route.continue();
+    });
+    const user0 = await session("user0");
+    const raw = label("late one");
+    await api(user0, "POST", `/chat/${channel.id}.json`, { message: raw, staged_id: label("staged") });
+    await fetched;
+    await arrow.click();
+    release();
+
+    await expect(page.locator(".chat-message-container", { hasText: raw })).toBeVisible();
+    await expect(arrow).not.toHaveClass(/visible/);
+  });
 });
 
 test("a hidden tab neither follows nor reads new messages", async ({ page, context, session }) => {
