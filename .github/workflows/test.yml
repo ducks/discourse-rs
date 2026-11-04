@@ -31,9 +31,108 @@ jobs:
       - name: Format and clippy
         run: make fmt-check clippy
 
-  # Three runners: the write suite (one test, the longest) alone, and the
-  # rest split in two by nextest. Each builds the tests itself; only one
-  # saves the cache, so they do not race to write the same entry.
+  # The write cases (3,475 tests, about 55 minutes on one runner) build
+  # once into a nextest archive and run in four shares from it. The archive
+  # holds one binary; every test binary links the whole library, so one of
+  # all of them would be about 6.4 GB. The rest build in place in two.
+  build-writes:
+    runs-on: ubuntu-latest
+
+    env:
+      CARGO_BUILD_JOBS: "1"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      # Its own cache: it builds one test binary, the rest jobs all of them.
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: writes
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.95
+
+      - name: Build the write cases
+        run: |
+          bash scripts/ci-resources &
+          monitor_pid=$!
+          trap 'kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true' EXIT
+          cargo nextest archive --test writes --archive-file writes.tar.zst
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: writes
+          path: writes.tar.zst
+          retention-days: 1
+          # zstd already.
+          compression-level: 0
+
+  writes:
+    name: test (writes ${{ matrix.share }}/4)
+    needs: build-writes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        share: [1, 2, 3, 4]
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      LETTER_AVATAR_FONT: /usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/discourse_rs_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.95
+
+      - name: Install avatar font
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y fonts-urw-base35
+          test -r "$LETTER_AVATAR_FONT"
+
+      - name: Load vendored Discourse schema
+        run: scripts/db-load --force discourse_rs_test
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: writes
+
+      # hash: keeps a case in its share as others are added.
+      - name: Test
+        run: |
+          cargo nextest run --archive-file writes.tar.zst --workspace-remap . \
+            --profile ci --partition hash:${{ matrix.share }}/4
+
+  # Each builds the tests itself; only one saves the cache, so they do not
+  # race to write the same entry.
   test:
     name: test (${{ matrix.shard.name }})
     runs-on: ubuntu-latest
@@ -41,7 +140,6 @@ jobs:
       fail-fast: false
       matrix:
         shard:
-          - { name: writes, filter: "binary(writes)", partition: "" }
           - { name: rest 1/2, filter: "not binary(writes)", partition: "--partition count:1/2" }
           - { name: rest 2/2, filter: "not binary(writes)", partition: "--partition count:2/2" }
 
@@ -84,7 +182,7 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          save-if: ${{ matrix.shard.name == 'writes' }}
+          save-if: ${{ matrix.shard.name == 'rest 1/2' }}
 
       # The same nextest as shell.nix carries.
       - name: Install cargo-nextest
