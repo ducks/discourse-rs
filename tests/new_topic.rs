@@ -4,7 +4,7 @@
 //! homepage with the discovery query params kept) and, before the
 //! composer, what static/js/composer.js opens it with.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

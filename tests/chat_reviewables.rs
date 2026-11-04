@@ -4,9 +4,8 @@
 //! settle it (chat's reviewable_chat_message_spec), a staff flag with
 //! take_action agrees at once, and flag stats past the limit are truncated.
 
-#[path = "common/chat_client.rs"]
-mod chat_client;
-mod common;
+use crate::common;
+use crate::common::chat_client;
 
 use chat_client::Client;
 use common::{TestDb, config, heard, state};

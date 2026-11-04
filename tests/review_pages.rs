@@ -4,7 +4,7 @@
 //! and the user menu's review queue with the pending reviewables the
 //! recent notifications carry.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

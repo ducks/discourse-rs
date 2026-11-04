@@ -2,7 +2,7 @@
 //! never has (a site without the Horizon theme), and what goes out on the
 //! bus (MessageBus lives in Redis on Rails, outside the recordings).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

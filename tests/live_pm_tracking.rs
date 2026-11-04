@@ -2,7 +2,7 @@
 //! and a read, each on the users' own channels, as the fixtures' message
 //! 42 (user1 to user0; post 49 is user0's reply) has them.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, bus_messages, config, state};
 use discourse_rs::AppState;

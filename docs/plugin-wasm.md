@@ -232,8 +232,8 @@ guest and not from the bundled port underneath.
 Release builds on the dev box (16 cores, shared: load average 9 to 12
 from other work during every run, so absolute numbers move between runs
 by 10 to 20%; the comparisons were run back to back). Microbenchmarks are
-`cargo nextest run --release --test plugin_wasm --run-ignored only
---no-capture measure`; the route numbers are a release server on the
+`cargo nextest run --release --run-ignored only --no-capture
+-E 'test(/^plugin_wasm::.*measure/)'`; the route numbers are a release server on the
 test fixtures plus the recorded `solved/latest` setup (5 topics on
 `/latest.json`, one solved), anonymous, with the anonymous cache off,
 `oha` for 10 s after a 3 s warmup.

@@ -1,7 +1,7 @@
 //! The customize admin pages' HTML (90g7): each page in the admin shell
 //! as Ember draws it.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

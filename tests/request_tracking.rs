@@ -5,7 +5,7 @@
 //! follows spec/lib/middleware/request_tracker_spec.rb and the models'
 //! specs.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::extract::ConnectInfo;

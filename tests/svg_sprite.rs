@@ -2,7 +2,7 @@
 //! groups, settings and theme sprites, its version with it, and the icon
 //! picker pages through the icons.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

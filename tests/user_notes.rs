@@ -4,7 +4,7 @@
 //! `user_notes` report, the keys it adds to users, admin users and posts,
 //! and its buttons on the server-rendered pages.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

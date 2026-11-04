@@ -5,7 +5,7 @@
 //! jobs (spec/jobs), the controllers (spec/requests), the serializer keys
 //! (spec/plugin_spec.rb), and the pages Ember draws.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

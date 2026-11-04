@@ -7,7 +7,7 @@
 //! Jobs::Chat::PullHotlinkedImages), optimized videos, and the job's
 //! notifications.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, bus_messages, config, set_setting, state};
 use discourse_rs::AppState;

@@ -2,7 +2,7 @@
 //! messages matching the query, its @user and #channel filters, the
 //! contract, paging and sorting.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

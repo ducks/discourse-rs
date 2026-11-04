@@ -1,7 +1,7 @@
 //! `/notification-alert/<id>` (PostAlerter.create_notification_alert):
 //! the alert a browser pops up for a new notification.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, bus_messages, config, state};
 use discourse_rs::AppState;

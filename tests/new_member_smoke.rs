@@ -4,7 +4,7 @@
 //! the ROADMAP item that fixes it; that item's branch removes the ignore.
 //! The seeded users' password is "password"; user1 is trust level 2.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

@@ -1,6 +1,6 @@
 //! The job queue: what runs, what waits, what fails and why.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, recorded_config, state};
 use discourse_rs::jobs;

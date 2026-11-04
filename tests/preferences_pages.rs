@@ -6,7 +6,7 @@
 //! session, where the routes Ember redirects go, and what other items
 //! port, refused.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

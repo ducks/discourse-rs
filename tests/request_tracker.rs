@@ -3,7 +3,7 @@
 //! address or per signed-in user in 10 and 60 second windows, the asset
 //! budget, the exemptions and the crawler slow-down.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::extract::ConnectInfo;

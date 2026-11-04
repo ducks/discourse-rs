@@ -5,9 +5,8 @@
 //! full-page counterpart draws; and GET /live/chat/search, the search's
 //! results.
 
-#[path = "common/chat_client.rs"]
-mod chat_client;
-mod common;
+use crate::common;
+use crate::common::chat_client;
 
 use chat_client::Client;
 use common::{TestDb, config, set_setting, state};

@@ -2,7 +2,7 @@
 //! towards the actor, the actor's towards them (the 'disallowed_pm' join
 //! as Rails writes it), the staff short circuit and unknown ids.
 
-mod common;
+use crate::common;
 
 use common::TestDb;
 use discourse_rs::user_comm_screener::{Actor, UserCommScreener};

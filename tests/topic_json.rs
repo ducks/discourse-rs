@@ -1,7 +1,7 @@
 //! GET /t/:slug/:id.json for anonymous users, on the snapshot's fixture
 //! topics. The full documents are covered by the parity golden files.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

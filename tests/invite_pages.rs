@@ -2,7 +2,7 @@
 //! (`/u/:username/invited/...`). The JSON and the writes behind them are
 //! covered by parity/writes/invites; these pin the HTML each viewer gets.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

@@ -4,7 +4,7 @@
 //! messages, and the channel page drawing them (ChatMessageCollapser,
 //! ChatUpload) and a draft's (ChatComposerUploads).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

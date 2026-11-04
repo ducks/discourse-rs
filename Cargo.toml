@@ -2,6 +2,8 @@
 name = "discourse-rs"
 version = "20261024.0.1"
 license = "GPL-3.0-or-later"
+# tests/integration.rs gathers the test files into one binary.
+autotests = false
 edition = "2024"
 default-run = "discourse-rs"
 
@@ -91,6 +93,9 @@ grass_compiler = { path = "crates/grass_compiler" }
 http-body-util = "0.1"
 libtest-mimic = "0.8.2"
 wat = "1"
+
+[[test]]
+name = "integration"
 
 # Every recorded write case is a test of its own (tests/writes.rs).
 [[test]]

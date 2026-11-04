@@ -5,7 +5,7 @@
 //! users#check_email, which the signup page asks as its email field is
 //! left.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

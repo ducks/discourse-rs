@@ -2,7 +2,7 @@
 //! cookie resolving to a user, rotation, logout, and what the login gate
 //! does for a logged-in user. The seeded users' password is "password".
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

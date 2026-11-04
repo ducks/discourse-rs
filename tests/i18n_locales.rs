@@ -1,7 +1,7 @@
 //! Translation overrides in other locales: read with English's, and
 //! applied only to lookups in their own locale.
 
-mod common;
+use crate::common;
 
 use common::TestDb;
 use discourse_rs::i18n::I18n;

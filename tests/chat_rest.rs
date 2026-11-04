@@ -3,7 +3,7 @@
 //! edits, the mobile starred and empty channels routes, and notifying of
 //! a deleted author's message with nobody to notify.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

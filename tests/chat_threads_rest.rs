@@ -4,7 +4,7 @@
 //! the header's back link data, do not disturb on the thread indicators,
 //! and the unread threads in the sidebar, the header and the footer.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{HeaderMap, Method, Request, header};

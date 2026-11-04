@@ -4,7 +4,7 @@
 //! upload's parts put at their presigned URLs, then completed as an
 //! upload and, for an admin, as a backup. Skipped without MinIO.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

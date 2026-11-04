@@ -4,7 +4,7 @@
 //! the plugin's assets on its own pages only (spec/integration/assets_spec.rb),
 //! and the section pages.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

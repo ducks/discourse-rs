@@ -4,7 +4,7 @@
 //! the guidelines, and the login wall's exceptions. The XHR fragment and
 //! the redirects are write cases (parity/writes/static).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

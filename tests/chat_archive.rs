@@ -5,9 +5,8 @@
 //! topic (threads split with their ranges), the destination's status, the
 //! members unfollowed, the system messages, a failure kept and retried.
 
-#[path = "common/chat_client.rs"]
-mod chat_client;
-mod common;
+use crate::common;
+use crate::common::chat_client;
 
 use chat_client::Client;
 use common::{TestDb, bus_messages, config, set_setting, state};

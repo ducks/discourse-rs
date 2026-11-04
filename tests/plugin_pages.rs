@@ -8,7 +8,7 @@
 //! static/js/checklist.js reads of a post with boxes, and a toggle's token
 //! on its revised message.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

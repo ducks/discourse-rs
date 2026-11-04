@@ -6,7 +6,7 @@
 //! (check_policy_spec), the current user's and user options' keys, the
 //! policy email and the policy drawn in the post.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

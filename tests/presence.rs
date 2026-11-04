@@ -2,7 +2,7 @@
 //! and leaving (their last, or the sweep taking an expired one), to those
 //! who may view the channel.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, config, heard, state};
 use discourse_rs::config::RailsEnv;

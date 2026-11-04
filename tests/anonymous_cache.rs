@@ -1,7 +1,7 @@
 //! Middleware::AnonymousCache: anonymous GETs of the actions that opt in
 //! are stored from the threshold'th ask and then served from memory.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

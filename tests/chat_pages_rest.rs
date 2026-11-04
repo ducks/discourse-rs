@@ -3,7 +3,7 @@
 //! deleted (NullUsers in its title and chatable), and the states Rails
 //! raises on (a DM channel without its direct message).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

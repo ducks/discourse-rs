@@ -3,7 +3,7 @@
 //! ported from the plugin's specs (spec/requests/assign_controller_spec.rb,
 //! spec/lib/assigner_spec.rb, spec/serializers/*).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

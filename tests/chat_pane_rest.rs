@@ -5,7 +5,7 @@
 //! date separator loads (target_date), and the channels list drawn for no
 //! member or a member without chat options.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

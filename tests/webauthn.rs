@@ -7,7 +7,7 @@
 //! there too, so the logins through the port's own challenges are signed
 //! as the authenticator signs them.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

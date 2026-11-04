@@ -3,7 +3,7 @@
 //! Insert Graphviz graph item (api-initializers/discourse-graphviz.js).
 //! The cooking is in tests/pretty_text.rs.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

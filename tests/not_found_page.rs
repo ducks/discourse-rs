@@ -2,7 +2,7 @@
 //! becomes the page for a request that does not show JSON errors. Its
 //! fragment (topics#show's extras.html) is covered by the write cases.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

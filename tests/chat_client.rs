@@ -2,7 +2,7 @@
 //! example texts for Ctrl/Cmd+B, I and E (modifySelection), and the
 //! sidebar links Alt+Up and Alt+Down switch between in order.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

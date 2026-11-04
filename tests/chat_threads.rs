@@ -5,7 +5,7 @@
 //! indicator under an original message, the threads list button, the
 //! channel's threads, a thread and the member's threads.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

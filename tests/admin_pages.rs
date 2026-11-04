@@ -2,7 +2,7 @@
 //! page header with its breadcrumbs, the admin classes) and the /admin
 //! dashboard drawn from the document /admin/dashboard.json serves.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

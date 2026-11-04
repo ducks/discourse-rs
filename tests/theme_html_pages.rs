@@ -2,7 +2,7 @@
 //! is drawn, which target the user agent picks, and what is refused. The
 //! fields' bytes are measured against Rails in parity/writes/theme_html.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

@@ -2,7 +2,7 @@
 //! lookups its rules make, against what Rails recorded on the reference
 //! (parity/pretty_text, written by scripts/record-pretty-text).
 
-mod common;
+use crate::common;
 
 use common::{TestDb, recorded_config, state};
 use discourse_rs::pretty_text::helpers::{Helpers, translate};

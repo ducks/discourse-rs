@@ -1,7 +1,7 @@
 //! `login_required`: anonymous requests are turned away everywhere except
 //! the status and basic-info endpoints.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

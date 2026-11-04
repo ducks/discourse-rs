@@ -3,7 +3,7 @@
 //! addressed both ways (virtual-hosted and path-style). Skipped, saying
 //! so, without MinIO.
 
-mod common;
+use crate::common;
 
 use common::s3::{ACCESS_KEY_ID, REGION, S3Server, SECRET_ACCESS_KEY};
 use discourse_rs::object_storage::{Backend, Part, PutOptions, StorageError, s3};

@@ -5,7 +5,7 @@
 //! (spec/system/cakeday_user_summary_spec.rb), and the rest of its client
 //! on the server-rendered pages.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

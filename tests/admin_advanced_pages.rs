@@ -2,7 +2,7 @@
 //! the admin shell with its header, tabs and content as Ember draws them,
 //! from the documents their JSON routes serve.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};
