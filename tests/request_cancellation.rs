@@ -34,22 +34,28 @@ async fn in_open_transaction(pool: &PgPool) -> bool {
 #[tokio::test]
 async fn a_dropped_begin_leaves_the_connection_in_a_transaction() {
     let db = TestDb::new().await;
-    let pool = PgPoolOptions::new()
-        .max_connections(1)
-        .connect(&db.url())
-        .await
-        .unwrap();
-    {
-        let mut conn = pool.acquire().await.unwrap();
-        // One poll: BEGIN queued, the reply not yet read.
-        let mut begin = std::pin::pin!(conn.begin());
-        assert!(
-            futures_util::poll!(&mut begin).is_pending(),
-            "begin finished in one poll"
-        );
+    // Postgres can answer within the first poll on a fast local socket,
+    // and then the begin completes and is rolled back; only a begin still
+    // waiting on its reply when dropped shows the leak.
+    for _ in 0..20 {
+        let pool = PgPoolOptions::new()
+            .max_connections(1)
+            .connect(&db.url())
+            .await
+            .unwrap();
+        let pending = {
+            let mut conn = pool.acquire().await.unwrap();
+            // One poll: BEGIN queued, the reply not yet read.
+            let mut begin = std::pin::pin!(conn.begin());
+            futures_util::poll!(&mut begin).is_pending()
+        };
+        if pending {
+            tokio::time::sleep(Duration::from_millis(200)).await;
+            assert!(in_open_transaction(&pool).await);
+            return;
+        }
     }
-    tokio::time::sleep(Duration::from_millis(200)).await;
-    assert!(in_open_transaction(&pool).await);
+    panic!("begin finished in one poll every time");
 }
 
 /// A handler waiting on `gate`, then marking `done`; the client is gone
