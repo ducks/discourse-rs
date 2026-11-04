@@ -1,6 +1,6 @@
 //! Schema verification against a clone of the test database.
 
-mod common;
+use crate::common;
 
 use common::TestDb;
 use discourse_rs::schema::{self, SchemaError};

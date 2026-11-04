@@ -4,7 +4,7 @@
 //! sidebar's Users link. The document is covered by the parity golden
 //! files.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

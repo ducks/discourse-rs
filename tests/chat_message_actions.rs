@@ -4,9 +4,8 @@
 //! message exemptions, other spellings of a target date and the author's
 //! name.
 
-#[path = "common/chat_client.rs"]
-mod chat_client;
-mod common;
+use crate::common;
+use crate::common::chat_client;
 
 use chat_client::Client;
 use common::{TestDb, config, set_setting, state};

@@ -2,7 +2,7 @@
 //! layouts/_head does, and ensure_optimized makes the sized copies the
 //! seed's optimized_images rows point at.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

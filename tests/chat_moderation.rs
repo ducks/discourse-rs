@@ -3,9 +3,8 @@
 //! select mode's bulk delete (Chat::TrashMessages) and moving messages to
 //! another channel (Chat::MessageMover).
 
-#[path = "common/chat_client.rs"]
-mod chat_client;
-mod common;
+use crate::common;
+use crate::common::chat_client;
 
 use chat_client::Client;
 use common::{TestDb, config, heard, state};

@@ -3,7 +3,7 @@
 //! states, where Ember's routes redirect, and the strings user-activity.js
 //! reads.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

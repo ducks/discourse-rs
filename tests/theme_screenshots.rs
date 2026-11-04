@@ -2,7 +2,7 @@
 //! SystemThemesManager.sync! stores on a fresh install) are served at
 //! their urls once ensure_screenshots has written the vendored files.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

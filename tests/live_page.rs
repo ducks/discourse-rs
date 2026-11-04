@@ -1,7 +1,7 @@
 //! The topic page's live updates for htmx: GET /t/:id/live streams each
 //! post change as HTML for that viewer, and the page wires it up.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

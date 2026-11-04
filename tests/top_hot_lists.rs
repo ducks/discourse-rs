@@ -2,7 +2,7 @@
 //! the parity golden files; these pin period selection, redirects and
 //! the definition-topic and pinning differences from /latest.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

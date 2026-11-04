@@ -5,7 +5,7 @@
 //! which hold the bundled port to Rails), and a misbehaving plugin costs
 //! the page its keys, never the page.
 
-mod common;
+use crate::common;
 
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;

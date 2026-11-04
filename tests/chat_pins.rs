@@ -2,9 +2,8 @@
 //! publishes, GET .../pins (Chat::ChannelPinsSerializer) and PUT
 //! .../pins/read.
 
-#[path = "common/chat_client.rs"]
-mod chat_client;
-mod common;
+use crate::common;
+use crate::common::chat_client;
 
 use chat_client::Client;
 use common::{TestDb, config, heard, set_setting, state};

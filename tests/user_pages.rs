@@ -2,7 +2,7 @@
 //! parity golden files; these pin the HTML, view tracking, and the
 //! visibility rules the fixtures only partly show.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

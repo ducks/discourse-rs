@@ -4,7 +4,7 @@
 //! spec/system/associated_account_prefs_spec.rb on the server drawn
 //! account preferences.
 
-mod common;
+use crate::common;
 
 use std::sync::{Arc, Mutex};
 

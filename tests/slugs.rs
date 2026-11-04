@@ -1,7 +1,7 @@
 //! SlugsController#generate (POST /slugs.json), ported from
 //! spec/requests/slugs_controller_spec.rb.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

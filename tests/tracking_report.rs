@@ -1,7 +1,7 @@
 //! TopicTrackingState.report on the fixture, against what the reference
 //! reports for the same rows, and the counts taken from it.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, config, state};
 use discourse_rs::config::RailsEnv;

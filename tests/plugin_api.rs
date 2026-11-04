@@ -5,7 +5,7 @@
 //! while its enabled setting is. Each test installs the plugin first, as a
 //! plugin's binary does before it serves (nextest runs a test per process).
 
-mod common;
+use crate::common;
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -585,7 +585,7 @@ async fn measure() {
         times.sort();
         println!(
             "{}: {path}: p50 {} us, p90 {} us",
-            env!("CARGO_CRATE_NAME"),
+            module_path!(),
             times[times.len() / 2],
             times[times.len() * 9 / 10]
         );

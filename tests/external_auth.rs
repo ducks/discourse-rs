@@ -5,7 +5,7 @@
 //! nonce, and the provider's answer is the callback the browser would
 //! follow.
 
-mod common;
+use crate::common;
 
 use std::sync::{Arc, Mutex};
 

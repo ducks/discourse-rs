@@ -2,7 +2,7 @@
 //! golden files; these pin the search log, the HTML page, and rules the
 //! fixtures can't show.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

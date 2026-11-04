@@ -9,7 +9,7 @@
 //! variables (tag_filtering_spec, chat_composer_spec), the composer's
 //! options menu item and the topic's template controls.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

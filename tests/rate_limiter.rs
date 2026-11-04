@@ -2,7 +2,7 @@
 //! refusal is worded and rendered: what no recording can show (Rails'
 //! recorder disables the limiter).
 
-mod common;
+use crate::common;
 
 use chrono::{TimeZone, Utc};
 use common::{TestDb, recorded_config, state};

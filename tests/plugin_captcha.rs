@@ -6,7 +6,7 @@
 //! providers' siteverify endpoints served by the test on loopback
 //! (`Config::auth_provider_hosts`).
 
-mod common;
+use crate::common;
 
 use std::sync::{Arc, Mutex};
 

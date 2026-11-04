@@ -1,6 +1,6 @@
 //! The server-rendered pages for anonymous readers.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

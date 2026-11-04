@@ -2,7 +2,7 @@
 //! inboxes dropdown, the routed inbox's navigation and list, and the
 //! exception and not-found pages a list's error leaves.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

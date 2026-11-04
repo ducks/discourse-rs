@@ -3,7 +3,7 @@
 //! protection off), the bus message, and the scheduled jobs skipped (the
 //! recorder runs a job's `execute`, past Jobs::Scheduled#perform).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

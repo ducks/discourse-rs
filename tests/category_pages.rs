@@ -2,7 +2,7 @@
 //! users. The documents are covered by the parity golden files; these pin
 //! routing, redirects and the HTML.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

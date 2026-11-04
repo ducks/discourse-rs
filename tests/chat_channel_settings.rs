@@ -4,7 +4,7 @@
 //! the slug edit and its validation errors, chat on or off for the
 //! member, and the live page hearing channels change.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

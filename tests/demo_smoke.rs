@@ -13,7 +13,7 @@
 //! demo" section lists them. The seeded users' password is "password":
 //! user0 is trust level 1, user1 and user2 trust level 2, admin an admin.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

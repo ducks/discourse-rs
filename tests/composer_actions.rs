@@ -4,7 +4,7 @@
 //! spec/lib/post_creator_spec.rb. Topic 35 is the seed's, its last post
 //! #5; admin is a whisperer once whispers_allowed_groups names staff.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

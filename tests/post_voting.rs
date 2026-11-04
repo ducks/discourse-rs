@@ -6,7 +6,7 @@
 //! Topic 35 is made a post voting one: its posts are 35 (#1, user0), 36
 //! (#2, user1), 37 (#3, user2), 38 (#4, admin) and 52 (#5, user0).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

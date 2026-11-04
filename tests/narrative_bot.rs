@@ -7,7 +7,7 @@
 //! (bot_input_spec), the certificate (discobot_certificate_spec,
 //! certificate_generator_spec), and the events core hands the plugin.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

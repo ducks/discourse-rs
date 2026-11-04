@@ -4,7 +4,7 @@
 //! secret_key_base, and FinishInstallationController's pages while the
 //! site has no admin.
 
-mod common;
+use crate::common;
 
 use std::collections::BTreeMap;
 use std::str::FromStr;

@@ -2,7 +2,7 @@
 //! mail carries opens the download, and a merged upload is a backup the
 //! staff are told about.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, bus_messages, recorded_config, state};
 use discourse_rs::backup_restore::{self, jobs, store::BackupStore, store::LocalBackupStore};

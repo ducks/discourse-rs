@@ -4,7 +4,7 @@
 //! asserts that what one site does stays out of the other, except for
 //! what Rails shares between sites (the `GLOBAL::` rate limits).
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::extract::ConnectInfo;

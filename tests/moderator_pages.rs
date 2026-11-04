@@ -7,7 +7,7 @@
 //! private message they are not in, and a flagged message they see
 //! through its flag.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

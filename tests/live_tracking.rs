@@ -2,7 +2,7 @@
 //! counts kept live (`/new`, `/latest`, `/unread`, `/unread/<id>`), and
 //! who hears them.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, bus_messages, config, state};
 use discourse_rs::AppState;

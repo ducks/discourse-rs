@@ -2,7 +2,7 @@
 //! publish_stats_to_clients!) and who hears them
 //! (Topic#secure_audience_publish_messages).
 
-mod common;
+use crate::common;
 
 use common::{TestDb, config, state};
 use discourse_rs::AppState;

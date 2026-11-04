@@ -2,7 +2,7 @@
 //! spec/requests/site_controller_spec.rb `describe "#basic_info"`; the rest
 //! pin the fallback chains in site_icon_manager.rb and color_scheme.rb.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};

@@ -1,6 +1,6 @@
 //! The anonymous sidebar on the server-rendered pages.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

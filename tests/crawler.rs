@@ -2,7 +2,7 @@
 //! description and OpenGraph tags on the HTML pages. The default outputs
 //! are covered by the parity golden files.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

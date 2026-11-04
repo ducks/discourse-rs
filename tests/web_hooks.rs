@@ -1,6 +1,6 @@
 //! Web hooks: which hooks an event reaches (`WebHook.active_web_hooks`).
 
-mod common;
+use crate::common;
 
 use common::{TestDb, recorded_config, state};
 use discourse_rs::{jobs, web_hooks};

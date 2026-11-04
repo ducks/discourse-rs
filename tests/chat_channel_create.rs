@@ -3,7 +3,7 @@
 //! hint the create modal reads, and a direct message name's validation
 //! errors.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

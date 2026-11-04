@@ -2,7 +2,7 @@
 //! in-process router, so `cargo test` catches parity regressions without
 //! Rails or a running server.
 
-mod common;
+use crate::common;
 
 use std::path::Path;
 

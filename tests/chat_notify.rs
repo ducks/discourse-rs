@@ -1,7 +1,7 @@
 //! What chat's notification jobs alert: NotifyMentioned and NotifyWatching
 //! publish to the member's /chat/notification-alert, which only they hear.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, config, heard, state};
 use discourse_rs::config::RailsEnv;

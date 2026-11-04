@@ -1,6 +1,7 @@
 // Each test crate uses a different subset of these helpers.
 #![allow(dead_code)]
 
+pub mod chat_client;
 pub mod s3;
 
 use std::str::FromStr;

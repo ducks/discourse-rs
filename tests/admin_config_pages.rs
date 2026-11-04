@@ -1,7 +1,7 @@
 //! The /admin/config areas' HTML (90g6): each area in the admin shell
 //! with its header and content as Ember draws them.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};

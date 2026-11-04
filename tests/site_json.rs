@@ -2,7 +2,7 @@
 //! examples of spec/models/site_spec.rb; the full document is covered by the
 //! parity golden file.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};

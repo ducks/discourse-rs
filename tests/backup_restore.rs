@@ -3,7 +3,7 @@
 //! the port made, put back over a changed database, compared row by row;
 //! the rollback; the refusals; and DropBackupSchema's week.
 
-mod common;
+use crate::common;
 
 use common::{TestDb, bus_messages, recorded_config, state};
 use discourse_rs::backup_restore::{self, creator, restorer};

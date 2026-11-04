@@ -2,7 +2,7 @@
 //! (plain and Slack compatible), the admin's webhooks (JSON and pages),
 //! the messages export and the category editor's Chat tab.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, header};

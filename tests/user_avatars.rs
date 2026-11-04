@@ -1,7 +1,7 @@
 //! `/letter_avatar_proxy`, against a local server standing in for the
 //! avatar CDN.
 
-mod common;
+use crate::common;
 
 use std::path::PathBuf;
 use std::sync::Arc;

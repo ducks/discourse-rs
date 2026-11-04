@@ -3,7 +3,7 @@
 //! tags for each combination of options, cookies and theme are measured
 //! against Rails in parity/writes/color_modes.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};

@@ -3,7 +3,7 @@
 //! notifications from posts quoting messages, the chat_summary email
 //! unsubscriber, and the chat API key scope following the plugin.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

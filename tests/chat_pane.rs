@@ -4,7 +4,7 @@
 //! a target that can't load, the `/channel -> /c` redirects and a
 //! channel without a slug.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Request, header};

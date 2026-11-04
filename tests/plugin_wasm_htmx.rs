@@ -4,7 +4,7 @@
 //! `publish_post_change` redrawing the post on every other page showing
 //! it, through /live, for that page's viewer.
 
-mod common;
+use crate::common;
 
 use std::path::{Path, PathBuf};
 

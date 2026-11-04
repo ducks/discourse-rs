@@ -2,7 +2,7 @@
 //! rules), its slash commands and hashtags, against what Rails cooked on
 //! the reference (parity/chat_cook, written by scripts/record-chat-cooks).
 
-mod common;
+use crate::common;
 
 use common::{TestDb, recorded_config};
 use discourse_rs::pretty_text::Host;

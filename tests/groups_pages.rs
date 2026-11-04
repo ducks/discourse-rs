@@ -3,7 +3,7 @@
 //! groups#show and groups#members. The documents are covered by the
 //! parity/writes/groups read cases.
 
-mod common;
+use crate::common;
 
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode, header};
