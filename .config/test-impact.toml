@@ -4,6 +4,11 @@
 # nextest filterset (`filter`), the tests that ran some Rust files (`ran`), or
 # `select = "none"`; a path no rule matches runs the whole suite.
 
+# CI loads the test database with it.
+[[rule]]
+globs = ["scripts/db-load"]
+select = "all"
+
 [[rule]]
 globs = [
   "**/*.md",
@@ -16,8 +21,8 @@ globs = [
   "flake.lock",
   "shell.nix",
   "Makefile",
-  "scripts/bench*",
-  "scripts/ci-resources",
+  # Recording and maintenance tools, run by hand.
+  "scripts/**",
   "parity/screens/**",
   "parity/reference.env",
   # The Playwright suite, which the browser job runs whole.
@@ -97,3 +102,13 @@ ran = ["src/stylesheet/mod.rs", "src/stylesheet/postcss.rs"]
 [[rule]]
 globs = ["plugins/**"]
 filter = "binary_id(=discourse-rs::integration) & test(/^plugin_wasm/)"
+
+# Served, and digested into page URLs, by src/assets.rs.
+[[rule]]
+globs = ["static/**"]
+ran = ["src/assets.rs"]
+
+# Compiled at runtime by the stylesheet code.
+[[rule]]
+globs = ["vendor/discourse/app/assets/stylesheets/**"]
+ran = ["src/stylesheet/**"]

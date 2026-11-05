@@ -156,11 +156,12 @@ jobs:
         with:
           name: recording-build
 
+      # A directory per share: merged, the shares' copies of a table would
+      # be extracted over each other at once.
       - uses: actions/download-artifact@v4
         with:
           pattern: recording-[0-9]*
           path: recordings
-          merge-multiple: true
 
       - name: Build the map
         run: |

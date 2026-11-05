@@ -44,31 +44,45 @@ pub fn build(dir: &str, out: &str, list: Option<&str>) -> Result<()> {
         Some(list) => binary_ids(list)?,
         None => BTreeMap::new(),
     };
+    // Each CI share's files sit in a directory of their own: the same table
+    // comes from several, and process ids repeat across runners.
+    let mut paths = Vec::new();
+    files_under(dir, &mut paths)?;
+    let file_name = |path: &Path| {
+        path.file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default()
+    };
+
     let mut functions: BTreeMap<String, BTreeSet<(u32, u32)>> = BTreeMap::new();
-    for entry in fs::read_dir(dir.join("tables"))? {
-        let path = entry?.path();
-        if path.extension().is_some_and(|ext| ext == "json") {
-            let table: Table = serde_json::from_slice(&fs::read(&path)?)?;
-            for (file, first, last) in table.functions.into_values() {
-                functions.entry(file).or_default().insert((first, last));
-            }
+    let mut tables_read = BTreeSet::new();
+    for path in &paths {
+        let in_tables = path
+            .parent()
+            .is_some_and(|parent| parent.ends_with("tables"));
+        if !(in_tables && file_name(path).ends_with(".json"))
+            || !tables_read.insert(file_name(path))
+        {
+            continue;
+        }
+        let table: Table = serde_json::from_slice(&fs::read(path)?)
+            .map_err(|err| format!("{}: {err}", path.display()))?;
+        for (file, first, last) in table.functions.into_values() {
+            functions.entry(file).or_default().insert((first, last));
         }
     }
 
     let mut tests: Vec<Test> = Vec::new();
     let mut ids: BTreeMap<(String, String), u32> = BTreeMap::new();
     let mut ran: BTreeMap<String, BTreeMap<(u32, u32), BTreeSet<u32>>> = BTreeMap::new();
-    for entry in fs::read_dir(dir)? {
-        let path = entry?.path();
-        let name = path
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
+    for path in &paths {
+        let name = file_name(path);
         if !(name.starts_with("recording-") && name.ends_with(".jsonl")) {
             continue;
         }
-        for line in BufReader::new(fs::File::open(&path)?).lines() {
-            let mut recording: Recording = serde_json::from_str(&line?)?;
+        for line in BufReader::new(fs::File::open(path)?).lines() {
+            let mut recording: Recording =
+                serde_json::from_str(&line?).map_err(|err| format!("{}: {err}", path.display()))?;
             if let Some(id) = binary_ids.get(&recording.binary) {
                 recording.binary = id.clone();
             }
@@ -129,6 +143,18 @@ pub fn build(dir: &str, out: &str, list: Option<&str>) -> Result<()> {
     Ok(())
 }
 
+fn files_under(dir: &Path, paths: &mut Vec<std::path::PathBuf>) -> Result<()> {
+    for entry in fs::read_dir(dir)? {
+        let path = entry?.path();
+        if path.is_dir() {
+            files_under(&path, paths)?;
+        } else {
+            paths.push(path);
+        }
+    }
+    Ok(())
+}
+
 /// Binary file name -> nextest binary id.
 fn binary_ids(list: &str) -> Result<BTreeMap<String, String>> {
     #[derive(Deserialize)]
@@ -141,7 +167,8 @@ fn binary_ids(list: &str) -> Result<BTreeMap<String, String>> {
         #[serde(rename = "binary-path")]
         binary_path: String,
     }
-    let list: List = serde_json::from_slice(&fs::read(list)?)?;
+    let list: List =
+        serde_json::from_slice(&fs::read(list)?).map_err(|err| format!("{list}: {err}"))?;
     Ok(list
         .suites
         .into_iter()

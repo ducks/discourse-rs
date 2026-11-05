@@ -59,6 +59,8 @@ struct Change {
     new: Option<String>,
     /// Old-side line ranges.
     hunks: Vec<(u32, u32)>,
+    /// Each hunk's removed and added lines.
+    lines: Vec<Vec<String>>,
 }
 
 pub fn select_command(map_path: &str, args: &[String]) -> Result<u8> {
@@ -173,11 +175,14 @@ fn select(map: &Map, rules: &Rules, inputs: &Inputs, changes: &[Change]) -> Sele
     selection
 }
 
-/// For an input the given Rust files read: the tests that ran them.
+/// For an input the given Rust files read (paths or globs): the tests that
+/// ran them.
 fn ran_files(map: &Map, files: &BTreeSet<String>, path: &str, selection: &mut Selection) {
-    let tests: BTreeSet<u32> = files
+    let tests: BTreeSet<u32> = map
+        .files
         .iter()
-        .filter_map(|file| map.files.get(file))
+        .filter(|(name, _)| files.iter().any(|file| file == *name || glob(file, name)))
+        .map(|(_, file)| file)
         .flat_map(|file| {
             file.ranges
                 .iter()
@@ -196,12 +201,18 @@ fn ran_files(map: &Map, files: &BTreeSet<String>, path: &str, selection: &mut Se
 fn select_rust(map: &Map, change: &Change, path: &str, selection: &mut Selection) {
     let file = change.old.as_deref().and_then(|old| map.files.get(old));
     let Some(file) = file else {
-        // A new test file's tests are new tests; a source file no binary
-        // compiled (build.rs, a bin) or a new one, nobody can say.
         if change.old.is_some() && change.new.is_none() {
             return;
         }
-        if !(change.old.is_none() && path.starts_with("tests/")) {
+        // A new file runs only where changed code calls it, which selects
+        // its tests; a new test file's tests are new tests (`--list`).
+        if change.old.is_none() {
+            selection
+                .untested
+                .push(format!("{path} (new: selected through its callers)"));
+        } else {
+            // Compiled into no recorded binary (build.rs, a bin), or newer
+            // than the map.
             selection.full.push(format!("{path} (not in the map)"));
         }
         return;
@@ -215,7 +226,7 @@ fn select_rust(map: &Map, change: &Change, path: &str, selection: &mut Selection
         );
         return;
     }
-    for &(first, last) in &change.hunks {
+    for (index, &(first, last)) in change.hunks.iter().enumerate() {
         let touched: Vec<(u32, u32)> = file
             .functions
             .iter()
@@ -253,10 +264,18 @@ fn select_rust(map: &Map, change: &Change, path: &str, selection: &mut Selection
         if path == TEST_ROOT {
             continue;
         }
-        if CRATE_ROOTS
+        let crate_root = CRATE_ROOTS
             .iter()
-            .any(|root| path == *root || path.ends_with(&format!("/{root}")))
-        {
+            .any(|root| path == *root || path.ends_with(&format!("/{root}")));
+        let lines = change
+            .lines
+            .get(index)
+            .map(Vec::as_slice)
+            .unwrap_or_default();
+        if crate_root && lines.iter().all(|line| module_list(line)) {
+            // A module's behaviour is in its file; a broken re-export
+            // doesn't compile.
+        } else if crate_root {
             selection
                 .full
                 .push(format!("{path}:{first}-{last} (crate root)"));
@@ -272,6 +291,24 @@ fn select_rust(map: &Map, change: &Change, path: &str, selection: &mut Selection
             );
         }
     }
+}
+
+/// A crate root's module list: `mod` and `use` lines, the names inside a
+/// multi-line `use`, blanks and comments.
+fn module_list(line: &str) -> bool {
+    let line = line.trim();
+    let line = line
+        .strip_prefix("pub(crate) ")
+        .or_else(|| line.strip_prefix("pub "))
+        .unwrap_or(line);
+    line.is_empty()
+        || line.starts_with("//")
+        || line.starts_with("#[cfg")
+        || line.starts_with("mod ")
+        || line.starts_with("use ")
+        || line
+            .chars()
+            .all(|c| c.is_alphanumeric() || " _:{},*;".contains(c))
 }
 
 /// parity/writes/<area>/<name>.case.json and its recording <name>.json are
@@ -354,7 +391,8 @@ fn seconds(map: &Map, ids: &BTreeSet<u32>) -> f64 {
 
 /// For each of the last `count` first-parent commits on origin/main, what
 /// its diff would have selected: sha, tests selected, whether the whole
-/// suite was needed, the selected share of recorded test time, subject.
+/// suite was needed, the selected share of recorded test time, subject,
+/// and why the whole suite was needed.
 pub fn replay(map_path: &str, count: Option<&String>) -> Result<()> {
     let map = Map::load(map_path)?;
     let rules = load_rules()?;
@@ -380,12 +418,13 @@ pub fn replay(map_path: &str, count: Option<&String>) -> Result<()> {
         shares.push(share);
         let subject = git(&["log", "-1", "--format=%s", sha])?;
         println!(
-            "{}\t{}\t{}\t{:.3}\t{}",
+            "{}\t{}\t{}\t{:.3}\t{}\t{}",
             &sha[..10],
             selection.tests.len(),
             if full { "whole" } else { "selected" },
             share,
             subject.trim().chars().take(60).collect::<String>(),
+            selection.full.join("; "),
         );
     }
     let selected = shares.iter().filter(|&&s| s < 1.0).count();
@@ -418,10 +457,14 @@ fn parse_diff(text: &str) -> Vec<Change> {
                     old: Some(old.into()),
                     new: Some(new.into()),
                     hunks: Vec::new(),
+                    lines: Vec::new(),
                 });
             }
         } else if let Some(change) = changes.last_mut() {
-            if line.starts_with("new file mode ") {
+            // Before the first hunk, `+++` and `---` are the header.
+            if let (Some(lines), Some('+' | '-')) = (change.lines.last_mut(), line.chars().next()) {
+                lines.push(line[1..].to_string());
+            } else if line.starts_with("new file mode ") {
                 change.old = None;
             } else if line.starts_with("deleted file mode ") {
                 change.new = None;
@@ -438,6 +481,7 @@ fn parse_diff(text: &str) -> Vec<Change> {
                 } else {
                     (start, start + count - 1)
                 });
+                change.lines.push(Vec::new());
             }
         }
     }
@@ -513,10 +557,15 @@ mod tests {
     }
 
     fn change(path: &str, hunks: &[(u32, u32)]) -> Change {
+        changed_lines(path, hunks, "run();")
+    }
+
+    fn changed_lines(path: &str, hunks: &[(u32, u32)], line: &str) -> Change {
         Change {
             old: Some(path.into()),
             new: Some(path.into()),
             hunks: hunks.to_vec(),
+            lines: vec![vec![line.to_string()]; hunks.len()],
         }
     }
 
@@ -576,19 +625,43 @@ mod tests {
     }
 
     #[test]
-    fn needs_the_whole_suite_for_a_crate_root_or_a_new_source_file() {
+    fn needs_the_whole_suite_for_crate_root_code_but_not_its_module_list() {
+        let code = select(
+            &map(),
+            &rules(),
+            &Inputs::default(),
+            &[change("src/lib.rs", &[(5, 5)])],
+        );
+        let modules = select(
+            &map(),
+            &rules(),
+            &Inputs::default(),
+            &[changed_lines("src/lib.rs", &[(5, 5)], "pub mod polls;")],
+        );
+        assert_eq!(code.full, ["src/lib.rs:5-5 (crate root)"]);
+        assert!(modules.full.is_empty() && modules.tests.is_empty());
+    }
+
+    #[test]
+    fn selects_a_new_source_file_through_its_callers() {
         let new = Change {
             old: None,
             new: Some("src/polls.rs".into()),
             hunks: vec![(0, 1)],
+            lines: vec![vec!["pub fn vote() {}".into()]],
         };
-        let selection = select(
-            &map(),
-            &rules(),
-            &Inputs::default(),
-            &[change("src/lib.rs", &[(5, 5)]), new],
+        let selection = select(&map(), &rules(), &Inputs::default(), &[new]);
+        assert!(selection.full.is_empty() && selection.tests.is_empty());
+        assert_eq!(
+            selection.untested,
+            ["src/polls.rs (new: selected through its callers)"]
         );
-        assert_eq!(selection.full.len(), 2);
+    }
+
+    #[test]
+    fn keeps_each_hunks_lines() {
+        let diff = "diff --git a/src/lib.rs b/src/lib.rs\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -5 +5 @@\n-pub mod a;\n+pub mod b;\n";
+        assert_eq!(parse_diff(diff)[0].lines, [["pub mod a;", "pub mod b;"]]);
     }
 
     #[test]
