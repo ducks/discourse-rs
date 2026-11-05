@@ -1,0 +1,99 @@
+# Changed files test-impact can't link to tests by itself (docs/test-impact.md).
+# Templates, and files named by include_str! or include_bytes!, need no rule:
+# the code names them. The first rule whose globs match a path decides, by a
+# nextest filterset (`filter`), the tests that ran some Rust files (`ran`), or
+# `select = "none"`; a path no rule matches runs the whole suite.
+
+[[rule]]
+globs = [
+  "**/*.md",
+  "LICENSE",
+  "docs/**",
+  "bench/**",
+  "deploy/**",
+  "nix/**",
+  "flake.nix",
+  "flake.lock",
+  "shell.nix",
+  "Makefile",
+  "scripts/bench*",
+  "scripts/ci-resources",
+  "parity/screens/**",
+  "parity/reference.env",
+  # The Playwright suite, which the browser job runs whole.
+  "tests/browser/**",
+]
+select = "none"
+
+# Test data, by the test modules that read it.
+[[rule]]
+globs = ["parity/golden/**", "parity/cases/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^parity::/)"
+
+[[rule]]
+globs = ["parity/environment/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^(parity|pretty_text)::/)"
+
+[[rule]]
+globs = ["parity/backup_restore/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^backup_restore::/)"
+
+[[rule]]
+globs = ["parity/chat_cook/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^chat_cook::/)"
+
+[[rule]]
+globs = ["parity/email_reply_trimmer/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^reply_trimmer::/)"
+
+[[rule]]
+globs = ["parity/fancy_title/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^fancy_title::/)"
+
+[[rule]]
+globs = ["parity/html_to_markdown/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^html_to_markdown::/)"
+
+[[rule]]
+globs = ["parity/incoming_mail/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^incoming_mail::/)"
+
+[[rule]]
+globs = ["parity/menus/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^html_pages::/)"
+
+[[rule]]
+globs = ["parity/onebox_engines/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^onebox_engines::/)"
+
+[[rule]]
+globs = ["parity/pretty_text/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^pretty_text::/)"
+
+[[rule]]
+globs = ["parity/revisions/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^discourse_diff::/)"
+
+[[rule]]
+globs = ["parity/webauthn/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^webauthn::/)"
+
+# Write cases select themselves; their shared fixtures are read by the
+# cases and by these pages' tests.
+[[rule]]
+globs = ["parity/writes/files/**"]
+filter = "binary_id(=discourse-rs::writes) | (binary_id(=discourse-rs::integration) & test(/^(admin_config_pages|color_modes|demo_smoke|direct_uploads|groups_pages|html_pages|invite_pages|plugin_pages|plugin_wasm|sessions|static_pages|theme_html_pages|user_avatars)::/))"
+
+# Read at runtime by these files.
+[[rule]]
+globs = ["parity/letter_avatars/**"]
+ran = ["src/letter_avatar.rs"]
+
+[[rule]]
+globs = ["parity/stylesheets/**"]
+ran = ["src/stylesheet/mod.rs", "src/stylesheet/postcss.rs"]
+
+# The plugin_wasm tests build these guests as they run.
+[[rule]]
+globs = ["plugins/**"]
+filter = "binary_id(=discourse-rs::integration) & test(/^plugin_wasm/)"

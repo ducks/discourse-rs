@@ -1,0 +1,175 @@
+name: Test impact
+
+# Records the map crates/test-impact selects from (docs/test-impact.md):
+# every test in a build with coverage instrumentation, each recording the
+# workspace functions it ran. On demand, or on a pull request labeled
+# test-impact-record (the label takes effect on the next push).
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-recording:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-impact-record')
+    runs-on: ubuntu-latest
+
+    env:
+      # As in test.yml: one compiler at a time on the 16 GB runner.
+      CARGO_BUILD_JOBS: "1"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test-impact
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.95
+
+      # Without instrumentation, in a target directory of its own: RUSTFLAGS
+      # would rebuild everything else.
+      - name: Build test-impact
+        run: CARGO_TARGET_DIR=target/tool cargo build --release -p test-impact
+
+      - name: Build the tests with coverage instrumentation
+        env:
+          RUSTFLAGS: -C instrument-coverage
+        run: |
+          bash scripts/ci-resources &
+          monitor_pid=$!
+          trap 'kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true' EXIT
+          cargo nextest archive --workspace --archive-file tests.tar.zst
+          mkdir -p tool && cp target/tool/release/test-impact tool/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recording-build
+          path: |
+            tests.tar.zst
+            tool/test-impact
+          retention-days: 1
+          compression-level: 0
+
+  record:
+    name: record (${{ matrix.share }}/10)
+    needs: build-recording
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        share: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      LETTER_AVATAR_FONT: /usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/discourse_rs_test
+      TEST_IMPACT_DIR: ${{ github.workspace }}/tmp/test-impact
+      # The archive's paths are the build job's, which is this same checkout path.
+      TEST_IMPACT_ROOT: ${{ github.workspace }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # wasm32 for the plugin_wasm tests' guests; llvm-tools for recording.
+      - name: Install Rust
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add wasm32-unknown-unknown
+          rustup component add llvm-tools
+          echo "TEST_IMPACT_LLVM_BIN=$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin" >> "$GITHUB_ENV"
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.95
+
+      - name: Install avatar font
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y fonts-urw-base35
+          test -r "$LETTER_AVATAR_FONT"
+
+      - name: Load vendored Discourse schema
+        run: scripts/db-load --force discourse_rs_test
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: recording-build
+
+      # A failing test still records what it ran; the share fails if one
+      # couldn't be recorded.
+      - name: Record
+        run: |
+          chmod +x tool/test-impact
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="$PWD/tool/test-impact runner" \
+            cargo nextest run --archive-file tests.tar.zst --workspace-remap . \
+              --profile ci --no-fail-fast --partition hash:${{ matrix.share }}/10 || true
+          if [ -s "$TEST_IMPACT_DIR/errors.log" ]; then cat "$TEST_IMPACT_DIR/errors.log"; exit 1; fi
+          test -n "$(ls "$TEST_IMPACT_DIR"/recording-*.jsonl 2>/dev/null)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recording-${{ matrix.share }}
+          path: |
+            tmp/test-impact/recording-*.jsonl
+            tmp/test-impact/tables/*.json
+
+  map:
+    needs: record
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.95
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: recording-build
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: recording-[0-9]*
+          path: recordings
+          merge-multiple: true
+
+      - name: Build the map
+        run: |
+          chmod +x tool/test-impact
+          # The instrumented binaries would leave a profile each listing.
+          LLVM_PROFILE_FILE=/dev/null cargo nextest list --archive-file tests.tar.zst --workspace-remap . \
+            --message-format json > recordings/list.json
+          tool/test-impact build-map recordings test-impact-map.json.gz recordings/list.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-impact-map
+          path: test-impact-map.json.gz
