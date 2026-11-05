@@ -3,11 +3,12 @@ name: Test impact
 # Records the map crates/test-impact selects from (docs/test-impact.md):
 # every test in a build with coverage instrumentation, each recording the
 # workspace functions it ran. On demand, or on a pull request labeled
-# test-impact-record (the label takes effect on the next push).
+# test-impact-record, when labeled and on each push.
 on:
   workflow_dispatch:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
 
 jobs:
   build-recording:
