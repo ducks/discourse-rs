@@ -88,15 +88,21 @@ async fn record(
         _ => Vec::new(),
     };
 
-    let mut tx = state.pool.begin().await?;
+    // No transaction, as in Rails (process_timings runs each statement on
+    // its own). One would hold the reader's user_stats row from
+    // update_time_read while waiting on the posts rows for `reads`, the
+    // opposite order to a like (posts, then user_stats), so a reader liking
+    // a post on the page deadlocked against their own timings.
+    let mut conn = state.pool.acquire().await?;
     let settings =
-        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     // find_visible_topic_from_topic_id
     let visible =
-        match crate::topic_guardian::TopicCtx::load(&mut tx, &settings, &guardian, topic_id).await?
+        match crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, topic_id)
+            .await?
         {
             Some(topic) if !topic.trashed() => {
-                let secure = guardian.secure_category_ids(&mut tx, &settings).await?;
+                let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
                 guardian.can_see_topic(&settings, &topic, true, &secure)?
             }
             _ => false,
@@ -105,13 +111,12 @@ async fn record(
         return Ok(super::topics::not_found_response(&state));
     }
     let notifications_read = read_tracking::process_timings(
-        &state.bus, &mut tx, &settings, &guardian, topic_id, topic_time, timings,
+        &state.bus, &mut conn, &settings, &guardian, topic_id, topic_time, timings,
     )
     .await?;
     if notifications_read && let Some(user_id) = guardian.user_id() {
-        crate::bus::publish_notifications_state(&state.bus, &mut tx, &settings, user_id).await?;
+        crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id).await?;
     }
-    tx.commit().await?;
     // render body: nil
     Ok(StatusCode::OK.into_response())
 }

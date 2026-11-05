@@ -1231,6 +1231,102 @@ async fn reading_clears_unread() {
     assert!(!listed(&unread), "still unread: {}", unread.body);
 }
 
+/// A reader likes a post while the page reports their timings for it. The
+/// like (PostAction save: update_counters, then UserActionManager) locks
+/// the post row, then the liker's user_stats row; the timings must not
+/// hold user_stats (update_time_read) while they wait on the post (`reads`),
+/// or the two deadlock. The like's two statements are run by hand around
+/// the blocked timings request so the overlap is certain.
+#[tokio::test]
+async fn reading_while_liking_does_not_deadlock() {
+    let (db, state) = app().await;
+    let mut user1 = member(&state, "user1").await;
+    let user = user_id(&db, "user1").await;
+    let post = post_by_another(&db, "user1").await;
+    let (post_number, reads_before): (i32, i32) =
+        sqlx::query_as("SELECT post_number, reads FROM posts WHERE id = $1")
+            .bind(post)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    // A first timing for the post, so it counts a read; seen five seconds
+    // ago, so time_read is added to user_stats first.
+    sqlx::query("DELETE FROM post_timings WHERE topic_id = $1 AND user_id = $2")
+        .bind(TOPIC)
+        .bind(user)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let seen = (chrono::Utc::now().timestamp_micros() as f64 / 1_000_000.0) - 5.0;
+    sqlx::query(
+        "INSERT INTO discourse_rs.cached_values (key, value, expires_at) \
+         VALUES ($1, $2, clock_timestamp() + interval '100 seconds') \
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, expires_at = EXCLUDED.expires_at",
+    )
+    .bind(format!("user-last-seen:{user}"))
+    .bind(seen.to_string())
+    .execute(&db.pool)
+    .await
+    .unwrap();
+
+    let mut like = db.pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL lock_timeout = '10s'")
+        .execute(&mut *like)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE posts SET like_count = like_count WHERE id = $1")
+        .bind(post)
+        .execute(&mut *like)
+        .await
+        .unwrap();
+
+    let topic_s = TOPIC.to_string();
+    let timing_key = format!("timings[{post_number}]");
+    let reading = tokio::spawn(async move {
+        user1
+            .post(
+                "/topics/timings",
+                &[
+                    ("topic_id", topic_s.as_str()),
+                    ("topic_time", "5000"),
+                    (timing_key.as_str(), "5000"),
+                ],
+            )
+            .await
+    });
+    // Until the timings wait on the post row.
+    let mut waiting = false;
+    for _ in 0..200 {
+        waiting = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE datname = current_database() \
+               AND wait_event_type = 'Lock' AND query LIKE 'UPDATE posts SET reads%')",
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        if waiting {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+    }
+    assert!(waiting, "the timings never waited on the post row");
+
+    sqlx::query("UPDATE user_stats SET likes_given = likes_given + 1 WHERE user_id = $1")
+        .bind(user)
+        .execute(&mut *like)
+        .await
+        .expect("the like's user_stats update");
+    like.commit().await.unwrap();
+    let read = reading.await.unwrap();
+    ok("POST /topics/timings", &read);
+    let reads: i32 = sqlx::query_scalar("SELECT reads FROM posts WHERE id = $1")
+        .bind(post)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(reads, reads_before + 1, "the read was not counted");
+}
+
 #[tokio::test]
 async fn flags_a_post() {
     let (db, state) = app().await;
