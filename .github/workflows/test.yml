@@ -33,7 +33,7 @@ jobs:
 
   # Every test builds once into a nextest archive (tests/integration.rs
   # makes the integration tests one binary, so it is about 280 MB) and
-  # runs in six shares from it.
+  # runs in ten shares from it.
   build-tests:
     runs-on: ubuntu-latest
 
@@ -76,13 +76,13 @@ jobs:
           compression-level: 0
 
   test:
-    name: test (${{ matrix.share }}/6)
+    name: test (${{ matrix.share }}/10)
     needs: build-tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        share: [1, 2, 3, 4, 5, 6]
+        share: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     services:
       # structure.sql needs pgvector for the bundled discourse-ai tables.
@@ -140,7 +140,7 @@ jobs:
           monitor_pid=$!
           trap 'kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true' EXIT
           cargo nextest run --archive-file tests.tar.zst --workspace-remap . \
-            --profile ci --partition hash:${{ matrix.share }}/6
+            --profile ci --partition hash:${{ matrix.share }}/10
 
   # The Playwright suite (make browser-test, tests/browser): the server
   # built with rustup as above, booted on a throwaway copy of the loaded
