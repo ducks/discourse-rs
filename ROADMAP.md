@@ -121,7 +121,7 @@ and the latest plugin audit entries for implementation and remaining gaps.
 
 On main at 16353d29. Open: 125 items, 42 S, 2 S/M, 63 M, 18 L (phase 8:
 1, item 90; phase 9: 63; phase 10: 16, 257 and 258 found by the demo
-smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c-194g, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a, 283a. Phases
+smoke test; phase 11: 38; phase 12: 7, new in this sweep). Open inside them: 90g7a, 164b-164h, 188i3-188i5, 194c, 194d, 194e1, 194f, 228a-228c, 258a, 260a, 261b, 262a, 263a, 264a, 265a, 266a, 267a, 268a, 269a, 270b, 271a, 272a, 273a, 274a, 276a, 277a, 280a, 283a. Phases
 9 to 12 together hold everything the markers name.
 
 Markers: `grep -rho 'Unsupported("[^"]*")' src/` counts 1704 sites (1427
@@ -221,7 +221,8 @@ Blockers, a scripted walk-through would hit them:
   NewPostManager queues the post, so its words are found from the
   payload as Rails does (fix/watched-word-reason-guess; the queue had
   answered 500 on every real watched-word hold). Still refused: user reviewables (must_approve_users, 148),
-  editing a queued post and the silence and suspend client actions (194e)
+  a queued topic's tags field (194e1); editing a queued post and the
+  silence and suspend client actions are done (194e)
 - [x] The admin's site settings answered 500 saving a list setting such as
   authorized_extensions (164), so an admin couldn't allow video or audio
   uploads; the demo sites have them set in the database
@@ -271,8 +272,8 @@ fix/newcomer-path.
   Approving a queued post unsilences its author (UserSilencer.unsilence
   with the reviewable). Recorded on rs-ref-c: review/penalized_authors_list,
   review/queued_approve_silenced_author. Still refused: performing a
-  flag's unsilence_user (with the flag actions that delete, edit or
-  penalize, 194e), a reason with markup (sanitize_staff_reason).
+  flag's unsilence_user (with the flag actions that delete or restore),
+  a reason with markup (sanitize_staff_reason).
 - [x] Saving a draft holding an upload answered 500 ("drafts with uploads
   (UploadReference)"). Done: Draft.set ends with
   UploadReference.ensure_exist! over Upload.extract_upload_ids(data) (the
@@ -323,8 +324,8 @@ feat/flag-and-penalty-modals:
   parsed (admin_users/silence_from_penalize_modal,
   suspend_from_penalize_modal). The member gets the "Account temporarily
   on hold" message; unsilence and unsuspend work from the page. Still
-  refused: the delete posts decider after "delete all posts", and the
-  review queue's silence and suspend (194e).
+  refused: the delete posts decider after "delete all posts". The
+  review queue's silence and suspend open it too (194e).
 - [x] /admin/reports to a single report raised a script error: the list's
   filter ran on the report page after a page swap (step 21).
   admin-reports.js now acts only where the index template's AdminReports
@@ -372,7 +373,10 @@ Visible if clicked, avoid them in a scripted demo:
   refused (194c, 194d).
 - [ ] The review queue's client actions (edit, suspend, silence), its
   reject reason modal and editing a reviewable are refused (194e); the
-  revise modal is done (feat/review-queued-posts).
+  revise modal is done (feat/review-queued-posts). The client actions,
+  editing a queued post's title, category and raw and its raw email
+  are done (feat/review-client-actions, 194e); its tags field and the
+  reject reason modal are refused (194e1).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
@@ -3650,12 +3654,38 @@ route table has been made, so this list may be short.
     GrantBadgeModal, locking (PUT /posts/:id/locked), permanent deletion
     (force_destroy), wiki (PUT /posts/:id/wiki), PublishPageModal and
     rebaking (PUT /posts/:id/rebake)
-    194e. `feat/review-client-actions` M: the review queue's client
-    actions (the composer's edit, suspend, silence), the reject reason
-    modal and editing a reviewable (a queued post's title, category, tags
-    and raw: PUT /review/:id, ReviewablesController#update), and a queued
-    post's raw email (RawEmailModal). The revise modal is done
-    (feat/review-queued-posts)
+    194e. ~~`feat/review-client-actions`~~ (done) M: the review queue's
+    client actions: suspend and silence open the penalty modal
+    (penalize-user.js, now on /review) for the author with the post and
+    its raw, performing the action as its `before` (a flag's
+    agree_and_silence and agree_and_suspend, now performed as
+    agree_and_keep when built; a queued or reviewed post's
+    reject_and_silence and reject_and_suspend), the automatic claim
+    released once the modal closes; edit (a flag's agree_and_edit)
+    opens the post in the composer when it may be edited (PostsController
+    #show, GET /posts/:id, now ported beside by_number), staying on the
+    page (skipJumpOnSave) and performing once saved (onSaved).
+    Editing a reviewable: ReviewablesController#update (PUT
+    /review/:id, src/review/edit.rs) with editable_for, the params
+    checked field by field, update_fields (the payload merged, the
+    category cast, the version, the edited history with its changes,
+    the raw's upload references, notify_reviewable), JSON bodies
+    wrapped under `reviewable` as ParamsWrapper does, and the answer
+    with the cooked raw and escaped title; review.js draws the editable
+    fields in place (the title's input, the category in the composer's
+    CategoryChooser, the raw in a DEditor with the toolbar and preview)
+    with Save and Cancel. A queued post by email links to RawEmailModal
+    for those in view_raw_email_allowed_groups. Recorded on rs-ref-a
+    (parity/writes/review: update_*, review_agree_and_edit*,
+    review_agree_and_silence*, review_agree_and_suspend*;
+    posts_by_number/show*); browser specs in
+    tests/browser/review-client-actions.spec.js. The rest is 194e1
+    194e1. `feat/review-edit-tags` S: what 194e refuses, by name: a
+    queued topic's tags field (ReviewableFieldTags, MiniTagChooser
+    outside the composer: the tags are drawn and changing them says
+    so), and the reject reason modal (RejectReasonReviewableModal),
+    which only a user reviewable's reject opens, so it waits on user
+    reviewables in the queue (148)
     194f. `feat/review-pages-rest` M: the /review/topics, /review/settings
     and /review/:id pages (the user menu's review items link to the
     last), the insights tab (IpLookup), the pin toggle and loading past

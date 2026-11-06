@@ -128,6 +128,37 @@ function sql(query, ...params) {
     .map((line) => line.split("\t"));
 }
 
+// A member of the test's own, as user2 is (password, groups, options),
+// for a spec whose writes would reach another spec through a shared user
+// (a status, a penalty). Returns { name, id }.
+function member() {
+  const name = "st" + Math.floor(Math.random() * 1e9).toString(36);
+  const [[id]] = sql(
+    "INSERT INTO users SELECT (jsonb_populate_record(NULL::users, to_jsonb(u) || jsonb_build_object( \
+       'id', nextval('users_id_seq'), 'username', :'p1', 'username_lower', lower(:'p1'), 'name', :'p1', \
+       'secure_identifier', NULL))).* FROM users u WHERE username = 'user2' RETURNING id",
+    name,
+  );
+  const copy = (table, extra, where) =>
+    sql(
+      `INSERT INTO ${table} SELECT (jsonb_populate_record(NULL::${table}, to_jsonb(t) || jsonb_build_object(${extra}))).* \
+       FROM ${table} t WHERE user_id = (SELECT id FROM users WHERE username = 'user2')${where || ""}`,
+      name,
+      id,
+    );
+  copy(
+    "user_emails",
+    "'id', nextval('user_emails_id_seq'), 'user_id', :'p2'::int, 'email', :'p1' || '@example.com', 'normalized_email', :'p1' || '@example.com'",
+    ' AND "primary"',
+  );
+  copy("user_passwords", "'id', nextval('user_passwords_id_seq'), 'user_id', :'p2'::int");
+  copy("user_options", "'user_id', :'p2'::int");
+  copy("user_stats", "'user_id', :'p2'::int");
+  copy("user_profiles", "'user_id', :'p2'::int");
+  copy("group_users", "'id', nextval('group_users_id_seq'), 'user_id', :'p2'::int");
+  return { name, id };
+}
+
 // A label for what a test writes, unique across runs and workers.
 function label(what) {
   return `${what} ${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
@@ -139,4 +170,4 @@ function asset(rel) {
   return fs.readFileSync(path.join(ROOT, "static", rel), "utf8");
 }
 
-module.exports = { test, expect: base.expect, login, api, topic, sql, label, asset, PASSWORD };
+module.exports = { test, expect: base.expect, login, api, topic, sql, label, member, asset, PASSWORD };

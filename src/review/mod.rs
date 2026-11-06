@@ -1,23 +1,26 @@
 //! Acting on the review queue: `Reviewable#perform` for a
 //! ReviewableFlaggedPost (agree and keep, agree and hide, disagree,
-//! ignore), with the flag actions it settles, the transition, the flaggers'
-//! stats, and `Post#hide!`; ReviewableUser's delete actions
+//! ignore, and agreeing as the client edits the post or penalizes its
+//! author: agree_and_edit, agree_and_silence, agree_and_suspend), with
+//! the flag actions it settles, the transition, the flaggers' stats, and
+//! `Post#hide!`; ReviewableUser's delete actions
 //! (user.rs) and the queued and reviewed posts' actions (posts.rs).
 //!
 //! Refused for flagged posts: posts that are deleted or hidden (restoring
-//! and unhiding), deleting posts, silencing or suspending from the queue,
-//! editing, deleting users, flags with a message (their moderator
-//! replies); for every type, category group moderation. The claim check
-//! (claim_error?) and the manual claim released at the transition are
-//! claims.rs's.
+//! and unhiding), deleting posts, unsilencing, deleting users, flags with
+//! a message (their moderator replies); for every type, category group
+//! moderation. The claim check (claim_error?) and the manual claim
+//! released at the transition are claims.rs's.
 
 pub mod claims;
+pub mod edit;
 pub mod list;
 pub mod posts;
 pub mod reviewables;
 pub mod user;
 pub mod view;
 
+use chrono::NaiveDateTime;
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
@@ -96,10 +99,10 @@ fn flag_action(action_id: &str, hidden: bool) -> Result<Option<FlagAction>, Unsu
         }
         "disagree" => Some(FlagAction::Disagree),
         "ignore_and_do_nothing" | "ignore" => Some(FlagAction::Ignore),
-        "agree_and_edit"
-        | "agree_and_silence"
-        | "agree_and_suspend"
-        | "agree_and_restore"
+        // The client edits the post (the composer) before this, and the
+        // penalty modal penalizes after it: both alias agree_and_keep.
+        "agree_and_edit" => (!hidden).then_some(FlagAction::AgreeAndKeep),
+        "agree_and_restore"
         | "agree_and_keep_deleted"
         | "disagree_and_restore"
         | "disagree_and_keep_deleted"
@@ -113,7 +116,7 @@ fn flag_action(action_id: &str, hidden: bool) -> Result<Option<FlagAction>, Unsu
         | "unsilence_user"
         | "unsilence_user_and_ignore" => {
             return Err(Unsupported(
-                "review actions that delete, edit, restore or penalize",
+                "review actions that delete or restore, and unsilencing",
             ));
         }
         _ => None,
@@ -158,6 +161,31 @@ async fn flagged_post(
     .await
 }
 
+/// `ReviewablesController#claim_error?`: the error's key when the topic
+/// must be claimed first, or someone else claimed it.
+pub(crate) async fn claim_error(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    user_id: i32,
+    topic_id: Option<i32>,
+) -> Result<Option<&'static str>, AppError> {
+    let claiming = s.get("reviewable_claiming")?.to_s().to_string();
+    let Some(topic_id) = topic_id.filter(|_| claiming != "disabled") else {
+        return Ok(None);
+    };
+    let claimed_by: Option<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM reviewable_claimed_topics WHERE topic_id = $1 ORDER BY id LIMIT 1",
+    )
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    Ok(match claimed_by {
+        None if claiming == "required" => Some("reviewables.must_claim"),
+        Some(id) if id != user_id => Some("reviewables.user_claimed"),
+        _ => None,
+    })
+}
+
 /// `ReviewablesController#perform` with the given version.
 pub async fn perform(
     conn: &mut PgConnection,
@@ -189,26 +217,8 @@ pub async fn perform(
     .bind(reviewable_id)
     .fetch_one(&mut *conn)
     .await?;
-    // claim_error?
-    let claiming = s.get("reviewable_claiming")?.to_s().to_string();
-    if claiming != "disabled"
-        && let Some(topic_id) = reviewable.topic_id
-    {
-        let claimed_by: Option<i32> = sqlx::query_scalar(
-            "SELECT user_id FROM reviewable_claimed_topics WHERE topic_id = $1 ORDER BY id LIMIT 1",
-        )
-        .bind(topic_id)
-        .fetch_optional(&mut *conn)
-        .await?;
-        match claimed_by {
-            None if claiming == "required" => {
-                return Ok(Outcome::ClaimError("reviewables.must_claim"));
-            }
-            Some(id) if id != user.id => {
-                return Ok(Outcome::ClaimError("reviewables.user_claimed"));
-            }
-            _ => {}
-        }
+    if let Some(key) = claim_error(&mut *conn, s, user.id, reviewable.topic_id).await? {
+        return Ok(Outcome::ClaimError(key));
     }
     if reviewable.kind == "ReviewableUser" {
         return perform_user(conn, ctx, guardian, &reviewable, action_id, version, extra).await;
@@ -288,7 +298,34 @@ pub async fn perform(
     if post.deleted_at.is_some() || post.user_deleted {
         return Err(Unsupported("reviewing flags on deleted posts").into());
     }
-    let Some(action) = flag_action(action_id, post.hidden)? else {
+    let action = match action_id {
+        // build_penalty_actions: for an author the performer may suspend
+        // (a regular user), silence while not silenced and suspend while
+        // not suspended.
+        "agree_and_silence" | "agree_and_suspend" => {
+            let author: Option<(bool, Option<NaiveDateTime>, Option<NaiveDateTime>)> =
+                sqlx::query_as(
+                    "SELECT u.admin OR u.moderator, u.silenced_till, u.suspended_till \
+                     FROM reviewables r JOIN users u ON u.id = r.target_created_by_id \
+                     WHERE r.id = $1",
+                )
+                .bind(reviewable.id)
+                .fetch_optional(&mut *conn)
+                .await?;
+            let now = crate::clock::now_naive();
+            let built = author.is_some_and(|(staff, silenced_till, suspended_till)| {
+                let till = if action_id == "agree_and_silence" {
+                    silenced_till
+                } else {
+                    suspended_till
+                };
+                guardian.is_staff() && !staff && !till.is_some_and(|t| t > now)
+            });
+            built.then_some(FlagAction::AgreeAndKeep)
+        }
+        _ => flag_action(action_id, post.hidden)?,
+    };
+    let Some(action) = action else {
         return Ok(Outcome::Forbidden);
     };
     let Some(version) = run(

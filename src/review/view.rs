@@ -52,6 +52,9 @@ pub struct Page<'a> {
     /// discourse-user-notes, when it is on: the author's notes button and
     /// the note form's copy option.
     pub user_notes: Option<crate::plugins::user_notes::view::UserNotesUi>,
+    /// `currentUser.can_view_raw_email`: a queued post by email links to
+    /// its raw email.
+    pub can_view_raw_email: bool,
 }
 
 fn s(v: &Value) -> &str {
@@ -316,6 +319,7 @@ pub fn render(p: &Page) -> String {
     out.push_str("</div></div></div>");
     out.push_str(&expanded_filters_template(p));
     out.push_str(&revise_modal_template(p));
+    out.push_str(&edit_templates(p));
     out.push_str(&format!(
         "<script type=\"application/json\" id=\"review-page-data\">{}</script>",
         json!({
@@ -382,6 +386,36 @@ fn revise_modal_template(p: &Page) -> String {
     )
 }
 
+/// What review.js draws a reviewable's edit with (ReviewableItem's
+/// editing): ReviewableFieldEditor's DEditor (the composer's toolbar over
+/// the textarea, its preview beside it) and the aside's Save and Cancel.
+/// Only when a reviewable on the page may be edited.
+fn edit_templates(p: &Page) -> String {
+    let cx = p.cx;
+    let editable = p.doc["reviewables"]
+        .as_array()
+        .is_some_and(|r| r.iter().any(|r| r["can_edit"] == true));
+    if !editable {
+        return String::new();
+    }
+    format!(
+        "<template id=\"review-edit-editor\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\" data-d-scroll-axis=\"horizontal\">{}</div></div><textarea autocomplete=\"off\" class=\"d-editor-input\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div></template><template id=\"review-edit-actions\">{}{}</template>",
+        crate::composer::view::toolbar(cx, None, None),
+        icon_button(
+            "btn-primary reviewable-action save-edit",
+            "check",
+            &t(cx, "review.save"),
+            None
+        ),
+        icon_button(
+            "btn-danger reviewable-action cancel-edit",
+            "xmark",
+            &t(cx, "review.cancel"),
+            None
+        ),
+    )
+}
+
 /// What review.js says on its own: the copy feedback, the toasts' close
 /// label, the status names, the options button's chevrons.
 fn strings(p: &Page) -> Value {
@@ -411,6 +445,12 @@ fn strings(p: &Page) -> Value {
         "still_silenced": t(cx, "review.author_penalty.toast.still_silenced"),
         "undo_penalty": t(cx, "review.author_penalty.toast.undo"),
         "penalty_undone": t(cx, "review.author_penalty.toast.undone"),
+        "editing_post": t(cx, "review.editing_post"),
+        "category_choose": t(cx, "category.choose").replace("&hellip;", "…"),
+        "raw_email_title": t(cx, "raw_email.title"),
+        "raw_email_not_available": t(cx, "raw_email.not_available"),
+        "raw_email_raw_button": t(cx, "post.raw_email.displays.raw.button"),
+        "raw_email_raw_title": t(cx, "post.raw_email.displays.raw.title"),
     })
 }
 
@@ -724,6 +764,22 @@ fn script_data(p: &Page, store: &Store, r: &Value) -> Value {
         "actions": actions,
         "watched_words": words,
         "author_penalties": r["author_penalties"],
+        // The client actions: the post the composer edits and the
+        // penalty modal acts on, with its raw (reviewable.raw ??
+        // payload.raw).
+        "post_id": r["post_id"],
+        "raw": if r["raw"].is_null() { &r["payload"]["raw"] } else { &r["raw"] },
+        // Editing: the fields, their values (editableValue) and the tags
+        // as the item draws them; the raw email's modal.
+        "editable_fields": r["editable_fields"],
+        "category_id": r["category_id"],
+        "payload": {
+            "title": r["payload"]["title"],
+            "raw": r["payload"]["raw"],
+            "tags": r["payload"]["tags"],
+            "raw_email": r["payload"]["raw_email"],
+        },
+        "tags_html": reviewable_tags(p.cx, &r["payload"]["tags"]),
         "target_created_by": store
             .user(&r["target_created_by_id"])
             .map(|u| json!({ "id": u["id"], "username": u["username"] }))
@@ -834,7 +890,14 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
             "review.review_user",
             &after_user,
         ),
-        "ReviewableQueuedPost" => queued_post_body(cx, r, store, target_created_by, &after_user),
+        "ReviewableQueuedPost" => queued_post_body(
+            cx,
+            r,
+            store,
+            target_created_by,
+            &after_user,
+            p.can_view_raw_email,
+        ),
         crate::reviewables::CHAT_MESSAGE => {
             chat_message_body(p, r, store, target_created_by, &after_user)
         }
@@ -1485,6 +1548,7 @@ fn queued_post_body(
     store: &Store,
     author: Option<&Value>,
     after_user: &str,
+    can_view_raw_email: bool,
 ) -> String {
     let mut fallback = format!("<div class=\"title-text\">{}</div>", s(&r["fancy_title"]));
     if let Some(category) = r["category_id"]
@@ -1496,15 +1560,15 @@ fn queued_post_body(
         ));
     }
     fallback.push_str(&reviewable_tags(cx, &r["payload"]["tags"]));
-    // A post by email: the envelope (the raw email's modal for those who
-    // may see it is not ported; review.js says so).
+    // A post by email: the envelope, a link to the raw email's modal
+    // (RawEmailModal, review.js) for those who may see raw emails.
     if r["payload"]["via_email"] == true {
         let envelope = format!(
             "<span class=\"svg-icon-title\" title=\"{}\">{}</span>",
             escape(&t(cx, "post.via_email")),
             icon("envelope", None)
         );
-        if r["payload"]["raw_email"].is_string() {
+        if can_view_raw_email {
             fallback.push_str(&format!(
                 "<a class=\"show-raw-email\" href=\"\">{envelope}</a>"
             ));

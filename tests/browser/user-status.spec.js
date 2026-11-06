@@ -7,36 +7,7 @@
 // watched topic's posts live. enable_user_status is on for the suite
 // (setup.sql); each test works on a member of its own (cloned from
 // user2), so no other spec meets a status.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
-
-// A member of the test's own, as user2 is (password, groups, options).
-function member() {
-  const name = "st" + Math.floor(Math.random() * 1e9).toString(36);
-  const [[id]] = sql(
-    "INSERT INTO users SELECT (jsonb_populate_record(NULL::users, to_jsonb(u) || jsonb_build_object( \
-       'id', nextval('users_id_seq'), 'username', :'p1', 'username_lower', lower(:'p1'), 'name', :'p1', \
-       'secure_identifier', NULL))).* FROM users u WHERE username = 'user2' RETURNING id",
-    name,
-  );
-  const copy = (table, extra, where) =>
-    sql(
-      `INSERT INTO ${table} SELECT (jsonb_populate_record(NULL::${table}, to_jsonb(t) || jsonb_build_object(${extra}))).* \
-       FROM ${table} t WHERE user_id = (SELECT id FROM users WHERE username = 'user2')${where || ""}`,
-      name,
-      id,
-    );
-  copy(
-    "user_emails",
-    "'id', nextval('user_emails_id_seq'), 'user_id', :'p2'::int, 'email', :'p1' || '@example.com', 'normalized_email', :'p1' || '@example.com'",
-    ' AND "primary"',
-  );
-  copy("user_passwords", "'id', nextval('user_passwords_id_seq'), 'user_id', :'p2'::int");
-  copy("user_options", "'user_id', :'p2'::int");
-  copy("user_stats", "'user_id', :'p2'::int");
-  copy("user_profiles", "'user_id', :'p2'::int");
-  copy("group_users", "'id', nextval('group_users_id_seq'), 'user_id', :'p2'::int");
-  return { name, id };
-}
+const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 function status(id) {
   return sql("SELECT emoji, description, ends_at IS NOT NULL FROM user_statuses WHERE user_id = :'p1'", id);

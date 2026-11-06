@@ -1,6 +1,7 @@
-//! Port of ReviewablesController#perform: PUT
+//! Port of ReviewablesController#perform (PUT
 //! /review/:reviewable_id/perform/:action_id, answering with
-//! ReviewablePerformResultSerializer.
+//! ReviewablePerformResultSerializer) and #update (PUT
+//! /review/:reviewable_id, review::edit).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -124,6 +125,141 @@ pub async fn perform(
             )
                 .into_response()
         }
+    })
+}
+
+/// `Reviewable.attribute_names`: its columns and the `attribute`s it
+/// declares.
+const REVIEWABLE_ATTRIBUTES: [&str; 24] = [
+    "id",
+    "type",
+    "status",
+    "created_by_id",
+    "reviewable_by_moderator",
+    "reviewable_by_group_id",
+    "category_id",
+    "topic_id",
+    "score",
+    "potential_spam",
+    "target_id",
+    "target_type",
+    "target_created_by_id",
+    "payload",
+    "version",
+    "latest_score",
+    "created_at",
+    "updated_at",
+    "force_review",
+    "reject_reason",
+    "potentially_illegal",
+    "type_source",
+    "sensitivity",
+    "priority",
+];
+
+/// ParamsWrapper: a JSON body without `reviewable` has its keys that
+/// name Reviewable's attributes wrapped under it (the body's alone, not
+/// the query's).
+fn wrapped_reviewable(headers: &HeaderMap, body: &[u8]) -> Option<Value> {
+    let json = headers
+        .get(axum::http::header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.starts_with("application/json"));
+    if !json {
+        return None;
+    }
+    let Ok(Value::Object(body)) = serde_json::from_slice::<Value>(body) else {
+        return None;
+    };
+    Some(Value::Object(
+        body.into_iter()
+            .filter(|(k, _)| REVIEWABLE_ATTRIBUTES.contains(&k.as_str()))
+            .collect(),
+    ))
+}
+
+/// PUT /review/:reviewable_id: ReviewablesController#update.
+pub async fn update(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(reviewable_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    // requires_login
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    // :reviewable_id is constrained to digits; the format may follow.
+    let digits = reviewable_id
+        .strip_suffix(".json")
+        .unwrap_or(&reviewable_id);
+    let Some(reviewable_id) = digits
+        .parse::<i64>()
+        .ok()
+        .filter(|_| digits.bytes().all(|b| b.is_ascii_digit()))
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    // version_required
+    let Some(version) = p
+        .get("version")
+        .and_then(params::scalar)
+        .filter(|v| !v.trim().is_empty())
+    else {
+        return Ok(json_error(
+            &state,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "reviewables.missing_version",
+        ));
+    };
+    let version = crate::ruby::to_i(&version);
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // ensure_can_see: can_see_review_queue?
+    if !guardian.is_staff() {
+        if settings.get("enable_category_group_moderation")?.truthy() {
+            return Err(Unsupported("the review queue for category group moderators").into());
+        }
+        return Ok(super::search::invalid_access(&state));
+    }
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let edit = match p.get("reviewable") {
+        Some(edit) => Some(edit.clone()),
+        None => wrapped_reviewable(&headers, &body),
+    };
+    let updated = crate::review::edit::update(
+        &mut tx,
+        &ctx,
+        &guardian,
+        reviewable_id,
+        version,
+        edit.as_ref(),
+    )
+    .await?;
+    use crate::review::edit::Updated;
+    Ok(match updated {
+        Updated::Done(result) => {
+            tx.commit().await?;
+            (StatusCode::OK, Json(result)).into_response()
+        }
+        Updated::NotFound => super::topics::not_found_response(&state),
+        Updated::Forbidden => super::search::invalid_access(&state),
+        Updated::Conflict => json_error(&state, StatusCode::CONFLICT, "reviewables.conflict"),
+        Updated::ClaimError(key) => json_error(&state, StatusCode::UNPROCESSABLE_ENTITY, key),
     })
 }
 
@@ -370,7 +506,26 @@ pub async fn page(
                     &settings,
                     guardian.is_staff(),
                 )?,
+                can_view_raw_email: guardian
+                    .in_setting_groups(&settings, "view_raw_email_allowed_groups")?,
             });
+            // The penalty modal the silence and suspend client actions open
+            // (adminTools.showSilenceModal and showSuspendModal).
+            let timezone = crate::penalize_view::viewer_timezone(
+                &mut tx,
+                i64::from(guardian.user_id().unwrap_or_default()),
+            )
+            .await?;
+            let main = main
+                + &crate::penalize_view::config(
+                    &state.i18n,
+                    &settings,
+                    &crate::penalize_view::Assets {
+                        base_path: &base_path,
+                    },
+                    timezone.as_deref(),
+                    None,
+                );
             (main, crate::topic_list_view::t(&cx, "review.title"))
         }
         // Discourse::InvalidParameters: the 400 the model's request gets.

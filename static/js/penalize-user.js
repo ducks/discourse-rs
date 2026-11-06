@@ -9,10 +9,12 @@
 // history. Submitting PUTs /admin/users/:id/silence or /suspend.
 //
 //   Discourse.penalizeUser.show({ penaltyType, user, postId, postEdit,
-//                                 reviewableId, before, successCallback })
+//                                 reviewableId, before, successCallback,
+//                                 onClose })
 //       `user` is the admin user's JSON (AdminUser); `before` runs once
-//       before the penalty (the flag modal's flag); `successCallback`
-//       gets the response.
+//       before the penalty (the flag modal's flag, the review queue's
+//       perform); `successCallback` gets the response; `onClose` runs
+//       once the modal is gone (the review queue releasing its claim).
 //   Discourse.penalizeUser.find(userId) -> Promise of the admin user JSON
 //       (AdminUser.find), for a caller that has only the user's id.
 //
@@ -872,6 +874,7 @@
       className: type + "-user-modal --large",
       title: t(suspend ? "admin.user.suspend_modal_title" : "admin.user.silence_modal_title"),
       beforeClose: warnBeforeClosing,
+      onClose: model.onClose,
       body: function (body) {
         modalEl = body.closest(".d-modal");
         if (canPenalize) {

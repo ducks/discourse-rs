@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/52.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/999999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/abc.json"
+    }
+  ]
+}

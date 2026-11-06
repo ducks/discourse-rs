@@ -2590,7 +2590,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/review/user-menu-list.json", get(review::user_menu_list))
         .route(
             "/review/{reviewable_id}",
-            get(permalinks::show).delete(user_activity::destroy_reviewable),
+            get(permalinks::show)
+                .put(review::update)
+                .delete(user_activity::destroy_reviewable),
         )
         .route(
             "/review/{reviewable_id}/perform/{action_id}",
@@ -2645,7 +2647,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/posts.json", post(posts::create))
         .route(
             "/posts/{id}",
-            put(posts::update).delete(post_destroy::destroy_post),
+            get(posts::show)
+                .put(posts::update)
+                .delete(post_destroy::destroy_post),
         )
         .route(
             "/posts/by_number/{topic_id}/{post_number}",

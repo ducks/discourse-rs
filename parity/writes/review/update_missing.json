@@ -1,0 +1,79 @@
+{
+  "name": "update_missing",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/12345.json",
+      "params": {
+        "version": 0
+      }
+    }
+  ],
+  "started_at": "2026-11-06T20:26:58.203491",
+  "transaction_started_at": "2026-11-06T20:26:57.00618",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "apIJrOxwUVVwndJw4a7zucru4tM=",
+            "created_at": "2026-11-06T20:26:57.347958",
+            "rotated_at": "2026-11-06T20:26:57.347109",
+            "updated_at": "2026-11-06T20:26:57.347958",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "apIJrOxwUVVwndJw4a7zucru4tM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T20:26:58.214",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "apIJrOxwUVVwndJw4a7zucru4tM=",
+            "created_at": "2026-11-06T20:26:57.347958",
+            "rotated_at": "2026-11-06T20:26:57.347109",
+            "updated_at": "2026-11-06T20:26:57.347958",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "apIJrOxwUVVwndJw4a7zucru4tM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)"
+  ],
+  "recorded_from": {
+    "case": "b2d91d429e877011079cdc08fabfb02ecc0a470252f918f9ac3cd77433e5b866",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

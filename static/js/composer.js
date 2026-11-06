@@ -519,6 +519,10 @@
     s.snapshot = opts.snapshot || null;
     s.noBump = !!opts.noBump;
     s.unlistTopic = !!opts.unlistTopic;
+    // skipJumpOnSave and onSaved: the review queue's edit stays on its
+    // page, then performs once this session is saved.
+    s.skipJumpOnSave = !!opts.skipJumpOnSave;
+    s.onSaved = opts.onSaved || null;
     setMode(opts.mode);
     applyDiscardIcon(opts.mode);
     textarea.value = "";
@@ -2186,7 +2190,7 @@
     if (!state) {
       return;
     }
-    submitPost(!(event && event.shiftKey && state.mode === "reply"), false);
+    submitPost(!(event && event.shiftKey && state.mode === "reply") && !state.skipJumpOnSave, false);
   }
 
   function submitPost(jump, force) {
@@ -2312,6 +2316,9 @@
         }
         var mode = s.mode;
         close();
+        if (s.onSaved) {
+          s.onSaved();
+        }
         var post = json.post || json;
         if (!post.topic_id) {
           return;
