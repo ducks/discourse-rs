@@ -192,6 +192,62 @@ pub struct TopicInfo {
     pub assign: Value,
     /// discourse-post-voting's state of a post voting topic.
     pub post_voting: Option<crate::plugins::post_voting::view::TopicState>,
+    /// What the bookmark menus read of the viewer.
+    pub bookmark_viewer: BookmarkViewer,
+}
+
+/// What BookmarkMenu and TopicBookmarksMenu read of the current user.
+#[derive(Clone, Default)]
+pub struct BookmarkViewer {
+    /// `user_option.timezone`, the reminder titles' zone; without one the
+    /// browser's (moment.tz.guess).
+    pub zone: Option<chrono_tz::Tz>,
+    /// `user_option.bookmark_auto_delete_preference`, which a new bookmark
+    /// carries (Bookmark.createFor).
+    pub auto_delete_preference: Option<i32>,
+}
+
+impl BookmarkViewer {
+    pub async fn load(
+        conn: &mut sqlx::PgConnection,
+        user_id: Option<i32>,
+    ) -> Result<BookmarkViewer, sqlx::Error> {
+        let Some(user_id) = user_id else {
+            return Ok(BookmarkViewer::default());
+        };
+        let row: Option<(Option<String>, i32)> = sqlx::query_as(
+            "SELECT timezone, bookmark_auto_delete_preference FROM user_options WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_optional(conn)
+        .await?;
+        Ok(match row {
+            Some((zone, preference)) => BookmarkViewer {
+                zone: zone.and_then(|z| z.parse().ok()),
+                auto_delete_preference: Some(preference),
+            },
+            None => BookmarkViewer::default(),
+        })
+    }
+
+    /// BookmarkFormData#saveData for a new bookmark, as jQuery sends it
+    /// (null and undefined as empty values), its auto delete preference
+    /// the user's, else clearing the reminder: hx-vals' JSON.
+    pub(crate) fn new_bookmark_vals(
+        &self,
+        bookmarkable_id: &Value,
+        bookmarkable_type: &str,
+    ) -> String {
+        serde_json::json!({
+            "reminder_at": "",
+            "name": "",
+            "id": "",
+            "auto_delete_preference": self.auto_delete_preference.unwrap_or(3).to_string(),
+            "bookmarkable_id": bookmarkable_id,
+            "bookmarkable_type": bookmarkable_type,
+        })
+        .to_string()
+    }
 }
 
 /// What the topic admin menu (TopicAdminMenu) and the post admin menu
@@ -308,6 +364,7 @@ impl TopicInfo {
             plugin_menu: HashMap::new(),
             assign: crate::plugins::assign::view::topic_assign(view),
             post_voting: crate::plugins::post_voting::view::TopicState::from_view(view),
+            bookmark_viewer: BookmarkViewer::default(),
         }
     }
 }
@@ -2092,6 +2149,154 @@ pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
     )
 }
 
+/// TopicBookmarksMenu's grouped DMenu content (DDropdownMenu), once per
+/// page in a template static/js/topic-bookmarks-menu.js opens from the
+/// footer's trigger: a row per post bookmark by post number (each opening
+/// TopicBookmarkPostSubmenu: jump, edit, delete), the topic's bookmark to
+/// edit or delete or else Bookmark topic, and Delete all bookmarks when
+/// there are several. Its data-topic carries what the script needs: the
+/// bookmarks, the topic's URL, the new bookmark's saveData and the
+/// strings. Empty unless the menu is drawn (a member with a post's
+/// bookmark in the topic).
+pub fn topic_bookmarks_menu(cx: &PostContext, view: &Value) -> String {
+    if cx.viewer.is_none() {
+        return String::new();
+    }
+    let l = cx.list;
+    let all: Vec<&Value> = view["bookmarks"]
+        .as_array()
+        .map(|b| b.iter().collect())
+        .unwrap_or_default();
+    let mut posts: Vec<&Value> = all
+        .iter()
+        .copied()
+        .filter(|b| b["bookmarkable_type"] == "Post")
+        .collect();
+    if posts.is_empty() {
+        return String::new();
+    }
+    // postBookmarks: by post number (a stable sort, as Array#sort is).
+    posts.sort_by_key(|b| b["post_number"].as_i64().unwrap_or(0));
+    let topic_bookmark = all.iter().find(|b| b["bookmarkable_type"] == "Topic");
+    let named = |b: &Value| b["name"].as_str().filter(|n| !n.is_empty()).map(escape);
+    let texts = |label: &str, description: Option<String>| {
+        let description = description
+            .map(|d| format!("<span class=\"bookmark-menu__row-description\">{d}</span>"))
+            .unwrap_or_default();
+        format!(
+            "<span class=\"bookmark-menu__row-texts\"><span class=\"bookmark-menu__row-label\">{}</span>{description}</span>",
+            escape(label)
+        )
+    };
+    let labelled = |class: &str, icon_name: &str, label: &str| {
+        format!(
+            "<button class=\"{class} btn btn-icon-text\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+            icon(icon_name, None),
+            escape(label)
+        )
+    };
+    let mut items = String::new();
+    for b in &posts {
+        let number = b["post_number"].as_i64().unwrap_or(0);
+        let label = t_with(
+            l,
+            "bookmarks.post_bookmark",
+            &[("post_number", &number.to_string())],
+        );
+        let name = named(b);
+        items.push_str(&format!(
+            "<li class=\"dropdown-menu__item bookmark-menu__row --post-bookmark{}\" data-menu-option-id=\"post-{number}\"><button aria-label=\"{}\" class=\"bookmark-menu__row-btn btn no-text btn-icon\" type=\"button\">{}{}<span class=\"d-button__suffix-icon\">{}</span></button></li>",
+            if name.is_some() { " --has-name" } else { "" },
+            escape(&label),
+            icon("bookmark", None),
+            texts(&label, name),
+            icon("angle-right", None),
+        ));
+    }
+    items.push_str(DROPDOWN_DIVIDER);
+    match topic_bookmark {
+        Some(b) => {
+            let name = named(b);
+            items.push_str(&format!(
+                "<li class=\"dropdown-menu__item bookmark-menu__row --edit{}\" data-menu-option-id=\"edit-topic-bookmark\"><button class=\"bookmark-menu__row-btn btn no-text btn-icon\" type=\"button\">{}{}</button></li>",
+                if name.is_some() { " --has-name" } else { "" },
+                icon("pencil", None),
+                texts(&t(l, "bookmarks.edit_topic_bookmark"), name),
+            ));
+            items.push_str(&format!(
+                "<li class=\"dropdown-menu__item bookmark-menu__row --remove\" data-menu-option-id=\"delete-topic-bookmark\">{}</li>",
+                labelled(
+                    "bookmark-menu__row-btn --danger",
+                    "trash-can",
+                    &t(l, "bookmarks.delete_topic_bookmark")
+                ),
+            ));
+        }
+        None => items.push_str(&format!(
+            "<li class=\"dropdown-menu__item bookmark-menu__row --bookmark-topic\" data-menu-option-id=\"bookmark-topic\">{}</li>",
+            labelled(
+                "bookmark-menu__row-btn",
+                "bookmark",
+                &t(l, "bookmarks.bookmark_topic")
+            ),
+        )),
+    }
+    // isMultipleBookmarks
+    if all.len() > 1 {
+        items.push_str(DROPDOWN_DIVIDER);
+        items.push_str(&format!(
+            "<li class=\"dropdown-menu__item bookmark-menu__row --remove\" data-menu-option-id=\"clear-all\">{}</li>",
+            labelled(
+                "bookmark-menu__row-btn --danger",
+                "trash-can",
+                &t(l, "bookmarked.delete_bookmarks")
+            ),
+        ));
+    }
+    // TopicBookmarkPostSubmenu's rows, the post's number filled in by the
+    // script.
+    let submenu = format!(
+        "<ul class=\"dropdown-menu topic-bookmark-post-submenu\"><li class=\"dropdown-menu__item bookmark-menu__row --jump\" data-menu-option-id=\"jump\"><button class=\"bookmark-menu__row-btn btn no-text btn-icon\" type=\"button\">{}<span class=\"bookmark-menu__row-label\"></span></button></li><li class=\"dropdown-menu__item bookmark-menu__row --edit\" data-menu-option-id=\"edit\">{}</li><li class=\"dropdown-menu__item bookmark-menu__row --remove\" data-menu-option-id=\"delete\">{}</li></ul>",
+        icon("arrow-right", None),
+        labelled("bookmark-menu__row-btn", "pencil", &t(l, "edit")),
+        labelled(
+            "bookmark-menu__row-btn --danger",
+            "trash-can",
+            &t(l, "delete")
+        ),
+    );
+    let bookmark = |b: &Value| {
+        serde_json::json!({
+            "id": b["id"],
+            "bookmarkable_id": b["bookmarkable_id"],
+            "bookmarkable_type": b["bookmarkable_type"],
+            "post_number": b["post_number"],
+        })
+    };
+    let data = serde_json::json!({
+        "id": cx.topic.id,
+        "url": format!("{}/t/{}/{}", l.base_path, cx.topic.slug, cx.topic.id),
+        "posts": posts.iter().map(|b| bookmark(b)).collect::<Vec<_>>(),
+        "topicBookmark": topic_bookmark.map(|b| bookmark(b)),
+        "newBookmark": serde_json::from_str::<Value>(
+            &cx.topic
+                .bookmark_viewer
+                .new_bookmark_vals(&serde_json::json!(cx.topic.id), "Topic"),
+        )
+        .unwrap_or(Value::Null),
+        "strings": {
+            "jumpToPost": t(l, "bookmarks.jump_to_post"),
+            "bookmarked": t(l, "bookmarks.bookmarked_success"),
+            "deleted": t(l, "bookmarks.deleted_bookmark_success"),
+            "confirmClear": t(l, "bookmarks.confirm_clear"),
+        },
+    });
+    format!(
+        "<template class=\"topic-bookmarks-menu-template\" data-topic=\"{}\"><ul class=\"dropdown-menu\">{items}</ul>{submenu}</template>",
+        escape(&data.to_string())
+    )
+}
+
 /// post/menu/buttons/delete: PostMenuDeleteButton.modeFor. Deleting a
 /// reply sends DELETE /posts/:id and recovering one PUT
 /// /posts/:id/recover; the topic modes, the recovering modes and the
@@ -2321,7 +2526,11 @@ fn bookmark_button(cx: &PostContext, p: &Value) -> String {
             } else {
                 "bookmark"
             },
-            t_with(cx.list, "bookmarks.created_generic", &[("name", "")]),
+            bookmark_title(
+                cx,
+                date(&p["bookmark_reminder_at"]),
+                p["bookmark_name"].as_str().unwrap_or_default(),
+            ),
             if reminder {
                 " bookmarked with-reminder"
             } else {
@@ -2334,15 +2543,42 @@ fn bookmark_button(cx: &PostContext, p: &Value) -> String {
             t(cx.list, "bookmarks.not_bookmarked"),
             "",
             format!(
-                " hx-post=\"{base}/bookmarks\" hx-vals='{{\"bookmarkable_id\": {id}, \"bookmarkable_type\": \"Post\"}}'"
+                " hx-post=\"{base}/bookmarks\" hx-vals=\"{}\"",
+                escape(&cx.topic.bookmark_viewer.new_bookmark_vals(id, "Post"))
             ),
         ),
     };
     format!(
-        "<button aria-expanded=\"false\" class=\"btn no-text btn-icon fk-d-menu__trigger bookmark-menu-trigger post-action-menu__bookmark btn-flat bookmark widget-button bookmark-menu__trigger btn-icon no-text{extra}\" data-identifier=\"bookmark-menu\" data-trigger=\"\"{htmx} hx-swap=\"none\" hx-on::after-request=\"refreshPost(event, '{base}/live/post/{id}')\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
-        escape(title.trim()),
+        "<button aria-expanded=\"false\" class=\"btn no-text btn-icon fk-d-menu__trigger bookmark-menu-trigger post-action-menu__bookmark btn-flat bookmark widget-button bookmark-menu__trigger btn-icon no-text{extra}\" data-identifier=\"bookmark-menu\" data-trigger=\"\"{htmx} hx-swap=\"none\" hx-on::after-request=\"refreshPost(event, '{base}/live/post/{id}')\"{} type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+        crate::viewer_dates::attr_in(
+            cx.list,
+            "title",
+            title.trim(),
+            cx.topic.bookmark_viewer.zone
+        ),
         icon(icon_name, None)
     )
+}
+
+/// BookmarkMenu's and TopicBookmarksMenu's buttonTitle for one bookmark:
+/// created_with_reminder_generic with BookmarkFormData#formattedReminder
+/// in the viewer's zone (a template for static/js/dates.js), else
+/// created_generic, each with the bookmark's name.
+fn bookmark_title(cx: &PostContext, reminder_at: Option<DateTime<Utc>>, name: &str) -> String {
+    match reminder_at {
+        Some(at) => t_with(
+            cx.list,
+            "bookmarks.created_with_reminder_generic",
+            &[
+                (
+                    "date",
+                    &crate::viewer_dates::relative_marker(at, "reminder-time"),
+                ),
+                ("name", name),
+            ],
+        ),
+        None => t_with(cx.list, "bookmarks.created_generic", &[("name", name)]),
+    }
 }
 
 /// post/actions-summary: the viewer's own flags, and who deleted it.
@@ -3179,8 +3415,10 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     };
     // TopicBookmarksMenu: every bookmark of the viewer's in the topic (the
     // topic's own and its posts'). With a post among them it is a DMenu
-    // grouping them (useGroupedDropdown), whose content is not ported:
-    // topic.js refuses its click. Otherwise BookmarkMenu, here a toggle.
+    // grouping them (useGroupedDropdown), its content the page's
+    // template.topic-bookmarks-menu-template (topic_bookmarks_menu) that
+    // static/js/topic-bookmarks-menu.js opens. Otherwise BookmarkMenu, here
+    // a toggle.
     let all: Vec<&Value> = view["bookmarks"]
         .as_array()
         .map(|b| b.iter().collect())
@@ -3188,13 +3426,14 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     let topic_bookmark = all.iter().find(|b| b["bookmarkable_type"] == "Topic");
     let grouped = all.iter().any(|b| b["bookmarkable_type"] == "Post");
     let base = l.base_path;
-    // buttonTitle: one bookmark's name (created_generic), several counted.
+    // buttonTitle: one bookmark's (with its reminder and name), several
+    // counted.
     let title = match all.as_slice() {
         [] => t(l, "bookmarks.not_bookmarked"),
-        [one] => t_with(
-            l,
-            "bookmarks.created_generic",
-            &[("name", one["name"].as_str().unwrap_or_default())],
+        [one] => bookmark_title(
+            cx,
+            date(&one["reminder_at"]),
+            one["name"].as_str().unwrap_or_default(),
         ),
         _ => t_count(l, "bookmarked.edit_bookmark", all.len() as i64, &[]),
     };
@@ -3244,8 +3483,12 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
                 String::new(),
                 "bookmark-menu",
                 format!(
-                    " hx-post=\"{base}/bookmarks\" hx-vals='{{\"bookmarkable_id\": {}, \"bookmarkable_type\": \"Topic\"}}' hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\"",
-                    cx.topic.id
+                    " hx-post=\"{base}/bookmarks\" hx-vals=\"{}\" hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\"",
+                    escape(
+                        &cx.topic
+                            .bookmark_viewer
+                            .new_bookmark_vals(&serde_json::json!(cx.topic.id), "Topic")
+                    )
                 ),
             ),
         }
@@ -3254,11 +3497,6 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         "topic-bookmarks-menu-trigger"
     } else {
         "bookmark-menu-trigger"
-    };
-    let unported = if grouped {
-        " data-unported=\"the topic's bookmarks menu (TopicBookmarksMenu)\""
-    } else {
-        ""
     };
     // showBookmarkLabel: none for a message.
     let (classes, label) = if private_message {
@@ -3275,8 +3513,8 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         "btn-icon-text"
     };
     actions.push_str(&format!(
-        "<button class=\"{classes} fk-d-menu__trigger {trigger} bookmark widget-button bookmark-menu__trigger {label_classes} btn-default topic-footer-button{extra}\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"{identifier}\" data-trigger=\"\"{htmx}{unported} type=\"button\">{}{label}</button>",
-        escape(&title),
+        "<button class=\"{classes} fk-d-menu__trigger {trigger} bookmark widget-button bookmark-menu__trigger {label_classes} btn-default topic-footer-button{extra}\"{} aria-expanded=\"false\" data-identifier=\"{identifier}\" data-trigger=\"\"{htmx} type=\"button\">{}{label}</button>",
+        crate::viewer_dates::attr_in(l, "title", &title, cx.topic.bookmark_viewer.zone),
         icon(icon_name, None),
     ));
     // Flag and Mark unread: inline on desktop, in the mobile view the
@@ -4037,6 +4275,7 @@ mod tests {
             plugin_menu: HashMap::new(),
             assign: Value::Null,
             post_voting: None,
+            bookmark_viewer: BookmarkViewer::default(),
         };
         let cx = PostContext {
             list: &list,
@@ -4322,6 +4561,7 @@ mod tests {
             plugin_menu: HashMap::new(),
             assign: Value::Null,
             post_voting: None,
+            bookmark_viewer: BookmarkViewer::default(),
         };
         let cx = PostContext {
             list: &list,

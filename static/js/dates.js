@@ -491,27 +491,31 @@
     return "UNKNOWN FORMAT";
   }
 
-  // lib/bookmark's formattedReminderTime, capitalized as
-  // Bookmark#formattedReminder: in the member's zone where they have one.
-  function formattedReminder(ms, zone) {
+  // lib/bookmark's formattedReminderTime (BookmarkFormData#formattedReminder):
+  // in the member's zone where they have one.
+  function formattedReminderTime(ms, zone) {
     var at = fields(ms, zone);
     var now = fields(Date.now(), zone);
     var next = new Date(Date.UTC(now.year, now.month, now.day + 1));
     var time = format(ms, i18n("dates.time"), zone);
-    var text;
     if (
       at.year === next.getUTCFullYear() &&
       at.month === next.getUTCMonth() &&
       at.day === next.getUTCDate()
     ) {
-      text = i18n("bookmarks.reminders.tomorrow_with_time", { time: time });
+      return i18n("bookmarks.reminders.tomorrow_with_time", { time: time });
     } else if (at.year === now.year && at.month === now.month && at.day === now.day) {
-      text = i18n("bookmarks.reminders.today_with_time", { time: time });
+      return i18n("bookmarks.reminders.today_with_time", { time: time });
     } else {
-      text = i18n("bookmarks.reminders.at_time", {
+      return i18n("bookmarks.reminders.at_time", {
         date_time: format(ms, i18n("dates.long_with_year"), zone),
       });
     }
+  }
+
+  // The same capitalized, as Bookmark#formattedReminder.
+  function formattedReminder(ms, zone) {
+    var text = formattedReminderTime(ms, zone);
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
@@ -521,6 +525,7 @@
   //   timeline-ago       the timeline's last post (addAgo, timelineDate)
   //   medium-span-ago    relativeAgeMediumSpan with ago (no dates)
   //   reminder           Bookmark#formattedReminder
+  //   reminder-time      formattedReminderTime (BookmarkFormData#formattedReminder)
   //   timeline-days-ago  the number is days: timelineDate of today less
   //                      them, as the timeline's scroller counts them
   //   tiny-ago           relativeAge with addAgo (poll-info's closed age)
@@ -540,6 +545,8 @@
         return relativeAgeTiny(ms, zone, false, true);
       case "humanize":
         return humanize(ms);
+      case "reminder-time":
+        return formattedReminderTime(ms, zone);
       case "reminder":
         return formattedReminder(ms, zone);
       case "medium-span-ago":

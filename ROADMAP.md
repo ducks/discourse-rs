@@ -374,7 +374,8 @@ Visible if clicked, avoid them in a scripted demo:
   profile's About me editor follows it.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
-- [ ] The grouped bookmarks menu (274a).
+- [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
+  editing a bookmark from it waits on BookmarkModal (196).
 
 Polish, from the second screenshot sweep:
 
@@ -4599,16 +4600,39 @@ route table has been made, so this list may be short.
     and admin-pages-mobile held (the rows that got worse scored the same
     on main's binary when rerun together: reference state). Left, split
     into 274a.
-    274a. `fix/profile-polish-rest` S: the grouped bookmarks menu's
-    content (its post rows and their submenu, edit and delete the
-    topic's bookmark, bookmark the topic, clear all): its trigger is
-    drawn and refused (post_view.rs:2300, static/js/topic.js:609); a
-    single bookmark with a reminder titles the footer and post buttons
-    created_generic where Ember says created_with_reminder_generic with
-    BookmarkFormData's formattedReminder (post_view.rs:1399,2237); GET
-    /g/:name/members as a page answers the members JSON route's 404
-    where Ember redirects to the group's page, its members
-    (routes/mod.rs:2467)
+    274a. ~~`fix/profile-polish-rest`~~ (done) S: the footer's grouped
+    bookmarks menu (TopicBookmarksMenu with a post's bookmark among the
+    member's in the topic) drew its trigger and refused the click. Its
+    DDropdownMenu is now the page's template.topic-bookmarks-menu-template
+    (post_view::topic_bookmarks_menu) that static/js/topic-bookmarks-menu.js
+    opens as a DMenu (a bottom sheet on a phone): a row per post bookmark
+    by post number with its name, each opening TopicBookmarkPostSubmenu by
+    it (right-start, closing the menu with it) to jump to the post
+    (routeTo) or delete its bookmark; the topic's bookmark to delete, or
+    Bookmark topic (POST /bookmarks with BookmarkFormData's saveData as
+    jQuery sends it, the user's auto delete preference, an empty name
+    stored empty as Rails does, where the port stored null); Delete all
+    bookmarks with several, after dialog.yesNoConfirm, through the newly
+    ported PUT /t/:topic_id/remove_bookmarks
+    (TopicsController#remove_bookmarks, BookmarkManager#destroy_for_topic:
+    each bookmark and its dependent reminder notifications, the topic
+    user's flag; 403 anonymous, 404 not visible). Each shows Ember's toast,
+    then the footer's button and the posts concerned are drawn again from
+    the server, as is the button after a post's bookmark toggles from its
+    own menu. The post menu's and the footer's toggles send the same
+    saveData. A single bookmark with a reminder titles the footer's and
+    the post's buttons created_with_reminder_generic with
+    formattedReminderTime, uncapitalized as BookmarkFormData#formattedReminder
+    has it, in the member's timezone (data-tz-zone) or the browser's
+    (viewer_dates' new `@reminder-time`), and the post's title carries the
+    bookmark's name, which it dropped. GET /g/:name/members as a page
+    redirects to the group's page at its lowercased name (group.members'
+    beforeModel, the group route's serialize), the 404 page for a group
+    the viewer can't see. Five write cases in parity/writes/bookmarks
+    (topic_remove_bookmarks*, bookmark_topic_from_menu), tests in
+    tests/sessions.rs and tests/groups_pages.rs, a browser spec
+    (topic-bookmarks-menu.spec.js). Editing a bookmark, the topic's or a
+    post's, opens BookmarkModal, which stays refused with 196.
 276. ~~`fix/composer-open-padding`~~ (done) S: with the composer open
     the page could not scroll its end clear of it: Ember's
     Composer#composeStateChanged puts html.composer-open on the document

@@ -1,7 +1,7 @@
 //! BookmarkManager for posts, topics and (while chat is enabled) chat
 //! messages: creating a bookmark (the bookmarkable's visibility, Bookmark's
 //! validations, the topic user's bookmarked flag), updating, pinning and
-//! destroying one.
+//! destroying one, and destroying every one of the user's in a topic.
 //!
 //! Refused: bookmarkables of other types, reminder times in formats other
 //! than ISO 8601. The controller's create_bookmark limit is in the route.
@@ -203,7 +203,8 @@ pub async fn create(
         }
     };
     let reminder_at = crate::user_penalties::cast_time(fields.reminder_at)?;
-    let name = fields.name.filter(|n| !n.is_empty());
+    // Stored as sent: an empty name stays empty (jQuery sends undefined as "").
+    let name = fields.name;
 
     // Bookmark's validations, in their order.
     let mut errors = Vec::new();
@@ -446,4 +447,55 @@ pub async fn destroy(
         topic_bookmarked,
         reminders_deleted,
     })
+}
+
+/// `BookmarkManager#destroy_for_topic` with no filter: each of the user's
+/// bookmarks in the topic (`Bookmark.for_user_in_topic`) destroyed with
+/// its dependent reminder notifications, then the topic user's
+/// bookmarked flag (`update_topic_user_bookmarked`). Every bookmark is the
+/// user's own, so `can_delete?` holds for each. Whether any reminder
+/// notification went (the user's notification state then needs
+/// publishing).
+pub async fn destroy_for_topic(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+) -> Result<bool, AppError> {
+    let bookmarks: Vec<(i64, i32)> = sqlx::query_as(
+        "SELECT b.id, b.auto_delete_preference FROM bookmarks b \
+           LEFT JOIN posts p ON p.id = b.bookmarkable_id AND b.bookmarkable_type = 'Post' \
+           LEFT JOIN topics t ON (t.id = b.bookmarkable_id AND b.bookmarkable_type = 'Topic') \
+                              OR (t.id = p.topic_id) \
+           WHERE b.user_id = $1 AND (t.id = $2 OR p.topic_id = $2) \
+             AND p.deleted_at IS NULL AND t.deleted_at IS NULL",
+    )
+    .bind(user_id)
+    .bind(topic_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut reminders_deleted = false;
+    for (bookmark_id, preference) in bookmarks {
+        sqlx::query("DELETE FROM bookmarks WHERE id = $1")
+            .bind(bookmark_id)
+            .execute(&mut *conn)
+            .await?;
+        // has_many :dependent_reminder_notifications, dependent: :destroy;
+        // kept when the bookmark goes because its reminder was sent.
+        if preference != 1 {
+            reminders_deleted |= sqlx::query(
+                "DELETE FROM notifications WHERE user_id = $1 AND notification_type = $2 \
+                 AND data::jsonb->>'bookmark_id' = $3",
+            )
+            .bind(user_id)
+            .bind(crate::notification_create::types::BOOKMARK_REMINDER)
+            .bind(bookmark_id.to_string())
+            .execute(&mut *conn)
+            .await?
+            .rows_affected()
+                > 0;
+        }
+    }
+    sync_topic_user(bus, &mut *conn, user_id, topic_id).await?;
+    Ok(reminders_deleted)
 }

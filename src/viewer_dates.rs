@@ -133,6 +133,7 @@ pub(crate) fn fill_in<C: DateContext + ?Sized>(
         };
         out.push_str(&match format.strip_prefix('@') {
             Some("reminder") => formatted_reminder(cx, at, zone),
+            Some("reminder-time") => formatted_reminder_time(cx, at, zone),
             Some(named) => named_format(cx, ms, at, named),
             None => format_utc(wall(at, zone), format).unwrap_or_default(),
         });
@@ -169,6 +170,29 @@ pub(crate) fn text<C: DateContext + ?Sized>(cx: &C, template: &str) -> (String, 
     (tz_attr("text", template), escape(&fill_utc(cx, template)))
 }
 
+/// `attr` in the member's zone where Ember reads their timezone option, as
+/// `text_in`: with one, ` data-tz-zone` names it and the value is drawn in
+/// it here; without one, the browser's zone, UTC here.
+pub(crate) fn attr_in<C: DateContext + ?Sized>(
+    cx: &C,
+    name: &str,
+    template: &str,
+    zone: Option<chrono_tz::Tz>,
+) -> String {
+    if !template.contains("%{") {
+        return attr(cx, name, template);
+    }
+    let mut out = format!(
+        " {name}=\"{}\" data-tz-{name}=\"{}\"",
+        escape(&fill_in(cx, template, zone.unwrap_or(chrono_tz::UTC))),
+        escape(template)
+    );
+    if let Some(z) = zone {
+        out.push_str(&format!(" data-tz-zone=\"{}\"", escape(z.name())));
+    }
+    out
+}
+
 /// `text` in the member's zone where Ember reads their timezone option:
 /// with one, ` data-tz-zone` names it and the text is drawn in it here;
 /// without one, the browser's zone (moment.tz.guess), UTC here.
@@ -192,9 +216,24 @@ pub(crate) fn text_in<C: DateContext + ?Sized>(
 }
 
 /// `formattedReminderTime(reminder_at, timezone)` capitalized
-/// (Bookmark#formattedReminder): today's or tomorrow's time, else the
-/// long date, in the zone.
-pub(crate) fn formatted_reminder<C: DateContext + ?Sized>(
+/// (Bookmark#formattedReminder).
+fn formatted_reminder<C: DateContext + ?Sized>(
+    cx: &C,
+    at: DateTime<Utc>,
+    zone: chrono_tz::Tz,
+) -> String {
+    let text = formatted_reminder_time(cx, at, zone);
+    let mut chars = text.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().chain(chars).collect(),
+        None => String::new(),
+    }
+}
+
+/// lib/bookmark's `formattedReminderTime(reminder_at, timezone)`, as
+/// BookmarkFormData#formattedReminder gives it: today's or tomorrow's
+/// time, else the long date, in the zone.
+fn formatted_reminder_time<C: DateContext + ?Sized>(
     cx: &C,
     at: DateTime<Utc>,
     zone: chrono_tz::Tz,
@@ -203,7 +242,7 @@ pub(crate) fn formatted_reminder<C: DateContext + ?Sized>(
     let today = cx.now().with_timezone(&zone).date_naive();
     let format = |key: &str| format_utc(wall(at, zone), &t(cx, key)).unwrap_or_default();
     let i18n = cx.i18n();
-    let text = if local == today + chrono::Duration::days(1) {
+    if local == today + chrono::Duration::days(1) {
         i18n.t_with(
             "js.bookmarks.reminders.tomorrow_with_time",
             &[("time", &format("dates.time"))],
@@ -219,12 +258,7 @@ pub(crate) fn formatted_reminder<C: DateContext + ?Sized>(
             &[("date_time", &format("dates.long_with_year"))],
         )
     }
-    .unwrap_or_default();
-    let mut chars = text.chars();
-    match chars.next() {
-        Some(first) => first.to_uppercase().chain(chars).collect(),
-        None => String::new(),
-    }
+    .unwrap_or_default()
 }
 
 /// `<tag attrs data-tz-text>text</tag>` for an element holding only the
@@ -263,6 +297,8 @@ pub(crate) fn tiny_span<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>) -> S
 ///                      addAgo and timelineDate past the relative ages
 ///   medium-span-ago    relativeAgeMediumSpan with ago (no dates)
 ///   reminder           Bookmark#formattedReminder (fill_in's zone)
+///   reminder-time      formattedReminderTime, not capitalized
+///                      (BookmarkFormData#formattedReminder)
 ///   timeline-days-ago  the number is days: timelineDate of today less them
 ///   tiny-ago           relativeAge with addAgo (poll-info's closed age)
 ///   humanize           moment().to(date, true) (poll-info's time left)
@@ -547,6 +583,20 @@ mod tests {
         assert_eq!(
             text_in(&cx, &template, None).0,
             " data-tz-text=\"%{1792288800000:@reminder}\""
+        );
+        // BookmarkFormData#formattedReminder: not capitalized, here in a
+        // title.
+        let template = relative_marker(at, "reminder-time");
+        assert_eq!(
+            attr_in(&cx, "title", &template, Some(la)),
+            " title=\"today at 7:00 pm\" \
+             data-tz-title=\"%{1792288800000:@reminder-time}\" \
+             data-tz-zone=\"America/Los_Angeles\""
+        );
+        assert_eq!(
+            attr_in(&cx, "title", &template, None),
+            " title=\"tomorrow at 2:00 am\" \
+             data-tz-title=\"%{1792288800000:@reminder-time}\""
         );
     }
 

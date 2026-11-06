@@ -1660,7 +1660,7 @@ async fn members_bookmark_from_the_topic_page() {
     let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
     assert!(
         page.body.contains(&format!(
-            r#"hx-vals='{{"bookmarkable_id": {post_id}, "bookmarkable_type": "Post"}}'"#
+            r#"hx-post="/bookmarks" hx-vals="{{&quot;reminder_at&quot;:&quot;&quot;,&quot;name&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;auto_delete_preference&quot;:&quot;3&quot;,&quot;bookmarkable_id&quot;:{post_id},&quot;bookmarkable_type&quot;:&quot;Post&quot;}}""#
         )),
         "{}",
         page.body
@@ -1680,7 +1680,9 @@ async fn members_bookmark_from_the_topic_page() {
             Method::POST,
             "/bookmarks",
             &headers,
-            &format!("bookmarkable_id={post_id}&bookmarkable_type=Post"),
+            &format!(
+                "reminder_at=&name=&id=&auto_delete_preference=3&bookmarkable_id={post_id}&bookmarkable_type=Post"
+            ),
         )
         .await;
     assert_eq!(made.status, StatusCode::OK, "{}", made.body);
@@ -1719,8 +1721,10 @@ async fn members_bookmark_from_the_topic_page() {
 
 /// The footer's bookmark button counts every bookmark the member holds in
 /// the topic (TopicBookmarksMenu): with a post's among them it is the
-/// grouped menu's trigger, whose menu is refused; the topic's alone is
-/// BookmarkMenu's toggle.
+/// grouped menu's trigger and the page carries the menu's content; the
+/// topic's alone is BookmarkMenu's toggle. A single bookmark with a
+/// reminder titles the footer's and the post's buttons with it, in the
+/// member's zone.
 #[tokio::test]
 async fn the_footer_bookmark_button_counts_the_topics_bookmarks() {
     let db = TestDb::new().await;
@@ -1739,20 +1743,66 @@ async fn the_footer_bookmark_button_counts_the_topics_bookmarks() {
         let end = at + body[at..].find("</button>").unwrap();
         body[start..end].to_string()
     };
+    let menu = |body: &str| {
+        let start = body
+            .find(r#"<template class="topic-bookmarks-menu-template""#)
+            .expect("the menu's template");
+        let end = start + body[start..].find("</template>").unwrap();
+        body[start..end].to_string()
+    };
 
     // The topic's bookmark and two of its posts', one with a reminder.
     let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
     let button = footer(&page.body);
     assert!(button.starts_with(
-        r#"<button class="btn btn-icon-text fk-d-menu__trigger topic-bookmarks-menu-trigger bookmark widget-button bookmark-menu__trigger btn-icon-text btn-default topic-footer-button bookmarked with-reminder" title="Edit bookmarks" aria-expanded="false" data-identifier="topic-bookmarks-menu" data-trigger="" data-unported="the topic's bookmarks menu (TopicBookmarksMenu)" type="button"><svg class="fa d-icon d-icon-bookmark "#
+        r#"<button class="btn btn-icon-text fk-d-menu__trigger topic-bookmarks-menu-trigger bookmark widget-button bookmark-menu__trigger btn-icon-text btn-default topic-footer-button bookmarked with-reminder" title="Edit bookmarks" aria-expanded="false" data-identifier="topic-bookmarks-menu" data-trigger="" type="button"><svg class="fa d-icon d-icon-bookmark "#
     ), "{button}");
     assert!(
         button.ends_with(r#"<span class="d-button-label">Edit bookmarks</span>"#),
         "{button}"
     );
     assert!(!button.contains("hx-"), "{button}");
+    assert!(page.body.contains("/assets/topic-bookmarks-menu.js?v="));
+    // The posts' rows by post number, then the topic's bookmark to edit
+    // or delete, then Delete all bookmarks.
+    let content = menu(&page.body);
+    let rows: Vec<&str> = content
+        .match_indices("data-menu-option-id=\"")
+        .map(|(i, m)| {
+            let rest = &content[i + m.len()..];
+            &rest[..rest.find('"').unwrap()]
+        })
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            "post-2",
+            "post-5",
+            "edit-topic-bookmark",
+            "delete-topic-bookmark",
+            "clear-all",
+            "jump",
+            "edit",
+            "delete"
+        ],
+        "{content}"
+    );
+    assert!(content.contains(
+        r#"<li class="dropdown-menu__item bookmark-menu__row --post-bookmark --has-name" data-menu-option-id="post-2"><button aria-label="Post #2" class="bookmark-menu__row-btn btn no-text btn-icon" type="button"><svg class="fa d-icon d-icon-bookmark "#
+    ), "{content}");
+    assert!(content.contains(
+        r#"<span class="bookmark-menu__row-texts"><span class="bookmark-menu__row-label">Post #2</span><span class="bookmark-menu__row-description">Parity fixture: with a reminder</span></span><span class="d-button__suffix-icon"><svg class="fa d-icon d-icon-angle-right "#
+    ), "{content}");
+    assert!(content.contains(
+        r#"<span class="bookmark-menu__row-label">Edit topic bookmark</span><span class="bookmark-menu__row-description">Parity fixture: topic bookmark</span>"#
+    ), "{content}");
+    assert!(content.contains(
+        r#"<button class="bookmark-menu__row-btn --danger btn btn-icon-text" type="button"><svg class="fa d-icon d-icon-trash-can "#
+    ), "{content}");
+    assert!(content.contains(r#"<span class="d-button-label">Delete all bookmarks</span>"#));
+    assert!(content.contains("&quot;confirmClear&quot;:&quot;Are you sure you want to delete all your bookmarks from this topic?&quot;"), "{content}");
 
-    // A post's bookmark alone.
+    // A post's bookmark alone: Bookmark topic, nothing to clear.
     let slug: String = sqlx::query_scalar("SELECT slug FROM topics WHERE id = 37")
         .fetch_one(&db.pool)
         .await
@@ -1764,8 +1814,55 @@ async fn the_footer_bookmark_button_counts_the_topics_bookmarks() {
         button.ends_with(r#"<span class="d-button-label">Edit bookmark</span>"#),
         "{button}"
     );
+    let content = menu(&page.body);
+    assert!(content.contains(r#"<li class="dropdown-menu__item bookmark-menu__row --post-bookmark" data-menu-option-id="post-1">"#), "{content}");
+    assert!(content.contains(r#"data-menu-option-id="bookmark-topic"><button class="bookmark-menu__row-btn btn btn-icon-text" type="button"><svg class="fa d-icon d-icon-bookmark "#), "{content}");
+    assert!(!content.contains("clear-all"), "{content}");
+    // Bookmark topic sends BookmarkFormData's saveData.
+    assert!(content.contains("&quot;newBookmark&quot;:{&quot;reminder_at&quot;:&quot;&quot;,&quot;name&quot;:&quot;&quot;,&quot;id&quot;:&quot;&quot;,&quot;auto_delete_preference&quot;:&quot;3&quot;,&quot;bookmarkable_id&quot;:37,&quot;bookmarkable_type&quot;:&quot;Topic&quot;}"), "{content}");
 
-    // The topic's alone: BookmarkMenu, which removes it.
+    // With a reminder: created_with_reminder_generic, the date as
+    // formattedReminderTime has it, in the browser's zone without the
+    // member's (UTC here), on the footer's and the post's buttons.
+    sqlx::query(
+        "UPDATE bookmarks SET reminder_at = '2031-01-15 09:30:00', name = 'Later' \
+         WHERE bookmarkable_type = 'Post' AND bookmarkable_id = \
+           (SELECT id FROM posts WHERE topic_id = 37 AND post_number = 1)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let title = r#"title="You&#x27;ve bookmarked this with a reminder at Jan 15, 2031 9:30 am. Later" data-tz-title="You&#x27;ve bookmarked this with a reminder %{1926235800000:@reminder-time}. Later""#;
+    let page = client.get(&format!("/t/{slug}/37")).await;
+    let button = footer(&page.body);
+    assert!(
+        button.contains(&format!(
+            r#"with-reminder --post-bookmarked-only" {title} aria-expanded"#
+        )),
+        "{button}"
+    );
+    let post = &page.body[page.body.find("post-action-menu__bookmark").unwrap()..];
+    let post = &post[..post.find("</button>").unwrap()];
+    assert!(
+        post.contains(&format!(r#" {title} type="button""#)),
+        "{post}"
+    );
+    // In the member's zone, which the script keeps.
+    sqlx::query(
+        "UPDATE user_options SET timezone = 'America/Denver' \
+         WHERE user_id = (SELECT id FROM users WHERE username = 'user1')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let page = client.get(&format!("/t/{slug}/37")).await;
+    let button = footer(&page.body);
+    assert!(
+        button.contains(r#"title="You&#x27;ve bookmarked this with a reminder at Jan 15, 2031 2:30 am. Later" data-tz-title="You&#x27;ve bookmarked this with a reminder %{1926235800000:@reminder-time}. Later" data-tz-zone="America/Denver""#),
+        "{button}"
+    );
+
+    // The topic's alone: BookmarkMenu, which removes it; no grouped menu.
     sqlx::query(
         "DELETE FROM bookmarks WHERE bookmarkable_type = 'Post' \
            AND user_id = (SELECT id FROM users WHERE username = 'user1') \
@@ -1789,6 +1886,7 @@ async fn the_footer_bookmark_button_counts_the_topics_bookmarks() {
         button.ends_with(r#"<span class="d-button-label">Edit bookmark</span>"#),
         "{button}"
     );
+    assert!(!page.body.contains("topic-bookmarks-menu-template"));
 }
 
 /// The post endpoint shows what the viewer may see: no bookmark button for

@@ -2846,6 +2846,9 @@ pub async fn topic_page(
             .await?;
     // Mark unread's destination: the message's inbox, else home.
     topic.defer_to = topic.pm_path.clone().unwrap_or_else(|| format!("{base}/"));
+    // What the bookmark menus read of the viewer.
+    topic.bookmark_viewer =
+        crate::post_view::BookmarkViewer::load(&mut *conn, guardian.user_id()).await?;
     if post_settings.poll.is_some()
         && let Some(username) = viewer
     {
@@ -2906,6 +2909,7 @@ pub async fn topic_page(
     };
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
+    let topic_bookmarks_menu = crate::post_view::topic_bookmarks_menu(&cx, view);
     // The flag modal for members; for staff the penalty modal its take
     // action opens.
     let mut flag_menus = String::new();
@@ -2932,7 +2936,7 @@ pub async fn topic_page(
         }
     }
     let topic_menus = format!(
-        "{topic_admin_menu}{}{flag_menus}",
+        "{topic_admin_menu}{topic_bookmarks_menu}{}{flag_menus}",
         crate::post_view::add_pm_participants_config(&cx, view)
     );
     let header_topic_info = crate::header_topic_view::template(
@@ -2962,6 +2966,7 @@ pub async fn topic_page(
         && (view["archetype"] == "private_message"
             || post_settings.poll.is_some()
             || !topic_admin_menu.is_empty()
+            || !topic_bookmarks_menu.is_empty()
             || topic_menus.contains("flag-modal-config"))
     {
         dialog_strings(i18n)

@@ -41,6 +41,8 @@
 <script src="{{ crate::assets::url(base_path, "post-stream.js") }}"></script>
 {#- The topic admin menu and the posts' admin menus. -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
+{#- The footer's bookmarks menu (TopicBookmarksMenu). -#}
+{% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-bookmarks-menu.js") }}"></script>{% endif %}
 {#- A message's add participant modal (AddPmParticipants). -#}
 {% if topic_menus.contains("add-pm-participants-config") %}<script src="{{ crate::assets::url(base_path, "email-group-user-chooser.js") }}"></script><script src="{{ crate::assets::url(base_path, "add-pm-participants.js") }}"></script>{% endif %}
 {#- The flag modal, and for staff the penalty modal its take action opens. -#}

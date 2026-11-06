@@ -681,6 +681,13 @@
       ]
     },
     {
+      "name": "topic-bookmarks-menu.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-bookmarks-menu.js"
+      ]
+    },
+    {
       "name": "add-pm-participants.js",
       "content_type": "js",
       "files": [

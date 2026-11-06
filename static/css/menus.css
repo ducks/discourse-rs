@@ -447,3 +447,96 @@
 .fk-d-menu-modal .dropdown-menu li > a {
   padding: .75em 1rem;
 }
+
+/* components/bookmark-menu.scss: BookmarkMenu's and TopicBookmarksMenu's
+   content. */
+
+/* bookmark-menu.scss:4 */
+.bookmark-menu-content .bookmark-menu__title {
+  background: var(--tertiary-low);
+  color: var(--tertiary);
+}
+/* bookmark-menu.scss:8 */
+.bookmark-menu-content .bookmark-menu__title .d-icon {
+  color: var(--tertiary);
+}
+/* bookmark-menu.scss:13 */
+.bookmark-menu-content .bookmark-menu__row-title,
+.bookmark-menu-content .bookmark-menu__title {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+  height: var(--d-sidebar-row-height);
+  padding-inline: var(--d-sidebar-row-horizontal-padding);
+  border-radius: var(--d-border-radius);
+}
+/* bookmark-menu.scss:23 */
+.bookmark-menu-content .bookmark-menu__row-title .d-icon,
+.bookmark-menu-content .bookmark-menu__title .d-icon {
+  width: var(--d-sidebar-section-link-prefix-width);
+}
+/* bookmark-menu.scss:30 */
+@media(width >= 40rem) {
+  .topic-bookmarks-menu-content {
+    max-height: 60vh;
+  }
+}
+/* bookmark-menu.scss:38 */
+.discourse-no-touch .topic-bookmarks-menu-content .--jump .btn:hover,
+.discourse-no-touch .topic-bookmarks-menu-content .--jump .btn:focus-visible {
+  background: var(--d-hover);
+}
+/* bookmark-menu.scss:47 */
+.topic-bookmarks-menu-content .--has-name .btn {
+  height: auto;
+  min-height: 2.2em;
+  padding: var(--space-1);
+}
+/* bookmark-menu.scss:53 */
+.topic-bookmarks-menu-content .--has-name .d-icon {
+  align-self: flex-start;
+  padding-top: var(--space-1);
+}
+/* bookmark-menu.scss:59 */
+.topic-bookmarks-menu-content .bookmark-menu__row-texts {
+  line-height: var(--line-height-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+/* bookmark-menu.scss:66 */
+.topic-bookmarks-menu-content .bookmark-menu__row-description {
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+  max-width: 35ch;
+}
+/* bookmark-menu.scss:76 */
+.topic-bookmarks-menu-content .--post-bookmark .d-button__suffix-icon {
+  margin-left: auto;
+  color: var(--primary-medium);
+}
+/* bookmark-menu.scss:82 */
+.topic-bookmarks-menu-content .bookmark-menu__section-title {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+  padding-inline: var(--d-sidebar-row-horizontal-padding);
+  padding-block: .35em;
+}
+/* bookmark-menu.scss:93 */
+.topic-bookmarks-menu-content .bookmark-menu__section-title .d-icon {
+  width: var(--d-sidebar-section-link-prefix-width);
+}
+/* bookmark-menu.scss:97 */
+.topic-bookmarks-menu-content .bookmark-menu__section-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

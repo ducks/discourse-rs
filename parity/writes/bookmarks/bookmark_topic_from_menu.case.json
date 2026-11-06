@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "reminder_at": "",
+        "name": "",
+        "id": "",
+        "auto_delete_preference": "3",
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Topic"
+      }
+    }
+  ]
+}

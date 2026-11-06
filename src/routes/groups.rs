@@ -933,7 +933,8 @@ async fn member_filter(
     })
 }
 
-/// GET /groups/:name/members(.json) (groups#members)
+/// GET /groups/:name/members(.json) (groups#members); as a page, Ember's
+/// redirect to the group's page.
 pub async fn members(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -943,6 +944,21 @@ pub async fn members(
 ) -> Result<Response, AppError> {
     let p = params::parse(uri.query(), &headers, &Bytes::new());
     let mut conn = state.pool.acquire().await?;
+    if !uri.path().ends_with(".json") && !super::wants_json(uri.query(), &headers) {
+        // The page: check_xhr hands it to Ember, whose group route loads
+        // the group (not found: the 404 page) and whose group.members
+        // route's beforeModel transitions to group.index, the group's
+        // page at its serialized (lowercased) name.
+        let Some((group, _)) = find_visible(&mut conn, &guardian, Some(&name), None).await? else {
+            return Ok(not_found(&state));
+        };
+        let base = state.config.globals.relative_url_root();
+        return Ok(axum::response::Redirect::to(&format!(
+            "{base}/g/{}",
+            group.name.to_lowercase()
+        ))
+        .into_response());
+    }
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     match members_doc(&state, &mut conn, &settings, &guardian, &name, &p).await? {

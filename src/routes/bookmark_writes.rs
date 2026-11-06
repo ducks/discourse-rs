@@ -1,6 +1,7 @@
 //! Port of BookmarksController#create, #update, #destroy and #toggle_pin:
 //! POST /bookmarks, PUT /bookmarks/:id, DELETE /bookmarks/:id and
-//! PUT /bookmarks/:bookmark_id/toggle_pin (each also with .json).
+//! PUT /bookmarks/:bookmark_id/toggle_pin (each also with .json), and
+//! TopicsController#remove_bookmarks (PUT /t/:topic_id/remove_bookmarks).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -235,4 +236,50 @@ pub async fn toggle_pin(
         Action::TogglePin,
     )
     .await
+}
+
+/// PUT /t/:topic_id/remove_bookmarks (TopicsController#remove_bookmarks):
+/// every bookmark of the member's in a topic they can see, through
+/// `BookmarkManager#destroy_for_topic`; `render body: nil`.
+pub async fn remove_topic_bookmarks(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(topic_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    // ensure_logged_in
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // find_visible_topic_from_topic_id: Topic.find_by(id: params[:topic_id].to_i)
+    // (trashed topics out of its default scope), then can_see?.
+    let topic_id = i32::try_from(crate::ruby::to_i(&topic_id)).unwrap_or(0);
+    let topic = crate::topic_guardian::TopicCtx::load(&mut tx, &settings, &guardian, topic_id)
+        .await?
+        .filter(|t| !t.trashed());
+    let Some(topic) = topic else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let secure = guardian.secure_category_ids(&mut tx, &settings).await?;
+    if !guardian.can_see_topic(&settings, &topic, true, &secure)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let reminders_deleted =
+        bookmark_manager::destroy_for_topic(&state.bus, &mut tx, user_id, topic_id).await?;
+    tx.commit().await?;
+    // The reminder notifications' after_commit refresh_notification_count.
+    if reminders_deleted {
+        let mut conn = state.pool.acquire().await?;
+        crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id).await?;
+    }
+    Ok(StatusCode::OK.into_response())
 }

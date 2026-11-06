@@ -220,3 +220,69 @@ async fn a_groups_page_lists_its_members() {
     assert_eq!(status, StatusCode::NOT_FOUND);
     assert!(html.contains("<html"));
 }
+
+/// The members route as a page: Ember's group.members route transitions to
+/// group.index, the group's page at its lowercased name (the group route's
+/// serialize); a group the viewer can't see is the 404 page. The JSON
+/// stays groups#members'.
+#[tokio::test]
+async fn the_members_page_redirects_to_the_groups_page() {
+    let db = TestDb::new().await;
+    custom_groups(&db).await;
+    sqlx::query("UPDATE groups SET name = 'Testers' WHERE id = 9001")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let get = |path: &'static str, accept: Option<&'static str>| {
+        let st = st.clone();
+        async move {
+            let mut request = Request::builder()
+                .uri(path)
+                .header(header::HOST, "test.localhost");
+            if let Some(accept) = accept {
+                request = request.header(header::ACCEPT, accept);
+            }
+            let response = discourse_rs::app(st)
+                .oneshot(request.body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            let status = response.status();
+            let location = response
+                .headers()
+                .get(header::LOCATION)
+                .map(|l| l.to_str().unwrap().to_string());
+            let bytes = response.into_body().collect().await.unwrap().to_bytes();
+            (
+                status,
+                location,
+                String::from_utf8_lossy(&bytes).into_owned(),
+            )
+        }
+    };
+    for path in [
+        "/g/testers/members",
+        "/g/TESTERS/members",
+        "/groups/testers/members",
+    ] {
+        let (status, location, _) = get(path, None).await;
+        assert!(status.is_redirection(), "{path}: {status}");
+        assert_eq!(location.as_deref(), Some("/g/testers"), "{path}");
+    }
+    let (status, location, html) = get("/g/members_only/members", None).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(location, None);
+    assert!(html.contains("<html"), "{html}");
+    let (status, _, html) = get("/g/nobody/members", None).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert!(html.contains("<html"), "{html}");
+    for (path, accept) in [
+        ("/g/testers/members.json", None),
+        ("/g/testers/members", Some("application/json")),
+    ] {
+        let (status, _, json) = get(path, accept).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        let json: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(json["meta"]["total"], 3, "{path}: {json}");
+    }
+}
