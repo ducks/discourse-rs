@@ -952,6 +952,15 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/slow_mode", put(topic_timer::slow_mode))
         // {slug} holds the topic id.
         .route("/t/{slug}/archive-message", put(archive_message::archive))
+        // TopicsController#remove_bookmarks; {slug} holds the topic id.
+        .route(
+            "/t/{slug}/remove_bookmarks",
+            put(bookmark_writes::remove_topic_bookmarks),
+        )
+        .route(
+            "/t/{slug}/remove_bookmarks.json",
+            put(bookmark_writes::remove_topic_bookmarks),
+        )
         .route("/t/{slug}/change-owner", post(change_owner::change_owner))
         .route(
             "/t/{slug}/change-owner.json",

@@ -1,0 +1,15 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/remove_bookmarks.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/999999/remove_bookmarks.json",
+      "params": {}
+    }
+  ]
+}

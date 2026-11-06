@@ -1,0 +1,9 @@
+{
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/remove_bookmarks.json",
+      "params": {}
+    }
+  ]
+}

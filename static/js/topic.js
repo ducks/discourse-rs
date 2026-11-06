@@ -313,7 +313,8 @@
   // when it runs (measured against rs-ref-c: an edit saved away from its
   // post, replies at the bottom and from the middle, staged or not).
   // opts.arriving: a post the page's live stream is bringing (a reply on
-  // the last page), waited for rather than loaded.
+  // the last page), waited for rather than loaded. opts.skipIfOnScreen
+  // false: a plain routeTo, which jumps to a post on screen too.
   function routeToPost(path, opts) {
     opts = opts || {};
     var pathname = path.split(/[?#]/)[0];
@@ -334,7 +335,7 @@
       if (opts.highlight !== false && uncloaked(holder)) {
         highlightPost(number);
       }
-      jumpToPost(number, null, true);
+      jumpToPost(number, null, opts.skipIfOnScreen !== false);
     };
     if (opts.arriving && !document.getElementById("post_" + number)) {
       whenDrawn(number, go);
@@ -813,17 +814,6 @@
           archive.disabled = false;
           console.error(e);
         });
-      return;
-    }
-    // A footer button whose menu is not ported (the topic's bookmarks
-    // menu, TopicBookmarksMenu's grouped dropdown) says so.
-    var unportedButton = event.target.closest("#topic-footer-buttons [data-unported]");
-    if (unportedButton) {
-      var notice = document.getElementById("page-error");
-      if (notice) {
-        notice.textContent = "Not ported yet: " + unportedButton.dataset.unported + ".";
-        notice.hidden = false;
-      }
       return;
     }
     // Mark unread (deferTopic): stop timing the page, unread its last

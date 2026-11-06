@@ -899,6 +899,8 @@ async fn render_post(
         )
         .await?,
         post_voting: crate::plugins::post_voting::view::TopicState::for_redraw(&post),
+        bookmark_viewer: crate::post_view::BookmarkViewer::load(&mut conn, guardian.user_id())
+            .await?,
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;
@@ -1222,6 +1224,8 @@ pub async fn gap(
     .await?;
     let mut topic = crate::post_view::TopicInfo::from_view(json);
     topic.menus = crate::post_view::StaffMenus::load(&guardian, &settings, json)?;
+    topic.bookmark_viewer =
+        crate::post_view::BookmarkViewer::load(&mut conn, guardian.user_id()).await?;
     topic.plugin_menu = crate::plugin_api::post_menu_buttons(
         &mut crate::plugin_api::Ctx {
             conn: &mut conn,
