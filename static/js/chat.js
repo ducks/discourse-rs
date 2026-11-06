@@ -4143,6 +4143,18 @@
         if (redrawn) {
           redrawn.remove();
         }
+        // addMessages' uniqBy("id"): a message drawn live while the page
+        // loaded gives way to the page's, drawn in sequence with the rest.
+        listItems(template.content).forEach(function (node) {
+          listItems(list).forEach(function (shown) {
+            if (shown.dataset.id === node.dataset.id) {
+              if (shown.classList.contains("-active")) {
+                clearActive();
+              }
+              shown.remove();
+            }
+          });
+        });
         var added = template.content.querySelectorAll(":scope > .chat-message-container, :scope > template").length;
         markFirstOfResults(template.content.firstElementChild);
         if (direction === PAST) {

@@ -429,6 +429,41 @@ test.describe("in the mobile view", () => {
     await expect(page.locator(".chat-message-container", { hasText: raw })).toBeVisible();
     await expect(arrow).not.toHaveClass(/visible/);
   });
+
+  test("a message drawn live while the newer page loads is drawn once", async ({ page, context, session }) => {
+    const channel = await filledChannel(session, 40);
+    await login(context, "user1");
+    await openChannel(page, channel.url);
+    const arrow = page.locator(".chat-scroll-to-bottom__button");
+    await page.evaluate((s) => (document.querySelector(s).scrollTop = -600), SCROLLER);
+    await expect(arrow).toHaveClass(/visible/);
+
+    // The page after the last message, asked for at the bottom, held until
+    // the new message is drawn live.
+    let release;
+    const held = new Promise((resolve) => (release = resolve));
+    let fetching;
+    const fetched = new Promise((resolve) => (fetching = resolve));
+    await page.route(new RegExp(`/live/chat/${channel.id}/messages\\?.*direction=future`), async (route) => {
+      fetching();
+      await held;
+      await route.continue();
+    });
+    await arrow.click();
+    await fetched;
+    const user0 = await session("user0");
+    const raw = label("raced one");
+    await api(user0, "POST", `/chat/${channel.id}.json`, { message: raw, staged_id: label("staged") });
+    const message = page.locator(".chat-message-container", { hasText: raw });
+    await expect(message).toHaveCount(1);
+    const loaded = page.waitForResponse(/\/messages\?.*direction=future/);
+    release();
+    await loaded;
+
+    // Counted as the page lands: a copy removed later still showed twice.
+    await page.waitForFunction(() => !document.querySelector(".chat-channel[data-id]").classList.contains("loading"));
+    expect(await message.count()).toBe(1);
+  });
 });
 
 test("a hidden tab neither follows nor reads new messages", async ({ page, context, session }) => {
