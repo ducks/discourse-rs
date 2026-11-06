@@ -1,8 +1,9 @@
 // Demo steps 6 to 8: the composer (composer.js) opened from a topic and
 // from the topic list, the preview while writing, posting, and the post
 // arriving on the page without a reload; the mention reaching the other
-// member's header live.
-const { test, expect, login, topic, sql, label } = require("./helpers");
+// member's header live. Its tag chooser: a category's minimum, recently
+// used tags first, and a picked tag kept in the draft.
+const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 test("a reply written in the composer appears without a reload and notifies the mention live", async ({
   page,
@@ -115,4 +116,136 @@ test("discarding a written draft asks first, and keeps it when declined", async 
   // Opened again, the composer starts empty: the draft went with it.
   await page.locator("#create-topic").click();
   await expect(page.locator("#reply-title")).toHaveValue("");
+});
+
+// The composer's tag chooser (composer.js miniTagChooser): a new topic
+// in a category with a minimum tag count is refused without a tag, with
+// the minimum in the chooser and the validation's tip, and posts with
+// its tags once one is picked.
+test("a new topic in a category requiring a tag posts once one is picked", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const name = label("Tags required");
+  const created = await api(admin, "POST", "/categories.json", {
+    name,
+    color: "0088CC",
+    text_color: "FFFFFF",
+    minimum_required_tags: "1",
+  });
+  const categoryId = String(created.category.id);
+  const author = member();
+  await login(context, author.name);
+  const title = label("A tagged topic from the composer");
+  await page.goto("/latest");
+  await page.locator("#create-topic").click();
+  await page.locator("#reply-title").fill(title);
+  await page.locator("#reply-control .d-editor-input").fill(`The first post of ${title}, which needs a tag.`);
+  await page.locator("#reply-control details.category-chooser summary").click();
+  await page.locator("#reply-control details.category-chooser .filter-input").fill(name);
+  await page.locator(`#reply-control .category-row[data-value="${categoryId}"]`).click();
+  const tags = page.locator("#reply-control details.mini-tag-chooser");
+  await expect(tags).toHaveAttribute("category-id", categoryId);
+  await expect(tags.locator("summary .formatted-selection")).toHaveText("select at least 1 tag…");
+
+  await page.locator("#reply-control .save-or-cancel .create").click();
+  const tip = page.locator("#reply-control .tags-input .popup-tip");
+  await expect(tip).toHaveClass(/\bbad\b/);
+  await expect(tip).toHaveText("You must choose at least 1 tag");
+  await expect(page.locator("#reply-control.open")).toBeVisible();
+  expect(sql("SELECT count(*) FROM topics WHERE title = :'p1'", title)).toEqual([["0"]]);
+
+  const search = page.waitForRequest(
+    (r) => r.url().includes("/tags/filter/search") && new URL(r.url()).searchParams.get("categoryId") === categoryId,
+  );
+  await tags.locator("summary").click();
+  await search;
+  await tags.locator(".filter-input").fill("howto");
+  await tags.locator('.select-kit-row[data-name="howto"]').click();
+  await expect(tags.locator("summary .formatted-selection")).toHaveText("howto");
+  await expect(tip).toHaveClass(/\bhide\b/);
+  await tags.locator(".filter-input").press("Escape");
+
+  await page.locator("#reply-control .save-or-cancel .create").click();
+  await expect(page).toHaveURL(/\/t\/[^/]+\/\d+/);
+  await expect(page.locator("#topic-title h1")).toContainText(title);
+  expect(
+    sql(
+      "SELECT t.category_id, string_agg(g.name, ',') FROM topics t JOIN topic_tags tt ON tt.topic_id = t.id \
+         JOIN tags g ON g.id = tt.tag_id WHERE t.title = :'p1' GROUP BY t.category_id",
+      title,
+    ),
+  ).toEqual([[categoryId, "howto"]]);
+});
+
+// prioritizeRecentTags (composer-container passes it, the upcoming change
+// prioritize_recently_used_tags decides): with no filter, the member's
+// recently used tags come first.
+test("the composer's tag chooser puts recently used tags first", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const author = member();
+  await login(context, author.name);
+  // The tag the search lists last without recent tags first.
+  const plain = await context.request.get("/tags/filter/search.json?q=&limit=5&filterForInput=true&categoryId=4", {
+    headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+  });
+  const names = (await plain.json()).results.map((r) => r.name);
+  expect(names.length).toBeGreaterThan(1);
+  const recent = names[names.length - 1];
+  await api(context, "POST", "/posts.json", {
+    title: label("A topic tagged recently"),
+    raw: label("A topic whose tag the composer puts first"),
+    category: "4",
+    "tags[]": recent,
+  });
+  await api(admin, "PUT", "/admin/config/upcoming-changes/toggle.json", {
+    setting_name: "prioritize_recently_used_tags",
+    enabled: "true",
+  });
+  try {
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    const tags = page.locator("#reply-control details.mini-tag-chooser");
+    const search = page.waitForRequest(
+      (r) => r.url().includes("/tags/filter/search") && new URL(r.url()).searchParams.get("prioritizeRecentTags") === "true",
+    );
+    await tags.locator("summary").click();
+    await search;
+    await expect(tags.locator(".select-kit-row").first()).toHaveAttribute("data-name", recent);
+  } finally {
+    await api(admin, "PUT", "/admin/config/upcoming-changes/toggle.json", {
+      setting_name: "prioritize_recently_used_tags",
+      enabled: "false",
+    });
+  }
+});
+
+// A picked tag goes into the new topic's draft and comes back when the
+// draft is opened again from the drafts menu.
+test("a tag picked in a new topic survives its draft", async ({ page, context }) => {
+  const author = member();
+  await login(context, author.name);
+  const title = label("A tagged draft");
+  await page.goto("/latest");
+  await page.locator("#create-topic").click();
+  await page.locator("#reply-title").fill(title);
+  await page.locator("#reply-control .d-editor-input").fill("A draft whose tag should come back.");
+  const tags = page.locator("#reply-control details.mini-tag-chooser");
+  await tags.locator("summary").click();
+  await tags.locator(".filter-input").fill("guide");
+  const saved = page.waitForResponse(
+    (r) => r.url().includes("/drafts.json") && r.request().method() === "POST" && (r.request().postData() || "").includes("guide"),
+  );
+  await tags.locator('.select-kit-row[data-name="guide"]').click();
+  await expect(tags.locator("summary .formatted-selection")).toHaveText("guide");
+  expect((await saved).ok()).toBeTruthy();
+  const [[data]] = sql(
+    "SELECT data FROM drafts WHERE user_id = :'p1' AND draft_key LIKE 'new_topic%'",
+    author.id,
+  );
+  expect(JSON.parse(data).tags).toEqual([{ id: 2, name: "guide" }]);
+
+  await page.goto("/latest");
+  await page.locator(".topic-drafts-menu-trigger").click();
+  await page.locator(".topic-drafts-item button", { hasText: title }).click();
+  await expect(page.locator("#reply-title")).toHaveValue(title);
+  await expect(tags.locator("summary .formatted-selection")).toHaveText("guide");
 });
