@@ -567,6 +567,28 @@ pub async fn revision(
     )
 }
 
+/// GET /posts/:id(.json) (posts#show): the post as by_number gives it,
+/// found by its id (the review queue's edit loads it). A past version
+/// (`version`) isn't ported.
+pub async fn show(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if uri
+        .query()
+        .is_some_and(|q| q.split('&').any(|p| p.starts_with("version=")))
+    {
+        return Err(Unsupported("posts#show of a past version").into());
+    }
+    // Post.where(id:): a param that isn't a number finds nothing.
+    let Ok(post_id) = strip_format(&id).parse::<i32>() else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    display_post(&state, &guardian, post_id).await
+}
+
 /// GET /posts/by_number/:topic_id/:post_number(.json) (posts#by_number):
 /// the post at that number as render_post_json gives it (PostSerializer
 /// with `raw` and the viewer's actions), found with deleted ones as
@@ -592,8 +614,6 @@ pub async fn by_number(
         return Ok(super::topics::not_found_response(&state));
     };
     let mut conn = state.pool.acquire().await?;
-    let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     // finder.with_deleted.first
     let post_id: Option<i32> = sqlx::query_scalar(
         "SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2 ORDER BY id LIMIT 1",
@@ -602,10 +622,24 @@ pub async fn by_number(
     .bind(post_number)
     .fetch_optional(&mut *conn)
     .await?;
+    drop(conn);
     let Some(post_id) = post_id else {
         return Ok(super::topics::not_found_response(&state));
     };
-    let cook_host = Host::from_state(&state);
+    display_post(&state, &guardian, post_id).await
+}
+
+/// `find_post_using` past its finder, then `display_post`:
+/// render_post_json for a post the viewer may see.
+async fn display_post(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    post_id: i32,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cook_host = Host::from_state(state);
     let ctx = Ctx {
         host: &cook_host,
         settings: &settings,
@@ -613,14 +647,14 @@ pub async fn by_number(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    if revisions::find_post_with_deleted(&mut conn, &ctx, &guardian, post_id)
+    if revisions::find_post_with_deleted(&mut conn, &ctx, guardian, post_id)
         .await?
         .is_none()
     {
-        return Ok(super::topics::not_found_response(&state));
+        return Ok(super::topics::not_found_response(state));
     }
     drop(conn);
-    let mut post = serialize_post(&state, &settings, &guardian, post_id, false, true).await?;
+    let mut post = serialize_post(state, &settings, guardian, post_id, false, true).await?;
     // render_post_json gives the serializer no draft_sequence.
     if let Value::Object(p) = &mut post {
         p.shift_remove("draft_sequence");

@@ -15,9 +15,17 @@
 // A queued post's revision asks for its reason first
 // (ReviseAndRejectPostReviewable, a DModal over a copy of the post).
 //
-// What leans on parts not ported says so instead: the client actions
-// (edit, suspend, silence), the reject reason modal, the insights tab,
-// editing, a queued post's raw email and the pin toggle.
+// The client actions: silence and suspend open the penalty modal
+// (static/js/penalize-user.js, adminTools) for the author, performing
+// before the penalty; edit opens the flagged post in the composer and
+// performs once it is saved. Editing a reviewable (a queued post's
+// title, category and raw) draws its editable fields in place and PUTs
+// /review/:id; a queued post by email shows its raw email
+// (RawEmailModal).
+//
+// What leans on parts not ported says so instead: the reject reason
+// modal (user reviewables are not listed), a queued topic's tags field
+// (MiniTagChooser), the insights tab and the pin toggle.
 (function () {
   "use strict";
 
@@ -415,9 +423,11 @@
     section.appendChild(output);
   }
 
-  // ReviewableItem#_performConfirmed, without a client action; the
-  // modal's fields (additionalData) go with it.
-  function performConfirmed(item, action, additionalData) {
+  // ReviewableItem#_performConfirmed's performAction: the perform with the
+  // modal's fields (additionalData), its toast, the automatic claim
+  // released and the reviewables it touched drawn again. Rejects as the
+  // request does.
+  function performAction(item, action, additionalData) {
     var data = reviewableData(item);
     var id = item.dataset.reviewableId;
     setDisabled(item, true);
@@ -427,31 +437,131 @@
         "/review/" + id + "/perform/" + encodeURIComponent(action.server_action) + "?version=" + data.version,
         additionalData
       )
-      .then(function (json) {
-        var result = (json && json.reviewable_perform_result) || {};
-        showCompletedToast(item, action, data);
-        // An approved queued topic now has one: the redraw looks there.
-        if (result.created_post_topic_id && !data.topic_id) {
-          data.topic_id = result.created_post_topic_id;
-          storeData(item, data);
-        }
-        var ids = [id];
-        Object.keys(result.reviewable_updates || {}).forEach(function (other) {
-          if (ids.indexOf(String(other)) === -1) {
-            ids.push(String(other));
+      .then(
+        function (json) {
+          var result = (json && json.reviewable_perform_result) || {};
+          showCompletedToast(item, action, data);
+          // An approved queued topic now has one: the redraw looks there.
+          if (result.created_post_topic_id && !data.topic_id) {
+            data.topic_id = result.created_post_topic_id;
+            storeData(item, data);
           }
-        });
-        // Then #unclaimAutomaticReviewable, before the redraw.
-        return unclaimAutomatic(item).then(function () {
-          return redraw(item, ids);
-        });
-      })
+          var ids = [id];
+          Object.keys(result.reviewable_updates || {}).forEach(function (other) {
+            if (ids.indexOf(String(other)) === -1) {
+              ids.push(String(other));
+            }
+          });
+          // Then #unclaimAutomaticReviewable, before the redraw.
+          return unclaimAutomatic(item).then(function () {
+            return redraw(item, ids);
+          });
+        },
+        function (error) {
+          setDisabled(item, false);
+          throw error;
+        }
+      );
+  }
+
+  // ReviewableItem#_performConfirmed: a client action claims the
+  // reviewable and hands its handler the perform to run; the others
+  // perform at once. A failure is shown, and the automatic claim released
+  // after either.
+  function performConfirmed(item, action, additionalData) {
+    var run;
+    if (action.client_action) {
+      var handler = CLIENT_ACTIONS[action.client_action];
+      if (!handler) {
+        notPorted("the review queue's " + action.client_action + " action");
+        return Promise.resolve();
+      }
+      run = claimReviewable(item).then(function (claimed) {
+        if (claimed) {
+          return handler(item, function () {
+            return performAction(item, action, additionalData);
+          });
+        }
+      });
+    } else {
+      run = performAction(item, action, additionalData);
+    }
+    return run
       .catch(function (error) {
-        setDisabled(item, false);
         ui().failed(error);
-        unclaimAutomatic(item);
+      })
+      .then(function () {
+        return unclaimAutomatic(item);
       });
   }
+
+  // ---- Client actions ---------------------------------------------------
+
+  // ReviewableItem#_penalize: adminTools' silence or suspend modal for
+  // the author (AdminUser.find), on the post with its raw, performing the
+  // action before the penalty. Settles once the modal is gone.
+  function penalize(item, type, perform) {
+    var data = reviewableData(item);
+    if (!Discourse.penalizeUser || !data.target_created_by) {
+      return Promise.resolve();
+    }
+    return Discourse.penalizeUser.find(data.target_created_by.id).then(function (user) {
+      return new Promise(function (resolve) {
+        Discourse.penalizeUser
+          .show({
+            penaltyType: type,
+            user: user,
+            postId: data.post_id,
+            postEdit: data.raw,
+            reviewableId: Number(item.dataset.reviewableId),
+            before: perform,
+            onClose: resolve,
+          })
+          .catch(resolve);
+      });
+    });
+  }
+
+  // client<Action>: what a client action does before (or instead of) its
+  // perform.
+  var CLIENT_ACTIONS = {
+    // #clientSuspend and #clientSilence
+    suspend: function (item, perform) {
+      return penalize(item, "suspend", perform);
+    },
+    silence: function (item, perform) {
+      return penalize(item, "silence", perform);
+    },
+    // #clientEdit: the flagged post in the composer (when it may be
+    // edited), staying on the page, the action performed once it is
+    // saved.
+    edit: function (item, perform) {
+      var data = reviewableData(item);
+      if (!Discourse.composerOpen) {
+        notPorted("editing a post without the composer");
+        return Promise.resolve();
+      }
+      return ui()
+        .ajax("GET", "/posts/" + data.post_id + ".json")
+        .then(function (post) {
+          if (!post || !post.can_edit) {
+            return false;
+          }
+          Discourse.composerOpen({
+            mode: "edit",
+            topicId: post.topic_id,
+            postId: post.id,
+            postNumber: post.post_number,
+            skipJumpOnSave: true,
+            onSaved: function () {
+              perform().catch(function (error) {
+                ui().failed(error);
+              });
+            },
+          });
+        });
+    },
+  };
 
   // #claimReviewable: a reviewable without a topic counts as claimed; an
   // unclaimed one is claimed automatically. True when the viewer holds it.
@@ -566,10 +676,6 @@
           reviseModal(item, action);
         }
       });
-      return;
-    }
-    if (action.client_action) {
-      notPorted("the review queue's " + action.client_action + " action");
       return;
     }
     performConfirmed(item, action);
@@ -706,6 +812,372 @@
     true
   );
 
+
+  // ---- Editing ----------------------------------------------------------
+
+  // ReviewableItem's editing (state.updates): by reviewable id, the
+  // changes made and what the fields stand in for.
+  var editing = {};
+
+  // #updateField: a nested field (`payload.raw`) under its key.
+  function updateField(updates, fieldId, value) {
+    var parts = fieldId.split(".");
+    if (parts[1]) {
+      var nested = Object.assign({}, updates[parts[0]]);
+      nested[parts[1]] = value;
+      updates[parts[0]] = nested;
+    } else {
+      updates[parts[0]] = value;
+    }
+  }
+
+  // helpers/editable-value: category_id is the category's id; an array
+  // is copied.
+  function editableValue(data, fieldId) {
+    var value = data;
+    fieldId.split(".").forEach(function (key) {
+      value = value === null || value === undefined ? undefined : value[key];
+    });
+    return Array.isArray(value) ? value.slice(0) : value;
+  }
+
+  // ReviewableFieldText: an Input, changed on change.
+  function textField(value, changed) {
+    var input = document.createElement("input");
+    input.className = "ember-text-field ember-view reviewable-input-text";
+    input.type = "text";
+    input.value = value === null || value === undefined ? "" : value;
+    input.addEventListener("change", function () {
+      changed(input.value);
+    });
+    return input;
+  }
+
+  // ReviewableFieldEditor: DEditor (the composer's toolbar and its
+  // markdown, the preview from the composer's renderer).
+  function editorField(value, changed) {
+    var template = document.getElementById("review-edit-editor");
+    var editor = template.content.firstElementChild.cloneNode(true);
+    var textarea = editor.querySelector(".d-editor-input");
+    var preview = editor.querySelector(".d-editor-preview");
+    var timer = null;
+    textarea.value = value === null || value === undefined ? "" : value;
+    function cook() {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (!Discourse.composerCook) {
+          return;
+        }
+        Discourse.composerCook(textarea.value)
+          .then(function (html) {
+            preview.innerHTML = html;
+          })
+          .catch(function () {});
+      }, 200);
+    }
+    function input() {
+      changed(textarea.value);
+      cook();
+    }
+    textarea.addEventListener("input", input);
+    editor.addEventListener("click", function (event) {
+      var tool = event.target.closest(".toolbar__button");
+      if (tool) {
+        toolbarAction(textarea, tool.dataset.action);
+        input();
+      }
+    });
+    cook();
+    return editor;
+  }
+
+  // The toolbar's markdown around the selection, as the composer's.
+  function toolbarAction(textarea, action) {
+    var labels = (document.getElementById("reply-control") || {}).dataset || {};
+    function surround(before, after, example) {
+      var start = textarea.selectionStart;
+      var end = textarea.selectionEnd;
+      var selected = textarea.value.slice(start, end) || example;
+      textarea.setRangeText(before + selected + after, start, end, "end");
+      textarea.selectionStart = start + before.length;
+      textarea.selectionEnd = start + before.length + selected.length;
+      textarea.focus();
+    }
+    function prefixLines(prefix, example) {
+      var start = textarea.selectionStart;
+      var end = textarea.selectionEnd;
+      var lineStart = textarea.value.lastIndexOf("\n", start - 1) + 1;
+      var selected = textarea.value.slice(lineStart, end) || example;
+      var replaced = selected
+        .split("\n")
+        .map(function (line) {
+          return prefix + line;
+        })
+        .join("\n");
+      textarea.setRangeText(replaced, lineStart, Math.max(end, lineStart), "end");
+      textarea.focus();
+    }
+    var actions = {
+      bold: function () {
+        surround("**", "**", labels.textBold || "strong text");
+      },
+      italic: function () {
+        surround("*", "*", labels.textItalic || "emphasized text");
+      },
+      link: function () {
+        surround("[", "](https://)", labels.textLink || "link");
+      },
+      blockquote: function () {
+        prefixLines("> ", labels.textBlockquote || "Blockquote");
+      },
+      code: function () {
+        var selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+        if (selected.indexOf("\n") >= 0 || selected === "") {
+          surround("```\n", "\n```", labels.textCode || "code");
+        } else {
+          surround("`", "`", "");
+        }
+      },
+      list: function () {
+        prefixLines("- ", labels.textList || "List item");
+      },
+    };
+    if (actions[action]) {
+      actions[action]();
+    }
+  }
+
+  // ReviewableFieldCategory: the composer's CategoryChooser, its rows the
+  // categories the viewer may post in, the category picked sent
+  // (#categoryChanged).
+  function categoryField(value, changed) {
+    var source = document.querySelector("#reply-control details.category-chooser");
+    if (!source) {
+      return null;
+    }
+    var chooser = source.cloneNode(true);
+    chooser.open = false;
+    chooser.classList.remove("is-expanded");
+    var filter = chooser.querySelector(".filter-input");
+    filter.value = "";
+    chooser.querySelectorAll(".category-row").forEach(function (row) {
+      row.hidden = false;
+    });
+    function select(id) {
+      var header = chooser.querySelector(".select-kit-selected-name");
+      var summary = chooser.querySelector("summary");
+      var row = id === null || id === undefined ? null : chooser.querySelector('.category-row[data-value="' + id + '"]');
+      header.innerHTML = "";
+      var name = document.createElement("span");
+      name.className = "name";
+      header.appendChild(name);
+      if (!row) {
+        name.textContent = (pageData().strings || {}).category_choose || "";
+        delete header.dataset.value;
+        delete header.dataset.name;
+        header.removeAttribute("title");
+        summary.dataset.value = "";
+        chooser.classList.remove("has-selection");
+        return;
+      }
+      // A subcategory's header shows its parent's badge before its own.
+      row.querySelectorAll(".category-status > .badge-category__wrapper").forEach(function (b) {
+        var badge = b.cloneNode(true);
+        var count = badge.querySelector(".topic-count");
+        if (count) {
+          count.remove();
+        }
+        name.appendChild(badge);
+      });
+      header.dataset.value = id;
+      header.dataset.name = row.dataset.name;
+      header.title = row.dataset.name;
+      summary.dataset.value = id;
+      chooser.classList.add("has-selection");
+    }
+    select(value);
+    chooser.addEventListener("toggle", function () {
+      chooser.classList.toggle("is-expanded", chooser.open);
+      if (chooser.open) {
+        ui().floatBody(chooser);
+        filter.focus();
+      } else {
+        chooser.querySelector(".select-kit-body").removeAttribute("style");
+      }
+    });
+    filter.addEventListener("input", function () {
+      var term = filter.value.toLowerCase();
+      chooser.querySelectorAll(".category-row").forEach(function (row) {
+        row.hidden = term !== "" && row.dataset.name.toLowerCase().indexOf(term) < 0;
+      });
+    });
+    chooser.addEventListener("click", function (event) {
+      var row = event.target.closest(".category-row");
+      if (row) {
+        event.preventDefault();
+        select(row.dataset.value);
+        chooser.open = false;
+        changed(parseInt(row.dataset.value, 10));
+      }
+    });
+    return chooser;
+  }
+
+  // ReviewableFieldTags (MiniTagChooser) is not ported: the tags are
+  // drawn as the item draws them, and changing them says so.
+  function tagsField(data) {
+    var holder = document.createElement("div");
+    holder.innerHTML = data.tags_html || "";
+    holder.addEventListener("click", function (event) {
+      event.preventDefault();
+      notPorted("changing a queued topic's tags (MiniTagChooser)");
+    });
+    return holder;
+  }
+
+  // #edit: the editable fields in place of the reviewable's component,
+  // and Save and Cancel in place of its actions.
+  function startEdit(item) {
+    var id = item.dataset.reviewableId;
+    var data = reviewableData(item);
+    var summary = item.querySelector(".review-item__flag-summary");
+    var header = summary.querySelector(".review-item__header");
+    var aside = item.querySelector(".review-item__moderator-actions:not(.--extra)");
+    var title = aside.querySelector(".review-item__aside-title");
+    var actionsTemplate = document.getElementById("review-edit-actions");
+    if (!actionsTemplate || (editing[id] && editing[id].fields.isConnected)) {
+      return;
+    }
+    var state = {
+      updates: {},
+      component: Array.prototype.filter.call(summary.children, function (c) {
+        return c !== header;
+      }),
+      actions: Array.prototype.filter.call(aside.children, function (c) {
+        return c !== title;
+      }),
+      title: title.textContent,
+    };
+    var fields = document.createElement("div");
+    fields.className = "editable-fields";
+    (data.editable_fields || []).forEach(function (f) {
+      var changed = function (value) {
+        updateField(state.updates, f.id, value);
+      };
+      var value = editableValue(data, f.id);
+      var control = null;
+      if (f.type === "text") {
+        control = textField(value, changed);
+      } else if (f.type === "editor") {
+        control = editorField(value, changed);
+      } else if (f.type === "category") {
+        control = categoryField(value, changed);
+      } else if (f.type === "tags") {
+        control = tagsField(data);
+      }
+      var wrapper = document.createElement("div");
+      wrapper.className = "editable-field " + dasherize(f.id);
+      if (control) {
+        wrapper.appendChild(control);
+      }
+      fields.appendChild(wrapper);
+    });
+    state.component.forEach(function (c) {
+      c.remove();
+    });
+    summary.appendChild(fields);
+    state.actions.forEach(function (c) {
+      c.remove();
+    });
+    title.textContent = (pageData().strings || {}).editing_post || "";
+    aside.appendChild(actionsTemplate.content.cloneNode(true));
+    state.fields = fields;
+    editing[id] = state;
+  }
+
+  // #cancelEdit: the reviewable as it was.
+  function stopEdit(item) {
+    var id = item.dataset.reviewableId;
+    var state = editing[id];
+    if (!state) {
+      return;
+    }
+    delete editing[id];
+    var summary = item.querySelector(".review-item__flag-summary");
+    var aside = item.querySelector(".review-item__moderator-actions:not(.--extra)");
+    state.fields.remove();
+    state.component.forEach(function (c) {
+      summary.appendChild(c);
+    });
+    aside.querySelectorAll(".save-edit, .cancel-edit").forEach(function (b) {
+      b.remove();
+    });
+    state.actions.forEach(function (c) {
+      aside.appendChild(c);
+    });
+    aside.querySelector(".review-item__aside-title").textContent = state.title;
+  }
+
+  // #saveEdit: Reviewable#update, nothing sent without a change (PUT
+  // /review/:id with the changes), then the reviewable drawn again.
+  function saveEdit(item) {
+    var id = item.dataset.reviewableId;
+    var state = editing[id];
+    if (!state) {
+      return;
+    }
+    if (Object.keys(state.updates).length === 0) {
+      stopEdit(item);
+      return;
+    }
+    ui()
+      .ajax("PUT", "/review/" + id + "?version=" + reviewableData(item).version, { reviewable: state.updates })
+      .then(function () {
+        delete editing[id];
+        return redraw(item, [id]);
+      })
+      .catch(function (error) {
+        ui().failed(error);
+      });
+  }
+
+  // ---- Raw email --------------------------------------------------------
+
+  // RawEmailModal for a queued post: the payload's raw email (with no
+  // post to load its text and HTML parts from), or that there is none.
+  function rawEmailModal(item) {
+    var strings = pageData().strings || {};
+    var raw = (reviewableData(item).payload || {}).raw_email || "";
+    Discourse.modal.show({
+      className: "incoming-email-modal",
+      title: strings.raw_email_title || "",
+      body: function (body) {
+        var tabs = document.createElement("div");
+        tabs.className = "incoming-email-tabs";
+        var tab = document.createElement("button");
+        tab.className = "btn btn-text active";
+        tab.title = strings.raw_email_raw_title || "";
+        tab.type = "button";
+        var label = document.createElement("span");
+        label.className = "d-button-label";
+        label.textContent = strings.raw_email_raw_button || "";
+        tab.appendChild(label);
+        tabs.appendChild(tab);
+        var content = document.createElement("div");
+        content.className = "incoming-email-content";
+        if (raw) {
+          var pre = document.createElement("pre");
+          pre.className = "incoming-email-raw";
+          pre.textContent = raw;
+          content.appendChild(pre);
+        } else {
+          content.textContent = strings.raw_email_not_available || "";
+        }
+        body.appendChild(tabs);
+        body.appendChild(content);
+      },
+    });
+  }
   // ---- Clicks -----------------------------------------------------------
 
   document.addEventListener("click", function (event) {
@@ -750,7 +1222,15 @@
     var button = target.closest(".review-item__moderator-actions button.reviewable-action");
     if (button && !button.disabled) {
       if (button.classList.contains("edit")) {
-        notPorted("editing a reviewable");
+        startEdit(item);
+        return;
+      }
+      if (button.classList.contains("save-edit")) {
+        saveEdit(item);
+        return;
+      }
+      if (button.classList.contains("cancel-edit")) {
+        stopEdit(item);
         return;
       }
       perform(item, actionOfButton(item, button));
@@ -802,7 +1282,7 @@
 
     if (target.closest(".show-raw-email")) {
       event.preventDefault();
-      notPorted("a queued post's raw email (RawEmailModal)");
+      rawEmailModal(item);
       return;
     }
 

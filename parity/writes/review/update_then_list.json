@@ -1,0 +1,523 @@
+{
+  "name": "update_then_list",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9702.json",
+      "params": {
+        "version": 0,
+        "reviewable": {
+          "payload": {
+            "title": "A better title for the queued topic"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/review.json?type=ReviewableQueuedPost"
+    }
+  ],
+  "started_at": "2026-11-06T20:27:23.652268",
+  "transaction_started_at": "2026-11-06T20:27:22.488915",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "payload": {
+          "title": "A better title for the queued topic"
+        },
+        "version": 1,
+        "cooked": "<p>A new topic waiting for approval in the queue.</p>",
+        "fancy_title": "A better title for the queued topic"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "reviewables": [
+          {
+            "id": 9702,
+            "type": "ReviewableQueuedPost",
+            "type_source": "core",
+            "target_type": null,
+            "target_id": null,
+            "category_id": 4,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "can_edit": true,
+            "score": 6.0,
+            "version": 1,
+            "target_created_by_trust_level": 1,
+            "created_from_flag": false,
+            "status": 0,
+            "fancy_title": "A better title for the queued topic",
+            "cooked": "<p>A new topic waiting for approval in the queue.</p>",
+            "removed_topic_id": null,
+            "payload": {
+              "raw": "A new topic waiting for approval in the queue.",
+              "title": "A better title for the queued topic",
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000,
+              "tags": [
+                "howto"
+              ]
+            },
+            "target_created_by_id": 2,
+            "created_by_id": -1,
+            "topic_id": null,
+            "editable_fields": [
+              {
+                "id": "payload.title",
+                "type": "text"
+              },
+              {
+                "id": "category_id",
+                "type": "category"
+              },
+              {
+                "id": "payload.tags",
+                "type": "tags"
+              },
+              {
+                "id": "payload.raw",
+                "type": "editor"
+              }
+            ],
+            "reviewable_score_ids": [
+              9702
+            ],
+            "bundled_action_ids": [
+              "9702-approve_post",
+              "9702-reject-post"
+            ],
+            "reviewable_note_ids": [],
+            "reviewable_history_ids": [
+              9702,
+              1
+            ],
+            "author_penalties": [],
+            "claimed_by_id": null
+          }
+        ],
+        "meta": {
+          "ids": null,
+          "status": "pending",
+          "category_id": null,
+          "topic_id": null,
+          "additional_filters": {},
+          "priority": null,
+          "username": null,
+          "reviewed_by": null,
+          "claimed_by": null,
+          "from_date": null,
+          "to_date": null,
+          "type": "ReviewableQueuedPost",
+          "sort_order": null,
+          "flagged_by": null,
+          "score_type": null,
+          "total_rows_reviewables": 1,
+          "types": {
+            "created_by": "user",
+            "target_created_by": "user",
+            "target_deleted_by": "user",
+            "reviewed_by": "user",
+            "claimed_by": "claimed_by"
+          },
+          "reviewable_types": [
+            "ReviewableFlaggedPost",
+            "ReviewableQueuedPost",
+            "ReviewableUser",
+            "ReviewablePost",
+            "Chat::ReviewableMessage"
+          ],
+          "unknown_reviewable_types_and_sources": [],
+          "score_types": [
+            {
+              "id": 3,
+              "name": "Off-Topic"
+            },
+            {
+              "id": 4,
+              "name": "Inappropriate"
+            },
+            {
+              "id": 8,
+              "name": "Spam"
+            },
+            {
+              "id": 10,
+              "name": "Illegal"
+            },
+            {
+              "id": 7,
+              "name": "Something Else"
+            },
+            {
+              "id": 9,
+              "name": "Needs Approval"
+            }
+          ],
+          "reviewable_count": 1,
+          "unseen_reviewable_count": 1
+        },
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "can_delete_all_posts": true,
+            "can_be_deleted": true,
+            "post_count": 1,
+            "topic_count": 2,
+            "ip_address": "172.17.0.1",
+            "custom_fields": {},
+            "flags_agreed": 0,
+            "flags_disagreed": 0,
+            "flags_ignored": 0,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "trust_level": 1,
+            "silenced_count": 0,
+            "suspended_count": 0,
+            "rejected_posts_count": 0
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "custom_fields": {}
+          },
+          {
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png"
+          }
+        ],
+        "topics": [],
+        "reviewable_scores": [
+          {
+            "id": 9702,
+            "score": 6.0,
+            "agree_stats": {
+              "agreed": 0,
+              "disagreed": 0,
+              "ignored": 0
+            },
+            "reason": "<p>New user typed their first post suspiciously fast (3 seconds), suspected bot or spammer behavior. See <a href=\"http://localhost:3048/admin/site_settings/category/all_results?filter=first_post_typing_time\">first post typing time</a>.</p>",
+            "reason_type": "fast_typer",
+            "reason_data": null,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewed_at": null,
+            "status": 0,
+            "user_id": -1,
+            "score_type_id": 9,
+            "reviewed_by_id": null
+          }
+        ],
+        "score_types": [
+          {
+            "id": 9,
+            "title": "Needs Approval",
+            "icon": "flag",
+            "type": "needs_approval"
+          }
+        ],
+        "bundled_actions": [
+          {
+            "id": "9702-approve_post",
+            "action_ids": [
+              "9702-approve_post"
+            ]
+          },
+          {
+            "id": "9702-reject-post",
+            "label": "No",
+            "action_ids": [
+              "9702-reject_post",
+              "9702-revise_and_reject_post",
+              "9702-reject_and_silence",
+              "9702-reject_and_suspend",
+              "9702-delete_user",
+              "9702-delete_user_block"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "id": "9702-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "Yes",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
+          },
+          {
+            "id": "9702-reject_post",
+            "action_name": "reject_post",
+            "icon": "xmark",
+            "button_class": null,
+            "label": "Reject Post",
+            "server_action": "reject_post",
+            "completed_message": "Post rejected."
+          },
+          {
+            "id": "9702-revise_and_reject_post",
+            "action_name": "revise_and_reject_post",
+            "icon": "envelope",
+            "button_class": null,
+            "label": "Request Revision...",
+            "server_action": "revise_and_reject_post",
+            "completed_message": "Post rejected pending revision."
+          },
+          {
+            "id": "9702-reject_and_silence",
+            "action_name": "reject_and_silence",
+            "icon": "microphone-slash",
+            "button_class": null,
+            "label": "Reject and silence user",
+            "description": "Reject the post and prevent the user from posting or sending messages",
+            "server_action": "reject_and_silence",
+            "client_action": "silence",
+            "completed_message": "Post rejected and user silenced."
+          },
+          {
+            "id": "9702-reject_and_suspend",
+            "action_name": "reject_and_suspend",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Reject and suspend user",
+            "description": "Reject the post and prevent the user from logging in until the suspension ends",
+            "server_action": "reject_and_suspend",
+            "client_action": "suspend",
+            "completed_message": "Post rejected and user suspended."
+          },
+          {
+            "id": "9702-delete_user",
+            "action_name": "delete_user",
+            "icon": "user-xmark",
+            "button_class": null,
+            "label": "Delete user",
+            "confirm_message": "Are you sure you want to delete @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user without blocking their email or IP address",
+            "server_action": "delete_user",
+            "completed_message": null
+          },
+          {
+            "id": "9702-delete_user_block",
+            "action_name": "delete_user_block",
+            "icon": "ban",
+            "button_class": null,
+            "label": "Delete and block user",
+            "confirm_message": "Are you sure you want to delete and block @user0?",
+            "confirm_destructive": true,
+            "description": "Delete the user and block their email and IP address",
+            "server_action": "delete_user_block",
+            "completed_message": null
+          }
+        ],
+        "reviewable_notes": [],
+        "reviewable_histories": [
+          {
+            "id": 9702,
+            "created_at": "2026-10-02T10:00:00.000Z",
+            "reviewable_history_type": 0,
+            "status": 0,
+            "created_by_id": -1
+          },
+          {
+            "id": 1,
+            "created_at": "2026-11-06T20:27:23.698Z",
+            "reviewable_history_type": 2,
+            "status": 0,
+            "created_by_id": 5
+          }
+        ],
+        "claimed_bies": [],
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": {
+            "payload": [
+              {
+                "raw": "A new topic waiting for approval in the queue.",
+                "tags": [
+                  "howto"
+                ],
+                "extra": "some extra data",
+                "title": "A queued topic waiting for review",
+                "typing_duration_msecs": 3000,
+                "composer_open_duration_msecs": 12000
+              },
+              {
+                "raw": "A new topic waiting for approval in the queue.",
+                "tags": [
+                  "howto"
+                ],
+                "extra": "some extra data",
+                "title": "A better title for the queued topic",
+                "typing_duration_msecs": 3000,
+                "composer_open_duration_msecs": 12000
+              }
+            ]
+          },
+          "status": 0,
+          "created_at": "2026-11-06T20:27:23.698264",
+          "updated_at": "2026-11-06T20:27:23.698264",
+          "created_by_id": 5,
+          "reviewable_id": 9702,
+          "reviewable_history_type": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewables": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9702,
+            "type": "ReviewableQueuedPost",
+            "score": 6,
+            "status": 0,
+            "payload": {
+              "raw": "A new topic waiting for approval in the queue.",
+              "tags": [
+                "howto"
+              ],
+              "extra": "some extra data",
+              "title": "A queued topic waiting for review",
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000
+            },
+            "version": 0,
+            "topic_id": null,
+            "target_id": null,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "category_id": 4,
+            "target_type": null,
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": -1,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 2,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          },
+          "after": {
+            "id": 9702,
+            "type": "ReviewableQueuedPost",
+            "score": 6,
+            "status": 0,
+            "payload": {
+              "raw": "A new topic waiting for approval in the queue.",
+              "tags": [
+                "howto"
+              ],
+              "extra": "some extra data",
+              "title": "A better title for the queued topic",
+              "typing_duration_msecs": 3000,
+              "composer_open_duration_msecs": 12000
+            },
+            "version": 1,
+            "topic_id": null,
+            "target_id": null,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-11-06T20:27:23.694848",
+            "category_id": 4,
+            "target_type": null,
+            "type_source": "core",
+            "force_review": true,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": -1,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 2,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
+            "created_at": "2026-11-06T20:27:22.854685",
+            "rotated_at": "2026-11-06T20:27:22.85377",
+            "updated_at": "2026-11-06T20:27:22.854685",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T20:27:23.659381",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
+            "created_at": "2026-11-06T20:27:22.854685",
+            "rotated_at": "2026-11-06T20:27:22.85377",
+            "updated_at": "2026-11-06T20:27:22.854685",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 9702
+      }
+    ]
+  ],
+  "next_ids": {
+    "reviewable_histories": 1
+  },
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9702, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, NULL, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"A new topic waiting for approval in the queue.\", \"tags\": [\"howto\"], \"title\": \"A queued topic waiting for review\", \"extra\": \"some extra data\", \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, reason, created_at, updated_at) VALUES (9702, 9702, -1, 9, 0, 6, 0, 0, 'fast_typer', '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9702, 9702, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "d4d4bc6869069a10550a056325723298d98a15e019fe40b9212d4e6943abad95",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

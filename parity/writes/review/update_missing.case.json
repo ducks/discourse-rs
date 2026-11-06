@@ -1,0 +1,16 @@
+{
+  "user": "user3",
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00', 2)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/12345.json",
+      "params": {
+        "version": 0
+      }
+    }
+  ]
+}
