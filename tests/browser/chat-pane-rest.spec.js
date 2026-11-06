@@ -438,8 +438,10 @@ test.describe("in the mobile view", () => {
     await page.evaluate((s) => (document.querySelector(s).scrollTop = -600), SCROLLER);
     await expect(arrow).toHaveClass(/visible/);
 
-    // The page after the last message, asked for at the bottom, held until
-    // the new message is drawn live.
+    // The page after the last message, asked for at the bottom while
+    // whether newer ones load is unknown (as after an older page), held
+    // until the new message is drawn live.
+    await page.evaluate(() => delete document.querySelector(".chat-channel[data-id]").dataset.canLoadMoreFuture);
     let release;
     const held = new Promise((resolve) => (release = resolve));
     let fetching;
