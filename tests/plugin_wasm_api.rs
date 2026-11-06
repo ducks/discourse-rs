@@ -752,13 +752,15 @@ async fn a_guest_cannot_lift_its_limits_and_what_it_sets_on_its_role_goes_at_boo
         .unwrap()
         .join(";")
     };
+    // The password last: a connection the guest's pool opens after it
+    // would log in with the install's password and fail.
     for sql in [
-        "!ALTER ROLE CURRENT_USER PASSWORD 'the guests own'".to_string(),
         "!ALTER ROLE CURRENT_USER SET work_mem = '4GB'".to_string(),
         format!(
             "!ALTER ROLE CURRENT_USER IN DATABASE \"{}\" SET search_path = public",
             db.name()
         ),
+        "!ALTER ROLE CURRENT_USER PASSWORD 'the guests own'".to_string(),
     ] {
         let result = probe(&st, Some(&session), &sql).await;
         assert!(result["ok"].is_number(), "{sql}: {result}");
