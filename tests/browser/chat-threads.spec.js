@@ -4,8 +4,11 @@
 // actions (react, edit, the secondary menu, no reply); its paging and
 // jumps; the settings modal from the title; the side panel's resizer; the
 // back link after the channel (ChatHistory); the threads list's load
-// more and live updates. Each test makes its own threaded channel, so
-// the other specs' General is left alone.
+// more and live updates. 160b: the lists' and the sidebar's unread
+// counts following the tracking state, the settings modal's header save
+// on a phone, the thread's date separators, ChatHistory over a reload.
+// Each test makes its own threaded channel, so the other specs' General
+// is left alone.
 const { test, expect, login, api, sql, label } = require("./helpers");
 const fs = require("fs");
 const path = require("path");
@@ -369,4 +372,223 @@ test("the side panel's resizer, the back link after the channel, the threads lis
     timeout: 20_000,
   });
   await expect(items).toHaveCount(11);
+});
+
+// 160b: the member's thread membership in a thread, read up to `lastRead`.
+function setMembership(userName, threadId, level, lastRead) {
+  sql(
+    `DELETE FROM user_chat_thread_memberships WHERE thread_id = :'p1' AND user_id = (SELECT id FROM users WHERE username = :'p2')`,
+    threadId,
+    userName,
+  );
+  sql(
+    `INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, last_read_message_id, created_at, updated_at)
+     SELECT id, :'p1', :'p3', :'p4', now(), now() FROM users WHERE username = :'p2'`,
+    threadId,
+    userName,
+    String(level),
+    String(lastRead),
+  );
+}
+
+function lastMessageOf(threadId) {
+  const [[id]] = sql("SELECT max(id) FROM chat_messages WHERE thread_id = :'p1'", threadId);
+  return id;
+}
+
+test("the threads lists and the sidebar follow the tracking state", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const older = await makeThread(channel, "user0", "user1", label("older thread"));
+  const newer = await makeThread(channel, "user0", "user1", label("newer thread"));
+  // The older a minute back (previews are to the second, and equal ones
+  // sort as the threads manager holds them).
+  sql("UPDATE chat_messages SET created_at = created_at - interval '1 minute' WHERE thread_id = :'p1'", older.threadId);
+  // user0 has read both.
+  setMembership("user0", older.threadId, 2, lastMessageOf(older.threadId));
+  setMembership("user0", newer.threadId, 2, lastMessageOf(newer.threadId));
+  await login(context, "user0");
+  await page.goto(`/chat/c/${channel.slug}/${channel.id}/t`);
+  const items = page.locator(".chat-thread-list-item");
+  await expect(items).toHaveCount(2);
+  // Both read: the latest reply first.
+  await expect(items.first()).toHaveAttribute("data-thread-id", String(newer.threadId));
+  const item = page.locator(`.chat-thread-list-item[data-thread-id='${older.threadId}']`);
+  await expect(item).not.toHaveClass(/-is-unread/);
+
+  // The sidebar on another page: the channel's link, its dot for threads
+  // replied to since it was viewed (My threads counts every channel's,
+  // which other specs reply in).
+  const forum = await context.newPage();
+  await forum.goto("/latest");
+  const link = forum.locator(`.sidebar-section[data-section-name="chat-channels"] a[href$="/chat/c/${channel.slug}/${channel.id}"]`);
+  await expect(link).toBeVisible();
+  await expect(link.locator(".sidebar-section-link-content-badge")).toHaveCount(0);
+
+  // A reply by another member: unread, counted, sorted first.
+  await send(channel.contexts.user1, channel.id, { message: label("new reply"), thread_id: String(older.threadId) });
+  await expect(item).toHaveClass(/-is-unread/, { timeout: 20_000 });
+  await expect(item.locator(".chat-thread-list-item-unread-indicator__number")).toHaveText("1");
+  await expect(items.first()).toHaveAttribute("data-thread-id", String(older.threadId));
+  await expect(link.locator(".sidebar-section-link-content-badge")).toHaveCount(1, { timeout: 20_000 });
+  await send(channel.contexts.user1, channel.id, { message: label("another reply"), thread_id: String(older.threadId) });
+  await expect(item.locator(".chat-thread-list-item-unread-indicator__number")).toHaveText("2", { timeout: 20_000 });
+
+  // Read elsewhere (the member's other session): read again, its place
+  // back by its last reply, the sidebar's dot gone.
+  await api(channel.contexts.user0, "PUT", `/chat/api/channels/${channel.id}/threads/${older.threadId}/read.json`, {
+    message_id: String(lastMessageOf(older.threadId)),
+  });
+  await expect(item).not.toHaveClass(/-is-unread/, { timeout: 20_000 });
+  await expect(item.locator(".chat-thread-list-item-unread-indicator")).toHaveCount(0);
+  await expect(link.locator(".sidebar-section-link-content-badge")).toHaveCount(0, { timeout: 20_000 });
+
+  // Watching: a reply counts as urgent.
+  setMembership("user0", newer.threadId, 3, lastMessageOf(newer.threadId));
+  await page.reload();
+  const watched = page.locator(`.chat-thread-list-item[data-thread-id='${newer.threadId}']`);
+  await expect(watched).not.toHaveClass(/-is-urgent/);
+  await send(channel.contexts.user1, channel.id, { message: label("watched reply"), thread_id: String(newer.threadId) });
+  await expect(watched).toHaveClass(/-is-urgent/, { timeout: 20_000 });
+  await expect(watched.locator(".chat-thread-list-item-unread-indicator.-urgent")).toHaveText("1");
+  await expect(items.first()).toHaveAttribute("data-thread-id", String(newer.threadId));
+});
+
+test("the member's threads follow the tracking state", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const thread = await makeThread(channel, "user0", "user1", label("my tracked thread"));
+  setMembership("user0", thread.threadId, 2, thread.messageId);
+  await login(context, "user0");
+  await page.goto("/chat/threads");
+  const item = page.locator(`.c-user-thread[data-id='${thread.threadId}']`);
+  const count = item.locator(".chat__thread-title-container .chat-thread-list-item-unread-indicator__number");
+  await expect(count).toHaveText("1");
+  await send(channel.contexts.user1, channel.id, { message: label("more for me"), thread_id: String(thread.threadId) });
+  await expect(count).toHaveText("2", { timeout: 20_000 });
+  // The viewer's own reply moves the membership's last read and leaves
+  // the counts (its tracking state names the channel's last read, not
+  // the thread); the next reply by another counts on from there.
+  const own = label("my own");
+  await send(channel.contexts.user0, channel.id, { message: own, thread_id: String(thread.threadId) });
+  const [[ownId]] = sql("SELECT id FROM chat_messages WHERE message = :'p1'", own);
+  await expect(item).toHaveAttribute("data-tracking", new RegExp(`"last_read_message_id":${ownId}\\}`), {
+    timeout: 20_000,
+  });
+  await expect(count).toHaveText("2");
+  await send(channel.contexts.user1, channel.id, { message: label("after mine"), thread_id: String(thread.threadId) });
+  await expect(count).toHaveText("3", { timeout: 20_000 });
+  // Read elsewhere: none.
+  await api(channel.contexts.user0, "PUT", `/chat/api/channels/${channel.id}/threads/${thread.threadId}/read.json`, {
+    message_id: String(lastMessageOf(thread.threadId)),
+  });
+  await expect(item.locator(".chat-thread-list-item-unread-indicator")).toHaveCount(0, { timeout: 20_000 });
+});
+
+test("the thread settings save from the header on a phone", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const { threadId } = await makeThread(channel, "user0", "user1", label("phone settings"));
+  await login(context, "user0");
+  await page.setViewportSize({ width: 400, height: 800 });
+  const base = new URL(test.info().project.use.baseURL);
+  await context.addCookies([{ name: "mobile_view", value: "1", domain: base.hostname, path: "/" }]);
+  // Seen: no title prompt in the way.
+  sql(
+    "UPDATE user_chat_thread_memberships SET thread_title_prompt_seen = true WHERE thread_id = :'p1'",
+    threadId,
+  );
+  await page.goto(threadUrl(channel, threadId));
+  await page.locator(".c-navbar__thread-settings-button").click();
+  const modal = page.locator(".chat-modal-thread-settings");
+  await expect(modal).toBeVisible();
+  const header = modal.locator(".d-modal__header");
+  await expect(header).toHaveClass(/--has-primary-action/);
+  await expect(header.locator(".modal-close")).toHaveCount(0);
+  // Cancel before the title closes it.
+  await expect(header.locator(".d-modal__dismiss-action .d-modal__dismiss-action-button")).toHaveText("Cancel");
+  await header.locator(".d-modal__dismiss-action-button").click();
+  await expect(modal).toHaveCount(0);
+
+  await page.locator(".c-navbar__thread-settings-button").click();
+  await expect(modal).toBeVisible();
+  const title = label("From the header");
+  await modal.locator(".chat-modal-thread-settings__title-input").fill(title);
+  const save = header.locator(".d-modal__primary-action .btn-transparent.--primary");
+  await expect(save).toHaveText("Save");
+  await save.click();
+  await expect(modal).toHaveCount(0);
+  await expect.poll(() => sql("SELECT title FROM chat_threads WHERE id = :'p1'", threadId)).toEqual([[title]]);
+  await expect(page.locator(".c-routes.--channel-thread .c-navbar__title-text")).toHaveText(title);
+});
+
+test("a desktop settings modal has its close button, no header action", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const { threadId } = await makeThread(channel, "user0", "user1", label("desktop settings"));
+  await login(context, "user0");
+  await page.goto(threadUrl(channel, threadId));
+  await page.locator(".c-navbar__thread-settings-button").click();
+  const modal = page.locator(".chat-modal-thread-settings");
+  await expect(modal.locator(".d-modal__header .modal-close")).toBeVisible();
+  await expect(modal.locator(".d-modal__primary-action, .d-modal__dismiss-action")).toHaveCount(0);
+  await expect(modal.locator(".d-modal__header")).not.toHaveClass(/--has-primary-action/);
+});
+
+test("a thread's date separator goes to its day's first message", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const { threadId } = await makeThread(channel, "user0", "user1", label("days thread"));
+  // The original message and the first reply three days ago, then a
+  // reply two days ago and twenty today.
+  sql(
+    "UPDATE chat_messages SET created_at = now() - interval '3 days' WHERE thread_id = :'p1'",
+    threadId,
+  );
+  const marker = label("day");
+  sql(
+    `INSERT INTO chat_messages (chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, thread_id)
+     SELECT :'p1', u.id, now() - interval '2 days', now(), :'p2' || ' old', '<p>' || :'p2' || ' old</p>', 1, u.id, :'p3'
+     FROM users u WHERE u.username = 'user1'`,
+    channel.id,
+    marker,
+    threadId,
+  );
+  sql(
+    `INSERT INTO chat_messages (chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, thread_id)
+     SELECT :'p1', u.id, now() - interval '1 hour' + n * interval '1 second', now(), :'p2' || ' ' || n, '<p>' || :'p2' || ' ' || n || '</p>', 1, u.id, :'p3'
+     FROM generate_series(1, 20) AS n, users u WHERE u.username = 'user1'`,
+    channel.id,
+    marker,
+    threadId,
+  );
+  sql(
+    "UPDATE chat_threads SET last_message_id = (SELECT max(id) FROM chat_messages WHERE thread_id = :'p1'), replies_count = 22 WHERE id = :'p1'",
+    threadId,
+  );
+  const [[old]] = sql("SELECT id FROM chat_messages WHERE message = :'p1'", `${marker} old`);
+  await login(context, "user1");
+  await page.goto(threadUrl(channel, threadId));
+  const pane = page.locator(".chat-thread");
+  const separators = pane.locator(".chat-message-separator-date");
+  await expect(separators).toHaveCount(3);
+  const separator = pane.locator(`.chat-message-separator-date[data-id='${old}']`);
+  await expect(separator).toHaveCount(1);
+  await pane.locator(".chat-messages-scroller").evaluate((s) => (s.scrollTop = 0));
+  await separator.locator(".chat-message-separator__text").dispatchEvent("click");
+  await expect(pane.locator(`.chat-message-container[data-id='${old}']`)).toHaveClass(/-highlighted/);
+});
+
+test("ChatHistory lasts while the page does: a reload starts it again", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const { threadId } = await makeThread(channel, "user0", "user1", label("history thread"));
+  await login(context, "user1");
+  const back = page.locator(".c-routes.--channel-thread .c-navbar__back-button");
+
+  // The threads list, then its item: back to the threads list.
+  await page.goto(`/chat/c/${channel.slug}/${channel.id}/t`);
+  await page.locator(`.chat-thread-list-item[data-thread-id='${threadId}'] .chat-thread-list-item__open-button`).click();
+  await expect(page).toHaveURL(new RegExp(`/t/${threadId}$`));
+  await expect(back).toHaveAttribute("href", new RegExp(`/${channel.id}/t$`));
+  expect(await page.evaluate(() => sessionStorage.getItem("discourse_chat_history"))).toBeNull();
+
+  // A reload: no previous route, so the server's link (the channel, the
+  // member having no unread threads in it).
+  await page.reload();
+  await expect(back).toHaveAttribute("href", new RegExp(`/${channel.id}$`));
 });

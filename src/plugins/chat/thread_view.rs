@@ -285,9 +285,10 @@ impl Context<'_> {
         Ok(out)
     }
 
-    /// ChatModalThreadSettings' body and footer, for chat-thread.js to show
-    /// in a modal: the title input with its length, Discourse AI's call to
-    /// action for admins, and the save button.
+    /// ChatModalThreadSettings for chat-thread.js to show in a modal: the
+    /// header's save button (headerPrimaryAction, which DModal draws on a
+    /// phone), the title input with its length, Discourse AI's call to
+    /// action for admins, and the footer's save button.
     fn thread_settings_template(&self, thread: &ThreadRow) -> String {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -306,7 +307,7 @@ impl Context<'_> {
             String::new()
         };
         format!(
-            "<template class=\"chat-modal-thread-settings-template\" data-title=\"{}\" data-label-save=\"{}\"><div class=\"chat-modal-thread-settings__body\"><input class=\"chat-modal-thread-settings__title-input\" maxlength=\"100\" name=\"thread-title\" placeholder=\"{}\" type=\"text\" value=\"{}\"><div class=\"thread-title-length\"><span>{}</span>/100</div>{ai}</div><div class=\"chat-modal-thread-settings__footer\"><button class=\"btn btn-text btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></template>",
+            "<template class=\"chat-modal-thread-settings-template\" data-title=\"{}\"><div class=\"chat-modal-thread-settings__header-primary-action\"><button class=\"btn btn-text btn-transparent --primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div><div class=\"chat-modal-thread-settings__body\"><input class=\"chat-modal-thread-settings__title-input\" maxlength=\"100\" name=\"thread-title\" placeholder=\"{}\" type=\"text\" value=\"{}\"><div class=\"thread-title-length\"><span>{}</span>/100</div>{ai}</div><div class=\"chat-modal-thread-settings__footer\"><button class=\"btn btn-text btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></template>",
             escape(&t("chat.thread_title_modal.title")),
             escape(&t("chat.save")),
             escape(&t("chat.thread_title_modal.input_placeholder")),
@@ -642,11 +643,12 @@ impl Context<'_> {
             ));
         }
         out.push_str(&items);
+        let viewer = self.list_viewer_attrs().await?;
         out.push_str(&format!(
-            "<div class=\"chat-thread-list__load-more\" data-load-more-url=\"{}/live/chat/{}/threads\" data-offset=\"{count}\" data-done=\"{}\"><br></div></div></div></div>",
+            "<div class=\"chat-thread-list__load-more\" data-load-more-url=\"{}/live/chat/{}/threads\" data-offset=\"{count}\" data-done=\"{}\"{viewer}><br></div></div></div></div>",
             self.base_path,
             channel.id,
-            count == 0
+            count == 0,
         ));
         if drawer.is_some() {
             out.push_str("</div>");
@@ -785,9 +787,10 @@ impl Context<'_> {
             })
             .unwrap_or_default();
         Ok(format!(
-            "<div class=\"chat-thread-list-item{}{}\" data-thread-id=\"{id}\"><div class=\"chat-thread-list-item__main\"><div class=\"chat-thread-list-item__open-button\" role=\"button\" title=\"{}\" data-href=\"{channel_url}/t/{id}\"><div class=\"chat-thread-list-item__header\"><div class=\"chat-thread-list-item__title\">{title}</div><div class=\"chat-thread-list-item__unread-indicator\">{}</div></div><div class=\"chat-thread-list-item__metadata\"><div class=\"chat-thread-list-item__members\">{}{participants}</div><div class=\"chat-thread-list-item__last-reply-timestamp\">{last_reply}</div></div></div></div></div>",
+            "<div class=\"chat-thread-list-item{}{}\" data-thread-id=\"{id}\"{}><div class=\"chat-thread-list-item__main\"><div class=\"chat-thread-list-item__open-button\" role=\"button\" title=\"{}\" data-href=\"{channel_url}/t/{id}\"><div class=\"chat-thread-list-item__header\"><div class=\"chat-thread-list-item__title\">{title}</div><div class=\"chat-thread-list-item__unread-indicator\">{}</div></div><div class=\"chat-thread-list-item__metadata\"><div class=\"chat-thread-list-item__members\">{}{participants}</div><div class=\"chat-thread-list-item__last-reply-timestamp\">{last_reply}</div></div></div></div></div>",
             if unread > 0 { " -is-unread" } else { "" },
             if watched > 0 { " -is-urgent" } else { "" },
+            tracking_attr(thread, tracked),
             escape(&t("chat.thread.view_thread")),
             thread_unread_indicator(tracked),
             static_user_avatar(original_user, 24, &[]),
@@ -809,9 +812,40 @@ impl Context<'_> {
                 escape(&t("chat.empty_state.my_threads"))
             ));
         }
+        let viewer = self.list_viewer_attrs().await?;
         Ok(format!(
-            "<div class=\"c-list\"><div class=\"--loaded c-user-threads\">{items}</div><div class=\"c-user-threads__load-more\" data-load-more-url=\"{}/live/chat/threads\" data-offset=\"{count}\"><br></div><div class=\"loading-container\"></div></div>",
-            self.base_path
+            "<div class=\"c-list\"><div class=\"--loaded c-user-threads\">{items}</div><div class=\"c-user-threads__load-more\" data-load-more-url=\"{}/live/chat/threads\" data-offset=\"{count}\"{viewer}><br></div><div class=\"loading-container\"></div></div>",
+            self.base_path,
+        ))
+    }
+
+    /// The viewer as ChatSubscriptionsManager's thread tracking reads it,
+    /// for chat-thread.js: their id (their own replies leave a thread
+    /// read), the users they ignore (whose replies do too), and the
+    /// channels it hears new messages on (the followed ones).
+    async fn list_viewer_attrs(&mut self) -> Result<String, AppError> {
+        let Some(user_id) = self.guardian.user_id() else {
+            return Ok(String::new());
+        };
+        let ignored: Vec<String> = sqlx::query_scalar(
+            "SELECT users.username FROM ignored_users INNER JOIN users ON users.id = ignored_users.ignored_user_id \
+             WHERE ignored_users.user_id = $1 ORDER BY ignored_users.id",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut followed: Vec<i64> = self
+            .memberships()
+            .await?
+            .into_iter()
+            .filter(|m| m.following)
+            .map(|m| m.chat_channel_id)
+            .collect();
+        followed.sort_unstable();
+        Ok(format!(
+            " data-viewer-id=\"{user_id}\" data-ignored-users=\"{}\" data-followed=\"{}\"",
+            escape(&serde_json::Value::from(ignored).to_string()),
+            escape(&serde_json::Value::from(followed).to_string()),
         ))
     }
 
@@ -869,8 +903,9 @@ impl Context<'_> {
             );
             let preview = &thread["preview"];
             out.push_str(&format!(
-                "<div class=\"c-user-thread\" data-id=\"{id}\" data-channel-id=\"{}\">",
-                c["id"]
+                "<div class=\"c-user-thread\" data-id=\"{id}\" data-channel-id=\"{}\"{}>",
+                c["id"],
+                tracking_attr(thread, tracked)
             ));
             if mobile {
                 // ChannelIcon for a thread: its last replier and the threads flair.
@@ -916,6 +951,31 @@ impl Context<'_> {
         }
         Ok((out, threads.len()))
     }
+}
+
+/// What chat-thread.js keeps of a listed thread's tracking, as Ember's
+/// models hold it (thread.tracking, thread.currentUserMembership,
+/// thread.preview.lastReplyCreatedAt): the counts the lists follow on the
+/// bus and the last reply the channel's list sorts by.
+fn tracking_attr(thread: &Value, tracked: &Value) -> String {
+    let count = |key: &str| tracked[key].as_i64().unwrap_or(0);
+    let membership = &thread["current_user_membership"];
+    let membership = if membership.is_object() {
+        serde_json::json!({
+            "notification_level": membership["notification_level"],
+            "last_read_message_id": membership["last_read_message_id"],
+        })
+    } else {
+        Value::Null
+    };
+    let data = serde_json::json!({
+        "unread_count": count("unread_count"),
+        "mention_count": count("mention_count"),
+        "watched_threads_unread_count": count("watched_threads_unread_count"),
+        "last_reply_created_at": thread["preview"]["last_reply_created_at"],
+        "membership": membership,
+    });
+    format!(" data-tracking=\"{}\"", escape(&data.to_string()))
 }
 
 /// ThreadUnreadIndicator: the urgent count (mentions and watched replies)

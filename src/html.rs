@@ -665,6 +665,7 @@ const COOKED_STRINGS: &[&str] = &[
     "fullscreen_table.expand_btn",
     "fullscreen_table.view_table",
     "modal.close",
+    "cancel",
     "expand",
     "post.collapse",
     "post.follow_quote",

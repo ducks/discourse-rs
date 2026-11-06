@@ -325,7 +325,9 @@ async fn the_drawer_lists_the_members_threads() {
     let mut user1 = Client::logged_in(st.clone(), "user1").await;
     let (_, _, _, html) = drawer(&mut user1, "url=/chat/threads").await;
     assert!(
-        html.contains("<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\">"),
+        html.contains(
+            "<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\" data-tracking="
+        ),
         "{html}"
     );
     assert!(html.contains("href=\"/chat/c/general/2/t/1\""), "{html}");

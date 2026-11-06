@@ -2655,14 +2655,45 @@ have handlers now.
     (plugins/chat/threads.rs thread_original_message,
     plugins/chat/create.rs, with 162), as do threads of deleted channels
     (threads.rs thread_channel). Left, as 160b.
-    160b. `feat/chat-threads-tracking-live` S: the threads lists and the
-    sidebar's thread indicators following /chat/user-tracking-state
-    (a thread read elsewhere, a new reply's unread count before its
-    preview), ChatModalThreadSettings' header save button in the mobile
-    view (headerPrimaryAction), the thread pane's date separator click
-    (fetchMessagesByDate, with 224a's), ChatHistory across page loads
-    (the port keeps it in sessionStorage where Ember starts empty on a
-    reload).
+    160b. ~~`feat/chat-threads-tracking-live`~~ (done) S: the threads lists
+    follow the tracking state as ChatSubscriptionsManager keeps it. Each
+    listed thread carries its tracking, its membership and its preview's
+    last reply (data-tracking), the load more the viewer (id, ignored
+    users, followed channels); static/js/chat-thread.js hears the
+    channel's /new-messages (while followed) and
+    /chat/user-tracking-state/:id beside the list's own bus.
+    _onNewThreadMessage: another member's reply past the last read counts
+    as unread (watched when watching) unless the membership is quiet,
+    the viewer's own or an ignored user's moves the last read only, so the
+    count shows before the preview's update_thread_original_message;
+    _updateChannelTrackingData: a thread read elsewhere (or any thread
+    tracking published) sets its counts. ChatThreadListItem's classes and
+    ThreadUnreadIndicator, and UserThreads' ThreadTitle indicator, drawn
+    again in place; ChatThreadList#sortedThreads (watched unread, then
+    unread, then the rest, each by the preview's last reply, over the
+    loaded threads in the threads manager's id order) on the first draw,
+    each page and each change; a thread the channel's list doesn't hold
+    comes in as the server lists it. The sidebar's indicators already
+    followed the tracking state (/live's chat chrome drawn again on
+    /chat/user-tracking-state); now covered by a spec. DModal's
+    <:headerPrimaryAction> in static/js/modal.js (the mobile view's
+    --has-primary-action header, its Cancel in the close button's place),
+    ChatModalThreadSettings' save button there ("cancel" joins the
+    cooked strings). The thread pane's date separator click
+    (ChatThread#fetchMessagesByDate): the day's first message highlighted
+    in the center; a thread's messages are never firstOfResults, so its
+    target_date page never loads. ChatHistory is the page's state again
+    (empty on a load, kept across page.js's swaps), the threads list's
+    item opening its thread as a boosted navigation (the router's
+    transition) instead of a load. Tests in tests/chat_threads_rest.rs
+    and tests/browser/chat-threads.spec.js. Left, as 160b1.
+    160b1. `feat/chat-threads-navbar-live` S: the navbar's thread
+    indicators following the tracking state (ChatThreadsListButton and
+    ThreadHeaderUnreadIndicator over threadsManager.unreadThreadCount,
+    drawn once by the server now); UserThreads hearing the channels of
+    the pages it loads later (trackChannel, only the first page's now);
+    one ChatHistory for the drawer and full-page chat (chat-drawer.js
+    keeps its own).
 161. `feat/chat-uploads` M: ~~chat message uploads~~ (done,
     feat/chat-uploads: Chat::CreateMessage and Chat::UpdateMessage take
     upload_ids, the sender's own uploads (user_uploads) while
