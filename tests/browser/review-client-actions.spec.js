@@ -3,7 +3,8 @@
 // post's author from the reject menu, both in the penalty modal
 // (penalize-user.js) with the action performed first; agreeing with a
 // flag by editing the post in the composer, staying on /review; editing
-// a queued topic's title, category and raw in place (PUT /review/:id);
+// a queued topic's title, category and raw, and its tags (the
+// composer's MiniTagChooser), in place (PUT /review/:id);
 // a queued post's raw email (RawEmailModal). Each test penalizes or
 // posts as a member of its own (helpers.js member()).
 const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
@@ -192,6 +193,60 @@ test("editing a queued topic's title, category and raw in place", async ({ page,
       queued.id,
     ),
   ).toEqual([["1"]]);
+});
+
+test("editing a queued topic's tags in place", async ({ page, context, session }) => {
+  await login(context, "admin");
+  const queued = await queuedTopic(context, session);
+  sql(
+    "UPDATE reviewables SET payload = payload::jsonb || '{\"tags\": [\"howto\"]}'::jsonb WHERE id = :'p1'",
+    queued.id,
+  );
+  await page.goto("/review");
+  const item = page.locator(`.review-item[data-reviewable-id="${queued.id}"]`);
+  await expect(item.locator(".list-tags .discourse-tag")).toHaveText(["howto"]);
+
+  await item.locator("button.reviewable-action.edit").click();
+  const field = item.locator('div[class="editable-field payload.tags"] details.mini-tag-chooser');
+  await expect(field.locator("summary .formatted-selection")).toHaveText("howto");
+  // tagCategoryId: the reviewable's category.
+  await expect(field).toHaveAttribute("category-id", "4");
+
+  // Add guide from the search, scoped to the category.
+  const search = page.waitForRequest(
+    (r) => r.url().includes("/tags/filter/search") && new URL(r.url()).searchParams.get("categoryId") === "4",
+  );
+  await field.locator("summary").click();
+  await search;
+  await field.locator(".filter-input").fill("guide");
+  await field.locator('.select-kit-row[data-name="guide"]').click();
+  await expect(field.locator("summary .formatted-selection")).toHaveText("howto, guide");
+
+  // Remove howto from the selection.
+  await field.locator('.selected-choice[data-name="howto"]').click();
+  await expect(field.locator("summary .formatted-selection")).toHaveText("guide");
+  await expect(field.locator(".selected-choice")).toHaveCount(1);
+  await field.locator(".filter-input").press("Escape");
+  await expect(field).not.toHaveAttribute("open", "");
+
+  await item.locator("button.save-edit").click();
+  await expect(item.locator(".editable-fields")).toHaveCount(0);
+  await expect(item.locator(".list-tags .discourse-tag")).toHaveText(["guide"]);
+  // MiniTagChooser's items, as Ember sends them.
+  expect(
+    sql(
+      "SELECT jsonb_path_query_array(payload::jsonb->'tags', '$[*].name')::text, \
+              jsonb_path_query_array(payload::jsonb->'tags', '$[*].id')::text \
+         FROM reviewables WHERE id = :'p1'",
+      queued.id,
+    ),
+  ).toEqual([['["guide"]', "[2]"]]);
+
+  // Saved: the tags shown after a reload and in the editor again.
+  await page.reload();
+  await expect(item.locator(".list-tags .discourse-tag")).toHaveText(["guide"]);
+  await item.locator("button.reviewable-action.edit").click();
+  await expect(field.locator("summary .formatted-selection")).toHaveText("guide");
 });
 
 test("a queued post by email shows its raw email", async ({ page, context, session }) => {
