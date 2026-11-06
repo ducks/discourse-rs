@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "off to the dentist",
+        "emoji": "tooth"
+      }
+    }
+  ]
+}

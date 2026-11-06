@@ -1,0 +1,77 @@
+{
+  "name": "set_missing_emoji",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "off to the dentist"
+      }
+    }
+  ],
+  "started_at": "2026-11-06T18:11:14.737395",
+  "transaction_started_at": "2026-11-06T18:11:13.512762",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: emoji"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "njFb3Ke2ijPzX35zXn3P/9VQODk=",
+            "created_at": "2026-11-06T18:11:13.95112",
+            "rotated_at": "2026-11-06T18:11:13.949469",
+            "updated_at": "2026-11-06T18:11:13.95112",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "njFb3Ke2ijPzX35zXn3P/9VQODk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:11:14.745008",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "njFb3Ke2ijPzX35zXn3P/9VQODk=",
+            "created_at": "2026-11-06T18:11:13.95112",
+            "rotated_at": "2026-11-06T18:11:13.949469",
+            "updated_at": "2026-11-06T18:11:13.95112",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "njFb3Ke2ijPzX35zXn3P/9VQODk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "recorded_from": {
+    "case": "c425f8900b130abe250a13e0f2cbe2590c161569979f1341c68cdc09628e034e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

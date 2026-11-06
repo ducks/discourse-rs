@@ -1,0 +1,22 @@
+{
+  "user": null,
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (2, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'coffee', 'on a break', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (4, 'palm_tree', 'hidden away', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (1, 'zzz', 'long gone', now() - interval '1 hour', now() - interval '10 minutes')",
+    "UPDATE user_options SET hide_profile = TRUE WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all"
+      }
+    }
+  ]
+}

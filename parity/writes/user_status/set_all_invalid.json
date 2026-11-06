@@ -1,0 +1,82 @@
+{
+  "name": "set_all_invalid",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "emoji": "nope_nope",
+        "ends_at": "2000-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "started_at": "2026-11-06T18:10:58.8739",
+  "transaction_started_at": "2026-11-06T18:10:57.570173",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Emoji is invalid",
+          "Description is too long (maximum is 100 characters)",
+          "Ends at ends_at should be greater than set_at"
+        ],
+        "error_type": "record_invalid"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2dJlIXWtmj5UbwjxkI1SP/9Ctt8=",
+            "created_at": "2026-11-06T18:10:58.131964",
+            "rotated_at": "2026-11-06T18:10:58.130957",
+            "updated_at": "2026-11-06T18:10:58.131964",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2dJlIXWtmj5UbwjxkI1SP/9Ctt8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:10:58.88041",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2dJlIXWtmj5UbwjxkI1SP/9Ctt8=",
+            "created_at": "2026-11-06T18:10:58.131964",
+            "rotated_at": "2026-11-06T18:10:58.130957",
+            "updated_at": "2026-11-06T18:10:58.131964",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2dJlIXWtmj5UbwjxkI1SP/9Ctt8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "recorded_from": {
+    "case": "d706be0006016143e2de68cd1fd66027d939e4fe26296c08723621854fba5cfe",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

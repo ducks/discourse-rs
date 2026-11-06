@@ -117,6 +117,7 @@ mod user_notifications;
 mod user_preferences;
 mod user_search;
 mod user_security;
+mod user_status;
 mod user_update;
 mod users;
 mod users_email;
@@ -248,6 +249,18 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/do-not-disturb.json",
             post(do_not_disturb::create).delete(do_not_disturb::destroy),
+        )
+        .route(
+            "/user-status",
+            get(user_status::get)
+                .put(user_status::set)
+                .delete(user_status::clear),
+        )
+        .route(
+            "/user-status.json",
+            get(user_status::get)
+                .put(user_status::set)
+                .delete(user_status::clear),
         )
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
@@ -3177,6 +3190,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/messages-dropdown.js", get(asset))
         .route("/assets/users-directory.js", get(asset))
         .route("/assets/user-menu.js", get(asset))
+        .route("/assets/user-status.js", get(asset))
         .route("/assets/user-notifications.js", get(asset))
         .route("/assets/preferences.js", get(asset))
         .route("/assets/prefs-choosers.js", get(asset))

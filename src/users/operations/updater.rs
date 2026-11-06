@@ -2,14 +2,14 @@
 //! options (discourse-solved's and chat's included), profile (bio,
 //! location, website, the profile and card backgrounds), name, locale,
 //! date of birth, title, primary and flair groups, category and tag
-//! tracking, sidebar links, muted users and
+//! tracking, sidebar links, the user status, muted users and
 //! allowed PM senders, the notification schedule, with the model
 //! callbacks that follow (the bio cooked, the search index, the name
 //! change logged, the display name job, the title's badge, the profile's
 //! upload references and the schedule's do not disturb timings).
 //!
 //! Refused: what failing validations would answer (the errors JSON),
-//! external ids, user status and uploads in the bio.
+//! external ids and uploads in the bio.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -289,10 +289,7 @@ const CHAT_SIDEBAR_MODES: &[(&str, i64)] = &[
 ];
 
 /// What the update refuses outright, by param.
-const REFUSED: &[(&str, &str)] = &[
-    ("custom_fields", "updating custom fields"),
-    ("status", "updating the user status (130)"),
-];
+const REFUSED: &[(&str, &str)] = &[("custom_fields", "updating custom fields")];
 
 /// `UsersController#user_params`' scalar keys beside OPTION_ATTR's.
 const PERMITTED: &[&str] = &[
@@ -714,6 +711,11 @@ pub async fn update(
     };
     update_profile(&mut *conn, ctx, actor, user, &attrs).await?;
     update_sidebar(&mut *conn, s, user, &attrs).await?;
+    if s.get("enable_user_status")?.truthy()
+        && let Some(status) = attrs.get("status")
+    {
+        update_user_status(&mut *conn, ctx, user.id, status).await?;
+    }
 
     // user.save
     let old_name = user.name.clone().unwrap_or_default();
@@ -838,6 +840,42 @@ pub async fn update(
         .await?;
     }
     Ok(true)
+}
+
+/// `update_user_status`: a blank status clears it, else
+/// `set_status!(status[:description], status[:emoji], status[:ends_at])`,
+/// whose RecordInvalid fails the whole update.
+async fn update_user_status(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    status: &Value,
+) -> Result<(), AppError> {
+    if crate::users::status::blank_param(status) {
+        return crate::users::status::clear(conn, ctx.bus, user_id).await;
+    }
+    let Value::Object(given) = status else {
+        return Err(Unsupported("a user status that is not a hash (TypeError)").into());
+    };
+    let field = |k: &str| given.get(k).and_then(params::scalar);
+    let (Some(description), Some(emoji)) = (field("description"), field("emoji")) else {
+        return Err(Unsupported(
+            "a user status without its description or emoji (NotNullViolation)",
+        )
+        .into());
+    };
+    let ends_at = crate::users::status::cast_ends_at(field("ends_at").as_deref())?;
+    crate::users::status::set(
+        conn,
+        ctx.bus,
+        ctx.settings,
+        ctx.i18n,
+        user_id,
+        &description,
+        &emoji,
+        ends_at,
+    )
+    .await
 }
 
 /// The name's validations: no longer than 255, present when the site

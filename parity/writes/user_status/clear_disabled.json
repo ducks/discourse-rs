@@ -1,0 +1,75 @@
+{
+  "name": "clear_disabled",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/user-status.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:10:39.813344",
+  "transaction_started_at": "2026-11-06T18:10:38.780403",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oyv2qlAp1iungT57XdmWDwSGc2M=",
+            "created_at": "2026-11-06T18:10:39.108732",
+            "rotated_at": "2026-11-06T18:10:39.107951",
+            "updated_at": "2026-11-06T18:10:39.108732",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "oyv2qlAp1iungT57XdmWDwSGc2M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:10:39.819668",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oyv2qlAp1iungT57XdmWDwSGc2M=",
+            "created_at": "2026-11-06T18:10:39.108732",
+            "rotated_at": "2026-11-06T18:10:39.107951",
+            "updated_at": "2026-11-06T18:10:39.108732",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "oyv2qlAp1iungT57XdmWDwSGc2M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "e61fb3af1b44cfebd5c21565ef84095301a3432fc96d286b9ed83422decae0f7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

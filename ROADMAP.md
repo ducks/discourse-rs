@@ -1973,7 +1973,46 @@ have handlers now.
     plugins/chat/membership.rs:128; plugins/chat/messages.rs:636;
     plugins/chat/channels.rs:642), the preferences' status
     (preferences_view/mod.rs:942) and PUT /u's `status`
-    (user_updater.rs's REFUSED)
+    (user_updater.rs's REFUSED). Split:
+    130a. ~~`feat/user-status`~~ (done) M: the model and its routes
+    (users/status.rs, routes/user_status.rs): GET, PUT and DELETE
+    /user-status behind requires_login and enable_user_status (404),
+    User#set_status! (UserStatus' validations in order: Emoji.exists?,
+    the 100 characters, an end before set_at; the RecordInvalid 422), the
+    upsert, #clear_status!, #publish_user_status (trust_level_0, or the
+    user and staff for a silenced one, nothing for a hidden profile), an
+    ends_at cast as ActiveRecord casts ISO 8601 (other formats refused);
+    PUT /u's status (blank clears, a RecordInvalid rolls the whole update
+    back, the cleared status still in its response as Rails keeps the
+    destroyed record); UserStatusMixin's `status` (has_status?,
+    hide_profile, can_see_user_status?) on users#show and its card (the
+    badges' sideloaded users too), current_user, group members, the
+    posts' user_status and mentioned_users (no scope: Guardian.new) on the
+    topic view. about, directory, TopicStats' last poster, API keys and
+    deleted posts pass no include_status, so their refusals went. Rails
+    has no job clearing ended statuses. Client (user-status.js,
+    css/user-status.css): the user menu's item, UserStatusModal with the
+    emoji picker, the description (speech_balloon by default), pause
+    notifications (do not disturb), the clear-after tiles (one hour, two
+    hours, tomorrow, never) and delete; the header bubble; the emoji by a
+    poster's name with its tooltip, on mentions in posts and on the user
+    card; the account preferences' row saved with the tab; /live redraws
+    the bubble and the topic's posts by a user whose status changed.
+    Write cases parity/writes/user_status; tests/browser/user-status.spec.js.
+    Left, as 130b.
+    130b. `feat/user-status-chat` M: the status in chat's serializers,
+    refused by name (plugins/chat/direct_messages.rs, membership.rs,
+    messages.rs, channels.rs: MessageUserSerializer and mentioned users
+    without a scope, the DM and membership users with one; the
+    publisher's payloads, threads and pins) and where chat draws it
+    (chat-message info, the members list, DM titles and the sidebar,
+    the message creator), discourse-cakeday's lists and
+    discourse-gamification's leaderboard (refused by name), the
+    autocomplete's status (user-status-on-autocomplete), DTimeShortcutPicker's
+    custom date and time tile (refused in the modal), a mention's status
+    redrawn live (the posts mentioning a user; the poster's are), and
+    MessageBus.last_id("/user-status") (pg-bus has no per-channel id, so
+    message_bus_last_id is 0).
 131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
     (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar

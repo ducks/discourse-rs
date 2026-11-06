@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/user-status.json"
+    },
+    {
+      "method": "GET",
+      "path": "/user-status.json"
+    }
+  ]
+}

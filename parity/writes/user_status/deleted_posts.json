@@ -1,0 +1,105 @@
+{
+  "name": "deleted_posts",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/user1/deleted.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:10:45.532153",
+  "transaction_started_at": "2026-11-06T18:10:44.465538",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
+          "id": 36,
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "post_number": 2,
+          "post_id": 36,
+          "name": "User1",
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "topic_id": 35,
+          "slug": "parity-fixture-replies-and-posters",
+          "title": "Parity fixture: replies and posters",
+          "category_id": 4,
+          "hidden": false,
+          "moderator_action": false,
+          "deleted": true,
+          "deleted_at": "2026-11-06T16:10:44.465Z",
+          "deleted_by": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          },
+          "reply_to_post_number": null,
+          "action_type": 5
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iQ0kraagmOUnoYVEd5GUPPgLhH8=",
+            "created_at": "2026-11-06T18:10:44.80877",
+            "rotated_at": "2026-11-06T18:10:44.807803",
+            "updated_at": "2026-11-06T18:10:44.80877",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iQ0kraagmOUnoYVEd5GUPPgLhH8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:10:45.546136",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iQ0kraagmOUnoYVEd5GUPPgLhH8=",
+            "created_at": "2026-11-06T18:10:44.80877",
+            "rotated_at": "2026-11-06T18:10:44.807803",
+            "updated_at": "2026-11-06T18:10:44.80877",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iQ0kraagmOUnoYVEd5GUPPgLhH8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (2, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'coffee', 'on a break', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (4, 'palm_tree', 'hidden away', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (1, 'zzz', 'long gone', now() - interval '1 hour', now() - interval '10 minutes')",
+    "UPDATE user_options SET hide_profile = TRUE WHERE user_id = 4",
+    "UPDATE posts SET deleted_at = now() - interval '2 hours', deleted_by_id = 2 WHERE id IN (36)"
+  ],
+  "recorded_from": {
+    "case": "b744453c14b0d2c972eec2484765bb11daf0863803c99d038342c56333fc4d5b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_user_status": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "status": {
+          "description": "in a meeting",
+          "emoji": "calendar",
+          "ends_at": "2099-02-01T09:00:00.000Z"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-status.json"
+    }
+  ],
+  "ignore": [
+    "/responses/*/body/message_bus_last_id",
+    "/responses/0/body/user/status/message_bus_last_id"
+  ]
+}

@@ -219,7 +219,7 @@ pub async fn page(
         .fetch_one(&mut *conn)
         .await?;
         if with_status {
-            return Err(Unsupported("user status on BasicUserSerializer").into());
+            return Err(Unsupported("user status in discourse-cakeday's lists (130b)").into());
         }
     }
     let names = settings.get("enable_names")?.truthy();

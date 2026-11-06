@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "settings": {
+    "enable_user_status": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "off to the dentist",
+        "emoji": "tooth"
+      }
+    }
+  ]
+}

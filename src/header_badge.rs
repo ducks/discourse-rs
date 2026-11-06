@@ -131,11 +131,11 @@ impl Badge {
     }
 }
 
-/// What the toggle-current-user button holds: the member's avatar, then
-/// the badge.
-pub fn toggle_contents(avatar_url: &str, badge: &str) -> String {
+/// What the toggle-current-user button holds: the member's avatar, their
+/// status (UserStatusBubble), then the badge.
+pub fn toggle_contents(avatar_url: &str, status: &str, badge: &str) -> String {
     format!(
-        r#"<img alt="" width="48" height="48" src="{}" class="avatar">{badge}"#,
+        r#"<img alt="" width="48" height="48" src="{}" class="avatar">{status}{badge}"#,
         attr(avatar_url)
     )
 }

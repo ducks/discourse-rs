@@ -43,6 +43,7 @@
         "css/search.css",
         "css/search-menu.css",
         "css/tooltip.css",
+        "css/user-status.css",
         "css/filter-controls.css",
         "css/theme-card.css",
         "css/not-found.css",
@@ -930,6 +931,13 @@
       "content_type": "js",
       "files": [
         "js/user-menu.js"
+      ]
+    },
+    {
+      "name": "user-status.js",
+      "content_type": "js",
+      "files": [
+        "js/user-status.js"
       ]
     },
     {

@@ -1,0 +1,102 @@
+{
+  "name": "set_skin_tone",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "waving",
+        "emoji": "wave:t3"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-status.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:11:17.740017",
+  "transaction_started_at": "2026-11-06T18:11:16.645596",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "description": "waving",
+        "emoji": "wave:t3",
+        "ends_at": null,
+        "message_bus_last_id": 1
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RF++XQSZRVNIMtLPMU+UUIi53ZU=",
+            "created_at": "2026-11-06T18:11:16.968479",
+            "rotated_at": "2026-11-06T18:11:16.967579",
+            "updated_at": "2026-11-06T18:11:16.968479",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RF++XQSZRVNIMtLPMU+UUIi53ZU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:11:17.747427",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RF++XQSZRVNIMtLPMU+UUIi53ZU=",
+            "created_at": "2026-11-06T18:11:16.968479",
+            "rotated_at": "2026-11-06T18:11:16.967579",
+            "updated_at": "2026-11-06T18:11:16.968479",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RF++XQSZRVNIMtLPMU+UUIi53ZU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_statuses": {
+      "inserted": [
+        {
+          "emoji": "wave:t3",
+          "set_at": "2026-11-06T18:11:17.754533",
+          "ends_at": null,
+          "user_id": 3,
+          "description": "waving"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "recorded_from": {
+    "case": "b414d739bbc66570497d1343188dabb1a67595e55003f3705b1b3bae6349702f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

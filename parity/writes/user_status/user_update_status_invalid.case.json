@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_user_status": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "name": "Renamed One",
+        "status": {
+          "description": "in a meeting",
+          "emoji": "definitely_not_emoji"
+        }
+      }
+    }
+  ]
+}

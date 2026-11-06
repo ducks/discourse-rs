@@ -300,14 +300,16 @@ pub async fn serialize(
     .bind(uid)
     .fetch_one(&mut *conn)
     .await?;
-    if settings.get("enable_user_status")?.truthy() {
-        return Err(Unsupported("user status on current_user").into());
-    }
     if settings.get("allow_anonymous_mode")?.truthy() {
         return Err(Unsupported("anonymous posting mode").into());
     }
 
     let mut out = Map::new();
+    // UserStatusMixin, which CurrentUserSerializer includes with
+    // include_status: the attribute comes first.
+    if let Some(status) = crate::users::status::visible_to_self(&mut *conn, settings, uid).await? {
+        out.insert("status".into(), status);
+    }
     out.insert("id".into(), json!(uid));
     out.insert("username".into(), json!(user.username));
     if enable_names {

@@ -16,6 +16,10 @@
 //!   connect and from their notification state, reviewable counts and do
 //!   not disturb, and the alert for a new notification. A staff member's
 //!   reviewable counts also redraw the sidebar's review link.
+//! - with enable_user_status, /user-status (UserStatusManager's and the
+//!   current user's subscriptions): the member's own status redraws the
+//!   avatar's bubble, and on a topic page the posts it shows by a user
+//!   whose status changed are drawn again with it.
 //!
 //! The stream starts after the Last-Event-ID header (the browser
 //! reconnecting), else `position` (the page's `bus-position`), else now;
@@ -156,7 +160,11 @@ pub async fn page(
     // Lists are kept current for the banner, and for a member's counts.
     let lists = since.is_some() || user_id.is_some();
 
+    let user_status = settings.get("enable_user_status")?.truthy();
     let mut channels = Vec::new();
+    if user_status && (topic_id.is_some() || user_id.is_some()) {
+        channels.push("/user-status".to_string());
+    }
     if let Some(id) = topic_id {
         channels.push(crate::bus::topic_channel(id));
         // discourse-poll's changes to the topic's polls.
@@ -197,6 +205,8 @@ pub async fn page(
     }
     let subscription = state.bus.subscribe(from, Filter { channels, tags });
     let live = Live {
+        user_status,
+        status_bubble: String::new(),
         state,
         guardian,
         settings,
@@ -263,6 +273,10 @@ pub async fn page(
 }
 
 struct Live {
+    /// enable_user_status: /user-status is heard.
+    user_status: bool,
+    /// The member's UserStatusBubble as last drawn.
+    status_bubble: String,
     state: AppState,
     guardian: Guardian,
     settings: SiteSettings,
@@ -315,6 +329,16 @@ async fn initial(live: &mut Live) -> Result<(), AppError> {
         let mut conn = live.state.pool.acquire().await?;
         live.badge =
             crate::header_badge::Badge::load(&mut conn, &live.settings, &live.guardian).await?;
+        if let (true, Some(id)) = (live.user_status, live.user_id)
+            && let Some(status) =
+                crate::users::status::visible_to_self(&mut conn, &live.settings, id).await?
+        {
+            live.status_bubble = crate::users::views::status::bubble(
+                live.settings.emojis(),
+                live.state.config.globals.relative_url_root(),
+                &status,
+            );
+        }
         drop(conn);
         push_badge(live, None)?;
     }
@@ -388,6 +412,8 @@ async fn handle_batch(
                 .as_str()
                 .and_then(|s| NaiveDateTime::parse_from_str(s, "%a, %d %b %Y %H:%M:%S GMT").ok());
             push_badge(live, Some(id))?;
+        } else if live.user_status && message.channel == "/user-status" {
+            user_status_changed(live, &message, id).await?;
         } else if alert.as_ref() == Some(&message.channel) {
             let base = live.state.config.globals.relative_url_root();
             live.pending.push_back(
@@ -463,8 +489,11 @@ fn push_badge(live: &mut Live, id: Option<String>) -> Result<(), AppError> {
         None,
     )?
     .replace("{size}", "48");
-    let contents =
-        crate::header_badge::toggle_contents(&avatar_url, &live.badge.html(&live.state.i18n));
+    let contents = crate::header_badge::toggle_contents(
+        &avatar_url,
+        &live.status_bubble,
+        &live.badge.html(&live.state.i18n),
+    );
     if live.sent_badge.as_ref() == Some(&contents) {
         return Ok(());
     }
@@ -476,6 +505,71 @@ fn push_badge(live: &mut Live, id: Option<String>) -> Result<(), AppError> {
         event = event.id(id);
     }
     live.pending.push_back(event);
+    Ok(())
+}
+
+/// `/user-status`'s `{user_id => status or null}`: the member's own
+/// redraws the avatar's bubble (onUserStatusChanged); the topic page's
+/// posts by those users are drawn again (UserStatusManager's tracked
+/// users, whose names show the status).
+async fn user_status_changed(
+    live: &mut Live,
+    message: &Message,
+    id: String,
+) -> Result<(), AppError> {
+    let Some(changed) = message.data.as_object() else {
+        return Ok(());
+    };
+    let users: Vec<i32> = changed.keys().filter_map(|k| k.parse().ok()).collect();
+    if let Some(me) = live.user_id
+        && let Some(status) = changed.get(&me.to_string())
+    {
+        live.status_bubble = if status.is_object() {
+            crate::users::views::status::bubble(
+                live.settings.emojis(),
+                live.state.config.globals.relative_url_root(),
+                status,
+            )
+        } else {
+            String::new()
+        };
+        push_badge(live, Some(id.clone()))?;
+    }
+    let (Some(topic_id), Some((first, last))) = (
+        live.topic_channel
+            .as_deref()
+            .and_then(|c| c.rsplit('/').next())
+            .and_then(|t| t.parse::<i32>().ok()),
+        live.posts,
+    ) else {
+        return Ok(());
+    };
+    let last = if live.tail { i32::MAX } else { last };
+    let ids: Vec<i32> = {
+        let mut conn = live.state.pool.acquire().await?;
+        sqlx::query_scalar(
+            "SELECT id FROM posts WHERE topic_id = $1 AND post_number BETWEEN $2 AND $3 \
+             AND user_id = ANY($4) AND deleted_at IS NULL ORDER BY post_number",
+        )
+        .bind(topic_id)
+        .bind(first)
+        .bind(last)
+        .bind(&users)
+        .fetch_all(&mut *conn)
+        .await?
+    };
+    let mut html = String::new();
+    for post_id in ids {
+        if let Some(post) =
+            render_post(&live.state, &live.settings, &live.guardian, post_id, false).await?
+        {
+            html.push_str(&post);
+        }
+    }
+    if !html.is_empty() {
+        live.pending
+            .push_back(Event::default().event("post").id(id).data(html));
+    }
     Ok(())
 }
 

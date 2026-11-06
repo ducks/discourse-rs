@@ -16,7 +16,10 @@ VALUES
   -- The composer actions menu's whisper toggle (staff whisper) and
   -- discourse-post-voting's toggle.
   ('whispers_allowed_groups', 20, '3', now(), now()),
-  ('post_voting_enabled', 5, 't', now(), now())
+  ('post_voting_enabled', 5, 't', now(), now()),
+  -- User status: the user menu's item, the modal, the emoji by names
+  -- (user-status.spec.js sets statuses only on members of its own).
+  ('enable_user_status', 5, 't', now(), now())
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
 -- user1 writes in the markdown editor (composition_mode 0), so the

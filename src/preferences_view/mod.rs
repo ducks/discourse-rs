@@ -22,9 +22,9 @@ pub mod users;
 
 use serde_json::{Map, Value, json};
 
+use crate::AppError;
 use crate::site_settings::SiteSettings;
 use crate::topic_list_view::{ListContext, escape, icon, t, t_with};
-use crate::{AppError, Unsupported};
 
 /// The preferences routes, by their path under `/preferences`.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -942,8 +942,31 @@ pub fn account(p: &Prefs, a: &Account) -> Result<(String, Map<String, Value>), A
         ));
     }
 
+    // canSelectUserStatus: newStatus (the model's status) as
+    // DUserStatusMessage, or "Not set", and the pencil opening
+    // UserStatusModal without its pause (static/js/preferences.js and
+    // user-status.js). What the modal sets is saved with the tab.
     if p.setting("enable_user_status")? {
-        return Err(Unsupported("the user status in preferences (130)").into());
+        let status = u.get("status").filter(|s| s.is_object());
+        let shown = match status {
+            Some(status) => crate::users::views::status::message(
+                &cx.settings.emojis,
+                cx.base_path,
+                status,
+                true,
+            ),
+            None => format!(
+                "<span class=\"static\">{}</span>",
+                escape(&t(cx, "user.status.not_set"))
+            ),
+        };
+        out.push_str(&format!(
+            "<div class=\"control-group pref-user-status\" data-setting-name=\"user-status\"><label class=\"control-label\">{}</label><div class=\"controls\" data-pref=\"status\" data-status=\"{}\" data-not-set=\"{}\">{shown}{}</div></div>",
+            escape(&t(cx, "user.status.title")),
+            escape(&status.cloned().unwrap_or(Value::Null).to_string()),
+            escape(&t(cx, "user.status.not_set")),
+            button("btn-default btn-small pad-left", Some("pencil"), None, ""),
+        ));
     }
 
     // filteredGroups: not automatic, but moderators.

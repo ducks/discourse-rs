@@ -852,28 +852,6 @@ async fn basic_user(
     Ok(Value::Object(out))
 }
 
-/// UserStatusMixin: the port has no user status serializer, so a member
-/// with one is refused.
-async fn refuse_status(
-    conn: &mut PgConnection,
-    settings: &SiteSettings,
-    user_id: i32,
-) -> Result<(), AppError> {
-    if !settings.get("enable_user_status")?.truthy() {
-        return Ok(());
-    }
-    let has: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = $1 AND (ends_at IS NULL OR ends_at > now()))",
-    )
-    .bind(user_id)
-    .fetch_one(conn)
-    .await?;
-    if has {
-        return Err(Unsupported("user status").into());
-    }
-    Ok(())
-}
-
 #[derive(sqlx::FromRow)]
 struct MemberRow {
     id: i32,
@@ -1029,8 +1007,8 @@ pub(crate) async fn members_doc(
         .fetch_all(&mut *conn)
         .await?;
         let mut list = Vec::new();
+        // GroupRequesterSerializer: no include_status, so no status.
         for row in rows {
-            refuse_status(conn, settings, row.id).await?;
             let mut u = match basic_user(conn, &urls, settings, row.id).await? {
                 Value::Object(m) => m,
                 _ => unreachable!(),
@@ -1110,8 +1088,13 @@ async fn member_json(
     let Some(user) = crate::users::User::find_by_id(conn, row.id).await? else {
         return Err(Unsupported("a group member without a user row").into());
     };
-    refuse_status(conn, settings, user.id).await?;
     let mut out = Map::new();
+    // UserStatusMixin (the serializer sets include_status).
+    if let Some(status) =
+        crate::users::status::visible_one(&mut *conn, settings, guardian, user.id).await?
+    {
+        out.insert("status".into(), status);
+    }
     out.insert("id".into(), json!(user.id));
     out.insert("username".into(), json!(user.username));
     if enable_names {

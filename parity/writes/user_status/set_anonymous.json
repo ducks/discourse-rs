@@ -1,0 +1,38 @@
+{
+  "name": "set_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "off to the dentist",
+        "emoji": "tooth"
+      }
+    }
+  ],
+  "started_at": "2026-11-06T18:11:00.27123",
+  "transaction_started_at": "2026-11-06T18:10:59.276678",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "recorded_from": {
+    "case": "9f277f28db4acf18b1ff7adc8f4a99f1867fc86ff8af36da6a9c0f50743efa79",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

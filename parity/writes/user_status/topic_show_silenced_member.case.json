@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (4, 'palm_tree', 'quiet time', now() - interval '1 hour', NULL)",
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json"
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/post_stream/posts/*/user_status/message_bus_last_id",
+    "/responses/0/body/post_stream/posts/*/mentioned_users/*/status/message_bus_last_id"
+  ]
+}

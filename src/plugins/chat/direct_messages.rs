@@ -243,7 +243,7 @@ impl Context<'_> {
                     .fetch_one(&mut *self.conn)
                     .await?;
                     if has_status {
-                        return Err(Unsupported("user status").into());
+                        return Err(Unsupported("user status in chat (130b)").into());
                     }
                 }
                 out.insert("custom_fields".into(), self.custom_fields(u.id).await?);

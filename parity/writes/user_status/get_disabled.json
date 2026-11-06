@@ -1,0 +1,72 @@
+{
+  "name": "get_disabled",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-status.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:10:50.881863",
+  "transaction_started_at": "2026-11-06T18:10:49.754118",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TyrsEnhxj3hAvCsR5jJv4/uLWYk=",
+            "created_at": "2026-11-06T18:10:50.100255",
+            "rotated_at": "2026-11-06T18:10:50.099063",
+            "updated_at": "2026-11-06T18:10:50.100255",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "TyrsEnhxj3hAvCsR5jJv4/uLWYk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:10:50.88925",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TyrsEnhxj3hAvCsR5jJv4/uLWYk=",
+            "created_at": "2026-11-06T18:10:50.100255",
+            "rotated_at": "2026-11-06T18:10:50.099063",
+            "updated_at": "2026-11-06T18:10:50.100255",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "TyrsEnhxj3hAvCsR5jJv4/uLWYk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "adc64a825b534cc28d3a0812a79a9dc96bb9bd54e55c03dc9df38a89ca78a830",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

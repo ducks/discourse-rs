@@ -242,16 +242,14 @@ async fn staff(
         .await?)
 }
 
-/// UserAboutSerializer: BasicUserSerializer with title and last_seen_at.
+/// UserAboutSerializer: BasicUserSerializer with title and last_seen_at
+/// (no include_status, so never a status).
 async fn about_user(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     urls: &Urls<'_>,
     id: i32,
 ) -> Result<Value, AppError> {
-    if settings.get("enable_user_status")?.truthy() {
-        return Err(Unsupported("user status on BasicUserSerializer").into());
-    }
     let (username, name, uploaded_avatar_id, title, last_seen_at): (
         String,
         Option<String>,

@@ -176,7 +176,15 @@ pub async fn update(
             return Err(crate::Unsupported("user_fields that isn't a hash (NoMethodError)").into());
         }
     };
-    if !user_updater::update(
+    // A blank status clears it with destroy!, which leaves the record in
+    // user.user_status: the response still serializes it.
+    let cleared = match attrs.get("status") {
+        Some(given) if crate::users::status::blank_param(given) => {
+            crate::users::status::visible_one(&mut tx, &settings, &guardian, target.id).await?
+        }
+        _ => None,
+    };
+    let updated = match user_updater::update(
         &mut tx,
         &ctx,
         &guardian,
@@ -184,8 +192,19 @@ pub async fn update(
         &attrs,
         custom_fields.as_deref(),
     )
-    .await?
+    .await
     {
+        Ok(updated) => updated,
+        // set_status!'s RecordInvalid: the updater's transaction rolls
+        // back, ApplicationController renders the 422.
+        Err(e) => {
+            return match e.downcast_ref::<crate::users::status::RecordInvalid>() {
+                Some(invalid) => Ok(crate::users::status::record_invalid_response(&invalid.0)),
+                None => Err(e),
+            };
+        }
+    };
+    if !updated {
         // json_result's render_json_error(user): no errors on the user,
         // its profile or options, so the generic one. What the updater
         // wrote before failing stays.
@@ -293,8 +312,11 @@ pub async fn update(
         base_path: state.config.globals.relative_url_root(),
         auth_token: auth_token.as_deref(),
     };
-    let doc = users.show(&user).await?;
+    let mut doc = users.show(&user).await?;
     tx.commit().await?;
+    if let (Some(status), Some(user)) = (cleared, doc["user"].as_object_mut()) {
+        crate::users::status::prepend(user, status);
+    }
     Ok((
         StatusCode::OK,
         Json(json!({ "success": "OK", "user": doc["user"] })),

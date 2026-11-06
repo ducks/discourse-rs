@@ -851,14 +851,54 @@ fn decorated_cooked(cx: &PostContext, p: &Value) -> String {
     } else {
         with_polls
     };
-    crate::hashtag_decorator::decorate(
+    let with_hashtags = crate::hashtag_decorator::decorate(
         &with_polls,
         &crate::hashtag_decorator::Icons {
             tag: cx.settings.hashtag_tag_icon.clone(),
             emojis: cx.list.settings.emojis.clone(),
             base_path: cx.list.base_path.to_string(),
         },
-    )
+    );
+    mention_statuses(cx, p, with_hashtags)
+}
+
+/// post-cooked-html-decorators/mentions: each mentioned user's status
+/// (`mentioned_users`, serialized with enable_user_status) as
+/// DUserStatusMessage in a wrapper at the end of their mentions.
+fn mention_statuses(cx: &PostContext, p: &Value, cooked: String) -> String {
+    let Some(users) = p["mentioned_users"].as_array() else {
+        return cooked;
+    };
+    let mut out = cooked;
+    for user in users {
+        let Some(status) = user.get("status").filter(|s| s.is_object()) else {
+            continue;
+        };
+        let href = format!(
+            "{}/u/{}",
+            cx.list.base_path,
+            s(&user["username"]).to_lowercase()
+        );
+        let open = format!("<a class=\"mention\" href=\"{}\">", escape(&href));
+        let wrapper = format!(
+            "<span class=\"user-status-message-wrapper\">{}</span>",
+            crate::users::views::status::message(
+                &cx.list.settings.emojis,
+                cx.list.base_path,
+                status,
+                false
+            )
+        );
+        let mut from = 0;
+        while let Some(at) = out[from..].find(&open).map(|i| i + from) {
+            let Some(close) = out[at..].find("</a>").map(|i| i + at) else {
+                break;
+            };
+            out.insert_str(close, &wrapper);
+            from = close + wrapper.len() + "</a>".len();
+        }
+    }
+    out
 }
 
 /// A regular post's main row: the avatar and the body.
@@ -1262,6 +1302,19 @@ fn poster_name(cx: &PostContext, p: &Value) -> String {
             _ => escape(title),
         };
         out.push_str(&format!("<span class=\"{class}\">{content}</span>"));
+    }
+    // shouldShowUserStatus: the poster's status (user_status, which the
+    // serializer sends only with enable_user_status).
+    if let Some(status) = p.get("user_status").filter(|s| s.is_object()) {
+        out.push_str(&format!(
+            "<span class=\"user-status-message-wrap\">{}</span>",
+            crate::users::views::status::message(
+                &cx.list.settings.emojis,
+                cx.list.base_path,
+                status,
+                false
+            )
+        ));
     }
     // The plugins' poster icons (addPosterIcon): before the names in the
     // mobile view, after them on a desktop.

@@ -1,0 +1,78 @@
+{
+  "name": "get_expired",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-status.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:10:52.379285",
+  "transaction_started_at": "2026-11-06T18:10:51.248136",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "description": "at the dentist",
+        "emoji": "tooth",
+        "ends_at": "2026-11-06T18:00:51Z",
+        "message_bus_last_id": 0
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cfNyLr9D9eV3RUt6Vj2oIbtFXow=",
+            "created_at": "2026-11-06T18:10:51.615661",
+            "rotated_at": "2026-11-06T18:10:51.614901",
+            "updated_at": "2026-11-06T18:10:51.615661",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "cfNyLr9D9eV3RUt6Vj2oIbtFXow=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:10:52.388145",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cfNyLr9D9eV3RUt6Vj2oIbtFXow=",
+            "created_at": "2026-11-06T18:10:51.615661",
+            "rotated_at": "2026-11-06T18:10:51.614901",
+            "updated_at": "2026-11-06T18:10:51.615661",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "cfNyLr9D9eV3RUt6Vj2oIbtFXow=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'tooth', 'at the dentist', now() - interval '1 hour', now() - interval '10 minutes')"
+  ],
+  "recorded_from": {
+    "case": "75524ddb95de0810ca06dcb0afebb72b7b576b212f9c27e83170e97eb57ad759",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

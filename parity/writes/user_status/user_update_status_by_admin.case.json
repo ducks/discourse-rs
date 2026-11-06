@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "settings": {
+    "enable_user_status": true
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "status": {
+          "description": "set by staff",
+          "emoji": "wave"
+        }
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/user/status/message_bus_last_id"
+  ]
+}
