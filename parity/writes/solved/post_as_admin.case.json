@@ -1,5 +1,4 @@
 {
-  "not_yet": "GET /posts/:id.json (PostsController#show) is not ported; the solved keys come from the same post serializer as the topic view's",
   "user": "admin",
   "settings": { "allow_solved_on_all_topics": "true" },
   "setup": [
