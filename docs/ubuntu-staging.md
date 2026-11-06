@@ -6,13 +6,18 @@ with 1 vCPU and 2 GiB RAM. Nix supplies the tested runtime dependencies
 and PostgreSQL 16 with pgvector; systemd manages the services. Caddy and
 image/video tools are installed through Ubuntu packages.
 
-The deployed release is `cbcb10a0`, containing the admin source
-reorganization and the Categories/Tags dropdown fix merged in `3feb1a92`.
-Its SHA-256 is
-`432816cf8dedc6d09439e7b3a95e0464d62a7d49208a0a73b7bee92900fa749e`.
-The November 2 local optimized build took 24 minutes, 10 seconds, including
-dependency compilation. All three focused category/dropdown browser tests
-passed. The previous `1819a61f` binary is retained for rollback.
+The deployed release is the `129e995f` binary with the frontend package
+from `32f3f543` (no Rust changes between them; `32f3f543` adds a chat
+JavaScript fix). It carries the grouped bookmarks menu, the poll
+builder's widgets and that fix. The binary's SHA-256 is
+`6b766a691e8284d2f44451e8a25b46198af468502cc7fe49102dcc14030241d0` and
+the package's manifest's is
+`83bda5a85dc9f452fd41e8c91e86feaf4a733944a859623e723d4f9e76342714`.
+The November 6 local optimized build took 12 minutes, 53 seconds,
+reusing dependencies. Thirteen focused browser tests passed against that
+binary before the upload, and the CI gate on `5354de2f` passed before
+activation. The previous `35832017` binary and its `frontend-35832017`
+package are retained for rollback.
 
 ## Access
 
@@ -45,8 +50,10 @@ systemctl restart discourse-rs
 ```
 
 All three services are enabled at boot. The binary is
-`/opt/discourse-rs/discourse-rs-cbcb10a0`, selected by
-`/usr/local/bin/discourse-rs`. Nix GC roots under `/opt/discourse-rs/`
+`/opt/discourse-rs/discourse-rs-129e995f`, selected by
+`/usr/local/bin/discourse-rs`; its frontend package is the one
+`/opt/discourse-rs/frontend-current` points at (`DISCOURSE_FRONTEND_DIR`
+in the env file). Nix GC roots under `/opt/discourse-rs/`
 retain its libraries, PostgreSQL, and the pinned stock images/fonts/emoji.
 
 Configuration lives in `/etc/discourse-rs/env` (0640, root:discourse-rs),

@@ -60,9 +60,9 @@ separate derivation and supplies its directory through the executable wrapper.
 
 ## Asset-only staging update
 
-The currently deployed embedded-assets binary needs one server upgrade before
-it supports this workflow. After that upgrade, configure the service with
-`DISCOURSE_FRONTEND_DIR=/opt/discourse-rs/frontend-current` and use:
+Staging made the one-time move from the embedded-assets binary on November
+3 (`35832017`): its service reads
+`DISCOURSE_FRONTEND_DIR=/opt/discourse-rs/frontend-current`. An update:
 
 1. Package the new sources with `--previous` pointing to the currently deployed
    package. Copy the complete package into a new directory on the VPS.
