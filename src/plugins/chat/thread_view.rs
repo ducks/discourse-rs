@@ -61,6 +61,30 @@ impl Context<'_> {
             .filter(|t| super::threads::shows(channel, t)))
     }
 
+    /// The chat-thread-navbar-actions plugin outlet's connectors
+    /// (PluginOutlet with thread, channel and context).
+    pub(super) async fn thread_navbar_outlet(
+        &mut self,
+        thread_id: i64,
+        channel: &Value,
+        context: &str,
+    ) -> Result<String, AppError> {
+        crate::plugin_api::outlet_html(
+            &mut crate::plugin_api::Ctx {
+                conn: &mut *self.conn,
+                settings: self.settings,
+                i18n: self.i18n,
+                base_path: self.base_path,
+            },
+            &crate::plugin_api::Outlet::ChatThreadNavbarActions {
+                thread_id,
+                channel,
+                context,
+            },
+        )
+        .await
+    }
+
     /// The thread route: ThreadHeader, then ChatThread with its messages
     /// (around `target`, else the member's last read one, else from the
     /// first) and its composer, or the channel's preview card for a
@@ -192,13 +216,17 @@ impl Context<'_> {
             ));
         } else {
             out.push_str("<div class=\"c-routes --channel-thread\">");
+            let outlet = self
+                .thread_navbar_outlet(thread.id, &channel_json, "full-page")
+                .await?;
             out.push_str(&self.thread_header(
                 &channel_json,
+                &outlet,
                 thread,
                 thread_membership.as_ref().map(|m| m.notification_level),
                 original_user,
-                unread,
-                do_not_disturb,
+                // The unread threads, none counted in do not disturb.
+                (!do_not_disturb).then_some(unread),
             ));
         }
         // The latest message, which scrollToLatestMessage loads around.
@@ -456,15 +484,16 @@ impl Context<'_> {
     /// some are unread, with their count, else to the channel), the title
     /// (the thread's, else "Thread"; clickable for admins and the original
     /// message's author), the tracking dropdown and settings button for
-    /// members, and the close button on desktop.
+    /// members, and the close button on desktop. `unread` is None in do
+    /// not disturb.
     fn thread_header(
         &self,
         c: &Value,
+        outlet: &str,
         thread: &ThreadRow,
         level: Option<i32>,
         original_user: Option<i64>,
-        unread: usize,
-        do_not_disturb: bool,
+        unread: Option<usize>,
     ) -> String {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -474,16 +503,15 @@ impl Context<'_> {
         if c["threading_enabled"] == true {
             // backLink without a previous route: the threads while some
             // are unread (the member not in do not disturb).
-            let back = if unread > 0 && !do_not_disturb {
+            let back = if unread.is_some_and(|n| n > 0) {
                 ThreadBack::Threads
             } else {
                 ThreadBack::Channel
             };
             // ChatThreadHeaderUnreadIndicator, hidden in do not disturb.
-            let unread_indicator = if do_not_disturb {
-                String::new()
-            } else {
-                super::page::thread_header_unread_indicator(self.i18n, unread)
+            let unread_indicator = match unread {
+                Some(n) => super::page::thread_header_unread_indicator(self.i18n, n),
+                None => String::new(),
             };
             let (href, title, indicator) = match back {
                 ThreadBack::Threads => (
@@ -530,6 +558,7 @@ impl Context<'_> {
             title_html
         ));
         out.push_str("<nav class=\"c-navbar__actions\">");
+        out.push_str(outlet);
         if self.guardian.is_authenticated() {
             out.push_str(&thread_tracking_dropdown(
                 self.i18n,

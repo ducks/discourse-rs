@@ -5,12 +5,14 @@
 //
 //   - the filter: what is typed becomes the query (chatSearchQuery, kept
 //     across the drawer's routes) after INPUT_DELAY, and a new query is
-//     searched from the first result
+//     searched from the first result; DFilterInput's clear button while
+//     there is a query, and its container is-focused with the input
 //   - the sort menu (DMenu): relevance or latest, searched again
 //   - the results GET /live/chat/search draws, LIMIT at a time, the next
 //     page as the list's end shows (DLoadMore); none found, the alert
 //   - a result opens its message (DiscourseURL.routeTo, which the drawer
-//     takes), on a click, Enter or Space
+//     takes), on a click, Enter or Space; Tab moves between the results
+//     (dTabToSibling)
 (function () {
   "use strict";
 
@@ -56,7 +58,10 @@
     s.nodes = [];
     s.list = null;
     s.spinner = null;
-    s.sentinel = null;
+    if (s.sentinel) {
+      s.observer.unobserve(s.sentinel);
+      s.sentinel = null;
+    }
     if (!query || !query.length) {
       return;
     }
@@ -75,24 +80,48 @@
     drawProgress();
   }
 
-  // DConditionalLoadingSpinner and DLoadMore.
+  // DConditionalLoadingSpinner (no @size: "spinner " as the template
+  // concatenates it, data-loading present only while loading) and
+  // DLoadMore without a block: its sentinel, kept while there are more
+  // results (its observer reports a change of intersection, not each
+  // page), gone with the list.
   function drawProgress() {
     var s = current;
     if (s.spinner) {
       s.spinner.classList.toggle("visible", s.loading);
-      s.spinner.innerHTML = s.loading ? '<div class="spinner"></div>' : "";
+      if (s.loading) {
+        s.spinner.setAttribute("data-loading", "");
+      } else {
+        s.spinner.removeAttribute("data-loading");
+      }
+      s.spinner.innerHTML = s.loading ? '<div class="spinner "></div>' : "";
     }
-    if (s.sentinel) {
+    if (s.sentinel && !(s.list && s.hasMore)) {
       s.observer.unobserve(s.sentinel);
       s.sentinel.remove();
       s.sentinel = null;
     }
-    if (s.list && s.hasMore) {
+    if (s.list && s.hasMore && !s.sentinel) {
       s.sentinel = document.createElement("div");
-      s.sentinel.className = "load-more";
+      s.sentinel.setAttribute("aria-hidden", "true");
+      s.sentinel.className = "load-more-sentinel";
       s.list.parentNode.insertBefore(s.sentinel, s.list.parentNode.querySelector(":scope > br"));
       s.nodes.push(s.sentinel);
       s.observer.observe(s.sentinel);
+    }
+  }
+
+  // DFilterInput's clear button, while there is a query (its @value).
+  function drawClear() {
+    var s = current;
+    var container = s.root.querySelector(".chat-search__filters .filter-input-container");
+    var button = container.querySelector(".filter-input-clear-btn");
+    if (query && query.length) {
+      if (!button) {
+        container.appendChild(s.root.querySelector("template.filter-input-clear-template").content.cloneNode(true));
+      }
+    } else if (button) {
+      button.remove();
     }
   }
 
@@ -170,6 +199,7 @@
 
   // checkQueryChange
   function checkQueryChange() {
+    drawClear();
     if (current.lastQuery !== query) {
       current.lastQuery = query;
       searchMessages(true);
@@ -200,10 +230,12 @@
     }
   }
 
-  // router.replaceWith({ queryParams: { q } }): no q without a query.
+  // router.replaceWith({ queryParams: { q } }): no q for a null query (an
+  // emptied input), an empty one for the clear button's "" (Ember prunes
+  // only the default, undefined).
   function replaceQueryParam() {
     var params = new URLSearchParams(location.search);
-    if (query) {
+    if (query !== null) {
       params.set("q", query);
     } else {
       params.delete("q");
@@ -254,6 +286,17 @@
     menu = { trigger: trigger, content: content };
   }
 
+  // debounceFilterChange
+  function setQuery(value) {
+    query = value;
+    if (current) {
+      if (fullPage()) {
+        replaceQueryParam();
+      }
+      checkQueryChange();
+    }
+  }
+
   document.addEventListener("input", function (event) {
     if (!current || !event.target.matches(".c-search .filter-input")) {
       return;
@@ -261,20 +304,37 @@
     var value = event.target.value;
     clearTimeout(filterTimer);
     filterTimer = setTimeout(function () {
-      // debounceFilterChange
-      query = value === "" ? null : value;
-      if (current) {
-        if (fullPage()) {
-          replaceQueryParam();
-        }
-        checkQueryChange();
-      }
+      setQuery(value === "" ? null : value);
     }, INPUT_DELAY);
+  });
+
+  // DFilterInput's focusState: the container is-focused while the input
+  // has the focus.
+  document.addEventListener("focusin", function (event) {
+    if (event.target.matches && event.target.matches(".c-search .filter-input")) {
+      event.target.closest(".filter-input-container").classList.add("is-focused");
+    }
+  });
+  document.addEventListener("focusout", function (event) {
+    if (event.target.matches && event.target.matches(".c-search .filter-input")) {
+      event.target.closest(".filter-input-container").classList.remove("is-focused");
+    }
   });
 
   document.addEventListener("click", function (event) {
     var s = current;
     if (!s || !s.root.isConnected) {
+      return;
+    }
+    // DFilterInput#onClearInput: debounceFilterChange("") at once, then
+    // the input's focus.
+    var clear = event.target.closest(".c-search .filter-input-clear-btn");
+    if (clear) {
+      var input = clear.closest(".filter-input-container").querySelector(".filter-input");
+      setQuery("");
+      // @value={{@query}}
+      input.value = "";
+      input.focus();
       return;
     }
     var trigger = event.target.closest(".c-search .search-sort-options-trigger");
@@ -306,12 +366,40 @@
     }
   });
 
-  // handleKeypress
+  // dTabToSibling's isFocusable.
+  function isFocusable(element) {
+    var tabindex = element.getAttribute("tabindex");
+    if (tabindex === "-1" || !element.offsetParent || element.disabled) {
+      return false;
+    }
+    return ["A", "BUTTON", "INPUT", "SELECT", "TEXTAREA", "SUMMARY"].indexOf(element.tagName) !== -1 || tabindex !== null;
+  }
+
+  // dTabToSibling: Tab and Shift+Tab from an entry (or anything in it)
+  // to the next or previous focusable sibling, else the browser's.
+  function tabToSibling(entry, event) {
+    var property = event.shiftKey ? "previousElementSibling" : "nextElementSibling";
+    var sibling = entry[property];
+    while (sibling && !isFocusable(sibling)) {
+      sibling = sibling[property];
+    }
+    if (sibling) {
+      event.preventDefault();
+      sibling.focus();
+    }
+  }
+
+  // handleKeypress, and dTabToSibling.
   document.addEventListener("keydown", function (event) {
     var entry = event.target.closest && event.target.closest(".c-search .chat-message-search-entry[data-url]");
-    if (entry && (event.key === "Enter" || event.key === " ")) {
+    if (!entry) {
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       visitMessage(entry);
+    } else if (event.key === "Tab") {
+      tabToSibling(entry, event);
     }
   });
 
@@ -335,16 +423,30 @@
       list: null,
       spinner: null,
       sentinel: null,
+      loadMoreTimer: null,
       observer: null,
     };
     var s = current;
+    // DLoadMore's dObserveIntersection (threshold 0, the document as its
+    // root): onIntersection debounces the action by 100ms, and loadMore
+    // checks for more and a search in flight when it runs.
     s.observer = window.IntersectionObserver
-      ? new IntersectionObserver(function (entries) {
-          // loadMore
-          if (entries.some(function (e) { return e.isIntersecting; }) && s.hasMore && !s.loading && current === s) {
-            searchMessages(false);
-          }
-        })
+      ? new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) {
+                return;
+              }
+              clearTimeout(s.loadMoreTimer);
+              s.loadMoreTimer = setTimeout(function () {
+                if (current === s && s.hasMore && !s.loading) {
+                  searchMessages(false);
+                }
+              }, 100);
+            });
+          },
+          { threshold: 0, rootMargin: "0px 0px 0px 0px", root: document },
+        )
       : { observe: function () {}, unobserve: function () {}, disconnect: function () {} };
     // The full page's @query is its q param.
     if (root.dataset.queryParams === "true") {
@@ -366,6 +468,7 @@
       current.controller.abort();
     }
     current.observer.disconnect();
+    clearTimeout(current.loadMoreTimer);
     current = null;
   }
 

@@ -3082,19 +3082,220 @@
     api("PUT", "/channels/" + list.dataset.channelId + "/pins/read").catch(function () {});
   }
 
+  // A pin's message id, from its link (chat.channel.near-message).
+  function pinMessageId(pin) {
+    var link = pin.querySelector(".chat-pinned-message__link");
+    var match = link && /\/(\d+)\/?$/.exec(link.getAttribute("href"));
+    return match ? match[1] : null;
+  }
+
+  function pinRows(list) {
+    return Array.prototype.slice.call(list.querySelectorAll(".chat-pinned-messages-list__items > .chat-pinned-message"));
+  }
+
+  // The list's {{else}}: the empty state once its last pin is gone.
+  function drawPinsEmpty(list) {
+    var items = list.querySelector(".chat-pinned-messages-list__items");
+    if (pinRows(list).length || items.querySelector(".chat-pinned-messages-list__empty")) {
+      return;
+    }
+    var empty = document.createElement("div");
+    empty.className = "chat-pinned-messages-list__empty";
+    empty.setAttribute("tabindex", "-1");
+    empty.textContent = list.dataset.labelEmpty || "";
+    items.appendChild(empty);
+  }
+
+  // The messages the list unpinned, kept until a pin event pins them
+  // again, so a load started before an unpin can't bring its row back.
+  var inFlightUnpins = {};
+
+  // handleUnpinMessage: the pin's row filtered out.
+  function removePin(list, messageId) {
+    pinRows(list).forEach(function (pin) {
+      if (pinMessageId(pin) === String(messageId)) {
+        pin.remove();
+      }
+    });
+    drawPinsEmpty(list);
+  }
+
+  // #restorePin: the row back in channel timeline order.
+  function restorePin(list, pin) {
+    if (!list.isConnected || pin.isConnected) {
+      return;
+    }
+    var items = list.querySelector(".chat-pinned-messages-list__items");
+    var empty = items.querySelector(".chat-pinned-messages-list__empty");
+    if (empty) {
+      empty.remove();
+    }
+    var id = Number(pinMessageId(pin));
+    var after = pinRows(list).filter(function (row) {
+      return Number(pinMessageId(row)) > id;
+    })[0];
+    items.insertBefore(pin, after || null);
+  }
+
+  // #focusAfterRemoval: the unpin button now at the removed row's index,
+  // else the last, else the empty state.
+  function focusAfterRemoval(list, index) {
+    var buttons = list.querySelectorAll(".chat-pinned-message__unpin");
+    var target = buttons[index] || buttons[buttons.length - 1] || list.querySelector(".chat-pinned-messages-list__empty");
+    if (target) {
+      target.focus();
+    }
+  }
+
+  // ChatPinnedMessagesList#unpin: the row out at once, the request after
+  // (ChatMessageInteractor#unpin), the row back if it fails.
   document.addEventListener("click", function (event) {
     var unpin = event.target.closest(".chat-pinned-message__unpin");
     if (!unpin) {
       return;
     }
     var list = unpin.closest(".chat-pinned-messages-list[data-channel-id]");
-    unpin.disabled = true;
-    api("DELETE", "/channels/" + list.dataset.channelId + "/messages/" + unpin.dataset.messageId + "/pin")
-      .then(changed)
-      .catch(function () {
-        unpin.disabled = false;
-      });
+    var pin = unpin.closest(".chat-pinned-message");
+    var messageId = unpin.dataset.messageId;
+    if (inFlightUnpins[messageId]) {
+      return;
+    }
+    inFlightUnpins[messageId] = true;
+    var index = pinRows(list).indexOf(pin);
+    pin.remove();
+    drawPinsEmpty(list);
+    focusAfterRemoval(list, index);
+    api("DELETE", "/channels/" + list.dataset.channelId + "/messages/" + messageId + "/pin").then(
+      function () {
+        // The drawer's list follows its own stream.
+        if (pinsLive && pinsLive.list === list && pinsLive.source.readyState === 1) {
+          return null;
+        }
+        return changed();
+      },
+      function () {
+        delete inFlightUnpins[messageId];
+        restorePin(list, pin);
+      },
+    ).catch(function () {});
   });
+
+  // ChatPinnedMessagesList's own subscription to the channel's bus, for
+  // the drawer's pins route (full page, the channel beside it draws the
+  // page again on pin and unpin): an unpin filters its row out, a pin of
+  // a message the list doesn't show loads the pins again. The loaded rows
+  // keep the unseen marks they were drawn with (isUnseen compares with
+  // the last view as the list opened), and the list marks the pins read
+  // when it goes, as it did when it came.
+  var pinsLive = null;
+
+  // #loadPins: the route drawn again for its list, the rows unpinned in
+  // flight left out; the latest load wins.
+  function loadPins(live) {
+    var sequence = ++live.loads;
+    if (!Discourse.chatDrawer) {
+      return Promise.resolve();
+    }
+    return Discourse.chatDrawer
+      .fetchRoute()
+      .then(function (html) {
+        if (!html || pinsLive !== live || sequence !== live.loads || !live.list.isConnected) {
+          return;
+        }
+        var template = document.createElement("template");
+        template.innerHTML = html;
+        var next = template.content.querySelector(".chat-pinned-messages-list__items");
+        if (!next) {
+          return;
+        }
+        var shown = {};
+        pinRows(live.list).forEach(function (pin) {
+          shown[pinMessageId(pin)] = pin.querySelector(".chat-pinned-message__pinned-by");
+        });
+        Array.prototype.slice.call(next.querySelectorAll(":scope > .chat-pinned-message")).forEach(function (pin) {
+          var id = pinMessageId(pin);
+          if (inFlightUnpins[id]) {
+            pin.remove();
+          }
+        });
+        var items = live.list.querySelector(".chat-pinned-messages-list__items");
+        items.replaceWith(next);
+        expandPins();
+        pinRows(live.list).forEach(function (pin) {
+          var before = shown[pinMessageId(pin)];
+          var by = pin.querySelector(".chat-pinned-message__pinned-by");
+          if (before && by) {
+            by.replaceWith(before);
+          }
+        });
+        drawPinsEmpty(live.list);
+      })
+      .catch(function () {
+        // A best-effort refresh, as #loadPins's.
+      });
+  }
+
+  function onPinsBus(live, data) {
+    if (data.type === "unpin") {
+      removePin(live.list, data.chat_message_id);
+    } else if (data.type === "pin") {
+      delete inFlightUnpins[data.chat_message_id];
+      var shown = pinRows(live.list).some(function (pin) {
+        return pinMessageId(pin) === String(data.chat_message_id);
+      });
+      if (!shown) {
+        return loadPins(live);
+      }
+    }
+    return Promise.resolve();
+  }
+
+  // The drawer's list, live while it is drawn without its channel.
+  function startPinsLive() {
+    var list = document.querySelector(".chat-drawer .chat-pinned-messages-list[data-channel-id]");
+    if (!list || pinsLive || document.querySelector(".chat-channel[data-id]") || !window.EventSource) {
+      return;
+    }
+    var meta = document.querySelector("meta[name='bus-position']");
+    var source = new EventSource(
+      basePath() +
+        "/bus/events?channels=" +
+        encodeURIComponent("/chat/" + list.dataset.channelId) +
+        (meta && meta.content ? "&position=" + encodeURIComponent(meta.content) : ""),
+      { withCredentials: true },
+    );
+    var live = { list: list, source: source, loads: 0 };
+    var queue = Promise.resolve();
+    source.addEventListener("message", function (event) {
+      var message = JSON.parse(event.data);
+      queue = queue
+        .then(function () {
+          return onPinsBus(live, message.data || {});
+        })
+        .catch(function () {});
+    });
+    source.addEventListener("gap", function () {
+      queue = queue.then(function () {
+        return loadPins(live);
+      });
+    });
+    pinsLive = live;
+  }
+
+  // The stream closed; `gone` when the drawer's route goes with the list
+  // (the modifier's destructor marks the pins read), not when a page
+  // swaps in beside the drawer, which keeps it.
+  function stopPinsLive(gone) {
+    var live = pinsLive;
+    if (!live) {
+      return;
+    }
+    live.source.close();
+    pinsLive = null;
+    if (gone) {
+      api("PUT", "/channels/" + live.list.dataset.channelId + "/pins/read", null, true).catch(function () {});
+    }
+  }
 
   // ChatSubscriptionsManager's channel status, archive status and edits
   // for the open channel (the status bar, the composer and the title
@@ -5248,12 +5449,14 @@
     drawChannelDates();
     setup(focus);
     startLive();
+    startPinsLive();
     startPresence();
   }
 
   function unmount() {
     teardown();
     stopLive();
+    stopPinsLive(false);
     stopPresence();
     paneRest.left = true;
   }
@@ -5847,7 +6050,10 @@
       unmount();
       mount(true);
     },
-    unmount: unmount,
+    unmount: function () {
+      stopPinsLive(true);
+      unmount();
+    },
     // For chat-thread.js: a pane's times and separators, and the
     // browser's cook of a staged message.
     redraw: redraw,

@@ -1,6 +1,7 @@
 //! An installed plugin (plugin_api) on every hook: its settings and
 //! translations, its routes, its jobs, its keys on the current user and
-//! the topic view, its outlet above a topic's posts, and its homepage
+//! the topic view, its outlets (above a topic's posts, a chat thread's
+//! navbar actions), and its homepage
 //! option; all of them off
 //! while its enabled setting is. Each test installs the plugin first, as a
 //! plugin's binary does before it serves (nextest runs a test per process).
@@ -195,11 +196,22 @@ impl Plugin for Echo {
         _ctx: &mut Ctx<'_>,
         outlet: &Outlet<'_>,
     ) -> Result<Option<String>, AppError> {
-        let Outlet::TopicAbovePosts { view } = outlet;
-        Ok(Some(format!(
-            "<div class=\"echo-card\">{}</div>",
-            view["echo_topic"]["id"]
-        )))
+        Ok(Some(match outlet {
+            Outlet::TopicAbovePosts { view } => {
+                format!(
+                    "<div class=\"echo-card\">{}</div>",
+                    view["echo_topic"]["id"]
+                )
+            }
+            Outlet::ChatThreadNavbarActions {
+                thread_id,
+                channel,
+                context,
+            } => format!(
+                "<span class=\"echo-thread\" data-thread=\"{thread_id}\" data-channel=\"{}\">{context}</span>",
+                channel["id"]
+            ),
+        }))
     }
 }
 
@@ -356,6 +368,71 @@ async fn an_enabled_plugin_serves_its_routes_and_adds_its_keys_and_outlet() {
         sprite.contains(r#"id=\"record-vinyl\""#),
         "the plugin's icon in the sprite"
     );
+}
+
+/// chat-thread-navbar-actions: the connector first among a chat thread's
+/// navbar actions, full page (before the tracking dropdown) and in the
+/// drawer (before its buttons), with its context; nothing while the
+/// plugin is off.
+#[tokio::test]
+async fn an_enabled_plugin_fills_the_chat_thread_navbar_actions() {
+    install();
+    let db = TestDb::new().await;
+    // General (2) with threading and a thread (1) of message 1 replied to
+    // by user1.
+    for sql in [
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello', '<p>Hello</p>', 1, 2)",
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, in_reply_to_id) VALUES (2, 2, 3, now() - interval '40 minutes', now() - interval '40 minutes', 'hi back', '<p>hi back</p>', 1, 3, 1)",
+        "SELECT setval('chat_messages_id_seq', 2)",
+        "UPDATE chat_channels SET last_message_id = 2, messages_count = 2, threading_enabled = true WHERE id = 2",
+        "INSERT INTO chat_threads (id, channel_id, original_message_id, original_message_user_id, status, replies_count, force, last_message_id, created_at, updated_at) VALUES (1, 2, 1, 2, 0, 1, false, 2, now() - interval '40 minutes', now() - interval '40 minutes')",
+        "SELECT setval('chat_threads_id_seq', 1)",
+        "UPDATE chat_messages SET thread_id = 1 WHERE id IN (1, 2)",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    set_setting(&db.pool, "chat_threads_enabled", BOOL, "t").await;
+    set_setting(&db.pool, "echo_enabled", BOOL, "t").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let cookie = login_cookie(&st, "user1").await;
+
+    let (status, page) = send(&st, "/chat/c/general/2/t/1", Some(&cookie)).await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    assert!(
+        page.contains("<nav class=\"c-navbar__actions\"><span class=\"echo-thread\" data-thread=\"1\" data-channel=\"2\">full-page</span><button class=\"btn no-text fk-d-menu__trigger notifications-tracking-trigger"),
+        "{page}"
+    );
+    let (status, html) = send(
+        &st,
+        "/live/chat/drawer?url=/chat/c/general/2/t/1",
+        Some(&cookie),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(
+        html.contains("<nav class=\"c-navbar__actions\"><span class=\"echo-thread\" data-thread=\"1\" data-channel=\"2\">drawer</span><button class=\"btn no-text btn-icon btn-transparent no-text c-navbar__toggle-drawer-button\""),
+        "{html}"
+    );
+    // Collapsed, the navbar keeps its actions.
+    let (_, html) = send(
+        &st,
+        "/live/chat/drawer?url=/chat/c/general/2/t/1&expanded=false",
+        Some(&cookie),
+    )
+    .await;
+    assert!(html.contains(">drawer</span>"), "{html}");
+
+    set_setting(&db.pool, "echo_enabled", BOOL, "f").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (_, page) = send(&st, "/chat/c/general/2/t/1", Some(&cookie)).await;
+    assert!(!page.contains("echo-thread"), "{page}");
+    let (_, html) = send(
+        &st,
+        "/live/chat/drawer?url=/chat/c/general/2/t/1",
+        Some(&cookie),
+    )
+    .await;
+    assert!(!html.contains("echo-thread"), "{html}");
 }
 
 #[tokio::test]

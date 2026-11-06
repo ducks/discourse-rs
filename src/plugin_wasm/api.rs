@@ -283,7 +283,10 @@ impl plugin_api::Plugin for WasmPlugin {
         ctx: &mut plugin_api::Ctx<'_>,
         outlet: &Outlet<'_>,
     ) -> Result<Option<String>, AppError> {
-        let Outlet::TopicAbovePosts { view } = outlet;
+        // A guest declares topic_above_posts only.
+        let Outlet::TopicAbovePosts { view } = outlet else {
+            return Ok(None);
+        };
         if !self.plugin.outlets.topic_above_posts {
             return Ok(None);
         }

@@ -255,8 +255,18 @@ async fn the_full_page_search_route_draws_chat_search() {
     assert_eq!(status, 200, "{page}");
     assert!(page.contains("<div class=\"main-chat-outlet chat-view\" id=\"main-chat-outlet\"><div class=\"c-routes --search\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"Search chat\"><span class=\"c-navbar__title-text\">Search chat</span></div>"), "{page}");
     assert!(page.contains("<div class=\"c-search\" data-url=\"/live/chat/search\" data-limit=\"20\" data-query-params=\"true\"><div class=\"chat-search__filters\">"), "{page}");
+    // DFilterInput's clear button while there is a query.
     assert!(
-        page.contains("placeholder=\"Search messages\" type=\"text\" value=\"brown &amp; fox\">"),
+        page.contains("placeholder=\"Search messages\" type=\"text\" value=\"brown &amp; fox\"><button class=\"btn no-text btn-icon btn-small btn-transparent filter-input-clear-btn\" aria-label=\"Clear filter\" title=\"Clear filter\" type=\"button\"><svg class=\"fa d-icon d-icon-xmark svg-icon"),
+        "{page}"
+    );
+    let (_, page, _) = c.page("/chat/search").await;
+    assert!(
+        page.contains("placeholder=\"Search messages\" type=\"text\" value=\"\"></div>"),
+        "{page}"
+    );
+    assert!(
+        page.contains("<template class=\"filter-input-clear-template\"><button class=\"btn no-text btn-icon btn-small btn-transparent filter-input-clear-btn\""),
         "{page}"
     );
     assert!(

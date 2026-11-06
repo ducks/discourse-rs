@@ -18,8 +18,8 @@ pub const LIMIT: i64 = 20;
 /// ChatSearch with an empty query: the filter (DFilterInput, its
 /// magnifying glass on the left) and the sort menu (DMenu on
 /// relevance, its items in a template chat-search.js floats under it),
-/// what chat-search.js draws the results into, and the result list's
-/// and empty alert's templates.
+/// what chat-search.js draws the results into, and the result list's,
+/// empty alert's and filter's clear button's templates.
 pub fn chat_search(i18n: &crate::i18n::I18n, base_path: &str) -> String {
     chat_search_with(i18n, base_path, None)
 }
@@ -39,8 +39,14 @@ pub fn chat_search_with(
             escape(&t(&format!("chat.search.sort.{value}")))
         )
     };
+    // DFilterInput's clear button (@onClearInput), while there is a query.
+    let clear_label = escape(&t("filter_input.clear"));
+    let clear = format!(
+        "<button class=\"btn no-text btn-icon btn-small btn-transparent filter-input-clear-btn\" aria-label=\"{clear_label}\" title=\"{clear_label}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+        d_icon("xmark", None)
+    );
     format!(
-        "<div class=\"c-search\" data-url=\"{}/live/chat/search\" data-limit=\"{LIMIT}\"{}><div class=\"chat-search__filters\"><div class=\"filter-input-container\">{}<input autocapitalize=\"none\" autocomplete=\"off\" autocorrect=\"off\" class=\"filter-input no-blur\" placeholder=\"{}\" type=\"text\" value=\"{}\"></div><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger search-sort-options-trigger btn-default\" data-identifier=\"search-sort-options\" data-trigger=\"\" type=\"button\" data-sort=\"relevance\">{}<span class=\"d-button-label\">{}</span></button><template class=\"search-sort-options-template\"><ul class=\"dropdown-menu\">{}{}</ul></template></div><template class=\"chat-search__results-template\"><div class=\"sr-only\" id=\"chat-search-instructions\">{}</div><ul aria-label=\"{}\" class=\"chat-message-search-entries\" role=\"listbox\"></ul><div class=\"chat-search-loading\"><div class=\"loading-container\"></div></div><br></template><template class=\"chat-search__empty-template\"><div class=\"alert alert-info\">{}</div></template></div>",
+        "<div class=\"c-search\" data-url=\"{}/live/chat/search\" data-limit=\"{LIMIT}\"{}><div class=\"chat-search__filters\"><div class=\"filter-input-container\">{}<input autocapitalize=\"none\" autocomplete=\"off\" autocorrect=\"off\" class=\"filter-input no-blur\" placeholder=\"{}\" type=\"text\" value=\"{}\">{}</div><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger search-sort-options-trigger btn-default\" data-identifier=\"search-sort-options\" data-trigger=\"\" type=\"button\" data-sort=\"relevance\">{}<span class=\"d-button-label\">{}</span></button><template class=\"search-sort-options-template\"><ul class=\"dropdown-menu\">{}{}</ul></template></div><template class=\"chat-search__results-template\"><div class=\"sr-only\" id=\"chat-search-instructions\">{}</div><ul aria-label=\"{}\" class=\"chat-message-search-entries\" role=\"listbox\"></ul><div class=\"chat-search-loading\"><div class=\"loading-container\"></div></div><br></template><template class=\"chat-search__empty-template\"><div class=\"alert alert-info\">{}</div></template><template class=\"filter-input-clear-template\">{clear}</template></div>",
         escape(base_path),
         if full_page.is_some() {
             " data-query-params=\"true\""
@@ -50,6 +56,11 @@ pub fn chat_search_with(
         d_icon("magnifying-glass", Some("-left")),
         escape(&t("chat.search_view.filter_placeholder")),
         escape(full_page.unwrap_or_default()),
+        if full_page.is_some_and(|q| !q.is_empty()) {
+            clear.as_str()
+        } else {
+            ""
+        },
         d_icon("sort", None),
         escape(&t("chat.search.sort.relevance")),
         sort("relevance"),
@@ -131,7 +142,7 @@ impl Context<'_> {
             let thread_title = m["thread_title"].as_str().filter(|t| !t.is_empty());
             out.push_str(&format!(
                 "<li aria-describedby=\"chat-search-instructions\" aria-label=\"{}\" class=\"chat-message-search-entry\" role=\"option\" tabindex=\"0\" data-url=\"{}\"><div class=\"chat-message-search-entry__info\">",
-                escape(&accessible_label(&t, m, thread_title)),
+                escape(&accessible_label(&t, m, thread_title)?),
                 escape(&url)
             ));
             if !scoped {
@@ -162,11 +173,19 @@ impl Context<'_> {
 }
 
 /// accessibleMessageLabel: the author, the excerpt (else the first 100
-/// characters of the message), and the thread's title.
-fn accessible_label(t: &dyn Fn(&str) -> String, m: &Value, thread_title: Option<&str>) -> String {
-    let username = match m["user"]["username"].as_str() {
-        Some(u) => u.to_string(),
-        None => t("chat.deleted_user"),
+/// characters of the message), and the thread's title. Its fallback for a
+/// message without a user, i18n("chat.deleted_user"), names a key neither
+/// core's nor chat's locale has; Chat::MessageSerializer always sends a
+/// user (Chat::NullUser for a deleted one), so that case is refused.
+fn accessible_label(
+    t: &dyn Fn(&str) -> String,
+    m: &Value,
+    thread_title: Option<&str>,
+) -> Result<String, AppError> {
+    let Some(username) = m["user"]["username"].as_str() else {
+        return Err(
+            Unsupported("a chat search result without its user (chat.deleted_user)").into(),
+        );
     };
     let preview = match m["excerpt"].as_str().filter(|e| !e.is_empty()) {
         Some(excerpt) => excerpt.to_string(),
@@ -178,12 +197,12 @@ fn accessible_label(t: &dyn Fn(&str) -> String, m: &Value, thread_title: Option<
     let thread = thread_title
         .map(|title| t("chat.search_view.in_thread").replace("%{title}", title))
         .unwrap_or_default();
-    t("chat.search_view.message_result_label")
-        .replace("%{username}", &username)
+    Ok(t("chat.search_view.message_result_label")
+        .replace("%{username}", username)
         .replace("%{preview}", &preview)
         .replace("%{threadInfo}", &thread)
         .trim()
-        .to_string()
+        .to_string())
 }
 
 /// formatChatDate in the long mode (dates.long_no_year) in place of the

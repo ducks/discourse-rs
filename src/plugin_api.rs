@@ -58,6 +58,16 @@ pub enum Outlet<'a> {
     /// `topic-above-posts`: above a topic's post stream. `view` is the
     /// topic view's JSON, with the plugins' `topic_view_fields` in it.
     TopicAbovePosts { view: &'a Value },
+    /// `chat-thread-navbar-actions`: first among a chat thread's navbar
+    /// actions, full page (ChatThreadHeader) and in the chat drawer
+    /// (ChatDrawerRoutesChannelThread). `channel` is the channel as the
+    /// chat API serializes it for the viewer, `context` "full-page" or
+    /// "drawer" as the outlet's args name it.
+    ChatThreadNavbarActions {
+        thread_id: i64,
+        channel: &'a Value,
+        context: &'a str,
+    },
 }
 
 /// `register_homepage`: an option for the default_homepage setting. While
