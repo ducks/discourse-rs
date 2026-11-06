@@ -11,11 +11,11 @@ use sqlx::PgConnection;
 
 use chrono::NaiveDateTime;
 
+use crate::AppError;
 use crate::posting::Ctx;
 use crate::site_settings::SiteSettings;
 use crate::topic_list::time_json;
 use crate::url::Urls;
-use crate::{AppError, Unsupported};
 
 /// The schema holding the backlog, beside `discourse_rs`.
 pub const SCHEMA: &str = "discourse_rs_bus";
@@ -466,15 +466,13 @@ fn now_json() -> String {
     time_json(crate::clock::now_naive())
 }
 
-/// `BasicUserSerializer`: the name only with enable_names.
+/// `BasicUserSerializer`: the name only with enable_names (Topic
+/// publish_stats passes no include_status, so no status).
 async fn basic_user(
     ctx: &Ctx<'_>,
     conn: &mut PgConnection,
     user_id: i32,
 ) -> Result<Value, AppError> {
-    if ctx.settings.get("enable_user_status")?.truthy() {
-        return Err(Unsupported("user status on BasicUserSerializer").into());
-    }
     let user: Option<(String, Option<String>, Option<i32>)> =
         sqlx::query_as("SELECT username, name, uploaded_avatar_id FROM users WHERE id = $1")
             .bind(user_id)

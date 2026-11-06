@@ -1,0 +1,174 @@
+/* User status as Rails compiles common/components/user-status-message.scss,
+   user-status-picker.scss, tap-tile.scss, time-shortcut-picker.scss,
+   common/modal/user-status.scss and discourse.scss's
+   .user-status-background (static/js/user-status.js). */
+
+/* user-status-message.scss:1 */
+.user-status-message .fk-d-tooltip__trigger-container {
+  align-items: center;
+}
+
+/* user-status-message.scss:6 */
+.user-status-message .user-status-message-description {
+  margin-left: 0.35em;
+}
+
+/* user-status-message.scss:11 */
+[data-content][data-identifier="user-status-message-tooltip"] .fk-d-tooltip__inner-content {
+  gap: 0.65em;
+}
+
+/* user-status-message.scss:16 */
+[data-content][data-identifier="user-status-message-tooltip"] .emoji {
+  width: 1em;
+  height: 1em;
+}
+
+/* user-status-message.scss:21 */
+[data-content][data-identifier="user-status-message-tooltip"] .user-status-message-description {
+  color: var(--primary-800);
+}
+
+/* user-status-message.scss:25 */
+[data-content][data-identifier="user-status-message-tooltip"] .user-status-tooltip-until {
+  color: var(--primary-medium);
+  white-space: nowrap;
+  margin-left: 0.15em;
+}
+
+/* user-status-picker.scss:1 */
+.user-status-picker-wrap {
+  display: inline-flex;
+  width: 100%;
+  align-items: end;
+}
+
+/* user-status-picker.scss:6 */
+.user-status-picker-wrap .user-status-picker {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--primary-medium);
+}
+
+/* user-status-picker.scss:11 */
+.user-status-picker-wrap .user-status-picker .emoji-picker-trigger {
+  margin: 3px;
+  width: 38px;
+  height: 38px;
+  text-align: center;
+}
+
+/* user-status-picker.scss:18 */
+.user-status-picker-wrap .user-status-picker .user-status-description {
+  width: 100%;
+  margin-bottom: 0;
+  border: none;
+  outline: none;
+  padding-left: 0;
+}
+
+/* user-status-picker.scss:27 */
+.user-status-picker-wrap .user-status-picker.focused {
+  border: 1px solid var(--tertiary);
+  outline: 1px solid var(--tertiary);
+}
+
+/* tap-tile.scss:1 */
+.tap-tile-grid {
+  justify-content: space-between;
+  margin: 0.5em 0 1em 0;
+}
+
+/* tap-tile.scss:5 */
+.tap-tile-grid .tap-tile {
+  color: var(--primary-high);
+  padding: 0.75em 0.25em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  border-bottom: 1px solid var(--content-border-color);
+  cursor: pointer;
+}
+
+/* tap-tile.scss:14 */
+.tap-tile-grid .tap-tile:first-child {
+  border-top: 1px solid var(--content-border-color);
+}
+
+/* tap-tile.scss:18 */
+.tap-tile-grid .tap-tile:hover {
+  background-color: var(--d-hover);
+}
+
+/* tap-tile.scss:22 */
+.tap-tile-grid .tap-tile.active {
+  background-color: var(--d-selected);
+}
+
+/* tap-tile.scss:26 */
+.tap-tile-grid .tap-tile .d-icon {
+  color: var(--primary-high);
+  margin: 0 0.5em 0 0;
+}
+
+/* tap-tile.scss:31 */
+.tap-tile-grid .tap-tile .tap-tile-title {
+  color: var(--primary);
+  margin-right: auto;
+}
+
+/* tap-tile.scss:36 */
+.tap-tile-grid .tap-tile .tap-tile-date {
+  margin-left: 1em;
+}
+
+/* user-status.scss:1 (modal) */
+.user-status.d-modal .d-modal__footer .delete-status {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* user-status.scss:11 */
+.user-status.d-modal .d-modal__body .control-group-remove-status {
+  margin-top: 25px;
+}
+
+/* user-status.scss:15 */
+.user-status.d-modal .d-modal__body .pause-notifications {
+  margin-top: 1.5em;
+}
+
+/* user-status.scss:19 */
+.user-status.d-modal .d-modal__body .control-label {
+  font-weight: 700;
+}
+
+/* user-status.scss:23 */
+.user-status.d-modal .d-modal__body .tap-tile:last-child {
+  border: 0;
+}
+
+/* discourse.scss:689 */
+.d-header .header-dropdown-toggle .user-status-background {
+  position: absolute;
+  right: -3px;
+  bottom: -1px;
+}
+
+/* discourse.scss:695 */
+.user-status-background {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  background-color: var(--secondary);
+  border-radius: 50%;
+}
+
+/* discourse.scss:704 */
+.user-status-background .emoji {
+  width: 14px;
+  height: 14px;
+  display: block;
+}

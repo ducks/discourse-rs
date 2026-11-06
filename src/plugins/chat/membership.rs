@@ -128,7 +128,7 @@ impl Context<'_> {
             .fetch_one(&mut *self.conn)
             .await?;
             if status {
-                return Err(Unsupported("user status").into());
+                return Err(Unsupported("user status in chat (130b)").into());
             }
         }
         let can_chat = super::enabled(self.settings)?

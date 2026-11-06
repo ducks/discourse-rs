@@ -2204,17 +2204,6 @@ impl TopicView<'_> {
             .bind(&usernames)
             .fetch_all(&mut *self.conn)
             .await?;
-            let ids: Vec<i32> = found.iter().map(|(id, _)| *id).collect();
-            let with_status: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = ANY($1) \
-                 AND (ends_at IS NULL OR ends_at > now()))",
-            )
-            .bind(&ids)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if with_status {
-                return Err(Unsupported("user status on mentioned users").into());
-            }
             for (post_id, names) in by_post {
                 let users = names
                     .iter()
@@ -2223,6 +2212,26 @@ impl TopicView<'_> {
                 mentioned.insert(post_id, users);
             }
         }
+
+        // PostSerializer#mentioned_users' BasicUserSerializer gets no scope
+        // (Guardian.new decides a silenced user's), #user_status the
+        // viewer's.
+        let mentioned_ids: Vec<i32> = mentioned.values().flatten().copied().collect();
+        let mentioned_statuses = crate::users::status::visible(
+            &mut *self.conn,
+            self.settings,
+            &Guardian::anonymous(),
+            &mentioned_ids,
+        )
+        .await?;
+        let poster_ids: Vec<i32> = posts.iter().filter_map(|p| p.user_id).collect();
+        let poster_statuses = crate::users::status::visible(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            &poster_ids,
+        )
+        .await?;
 
         // discourse-reactions' preload_post_reactions for the page, with the
         // viewer's likes and whether they may still undo them.
@@ -2715,11 +2724,16 @@ impl TopicView<'_> {
             }) {
                 p.insert("user_suspended".into(), json!(true));
             }
+            // include_user_status?
+            if let Some(status) = post.user_id.and_then(|id| poster_statuses.get(&id)) {
+                p.insert("user_status".into(), status.clone());
+            }
             if let Some(ids) = mentioned.get(&post.id) {
                 let mut users = Vec::with_capacity(ids.len());
                 for id in ids {
                     users.push(self.basic_user(*id, logo_small_url.as_deref()).await?);
                 }
+                crate::users::status::decorate(&mut users, &mentioned_statuses);
                 p.insert("mentioned_users".into(), Value::Array(users));
             }
             p.insert(

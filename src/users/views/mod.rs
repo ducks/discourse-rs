@@ -6,3 +6,4 @@ pub mod info;
 pub mod menu;
 pub mod notifications;
 pub mod profile;
+pub mod status;

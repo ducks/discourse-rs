@@ -61,7 +61,7 @@ async fn settings(state: &AppState, conn: &mut PgConnection) -> Result<SiteSetti
     Ok(SiteSettings::load(conn, &state.site_setting_defs, &state.config.globals).await?)
 }
 
-/// BasicUserSerializer, or null.
+/// BasicUserSerializer (no include_status: no status), or null.
 async fn basic_user(
     conn: &mut PgConnection,
     urls: &Urls<'_>,
@@ -70,9 +70,6 @@ async fn basic_user(
     let Some(id) = id else {
         return Ok(Value::Null);
     };
-    if urls.settings.get("enable_user_status")?.truthy() {
-        return Err(Unsupported("user status on BasicUserSerializer").into());
-    }
     let row: Option<(String, Option<String>, Option<i32>)> =
         sqlx::query_as("SELECT username, name, uploaded_avatar_id FROM users WHERE id = $1")
             .bind(id)

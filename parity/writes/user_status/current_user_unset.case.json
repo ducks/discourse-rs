@@ -1,0 +1,12 @@
+{
+  "user": "user0",
+  "settings": {
+    "enable_user_status": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

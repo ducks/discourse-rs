@@ -266,7 +266,7 @@ pub async fn user_scores_json(
         .await?;
         if with_status {
             return Err(PluginError::Unsupported(crate::Unsupported(
-                "user status on BasicUserSerializer",
+                "user status in discourse-gamification's leaderboard (130b)",
             )));
         }
     }

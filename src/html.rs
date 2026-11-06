@@ -239,6 +239,15 @@ pub struct Chrome {
     /// The header avatar's badge (crate::header_badge), empty for a
     /// visitor or while nothing applies.
     pub avatar_badge: String,
+    /// UserStatusBubble on the header avatar, for a member with a status.
+    pub avatar_status: String,
+    /// static/js/user-status.js's script attributes with
+    /// enable_user_status (crate::users::views::status::script_attrs),
+    /// empty without it.
+    pub user_status_attrs: String,
+    /// The emoji picker's template for UserStatusModal's picker, for a
+    /// member with enable_user_status.
+    pub user_status_picker: String,
     /// A member's topic tracking state, for the nav pills' counts.
     pub tracking: Option<crate::topic_tracking_report::Tracking>,
     /// What the page's live updates keep counted besides the stream's own
@@ -1241,6 +1250,38 @@ impl Site {
                 crate::header_badge::Badge::load(&mut *conn, settings, guardian)
                     .await?
                     .html(&state.i18n);
+            if settings.get("enable_user_status")?.truthy() {
+                let emojis = settings.emojis();
+                if let Some(status) =
+                    crate::users::status::visible_to_self(&mut *conn, settings, user_id).await?
+                {
+                    self.chrome.avatar_status =
+                        crate::users::views::status::bubble(emojis, &self.base_path, &status);
+                }
+                let timezone = options
+                    .as_ref()
+                    .and_then(|o| o.timezone.clone())
+                    .unwrap_or_default();
+                self.chrome.user_status_attrs = crate::users::views::status::script_attrs(
+                    &state.i18n,
+                    &self.base_path,
+                    emojis,
+                    Some(&timezone),
+                );
+                let t = |key: &str| {
+                    state
+                        .i18n
+                        .t(&format!("js.{key}"))
+                        .unwrap_or(key)
+                        .to_string()
+                };
+                self.chrome.user_status_picker =
+                    crate::plugins::chat::actions_view::picker_template(
+                        &t,
+                        &self.base_path,
+                        emojis,
+                    );
+            }
             let composer_options = options.as_ref().map(|o| crate::composer::Options {
                 composition_mode: o.composition_mode,
                 hide_presence: o.hide_presence,
@@ -1257,6 +1298,16 @@ impl Site {
             .await?;
             self.chrome.composer = composer.html;
             self.categories = Some(composer.categories);
+        }
+        // A visitor sees the statuses' tooltips too.
+        if self.chrome.user_status_attrs.is_empty() && settings.get("enable_user_status")?.truthy()
+        {
+            self.chrome.user_status_attrs = crate::users::views::status::script_attrs(
+                &state.i18n,
+                &self.base_path,
+                settings.emojis(),
+                None,
+            );
         }
         self.chrome.body_classes = classes.join(" ");
         Ok(())

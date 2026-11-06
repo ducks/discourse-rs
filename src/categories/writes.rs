@@ -881,7 +881,7 @@ fn numericality(
 
 /// `Emoji.exists?(name)`: a standard emoji or alias, or a custom one,
 /// with the colons and a skin tone stripped.
-fn emoji_exists(s: &SiteSettings, name: &str) -> bool {
+pub(crate) fn emoji_exists(s: &SiteSettings, name: &str) -> bool {
     let trimmed = name.strip_prefix(':').unwrap_or(name);
     let trimmed = trimmed.strip_suffix(':').unwrap_or(trimmed);
     let base = match trimmed.rsplit_once(":t") {

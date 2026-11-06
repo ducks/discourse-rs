@@ -29,8 +29,6 @@ const ANONYMIZE_USER_ACTION: i32 = 24;
 const DELETE_USER_ACTION: i32 = 1;
 /// `UserOption.email_level_types[:never]`
 const NEVER: i32 = 2;
-/// `Group::AUTO_GROUPS[:trust_level_0]`
-const TRUST_LEVEL_0: i32 = 10;
 
 /// `Guardian#can_anonymize_user?` for staff: not staff, not anonymized.
 pub async fn can_anonymize(conn: &mut PgConnection, user_id: i32) -> Result<bool, AppError> {
@@ -372,30 +370,7 @@ pub async fn make_anonymous(
     }
 
     // clear_status!
-    sqlx::query("DELETE FROM user_statuses WHERE user_id = $1")
-        .bind(user_id)
-        .execute(&mut *conn)
-        .await?;
-    let (hide_profile, silenced): (bool, bool) = sqlx::query_as(
-        "SELECT COALESCE((SELECT hide_profile FROM user_options WHERE user_id = u.id), FALSE), \
-                COALESCE(silenced_till > now(), FALSE) \
-         FROM users u WHERE id = $1",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if !hide_profile && !silenced {
-        let mut message = serde_json::Map::new();
-        message.insert(user_id.to_string(), Value::Null);
-        ctx.bus
-            .publish(
-                &mut *conn,
-                "/user-status",
-                &Value::Object(message),
-                Some(&[crate::bus::group_tag(TRUST_LEVEL_0)]),
-            )
-            .await?;
-    }
+    crate::users::status::clear(&mut *conn, ctx.bus, user_id).await?;
 
     for sql in [
         // user_avatar&.destroy!

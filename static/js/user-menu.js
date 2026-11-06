@@ -7,7 +7,8 @@
 // (the cn cookie, as UserMenuNotificationItem#onClick sets it); Dismiss
 // marks the tab's notifications read, asking first while important ones
 // are unread (DismissNotificationConfirmationModal); the profile tab
-// toggles presence, leaves do not disturb and logs out. A click outside,
+// toggles presence, sets the user status (user-status.js), leaves do not
+// disturb and logs out. A click outside,
 // on the mobile view's cloak, or Escape closes it.
 (function () {
   "use strict";
@@ -265,8 +266,28 @@
       return;
     }
     if (target.closest(".set-user-status button")) {
+      // setUserStatusClick: UserStatusModal (user-status.js) with the
+      // member's status, saved or cleared by the UserStatusService.
+      var item = target.closest(".set-user-status");
+      var status = item.dataset.status ? JSON.parse(item.dataset.status) : null;
       close();
-      showError("Not ported yet: the user status modal.");
+      if (!Discourse.userStatus) {
+        return;
+      }
+      Discourse.userStatus.open({
+        status: status,
+        pauseNotifications: !!document.querySelector("#toggle-current-user .do-not-disturb-background"),
+        saveAction: function (newStatus, pause) {
+          return Discourse.userStatus.set(newStatus, pause).then(function () {
+            Discourse.userStatus.drawBubble(newStatus);
+          });
+        },
+        deleteAction: function () {
+          return Discourse.userStatus.clear().then(function () {
+            Discourse.userStatus.drawBubble(null);
+          });
+        },
+      });
       return;
     }
     if (target.closest(".enable-anonymous button, .disable-anonymous button")) {

@@ -113,6 +113,38 @@
     });
   }
 
+  // AccountController#showUserStatusModal: UserStatusModal without its
+  // pause, whose save and delete set newStatus (saved with the tab).
+  function showUserStatusModal(controls) {
+    if (!Discourse.userStatus) {
+      unported("the user status modal");
+      return;
+    }
+    var draw = function (status) {
+      controls.dataset.status = JSON.stringify(status);
+      controls.dataset.dirty = "true";
+      var shown = controls.querySelector(".user-status-message, .static");
+      var html = status
+        ? Discourse.userStatus.messageHtml(status, true)
+        : '<span class="static">' + escape(controls.dataset.notSet || "") + "</span>";
+      if (shown) {
+        shown.outerHTML = html;
+      } else {
+        controls.insertAdjacentHTML("afterbegin", html);
+      }
+    };
+    Discourse.userStatus.open({
+      status: JSON.parse(controls.dataset.status || "null"),
+      hidePauseNotifications: true,
+      saveAction: function (status) {
+        draw(status);
+      },
+      deleteAction: function () {
+        draw(null);
+      },
+    });
+  }
+
   function popupAjaxError(e) {
     Discourse.dialog.popupAjaxError(e.message);
   }
@@ -296,6 +328,10 @@
       editUsername();
       return;
     }
+    if (event.target.closest(".pref-user-status .controls > .btn")) {
+      showUserStatusModal(event.target.closest(".pref-user-status .controls"));
+      return;
+    }
     if (event.target.closest(".delete-account-button")) {
       deleteAccount(event.target.closest(".delete-account-button"));
       return;
@@ -363,6 +399,10 @@
   }
 
   function controlValue(el) {
+    // The account's newStatus, as the status modal left it.
+    if (el.dataset.pref === "status") {
+      return JSON.parse(el.dataset.status || "null");
+    }
     // A multi-select (prefs-choosers.js): User#save's categories as ids,
     // an empty list as [-1]; users and tags comma-joined.
     if (el.dataset.chooser) {

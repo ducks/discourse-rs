@@ -1,0 +1,102 @@
+{
+  "name": "set",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/user-status.json",
+      "params": {
+        "description": "off to the dentist",
+        "emoji": "tooth"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-status.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:11:05.155692",
+  "transaction_started_at": "2026-11-06T18:11:03.843989",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "description": "off to the dentist",
+        "emoji": "tooth",
+        "ends_at": null,
+        "message_bus_last_id": 1
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cUNAZhpVo0r824VFsd/hEqlbFFw=",
+            "created_at": "2026-11-06T18:11:04.38467",
+            "rotated_at": "2026-11-06T18:11:04.383492",
+            "updated_at": "2026-11-06T18:11:04.38467",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "cUNAZhpVo0r824VFsd/hEqlbFFw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:11:05.162482",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cUNAZhpVo0r824VFsd/hEqlbFFw=",
+            "created_at": "2026-11-06T18:11:04.38467",
+            "rotated_at": "2026-11-06T18:11:04.383492",
+            "updated_at": "2026-11-06T18:11:04.38467",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "cUNAZhpVo0r824VFsd/hEqlbFFw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_statuses": {
+      "inserted": [
+        {
+          "emoji": "tooth",
+          "set_at": "2026-11-06T18:11:05.170337",
+          "ends_at": null,
+          "user_id": 3,
+          "description": "off to the dentist"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "recorded_from": {
+    "case": "8642020ad5a480921370290ed06b7cee931d944c5acd935620e4b38223ba6ec1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

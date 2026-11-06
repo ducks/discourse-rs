@@ -5,7 +5,7 @@
 //! the users#show_card document. static/js/user-card.js floats it by the
 //! avatar or mention that opened it.
 //!
-//! Not drawn: the user status (refused by users#show), suspension and
+//! Not drawn: suspension and
 //! silencing (refused by users#show), the featured topic (refused by
 //! users#show), Cancel filter (no user filters on the topic page) and
 //! Delete (admin pages only).
@@ -332,6 +332,22 @@ pub fn render(
         out.push_str(&format!(
             "<div class=\"names__secondary staged\">{}</div>",
             escape(&t(cx, "user.staged"))
+        ));
+    }
+    // hasStatus: the serializer sends it only with enable_user_status.
+    if let Some(status) = u.get("status").filter(|s| s.is_object()) {
+        let ends = crate::users::views::status::ends_at(status)
+            .map(|t| format!(" {}", crate::viewer_dates::tiny_span(cx, t)))
+            .unwrap_or_default();
+        out.push_str(&format!(
+            "<div class=\"user-status\">{} <span class=\"user-status__description\">{}</span>{ends}</div>",
+            crate::users::views::status::emoji(
+                &cx.settings.emojis,
+                cx.base_path,
+                s(&status["emoji"]),
+                false
+            ),
+            escape(s(&status["description"]))
         ));
     }
     // The user-card-post-names outlet: the connectors in plugin load

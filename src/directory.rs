@@ -636,7 +636,8 @@ async fn user_fields_json(
 
 /// DirectoryItemSerializer: the user (UserNameSerializer with
 /// UserPrimaryGroupMixin, and the user fields asked for), the id, the
-/// active columns, and time_read for the all-time period.
+/// active columns, and time_read for the all-time period. No status: the
+/// controller passes no include_status.
 async fn serialize(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -646,9 +647,6 @@ async fn serialize(
     field_map: Option<&FieldMap>,
     item_id: i32,
 ) -> Result<Value, AppError> {
-    if settings.get("enable_user_status")?.truthy() {
-        return Err(Unsupported("user status on BasicUserSerializer").into());
-    }
     let row: (i32, i32) =
         sqlx::query_as("SELECT user_id, period_type FROM directory_items WHERE id = $1")
             .bind(item_id)

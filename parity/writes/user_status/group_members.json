@@ -1,0 +1,160 @@
+{
+  "name": "group_members",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/groups/trust_level_0/members.json"
+    }
+  ],
+  "started_at": "2026-11-06T18:10:57.169411",
+  "transaction_started_at": "2026-11-06T18:10:55.967916",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "members": [
+          {
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+            "custom_fields": {},
+            "trust_level": 4,
+            "title": null,
+            "last_posted_at": null,
+            "last_seen_at": null,
+            "added_at": "2026-07-25T05:59:17.414Z"
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "custom_fields": {},
+            "trust_level": 2,
+            "title": null,
+            "last_posted_at": "2026-09-30T07:28:29.179Z",
+            "last_seen_at": null,
+            "added_at": "2026-07-25T05:59:16.953Z"
+          },
+          {
+            "status": {
+              "description": "on a break",
+              "emoji": "coffee",
+              "ends_at": null,
+              "message_bus_last_id": 0
+            },
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "custom_fields": {},
+            "trust_level": 2,
+            "title": null,
+            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "last_seen_at": "2026-10-01T22:32:51.040Z",
+            "added_at": "2026-07-25T05:59:16.474Z"
+          },
+          {
+            "status": {
+              "description": "at the dentist",
+              "emoji": "tooth",
+              "ends_at": "2099-01-01T10:00:00Z",
+              "message_bus_last_id": 0
+            },
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "custom_fields": {},
+            "trust_level": 1,
+            "title": null,
+            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "last_seen_at": "2026-10-01T22:32:51.475Z",
+            "added_at": "2026-07-25T05:59:16.049Z"
+          },
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "custom_fields": {},
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4,
+            "title": null,
+            "last_posted_at": "2026-09-30T07:28:29.674Z",
+            "last_seen_at": "2026-10-01T22:32:51.276Z",
+            "added_at": "2026-07-25T05:59:15.280Z"
+          }
+        ],
+        "owners": [],
+        "meta": {
+          "total": 5,
+          "limit": 50,
+          "offset": 0
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 665,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ebgxUOsSr9ov5LZogNi9jErLzJs=",
+            "created_at": "2026-11-06T18:10:56.338827",
+            "rotated_at": "2026-11-06T18:10:56.337785",
+            "updated_at": "2026-11-06T18:10:56.338827",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ebgxUOsSr9ov5LZogNi9jErLzJs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 665,
+            "seen_at": "2026-11-06T18:10:57.181547",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ebgxUOsSr9ov5LZogNi9jErLzJs=",
+            "created_at": "2026-11-06T18:10:56.338827",
+            "rotated_at": "2026-11-06T18:10:56.337785",
+            "updated_at": "2026-11-06T18:10:56.338827",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ebgxUOsSr9ov5LZogNi9jErLzJs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (2, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'coffee', 'on a break', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (4, 'palm_tree', 'hidden away', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (1, 'zzz', 'long gone', now() - interval '1 hour', now() - interval '10 minutes')",
+    "UPDATE user_options SET hide_profile = TRUE WHERE user_id = 4"
+  ],
+  "recorded_from": {
+    "case": "9d26345a00259b1a2fb42ffcde9ac3ea7892f390831dd61e6a3185cb79be36b4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

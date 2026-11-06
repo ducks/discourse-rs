@@ -1293,14 +1293,34 @@ pub fn profile_tab(cx: &MenuContext) -> String {
         )
     };
     if cx.enable_user_status {
-        // The status button needs the user status modal, not ported.
-        out.push_str(&format!(
-            "<li class=\"set-user-status\">{}</li>",
-            button(
+        // setUserStatusClick opens UserStatusModal (user-status.js).
+        let status = cx.user.get("status").filter(|s| s.is_object());
+        let item = match status {
+            Some(status) => {
+                let ends = crate::users::views::status::ends_at(status)
+                    .map(|t| format!(" {}", crate::viewer_dates::tiny_span(cx, t)))
+                    .unwrap_or_default();
+                format!(
+                    "<button class=\"btn no-text btn-flat profile-tab-btn\" type=\"button\">{}<span class=\"item-label\">{}{ends}</span></button>",
+                    crate::users::views::status::emoji(
+                        cx.emojis,
+                        cx.base_path,
+                        status["emoji"].as_str().unwrap_or_default(),
+                        false
+                    ),
+                    escape(status["description"].as_str().unwrap_or_default())
+                )
+            }
+            None => button(
                 "circle-plus",
-                &escape(&cx.t("user_status.set_custom_status"))
-            )
-        ));
+                &escape(&cx.t("user_status.set_custom_status")),
+            ),
+        };
+        // The status the modal starts from, for user-menu.js.
+        let data = status
+            .map(|s| format!(" data-status=\"{}\"", escape(&s.to_string())))
+            .unwrap_or_default();
+        out.push_str(&format!("<li class=\"set-user-status\"{data}>{item}</li>"));
     }
     let hidden = cx.user_option("hide_presence") == true;
     out.push_str(&format!(

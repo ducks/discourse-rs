@@ -15,7 +15,7 @@ use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::topic_list::time_json;
 use crate::url::Urls;
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 /// PostsController::DELETED_POSTS_MAX_LIMIT
 const MAX_LIMIT: i64 = 100;
@@ -51,9 +51,6 @@ pub async fn posts(
     offset: i64,
     limit: i64,
 ) -> Result<Vec<Value>, AppError> {
-    if settings.get("enable_user_status")?.truthy() {
-        return Err(Unsupported("user status on BasicUserSerializer (130)").into());
-    }
     let moderator_only = guardian.is_moderator() && !guardian.is_admin();
     let allowed = if moderator_only {
         guardian.allowed_category_ids(&mut *conn, settings).await?
@@ -144,7 +141,8 @@ pub async fn posts(
     Ok(out)
 }
 
-/// BasicUserSerializer, null for nobody.
+/// BasicUserSerializer, null for nobody (AdminUserActionSerializer passes
+/// no include_status, so no status).
 async fn basic_user(
     conn: &mut PgConnection,
     urls: &Urls<'_>,

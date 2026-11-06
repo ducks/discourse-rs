@@ -3,7 +3,7 @@
 //! by Chat::MessagesSerializer and Chat::MessageSerializer; a thread's
 //! (Chat::ListChannelThreadMessages) over the same query.
 //!
-//! Refused as Unsupported until their slices port them: user status.
+//! Refused as Unsupported until their slices port them: user status (130b).
 //! The two writes Rails defers (Scheduler::Defer) to after the response,
 //! the membership's last_viewed_at and the user's last chat channel, are
 //! made before it.
@@ -1090,7 +1090,7 @@ impl Context<'_> {
             .fetch_one(&mut *self.conn)
             .await?;
             if any {
-                return Err(Unsupported("user status").into());
+                return Err(Unsupported("user status in chat (130b)").into());
             }
         }
         let group_ids: Vec<i32> = users

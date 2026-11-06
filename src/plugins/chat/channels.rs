@@ -584,7 +584,7 @@ impl Context<'_> {
                 .fetch_one(&mut *self.conn)
                 .await?;
                 if has_status {
-                    return Err(Unsupported("user status").into());
+                    return Err(Unsupported("user status in chat (130b)").into());
                 }
             }
             let mut user = Map::new();

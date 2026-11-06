@@ -11,6 +11,7 @@ pub mod option_defaults;
 pub mod penalties;
 pub mod private;
 pub mod search;
+pub mod status;
 pub mod views;
 
 pub(crate) use model::website_name;

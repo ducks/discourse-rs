@@ -524,9 +524,13 @@ impl Users<'_> {
         let featured = self.featured_badges(user.id, rank_limit, &mut side).await?;
         out.insert("user_badges".into(), Value::Array(featured.clone()));
         if !side.badges.is_empty() {
+            // UserCardSerializer's include_status reaches the badges'
+            // users too (AMS hands its options to associations).
+            let mut users = side.users.clone();
+            crate::users::status::include(&mut *self.conn, self.settings, g, &mut users).await?;
             out.insert("badges".into(), Value::Array(side.badges.clone()));
             out.insert("badge_types".into(), Value::Array(side.badge_types.clone()));
-            out.insert("users".into(), Value::Array(side.users.clone()));
+            out.insert("users".into(), Value::Array(users));
             if !side.topics.is_empty() {
                 out.insert("topics".into(), Value::Array(side.topics.clone()));
             }
@@ -534,16 +538,11 @@ impl Users<'_> {
 
         // UserSerializer
         let mut u = Map::new();
-        if self.settings.get("enable_user_status")?.truthy() {
-            let has_status: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = $1 AND (ends_at IS NULL OR ends_at > now()))",
-            )
-            .bind(user.id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if has_status {
-                return Err(Unsupported("user status").into());
-            }
+        // UserStatusMixin (UserCardSerializer sets include_status).
+        if let Some(status) =
+            crate::users::status::visible_one(&mut *self.conn, self.settings, g, user.id).await?
+        {
+            u.insert("status".into(), status);
         }
         u.insert("id".into(), json!(user.id));
         u.insert("username".into(), json!(user.username));
