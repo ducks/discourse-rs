@@ -1,8 +1,9 @@
 // The composer actions menu (the caret on the composer's title: its items
 // per action and role, what they switch the composer to, the whisper, do
 // not bump and unlisted toggles, discourse-post-voting's toggle) and the
-// toolbar's Build poll (discourse-poll's builder), in composer.js and
-// poll-builder.js.
+// toolbar's Build poll (discourse-poll's builder, with its group chooser,
+// date and time input and results combo box, and the item's condition in
+// a PM with a non-human user), in composer.js and poll-builder.js.
 const { test, expect, login, api, topic, sql, label } = require("./helpers");
 
 const trigger = (page) => page.locator("#reply-control .composer-actions-trigger");
@@ -274,7 +275,8 @@ test("Build poll inserts the poll it builds, which draws once posted", async ({ 
   await modal.locator(".poll-options-max").fill("10");
   await expect(modal.locator(".tip.bad")).toHaveCount(0);
   await modal.locator(".poll-title input").fill("Rate it");
-  await modal.locator(".poll-result").selectOption("on_vote");
+  await modal.locator(".poll-result .select-kit-header").click();
+  await modal.locator(".poll-result .select-kit-row[data-value='on_vote']").click();
   await expect(modal.locator("input[name='poll-chart-type']")).toHaveCount(0);
   await modal.locator(".insert-poll").click();
   await expect(editor).toHaveValue(
@@ -323,4 +325,171 @@ test("a reply in a group message starts a new message to the same people", async
   await expect(page.locator("#reply-control .d-editor-input")).toHaveValue(
     `Continuing the discussion from [${title}](${origin}/t/${pm.topic_slug}/${pm.topic_id}):\n\nStarting over with everyone.`
   );
+});
+
+// The builder's advanced fields as Ember draws them: GroupChooser,
+// DDateTimeInput (DDateInput and DTimeInput) and the results ComboBox.
+test("Build poll's group chooser, automatic close and results pick what the poll gets", async ({ page, context }) => {
+  await login(context, "user1");
+  await page.goto("/latest");
+  await page.locator("#create-topic").click();
+  const editor = page.locator("#reply-control .d-editor-input");
+  await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+  await page.locator(".toolbar-menu__options-content button[title='Build poll']").click();
+  const modal = page.locator(".d-modal.poll-ui-builder");
+  await expect(modal).toBeVisible();
+  await modal.locator(".advanced-mode-btn").click();
+  await modal.locator(".poll-options textarea").fill("Yes\nNo");
+
+  // GroupChooser: every group but everyone, none chosen.
+  const groups = modal.locator(".poll-allowed-groups details.select-kit.multi-select.group-chooser");
+  await expect(groups.locator(".formatted-selection")).toHaveText("Select…");
+  await groups.locator(".select-kit-header").click();
+  await expect(groups.locator(".select-kit-row")).toHaveCount(10);
+  await expect(groups.locator(".select-kit-row[data-value='everyone']")).toHaveCount(0);
+  const filter = groups.locator(".filter-input");
+  await expect(filter).toBeFocused();
+  await filter.fill("trust_level");
+  await expect(groups.locator(".select-kit-row")).toHaveCount(5);
+  await expect(groups.locator(".select-kit-row").first()).toHaveClass(/is-highlighted/);
+  await expect(groups.locator(".results-count")).toHaveText("5 results");
+  // A row chosen joins the choices and the menu stays open, without it.
+  await groups.locator(".select-kit-row[data-value='trust_level_1']").click();
+  await expect(groups).toHaveAttribute("open", "");
+  await expect(groups.locator(".selected-choice")).toHaveText(["trust_level_1"]);
+  await expect(groups.locator(".select-kit-row")).toHaveCount(9);
+  await expect(filter).toHaveValue("");
+  // Enter takes the highlighted row.
+  await filter.fill("level_2");
+  await filter.press("Enter");
+  await expect(groups.locator(".selected-choice")).toHaveText(["trust_level_1", "trust_level_2"]);
+  await expect(groups.locator(".formatted-selection")).toHaveText("trust_level_1, trust_level_2");
+  await filter.fill("nothing like it");
+  await expect(groups.locator(".no-content")).toHaveText("No matches found");
+  // A choice clicked leaves; Escape closes the chooser, not the modal.
+  await groups.locator(".selected-choice[data-value='trust_level_1']").click();
+  await expect(groups.locator(".selected-choice")).toHaveText(["trust_level_2"]);
+  await page.keyboard.press("Escape");
+  await expect(groups).not.toHaveAttribute("open", "");
+  await expect(modal).toBeVisible();
+  await expect(groups.locator(".formatted-selection")).toHaveText("trust_level_2");
+
+  // DDateTimeInput: a time without a date is today's; clearing empties
+  // both; a date keeps the time chosen.
+  const close = modal.locator(".poll-date .d-date-time-input");
+  const date = close.locator(".d-date-input input.date-picker");
+  const time = close.locator(".d-time-input details.combo-box");
+  await expect(date).toHaveValue("");
+  await expect(time.locator(".select-kit-selected-name")).toHaveText("--:--");
+  await time.locator(".select-kit-header").click();
+  await expect(time.locator(".select-kit-row")).toHaveCount(96);
+  await expect(time.locator(".filter-input")).toHaveAttribute("placeholder", "--:--");
+  await time.locator(".select-kit-row[data-name='2:30 PM']").click();
+  await expect(time.locator(".select-kit-selected-name")).toHaveText("2:30 PM");
+  const today = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  await expect(date).toHaveValue(today);
+  await close.locator(".clear-date-time").click();
+  await expect(date).toHaveValue("");
+  await expect(time.locator(".select-kit-selected-name")).toHaveText("--:--");
+  await date.fill("2030-01-15");
+  await expect(time.locator(".select-kit-selected-name")).toHaveText("12:00 AM");
+  // allowAny: a typed time is offered as its own row.
+  await time.locator(".select-kit-header").click();
+  await time.locator(".filter-input").fill("2:35 pm");
+  await expect(time.locator(".select-kit-row.create")).toHaveText("Create: '2:35 pm'");
+  await time.locator(".filter-input").press("Enter");
+  await expect(time.locator(".select-kit-selected-name")).toHaveText("2:35 PM");
+  await expect(date).toHaveValue("2030-01-15");
+  // The typed time joins the options.
+  await time.locator(".select-kit-header").click();
+  await expect(time.locator(".select-kit-row")).toHaveCount(97);
+  await expect(time.locator(".select-kit-row.is-selected")).toHaveText("2:35 PM");
+  await page.keyboard.press("Escape");
+  await expect(modal).toBeVisible();
+
+  // The results ComboBox: a member's choices, without staff only.
+  const results = modal.locator("details.combo-box.poll-result");
+  await expect(results.locator(".select-kit-selected-name")).toHaveText("Always visible");
+  await results.locator(".select-kit-header").click();
+  await expect(results.locator(".select-kit-row")).toHaveCount(3);
+  await results.locator(".select-kit-row[data-value='on_close']").click();
+  await expect(results).not.toHaveAttribute("open", "");
+  await expect(results.locator(".select-kit-header")).toHaveAttribute("data-value", "on_close");
+
+  const closeAt = await page.evaluate(() => new Date(2030, 0, 15, 14, 35).toISOString());
+  await modal.locator(".insert-poll").click();
+  await expect(modal).toHaveCount(0);
+  await expect(editor).toHaveValue(
+    `[poll type=regular results=on_close public=true chartType=bar groups=trust_level_2 close=${closeAt}]\n* Yes\n* No\n[/poll]\n`
+  );
+});
+
+// add-poll-ui-builder's condition: a member who may not create polls
+// sees Build poll only replying in a PM with a non-human user.
+test("Build poll shows in a PM with a non-human user for a member who may not create polls", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  await api(admin, "PUT", "/admin/site_settings/poll_create_allowed_groups", {
+    poll_create_allowed_groups: "14",
+  });
+  try {
+    await login(context, "user1");
+    const options = page.locator(".toolbar-menu__options-content");
+    const buildPoll = options.locator("button[title='Build poll']");
+
+    // A new topic: no item.
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    await expect(options).toBeVisible();
+    await expect(buildPoll).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await discard(page);
+
+    // A message with another member: no item.
+    const human = await api(context, "POST", "/posts.json", {
+      title: label("A message to a person"),
+      raw: label("A message user1 sends to user2"),
+      archetype: "private_message",
+      target_recipients: "user2",
+    });
+    await page.goto(`/t/${human.topic_slug}/${human.topic_id}`);
+    await page.locator("#topic-footer-buttons .create").click();
+    await expect(trigger(page)).toContainText("Message");
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    await expect(options).toBeVisible();
+    await expect(buildPoll).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await discard(page);
+
+    // A message with discobot alone: the item, and a poll it builds posts.
+    const bot = await api(context, "POST", "/posts.json", {
+      title: label("A message to the bot"),
+      raw: label("A message user1 sends to discobot"),
+      archetype: "private_message",
+      target_recipients: "discobot",
+    });
+    await page.goto(`/t/${bot.topic_slug}/${bot.topic_id}`);
+    await page.locator("#topic-footer-buttons .create").click();
+    await expect(trigger(page)).toContainText("Message");
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    await expect(buildPoll).toBeVisible();
+    await buildPoll.click();
+    const modal = page.locator(".d-modal.poll-ui-builder");
+    await expect(modal).toBeVisible();
+    await modal.locator(".poll-option-value input").first().fill("Tea");
+    await modal.locator(".poll-option-add").click();
+    await modal.locator(".poll-option-value input").nth(1).fill("Coffee");
+    await modal.locator(".insert-poll").click();
+    await expect(modal).toHaveCount(0);
+    await page.locator("#reply-control .save-or-cancel .create").click();
+    await expect(page.locator("#reply-control.open")).toHaveCount(0);
+    await expect(page.locator(".topic-post .cooked .poll li[data-poll-option-id]")).toHaveCount(2);
+  } finally {
+    await api(admin, "PUT", "/admin/site_settings/poll_create_allowed_groups", {
+      poll_create_allowed_groups: "11",
+    });
+  }
 });

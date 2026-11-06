@@ -131,8 +131,9 @@ pub(crate) async fn load(
     } else {
         None
     };
-    // The toolbar's options menu: add-poll-ui-builder's condition is
-    // staff or poll_create_allowed_groups.
+    // The toolbar's options menu: add-poll-ui-builder's currentUser
+    // half of its condition (staff or can_create_poll); a PM with a
+    // non-human user shows the item to anyone (composer.js).
     let can_create_poll = guardian.is_staff()
         || guardian.in_setting_groups(settings, "poll_create_allowed_groups")?;
     let can_create_policy = guardian.in_setting_groups(settings, "create_policy_allowed_groups")?;
@@ -196,6 +197,8 @@ pub(crate) async fn load(
             staff: guardian.is_staff(),
             groups,
             local_dates: crate::plugins::local_dates::enabled(settings)?,
+            moment_src: crate::assets::url(base_path, "moment.min.js"),
+            pikaday_src: crate::assets::url(base_path, "pikaday.js"),
         })
     } else {
         None
