@@ -177,7 +177,7 @@ async fn the_drawer_draws_a_channels_pins() {
     );
     // ChatPinnedMessagesList, as the side panel draws it.
     assert!(
-        html.contains("<div class=\"chat-drawer-content\"><div class=\"chat-pinned-messages-list chat-messages-scroller\" data-channel-id=\"2\"><div class=\"chat-pinned-messages-list__items\"><div class=\"chat-pinned-message\"><a class=\"chat-pinned-message__link\" href=\"/chat/c/general/2/4\"><template class=\"chat-pinned-message__content\">"),
+        html.contains("<div class=\"chat-drawer-content\"><div class=\"chat-pinned-messages-list chat-messages-scroller\" data-channel-id=\"2\" data-label-empty=\"No pinned messages in this channel.\"><div class=\"chat-pinned-messages-list__items\"><div class=\"chat-pinned-message\"><a class=\"chat-pinned-message__link\" href=\"/chat/c/general/2/4\"><template class=\"chat-pinned-message__content\">"),
         "{html}"
     );
     assert!(html.contains("<p>channel chatter</p>"));
@@ -385,7 +385,15 @@ async fn the_drawer_searches_chat() {
         html.starts_with(&format!("<div class=\"c-drawer-routes --search\"><div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"Search chat\"><span class=\"c-navbar__title-text\">Search chat</span></div><nav class=\"c-navbar__actions\">{DRAWER_BUTTONS}</nav></nav></div><div class=\"chat-drawer-content\"><div class=\"c-search\" data-url=\"/live/chat/search\" data-limit=\"20\"><div class=\"chat-search__filters\"><div class=\"filter-input-container\">")),
         "{html}"
     );
-    assert!(html.contains("placeholder=\"Search messages\""));
+    // No query yet: the clear button waits in its template.
+    assert!(
+        html.contains("placeholder=\"Search messages\" type=\"text\" value=\"\"></div>"),
+        "{html}"
+    );
+    assert!(
+        html.contains("<template class=\"filter-input-clear-template\">"),
+        "{html}"
+    );
     assert!(html.contains("data-identifier=\"search-sort-options\""));
     assert!(html.contains("<span class=\"d-button-label\">Relevance</span>"));
     // The footer, its search item active.

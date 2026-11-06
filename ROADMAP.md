@@ -70,7 +70,7 @@ the local release report is
 `tmp/rehearsal/release-20261101-focus/report/index.html`.
 
 Remaining chat follow-ups include thread tracking/live updates (160b),
-drawer details (223e), GIFs (224b) and further reviewable cases (148b).
+GIFs (224b) and further reviewable cases (148b).
 Performance item 285 is low priority. Full parity remains the long-term
 goal; the older counts below are a dated snapshot, not current totals.
 
@@ -5559,7 +5559,58 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     tests/browser/setup.sql turns on chat_threads_enabled, hidden from
     the admin). Not compared against the reference. Left, split into
     223e.
-    223e. `feat/chat-drawer-routes-rest` S: the drawer's pins list's own
+    223e. ~~`feat/chat-drawer-routes-rest`~~ (done) S: the drawer's pins
+    list follows the channel's bus itself (ChatPinnedMessagesList's
+    subscribe modifier; full page, the channel beside it still draws the
+    page again): chat.js opens /chat/:id for a drawer list without its
+    channel, an unpin filters its row out (the empty state once the last
+    goes, its label in the list's data-label-empty), a pin of a message
+    not shown loads the pins again (#loadPins: the drawer's route
+    fetched for its list, the latest load winning, the rows unpinned in
+    flight left out, the rows already shown keeping the unseen mark they
+    were drawn with as isUnseen's snapshot does), and the pins are marked
+    read when the route goes with the list (the destructor's
+    #markPinsAsRead; not on a page swap, which keeps the drawer). The
+    list's own unpin, full page and drawer: the row out at once, the
+    focus on the unpin button now at its index, else the last, else the
+    empty state (#focusAfterRemoval), the request after, the row back in
+    timeline order if it fails (#restorePin). ChatSearch: DFilterInput's
+    clear button (btn-small btn-transparent filter-input-clear-btn,
+    "Clear filter") while there is a query, drawn by the server for the
+    full page's q and by chat-search.js from a template, clearing the
+    query to "" (the full page's address to `?q=`, as Ember prunes only
+    the undefined default) and focusing the input; the container
+    is-focused with the input; dTabToSibling on each result (Tab and
+    Shift+Tab to the next or previous focusable sibling).
+    DConditionalLoadingSpinner and DLoadMore are in the ref's frontend
+    (vendor/discourse lacks only the copy, not the commit): the
+    spinner's loading-container gains visible, data-loading="" and
+    `<div class="spinner ">` while loading; DLoadMore's sentinel is
+    `<div aria-hidden="true" class="load-more-sentinel">` (it was a
+    load-more div), kept while there are more results rather than drawn
+    again each page, observed with threshold 0 and the document as its
+    root, its action debounced 100ms. The chat-thread-navbar-actions
+    plugin outlet: plugin_api::Outlet::ChatThreadNavbarActions (thread
+    id, the channel's JSON, context "full-page" or "drawer"), first in
+    ChatThreadHeader's actions and before the drawer's buttons; no
+    bundled plugin connects to it (voice's connector is unported with
+    voice) and a WASM guest can't declare it. "chat.deleted_user": in
+    neither core's nor chat's locale at the ref (Ember would draw
+    "[<locale>.chat.deleted_user]"), and unreachable, Chat::MessageSerializer
+    always sending a user (Chat::NullUser for a deleted one): refused
+    (Unsupported, "a chat search result without its user"). Tests in
+    tests/chat_drawer_routes.rs, tests/chat_search.rs and
+    tests/plugin_api.rs (the outlet full page, in the drawer expanded and
+    collapsed, gone with the plugin off); driven in
+    tests/browser/chat-drawer-routes.spec.js (live pin and unpins to the
+    empty state, read on leaving, the list's unpin and its focus, the
+    clear button full page and in the drawer, Tab between results, the
+    spinner and the sentinel over a second page). Not compared against
+    the reference. Left: the unpin's a11y.announce
+    ("chat.pinned_messages.message_unpinned"; core's A11yLiveRegions
+    isn't ported), the full-page side panel list's read on leaving, and
+    the list's dismiss and show footer with the pinned bar (219). Was:
+    the drawer's pins list's own
     live pin and unpin (ChatPinnedMessagesList subscribes to the
     channel's bus; the drawer's list follows only a refresh), the
     search's clear button and dTabToSibling, DLoadMore's and

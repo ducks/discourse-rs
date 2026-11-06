@@ -309,3 +309,177 @@ test("back to a thread's URL opens the thread in the drawer, forward restores th
   await expect(page.locator("#main-outlet .topic-list")).toBeVisible();
   expect(await page.evaluate(() => window.__sameDocument === true)).toBe(true);
 });
+
+// 223e: the drawer's pins list follows the channel's bus itself (no
+// channel beside it to draw the page again), and its own unpin.
+const lastViewedPins = (channel, username) =>
+  sql(
+    "SELECT COALESCE(extract(epoch FROM last_viewed_pins_at)::text, '') FROM user_chat_channel_memberships m JOIN users u ON u.id = m.user_id WHERE u.username = :'p2' AND m.chat_channel_id = :'p1'",
+    channel.id,
+    username,
+  )[0][0];
+
+test("the drawer's pins follow pins and unpins live, and are read when the route goes", async ({ page, context, session }) => {
+  const channel = await channelWithThread(session);
+  const admin = await session("admin");
+  await api(admin, "POST", `/chat/api/channels/${channel.id}/messages/${channel.originalId}/pin`, {});
+  const other = label("pinned live");
+  await api(await session("user0"), "POST", `/chat/${channel.id}.json`, { message: other, staged_id: label("staged") });
+  const [[otherId]] = sql("SELECT id FROM chat_messages WHERE message = :'p1'", other);
+  await login(context, "user1");
+  const drawer = await openDrawer(page);
+  await openChannel(drawer, channel);
+  await drawer.locator(".c-navbar__pinned-messages-btn").click();
+  const pins = drawer.locator(".c-drawer-routes.--channel-pins");
+  const original = pins.locator(".chat-pinned-message", { hasText: channel.original });
+  await expect(original).toBeVisible();
+  // Unseen as the list opened (never viewed), and kept so.
+  await expect(original.locator(".chat-pinned-message__pinned-by-icon")).toBeVisible();
+  await expect.poll(() => lastViewedPins(channel, "user1")).not.toBe("");
+  const opened = Number(lastViewedPins(channel, "user1"));
+
+  // A pin elsewhere: the list loads it, unseen; the shown row keeps its mark.
+  await api(admin, "POST", `/chat/api/channels/${channel.id}/messages/${otherId}/pin`, {});
+  const added = pins.locator(".chat-pinned-message", { hasText: other });
+  await expect(added).toBeVisible();
+  await expect(added.locator(".chat-pinned-message__pinned-by")).toContainText("Pinned by admin");
+  await expect(added.locator(".chat-pinned-message__pinned-by-icon")).toBeVisible();
+  await expect(original.locator(".chat-pinned-message__pinned-by-icon")).toBeVisible();
+  await expect(pins.locator(".chat-pinned-message")).toHaveCount(2);
+  // Its message drawn into its link, as the route's are.
+  await expect(added.locator(".chat-pinned-message__link .chat-message-container")).toBeVisible();
+
+  // Unpins elsewhere: each row goes, then the empty state.
+  await api(admin, "DELETE", `/chat/api/channels/${channel.id}/messages/${channel.originalId}/pin`, {});
+  await expect(original).toHaveCount(0);
+  await expect(pins.locator(".chat-pinned-message")).toHaveCount(1);
+  await api(admin, "DELETE", `/chat/api/channels/${channel.id}/messages/${otherId}/pin`, {});
+  await expect(pins.locator(".chat-pinned-message")).toHaveCount(0);
+  await expect(pins.locator(".chat-pinned-messages-list__empty")).toHaveText("No pinned messages in this channel.");
+  expect(await page.evaluate(() => location.pathname)).toBe("/latest");
+
+  // Leaving the route marks the pins read again.
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  await pins.locator(".c-navbar__back-button").click();
+  await expect(drawer.locator(".c-drawer-routes.--channel .chat-composer__input")).toBeVisible();
+  await expect.poll(() => Number(lastViewedPins(channel, "user1"))).toBeGreaterThan(opened);
+});
+
+test("unpinning from the drawer's list takes the row out at once and keeps the focus in the list", async ({
+  page,
+  context,
+  session,
+}) => {
+  const channel = await channelWithThread(session);
+  sql(
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, notification_level, created_at, updated_at) SELECT id, :'p1', true, 2, now(), now() FROM users WHERE username = 'admin'",
+    channel.id,
+  );
+  const other = label("second pin");
+  await api(await session("user0"), "POST", `/chat/${channel.id}.json`, { message: other, staged_id: label("staged") });
+  const [[otherId]] = sql("SELECT id FROM chat_messages WHERE message = :'p1'", other);
+  const admin = await session("admin");
+  await api(admin, "POST", `/chat/api/channels/${channel.id}/messages/${channel.originalId}/pin`, {});
+  await api(admin, "POST", `/chat/api/channels/${channel.id}/messages/${otherId}/pin`, {});
+  await login(context, "admin");
+  const drawer = await openDrawer(page);
+  await openChannel(drawer, channel);
+  await drawer.locator(".c-navbar__pinned-messages-btn").click();
+  const pins = drawer.locator(".c-drawer-routes.--channel-pins");
+  await expect(pins.locator(".chat-pinned-message")).toHaveCount(2);
+
+  // The first: gone, the focus on the unpin button now at its index.
+  await pins.locator(".chat-pinned-message", { hasText: channel.original }).locator(".chat-pinned-message__unpin").click();
+  await expect(pins.locator(".chat-pinned-message")).toHaveCount(1);
+  await expect(pins.locator(".chat-pinned-message", { hasText: other }).locator(".chat-pinned-message__unpin")).toBeFocused();
+  await expect
+    .poll(() => sql("SELECT count(*) FROM chat_pinned_messages WHERE chat_message_id = :'p1'", channel.originalId))
+    .toEqual([["0"]]);
+  // The bus's unpin of a row already gone changes nothing.
+  await expect(pins.locator(".chat-pinned-message")).toHaveCount(1);
+
+  // The last: the empty state, focused.
+  await pins.locator(".chat-pinned-message__unpin").click();
+  await expect(pins.locator(".chat-pinned-messages-list__empty")).toBeFocused();
+  await expect
+    .poll(() => sql("SELECT count(*) FROM chat_pinned_messages WHERE chat_channel_id = :'p1'", channel.id))
+    .toEqual([["0"]]);
+
+  // Pinned again elsewhere: back in the list.
+  await api(admin, "POST", `/chat/api/channels/${channel.id}/messages/${otherId}/pin`, {});
+  await expect(pins.locator(".chat-pinned-message", { hasText: other })).toBeVisible();
+  await expect(pins.locator(".chat-pinned-messages-list__empty")).toHaveCount(0);
+});
+
+// 223e: ChatSearch's DFilterInput clear button and focus state,
+// dTabToSibling between the results, DConditionalLoadingSpinner and
+// DLoadMore's sentinel over a second page.
+test("search's filter clears, its results take Tab between them, and the next page loads at the end", async ({
+  page,
+  context,
+  session,
+}) => {
+  const channel = await channelWithThread(session);
+  const word = label("pager").replace(/[^a-z0-9]+/gi, "").toLowerCase();
+  // LIMIT + 1 messages with the word, indexed as the indexer writes them.
+  sql(
+    "INSERT INTO chat_messages (chat_channel_id, user_id, last_editor_id, created_at, updated_at, message, cooked, cooked_version) SELECT :'p1', u.id, u.id, now() - (n || ' minutes')::interval, now(), :'p2' || ' number ' || n, '<p>' || :'p2' || ' number ' || n || '</p>', 1 FROM generate_series(1, 21) AS n, users u WHERE u.username = 'user0'",
+    channel.id,
+    word,
+  );
+  sql(
+    "INSERT INTO chat_message_search_data (chat_message_id, raw_data, locale, version, search_data) SELECT id, message, 'en', 1, setweight(to_tsvector('english', message), 'A') FROM chat_messages WHERE chat_channel_id = :'p1' AND message LIKE :'p2' || ' number %'",
+    channel.id,
+    word,
+  );
+  await login(context, "user1");
+  const drawer = await openDrawer(page);
+  await page.locator("#d-sidebar a[href$='/chat/search']").click();
+  const search = drawer.locator(".c-drawer-routes.--search");
+  const container = search.locator(".c-search .filter-input-container");
+  const input = container.locator(".filter-input");
+  await expect(input).toBeFocused();
+  await expect(container).toHaveClass(/is-focused/);
+  await expect(container.locator(".filter-input-clear-btn")).toHaveCount(0);
+
+  await input.fill(word);
+  const entries = search.locator(".chat-message-search-entry");
+  await expect(entries).toHaveCount(20);
+  await expect(container.locator(".filter-input-clear-btn")).toHaveAttribute("title", "Clear filter");
+  // Not loading: the spinner's container, empty.
+  const spinner = search.locator(".chat-search-loading > .loading-container");
+  await expect(spinner).not.toHaveClass(/visible/);
+  await expect(spinner).not.toHaveAttribute("data-loading");
+
+  // Tab and Shift+Tab move between the results.
+  await entries.nth(0).focus();
+  await expect(container).not.toHaveClass(/is-focused/);
+  await page.keyboard.press("Tab");
+  await expect(entries.nth(1)).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(entries.nth(0)).toBeFocused();
+
+  // The sentinel after the spinner: the next page as it shows.
+  const sentinel = search.locator(".chat-search-loading + .load-more-sentinel[aria-hidden='true']");
+  await expect(sentinel).toHaveCount(1);
+  await sentinel.scrollIntoViewIfNeeded();
+  await expect(entries).toHaveCount(21);
+  await expect(search.locator(".load-more-sentinel")).toHaveCount(0);
+
+  // The clear button: no query, no results, the focus back in the input.
+  await container.locator(".filter-input-clear-btn").click();
+  await expect(input).toHaveValue("");
+  await expect(input).toBeFocused();
+  await expect(entries).toHaveCount(0);
+  await expect(search.locator(".alert")).toHaveCount(0);
+  await expect(container.locator(".filter-input-clear-btn")).toHaveCount(0);
+  expect(await page.evaluate(() => location.pathname)).toBe("/latest");
+
+  // Full page, the clear button empties the q param (Ember's "").
+  await page.goto(`/chat/search?q=${word}`);
+  const full = page.locator(".full-page-chat .c-search");
+  await expect(full.locator(".chat-message-search-entry")).toHaveCount(20);
+  await full.locator(".filter-input-clear-btn").click();
+  await expect(page).toHaveURL(/\/chat\/search\?q=$/);
+  await expect(full.locator(".chat-message-search-entry")).toHaveCount(0);
+});

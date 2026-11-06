@@ -3087,9 +3087,12 @@ impl Context<'_> {
         let slug = slugified_title(&channel_json);
         let channel_url = format!("{}/chat/c/{}/{}", self.base_path, escape(&slug), channel.id);
         let can_manage = self.can_manage_pins(channel).await?;
+        // data-label-empty: the empty state chat.js draws once the last
+        // pin is unpinned or goes live.
         let mut out = format!(
-            "<div class=\"chat-pinned-messages-list chat-messages-scroller\" data-channel-id=\"{}\"><div class=\"chat-pinned-messages-list__items\">",
-            channel.id
+            "<div class=\"chat-pinned-messages-list chat-messages-scroller\" data-channel-id=\"{}\" data-label-empty=\"{}\"><div class=\"chat-pinned-messages-list__items\">",
+            channel.id,
+            escape(&t("chat.no_pinned_messages"))
         );
         let last_viewed = listed["membership"]["last_viewed_pins_at"].as_str();
         let pins = listed["pinned_messages"]

@@ -89,8 +89,21 @@ impl Nav<'_> {
         title: &str,
         title_html: &str,
     ) -> String {
+        self.titled_navbar_with(back, icon, title, title_html, "")
+    }
+
+    /// titled_navbar with `outlet`, a plugin outlet's HTML, before the
+    /// drawer's actions.
+    pub fn titled_navbar_with(
+        &self,
+        back: (&str, &str),
+        icon: &str,
+        title: &str,
+        title_html: &str,
+        outlet: &str,
+    ) -> String {
         format!(
-            "<div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\">{}<div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{}{title_html}</span></div><nav class=\"c-navbar__actions\">{}</nav></nav></div>",
+            "<div class=\"c-navbar-container -clickable\"><nav class=\"c-navbar\">{}<div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{}{title_html}</span></div><nav class=\"c-navbar__actions\">{outlet}{}</nav></nav></div>",
             self.back_link(back.0, back.1),
             d_icon(icon, None),
             self.buttons()
@@ -605,7 +618,14 @@ async fn thread_route(
             .filter(|t| !t.is_empty())
             .unwrap_or_else(|| nav.t("chat.thread.label")),
     );
-    let navbar = nav.titled_navbar((&back.0, back.1), "discourse-threads", &title, &title);
+    let outlet = cx.thread_navbar_outlet(thread.id, &c, "drawer").await?;
+    let navbar = nav.titled_navbar_with(
+        (&back.0, back.1),
+        "discourse-threads",
+        &title,
+        &title,
+        &outlet,
+    );
     if !nav.expanded {
         return Ok(format!(
             "<div class=\"c-drawer-routes --channel-thread\">{navbar}</div>"
