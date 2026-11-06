@@ -437,6 +437,10 @@ test.describe("in the mobile view", () => {
     const arrow = page.locator(".chat-scroll-to-bottom__button");
     await page.evaluate((s) => (document.querySelector(s).scrollTop = -600), SCROLLER);
     await expect(arrow).toHaveClass(/visible/);
+    // Scrolling up asks for the older page; one load at a time, so the
+    // newer page below waits for it to land (the scroll settles in 250ms).
+    await page.waitForTimeout(400);
+    await page.waitForFunction(() => !document.querySelector(".chat-channel[data-id]").classList.contains("loading"));
 
     // The page after the last message, asked for at the bottom while
     // whether newer ones load is unknown (as after an older page), held
