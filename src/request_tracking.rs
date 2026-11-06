@@ -65,6 +65,16 @@ fn header_str(headers: &HeaderMap, name: &str) -> Option<String> {
         .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
 }
 
+/// `TrackViewSessionIdInjector`: the page view session id each HTML page
+/// carries in its `discourse-track-view-session-id` meta,
+/// `SecureRandom.alphanumeric(MAX_SESSION_ID_LENGTH)`.
+pub fn new_session_id() -> String {
+    rand::Rng::sample_iter(rand::thread_rng(), rand::distributions::Alphanumeric)
+        .take(MAX_SESSION_ID_LENGTH)
+        .map(char::from)
+        .collect()
+}
+
 /// `Discourse.beacon_pv_tracking_path`
 pub fn beacon_path(base: &str) -> String {
     format!("{base}/srv/pv")

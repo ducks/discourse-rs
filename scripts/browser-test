@@ -111,7 +111,7 @@ for attempt in 1 2 3 4 5; do
     RAILS_ENV=development RUST_LOG="${RUST_LOG:-info}" \
     PUBLIC_DIR="$work/public" TMP_DIR="$work/tmp" \
     DISCOURSE_SECRET_KEY_BASE="$secret" \
-    DISCOURSE_RS_RATE_LIMITS=off \
+    DISCOURSE_RS_RATE_LIMITS=off TRACK_REQUESTS=1 \
     "$work/discourse-rs" >>"$log" 2>&1 &
   server_pid=$!
   ready=

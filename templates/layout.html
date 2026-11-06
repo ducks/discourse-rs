@@ -70,6 +70,10 @@
     {#- Back and forward ask the server for the page again (page.js). -#}
     <meta name="htmx-config" content='{"historyCacheSize": 0}'>
     <meta name="discourse-base-uri" content="{{ base_path }}">
+    {%- if let Some(id) = chrome.track_view_session_id %}
+    {#- discourse_pageview_tracking_meta_tags, for page.js's page views. -#}
+    <meta name="discourse-track-view-session-id" content="{{ id }}">
+    {%- endif %}
     {%- if narrow %}
     {#- The narrow desktop layout, for page.js before the body is in. -#}
     <meta name="discourse-narrow-desktop" content="1">

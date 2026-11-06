@@ -192,6 +192,10 @@ impl Site {
 /// The page chrome around every page: the header and the body's classes.
 #[derive(Clone, Default)]
 pub struct Chrome {
+    /// discourse_pageview_tracking_meta_tags' session id, fresh for each
+    /// page; none where requests aren't tracked (development without
+    /// TRACK_REQUESTS).
+    pub track_view_session_id: Option<String>,
     /// The header's logo (`SiteSetting.site_logo_url`), empty for the site
     /// title as text.
     pub logo_url: String,
@@ -831,6 +835,10 @@ impl Site {
         active: crate::sidebar::Active,
     ) -> Result<(), crate::AppError> {
         self.chrome.i18n = Some(state.i18n.clone());
+        self.chrome.track_view_session_id = state
+            .config
+            .track_requests
+            .then(crate::request_tracking::new_session_id);
         let urls = crate::url::Urls {
             config: &state.config,
             settings,

@@ -95,6 +95,75 @@
     return event.detail.boosted || (event.detail.requestConfig && event.detail.requestConfig.boosted);
   }
 
+  // page-tracking: the request tracker's page views, and through them the
+  // topic's view. Each page that arrives sends the beacon
+  // (handleRouteDidChange's sendBeaconPageview); a page asked for in place
+  // also carries the tracking headers (handleRouteWillChange's
+  // trackNextAjaxAsPageview and trackNextAjaxAsTopicView). The session id
+  // is the first page's, its <head> staying across swaps. With an error
+  // page first, no beacon is sent.
+  var trackingSessionId = (document.querySelector("meta[name=discourse-track-view-session-id]") || {}).content;
+  var trackingBase = (document.querySelector("meta[name=discourse-base-uri]") || {}).content || "";
+  var trackBeacons = !document.querySelector('meta#discourse-error[data-discourse-error="true"]');
+  var preNavigationUrl = null;
+
+  // The topic.fromParams and topic.fromParamsNear routes:
+  // /t/:slug/:id and /t/:slug/:id/:nearPost.
+  function trackedTopicId(url) {
+    var path = new URL(url, location.href).pathname;
+    if (trackingBase && path.indexOf(trackingBase + "/") === 0) {
+      path = path.slice(trackingBase.length);
+    }
+    var match = /^\/t\/[^/]+\/(\d+)(?:\/[^/]+)?\/?$/.exec(path);
+    return match ? match[1] : null;
+  }
+
+  function sendBeaconPageview(referrer) {
+    if (!trackBeacons || !trackingSessionId) {
+      return;
+    }
+    var body = {
+      session_id: trackingSessionId,
+      url: location.href,
+      referrer: referrer,
+      language: navigator.language,
+    };
+    var topicId = trackedTopicId(location.href);
+    if (topicId) {
+      body.topic_id = topicId;
+    }
+    fetch(trackingBase + "/srv/pv", {
+      method: "POST",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch(function () {});
+    preNavigationUrl = location.href;
+  }
+
+  function trackNavigation(event) {
+    var headers = event.detail.headers;
+    headers["Discourse-Track-View"] = "true";
+    if (trackingSessionId) {
+      headers["Discourse-Track-View-Session-Id"] = trackingSessionId;
+      headers["Discourse-Track-View-Url"] = new URL(event.detail.path, location.href).href;
+      headers["Discourse-Track-View-Referrer"] = location.href;
+    }
+    var topicId = trackedTopicId(event.detail.path);
+    if (topicId) {
+      headers["Discourse-Track-View-Topic-Id"] = topicId;
+    }
+  }
+
+  function firstPageview() {
+    sendBeaconPageview(document.referrer.length ? document.referrer : null);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", firstPageview);
+  } else {
+    firstPageview();
+  }
+
   // Before a page is swapped in: the one going away cleans up, and what
   // the body swap leaves behind (the html and body attributes) is brought
   // over from the new page.
@@ -160,6 +229,7 @@
     anchor = null;
     Discourse.swapped = true;
     pages.forEach(run);
+    sendBeaconPageview(preNavigationUrl);
   }
 
   // A page is asked for as the browser asks for one: not as XHR, which
@@ -180,6 +250,7 @@
       if (elt && !elt.hasAttribute("hx-push-url")) {
         elt.setAttribute("hx-push-url", "true");
       }
+      trackNavigation(event);
     }
   });
 
