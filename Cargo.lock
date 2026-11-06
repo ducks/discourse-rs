@@ -4135,6 +4135,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-impact"
+version = "20261104.0.0"
+dependencies = [
+ "flate2",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "thiserror"
 version = "2.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"

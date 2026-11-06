@@ -1,0 +1,13 @@
+[package]
+name = "test-impact"
+version = "20261104.0.0"
+license = "GPL-3.0-or-later"
+edition = "2024"
+description = "Runs only the tests a change can reach, from a map of the functions each test ran (docs/test-impact.md)."
+publish = false
+
+[dependencies]
+flate2 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"

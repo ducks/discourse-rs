@@ -8,7 +8,7 @@ edition = "2024"
 default-run = "discourse-rs"
 
 [workspace]
-members = ["crates/markdown"]
+members = ["crates/markdown", "crates/test-impact"]
 # A patched copy of grass's compiler (crates/grass_compiler/PATCHES.md),
 # built as a dependency and not linted with the workspace.
 exclude = ["crates/grass_compiler", "plugins"]
