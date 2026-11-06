@@ -3,7 +3,8 @@
 //
 //   Discourse.modal.show({ className, title, body: fn(bodyEl, close),
 //                          footer: fn(footerEl, close), onClose,
-//                          hideHeader, ariaLabel, attributes })
+//                          hideHeader, ariaLabel, attributes,
+//                          headerPrimaryAction: fn(el, close) })
 //       renders the modal into .modal-container (ModalContainer, the
 //       application template's, inside .discourse-root) with html.modal-open,
 //       and returns its close function. body fills .d-modal__body, footer
@@ -11,7 +12,10 @@
 //       once it is gone. A modal shown while one is open replaces it.
 //       beforeClose, when given, runs as the modal is asked to close (the
 //       close button, Escape, the backdrop, the returned function) and
-//       keeps it open by answering false.
+//       keeps it open by answering false. headerPrimaryAction fills the
+//       header's .d-modal__primary-action (<:headerPrimaryAction>), which
+//       DModal draws only in the mobile view, its cancel button then in
+//       the close button's stead.
 //
 // Dismissable as DModal is when given @closeModal: the close button,
 // Escape and a click on the backdrop close it, after the exit animation.
@@ -91,6 +95,25 @@
     if (closeButton) {
       modal.querySelector(".d-modal__title-text").textContent = opts.title || "";
       closeButton.title = t("modal.close");
+    }
+    // <:headerPrimaryAction> in the mobile view: a cancel button before
+    // the title, the action in the close button's place.
+    var header = modal.querySelector(".d-modal__header");
+    var primary = null;
+    if (header && opts.headerPrimaryAction && document.documentElement.classList.contains("mobile-view")) {
+      header.classList.add("--has-primary-action");
+      var dismiss = document.createElement("div");
+      dismiss.className = "d-modal__dismiss-action";
+      dismiss.innerHTML =
+        '<button class="btn btn-text btn-transparent d-modal__dismiss-action-button" type="button"><span class="d-button-label"></span></button>';
+      var dismissButton = dismiss.querySelector("button");
+      dismissButton.title = t("modal.close");
+      dismissButton.querySelector(".d-button-label").textContent = t("cancel");
+      header.insertBefore(dismiss, header.firstChild);
+      primary = document.createElement("div");
+      primary.className = "d-modal__primary-action";
+      closeButton.replaceWith(primary);
+      closeButton = dismissButton;
     }
     var modalContainer = modal.querySelector(".d-modal__container");
     var body = modal.querySelector(".d-modal__body");
@@ -195,6 +218,9 @@
       event.stopPropagation();
     });
 
+    if (primary) {
+      opts.headerPrimaryAction(primary, close);
+    }
     if (opts.body) {
       opts.body(body, close);
     }

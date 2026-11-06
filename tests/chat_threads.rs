@@ -365,14 +365,18 @@ async fn the_channel_threads_list_its_threads() {
         page.contains("<div class=\"c-routes --channel-threads\">"),
         "{page}"
     );
-    assert!(page.contains("<div class=\"chat-thread-list-item -is-unread\" data-thread-id=\"1\">"));
+    assert!(page.contains(
+        "<div class=\"chat-thread-list-item -is-unread\" data-thread-id=\"1\" data-tracking="
+    ));
     assert!(page.contains("<div class=\"chat-thread-list-item__title\">Hello world</div>"));
     assert!(page.contains("data-href=\"/chat/c/general/2/t/1\""));
     assert!(page.contains("chat-thread-list-item-unread-indicator__number\">1</span>"));
     // The member's threads.
     let page = user1.page("/chat/threads").await;
     assert!(
-        page.contains("<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\">"),
+        page.contains(
+            "<div class=\"c-user-thread\" data-id=\"1\" data-channel-id=\"2\" data-tracking="
+        ),
         "{page}"
     );
     assert!(page.contains(

@@ -295,6 +295,98 @@ async fn the_threads_lists_load_their_next_pages() {
     assert_eq!(status, 404);
 }
 
+/// The data-tracking of the first list item from `marker` on.
+fn tracking_after(page: &str, marker: &str) -> Value {
+    let start = page
+        .find(marker)
+        .unwrap_or_else(|| panic!("{marker}: {page}"));
+    let rest = &page[start..];
+    let at = rest.find("data-tracking=\"").expect("data-tracking") + "data-tracking=\"".len();
+    let end = rest[at..].find('"').unwrap();
+    serde_json::from_str(&rest[at..at + end].replace("&quot;", "\"")).unwrap()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_threads_lists_carry_what_their_tracking_follows() {
+    let db = TestDb::new().await;
+    threaded(&db).await;
+    // user1 ignores admin; user0 watches the thread.
+    run(&db, &[
+        "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (3, 1, now(), now(), now() + interval '1 day')",
+        "UPDATE user_chat_thread_memberships SET notification_level = 3 WHERE user_id = 2",
+    ])
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let followed: Vec<i64> = sqlx::query_scalar(
+        "SELECT chat_channel_id FROM user_chat_channel_memberships WHERE user_id = 3 AND following ORDER BY chat_channel_id",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert!(followed.contains(&2));
+    let last_reply: String = sqlx::query_scalar(
+        "SELECT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS') FROM chat_messages WHERE id = 3",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+
+    // The channel's list: the thread's counts, its preview's last reply
+    // and the member's membership; the viewer on the load more.
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let page = user1.page("/chat/c/general/2/t").await;
+    let tracking = tracking_after(&page, "data-thread-id=\"1\"");
+    assert_eq!(tracking["unread_count"], 1, "{tracking}");
+    assert_eq!(tracking["mention_count"], 0);
+    assert_eq!(tracking["watched_threads_unread_count"], 0);
+    assert!(
+        tracking["last_reply_created_at"]
+            .as_str()
+            .unwrap()
+            .starts_with(&last_reply),
+        "{tracking} {last_reply}"
+    );
+    assert_eq!(
+        tracking["membership"],
+        serde_json::json!({"notification_level": 2, "last_read_message_id": 2})
+    );
+    let viewer = format!(
+        " data-viewer-id=\"3\" data-ignored-users=\"[&quot;admin&quot;]\" data-followed=\"{}\"><br></div>",
+        serde_json::Value::from(followed.clone())
+            .to_string()
+            .replace('"', "&quot;")
+    );
+    assert!(
+        page.contains(&format!("data-done=\"false\"{viewer}")),
+        "{page}"
+    );
+
+    // The member's threads: the same on each thread and the load more.
+    let page = user1.page("/chat/threads").await;
+    assert_eq!(
+        tracking_after(&page, "<div class=\"c-user-thread\" data-id=\"1\""),
+        tracking
+    );
+    assert!(
+        page.contains(&format!("data-offset=\"1\"{viewer}")),
+        "{page}"
+    );
+
+    // A watcher's unread replies count as watched.
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let page = user0.page("/chat/c/general/2/t").await;
+    let tracking = tracking_after(&page, "data-thread-id=\"1\"");
+    assert_eq!(
+        tracking["membership"],
+        serde_json::json!({"notification_level": 3, "last_read_message_id": null})
+    );
+    assert!(
+        tracking["watched_threads_unread_count"].as_i64().unwrap() > 0,
+        "{tracking}"
+    );
+    assert!(page.contains("data-viewer-id=\"2\" data-ignored-users=\"[]\""));
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn the_thread_settings_are_offered_to_who_may_change_them() {
     let db = TestDb::new().await;
@@ -310,7 +402,8 @@ async fn the_thread_settings_are_offered_to_who_may_change_them() {
         "{page}"
     );
     assert!(page.contains("c-navbar__thread-settings-button"));
-    assert!(page.contains("<template class=\"chat-modal-thread-settings-template\" data-title=\"Set thread title\" data-label-save=\"Save\">"));
+    assert!(page.contains("<template class=\"chat-modal-thread-settings-template\" data-title=\"Set thread title\"><div class=\"chat-modal-thread-settings__header-primary-action\"><button class=\"btn btn-text btn-transparent --primary\" type=\"button\"><span class=\"d-button-label\">Save</span></button></div><div class=\"chat-modal-thread-settings__body\">"));
+    assert!(page.contains("<div class=\"chat-modal-thread-settings__footer\"><button class=\"btn btn-text btn-primary\" type=\"button\"><span class=\"d-button-label\">Save Changes</span></button></div></template>"));
     assert!(page.contains("class=\"chat-modal-thread-settings__title-input\" maxlength=\"100\" name=\"thread-title\" placeholder=\"Tell others what this conversation is about...\" type=\"text\" value=\"\""));
     assert!(page.contains("<div class=\"thread-title-length\"><span>0</span>/100</div>"));
     assert!(!page.contains("discourse-ai-cta"));

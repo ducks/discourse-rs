@@ -3,7 +3,8 @@
 // thread's composer (ChatComposerThread) and its messages' actions.
 //
 //   - its messages' times and date separators, as chat.js draws the
-//     channel's (Discourse.chat.redraw)
+//     channel's (Discourse.chat.redraw), a separator's click going to
+//     its day's first message (fetchMessagesByDate)
 //   - its live messages: the thread's bus channel (/chat/:id/thread/:id),
 //     each message drawn again by the server as the pane draws it
 //     (GET /live/chat/:channel_id/:message_id?context=thread)
@@ -19,7 +20,8 @@
 //   - the side panel's resizer, its width kept
 //     (discourse_chat_side_panel_size_width)
 //   - the threads lists: an item opens its thread, the next page loads at
-//     the end, and the list follows the channels' bus
+//     the end, the list follows the channels' bus, and its threads'
+//     unread counts follow the tracking state (ChatTrackingStateManager)
 (function () {
   "use strict";
 
@@ -691,9 +693,24 @@
     true
   );
 
-  // ChatHistory: the chat routes visited in this tab, the last ten, each
-  // once in a row (visit), by the route Ember recognizes for the url.
-  var HISTORY_KEY = "discourse_chat_history";
+  // ChatThread#fetchMessagesByDate from a date separator: the day's first
+  // message loaded (the separator's), highlighted in the center. A
+  // thread's messages are never firstOfResults (only ChatChannel marks
+  // them), so the page by target_date never loads here.
+  document.addEventListener("click", function (event) {
+    var separator = event.target.closest(".chat-message-separator-date[data-id]");
+    var pane = separator && separator.closest(".chat-thread[data-id]");
+    if (pane && !state.loading) {
+      scrollToMessage(pane, separator.dataset.id, { highlight: true, position: "center", autoExpand: true });
+    }
+  });
+
+  // ChatHistory: the chat routes visited since the page loaded, the last
+  // ten, each once in a row (visit), by the route Ember recognizes for
+  // the url. A service's state: page.js swaps pages in without a load,
+  // and a load (a reload, a url typed) starts it empty as Ember's boot
+  // does.
+  var chatHistory = [];
 
   function routeOf(pathname) {
     var base = basePath();
@@ -732,30 +749,16 @@
     return null;
   }
 
-  function readHistory() {
-    try {
-      return JSON.parse(sessionStorage.getItem(HISTORY_KEY) || "[]");
-    } catch (e) {
-      return [];
-    }
-  }
-
   function visit(pathname) {
     var route = routeOf(pathname);
     if (!route) {
       return;
     }
-    var history = readHistory();
-    var current = history[history.length - 1];
+    var current = chatHistory[chatHistory.length - 1];
     if (current && current.name === route.name && current.params.join("/") === route.params.join("/")) {
       return;
     }
-    history = history.slice(-9).concat([route]);
-    try {
-      sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    } catch (e) {
-      // No storage: the back link stays the server's.
-    }
+    chatHistory = chatHistory.slice(-9).concat([route]);
   }
 
   // ChatThreadHeader#backLink: the threads list after the threads list,
@@ -766,8 +769,7 @@
     if (!back) {
       return;
     }
-    var history = readHistory();
-    var previous = history.length > 1 ? history[history.length - 2].name : null;
+    var previous = chatHistory.length > 1 ? chatHistory[chatHistory.length - 2].name : null;
     var desktop = !document.documentElement.classList.contains("mobile-view");
     var target = null;
     if (previous === "chat.channel.threads" || (previous === "chat.channel.index" && desktop)) {
@@ -804,6 +806,13 @@
     var close = Discourse.modal.show({
       className: "chat-modal-thread-settings",
       title: tpl.dataset.title,
+      // A phone's header save button, beside the footer's.
+      headerPrimaryAction: function (el) {
+        var button = tpl.content.querySelector(".chat-modal-thread-settings__header-primary-action .btn").cloneNode(true);
+        el.appendChild(button);
+        buttons.push(button);
+        button.addEventListener("click", save);
+      },
       body: function (body) {
         body.appendChild(tpl.content.querySelector(".chat-modal-thread-settings__body").cloneNode(true));
         input = body.querySelector(".chat-modal-thread-settings__title-input");
@@ -819,11 +828,10 @@
         });
       },
       footer: function (footer) {
-        footer.appendChild(tpl.content.querySelector(".chat-modal-thread-settings__footer .btn").cloneNode(true));
-        buttons = Array.prototype.slice.call(footer.querySelectorAll(".btn"));
-        buttons.forEach(function (button) {
-          button.addEventListener("click", save);
-        });
+        var button = tpl.content.querySelector(".chat-modal-thread-settings__footer .btn").cloneNode(true);
+        footer.appendChild(button);
+        buttons.push(button);
+        button.addEventListener("click", save);
       },
     });
     function save() {
@@ -1041,6 +1049,9 @@
         template.innerHTML = page.html;
         box.insertBefore(template.content, box === more.parentNode ? more : null);
         more.dataset.offset = String(Number(more.dataset.offset || 0) + page.count);
+        if (box === more.parentNode) {
+          sortThreads(more);
+        }
         if (!box.isConnected) {
           return;
         }
@@ -1097,6 +1108,166 @@
       }
       box.insertBefore(template.content, more);
       more.dataset.offset = String(count);
+      sortThreads(more);
+    });
+  }
+
+  // A listed thread's ChatTrackingState, its currentUserMembership and its
+  // preview's lastReplyCreatedAt, as the server drew them (data-tracking)
+  // and the bus changes them since.
+  function trackingOf(node) {
+    try {
+      return JSON.parse(node.dataset.tracking || "null");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ThreadUnreadIndicator: the urgent count (mentions and watched
+  // replies) when any, else the unread one, capped at 99.
+  function unreadIndicator(tracking) {
+    var unread = tracking.unread_count;
+    var urgent = tracking.mention_count + tracking.watched_threads_unread_count;
+    if (!(unread > 0 || urgent > 0)) {
+      return "";
+    }
+    var count = urgent > 0 ? urgent : unread;
+    return (
+      '<span class="chat-thread-list-item-unread-indicator ' +
+      (urgent > 0 ? "-urgent" : "") +
+      '"><span class="chat-thread-list-item-unread-indicator__number">' +
+      (count > 99 ? "99+" : String(count)) +
+      "</span></span>"
+    );
+  }
+
+  // The item drawn again from its tracking: ChatThreadListItem's classes
+  // and indicator, or UserThreads' ThreadTitle's indicator.
+  function setTracking(node, tracking) {
+    node.dataset.tracking = JSON.stringify(tracking);
+    if (node.classList.contains("chat-thread-list-item")) {
+      node.classList.toggle("-is-unread", tracking.unread_count > 0);
+      node.classList.toggle("-is-urgent", tracking.watched_threads_unread_count > 0);
+      var box = node.querySelector(".chat-thread-list-item__unread-indicator");
+      if (box) {
+        box.innerHTML = unreadIndicator(tracking);
+      }
+      return;
+    }
+    var title = node.querySelector(".chat__thread-title-container");
+    if (title) {
+      var shown = title.querySelector(":scope > .chat-thread-list-item-unread-indicator");
+      if (shown) {
+        shown.remove();
+      }
+      title.insertAdjacentHTML("beforeend", unreadIndicator(tracking));
+    }
+  }
+
+  // UserChatThreadMembership#isQuiet: regular or muted.
+  function quiet(membership) {
+    return membership.notification_level === 1 || membership.notification_level === 0;
+  }
+
+  function viewerOf(more) {
+    var parse = function (value) {
+      try {
+        return JSON.parse(value || "[]");
+      } catch (e) {
+        return [];
+      }
+    };
+    return {
+      id: Number(more.dataset.viewerId || 0),
+      ignored: parse(more.dataset.ignoredUsers),
+      followed: parse(more.dataset.followed).map(String),
+    };
+  }
+
+  // ChatSubscriptionsManager#_onNewThreadMessage for a listed thread: the
+  // viewer's own reply or an ignored user's leaves it read; another's
+  // past the last read counts as unread (watched when watching) unless
+  // the membership is quiet. Nothing changes without a membership.
+  function onNewThreadMessage(node, data, viewer) {
+    var tracking = trackingOf(node);
+    var message = data.message;
+    var membership = tracking && tracking.membership;
+    if (!tracking || !message || !message.user) {
+      return;
+    }
+    if (message.user.id === viewer.id || viewer.ignored.indexOf(message.user.username) !== -1) {
+      if (membership) {
+        membership.last_read_message_id = message.id;
+        setTracking(node, tracking);
+      }
+      return;
+    }
+    if (membership && message.id > (membership.last_read_message_id || 0) && !quiet(membership)) {
+      if (membership.notification_level === 3) {
+        tracking.watched_threads_unread_count += 1;
+      } else {
+        tracking.unread_count += 1;
+      }
+      setTracking(node, tracking);
+    }
+  }
+
+  // ChatSubscriptionsManager#_updateChannelTrackingData for a thread (read
+  // here or elsewhere, or the viewer's own reply): its counts as
+  // published, unless quiet.
+  function onThreadTracking(node, data) {
+    var tracking = trackingOf(node);
+    var membership = tracking && tracking.membership;
+    if (!membership || quiet(membership)) {
+      return;
+    }
+    membership.last_read_message_id = data.last_read_message_id;
+    tracking.unread_count = data.thread_tracking.unread_count;
+    tracking.mention_count = data.thread_tracking.mention_count;
+    tracking.watched_threads_unread_count = data.thread_tracking.watched_threads_unread_count;
+    setTracking(node, tracking);
+  }
+
+  // ChatThreadList#sortedThreads over the loaded threads (in the threads
+  // manager's order, by id): watched unread first, then unread, then the
+  // rest, each by the preview's last reply, latest first.
+  function lastReply(tracking) {
+    var at = tracking && tracking.last_reply_created_at;
+    return new Date(at === null || at === undefined ? undefined : at);
+  }
+
+  function compareThreads(a, b) {
+    var threadA = trackingOf(a) || {};
+    var threadB = trackingOf(b) || {};
+    var later = lastReply(threadA) > lastReply(threadB) ? -1 : 1;
+    if (threadA.watched_threads_unread_count && threadB.watched_threads_unread_count) {
+      return later;
+    }
+    if (threadA.watched_threads_unread_count) {
+      return -1;
+    }
+    if (threadB.watched_threads_unread_count) {
+      return 1;
+    }
+    if (threadA.unread_count && threadB.unread_count) {
+      return later;
+    }
+    if (threadA.unread_count) {
+      return -1;
+    }
+    if (threadB.unread_count) {
+      return 1;
+    }
+    return later;
+  }
+
+  function sortThreads(more) {
+    var items = Array.prototype.slice.call(more.parentNode.querySelectorAll(":scope > .chat-thread-list-item"));
+    items.sort(function (a, b) {
+      return Number(a.dataset.threadId) - Number(b.dataset.threadId);
+    });
+    items.sort(compareThreads).forEach(function (node) {
+      more.parentNode.insertBefore(node, more);
     });
   }
 
@@ -1122,20 +1293,58 @@
     });
     // ChatThreadList#subscribe: the channel's bus; an original message
     // deleted or restored, or a thread's preview changed, draws the list
-    // again.
+    // again. The threads' tracking follows ChatSubscriptionsManager's
+    // (the channel's new messages while followed, the viewer's tracking
+    // state), the list sorted again; a thread it doesn't hold yet comes
+    // in as the server lists it.
     var channelList = document.querySelector(".chat-thread-list[data-channel-id]");
     var channelMore = channelList && channelList.querySelector(".chat-thread-list__load-more");
     if (channelMore) {
+      var channelId = channelList.dataset.channelId;
+      var viewer = viewerOf(channelMore);
       var timer = null;
+      var reloadSoon = function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          reloadThreads(channelMore).catch(function () {});
+        }, 250);
+      };
+      var followTracking = function (data, apply) {
+        var node = channelMore.parentNode.querySelector(
+          ":scope > .chat-thread-list-item[data-thread-id='" + Number(data.thread_id) + "']"
+        );
+        if (!node) {
+          reloadSoon();
+          return;
+        }
+        apply(node);
+        sortThreads(channelMore);
+      };
+      var channels = ["/chat/" + channelId];
+      if (viewer.followed.indexOf(channelId) !== -1) {
+        channels.push("/chat/" + channelId + "/new-messages");
+      }
+      if (viewer.id) {
+        channels.push("/chat/user-tracking-state/" + viewer.id);
+      }
       var source = subscribe(
-        ["/chat/" + channelList.dataset.channelId],
+        channels,
         function (message) {
-          var type = message.data && message.data.type;
-          if (["delete", "restore", "update_thread_original_message", "thread_created"].indexOf(type) !== -1) {
-            clearTimeout(timer);
-            timer = setTimeout(function () {
-              reloadThreads(channelMore).catch(function () {});
-            }, 250);
+          var data = message.data || {};
+          if (message.channel === "/chat/" + channelId + "/new-messages") {
+            if (data.type === "thread" && data.thread_id) {
+              followTracking(data, function (node) {
+                onNewThreadMessage(node, data, viewer);
+              });
+            }
+          } else if (message.channel === "/chat/user-tracking-state/" + viewer.id) {
+            if (String(data.channel_id) === channelId && data.thread_id && data.thread_tracking) {
+              followTracking(data, function (node) {
+                onThreadTracking(node, data);
+              });
+            }
+          } else if (["delete", "restore", "update_thread_original_message", "thread_created"].indexOf(data.type) !== -1) {
+            reloadSoon();
           }
         },
         function () {
@@ -1145,24 +1354,50 @@
       if (source) {
         sources.push(source);
       }
+      sortThreads(channelMore);
     }
     // UserThreads#trackChannel: each channel shown, a thread's preview
-    // drawn again where it is.
+    // drawn again where it is; its tracking as the channel's list's, in
+    // place (the list keeps its order).
     var userMore = document.querySelector(".c-user-threads__load-more");
     if (userMore) {
+      var userViewer = viewerOf(userMore);
       var tracked = {};
       document.querySelectorAll(".c-user-thread[data-channel-id]").forEach(function (node) {
         tracked[node.dataset.channelId] = true;
       });
       var ids = Object.keys(tracked);
+      var userNode = function (threadId) {
+        return itemsBox(userMore).querySelector(".c-user-thread[data-id='" + Number(threadId) + "']");
+      };
       if (ids.length) {
+        var userChannels = ids.map(function (id) {
+          return "/chat/" + id;
+        });
+        ids.forEach(function (id) {
+          if (userViewer.followed.indexOf(id) !== -1) {
+            userChannels.push("/chat/" + id + "/new-messages");
+          }
+        });
+        if (userViewer.id) {
+          userChannels.push("/chat/user-tracking-state/" + userViewer.id);
+        }
         var userSource = subscribe(
-          ids.map(function (id) {
-            return "/chat/" + id;
-          }),
+          userChannels,
           function (message) {
             var data = message.data || {};
-            if (data.type === "update_thread_original_message" && data.thread_id) {
+            var node;
+            if (/^\/chat\/\d+\/new-messages$/.test(message.channel)) {
+              node = data.type === "thread" && data.thread_id && userNode(data.thread_id);
+              if (node) {
+                onNewThreadMessage(node, data, userViewer);
+              }
+            } else if (message.channel === "/chat/user-tracking-state/" + userViewer.id) {
+              node = data.thread_id && data.thread_tracking && userNode(data.thread_id);
+              if (node) {
+                onThreadTracking(node, data);
+              }
+            } else if (data.type === "update_thread_original_message" && data.thread_id) {
               return reloadThreads(userMore, String(data.thread_id));
             }
           },
@@ -1180,11 +1415,27 @@
     };
   }
 
+  // router.transitionTo: the page swapped in as a link's (hx-boost), so
+  // ChatHistory keeps the route it came from.
+  function transitionTo(href) {
+    var main = document.getElementById("main-outlet");
+    if (!window.htmx || !main) {
+      window.location.assign(href);
+      return;
+    }
+    var link = document.createElement("a");
+    link.href = href;
+    link.hidden = true;
+    main.appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  }
+
   document.addEventListener("click", function (event) {
     // ChatThreadListItem#openThread
     var item = event.target.closest(".chat-thread-list-item__open-button[data-href]");
     if (item) {
-      window.location.assign(item.dataset.href);
+      transitionTo(item.dataset.href);
     }
   });
 
