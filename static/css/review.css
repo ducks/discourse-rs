@@ -940,6 +940,10 @@
   opacity: .7;
 }
 
+.editable-fields .editable-field .mini-tag-chooser {
+  margin: 0;
+}
+
 .editable-fields .editable-field .reviewable-input-text {
   width: 100%;
   margin-bottom: 0;

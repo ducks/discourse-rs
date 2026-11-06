@@ -220,9 +220,9 @@ Blockers, a scripted walk-through would hit them:
   Playwright. A watched word score has no context when
   NewPostManager queues the post, so its words are found from the
   payload as Rails does (fix/watched-word-reason-guess; the queue had
-  answered 500 on every real watched-word hold). Still refused: user reviewables (must_approve_users, 148),
-  a queued topic's tags field (194e1); editing a queued post and the
-  silence and suspend client actions are done (194e)
+  answered 500 on every real watched-word hold). Still refused: user reviewables (must_approve_users, 148);
+  editing a queued post and the silence and suspend client actions are
+  done (194e), a queued topic's tags field too (194e1)
 - [x] The admin's site settings answered 500 saving a list setting such as
   authorized_extensions (164), so an admin couldn't allow video or audio
   uploads; the demo sites have them set in the database
@@ -375,8 +375,9 @@ Visible if clicked, avoid them in a scripted demo:
   reject reason modal and editing a reviewable are refused (194e); the
   revise modal is done (feat/review-queued-posts). The client actions,
   editing a queued post's title, category and raw and its raw email
-  are done (feat/review-client-actions, 194e); its tags field and the
-  reject reason modal are refused (194e1).
+  are done (feat/review-client-actions, 194e), its tags field too
+  (feat/review-edit-tags, 194e1); the reject reason modal is refused
+  until user reviewables are listed (194e2).
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
@@ -3710,13 +3711,27 @@ route table has been made, so this list may be short.
     (parity/writes/review: update_*, review_agree_and_edit*,
     review_agree_and_silence*, review_agree_and_suspend*;
     posts_by_number/show*); browser specs in
-    tests/browser/review-client-actions.spec.js. The rest is 194e1
-    194e1. `feat/review-edit-tags` S: what 194e refuses, by name: a
-    queued topic's tags field (ReviewableFieldTags, MiniTagChooser
-    outside the composer: the tags are drawn and changing them says
-    so), and the reject reason modal (RejectReasonReviewableModal),
-    which only a user reviewable's reject opens, so it waits on user
-    reviewables in the queue (148)
+    tests/browser/review-client-actions.spec.js. The rest is 194e1 and
+    194e2
+    194e1. ~~`feat/review-edit-tags`~~ (done) S: a queued topic's tags
+    field (ReviewableFieldTags): the composer's MiniTagChooser made
+    reusable (Discourse.miniTagChooser in static/js/composer.js, the
+    composer's own tags drawn through it) and drawn in place over a
+    copy of the composer's chooser, with the categoryId option
+    (tagCategoryId: the category being picked, else the reviewable's),
+    no minimum and no recent tags first; the tags it changes to are
+    sent as MiniTagChooser#_onChange's items ({id, name}, isNew for a
+    new tag, the one just chosen as /tags/filter/search returned it),
+    and the update goes as JSON as ReviewableAdapter's jsonMode sends
+    it (it went form encoded, which loses an empty list and the tag
+    objects' shape). Without the composer's chooser (a viewer who may
+    not tag topics) the tags are drawn and changing them still says
+    so. Browser spec in tests/browser/review-client-actions.spec.js
+    (add, remove, saved and shown after a reload)
+    194e2. `feat/review-reject-reason` S: the reject reason modal
+    (RejectReasonReviewableModal), refused (review.js): only a user
+    reviewable's reject opens it, so it waits on user reviewables in
+    the queue (148)
     194f. `feat/review-pages-rest` M: the /review/topics, /review/settings
     and /review/:id pages (the user menu's review items link to the
     last), the insights tab (IpLookup), the pin toggle and loading past

@@ -19,13 +19,13 @@
 // (static/js/penalize-user.js, adminTools) for the author, performing
 // before the penalty; edit opens the flagged post in the composer and
 // performs once it is saved. Editing a reviewable (a queued post's
-// title, category and raw) draws its editable fields in place and PUTs
-// /review/:id; a queued post by email shows its raw email
+// title, category, tags and raw) draws its editable fields in place and
+// PUTs /review/:id; a queued post by email shows its raw email
 // (RawEmailModal).
 //
 // What leans on parts not ported says so instead: the reject reason
-// modal (user reviewables are not listed), a queued topic's tags field
-// (MiniTagChooser), the insights tab and the pin toggle.
+// modal (user reviewables are not listed), the insights tab and the pin
+// toggle.
 (function () {
   "use strict";
 
@@ -1023,16 +1023,81 @@
     return chooser;
   }
 
-  // ReviewableFieldTags (MiniTagChooser) is not ported: the tags are
-  // drawn as the item draws them, and changing them says so.
-  function tagsField(data) {
-    var holder = document.createElement("div");
-    holder.innerHTML = data.tags_html || "";
-    holder.addEventListener("click", function (event) {
-      event.preventDefault();
-      notPorted("changing a queued topic's tags (MiniTagChooser)");
+  // A tag as MiniTagChooser's content holds it: defaultItem(id, name), a
+  // name standing for both, with isNew kept.
+  function tagItem(t) {
+    if (typeof t !== "object" || t === null) {
+      return { id: t, name: t };
+    }
+    var item = { id: t.id === undefined || t.id === null ? t.name : t.id, name: t.name };
+    if (t.isNew) {
+      item.isNew = true;
+    }
+    return item;
+  }
+
+  // ReviewableFieldTags: the composer's MiniTagChooser
+  // (Discourse.miniTagChooser over a copy of its .mini-tag-chooser) with
+  // the categoryId option (ReviewableItem#tagCategoryId: the category
+  // being picked, else the reviewable's), the tags it changes to sent as
+  // MiniTagChooser#_onChange's items: the selection as its content again,
+  // the tag just chosen as the search returned it. Without the composer's
+  // chooser (a viewer who may not tag topics) the tags are drawn as the
+  // item draws them, and changing them says so.
+  function tagsField(data, value, state, changed) {
+    var source = document.querySelector("#reply-control details.mini-tag-chooser");
+    if (!source || !Discourse.miniTagChooser) {
+      var holder = document.createElement("div");
+      holder.innerHTML = data.tags_html || "";
+      holder.addEventListener("click", function (event) {
+        event.preventDefault();
+        notPorted("changing a queued topic's tags without the composer's tag chooser");
+      });
+      return holder;
+    }
+    var el = source.cloneNode(true);
+    el.open = false;
+    el.classList.remove("is-expanded");
+    var body = el.querySelector(".select-kit-body");
+    body.innerHTML = "";
+    body.removeAttribute("style");
+    function categoryId() {
+      var id = state.updates.category_id || data.category_id;
+      return id === null || id === undefined ? "" : String(id);
+    }
+    function categoryAttribute() {
+      var id = categoryId();
+      if (id) {
+        el.setAttribute("category-id", id);
+      } else {
+        el.removeAttribute("category-id");
+      }
+    }
+    var chooser = Discourse.miniTagChooser(el, {
+      categoryId: categoryId,
+      changed: function (added) {
+        changed(
+          chooser.selected().map(function (t) {
+            return t === added && !t.isNew ? t : tagItem(t);
+          })
+        );
+      },
+      opened: function () {
+        ui().floatBody(el);
+      },
+      failed: function (error) {
+        ui().failed(error);
+      },
     });
-    return holder;
+    // The payload's tags: a name is a tag without an id until it changes.
+    chooser.set(
+      (Array.isArray(value) ? value : []).map(function (t) {
+        return typeof t === "object" && t !== null ? tagItem(t) : { name: String(t) };
+      })
+    );
+    categoryAttribute();
+    state.categoryChanged = categoryAttribute;
+    return el;
   }
 
   // #edit: the editable fields in place of the reviewable's component,
@@ -1063,6 +1128,9 @@
     (data.editable_fields || []).forEach(function (f) {
       var changed = function (value) {
         updateField(state.updates, f.id, value);
+        if (f.id === "category_id" && state.categoryChanged) {
+          state.categoryChanged();
+        }
       };
       var value = editableValue(data, f.id);
       var control = null;
@@ -1073,7 +1141,7 @@
       } else if (f.type === "category") {
         control = categoryField(value, changed);
       } else if (f.type === "tags") {
-        control = tagsField(data);
+        control = tagsField(data, value, state, changed);
       }
       var wrapper = document.createElement("div");
       wrapper.className = "editable-field " + dasherize(f.id);
@@ -1119,7 +1187,8 @@
   }
 
   // #saveEdit: Reviewable#update, nothing sent without a change (PUT
-  // /review/:id with the changes), then the reviewable drawn again.
+  // /review/:id with the changes as JSON, ReviewableAdapter#jsonMode, so
+  // the tags keep their shape), then the reviewable drawn again.
   function saveEdit(item) {
     var id = item.dataset.reviewableId;
     var state = editing[id];
@@ -1131,7 +1200,7 @@
       return;
     }
     ui()
-      .ajax("PUT", "/review/" + id + "?version=" + reviewableData(item).version, { reviewable: state.updates })
+      .ajax("PUT", "/review/" + id + "?version=" + reviewableData(item).version, { json: { reviewable: state.updates } })
       .then(function () {
         delete editing[id];
         return redraw(item, [id]);

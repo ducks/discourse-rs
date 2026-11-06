@@ -1662,32 +1662,441 @@
     }
   });
 
-  // The tag chooser: MiniTagChooser (a multi select over
-  // /tags/filter/search) as composer-container renders it for a member
-  // who may tag topics. Its body is drawn when it opens, as select-kit
-  // draws it.
-  var tagChooser = control.querySelector(".mini-tag-chooser");
-  var tagsTip = control.querySelector(".tags-input .popup-tip");
-  var selectedTags = [];
-  var tagSearchTimer = null;
-  var tagSearchSeq = 0;
-  var tagRequired = null;
-  var tagForbidden = false;
-  var tagHighlighted = -1;
-  var tagRows = [];
-  var tagOpts = {};
-  if (tagChooser) {
+  // MiniTagChooser (a multi select over /tags/filter/search) on a
+  // `.mini-tag-chooser` drawn closed by composer_view (its options in
+  // data-options); its body is drawn when it opens, as select-kit draws
+  // it. The composer's tags and the review queue's ReviewableFieldTags
+  // (static/js/review.js, Discourse.miniTagChooser) both use it. `hooks`:
+  //   categoryId()   the categoryId option ("" or null for none)
+  //   minimum()      the minimum option (modifyNoSelection's label)
+  //   prioritizeRecent()  the prioritizeRecentTags option and the site's
+  //                  prioritize_recently_used_tags
+  //   changed(added) after the selection changes (`added`: the item just
+  //                  selected, the search result as returned)
+  //   opened()       after it opens and draws its body
+  //   failed(error)  when the search fails
+  // The selection is a list of {id, name, isNew}: a name alone is a tag
+  // without an id.
+  function miniTagChooser(el, hooks) {
+    var selectedTags = [];
+    var tagSearchTimer = null;
+    var tagSearchSeq = 0;
+    var tagRequired = null;
+    var tagForbidden = false;
+    var tagHighlighted = -1;
+    var tagRows = [];
+    var tagOpts = {};
     try {
-      tagOpts = JSON.parse(tagChooser.dataset.options || "{}");
+      tagOpts = JSON.parse(el.dataset.options || "{}");
     } catch (_) {}
+
+    function call(name) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      return typeof hooks[name] === "function" ? hooks[name].apply(null, args) : undefined;
+    }
+
+    function tagLabel(key, vars) {
+      var text = (tagOpts.labels || {})[key] || "";
+      Object.keys(vars || {}).forEach(function (k) {
+        text = text.split("%{" + k + "}").join(vars[k]);
+      });
+      return text;
+    }
+
+    function renderTag(name, count) {
+      var html =
+        '<a data-tag-name="' + escapeHtml(name.toLowerCase()) + '" class="discourse-tag ' +
+        escapeHtml(tagOpts.style || "simple") + '">' + escapeHtml(name) + "</a>";
+      if (count) {
+        html += ' <span class="discourse-tag-count">x' + count + "</span>";
+      }
+      return html;
+    }
+
+    function tagHeader() {
+      var summary = el.querySelector("summary");
+      // modifyNoSelection: the minimum, when there is one.
+      var minimum = call("minimum") || 0;
+      var none =
+        minimum > 0
+          ? tagLabel(minimum === 1 ? "required_one" : "required_other", { count: minimum })
+          : tagLabel("optional");
+      var names = selectedTags.map(function (t) {
+        return t.name;
+      });
+      var max = tagOpts.maximum;
+      var caret = max && selectedTags.length >= max ? "" : svg("plus", "angle-icon");
+      summary.querySelector(".select-kit-header-wrapper").innerHTML =
+        '<span class="formatted-selection">' + escapeHtml(names.length ? names.join(", ") : none) + "</span>" + caret;
+      summary.dataset.name = names.join(",");
+      summary.dataset.value = selectedTags
+        .map(function (t) {
+          return t.id || t.name;
+        })
+        .join(",");
+      el.classList.toggle("no-tags", selectedTags.length === 0);
+      el.classList.toggle("has-selection", selectedTags.length > 0);
+    }
+
+    function tagFilter() {
+      var input = el.querySelector(".filter-input");
+      return input ? input.value : "";
+    }
+
+    // tagUtils.createContentFromInput
+    function tagFromInput(input) {
+      input = input
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[\/\?#\[\]@!\$&'\(\)\*\+,;=%\\`^\s|\{\}"<>]+/g, "")
+        .replace(/-{2,}/g, "-")
+        .substring(0, tagOpts.maxLength || 20)
+        .replace(/^\.+|\.+$/g, "");
+      if (tagOpts.forceLowercase) {
+        input = input.toLowerCase();
+      }
+      return input;
+    }
+
+    // tagUtils.validateCreate
+    function canCreateTag(filter, results) {
+      if (!tagOpts.allowAny || !filter.length) {
+        return false;
+      }
+      if (tagOpts.maximum && selectedTags.length >= tagOpts.maximum) {
+        return false;
+      }
+      var term = filter.replace(new RegExp(tagOpts.filterRegexp || "^$", "g"), "").trim().toLowerCase();
+      if (tagForbidden) {
+        return false;
+      }
+      var inCollection = results.some(function (r) {
+        return (r.name || "").toLowerCase() === term;
+      });
+      var inSelection = selectedTags.some(function (t) {
+        return t.name.toLowerCase() === term;
+      });
+      return !(inCollection || inSelection);
+    }
+
+    function drawTagBody(results, filter) {
+      var body = el.querySelector(".select-kit-body");
+      var input = body.querySelector(".filter-input");
+      var focused = document.activeElement === input;
+      var value = input ? input.value : "";
+      var placeholder = tagRequired
+        ? tagLabel(tagRequired.min_count === 1 ? "required_group_one" : "required_group_other", {
+            count: tagRequired.min_count,
+            name: tagRequired.name,
+          })
+        : tagLabel(tagOpts.allowAny ? "filter_placeholder_with_any" : "filter_placeholder");
+      var html =
+        '<div class="select-kit-filter multi-select-filter is-expanded"><input class="filter-input" autocapitalize="off" autocomplete="off" autocorrect="off" name="filter-input-search" placeholder="' +
+        escapeHtml(placeholder) + '" spellcheck="false" tabindex="0" type="search"></div>';
+      if (selectedTags.length) {
+        html += '<div class="selected-content">';
+        selectedTags.forEach(function (t, i) {
+          html +=
+            '<button aria-label="' + escapeHtml(tagLabel("delete_item", { name: t.name })) +
+            '" class="btn btn-default selected-choice tag-choice " data-name="' + escapeHtml(t.name) +
+            '" data-value="' + escapeHtml(String(t.id || t.name)) + '" data-index="' + i + '" type="button">' +
+            svg("xmark") + '<span class="d-button-label">' + escapeHtml(t.name) + "</span></button>";
+        });
+        html += "</div>";
+      }
+      tagRows = [];
+      var maxReached = tagOpts.maximum && selectedTags.length >= tagOpts.maximum;
+      if (maxReached && filter) {
+        html +=
+          '<ul class="select-kit-errors-collection"><li class="select-kit-error">' +
+          escapeHtml(tagLabel(tagOpts.maximum === 1 ? "max_one" : "max_other", { count: tagOpts.maximum })) +
+          "</li></ul>";
+      }
+      if (canCreateTag(filter, results)) {
+        var created = tagFromInput(filter);
+        if (created) {
+          tagRows.push({ create: true, name: created });
+        }
+      }
+      results.forEach(function (r) {
+        tagRows.push(r);
+      });
+      if (tagRows.length) {
+        html += '<ul aria-live="polite" class="select-kit-collection" role="menu">';
+        tagRows.forEach(function (r, i) {
+          var highlighted = i === tagHighlighted ? " is-highlighted" : "";
+          if (r.create) {
+            html +=
+              '<li aria-checked="false" role="menuitemradio" data-index="' + i + '" data-name="' + escapeHtml(r.name) +
+              '" data-value="' + escapeHtml(r.name) + '" title="' + escapeHtml(r.name) + '" tabindex="0" class="select-kit-row' +
+              highlighted + '"><span class="name">' + escapeHtml(tagLabel("create", { content: r.name })) + "</span></li>";
+            return;
+          }
+          var disabled = r.disabled ? " disabled" : "";
+          html +=
+            '<li aria-checked="false" role="menuitemradio" data-index="' + i + '" data-name="' + escapeHtml(r.name) +
+            '" data-value="' + escapeHtml(String(r.id)) + '" title="' + escapeHtml(r.title || r.name) + '" tabindex="0"' +
+            (r.disabled ? ' aria-disabled="true"' : "") + ' class="select-kit-row tag-row' + highlighted + disabled + '">  ' +
+            renderTag(r.name, r.count);
+          if (r.disabled) {
+            html += '<span class="disabled-reason">' + escapeHtml(r.title || "") + "</span>";
+          } else if (r.target_tag) {
+            html += '<span class="synonym-hint">' + escapeHtml(tagLabel("synonym_hint", { tag_name: r.target_tag.name })) + "</span>";
+          }
+          html += "</li>";
+        });
+        html += "</ul>";
+      }
+      if (filter) {
+        if (!tagRows.length) {
+          html += '<span class="no-content" role="alert">' + escapeHtml(tagLabel("no_content")) + "</span>";
+        } else {
+          html +=
+            '<span class="results-count" role="alert">' +
+            escapeHtml(tagLabel(tagRows.length === 1 ? "results_one" : "results_other", { count: tagRows.length })) +
+            "</span>";
+        }
+      }
+      body.innerHTML = html;
+      var next = body.querySelector(".filter-input");
+      next.value = value;
+      if (focused || el.open) {
+        next.focus();
+      }
+    }
+
+    // MiniTagChooser#search and _transformJson: the results less the
+    // selected tags, sorted by name when the site sorts tags so.
+    function searchTags() {
+      var filter = tagFilter();
+      var seq = ++tagSearchSeq;
+      if (tagOpts.maximum === 0) {
+        drawTagBody([], filter);
+        return;
+      }
+      var params = new URLSearchParams();
+      params.append("q", filter || "");
+      params.append("limit", tagOpts.limit);
+      var category = call("categoryId");
+      if (category) {
+        params.append("categoryId", category);
+      }
+      selectedTags
+        .filter(function (t) {
+          return t.id;
+        })
+        .slice(0, 100)
+        .forEach(function (t) {
+          params.append("selected_tag_ids[]", t.id);
+        });
+      params.append("filterForInput", "true");
+      var recent = call("prioritizeRecent") && !filter;
+      if (recent) {
+        params.append("prioritizeRecentTags", "true");
+      }
+      fetch(base + "/tags/filter/search?" + params.toString(), {
+        credentials: "same-origin",
+        headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (json) {
+          if (seq !== tagSearchSeq || !el.open) {
+            return;
+          }
+          tagForbidden = Boolean(json.forbidden);
+          tagRequired = json.required_tag_group || null;
+          var results = json.results || [];
+          if (!recent && tagOpts.sortAlphabetically) {
+            var byName = function (a, b) {
+              return a.name.localeCompare(b.name);
+            };
+            results = results
+              .filter(function (r) {
+                return !r.disabled;
+              })
+              .sort(byName)
+              .concat(
+                results
+                  .filter(function (r) {
+                    return r.disabled;
+                  })
+                  .sort(byName)
+              );
+          }
+          var names = selectedTags.map(function (t) {
+            return t.name;
+          });
+          results = results.filter(function (r) {
+            return names.indexOf(r.name) < 0;
+          });
+          // select-kit highlights the first row once there is a filter.
+          tagHighlighted = filter ? 0 : -1;
+          drawTagBody(results, filter);
+        })
+        .catch(function (error) {
+          call("failed", error);
+        });
+    }
+
+    function changed(added) {
+      tagHeader();
+      call("changed", added);
+      searchTags();
+    }
+
+    function chooseTagRow(index) {
+      var row = tagRows[index];
+      if (!row || row.disabled) {
+        return;
+      }
+      if (tagOpts.maximum && selectedTags.length >= tagOpts.maximum) {
+        return;
+      }
+      var added = row.create ? { name: row.name, isNew: true } : row;
+      selectedTags.push(added);
+      var input = el.querySelector(".filter-input");
+      if (input) {
+        input.value = "";
+      }
+      changed(added);
+    }
+
+    el.addEventListener("toggle", function () {
+      el.classList.toggle("is-expanded", el.open);
+      if (el.open) {
+        tagHighlighted = -1;
+        drawTagBody([], "");
+        call("opened");
+        searchTags();
+      } else {
+        el.querySelector(".select-kit-body").innerHTML = "";
+      }
+    });
+    el.addEventListener("input", function (e) {
+      if (!e.target.classList.contains("filter-input")) {
+        return;
+      }
+      clearTimeout(tagSearchTimer);
+      tagSearchTimer = setTimeout(searchTags, 200);
+    });
+    el.addEventListener("keydown", function (e) {
+      if (!el.open || !e.target.classList.contains("filter-input")) {
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        el.open = false;
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        chooseTagRow(tagHighlighted);
+      } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (!tagRows.length) {
+          return;
+        }
+        var from = tagHighlighted < 0 ? (e.key === "ArrowDown" ? -1 : 0) : tagHighlighted;
+        tagHighlighted = (from + (e.key === "ArrowDown" ? 1 : tagRows.length - 1)) % tagRows.length;
+        el.querySelectorAll(".select-kit-row").forEach(function (row, i) {
+          row.classList.toggle("is-highlighted", i === tagHighlighted);
+        });
+      } else if (e.key === "Backspace" && tagFilter() === "" && selectedTags.length) {
+        selectedTags.pop();
+        changed(null);
+      }
+    });
+    el.addEventListener("click", function (e) {
+      var choice = e.target.closest(".selected-choice");
+      if (choice) {
+        e.preventDefault();
+        selectedTags.splice(parseInt(choice.dataset.index, 10), 1);
+        changed(null);
+        return;
+      }
+      var row = e.target.closest(".select-kit-row");
+      if (row) {
+        e.preventDefault();
+        chooseTagRow(parseInt(row.dataset.index, 10));
+      }
+    });
+    el.addEventListener("mouseover", function (e) {
+      var row = e.target.closest(".select-kit-row");
+      if (row) {
+        tagHighlighted = parseInt(row.dataset.index, 10);
+        el.querySelectorAll(".select-kit-row").forEach(function (r) {
+          r.classList.toggle("is-highlighted", r === row);
+        });
+      }
+    });
+    // A click elsewhere closes it, as select-kit's click outside does.
+    document.addEventListener("click", function (e) {
+      if (el.open && !el.contains(e.target)) {
+        el.open = false;
+      }
+    });
+
+    return {
+      options: tagOpts,
+      selected: function () {
+        return selectedTags;
+      },
+      set: function (tags) {
+        selectedTags = (tags || []).slice(0);
+        tagHeader();
+      },
+      header: tagHeader,
+    };
   }
 
-  function tagLabel(key, vars) {
-    var text = (tagOpts.labels || {})[key] || "";
-    Object.keys(vars || {}).forEach(function (k) {
-      text = text.split("%{" + k + "}").join(vars[k]);
-    });
-    return text;
+  // The composer's tag chooser, as composer-container renders it for a
+  // member who may tag topics: the category's minimum, recent tags first.
+  var tagChooser = control.querySelector(".mini-tag-chooser");
+  var tagsTip = control.querySelector(".tags-input .popup-tip");
+  // The tags kept without a chooser (a message's, site.can_tag_pms).
+  var unchosenTags = [];
+  var tags = tagChooser
+    ? miniTagChooser(tagChooser, {
+        categoryId: function () {
+          return chooser ? chooser.querySelector("summary").dataset.value : "";
+        },
+        minimum: minimumRequiredTags,
+        prioritizeRecent: function () {
+          return tagOpts.prioritizeRecent;
+        },
+        changed: function () {
+          validateTags(false);
+          scheduleDraft();
+        },
+        // select-kit's floating body: on screens up to 450px wide it
+        // spans the viewport less 10px each side (applySmallScreenOffset
+        // and applySmallScreenMaxWidth).
+        opened: function () {
+          var body = tagChooser.querySelector(".select-kit-body");
+          if (window.innerWidth <= 450) {
+            var x = tagChooser.getBoundingClientRect().x;
+            body.style.left = 10 - x + "px";
+            body.style.width = window.innerWidth - 20 + "px";
+            body.style.minWidth = "0";
+          } else {
+            body.style.left = "";
+            body.style.width = "";
+            body.style.minWidth = "";
+          }
+        },
+        failed: function () {
+          showError("Could not search tags.");
+        },
+      })
+    : null;
+  var tagOpts = tags ? tags.options : {};
+
+  function selectedTags() {
+    return tags ? tags.selected() : unchosenTags;
+  }
+
+  function tagHeader() {
+    tags.header();
   }
 
   // The category's minimumRequiredTags (its minimum, or its required
@@ -1703,279 +2112,21 @@
 
   // serializeTags
   function serializedTags() {
-    return selectedTags.map(function (t) {
+    return selectedTags().map(function (t) {
       return t.isNew || !t.id ? { name: t.name } : { id: t.id, name: t.name };
     });
   }
 
-  function renderTag(name, count) {
-    var html =
-      '<a data-tag-name="' + escapeHtml(name.toLowerCase()) + '" class="discourse-tag ' +
-      escapeHtml(tagOpts.style || "simple") + '">' + escapeHtml(name) + "</a>";
-    if (count) {
-      html += ' <span class="discourse-tag-count">x' + count + "</span>";
-    }
-    return html;
-  }
-
-  function tagHeader() {
-    var summary = tagChooser.querySelector("summary");
-    // modifyNoSelection: the category's minimum, when it has one.
-    var minimum = minimumRequiredTags();
-    var none =
-      minimum > 0
-        ? tagLabel(minimum === 1 ? "required_one" : "required_other", { count: minimum })
-        : tagLabel("optional");
-    var names = selectedTags.map(function (t) {
-      return t.name;
-    });
-    var max = tagOpts.maximum;
-    var caret = max && selectedTags.length >= max ? "" : svg("plus", "angle-icon");
-    summary.querySelector(".select-kit-header-wrapper").innerHTML =
-      '<span class="formatted-selection">' + escapeHtml(names.length ? names.join(", ") : none) + "</span>" + caret;
-    summary.dataset.name = names.join(",");
-    summary.dataset.value = selectedTags
-      .map(function (t) {
-        return t.id || t.name;
-      })
-      .join(",");
-    tagChooser.classList.toggle("no-tags", selectedTags.length === 0);
-    tagChooser.classList.toggle("has-selection", selectedTags.length > 0);
-  }
-
-  function setTags(tags) {
-    selectedTags = (tags || []).map(function (t) {
+  function setTags(list) {
+    var normalized = (list || []).map(function (t) {
       return typeof t === "string" ? { name: t, isNew: true } : { id: t.id, name: t.name, isNew: !t.id };
     });
-    if (tagChooser) {
-      tagHeader();
+    if (tags) {
+      tags.set(normalized);
       validateTags(false);
-    }
-  }
-
-  function tagFilter() {
-    var input = tagChooser.querySelector(".filter-input");
-    return input ? input.value : "";
-  }
-
-  // tagUtils.createContentFromInput
-  function tagFromInput(input) {
-    input = input
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[\/\?#\[\]@!\$&'\(\)\*\+,;=%\\`^\s|\{\}"<>]+/g, "")
-      .replace(/-{2,}/g, "-")
-      .substring(0, tagOpts.maxLength || 20)
-      .replace(/^\.+|\.+$/g, "");
-    if (tagOpts.forceLowercase) {
-      input = input.toLowerCase();
-    }
-    return input;
-  }
-
-  // tagUtils.validateCreate
-  function canCreateTag(filter, results) {
-    if (!tagOpts.allowAny || !filter.length) {
-      return false;
-    }
-    if (tagOpts.maximum && selectedTags.length >= tagOpts.maximum) {
-      return false;
-    }
-    var term = filter.replace(new RegExp(tagOpts.filterRegexp || "^$", "g"), "").trim().toLowerCase();
-    if (tagForbidden) {
-      return false;
-    }
-    var inCollection = results.some(function (r) {
-      return (r.name || "").toLowerCase() === term;
-    });
-    var inSelection = selectedTags.some(function (t) {
-      return t.name.toLowerCase() === term;
-    });
-    return !(inCollection || inSelection);
-  }
-
-  function drawTagBody(results, filter) {
-    var body = tagChooser.querySelector(".select-kit-body");
-    var input = body.querySelector(".filter-input");
-    var focused = document.activeElement === input;
-    var value = input ? input.value : "";
-    var placeholder = tagRequired
-      ? tagLabel(tagRequired.min_count === 1 ? "required_group_one" : "required_group_other", {
-          count: tagRequired.min_count,
-          name: tagRequired.name,
-        })
-      : tagLabel(tagOpts.allowAny ? "filter_placeholder_with_any" : "filter_placeholder");
-    var html =
-      '<div class="select-kit-filter multi-select-filter is-expanded"><input class="filter-input" autocapitalize="off" autocomplete="off" autocorrect="off" name="filter-input-search" placeholder="' +
-      escapeHtml(placeholder) + '" spellcheck="false" tabindex="0" type="search"></div>';
-    if (selectedTags.length) {
-      html += '<div class="selected-content">';
-      selectedTags.forEach(function (t, i) {
-        html +=
-          '<button aria-label="' + escapeHtml(tagLabel("delete_item", { name: t.name })) +
-          '" class="btn btn-default selected-choice tag-choice " data-name="' + escapeHtml(t.name) +
-          '" data-value="' + escapeHtml(String(t.id || t.name)) + '" data-index="' + i + '" type="button">' +
-          svg("xmark") + '<span class="d-button-label">' + escapeHtml(t.name) + "</span></button>";
-      });
-      html += "</div>";
-    }
-    tagRows = [];
-    var maxReached = tagOpts.maximum && selectedTags.length >= tagOpts.maximum;
-    if (maxReached && filter) {
-      html +=
-        '<ul class="select-kit-errors-collection"><li class="select-kit-error">' +
-        escapeHtml(tagLabel(tagOpts.maximum === 1 ? "max_one" : "max_other", { count: tagOpts.maximum })) +
-        "</li></ul>";
-    }
-    if (canCreateTag(filter, results)) {
-      var created = tagFromInput(filter);
-      if (created) {
-        tagRows.push({ create: true, name: created });
-      }
-    }
-    results.forEach(function (r) {
-      tagRows.push(r);
-    });
-    if (tagRows.length) {
-      html += '<ul aria-live="polite" class="select-kit-collection" role="menu">';
-      tagRows.forEach(function (r, i) {
-        var highlighted = i === tagHighlighted ? " is-highlighted" : "";
-        if (r.create) {
-          html +=
-            '<li aria-checked="false" role="menuitemradio" data-index="' + i + '" data-name="' + escapeHtml(r.name) +
-            '" data-value="' + escapeHtml(r.name) + '" title="' + escapeHtml(r.name) + '" tabindex="0" class="select-kit-row' +
-            highlighted + '"><span class="name">' + escapeHtml(tagLabel("create", { content: r.name })) + "</span></li>";
-          return;
-        }
-        var disabled = r.disabled ? " disabled" : "";
-        html +=
-          '<li aria-checked="false" role="menuitemradio" data-index="' + i + '" data-name="' + escapeHtml(r.name) +
-          '" data-value="' + escapeHtml(String(r.id)) + '" title="' + escapeHtml(r.title || r.name) + '" tabindex="0"' +
-          (r.disabled ? ' aria-disabled="true"' : "") + ' class="select-kit-row tag-row' + highlighted + disabled + '">  ' +
-          renderTag(r.name, r.count);
-        if (r.disabled) {
-          html += '<span class="disabled-reason">' + escapeHtml(r.title || "") + "</span>";
-        } else if (r.target_tag) {
-          html += '<span class="synonym-hint">' + escapeHtml(tagLabel("synonym_hint", { tag_name: r.target_tag.name })) + "</span>";
-        }
-        html += "</li>";
-      });
-      html += "</ul>";
-    }
-    if (filter) {
-      if (!tagRows.length) {
-        html += '<span class="no-content" role="alert">' + escapeHtml(tagLabel("no_content")) + "</span>";
-      } else {
-        html +=
-          '<span class="results-count" role="alert">' +
-          escapeHtml(tagLabel(tagRows.length === 1 ? "results_one" : "results_other", { count: tagRows.length })) +
-          "</span>";
-      }
-    }
-    body.innerHTML = html;
-    var next = body.querySelector(".filter-input");
-    next.value = value;
-    if (focused || tagChooser.open) {
-      next.focus();
-    }
-  }
-
-  // MiniTagChooser#search and _transformJson: the results less the
-  // selected tags, sorted by name when the site sorts tags so.
-  function searchTags() {
-    var filter = tagFilter();
-    var seq = ++tagSearchSeq;
-    if (tagOpts.maximum === 0) {
-      drawTagBody([], filter);
-      return;
-    }
-    var params = new URLSearchParams();
-    params.append("q", filter || "");
-    params.append("limit", tagOpts.limit);
-    var category = chooser ? chooser.querySelector("summary").dataset.value : "";
-    if (category) {
-      params.append("categoryId", category);
-    }
-    selectedTags
-      .filter(function (t) {
-        return t.id;
-      })
-      .slice(0, 100)
-      .forEach(function (t) {
-        params.append("selected_tag_ids[]", t.id);
-      });
-    params.append("filterForInput", "true");
-    var recent = tagOpts.prioritizeRecent && !filter;
-    if (recent) {
-      params.append("prioritizeRecentTags", "true");
-    }
-    fetch(base + "/tags/filter/search?" + params.toString(), {
-      credentials: "same-origin",
-      headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
-    })
-      .then(function (r) {
-        return r.json();
-      })
-      .then(function (json) {
-        if (seq !== tagSearchSeq || !tagChooser.open) {
-          return;
-        }
-        tagForbidden = Boolean(json.forbidden);
-        tagRequired = json.required_tag_group || null;
-        var results = json.results || [];
-        if (!recent && tagOpts.sortAlphabetically) {
-          var byName = function (a, b) {
-            return a.name.localeCompare(b.name);
-          };
-          results = results
-            .filter(function (r) {
-              return !r.disabled;
-            })
-            .sort(byName)
-            .concat(
-              results
-                .filter(function (r) {
-                  return r.disabled;
-                })
-                .sort(byName)
-            );
-        }
-        var names = selectedTags.map(function (t) {
-          return t.name;
-        });
-        results = results.filter(function (r) {
-          return names.indexOf(r.name) < 0;
-        });
-        // select-kit highlights the first row once there is a filter.
-        tagHighlighted = filter ? 0 : -1;
-        drawTagBody(results, filter);
-      })
-      .catch(function () {
-        showError("Could not search tags.");
-      });
-  }
-
-  function chooseTagRow(index) {
-    var row = tagRows[index];
-    if (!row || row.disabled) {
-      return;
-    }
-    if (tagOpts.maximum && selectedTags.length >= tagOpts.maximum) {
-      return;
-    }
-    if (row.create) {
-      selectedTags.push({ name: row.name, isNew: true });
     } else {
-      selectedTags.push({ id: row.id, name: row.name });
+      unchosenTags = normalized;
     }
-    var input = tagChooser.querySelector(".filter-input");
-    if (input) {
-      input.value = "";
-    }
-    tagHeader();
-    validateTags(false);
-    scheduleDraft();
-    searchTags();
   }
 
   // composer.tagValidation: staff and members of sites that can't tag
@@ -1985,7 +2136,7 @@
       return true;
     }
     var min = minimumRequiredTags();
-    var failed = !tagOpts.staff && state && state.mode === "create-topic" && min > selectedTags.length;
+    var failed = !tagOpts.staff && state && state.mode === "create-topic" && min > selectedTags().length;
     if (failed && show) {
       var text = tagLabel(min === 1 ? "tags_missing_one" : "tags_missing_other", { count: min });
       tagsTip.className = "popup-tip bad";
@@ -2001,99 +2152,16 @@
     return !failed;
   }
 
-  if (tagChooser) {
-    tagChooser.addEventListener("toggle", function () {
-      tagChooser.classList.toggle("is-expanded", tagChooser.open);
-      if (tagChooser.open) {
-        // select-kit's floating body: on screens up to 450px wide it
-        // spans the viewport less 10px each side (applySmallScreenOffset
-        // and applySmallScreenMaxWidth).
-        var body = tagChooser.querySelector(".select-kit-body");
-        if (window.innerWidth <= 450) {
-          var x = tagChooser.getBoundingClientRect().x;
-          body.style.left = 10 - x + "px";
-          body.style.width = window.innerWidth - 20 + "px";
-          body.style.minWidth = "0";
-        } else {
-          body.style.left = "";
-          body.style.width = "";
-          body.style.minWidth = "";
-        }
-        tagHighlighted = -1;
-        drawTagBody([], "");
-        searchTags();
-      } else {
-        tagChooser.querySelector(".select-kit-body").innerHTML = "";
-      }
+  function tagLabel(key, vars) {
+    var text = (tagOpts.labels || {})[key] || "";
+    Object.keys(vars || {}).forEach(function (k) {
+      text = text.split("%{" + k + "}").join(vars[k]);
     });
-    tagChooser.addEventListener("input", function (e) {
-      if (!e.target.classList.contains("filter-input")) {
-        return;
-      }
-      clearTimeout(tagSearchTimer);
-      tagSearchTimer = setTimeout(searchTags, 200);
-    });
-    tagChooser.addEventListener("keydown", function (e) {
-      if (!tagChooser.open || !e.target.classList.contains("filter-input")) {
-        return;
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();
-        tagChooser.open = false;
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        chooseTagRow(tagHighlighted);
-      } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        if (!tagRows.length) {
-          return;
-        }
-        var from = tagHighlighted < 0 ? (e.key === "ArrowDown" ? -1 : 0) : tagHighlighted;
-        tagHighlighted = (from + (e.key === "ArrowDown" ? 1 : tagRows.length - 1)) % tagRows.length;
-        tagChooser.querySelectorAll(".select-kit-row").forEach(function (row, i) {
-          row.classList.toggle("is-highlighted", i === tagHighlighted);
-        });
-      } else if (e.key === "Backspace" && tagFilter() === "" && selectedTags.length) {
-        selectedTags.pop();
-        tagHeader();
-        validateTags(false);
-        scheduleDraft();
-        searchTags();
-      }
-    });
-    tagChooser.addEventListener("click", function (e) {
-      var choice = e.target.closest(".selected-choice");
-      if (choice) {
-        e.preventDefault();
-        selectedTags.splice(parseInt(choice.dataset.index, 10), 1);
-        tagHeader();
-        validateTags(false);
-        scheduleDraft();
-        searchTags();
-        return;
-      }
-      var row = e.target.closest(".select-kit-row");
-      if (row) {
-        e.preventDefault();
-        chooseTagRow(parseInt(row.dataset.index, 10));
-      }
-    });
-    tagChooser.addEventListener("mouseover", function (e) {
-      var row = e.target.closest(".select-kit-row");
-      if (row) {
-        tagHighlighted = parseInt(row.dataset.index, 10);
-        tagChooser.querySelectorAll(".select-kit-row").forEach(function (r) {
-          r.classList.toggle("is-highlighted", r === row);
-        });
-      }
-    });
-    // A click elsewhere closes it, as select-kit's click outside does.
-    document.addEventListener("click", function (e) {
-      if (tagChooser.open && !tagChooser.contains(e.target)) {
-        tagChooser.open = false;
-      }
-    });
+    return text;
   }
+
+  // For the review queue's ReviewableFieldTags.
+  Discourse.miniTagChooser = miniTagChooser;
 
   function form(pairs) {
     return pairs
