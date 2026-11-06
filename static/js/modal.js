@@ -145,6 +145,19 @@
       }
       if (event.key === "Escape") {
         event.stopPropagation();
+        // An open select-kit in the modal takes the Escape (its filter's
+        // and header's keydown stop it before DModal's document listener
+        // hears it): it closes and gives its header the focus.
+        var kit = modal.querySelector("details.select-kit[open]");
+        if (kit) {
+          event.preventDefault();
+          kit.open = false;
+          var header = kit.querySelector("summary");
+          if (header) {
+            header.focus();
+          }
+          return;
+        }
         close();
         return;
       }

@@ -354,7 +354,10 @@ Visible if clicked, avoid them in a scripted demo:
   feat/poll-ui-vote (228a), done: the widget votes, changes and removes
   votes; its results say they are not ported yet (228b), as do ranked
   choice polls and the actions menu (228b, 228c).
-- [ ] No Build Poll (229).
+- [x] No Build Poll (229): feat/poll-builder-widgets, done: Build poll
+  draws its groups, automatic close and results with Discourse's
+  GroupChooser, DDateTimeInput and ComboBox, and shows in a PM with
+  discobot for members who may not create polls.
 - [x] A post with an uploaded video or audio file is refused (138, 141):
   feat/post-video-audio, done: such posts are created and edited, the
   video drawn as its placeholder with the play button and the audio as
@@ -3658,7 +3661,9 @@ route table has been made, so this list may be short.
     the login, signup and logout dialogs (79c), the Edit Directory
     Columns modal (74), BookmarkModal (editing a bookmark from the
     bookmarks tab, 193c), the ForgotPassword modal a password
-    reset code opens (from the security tab, 193e). Split when started
+    reset code opens (from the security tab, 193e), discourse-poll's
+    rich editor node view (PollNodeView and the builder's Edit poll mode
+    over it, from 229). Split when started
     196a. ~~`feat/composer-actions-menu`~~ (done): the composer's actions
     menu switches between replies, linked topics and private messages,
     with whisper, do-not-bump and unlisted toggles and post voting topics.
@@ -3666,8 +3671,8 @@ route table has been made, so this list may be short.
     keeps whispers out of public topic counts and bumps. The toolbar's
     poll builder inserts regular, multiple, number and ranked-choice
     polls. Tests: composer_actions.rs and browser/composer-actions.spec.js.
-    Rich text and the remaining client work stay in 196; poll builder
-    follow-ups stay in 229.
+    Rich text and the remaining client work stay in 196; the poll
+    builder's follow-ups were 229.
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
     status:solved and status:unsolved; the topic_ids and state list
@@ -5775,12 +5780,31 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     open with their confirm (toggleStatus, with the on_close refresh)
     and the breakdown modal over /polls/grouped_poll_results with
     per-group pies, poll-breakdown.scss (already in poll.css).
-229. `feat/poll-builder` M: the markdown builder shipped in 196a:
-    types, title, options and validation, min/max/step, results visibility,
-    public default, chart type, groups, automatic close, dynamic options
-    and BBCode insertion. Left: Discourse's shared group and date/time
-    widgets instead of native controls, the menu's pm_with_non_human_user
-    condition, and the rich editor's node view after 196.
+229. ~~`feat/poll-builder`~~ (done, as feat/poll-builder-widgets) M: the
+    markdown builder shipped in 196a: types, title, options and
+    validation, min/max/step, results visibility, public default, chart
+    type, groups, automatic close, dynamic options and BBCode insertion.
+    Done here, in static/js/poll-builder.js: the advanced fields are
+    Discourse's shared widgets instead of native controls (the port had
+    no shared one to reuse; the choosers elsewhere are page-local).
+    GroupChooser (MultiSelect over site.groups but everyone): the filter,
+    the chosen groups as removable choices, rows without them up to
+    displayedGroupsLimit with FilterForMore's tip, the results count and
+    no content, Enter and Backspace, open across a choice (closeOnChange
+    false). DDateTimeInput, clearable, in the browser's timezone:
+    DDateInput's native date input (Pikaday and moment loaded where there
+    is none), DTimeInput's ComboBox of quarter hours with allowAny's
+    typed time read as onChangeTime reads it ("h:mm am" or "HH:MM"), a
+    time without a date today's, a new date at the time there was. The
+    results are a ComboBox too. static/js/modal.js gives Escape to an
+    open select-kit before the modal, as select-kit's keydown does. The
+    options menu's item follows add-poll-ui-builder's condition: a member
+    who may not create polls gets it when the composer's topic (the one
+    replied in, or edited) is pm_with_non_human_user. Tests:
+    composer_actions.rs (the item's condition per viewer and setting) and
+    browser/composer-actions.spec.js (the three widgets' choices in the
+    markdown they build; the item in a PM with discobot, not with a
+    member or in a new topic). The rich editor's node view waits on 196.
 230. `feat/poll-rest` M: poll's server leftovers: reduce_cooked in emails
     (the options without ids, the link_to_poll link, polls of trashed
     posts dropped; email/notification.rs:901-945 passes the raw widget

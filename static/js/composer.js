@@ -368,6 +368,7 @@
           privateMessage: topic.archetype === "private_message",
           canEdit: !!details.can_edit,
           canEditTags: !!details.can_edit_tags,
+          pmWithNonHumanUser: !!topic.pm_with_non_human_user,
         };
         if (state !== s) {
           return;
@@ -566,6 +567,7 @@
     textarea.disabled = true;
     announce();
     loadActionContext(s);
+    loadEditTopic(s);
     // A new topic's key is new: there is no draft to look up. A composer
     // switched from another (the actions menu) carries its text, and
     // takes only the key's sequence.
@@ -2476,6 +2478,7 @@
           categoryId: t.category_id,
           privateMessage: t.archetype === "private_message",
           postVoting: !!t.is_post_voting,
+          pmWithNonHumanUser: !!t.pm_with_non_human_user,
           slowMode: (t.slow_mode_seconds || 0) > 0,
           allowedUsers: (details.allowed_users || []).map(function (u) {
             return u.username;
@@ -2559,6 +2562,23 @@
       }
       rememberActions(s);
       renderActions();
+    });
+  }
+
+  // The topic of a reply being edited, for the options menu item shown
+  // only in a PM with a non-human user (add-poll-ui-builder's
+  // composer.model.topic); a first post's comes with loadTopic.
+  function loadEditTopic(s) {
+    var wanted = ((popup && popup.items) || []).some(function (item) {
+      return item.when === "pm-with-non-human-user";
+    });
+    if (!wanted || s.mode !== "edit" || s.firstPost || !s.topicId) {
+      return;
+    }
+    loadActionTopic(s.topicId).then(function (topic) {
+      if (state === s) {
+        s.editTopic = topic;
+      }
     });
   }
 
@@ -3333,6 +3353,12 @@
     }
     if (item.when === "edit-reply") {
       return !!state && state.mode === "edit" && parseInt(state.postNumber, 10) > 1;
+    }
+    // composer.model.topic?.pm_with_non_human_user: the topic replied in
+    // or edited.
+    if (item.when === "pm-with-non-human-user") {
+      var topic = state && (state.mode === "edit" ? state.topic || state.editTopic : state.mode === "reply" ? state.actionTopic : null);
+      return !!topic && topic.pmWithNonHumanUser;
     }
     return true;
   }

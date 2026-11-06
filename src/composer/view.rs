@@ -199,8 +199,9 @@ pub struct PopupOption {
     pub shortcut: Option<&'static str>,
     pub always_show_shortcut: bool,
     pub show_active_icon: bool,
-    /// When the item shows: `touch` (a touch device) or `edit-reply` (an
-    /// edit of a reply); always without.
+    /// When the item shows: `touch` (a touch device), `edit-reply` (an
+    /// edit of a reply) or `pm-with-non-human-user` (the composer's topic
+    /// is `pm_with_non_human_user`); always without.
     pub when: Option<&'static str>,
     /// Whether composer.js carries out its action; the others refuse.
     pub ported: bool,
@@ -303,8 +304,11 @@ pub fn popup_options(
             ..option("spoiler", "wand-magic", "spoiler.title")
         });
     }
-    if on("poll_enabled")? && can_create_poll {
+    // add-poll-ui-builder's condition: poll_enabled, and the composer's
+    // topic a PM with a non-human user or a viewer who may create polls.
+    if on("poll_enabled")? {
         out.push(PopupOption {
+            when: (!can_create_poll).then_some("pm-with-non-human-user"),
             ported: true,
             named: false,
             ..option("poll", "chart-bar", "poll.ui_builder.title")
@@ -496,6 +500,9 @@ pub struct PollBuilderUi {
     pub groups: Vec<String>,
     /// discourse_local_dates_enabled: mod+Shift+. in an option.
     pub local_dates: bool,
+    /// DDateInput's Pikaday, for a browser without a native date input.
+    pub moment_src: String,
+    pub pikaday_src: String,
 }
 
 const POLL_BUILDER_STRINGS: &[&str] = &[
@@ -531,6 +538,21 @@ const POLL_BUILDER_STRINGS: &[&str] = &[
     "poll.ui_builder.automatic_close.label",
     "advanced_mode_toggle.simple_mode",
     "advanced_mode_toggle.advanced_mode",
+    "select_kit.default_header_text",
+    "select_kit.filter_by",
+    "select_kit.select_to_filter",
+    "select_kit.filter_placeholder",
+    "select_kit.filter_placeholder_with_any",
+    "select_kit.no_content",
+    "select_kit.results_count.one",
+    "select_kit.results_count.other",
+    "select_kit.create",
+    "select_kit.delete_item",
+    "select_kit.components.filter_for_more",
+    "dates.placeholder",
+    "dates.time",
+    "dates.previous_month",
+    "dates.next_month",
     "cancel",
 ];
 
@@ -547,6 +569,7 @@ fn poll_builder_data(list: &ListContext, builder: &PollBuilderUi) -> String {
         "staff": builder.staff,
         "groups": builder.groups,
         "localDates": builder.local_dates,
+        "assets": { "moment": builder.moment_src, "pikaday": builder.pikaday_src },
         "strings": strings,
     });
     format!(" data-poll-builder=\"{}\"", escape(&data.to_string()))

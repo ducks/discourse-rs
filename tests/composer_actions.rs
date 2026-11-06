@@ -318,3 +318,77 @@ async fn the_composer_draws_the_actions_menu_and_the_poll_builder() {
         .unwrap();
     assert!(poll.contains("&quot;ported&quot;:true"));
 }
+
+/// The composer page's HTML for `username`.
+async fn latest_html(st: AppState, username: &str) -> String {
+    let client = Client::logged_in(st.clone(), username).await;
+    let cookie: Vec<String> = client
+        .cookies
+        .iter()
+        .map(|(k, v)| format!("{k}={v}"))
+        .collect();
+    let request = Request::builder()
+        .uri("/latest")
+        .header(header::HOST, "test.localhost")
+        .header(header::COOKIE, cookie.join("; "));
+    let response = discourse_rs::app(st)
+        .oneshot(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    String::from_utf8(
+        response
+            .into_body()
+            .collect()
+            .await
+            .unwrap()
+            .to_bytes()
+            .to_vec(),
+    )
+    .unwrap()
+}
+
+/// The options menu's Build poll item, as data-popup-options lists it.
+fn poll_item(html: &str) -> Value {
+    let start = html.find("data-popup-options=\"").unwrap() + "data-popup-options=\"".len();
+    let end = start + html[start..].find('"').unwrap();
+    let raw = html[start..end]
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&");
+    let data: Value = serde_json::from_str(&raw).unwrap();
+    data["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["name"] == "poll")
+        .cloned()
+        .unwrap_or(Value::Null)
+}
+
+#[tokio::test]
+async fn build_poll_shows_in_a_pm_with_a_non_human_user_for_who_cannot_create_polls() {
+    let db = TestDb::new().await;
+    // trust_level_4 only: user1 (trust level 2) may not create polls.
+    set_setting(&db.pool, "poll_create_allowed_groups", 20, "14").await;
+    let st = setup(&db).await;
+    // Staff always may (add-poll-ui-builder's currentUser.staff).
+    let admin = poll_item(&latest_html(st.clone(), "admin").await);
+    assert_eq!(admin["ported"], true);
+    assert_eq!(admin["when"], Value::Null);
+    // A member who may not: the item, and the builder with it, only in a
+    // PM with a non-human user (composer.model.topic).
+    let html = latest_html(st.clone(), "user1").await;
+    let member = poll_item(&html);
+    assert_eq!(member["ported"], true);
+    assert_eq!(member["when"], "pm-with-non-human-user");
+    assert!(html.contains("data-poll-builder=\""));
+    // DDateInput's Pikaday, should the browser have no date input.
+    assert!(html.contains("pikaday.js"));
+
+    // poll_enabled off: no item at all.
+    set_setting(&db.pool, "poll_enabled", 5, "f").await;
+    let st = setup(&db).await;
+    assert_eq!(poll_item(&latest_html(st, "user1").await), Value::Null);
+}
