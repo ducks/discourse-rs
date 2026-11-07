@@ -12,6 +12,7 @@ mod bus;
 mod cakeday;
 mod captcha;
 mod change_owner;
+mod composer_mentions;
 mod deleted_posts;
 mod directory;
 mod directory_columns;
@@ -270,6 +271,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/notifications/totals.json", get(notifications::totals))
         .route("/onebox", get(onebox::show))
         .route("/inline-onebox", get(onebox::inline))
+        .route("/composer/mentions", get(composer_mentions::mentions))
+        .route("/composer/mentions.json", get(composer_mentions::mentions))
         .route("/hashtags", get(hashtags::lookup))
         .route("/hashtags.json", get(hashtags::lookup))
         .route("/hashtags/by-ids", get(hashtags::by_ids))
