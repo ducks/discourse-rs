@@ -387,8 +387,9 @@ Visible if clicked, avoid them in a scripted demo:
   194e1); the revise modal was done before (feat/review-queued-posts).
   Not a demo blocker: the reject reason modal (194e2), which only a
   user reviewable opens, and the queue lists none yet.
-- [ ] The composer's rich editor and its toolbar buttons (196); the
-  profile's About me editor follows it.
+- [ ] The composer's rich editor and its toolbar buttons (196r1 to 196r3;
+  196r1's phase A, the frontend core, is done); the profile's About me
+  editor follows it (196r5).
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -3892,7 +3893,8 @@ route table has been made, so this list may be short.
     bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the
     badge feed exists (85b)
 196. `feat/client-rest` L: the client's leftovers named under done
-    items: the rich editor (ProseMirror) and its toggle, the composer's
+    items: the rich editor (ProseMirror, split into 196r1 to 196r5 below)
+    and its toggle, the composer's
     actions, heading, list, options and emoji menus, the insert-date
     modal (49, 96), the desktop header's search menu (94; the advanced
     filters panel was 143i), the do not disturb and user status modals (95),
@@ -3914,6 +3916,54 @@ route table has been made, so this list may be short.
     polls. Tests: composer_actions.rs and browser/composer-actions.spec.js.
     Rich text and the remaining client work stay in 196; the poll
     builder's follow-ups were 229.
+    The rich editor (docs/rich-editor.md), in five steps. The owner's
+    decisions: markdown stays the default composition mode until the
+    round-trip tests pass, and the rich editor is reached through the
+    member's composition_mode and the composer's toggle; the editor parses
+    with the port's markdown crate (its WebAssembly build) through a node
+    tree export, never with JS markdown-it; ProseMirror is vendored ES
+    modules behind an import map, with no bundler, build step or CDN.
+    196r1. `feat/rich-editor-core` L: the core: vendoring, the import map,
+    the parser over the markdown crate's node tree, the serializer, the
+    toggle on composition_mode, the round-trip tests. Phase A (done, no
+    Rust): every prosemirror-* package the editor imports and their
+    dependencies at the reference's pnpm-lock.yaml versions, checked
+    against its sha512 integrity (static/vendor/prosemirror, the README);
+    the loader and its import map (static/js/rich-editor.js, markdown-it
+    mapped to a stub since prosemirror-markdown imports it at load); the
+    schema, serializer, keymap, input rules, plugin utils, core extensions,
+    to-markdown and the editor itself (static/js/rich-editor/); the parser's
+    mapping layer from the node tree to markdown-it's tokens and the tree's
+    contract (docs/rich-editor.md); the core CSS and the toggle switch's;
+    tests/browser/rich-editor.spec.js with the reference's
+    prosemirror-markdown, strikethrough and underline cases (serialized
+    from HTML and mapped from trees: 48 pass) and their round trips
+    through the export (18, skipped until it exists). Phase B (Rust and the
+    wiring, docs/rich-editor.md "Phase B"): the crate's node tree and
+    markdown.wasm's rich_editor_tree export with Rust tests over the same
+    cases; an assets helper for data-assets; the loader's tag in the head
+    of logged-in pages before lightbox.js; data-composition-mode and the
+    toggle's markup and labels in the composer; composer.js switching
+    editors, saving composition_mode after 1s and falling back on
+    unsupported tokens; the round-trip cases passing
+    196r2. `feat/rich-editor-extensions` L: the everyday extensions: emoji,
+    mentions, hashtags, links and the link toolbar, images and uploads
+    (upload placeholder, image node view, grid), quotes, code blocks with
+    highlighting (prosemirror-highlightjs over the vendored highlight.js),
+    lists, headings, tables, html blocks and inline html, paste (markdown
+    paste, word paste's clean-up in to-markdown); each extension's parse
+    spec over the node tree and the reference's tests for it
+    196r3. `feat/rich-editor-toolbar` M: the toolbar and its menus wired to
+    the rich editor (text-manipulation.ts: bold, italic, link, quote, code,
+    lists, headings, emoji, upload, the options menu), onebox and its
+    toolbar, the preview toolbar
+    196r4. `feat/rich-editor-plugins` L: the plugins' extensions: poll's
+    node view (PollNodeView and the builder's Edit poll mode), checklist,
+    details, spoiler, footnotes, math, local dates, policy, events
+    196r5. `feat/rich-editor-default` S: the profile's About me editor in
+    rich mode, then rich as the default composition mode
+    (default_composition_mode 1, as Discourse ships) once the round-trip
+    tests pass
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
     status:solved and status:unsolved; the topic_ids and state list
