@@ -69,8 +69,9 @@ those scripts. `Discourse.richEditor.load()` imports
 
 ## The node tree
 
-The parser takes markdown as a node tree in JSON, which the markdown crate's
-WebAssembly export writes (phase B). The tree is markdown-it's token stream
+The parser takes markdown as a node tree in JSON, which the markdown crate
+writes (`render::rich_editor_tree`, `crates/markdown/src/render/tree.rs`)
+and its WebAssembly build exports as `rich_editor_tree`. The tree is markdown-it's token stream
 nested: a pair of `X_open` / `X_close` tokens is a node of type `X` with
 children, any other token a node without. `tokensFromTree`
 (`rich-editor/parser.js`) flattens it back into the tokens Discourse's
@@ -149,33 +150,45 @@ the reference does (`composer.unsupported_token`, back to markdown).
 | `code_inline` | `code` | | `markup` the backticks, `content` |
 | `bbcode_b`, `bbcode_i`, `bbcode_u`, `bbcode_s` | `span` | `class` `bbcode-b` (and so on) | `markup` `[b]` (and so on) |
 
-Discourse's other tokens (html_block, html_inline, emoji, mention, hashtag,
-table, quotes and the other bbcode blocks, the plugins') are written the same
-way, as their rules push them; their parse specs arrive with their
-extensions (196r2, 196r4), and until then they refuse the post as
-unsupported. Text may be split or merged differently from markdown-it's
+Discourse's other tokens are written the same way where the crate already
+knows the token: html_block, html_inline, html_raw, emoji (with
+getEmojiTokenByName's attrs), tables (`table`, `thead`, `tbody`, `tr`, `th`,
+`td` with their `text-align` style), `[code]` as `code_inline`, `[url]` and
+`[email]` as `link`. The rest (mentions, hashtags, quotes and the other
+bbcode blocks, checklists, footnotes, math, the plugins') is written as
+`unported:<name>` (the Element's tag, or the crate node's name) until its
+extension records its JS token (196r2, 196r4). No parse spec handles
+either yet, so they refuse the post as unsupported. Text may be split or merged differently from markdown-it's
 (the parser merges adjacent text), so the test is the document a tree gives,
 not equality with markdown-it's tokens.
 
 tests/browser/rich-editor.spec.js writes the trees for each of the
 reference's cases (its `doc(...)` builders): those are the expected shape.
 
-### What the export must rebuild
+### What the export rebuilds
 
-The crate's tree is not markdown-it's token stream as it stands:
+The crate's tree is not markdown-it's token stream as it stands; tree.rs
+rebuilds it from `render::parse`, the cook's parse and core rules up to
+emoji:
 
 1. A tight list's paragraphs are spliced away (markdown-it 0.6
    `ListScanner::mark_tight_paragraphs`): each item's text goes back in a
    `paragraph` with `hidden: true`.
 2. `InlineRoot` is replaced by its children once inline rules run: each
-   block's inline content goes back in an `inline` node.
+   block's inline content goes back in an `inline` node, grouped by the
+   inline blocks `render::blocks` keeps (`inline_blocks`), its content the
+   block's source (trimmed for an ATX heading, as heading.mjs trims).
 3. `render::element::Element` keeps only a tag and attrs. Where a rule builds
    one for a JS token (bbcode-inline's `[b]` is `bbcode_b`, a `span` with
-   `class="bbcode-b"`), the token's type and markup must be recorded (a node
-   extension set by the rule), not guessed from the tag.
+   `class="bbcode-b"`), the rule records the token's type and markup in the
+   `element::JsToken` node extension; the tag is never guessed from.
 4. The tree is the parse, before what only rendering adds: heading anchors
    (`render::anchor`, an empty link pair in JS that gives the editor
    nothing, so left out), the sanitizer, text post-processing for HTML.
+   The upload pass is left out too: this port runs upload-protocol together
+   with the image and link renderers (images become their HTML), so an
+   `upload://` image is an image token with its short url until the image
+   extension (196r2) records what upload-protocol adds.
 5. The settings: typographer off; onebox, watched words and censored off
    whatever the site's settings say.
 
@@ -191,54 +204,57 @@ ProseMirror's artifacts, and the markdown an edit serializes), three ways:
   schema, view and serializer;
 - `maps`: the document from the case's node tree, so `tokensFromTree` and
   the parse specs;
-- `round-trips`: markdown through markdown.wasm's `rich_editor_tree`,
-  skipped while the build lacks the export.
+- `round-trips`: markdown through markdown.wasm's `rich_editor_tree` (all
+  18 pass; the case skips itself on a build without the export).
 
 It also checks the import map serves every module, typing through the input
 rules and undo, the refusals, and the to-markdown cases the core covers.
-Run it with `scripts/browser-test rich-editor`.
+Run it with `scripts/browser-test rich-editor`. The Rust tests in tree.rs
+check the same cases' trees after the editor's text merging, and what the
+overrides leave out.
 
-## Phase B (the Rust side of 196r1)
+## In the composer
 
-1. `crates/markdown`: a function returning the node tree for raw markdown
-   and RenderSettings (with the overrides above), and in `src/wasm.rs`
-   `rich_editor_tree(ptr, len) -> i32`, called like `preview`: the
-   configured settings, the tree's JSON at `output_ptr` / `output_len`, 1 and
-   a message on failure. Rust tests over the spec's cases, comparing the
-   trees after the same text merging. MARKDOWN_WASM_VERSION follows the new
-   bytes.
-2. `src/assets.rs`: the current urls of every asset under a prefix
-   (`prosemirror/`, `rich-editor/`) as a JSON object, for `data-assets`.
-3. `templates/layout.html`: `<script src="rich-editor.js" data-assets="..."
-   data-base-path="...">` (classic, not deferred, so its map precedes any
-   module) in the head before lightbox.js, on every page of a logged-in
-   member, since an htmx navigation can bring the composer to a document
-   that has already imported modules.
-4. `src/composer/view.rs` and `src/composer/load.rs`: `data-composition-mode`
-   on `#reply-control` (the member's user_options.composition_mode; keep
-   `allow_preview` false for 1), and the toggle as d-editor draws it when no
-   editor mode is forced: first in `.d-editor-button-bar`,
-   `<button class="composer-toggle-switch --markdown" role="switch"
-   aria-checked="false" data-rich-editor="false" type="button">` with
-   `composer-toggle-switch__slider` and its `__left-icon` (fab-markdown,
-   `--active` in markdown mode) and `__right-icon` (`a`, `--active` in rich
-   mode); the labels `composer.switch_to_markdown`,
-   `composer.switch_to_rich_text` (with `%{keyboardShortcut}`, Ctrl+M) and
-   their `_no_shortcut` forms, and `composer.unsupported_token`, as data
-   attributes. Both icons in the sprite.
-5. `static/js/composer.js` (d-editor's toggleRichEditor): the renderer loader
-   also returns `tree` (`JSON.parse` of `rich_editor_tree`). Switching to
-   rich, or opening with composition mode 1: `Discourse.richEditor.load()`,
-   then `createEditor` in `.d-editor-textarea-wrapper` with the textarea's
-   value, `parseTree`, its placeholder, `className: "d-editor-input"`,
-   `keymap` Ctrl+M back, `onChange` writing the textarea's value and firing
-   its `input` (drafts, presence and submit keep reading the textarea),
-   `onUnsupported` alerting the string and switching back. The textarea is
-   hidden, `.d-editor-container` takes `--rich-editor-enabled` for
-   `--markdown-editor-enabled`, the preview hides, the toggle takes `--rte`.
-   Switching back destroys the editor and shows the textarea. Each switch
-   sets the preference after 1s of quiet (PUT /u/:username.json
-   `composition_mode`). Where composer.js writes the textarea itself (a
-   draft, a quote, the toolbar until 196r3), the editor's `setValue` follows.
-6. Run the spec against the phase B build: the `round-trips` cases must
-   pass, and composer.spec.js and composer-actions.spec.js stay green.
+- `templates/layout.html` puts `rich-editor.js` in the head of every page of
+  a logged-in member, before lightbox.js, classic and not deferred, with
+  `data-assets` (`assets::rich_editor_urls`: every `prosemirror/` and
+  `rich-editor/` asset's digested url) and `data-base-path`. An htmx
+  navigation can bring the composer to a document that has already
+  imported modules, so the map is there from the first page.
+- `src/composer/view.rs` draws ComposerToggleSwitch first in
+  `.d-editor-button-bar` (d-editor's showEditorModeToggle: no editor mode is
+  forced in the composer), in the member's `composition_mode`
+  (user_options; `load.rs`): `--rte` and `aria-checked="true"` for 1,
+  `--markdown` otherwise, `--active` on the fab-markdown or `a` icon,
+  labelled with formatShortcut("ctrl+m") for a keyboard outside Apple's
+  platforms. `#reply-control` carries `data-composition-mode`,
+  `data-label-switch-to-markdown`, `-rich-text` and their `-no-shortcut`
+  forms (with `%{keyboardShortcut}` left in), `data-label-key-ctrl`,
+  `data-label-key-control` and `data-label-unsupported-token`;
+  `.d-editor-container` takes `--rich-editor-enabled` or
+  `--markdown-editor-enabled`, and `data-allow-preview` is false in rich
+  mode.
+- `static/js/composer.js` follows d-editor's toggleRichEditor. The toggle,
+  Ctrl+M (in the textarea, or the editor's keymap) or opening the composer
+  in mode 1 loads `Discourse.richEditor` and the preview's renderer (whose
+  `tree` is `rich_editor_tree`), then `createEditor` in
+  `.d-editor-textarea-wrapper` over the textarea's value. The textarea
+  stays, hidden: each edit writes its markdown there and fires `input`, so
+  drafts, presence and the save read it as before, and wherever composer.js
+  writes the textarea itself (the text it opens with, the toolbar until
+  196r3, a quote, a template, upload placeholders) the editor's `setValue`
+  follows. A refusal alerts `composer.unsupported_token` and switches back
+  to markdown. Each switch redraws the container, the preview and the
+  toggle (relabelled for the platform, or the `_no_shortcut` forms without
+  a fine pointer) and saves `composition_mode` with PUT
+  /u/:username.json after a second of quiet.
+
+Open: Discourse ships `default_composition_mode` 1, and the port reads a
+member's stored mode as Ember does, so a member on Discourse's default (the
+seed's members, an imported site's, a new signup) opens the composer in the
+rich editor, which refuses a post with a mention, an emoji, a quote or any
+other construct whose extension is 196r2's or 196r4's. That is at odds
+with markdown staying the default until 196r5, and needs the owner's call:
+the port has no override of a site setting's default, and rewriting stored
+modes would lose members' own choices. The browser suite puts its members
+on markdown (`tests/browser/setup.sql`); composer.spec.js opts its own in.

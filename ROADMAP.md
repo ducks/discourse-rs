@@ -388,8 +388,8 @@ Visible if clicked, avoid them in a scripted demo:
   Not a demo blocker: the reject reason modal (194e2), which only a
   user reviewable opens, and the queue lists none yet.
 - [ ] The composer's rich editor and its toolbar buttons (196r1 to 196r3;
-  196r1's phase A, the frontend core, is done); the profile's About me
-  editor follows it (196r5).
+  196r1, the core and the composer's toggle, is done); the profile's About
+  me editor follows it (196r5).
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -3923,11 +3923,11 @@ route table has been made, so this list may be short.
     with the port's markdown crate (its WebAssembly build) through a node
     tree export, never with JS markdown-it; ProseMirror is vendored ES
     modules behind an import map, with no bundler, build step or CDN.
-    196r1. `feat/rich-editor-core` L: the core: vendoring, the import map,
-    the parser over the markdown crate's node tree, the serializer, the
-    toggle on composition_mode, the round-trip tests. Phase A (done, no
-    Rust): every prosemirror-* package the editor imports and their
-    dependencies at the reference's pnpm-lock.yaml versions, checked
+    196r1. ~~`feat/rich-editor-core`~~ (done) L: the core: vendoring, the
+    import map, the parser over the markdown crate's node tree, the
+    serializer, the toggle on composition_mode, the round-trip tests.
+    Phase A (no Rust): every prosemirror-* package the editor imports and
+    their dependencies at the reference's pnpm-lock.yaml versions, checked
     against its sha512 integrity (static/vendor/prosemirror, the README);
     the loader and its import map (static/js/rich-editor.js, markdown-it
     mapped to a stub since prosemirror-markdown imports it at load); the
@@ -3936,16 +3936,29 @@ route table has been made, so this list may be short.
     mapping layer from the node tree to markdown-it's tokens and the tree's
     contract (docs/rich-editor.md); the core CSS and the toggle switch's;
     tests/browser/rich-editor.spec.js with the reference's
-    prosemirror-markdown, strikethrough and underline cases (serialized
-    from HTML and mapped from trees: 48 pass) and their round trips
-    through the export (18, skipped until it exists). Phase B (Rust and the
-    wiring, docs/rich-editor.md "Phase B"): the crate's node tree and
-    markdown.wasm's rich_editor_tree export with Rust tests over the same
-    cases; an assets helper for data-assets; the loader's tag in the head
-    of logged-in pages before lightbox.js; data-composition-mode and the
-    toggle's markup and labels in the composer; composer.js switching
-    editors, saving composition_mode after 1s and falling back on
-    unsupported tokens; the round-trip cases passing
+    prosemirror-markdown, strikethrough and underline cases. Phase B: the
+    crate's node tree (render::rich_editor_tree on render::parse, which
+    render() now shares; render/tree.rs rebuilds tight lists' hidden
+    paragraphs, the inline tokens and the JS tokens Elements stand for,
+    recorded by their rules in element::JsToken; typographer, onebox,
+    watched words, censored and the upload pass left out) and
+    markdown.wasm's rich_editor_tree export, with Rust tests over the
+    spec's cases; assets::rich_editor_urls for the loader's data-assets;
+    the loader's tag in the head of a member's pages before lightbox.js;
+    the toggle (ComposerToggleSwitch), data-composition-mode and the labels
+    in the composer; composer.js switching editors by the toggle, Ctrl+M
+    or composition mode 1, keeping the textarea as the markdown's holder
+    (setValue wherever it writes it), saving composition_mode after 1s and
+    going back to markdown with composer.unsupported_token on a refusal.
+    Round trips: all 18 of the spec's round-trip cases pass through
+    markdown.wasm (rich-editor.spec.js 66 of 66); composer.spec.js (with
+    four rich editor cases: switching and Ctrl+M, opening in mode 1 and
+    keeping a saved switch, the refusal, posting from rich mode) and
+    composer-actions.spec.js pass. Open, for the owner: Discourse's
+    default_composition_mode is 1 and the seed's, imported and newly
+    signed-up members have it, so they now open in the rich editor before
+    196r2's extensions; the browser suite puts its members on markdown
+    (docs/rich-editor.md, "In the composer")
     196r2. `feat/rich-editor-extensions` L: the everyday extensions: emoji,
     mentions, hashtags, links and the link toolbar, images and uploads
     (upload placeholder, image node view, grid), quotes, code blocks with
