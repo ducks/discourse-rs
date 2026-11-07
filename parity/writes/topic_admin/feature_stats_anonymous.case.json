@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET pinned_at = now() - interval '1 day', pinned_globally = TRUE WHERE id = 2",
+    "UPDATE topics SET pinned_at = now() - interval '1 day', pinned_globally = TRUE WHERE id = 39"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/topics/feature_stats.json?category_id=3"
+    }
+  ]
+}

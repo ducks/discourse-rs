@@ -1,0 +1,15 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/make-banner",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/remove-banner",
+      "params": {}
+    }
+  ]
+}

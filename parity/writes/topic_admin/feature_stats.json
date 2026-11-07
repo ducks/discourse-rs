@@ -1,0 +1,87 @@
+{
+  "name": "feature_stats",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/topics/feature_stats.json?category_id=4"
+    },
+    {
+      "method": "GET",
+      "path": "/topics/feature_stats.json"
+    }
+  ],
+  "started_at": "2026-11-07T02:32:44.412154",
+  "transaction_started_at": "2026-11-07T02:32:42.988393",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "pinned_globally_count": 2,
+        "banner_count": 1,
+        "pinned_in_category_count": 2
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "pinned_globally_count": 2,
+        "banner_count": 1
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sLwh5pFQtZBWZovaCT37vj1mGbQ=",
+            "created_at": "2026-11-07T02:32:43.556336",
+            "rotated_at": "2026-11-07T02:32:43.552831",
+            "updated_at": "2026-11-07T02:32:43.556336",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "sLwh5pFQtZBWZovaCT37vj1mGbQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T02:32:44.419607",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sLwh5pFQtZBWZovaCT37vj1mGbQ=",
+            "created_at": "2026-11-07T02:32:43.556336",
+            "rotated_at": "2026-11-07T02:32:43.552831",
+            "updated_at": "2026-11-07T02:32:43.556336",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "sLwh5pFQtZBWZovaCT37vj1mGbQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET pinned_at = now() - interval '1 day', pinned_globally = TRUE WHERE id = 41",
+    "UPDATE topics SET pinned_at = now() - interval '1 day', pinned_globally = FALSE WHERE id = 35",
+    "UPDATE topics SET archetype = 'banner' WHERE id = 38"
+  ],
+  "recorded_from": {
+    "case": "da7950937439b12328330dc16dfb5d70a162f5dfb04a5f66345da9a3a9da1587",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -689,6 +689,13 @@
       ]
     },
     {
+      "name": "topic-admin-modals.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-admin-modals.js"
+      ]
+    },
+    {
       "name": "topic-bookmarks-menu.js",
       "content_type": "js",
       "files": [

@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/make-banner",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/2/make-banner",
+      "params": {}
+    }
+  ]
+}

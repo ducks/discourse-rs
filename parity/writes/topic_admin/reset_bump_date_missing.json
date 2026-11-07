@@ -1,0 +1,194 @@
+{
+  "name": "reset_bump_date_missing",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/999999/reset-bump-date",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/3/reset-bump-date",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T02:33:13.659499",
+  "transaction_started_at": "2026-11-07T02:33:12.651972",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "slug": "about-the-general-category",
+            "score": 0,
+            "title": "About the General category",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": null,
+            "subtype": null,
+            "user_id": -1,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-07-25T05:58:16.326415",
+            "pinned_at": "2026-07-25T05:58:16.314242",
+            "created_at": "2026-07-25T05:58:16.326029",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-07-25T05:58:16.326029",
+            "word_count": null,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "About the General category",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": null,
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": -1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          },
+          "after": {
+            "id": 3,
+            "slug": "about-the-general-category",
+            "score": 0,
+            "title": "About the General category",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": null,
+            "subtype": null,
+            "user_id": -1,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-07-25T05:58:16.335067",
+            "pinned_at": "2026-07-25T05:58:16.314242",
+            "created_at": "2026-07-25T05:58:16.326029",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-11-07T02:33:13.695522",
+            "word_count": null,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "About the General category",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": null,
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": -1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GHXdPzS6cELses1am5PTK5zREbk=",
+            "created_at": "2026-11-07T02:33:12.967973",
+            "rotated_at": "2026-11-07T02:33:12.967262",
+            "updated_at": "2026-11-07T02:33:12.967973",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "GHXdPzS6cELses1am5PTK5zREbk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T02:33:13.665183",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GHXdPzS6cELses1am5PTK5zREbk=",
+            "created_at": "2026-11-07T02:33:12.967973",
+            "rotated_at": "2026-11-07T02:33:12.967262",
+            "updated_at": "2026-11-07T02:33:12.967973",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "GHXdPzS6cELses1am5PTK5zREbk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "a1e76b13a18b64a4ff031409a20ae53a4c00cf974c351d2fe3e29a45c8779f14",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

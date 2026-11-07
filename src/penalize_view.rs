@@ -4,7 +4,8 @@
 //! `i18n` resolves them for staff (count keys as their `one` and `other`
 //! forms, MessageFormat keys raw), the settings it reads, the member's
 //! timezone the time shortcuts are computed in, the date libraries it
-//! loads and, on the admin user page, the AdminUser it penalizes.
+//! loads and, on the admin user page, the AdminUser it penalizes. The
+//! topic admin menu's modals draw their date inputs from it too.
 
 use serde_json::{Map, Value, json};
 
@@ -54,6 +55,8 @@ const KEYS: &[&str] = &[
     "admin.user.confirm_cancel_penalty",
     "time_shortcut.later_today",
     "time_shortcut.tomorrow",
+    "time_shortcut.two_days",
+    "time_shortcut.next_week",
     "time_shortcut.later_this_week",
     "time_shortcut.start_of_next_business_week",
     "time_shortcut.start_of_next_business_week_alt",

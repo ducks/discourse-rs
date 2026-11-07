@@ -41,6 +41,7 @@
 <script src="{{ crate::assets::url(base_path, "post-stream.js") }}"></script>
 {#- The topic admin menu and the posts' admin menus. -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
+{% if topic_menus.contains("topic-admin-menu-template") %}<script src="{{ crate::assets::url(base_path, "topic-admin-modals.js") }}"></script>{% endif %}
 {#- The footer's bookmarks menu (TopicBookmarksMenu). -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-bookmarks-menu.js") }}"></script>{% endif %}
 {#- A message's add participant modal (AddPmParticipants). -#}

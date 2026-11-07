@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET bumped_at = now() - interval '2 hours' WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/reset-bump-date",
+      "params": {}
+    }
+  ]
+}

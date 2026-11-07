@@ -375,8 +375,10 @@ Visible if clicked, avoid them in a scripted demo:
 - [x] The review queue's claims and notes are refused (194), and the topic
   admin wrench isn't drawn (194, 262a): the wrench and the post admin
   menu, feat/topic-admin-menus (194a), and claims and notes,
-  feat/review-claims-notes (194b), done; the menus' unported actions are
-  refused (194c, 194d).
+  feat/review-claims-notes (194b), done; the topic menu's actions
+  (feat/topic-admin-actions, 194c) done but the timer modal,
+  multi-select and nested replies (194c1); the post menu's unported
+  actions are refused (194d).
 - [x] The review queue's client actions (edit, suspend, silence) and
   editing a reviewable (194e): done, feat/review-client-actions, with
   the raw email modal, and the tags field (feat/review-edit-tags,
@@ -3728,16 +3730,40 @@ route table has been made, so this list may be short.
     claim_*, notes_*, perform_*claim*, review_list_notes and
     review_list_claimed*). The modals and client actions a claim also
     precedes are 194e
-    194c. `feat/topic-admin-actions` M: what the topic admin menu refuses:
-    the FeatureTopic modal (pinning with its date, globally, banners:
-    /topics/feature_stats, make-banner, remove-banner; its pin form
-    requires a future date and topic_status.rs refuses pinning until a
-    time, the unpin job, so pinning needs that first), recovering a topic
-    (PUT /t/:id/recover; post_destroyer refuses recovering topics),
-    selecting posts (multi-select), the ConvertToPublicTopic modal, the
-    EditTopicTimer and EditSlowMode modals (their endpoints are ported),
-    ChangeTimestamp (PUT /t/:id/change-timestamp), reset bump date (PUT
-    /t/:id/reset-bump-date) and the nested replies toggle
+    194c. ~~`feat/topic-admin-actions`~~ (done) M: the topic admin menu's
+    actions. Pinning until a time (Topic#update_pinned: the time parsed
+    as Time.parse reads the pin form's, InvalidParameters for what has
+    none, the unpin job scheduled and cancelled; Jobs::UnpinTopic), for
+    PUT /t/:id/status and the bulk pin. The FeatureTopic modal
+    (static/js/topic-admin-modals.js): GET /topics/feature_stats, pinning
+    in the category and globally through PinOptionSection's form (the
+    date required and to come, a confirmation past four global pins),
+    unpinning, and banners (PUT make-banner and remove-banner,
+    src/topics/banner.rs, with Jobs::RemoveBanner and
+    Topic.ensure_consistency!'s expired banners, no longer refused).
+    Recovering a topic (PUT /t/:id/recover, PostDestroyer#recover for a
+    first post: staff_recovered, Topic#recover! with the category's and
+    its tags' counts, both topic_recovered events, the user actions and
+    the staff log). ChangeTimestamp (PUT /t/:id/change-timestamp,
+    src/topics/timestamp.rs: TopicTimestampChanger with each post saved
+    as validated, Ruby's float arithmetic for the moved times, the log),
+    reset bump date (PUT /t/:id/reset-bump-date(/:post_id)), EditSlowMode
+    and ConvertToPublicTopic. penalize-user.js's DFutureDateInput and
+    ComboBox are shared as Discourse.futureDateInput (custom shortcuts,
+    label classes), its config drawn for whoever has the menu. Recorded
+    on rs-ref-a (parity/writes/topic_admin, 28 cases); browser specs in
+    tests/browser/topic-admin-actions.spec.js. The rest is 194c1 and
+    194c2
+    194c1. `feat/topic-admin-actions-rest` M: what the topic admin menu
+    still refuses: the EditTopicTimer modal (its endpoint is ported; it
+    needs DTimeShortcutPicker's tap tiles, DRelativeTimePicker and
+    TopicTimerInfo), selecting posts (the topic's multi-select mode and
+    its bulk actions) and the nested replies toggle (PUT
+    /n/:slug/:id/toggle)
+    194c2. `feat/site-banner` S: the banner topic drawn atop every page
+    (ApplicationLayoutPreloader's banner, DiscourseBanner, dismissing it
+    through dismissed_banner_key, the `/site/banner` messages): banners
+    are made and removed (194c) but not shown
     194d. `feat/post-admin-actions` M: what the post admin menu refuses:
     the staff color (PUT /posts/:id/post_type), the post notice modal
     (PUT /posts/:id/notice), unhiding (PUT /posts/:id/unhide), the

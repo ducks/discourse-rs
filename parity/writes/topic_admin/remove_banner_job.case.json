@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET archetype = 'banner', bannered_until = now() - interval '1 minute' WHERE id = 35"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "remove_banner",
+      {
+        "topic_id": 35
+      }
+    ]
+  ],
+  "run_jobs": [
+    "remove_banner"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "feature_stats_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/topics/feature_stats.json?category_id=3"
+    }
+  ],
+  "started_at": "2026-11-07T02:32:42.620535",
+  "transaction_started_at": "2026-11-07T02:32:41.778072",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "pinned_globally_count": 1,
+        "banner_count": 0,
+        "pinned_in_category_count": 0
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET pinned_at = now() - interval '1 day', pinned_globally = TRUE WHERE id = 2",
+    "UPDATE topics SET pinned_at = now() - interval '1 day', pinned_globally = TRUE WHERE id = 39"
+  ],
+  "recorded_from": {
+    "case": "6b468d7ef2fedfc00af78142c36548e8ece40cb408bf3d0320b7e6b8f64f4df8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

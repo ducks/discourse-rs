@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "pinned",
+        "enabled": "true",
+        "until": "2030-01-15 08:00+01:00"
+      }
+    }
+  ]
+}

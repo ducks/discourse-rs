@@ -105,7 +105,7 @@ async fn update(
         bus: &state.bus,
     };
     let topic_id = crate::ruby::to_i(&topic_id) as i32;
-    let outcome = topic_status::update(
+    let outcome = match topic_status::update(
         &mut tx,
         &ctx,
         &guardian,
@@ -115,7 +115,16 @@ async fn update(
         cast_bool(&enabled),
         until.as_deref(),
     )
-    .await?;
+    .await
+    {
+        Ok(outcome) => outcome,
+        Err(e) => {
+            return match e.downcast_ref::<topic_status::InvalidParameters>() {
+                Some(invalid) => Ok(super::search::invalid_parameters(&state, invalid.0)),
+                None => Err(e),
+            };
+        }
+    };
     Ok(match outcome {
         Outcome::Done => {
             let body = topic_status::response(&mut tx, topic_id).await?;

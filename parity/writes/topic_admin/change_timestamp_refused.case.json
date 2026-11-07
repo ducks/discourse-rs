@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/change-timestamp",
+      "params": {
+        "timestamp": "4102444800"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/change-timestamp",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/999999/change-timestamp",
+      "params": {
+        "timestamp": "1767225600"
+      }
+    }
+  ]
+}

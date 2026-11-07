@@ -1,0 +1,77 @@
+{
+  "name": "recover_forbidden",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/recover",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T02:33:00.37673",
+  "transaction_started_at": "2026-11-07T02:32:59.359845",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pupnpxN9CrI0rjFqm+LSUYOv+Hg=",
+            "created_at": "2026-11-07T02:32:59.671951",
+            "rotated_at": "2026-11-07T02:32:59.671034",
+            "updated_at": "2026-11-07T02:32:59.671951",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pupnpxN9CrI0rjFqm+LSUYOv+Hg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T02:33:00.382742",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pupnpxN9CrI0rjFqm+LSUYOv+Hg=",
+            "created_at": "2026-11-07T02:32:59.671951",
+            "rotated_at": "2026-11-07T02:32:59.671034",
+            "updated_at": "2026-11-07T02:32:59.671951",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pupnpxN9CrI0rjFqm+LSUYOv+Hg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 35",
+    "UPDATE posts SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "8ea1cb4691fea6b4acd8396747a7c1ee36c4ca7984c3d1e63f5b3af21237d96e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

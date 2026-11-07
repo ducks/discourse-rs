@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE topics SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 35",
+    "UPDATE posts SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/recover",
+      "params": {}
+    }
+  ]
+}

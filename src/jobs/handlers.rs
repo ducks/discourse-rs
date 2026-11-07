@@ -82,6 +82,25 @@ fn handler<'a>(
         "feature_topic_users" => {
             Box::pin(async move { feature_topic_users(state, &job.args).await })
         }
+        "unpin_topic" => Box::pin(async move {
+            let mut conn = state.pool.acquire().await?;
+            crate::topic_status::unpin_topic_job(&mut conn, &job.args).await
+        }),
+        "remove_banner" => Box::pin(async move {
+            let mut tx = state.pool.begin().await?;
+            let s = settings(state, &mut tx).await?;
+            let host = crate::pretty_text::Host::from_state(state);
+            let ctx = crate::posting::Ctx {
+                host: &host,
+                settings: &s,
+                config: &state.config,
+                i18n: &state.i18n,
+                bus: &state.bus,
+            };
+            crate::topics::banner::remove_banner_job(&mut tx, &ctx, &job.args).await?;
+            tx.commit().await?;
+            Ok(())
+        }),
         "sync_topic_user_bookmarked" => {
             Box::pin(async move { sync_topic_user_bookmarked(state, &job.args).await })
         }

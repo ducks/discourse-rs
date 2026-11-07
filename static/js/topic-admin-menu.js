@@ -9,9 +9,13 @@
 // opening, archiving, listing and unlisting PUT /t/:id/status as
 // Topic#toggleStatus does, deleting DELETEs /t/:id (asking first through
 // DeleteTopicConfirm for a topic past min_topic_views_for_delete_confirm),
-// and Make Personal Message PUTs convert-topic/private; the page is then
-// drawn again, where Ember re-renders it in place. The post menu is the
-// menu service's (modalForMobile, autofocus); its Moderation History links
+// recovering PUTs /t/:id/recover, Make Personal Message PUTs
+// convert-topic/private and Reset Bump Date PUTs reset-bump-date; the
+// page is then drawn again, where Ember re-renders it in place. Pinning
+// and banners (FeatureTopic), Make Public (ConvertToPublicTopic), the
+// timestamp (ChangeTimestamp) and slow mode (EditSlowMode) open their
+// modals (static/js/topic-admin-modals.js). The post menu is the menu
+// service's (modalForMobile, autofocus); its Moderation History links
 // work. What either opens that is not ported is refused, named.
 (function () {
   "use strict";
@@ -77,6 +81,13 @@
       return JSON.parse(template.dataset.topic);
     } catch (e) {
       return null;
+    }
+  }
+
+  // One of topic-admin-modals.js's modals.
+  function modals(name, topic) {
+    if (Discourse.topicAdminModals) {
+      Discourse.topicAdminModals[name](topic);
     }
   }
 
@@ -161,7 +172,7 @@
   // The topic controller's actions, by the item's class.
   var TOPIC_ACTIONS = {
     "topic-admin-multi-select": function () {
-      unported("selecting posts (the topic's multi-select mode)");
+      unported("selecting posts (the topic's multi-select mode, 194c1)");
     },
     "topic-admin-delete": function (topic) {
       if (topic.deleteConfirm && Discourse.modal) {
@@ -176,8 +187,18 @@
         }
       });
     },
-    "topic-admin-recover": function () {
-      unported("recovering topics (PUT /t/:id/recover)");
+    // Topic#recover. Ember leaves a failure unhandled.
+    "topic-admin-recover": function (topic) {
+      request("PUT", "/t/" + topic.id + "/recover", { context: location.pathname })
+        .then(function (r) {
+          if (!r.ok) {
+            throw new Error("/t/" + topic.id + "/recover: " + r.status);
+          }
+          location.reload();
+        })
+        .catch(function (e) {
+          console.error(e);
+        });
     },
     "topic-admin-close": function (topic) {
       toggleStatus(topic, "closed", true);
@@ -185,8 +206,8 @@
     "topic-admin-open": function (topic) {
       toggleStatus(topic, "closed", false);
     },
-    "topic-admin-pin": function () {
-      unported("the feature topic modal (FeatureTopic: pinning, unpinning and banners)");
+    "topic-admin-pin": function (topic) {
+      modals("featureTopic", topic);
     },
     "topic-admin-archive": function (topic) {
       toggleStatus(topic, "archived", !topic.archived);
@@ -196,7 +217,7 @@
     },
     "topic-admin-convert": function (topic, item) {
       if (item.querySelector(".d-icon-comment")) {
-        unported("the make public topic modal (ConvertToPublicTopic)");
+        modals("makePublic", topic);
         return;
       }
       request("PUT", "/t/" + topic.id + "/convert-topic/private").then(function (r) {
@@ -207,19 +228,24 @@
       });
     },
     "admin-topic-timer-update": function () {
-      unported("the topic timer modal (EditTopicTimer)");
+      unported("the topic timer modal (EditTopicTimer, 194c1)");
     },
-    "topic-admin-change-timestamp": function () {
-      unported("changing a topic's timestamp (ChangeTimestamp, PUT /t/:id/change-timestamp)");
+    "topic-admin-change-timestamp": function (topic) {
+      modals("changeTimestamp", topic);
     },
-    "topic-admin-reset-bump-date": function () {
-      unported("resetting a topic's bump date (PUT /t/:id/reset-bump-date)");
+    // Topic#resetBumpDate: nothing on the page changes.
+    "topic-admin-reset-bump-date": function (topic) {
+      request("PUT", "/t/" + topic.id + "/reset-bump-date").then(function (r) {
+        if (!r.ok) {
+          popupError(r);
+        }
+      });
     },
-    "topic-admin-slow-mode": function () {
-      unported("the slow mode modal (EditSlowMode)");
+    "topic-admin-slow-mode": function (topic) {
+      modals("slowMode", topic);
     },
     "topic-admin-nested-replies": function () {
-      unported("the nested replies view (PUT /n/:slug/:id/toggle)");
+      unported("the nested replies view (PUT /n/:slug/:id/toggle, 194c1)");
     },
   };
 
