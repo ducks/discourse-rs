@@ -6,21 +6,18 @@ with 1 vCPU and 2 GiB RAM. Nix supplies the tested runtime dependencies
 and PostgreSQL 16 with pgvector; systemd manages the services. Caddy and
 image/video tools are installed through Ubuntu packages.
 
-The deployed release is `9d0871e3`, binary and frontend package alike.
-Since the previous release (`d1597764`) it adds user status in chat,
-one chat history for the drawer and full-page chat, and the topic admin
-menu's actions (pinning until a time, banners, recover, change
-timestamp, reset bump date, slow mode, make public). The binary's
-SHA-256 is
-`2d691a8dd2fba97817ee8ec13c14b9baef585cf1542dd51770d402efa964b793` and
-the package's manifest's is
-`c7b91da941df479be01ffc0040f20116bcfee20e2e2f1ce621dc8f05c2a8dd2f`.
-The November 6 local optimized build took 13 minutes, 7 seconds,
-reusing dependencies. Forty-two focused browser tests passed against
-that binary before the upload, and the CI gate on `6d7c343d` (its
-source plus a spec fix) passed before activation. The previous
-`d1597764` binary and its `frontend-d1597764` package are retained for
-rollback.
+The deployed release is `1318ea47`, binary and frontend package alike.
+Since the previous release (`9d0871e3`) it adds the site banner drawn
+atop pages (dismissed and kept live) and the post admin menu's actions
+(staff color, notice, unhide, lock, wiki, rebake). The binary's SHA-256
+is `bf653246fffc3c70cb57b24252abfc54207a8b22f8542449d3eeef1ec8be97cd`
+and the package's manifest's is
+`f6e18627962ed8531649ad113633ca019b693d01411eb31ce3cf934bdda3820e`.
+The November 6 local optimized build took 21 minutes, 38 seconds,
+sharing the machine with a debug build. Thirty-five focused browser
+tests passed against that binary before the upload, and the CI gate on
+`1318ea47` passed before activation. The previous `9d0871e3` binary and
+its `frontend-9d0871e3` package are retained for rollback.
 
 ## Access
 
@@ -53,7 +50,7 @@ systemctl restart discourse-rs
 ```
 
 All three services are enabled at boot. The binary is
-`/opt/discourse-rs/discourse-rs-9d0871e3`, selected by
+`/opt/discourse-rs/discourse-rs-1318ea47`, selected by
 `/usr/local/bin/discourse-rs`; its frontend package is the one
 `/opt/discourse-rs/frontend-current` points at (`DISCOURSE_FRONTEND_DIR`
 in the env file). Nix GC roots under `/opt/discourse-rs/`
