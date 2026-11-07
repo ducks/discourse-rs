@@ -7,9 +7,9 @@ use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime};
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
+use crate::AppError;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
-use crate::{AppError, Unsupported};
 
 /// `CakedayController::PAGE_SIZE`
 pub const PAGE_SIZE: i64 = 48;
@@ -208,20 +208,6 @@ pub async fn page(
     }
     let rows = query.fetch_all(&mut *conn).await?;
 
-    let ids: Vec<i32> = rows.iter().map(|r| r.id).collect();
-    if settings.get("enable_user_status")?.truthy() {
-        let with_status: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = ANY($1) \
-             AND (ends_at IS NULL OR ends_at > $2))",
-        )
-        .bind(&ids)
-        .bind(now)
-        .fetch_one(&mut *conn)
-        .await?;
-        if with_status {
-            return Err(Unsupported("user status in discourse-cakeday's lists (130b)").into());
-        }
-    }
     let names = settings.get("enable_names")?.truthy();
     let logo = crate::admin::users::logo_small_url(&mut *conn, settings).await?;
     let mut users = Vec::with_capacity(rows.len());

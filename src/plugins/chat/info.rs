@@ -854,11 +854,22 @@ impl Context<'_> {
         }
         let mut out = String::new();
         for m in &list {
+            // ChatUserInfo's @showStatus and @showStatusDescription.
+            let status = match m["user"].get("status").filter(|s| s.is_object()) {
+                Some(status) => crate::users::views::status::message(
+                    self.settings.emojis(),
+                    self.base_path,
+                    status,
+                    true,
+                ),
+                None => String::new(),
+            };
             out.push_str(&member_item(
                 &m["user"],
                 can_remove && m["user"]["id"].as_i64() != Some(viewer),
                 name_first,
                 &online,
+                &status,
                 &t,
             )?);
         }
@@ -891,6 +902,7 @@ pub(crate) fn member_item(
     removable: bool,
     name_first: bool,
     online: &[i64],
+    status: &str,
     t: &dyn Fn(&str) -> String,
 ) -> Result<String, AppError> {
     let username = s(&user["username"]);
@@ -916,7 +928,7 @@ pub(crate) fn member_item(
             escape(name)
         ));
     }
-    info.push_str("</span><div class=\"user-status\"></div>");
+    info.push_str(&format!("</span><div class=\"user-status\">{status}</div>"));
     Ok(format!(
         "<li class=\"c-channel-members__list-item -member\" tabindex=\"0\" data-user-id=\"{}\" data-username=\"{}\"><div class=\"c-channel-members__list-item -user-info\" role=\"button\">{info}</div>{}</li>",
         user["id"],

@@ -6,9 +6,9 @@
 use serde_json::{Map, Value, json};
 
 use super::channels::{CHANNEL_COLUMNS, ChannelRow, Context};
+use crate::AppError;
 use crate::guardian::Guardian;
 use crate::session::current::SessionUser;
-use crate::{AppError, Unsupported};
 
 /// `ChannelFetcher::MAX_DM_CHANNEL_RESULTS`
 pub const MAX_DM_CHANNEL_RESULTS: i64 = 75;
@@ -235,17 +235,6 @@ impl Context<'_> {
                         logo.as_deref()
                     )?),
                 );
-                if s.get("enable_user_status")?.truthy() {
-                    let has_status: bool = sqlx::query_scalar(
-                        "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = $1 AND (ends_at IS NULL OR ends_at > now()))",
-                    )
-                    .bind(u.id)
-                    .fetch_one(&mut *self.conn)
-                    .await?;
-                    if has_status {
-                        return Err(Unsupported("user status in chat (130b)").into());
-                    }
-                }
                 out.insert("custom_fields".into(), self.custom_fields(u.id).await?);
                 // object.guardian.can_chat?
                 let target_can_chat = match SessionUser::load(&mut *self.conn, u.id).await? {
@@ -261,6 +250,13 @@ impl Context<'_> {
                     "has_chat_enabled".into(),
                     json!(can_chat && u.chat_enabled.unwrap_or(false)),
                 );
+                // UserStatusMixin (include_status: true) with the viewer's
+                // scope.
+                if let Some(status) =
+                    crate::users::status::visible_one(&mut *self.conn, s, g, u.id).await?
+                {
+                    crate::users::status::prepend(&mut out, status);
+                }
             }
             None => {
                 out.insert("id".into(), Value::Null);

@@ -1173,6 +1173,30 @@ async fn create_views(st: &AppState, lb: i64) {
     cached_view::create(&mut conn, &s, lb).await.unwrap();
 }
 
+// UserScoreSerializer is a BasicUserSerializer the controller gives no
+// include_status: a ranked user's status stays out.
+#[tokio::test]
+async fn the_leaderboard_leaves_statuses_out() {
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "discourse_gamification_enabled", 5, "t").await;
+    set_setting(&db.pool, "enable_user_status", 5, "t").await;
+    exec(&db, "DELETE FROM gamification_leaderboards").await;
+    exec(
+        &db,
+        "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'coffee', 'on a break', now() - interval '1 hour', NULL)",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let [lb, _, _, _] = leaderboard_world(&db, &st).await;
+    create_views(&st, lb).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (status, doc) = user1.get(&format!("/leaderboard/{lb}.json")).await;
+    assert_eq!(status, StatusCode::OK, "{doc}");
+    assert_eq!(doc["users"][0]["username"], "user1");
+    assert!(doc["users"][0].get("status").is_none(), "{doc}");
+    assert!(doc["personal"]["user"].get("status").is_none(), "{doc}");
+}
+
 #[tokio::test]
 async fn respond_returns_users_their_scores_and_the_viewers_position() {
     let (db, st) = setup().await;

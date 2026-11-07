@@ -2007,19 +2007,45 @@ have handlers now.
     the bubble and the topic's posts by a user whose status changed.
     Write cases parity/writes/user_status; tests/browser/user-status.spec.js.
     Left, as 130b.
-    130b. `feat/user-status-chat` M: the status in chat's serializers,
-    refused by name (plugins/chat/direct_messages.rs, membership.rs,
-    messages.rs, channels.rs: MessageUserSerializer and mentioned users
-    without a scope, the DM and membership users with one; the
-    publisher's payloads, threads and pins) and where chat draws it
-    (chat-message info, the members list, DM titles and the sidebar,
-    the message creator), discourse-cakeday's lists and
-    discourse-gamification's leaderboard (refused by name), the
-    autocomplete's status (user-status-on-autocomplete), DTimeShortcutPicker's
-    custom date and time tile (refused in the modal), a mention's status
-    redrawn live (the posts mentioning a user; the poster's are), and
-    MessageBus.last_id("/user-status") (pg-bus has no per-channel id, so
-    message_bus_last_id is 0).
+    130b. ~~`feat/user-status-chat`~~ (done) M: the status in chat's
+    serializers with Rails' viewers: MessageUserSerializer and the
+    mentioned users (Chat::MessageSerializer, so the messages list, the
+    pins, search and every Chat::Publisher payload that carries a
+    message) and ThreadOriginalMessageSerializer's user and mentioned
+    users get include_status without a scope (Guardian.new: a silenced
+    user's status shows to no one there); ChatableUserSerializer (DM
+    chatables, /chatables) and the membership and members list users
+    get it with the viewer's scope; in-reply-to users, reactions,
+    pinned_by, thread previews and the publisher's other users get none,
+    as in Rails. Client: the emoji by the author's name
+    (ChatMessageInfo), on mentions in cooked messages
+    (updateUserStatusOnMention's UserStatusMessage), after a one on one
+    DM's title (ChatChannelName, in rows, titles and the new message
+    list; never with its description, as `this.site` is not injected
+    there) and on its sidebar link (ChatSidebarIndicators), in the
+    members list and the message creator's user rows with the
+    description, and in the chat composer's mention autocomplete
+    (initUserStatusHtml, renderUserStatusHtml). discourse-cakeday's lists
+    and discourse-gamification's leaderboard pass no include_status in
+    Rails, so their refusals went (no status). /live redraws the topic's
+    posts mentioning a user whose status changed, as the mentions
+    decorator tracks them. Rails' DM messages' available_flags keep a
+    nil where a notify flag is left out (`next` inside `map`); so does
+    the port now. Write cases parity/writes/chat/user_status*,
+    parity/writes/user_status/cakeday_anniversaries;
+    tests/chat_threads.rs (the bus, the page),
+    tests/plugin_gamification.rs, tests/browser/user-status.spec.js.
+    Left, as 130c.
+    130c. `feat/user-status-rest` M: chat's live status tracking
+    (user.statusManager.trackStatus: a /user-status change redraws chat's
+    statuses in the page; until then they show as of the page's render
+    and each message as of its live redraw), DTimeShortcutPicker's custom
+    date and time tile (DatePickerFuture, the time input,
+    DRelativeTimePicker and the last custom tile; refused in the modal),
+    and the core composer's mention autocomplete, whose statuses come
+    with it (the composer has no @ autocomplete yet).
+    MessageBus.last_id("/user-status") stays 0 with item 100's
+    placeholders.
 131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
     (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar
@@ -5421,7 +5447,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     items; the drawer's and full-page lists draw its button without a
     menu), the add members mode (MODES.add_members, from a channel's
     members, refused with the info route), and in the modal's rows the
-    presence dot (is-online), user status, avatar flair, unread thread
+    presence dot (is-online), avatar flair, unread thread
     counts (threads, 99), emoji in channel titles; /chat/new-message with
     a message (#seedDraft, a draft seeded in the browser, refused)
 223. `feat/chat-drawer` L: the chat drawer in the below-footer outlet with

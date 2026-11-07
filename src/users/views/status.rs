@@ -33,6 +33,48 @@ pub fn ends_at(status: &Value) -> Option<DateTime<Utc>> {
 /// description) in a DTooltip trigger whose content, the emoji, the
 /// description and the "until", user-status.js draws on hover.
 pub fn message(emojis: &Emojis, base_path: &str, status: &Value, show_description: bool) -> String {
+    message_with_class(emojis, base_path, status, show_description, None)
+}
+
+/// [`message`] given a class (`...attributes`), after its own.
+pub fn message_with_class(
+    emojis: &Emojis,
+    base_path: &str,
+    status: &Value,
+    show_description: bool,
+    class: Option<&str>,
+) -> String {
+    let code = status["emoji"].as_str().unwrap_or_default();
+    let description = status["description"].as_str().unwrap_or_default();
+    let mut inner = emoji(emojis, base_path, code, true);
+    if show_description {
+        inner.push_str(&format!(
+            "<span class=\"user-status-message-description\">{}</span>",
+            escape(description)
+        ));
+    }
+    let ends = ends_at(status)
+        .map(|t| format!(" data-ends-at=\"{}\"", t.timestamp_millis()))
+        .unwrap_or_default();
+    let class = class.map(|c| format!(" {}", escape(c))).unwrap_or_default();
+    format!(
+        "<span aria-expanded=\"false\" class=\"fk-d-tooltip__trigger user-status-message{class}\" data-identifier=\"user-status-message-tooltip\" data-trigger=\"\" role=\"button\" data-emoji=\"{}\" data-description=\"{}\"{ends}><span class=\"fk-d-tooltip__trigger-container\">{inner}</span></span>",
+        escape(code),
+        escape(description),
+    )
+}
+
+/// lib/user-status-message's UserStatusMessage, which chat's mentions and
+/// the autocomplete put in the page themselves: the emoji (and with
+/// `show_description`, the description) in a plain span, its tooltip
+/// registered on it. The data attributes are what user-status.js draws the
+/// tooltip from.
+pub fn plain_message(
+    emojis: &Emojis,
+    base_path: &str,
+    status: &Value,
+    show_description: bool,
+) -> String {
     let code = status["emoji"].as_str().unwrap_or_default();
     let description = status["description"].as_str().unwrap_or_default();
     let mut inner = emoji(emojis, base_path, code, true);
@@ -46,10 +88,27 @@ pub fn message(emojis: &Emojis, base_path: &str, status: &Value, show_descriptio
         .map(|t| format!(" data-ends-at=\"{}\"", t.timestamp_millis()))
         .unwrap_or_default();
     format!(
-        "<span aria-expanded=\"false\" class=\"fk-d-tooltip__trigger user-status-message\" data-identifier=\"user-status-message-tooltip\" data-trigger=\"\" role=\"button\" data-emoji=\"{}\" data-description=\"{}\"{ends}><span class=\"fk-d-tooltip__trigger-container\">{inner}</span></span>",
+        "<span class=\"user-status-message\" data-identifier=\"user-status-message-tooltip\" data-emoji=\"{}\" data-description=\"{}\"{ends}>{inner}</span>",
         escape(code),
         escape(description),
     )
+}
+
+/// `html` put at the end of each mention of `username` in cooked HTML
+/// (`a.mention[href="<base>/u/<username lowercased>"]`).
+pub fn in_mentions(cooked: &str, base_path: &str, username: &str, html: &str) -> String {
+    let href = format!("{base_path}/u/{}", username.to_lowercase());
+    let open = format!("<a class=\"mention\" href=\"{}\">", escape(&href));
+    let mut out = cooked.to_string();
+    let mut from = 0;
+    while let Some(at) = out[from..].find(&open).map(|i| i + from) {
+        let Some(close) = out[at..].find("</a>").map(|i| i + at) else {
+            break;
+        };
+        out.insert_str(close, html);
+        from = close + html.len() + "</a>".len();
+    }
+    out
 }
 
 /// UserStatusBubble: the emoji on a round background, titled with the

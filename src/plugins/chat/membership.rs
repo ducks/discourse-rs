@@ -120,17 +120,6 @@ impl Context<'_> {
         let Some((username, name, avatar, chat_enabled)) = row else {
             return Ok(Value::Null);
         };
-        if self.settings.get("enable_user_status")?.truthy() {
-            let status: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = $1 AND (ends_at IS NULL OR ends_at > now()))",
-            )
-            .bind(user_id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if status {
-                return Err(Unsupported("user status in chat (130b)").into());
-            }
-        }
         let can_chat = super::enabled(self.settings)?
             && super::can_chat(&mut *self.conn, self.settings, self.guardian).await?;
         let logo = crate::admin::users::logo_small_url(&mut *self.conn, self.settings).await?;
@@ -156,6 +145,17 @@ impl Context<'_> {
         );
         out.insert("can_chat".into(), json!(can_chat));
         out.insert("has_chat_enabled".into(), json!(can_chat && chat_enabled));
+        // UserStatusMixin (include_status: true) with the viewer's scope.
+        if let Some(status) = crate::users::status::visible_one(
+            &mut *self.conn,
+            self.settings,
+            self.guardian,
+            user_id,
+        )
+        .await?
+        {
+            crate::users::status::prepend(&mut out, status);
+        }
         Ok(Value::Object(out))
     }
 

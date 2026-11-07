@@ -561,7 +561,10 @@ impl Context<'_> {
         let can_chat = super::enabled(settings)?
             && super::can_chat(&mut *self.conn, settings, self.guardian).await?;
         let enable_names = settings.get("enable_names")?.truthy();
-        let status = settings.get("enable_user_status")?.truthy();
+        // UserStatusMixin (include_status: true) with the viewer's scope.
+        let ids: Vec<i32> = rows.iter().map(|r| r.id).collect();
+        let statuses =
+            crate::users::status::visible(&mut *self.conn, settings, self.guardian, &ids).await?;
         let logo = crate::admin::users::logo_small_url(&mut *self.conn, settings).await?;
         let urls = crate::url::Urls {
             config: self.config,
@@ -576,18 +579,10 @@ impl Context<'_> {
             chat_enabled,
         } in rows
         {
-            if status {
-                let has_status: bool = sqlx::query_scalar(
-                    "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = $1 AND (ends_at IS NULL OR ends_at > now()))",
-                )
-                .bind(id)
-                .fetch_one(&mut *self.conn)
-                .await?;
-                if has_status {
-                    return Err(Unsupported("user status in chat (130b)").into());
-                }
-            }
             let mut user = Map::new();
+            if let Some(status) = statuses.get(&id) {
+                user.insert("status".into(), status.clone());
+            }
             user.insert("id".into(), json!(id));
             user.insert("username".into(), json!(username));
             if enable_names {

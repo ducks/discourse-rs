@@ -18,8 +18,8 @@
 //!   reviewable counts also redraw the sidebar's review link.
 //! - with enable_user_status, /user-status (UserStatusManager's and the
 //!   current user's subscriptions): the member's own status redraws the
-//!   avatar's bubble, and on a topic page the posts it shows by a user
-//!   whose status changed are drawn again with it.
+//!   avatar's bubble, and on a topic page the posts it shows by or
+//!   mentioning a user whose status changed are drawn again with it.
 //!
 //! The stream starts after the Last-Event-ID header (the browser
 //! reconnecting), else `position` (the page's `bus-position`), else now;
@@ -510,8 +510,9 @@ fn push_badge(live: &mut Live, id: Option<String>) -> Result<(), AppError> {
 
 /// `/user-status`'s `{user_id => status or null}`: the member's own
 /// redraws the avatar's bubble (onUserStatusChanged); the topic page's
-/// posts by those users are drawn again (UserStatusManager's tracked
-/// users, whose names show the status).
+/// posts by those users or mentioning them are drawn again
+/// (UserStatusManager's tracked users: the posters, whose names show the
+/// status, and the mentioned users the mentions decorator tracks).
 async fn user_status_changed(
     live: &mut Live,
     message: &Message,
@@ -545,19 +546,39 @@ async fn user_status_changed(
         return Ok(());
     };
     let last = if live.tail { i32::MAX } else { last };
-    let ids: Vec<i32> = {
+    // The posts by those users, and those mentioning them (the mentions
+    // decorator tracks each mentioned user's status).
+    type Candidate = (i32, Option<i32>, String);
+    let (posts, usernames): (Vec<Candidate>, Vec<String>) = {
         let mut conn = live.state.pool.acquire().await?;
-        sqlx::query_scalar(
-            "SELECT id FROM posts WHERE topic_id = $1 AND post_number BETWEEN $2 AND $3 \
-             AND user_id = ANY($4) AND deleted_at IS NULL ORDER BY post_number",
+        let posts = sqlx::query_as(
+            "SELECT id, user_id, cooked FROM posts WHERE topic_id = $1 \
+             AND post_number BETWEEN $2 AND $3 AND deleted_at IS NULL \
+             AND (user_id = ANY($4) OR cooked LIKE '%class=\"mention\"%') ORDER BY post_number",
         )
         .bind(topic_id)
         .bind(first)
         .bind(last)
         .bind(&users)
         .fetch_all(&mut *conn)
-        .await?
+        .await?;
+        let usernames = sqlx::query_scalar("SELECT username_lower FROM users WHERE id = ANY($1)")
+            .bind(&users)
+            .fetch_all(&mut *conn)
+            .await?;
+        (posts, usernames)
     };
+    let mut ids = Vec::new();
+    for (post_id, user_id, cooked) in posts {
+        let by = user_id.is_some_and(|u| users.contains(&u));
+        if by
+            || crate::pretty_text::extract_mentions(&cooked)?
+                .iter()
+                .any(|m| usernames.contains(m))
+        {
+            ids.push(post_id);
+        }
+    }
     let mut html = String::new();
     for post_id in ids {
         if let Some(post) =

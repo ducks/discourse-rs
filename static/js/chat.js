@@ -3764,7 +3764,21 @@
         return JSON.parse(JSON.stringify(r));
       });
     }).then(function (r) {
-      return organizeResults(r, term, 6);
+      var results = organizeResults(r, term, 6);
+      // initUserStatusHtml: each user with a status keeps its index among
+      // the results' users, which its item carries.
+      if (Array.isArray(results)) {
+        results
+          .filter(function (item) {
+            return item.isUser;
+          })
+          .forEach(function (user, index) {
+            if (user.status) {
+              user.index = index;
+            }
+          });
+      }
+      return results;
     });
   }
 
@@ -3781,7 +3795,7 @@
         classes.push("selected");
       }
       var title = result.isUser ? result.name : result.isEmail ? result.username : result.full_name;
-      out += '<li><a class="' + classes.join(" ") + '" href=""' +
+      out += "<li" + (result.index === undefined ? "" : ' data-index="' + result.index + '"') + '><a class="' + classes.join(" ") + '" href=""' +
         (title === undefined || title === null ? "" : ' title="' + escapeHtml(title) + '"') + ">";
       if (result.isUser) {
         out +=
@@ -3790,7 +3804,13 @@
           '" class="avatar" title="' + escapeHtml(result.username) + '">' +
           '<span class="text-content"><span class="username">' + escapeHtml(result.username) + "</span>" +
           (result.name ? '<span class="name">' + escapeHtml(result.name) + "</span>" : "") +
-          "</span>" + (result.status ? '<span class="user-status"></span>' : "");
+          "</span>" +
+          // renderUserStatusHtml: the status put in place of its span.
+          (result.status
+            ? Discourse.userStatus
+              ? Discourse.userStatus.plainHtml(result.status, true)
+              : '<span class="user-status"></span>'
+            : "");
       } else if (result.isGroup) {
         out +=
           iconHtml("users") +

@@ -475,12 +475,23 @@ impl Context<'_> {
     }
 
     /// Chat::BasicUserSerializer without a scope: core's, its can_chat
-    /// and has_chat_enabled nil.
+    /// and has_chat_enabled nil, with include_status (Guardian.new decides).
     async fn chat_basic_user(&mut self, user_id: Option<i32>) -> Result<Value, AppError> {
         let mut user = self.core_basic_user(user_id).await?;
         if let Value::Object(u) = &mut user {
             u.insert("can_chat".into(), Value::Null);
             u.insert("has_chat_enabled".into(), Value::Null);
+            if let Some(id) = user_id
+                && let Some(status) = crate::users::status::visible_one(
+                    &mut *self.conn,
+                    self.settings,
+                    &crate::guardian::Guardian::anonymous(),
+                    id,
+                )
+                .await?
+            {
+                crate::users::status::prepend(u, status);
+            }
         }
         Ok(user)
     }

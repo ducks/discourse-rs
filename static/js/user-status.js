@@ -11,7 +11,10 @@
 //                               pause) -> Promise, deleteAction() -> Promise })
 //   Discourse.userStatus.set(status, pause) -> Promise
 //   Discourse.userStatus.clear() -> Promise
-//   Discourse.userStatus.messageHtml(status, showDescription) -> String
+//   Discourse.userStatus.messageHtml(status, showDescription, className)
+//                                             DUserStatusMessage -> String
+//   Discourse.userStatus.plainHtml(status, showDescription)
+//                                             UserStatusMessage -> String
 //   Discourse.userStatus.drawBubble(status)   the header avatar's bubble,
 //                                             as currentUser.status changes
 //
@@ -150,22 +153,44 @@
   }
 
   // DUserStatusMessage, as crate::users::views::status::message draws it.
-  function messageHtml(status, showDescription) {
+  // `className` is the class given it (...attributes), after its own.
+  function messageHtml(status, showDescription, className) {
     var inner = emojiHtml(status.emoji, true);
     if (showDescription) {
       inner += '<span class="user-status-message-description">' + escapeHtml(status.description) + "</span>";
     }
-    var ends = status.ends_at ? ' data-ends-at="' + new Date(status.ends_at).getTime() + '"' : "";
     return (
-      '<span aria-expanded="false" class="fk-d-tooltip__trigger user-status-message" data-identifier="user-status-message-tooltip" data-trigger="" role="button" data-emoji="' +
+      '<span aria-expanded="false" class="fk-d-tooltip__trigger user-status-message' +
+      (className ? " " + escapeHtml(className) : "") +
+      '" data-identifier="user-status-message-tooltip" data-trigger="" role="button"' +
+      dataAttrs(status) +
+      '><span class="fk-d-tooltip__trigger-container">' +
+      inner +
+      "</span></span>"
+    );
+  }
+
+  // What the tooltip is drawn from.
+  function dataAttrs(status) {
+    return (
+      ' data-emoji="' +
       escapeHtml(status.emoji) +
       '" data-description="' +
       escapeHtml(status.description) +
       '"' +
-      ends +
-      '><span class="fk-d-tooltip__trigger-container">' +
-      inner +
-      "</span></span>"
+      (status.ends_at ? ' data-ends-at="' + new Date(status.ends_at).getTime() + '"' : "")
+    );
+  }
+
+  // lib/user-status-message's UserStatusMessage (chat's mentions, the
+  // autocomplete), as crate::users::views::status::plain_message draws it.
+  function plainHtml(status, showDescription) {
+    var inner = emojiHtml(status.emoji, true);
+    if (showDescription) {
+      inner += '<span class="user-status-message-description">' + escapeHtml(status.description) + "</span>";
+    }
+    return (
+      '<span class="user-status-message" data-identifier="user-status-message-tooltip"' + dataAttrs(status) + ">" + inner + "</span>"
     );
   }
 
@@ -194,6 +219,19 @@
 
   // The DUserStatusMessage tooltip's content.
   function tooltipContent(trigger) {
+    var ends = parseInt(trigger.dataset.endsAt, 10);
+    if (!trigger.classList.contains("fk-d-tooltip__trigger")) {
+      // UserStatusMessage#tooltipHtml
+      return (
+        '<div class="user-status-message-tooltip-content">' +
+        emojiHtml(trigger.dataset.emoji || "", true) +
+        '<span class="user-status-tooltip-description">' +
+        escapeHtml(trigger.dataset.description) +
+        "</span>" +
+        (isNaN(ends) ? "" : '<div class="user-status-tooltip-until">' + escapeHtml(until(ends)) + "</div>") +
+        "</div>"
+      );
+    }
     var html =
       emojiHtml(trigger.dataset.emoji || "", true) +
       '<div class="user-status-tooltip-wrapper"><span class="user-status-tooltip-description">' +
@@ -576,6 +614,7 @@
     set: set,
     clear: clear,
     messageHtml: messageHtml,
+    plainHtml: plainHtml,
     drawBubble: drawBubble,
   };
 })();

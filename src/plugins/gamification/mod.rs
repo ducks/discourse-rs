@@ -245,30 +245,13 @@ pub fn leaderboard_json(lb: &Leaderboard, admin: bool) -> Value {
 
 /// UserScoreSerializer (BasicUserSerializer's keys, then total_score and
 /// position) for each position.
-pub async fn user_scores_json(
-    conn: &mut PgConnection,
+pub fn user_scores_json(
     urls: &Urls<'_>,
     positions: &[cached_view::Position],
 ) -> Result<Vec<Value>, PluginError> {
     let settings = urls.settings;
     if positions.is_empty() {
         return Ok(Vec::new());
-    }
-    if settings.get("enable_user_status")?.truthy() {
-        let ids: Vec<i32> = positions.iter().map(|p| p.id).collect();
-        let with_status: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = ANY($1) \
-             AND (ends_at IS NULL OR ends_at > $2))",
-        )
-        .bind(&ids)
-        .bind(crate::clock::now_naive())
-        .fetch_one(&mut *conn)
-        .await?;
-        if with_status {
-            return Err(PluginError::Unsupported(crate::Unsupported(
-                "user status in discourse-gamification's leaderboard (130b)",
-            )));
-        }
     }
     let names = settings.get("enable_names")?.truthy();
     let mut out = Vec::with_capacity(positions.len());
@@ -345,9 +328,7 @@ pub async fn view_json(
             };
             match mine.first() {
                 Some(pos) => {
-                    let user = user_scores_json(conn, urls, std::slice::from_ref(pos))
-                        .await?
-                        .remove(0);
+                    let user = user_scores_json(urls, std::slice::from_ref(pos))?.remove(0);
                     json!({ "user": user, "position": pos.position })
                 }
                 None => json!({ "user": null, "position": null }),
@@ -357,7 +338,7 @@ pub async fn view_json(
     Ok(Ok(json!({
         "personal": personal,
         "leaderboard": leaderboard_json(p.leaderboard, false),
-        "users": user_scores_json(conn, urls, &users).await?,
+        "users": user_scores_json(urls, &users)?,
     })))
 }
 
