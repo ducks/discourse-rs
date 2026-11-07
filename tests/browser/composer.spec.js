@@ -329,29 +329,37 @@ test.describe("the rich editor", () => {
     await expect(rich(page).locator("ul li")).toHaveCount(2);
   });
 
-  test("opens in the rich editor for composition mode 1, and keeps the mode across pages", async ({
+  // Until 196r5 the composer opens in markdown whatever the stored mode
+  // (src/composer/load.rs OPEN_IN_STORED_MODE, off): the seed's and an
+  // imported site's members are on Discourse's default of 1. The toggle
+  // still switches and saves, and the stored mode is left as saved.
+  test("opens in markdown for a stored mode 1, and the toggle still switches and saves", async ({
     page,
     context,
     session,
   }) => {
     const { writer, t } = await replyTo(page, context, session, 1);
-    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "1");
+    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "0");
+    await expect(textarea(page)).toBeVisible();
+    await expect(rich(page)).toHaveCount(0);
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeVisible();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+
+    const saved = savedMode(page, writer.name, 1);
+    await toggle(page).click();
     await expect(rich(page)).toBeVisible();
     await expect(textarea(page)).toBeHidden();
-    await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
-    await expect(page.locator("#reply-control .toggle-preview")).toBeHidden();
     await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeHidden();
-
-    // Switched to markdown, saved, and a fresh page opens in markdown.
-    const saved = savedMode(page, writer.name, 0);
-    await toggle(page).click();
-    await expect(textarea(page)).toBeVisible();
     expect((await saved).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+
+    // A fresh page opens in markdown again, the saved mode kept.
     await page.goto(t.url);
-    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "0");
     await page.locator("#topic-footer-buttons .create").click();
     await expect(textarea(page)).toBeVisible();
     await expect(rich(page)).toHaveCount(0);
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
   });
 
   test("goes back to markdown with the alert on what it cannot hold yet", async ({ page, context, session }) => {
@@ -373,7 +381,8 @@ test.describe("the rich editor", () => {
   });
 
   test("posts the markdown the rich editor writes", async ({ page, context, session }) => {
-    const { writer, t } = await replyTo(page, context, session, 1);
+    const { writer, t } = await replyTo(page, context, session, 0);
+    await toggle(page).click();
     await expect(rich(page)).toBeFocused();
     const marker = label("rich reply");
     await page.keyboard.type(`A **bold** reply, ${marker}`);

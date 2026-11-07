@@ -223,8 +223,8 @@ overrides leave out.
   imported modules, so the map is there from the first page.
 - `src/composer/view.rs` draws ComposerToggleSwitch first in
   `.d-editor-button-bar` (d-editor's showEditorModeToggle: no editor mode is
-  forced in the composer), in the member's `composition_mode`
-  (user_options; `load.rs`): `--rte` and `aria-checked="true"` for 1,
+  forced in the composer), in the mode it opens in (the member's
+  `composition_mode`, while `OPEN_IN_STORED_MODE` is on; see below): `--rte` and `aria-checked="true"` for 1,
   `--markdown` otherwise, `--active` on the fab-markdown or `a` icon,
   labelled with formatShortcut("ctrl+m") for a keyboard outside Apple's
   platforms. `#reply-control` carries `data-composition-mode`,
@@ -249,12 +249,15 @@ overrides leave out.
   a fine pointer) and saves `composition_mode` with PUT
   /u/:username.json after a second of quiet.
 
-Open: Discourse ships `default_composition_mode` 1, and the port reads a
-member's stored mode as Ember does, so a member on Discourse's default (the
-seed's members, an imported site's, a new signup) opens the composer in the
-rich editor, which refuses a post with a mention, an emoji, a quote or any
-other construct whose extension is 196r2's or 196r4's. That is at odds
-with markdown staying the default until 196r5, and needs the owner's call:
-the port has no override of a site setting's default, and rewriting stored
-modes would lose members' own choices. The browser suite puts its members
-on markdown (`tests/browser/setup.sql`); composer.spec.js opts its own in.
+A temporary deviation: Ember opens the composer in the member's stored
+mode (d-editor's setupEditorMode), but Discourse ships
+`default_composition_mode` 1, so the seed's members, an imported site's and
+new signups would all open in a rich editor that refuses a post with a
+mention, an emoji, a quote or any other construct whose extension is
+196r2's or 196r4's. Until then `composer::OPEN_IN_STORED_MODE`
+(`src/composer/load.rs`) is off: the composer always opens in markdown
+(`data-composition-mode="0"`, the preview allowed) whatever is stored. The
+toggle and Ctrl+M still switch and still save `composition_mode`, and no
+stored value is rewritten. 196r5 turns the switch on and removes it. The
+browser suite's members are on markdown too (`tests/browser/setup.sql`);
+composer.spec.js gives its own the mode each case needs.

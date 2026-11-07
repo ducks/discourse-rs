@@ -2204,7 +2204,7 @@ async fn the_composer_draws_the_rich_editor_toggle_in_the_composition_mode() {
 
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
-    // The seed has user1 on the rich editor (default_composition_mode).
+    // The seed has user1 on the rich editor (default_composition_mode 1).
     let page = client.get("/latest").await.body;
     let head = between(&page, "<head>", "</head>");
     let loader = head
@@ -2229,15 +2229,25 @@ async fn the_composer_draws_the_rich_editor_toggle_in_the_composition_mode() {
     assert!(head[loader..].contains(r#"data-base-path=""></script>"#));
 
     let composer = between(&page, r#"<div id="reply-control""#, "</textarea>");
-    assert!(composer.contains(r#"data-allow-preview="false" data-composition-mode="1""#));
     assert!(composer.contains(r#"data-label-switch-to-markdown="Switch to standard Markdown editor (%{keyboardShortcut})""#));
     assert!(composer.contains(
         r#"data-label-switch-to-rich-text-no-shortcut="Switch to new rich text editor""#
     ));
     assert!(composer.contains(r#"data-label-unsupported-token="The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.""#));
-    assert!(composer.contains(r#"<div class="d-editor-container --rich-editor-enabled">"#));
-    assert!(composer.contains(r#"role="toolbar"><button aria-checked="true" aria-keyshortcuts="Ctrl+M" aria-label="Switch to standard Markdown editor (Ctrl M)" class="composer-toggle-switch --rte" data-rich-editor="true" role="switch" title="Switch to standard Markdown editor (Ctrl M)" type="button"><span class="composer-toggle-switch__slider"><span aria-hidden="true" class="composer-toggle-switch__left-icon"><svg class="fa d-icon d-icon-fab-markdown"#));
-    assert!(composer.contains(r#"<span aria-hidden="true" class="composer-toggle-switch__right-icon --active"><svg class="fa d-icon d-icon-a "#));
+    if discourse_rs::composer::OPEN_IN_STORED_MODE {
+        assert!(composer.contains(r#"data-allow-preview="false" data-composition-mode="1""#));
+        assert!(composer.contains(r#"<div class="d-editor-container --rich-editor-enabled">"#));
+        assert!(composer.contains(r#"role="toolbar"><button aria-checked="true" aria-keyshortcuts="Ctrl+M" aria-label="Switch to standard Markdown editor (Ctrl M)" class="composer-toggle-switch --rte" data-rich-editor="true" role="switch" title="Switch to standard Markdown editor (Ctrl M)" type="button"><span class="composer-toggle-switch__slider"><span aria-hidden="true" class="composer-toggle-switch__left-icon"><svg class="fa d-icon d-icon-fab-markdown"#));
+        assert!(composer.contains(r#"<span aria-hidden="true" class="composer-toggle-switch__right-icon --active"><svg class="fa d-icon d-icon-a "#));
+    } else {
+        // Until 196r5 the stored mode does not open the rich editor.
+        assert!(composer.contains(r#"data-allow-preview="true" data-composition-mode="0""#));
+        assert!(composer.contains(r#"<div class="d-editor-container --markdown-editor-enabled">"#));
+        assert!(
+            composer
+                .contains(r#"class="composer-toggle-switch --markdown" data-rich-editor="false""#)
+        );
+    }
 
     // In markdown mode: the preview, and the switch the other way.
     sqlx::query(

@@ -3954,11 +3954,11 @@ route table has been made, so this list may be short.
     markdown.wasm (rich-editor.spec.js 66 of 66); composer.spec.js (with
     four rich editor cases: switching and Ctrl+M, opening in mode 1 and
     keeping a saved switch, the refusal, posting from rich mode) and
-    composer-actions.spec.js pass. Open, for the owner: Discourse's
-    default_composition_mode is 1 and the seed's, imported and newly
-    signed-up members have it, so they now open in the rich editor before
-    196r2's extensions; the browser suite puts its members on markdown
-    (docs/rich-editor.md, "In the composer")
+    composer-actions.spec.js pass. Opening in the stored
+    composition_mode is held behind composer::OPEN_IN_STORED_MODE, off
+    (a documented, temporary deviation: Discourse's default_composition_mode
+    1 would put the seed's, imported and new members in the rich editor
+    before its extensions); the toggle and Ctrl+M still switch and save
     196r2. `feat/rich-editor-extensions` L: the everyday extensions: emoji,
     mentions, hashtags, links and the link toolbar, images and uploads
     (upload placeholder, image node view, grid), quotes, code blocks with
@@ -3973,8 +3973,11 @@ route table has been made, so this list may be short.
     196r4. `feat/rich-editor-plugins` L: the plugins' extensions: poll's
     node view (PollNodeView and the builder's Edit poll mode), checklist,
     details, spoiler, footnotes, math, local dates, policy, events
-    196r5. `feat/rich-editor-default` S: the profile's About me editor in
-    rich mode, then rich as the default composition mode
+    196r5. `feat/rich-editor-default` S: once 196r2 and 196r4 land, turn
+    composer::OPEN_IN_STORED_MODE (src/composer/load.rs) on and remove it,
+    so the composer opens in the stored composition_mode as Ember does;
+    the profile's About me editor in rich mode, then rich as the default
+    composition mode
     (default_composition_mode 1, as Discourse ships) once the round-trip
     tests pass
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)

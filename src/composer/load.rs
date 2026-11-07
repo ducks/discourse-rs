@@ -14,6 +14,21 @@ pub(crate) struct Options {
     pub hide_presence: bool,
 }
 
+/// Whether the composer opens in the member's stored composition_mode.
+/// A temporary deviation from Ember, which always does (d-editor's
+/// setupEditorMode): off, it always opens in markdown, since Discourse's
+/// default_composition_mode of 1 would put most members in a rich editor
+/// that refuses their posts until its extensions land. The toggle and
+/// Ctrl+M still switch and save the mode. ROADMAP 196r5 turns it on and
+/// removes it once 196r2 and 196r4 are done.
+pub const OPEN_IN_STORED_MODE: bool = false;
+
+/// The rich editor opens: composition_mode 1 (useRichEditor), while the
+/// stored mode is honoured.
+fn opens_rich(stored: Option<i32>, open_in_stored: bool) -> bool {
+    open_in_stored && stored == Some(1)
+}
+
 pub(crate) struct Loaded {
     pub html: String,
     pub categories: HashMap<i64, ListCategory>,
@@ -94,12 +109,10 @@ pub(crate) async fn load(
         super::preview::MARKDOWN_WASM_VERSION
     );
     let render_settings = format!("{}/assets/markdown-settings.json", base_path);
-    // allowPreview: not for the rich editor (composition_mode 1).
+    let rich = opens_rich(options.map(|o| o.composition_mode), OPEN_IN_STORED_MODE);
+    // allowPreview: not for the rich editor.
     let (allow_preview, hide_presence) = match guardian.user_id() {
-        Some(_) => (
-            options.map(|o| o.composition_mode) != Some(1),
-            options.is_some_and(|o| o.hide_presence),
-        ),
+        Some(_) => (!rich, options.is_some_and(|o| o.hide_presence)),
         None => (false, false),
     };
     // discourse-presence: what the composer and the topic's footer show
@@ -213,7 +226,7 @@ pub(crate) async fn load(
             settings.get("max_oneboxes_per_post")?.to_i(),
         )),
         allow_preview,
-        options.map(|o| o.composition_mode) == Some(1),
+        rich,
         presence.as_ref(),
         super::view::UploadUi::for_user(
             &settings.get("authorized_extensions")?.to_s(),
@@ -246,4 +259,18 @@ pub(crate) async fn load(
         },
     );
     Ok(Loaded { html, categories })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::opens_rich;
+
+    #[test]
+    fn the_stored_mode_opens_the_rich_editor_only_with_the_switch_on() {
+        assert!(!opens_rich(Some(1), false));
+        assert!(!opens_rich(Some(0), false));
+        assert!(opens_rich(Some(1), true));
+        assert!(!opens_rich(Some(0), true));
+        assert!(!opens_rich(None, true));
+    }
 }
