@@ -7,9 +7,10 @@
 // more and live updates. 160b: the lists' and the sidebar's unread
 // counts following the tracking state, the settings modal's header save
 // on a phone, the thread's date separators, ChatHistory over a reload.
+// 160b1: the member's threads hearing the channels of later pages.
 // Each test makes its own threaded channel, so the other specs' General
 // is left alone.
-const { test, expect, login, api, sql, label } = require("./helpers");
+const { test, expect, login, api, sql, label, member } = require("./helpers");
 const fs = require("fs");
 const path = require("path");
 
@@ -591,4 +592,39 @@ test("ChatHistory lasts while the page does: a reload starts it again", async ({
   // member having no unread threads in it).
   await page.reload();
   await expect(back).toHaveAttribute("href", new RegExp(`/${channel.id}$`));
+});
+
+// 160b1: UserThreads#trackChannel for the pages loaded after the first.
+test("the member's threads hear the channels of the pages loaded later", async ({ page, context, session }) => {
+  // A member of the test's own: their threads are only these.
+  const me = member();
+  const later = await threadedChannel(session, [me.name, "user1"]);
+  const first = await threadedChannel(session, [me.name, "user1"]);
+  // The later channel's thread is the oldest, so on the second page; the
+  // first page's ten are all in the other channel.
+  const old = await makeThread(later, me.name, "user1", label("later page thread"));
+  sql("UPDATE chat_messages SET created_at = created_at - interval '1 hour' WHERE thread_id = :'p1'", old.threadId);
+  setMembership(me.name, old.threadId, 2, old.messageId);
+  for (let i = 0; i < 10; i++) {
+    const t = await makeThread(first, me.name, "user1", label(`first page thread ${i}`));
+    setMembership(me.name, t.threadId, 2, t.messageId);
+  }
+  await login(context, me.name);
+  await page.goto("/chat/threads");
+  const items = page.locator(".c-user-thread");
+  await expect(items).toHaveCount(10);
+  await page.locator(".c-user-threads__load-more").scrollIntoViewIfNeeded();
+  await expect(items).toHaveCount(11);
+  const item = page.locator(`.c-user-thread[data-id='${old.threadId}']`);
+  const count = item.locator(".chat__thread-title-container .chat-thread-list-item-unread-indicator__number");
+  await expect(count).toHaveText("1");
+
+  // A reply in the later page's channel: counted, and its preview drawn
+  // again from the channel's bus.
+  const reply = label("heard later");
+  await send(later.contexts.user1, later.id, { message: reply, thread_id: String(old.threadId) });
+  await expect(count).toHaveText("2", { timeout: 20_000 });
+  await expect(item.locator(".chat-message-thread-indicator__last-reply-excerpt")).toContainText(reply, {
+    timeout: 20_000,
+  });
 });

@@ -4,8 +4,9 @@
 // a thread (chat-thread.js in the drawer), the member's threads (the
 // footer's item) and search (chat-search.js), each opened from the
 // drawer's own UI, with the drawer's back button, and the browser's back
-// to a thread's URL opening it in the drawer. Each test works in a channel
-// of its own with threading, so the other specs' General stays as it is.
+// to a thread's URL opening it in the drawer; 160b1: one ChatHistory with
+// full-page chat, each way. Each test works in a channel of its own with
+// threading, so the other specs' General stays as it is.
 const { test, expect, login, api, sql, label } = require("./helpers");
 
 const prefer = (page, mode) =>
@@ -482,4 +483,63 @@ test("search's filter clears, its results take Tab between them, and the next pa
   await full.locator(".filter-input-clear-btn").click();
   await expect(page).toHaveURL(/\/chat\/search\?q=$/);
   await expect(full.locator(".chat-message-search-entry")).toHaveCount(0);
+});
+
+// 160b1: one ChatHistory for full-page chat and the drawer. A boosted
+// link's navigation, as the forum's own links make, so the page (and the
+// history with it) stays.
+async function follow(page, href) {
+  await page.evaluate((href) => {
+    const link = document.createElement("a");
+    link.href = href;
+    link.hidden = true;
+    document.getElementById("main-outlet").appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  }, href);
+}
+
+test("a thread opened in the drawer after full-page My Threads backs to them", async ({ page, context, session }) => {
+  const channel = await channelWithThread(session);
+  await login(context, "user1");
+  await page.goto("/latest");
+  await prefer(page, "FULL_PAGE_CHAT");
+  await page.goto("/chat/threads");
+  await expect(page.locator(".full-page-chat .c-user-threads")).toBeVisible();
+  await page.evaluate(() => (window.__sameDocument = true));
+
+  // The forum, then the thread's link with the drawer preferred: the
+  // drawer's thread, its previous route full-page chat's My Threads.
+  await prefer(page, "DRAWER_CHAT");
+  await follow(page, "/latest");
+  await expect(page.locator("#main-outlet .topic-list")).toBeVisible();
+  await follow(page, `${channel.url}/t/${channel.threadId}`);
+  const thread = page.locator(".chat-drawer .c-drawer-routes.--channel-thread");
+  await expect(thread.locator(".chat-message-container", { hasText: channel.reply })).toBeVisible();
+  const back = thread.locator(".c-navbar__back-button");
+  await expect(back).toHaveAttribute("title", "My Threads");
+  await expect(back).toHaveAttribute("href", /\/chat\/threads$/);
+  expect(await page.evaluate(() => window.__sameDocument === true)).toBe(true);
+});
+
+test("a full-page thread after the drawer's threads list backs to the list", async ({ page, context, session }) => {
+  // user1's own reply: no unread threads, so without a previous route the
+  // thread backs to the channel.
+  const channel = await channelWithThread(session);
+  await login(context, "user1");
+  const drawer = await openDrawer(page);
+  await openChannel(drawer, channel);
+  await drawer.locator(".c-navbar__threads-list-button").click();
+  await expect(drawer.locator(`.c-drawer-routes.--channel-threads .chat-thread-list-item[data-thread-id='${channel.threadId}']`)).toBeVisible();
+  await page.evaluate(() => (window.__sameDocument = true));
+
+  // The thread's link with full page preferred: full-page chat, its
+  // previous route the drawer's threads list.
+  await prefer(page, "FULL_PAGE_CHAT");
+  await follow(page, `${channel.url}/t/${channel.threadId}`);
+  await expect(page.locator(".full-page-chat .chat-thread .chat-message-container", { hasText: channel.reply })).toBeVisible();
+  const back = page.locator(".c-routes.--channel-thread .c-navbar__back-button");
+  await expect(back).toHaveAttribute("href", new RegExp(`${channel.url}/t$`));
+  await expect(back).toHaveAttribute("title", "Return to threads list");
+  expect(await page.evaluate(() => window.__sameDocument === true)).toBe(true);
 });
