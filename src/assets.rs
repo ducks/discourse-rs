@@ -257,6 +257,23 @@ pub fn names() -> impl Iterator<Item = &'static str> {
     store().current.keys().map(String::as_str)
 }
 
+/// The url of every asset under one of `prefixes`, as a JSON object of
+/// name to url: the rich editor loader's `data-assets`
+/// (static/js/rich-editor.js), so its import map names digested urls.
+pub fn urls_json(base_path: &str, prefixes: &[&str]) -> String {
+    let urls: std::collections::BTreeMap<&str, String> = names()
+        .filter(|name| prefixes.iter().any(|prefix| name.starts_with(prefix)))
+        .map(|name| (name, url(base_path, name)))
+        .collect();
+    serde_json::to_string(&urls).expect("string map serializes")
+}
+
+/// The rich editor loader's `data-assets` (templates/layout.html): its
+/// vendored ProseMirror and its own modules.
+pub fn rich_editor_urls(base_path: &str) -> String {
+    urls_json(base_path, &["prosemirror/", "rich-editor/"])
+}
+
 /// GET /assets/<name>
 pub fn serve(name: &str, query: Option<&str>, headers: &HeaderMap) -> Response {
     store().serve(name, query, headers)
@@ -265,6 +282,23 @@ pub fn serve(name: &str, query: Option<&str>, headers: &HeaderMap) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn urls_json_lists_the_prefixed_assets_with_their_digests() {
+        let urls: std::collections::BTreeMap<String, String> =
+            serde_json::from_str(&rich_editor_urls("/forum")).unwrap();
+        assert_eq!(
+            urls["rich-editor/editor.js"],
+            url("/forum", "rich-editor/editor.js")
+        );
+        assert!(
+            urls["prosemirror/prosemirror-model.js"]
+                .starts_with("/forum/assets/prosemirror/prosemirror-model.js?v=")
+        );
+        assert!(urls.contains_key("prosemirror/prosemirror-codemark/plugin.js"));
+        assert!(!urls.contains_key("rich-editor.js"));
+        assert!(!urls.contains_key("topic.js"));
+    }
 
     #[test]
     fn the_current_digest_is_cached_for_good_and_others_revalidate() {
