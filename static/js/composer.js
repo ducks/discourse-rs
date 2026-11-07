@@ -526,6 +526,7 @@
     setMode(opts.mode);
     applyDiscardIcon(opts.mode);
     textarea.value = "";
+    syncRichEditor();
     title.value = "";
     showError("");
     showDraftStatus("");
@@ -556,6 +557,9 @@
     root.style.setProperty("--composer-height", composerHeight);
     composeStateChanged();
     updatePreview();
+    if (richMode) {
+      openRichEditor();
+    }
 
     var resuming = Boolean(opts.draftKey);
     var creating = opts.mode === "create-topic" || opts.mode === "private-message";
@@ -607,6 +611,7 @@
           return;
         }
         textarea.value = text;
+        syncRichEditor();
         updatePreview();
         announce();
       })
@@ -634,7 +639,7 @@
         } else if (s.mode === "private-message" || (s.mode === "create-topic" && (title.value === "" || prefilled))) {
           title.focus();
         } else {
-          textarea.focus();
+          focusEditor();
         }
         if (prefilled) {
           scheduleDraft();
@@ -1023,7 +1028,8 @@
     textarea.setRangeText(before + selected + after, start, end, "end");
     textarea.selectionStart = start + before.length;
     textarea.selectionEnd = start + before.length + selected.length;
-    textarea.focus();
+    syncRichEditor();
+    focusEditor();
   }
 
   function prefixLines(prefix, example) {
@@ -1038,7 +1044,8 @@
       })
       .join("\n");
     textarea.setRangeText(replaced, lineStart, Math.max(end, lineStart), "end");
-    textarea.focus();
+    syncRichEditor();
+    focusEditor();
   }
 
   var actions = {
@@ -1108,9 +1115,15 @@
           return out;
         };
         call(wasm.configure, loaded[1]);
-        return function (raw) {
+        var render = function (raw) {
           return call(wasm.preview, raw);
         };
+        // The rich editor's parser: the same parse as a node tree
+        // (docs/rich-editor.md).
+        render.tree = function (raw) {
+          return JSON.parse(call(wasm.rich_editor_tree, raw));
+        };
+        return render;
       });
     }
     return renderer;
@@ -1222,6 +1235,247 @@
   applyPreviewShown();
   textarea.addEventListener("input", schedulePreview);
   textarea.addEventListener("input", announce);
+
+  // The rich editor (d-editor's toggleRichEditor, docs/rich-editor.md):
+  // ProseMirror in place of the textarea, opened by the toggle, Ctrl+M, or
+  // the composer opening in composition mode 1 (currentUser.useRichEditor).
+  // The textarea stays, hidden, and holds the markdown each edit
+  // serializes, so drafts, presence and the save read it as before; where
+  // this file writes the textarea itself, syncRichEditor follows. Each
+  // switch saves the mode as the member's preference after a second of
+  // quiet (#saveRichEditorPreference).
+  var modeToggle = control.querySelector(".composer-toggle-switch");
+  var editorContainer = control.querySelector(".d-editor-container");
+  var richMode = data.compositionMode === "1";
+  var richEditor = null;
+  var richOpening = null;
+  var preferenceTimer = null;
+  var isApple = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || "");
+
+  // capabilities.hasKeyboard
+  function hasKeyboard() {
+    return Boolean(window.matchMedia && window.matchMedia("(pointer: fine)").matches);
+  }
+
+  // ComposerToggleSwitch's label: formatShortcut("ctrl+m"), a literal
+  // Control key everywhere (⌃ on Apple's platforms).
+  function drawModeToggle() {
+    if (!modeToggle) {
+      return;
+    }
+    var key = richMode ? "labelSwitchToMarkdown" : "labelSwitchToRichText";
+    var keyboard = hasKeyboard();
+    var label = keyboard
+      ? data[key].replace("%{keyboardShortcut}", (isApple ? "⌃" : data.labelKeyCtrl) + " M")
+      : data[key + "NoShortcut"];
+    modeToggle.classList.toggle("--rte", richMode);
+    modeToggle.classList.toggle("--markdown", !richMode);
+    modeToggle.setAttribute("aria-checked", String(richMode));
+    modeToggle.dataset.richEditor = String(richMode);
+    modeToggle.title = label;
+    modeToggle.setAttribute("aria-label", label);
+    if (keyboard) {
+      modeToggle.setAttribute("aria-keyshortcuts", (isApple ? data.labelKeyControl : data.labelKeyCtrl) + "+M");
+    } else {
+      modeToggle.removeAttribute("aria-keyshortcuts");
+    }
+    modeToggle.querySelector(".composer-toggle-switch__left-icon").classList.toggle("--active", !richMode);
+    modeToggle.querySelector(".composer-toggle-switch__right-icon").classList.toggle("--active", richMode);
+  }
+
+  // editorContainerModeClass, and the composer's allowPreview: the rich
+  // editor has no preview.
+  function drawEditorMode() {
+    editorContainer.classList.toggle("--rich-editor-enabled", richMode);
+    editorContainer.classList.toggle("--markdown-editor-enabled", !richMode);
+    textarea.hidden = Boolean(richEditor);
+    data.allowPreview = String(!richMode);
+    drawModeToggle();
+    applyPreviewShown();
+  }
+
+  function saveCompositionMode() {
+    var mode = richMode ? "1" : "0";
+    data.compositionMode = mode;
+    clearTimeout(preferenceTimer);
+    preferenceTimer = setTimeout(function () {
+      var headers = csrfHeaders();
+      headers.Accept = "application/json";
+      headers["X-Requested-With"] = "XMLHttpRequest";
+      fetch(base + "/u/" + encodeURIComponent(data.username) + ".json", {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: headers,
+        body: new URLSearchParams({ composition_mode: mode }).toString(),
+      })
+        .then(function (r) {
+          if (!r.ok) {
+            throw new Error("composition_mode " + r.status);
+          }
+        })
+        .catch(function (e) {
+          console.error(e);
+        });
+    }, 1000);
+  }
+
+  function focusEditor(options) {
+    if (richEditor) {
+      richEditor.focus();
+    } else {
+      textarea.focus(options);
+    }
+  }
+
+  // Back to the textarea, holding the markdown the editor last wrote.
+  function closeRichEditor() {
+    if (richEditor) {
+      richEditor.destroy();
+      richEditor = null;
+    }
+    richOpening = null;
+  }
+
+  // A post the editor cannot hold (UnsupportedTokenError, or a construct
+  // the markdown crate itself refuses): the reference's alert, and the
+  // markdown editor again. Anything else is a bug, shown as it is.
+  function richEditorFailed(e) {
+    var unsupported =
+      e && (e.name === "UnsupportedTokenError" || /^not ported yet/.test(e.message || ""));
+    if (!unsupported) {
+      console.error(e);
+    }
+    closeRichEditor();
+    if (richMode) {
+      richMode = false;
+      saveCompositionMode();
+    }
+    drawEditorMode();
+    updatePreview();
+    alertText(unsupported ? data.labelUnsupportedToken : (e && e.message) || String(e));
+  }
+
+  function openRichEditor() {
+    if (richEditor || richOpening) {
+      return;
+    }
+    var opening = Promise.resolve()
+      .then(function () {
+        return Promise.all([Discourse.richEditor.load(), loadRenderer()]);
+      })
+      .then(function (loaded) {
+        // Superseded: switched back to markdown meanwhile.
+        if (richOpening !== opening) {
+          return;
+        }
+        var refused = null;
+        var editor = loaded[0].createEditor({
+          container: control.querySelector(".d-editor-textarea-wrapper"),
+          value: textarea.value,
+          parseTree: loaded[1].tree,
+          placeholder: textarea.placeholder,
+          className: "d-editor-input",
+          keymap: {
+            "ctrl+m": function () {
+              toggleRichEditor();
+            },
+          },
+          onChange: function (markdown) {
+            textarea.value = markdown;
+            textarea.dispatchEvent(new Event("input", { bubbles: true }));
+          },
+          onUnsupported: function (e) {
+            refused = e;
+          },
+          focusIn: function () {
+            wrapper.classList.add("in-focus");
+          },
+          focusOut: function () {
+            wrapper.classList.remove("in-focus");
+          },
+        });
+        richEditor = editor;
+        richOpening = null;
+        if (refused) {
+          richEditorFailed(refused);
+          return;
+        }
+        // Ctrl or Cmd + Enter submits here too.
+        editor.view.dom.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            save();
+          }
+        });
+        drawEditorMode();
+        if (state) {
+          editor.focus();
+        }
+      });
+    richOpening = opening;
+    opening.catch(function (e) {
+      if (richOpening === opening) {
+        richOpening = null;
+        richEditorFailed(e);
+      }
+    });
+  }
+
+  // The markdown this file wrote into the textarea, into the editor
+  // (convertFromValue), refused as on opening.
+  function syncRichEditor() {
+    if (!richEditor) {
+      return;
+    }
+    var refused = null;
+    try {
+      if (!richEditor.setValue(textarea.value)) {
+        refused = { name: "UnsupportedTokenError" };
+      }
+    } catch (e) {
+      refused = e;
+    }
+    if (refused) {
+      richEditorFailed(refused);
+    }
+  }
+
+  function toggleRichEditor() {
+    richMode = !richMode;
+    if (richMode) {
+      openRichEditor();
+      drawEditorMode();
+    } else {
+      closeRichEditor();
+      drawEditorMode();
+      updatePreview();
+      if (state) {
+        textarea.focus();
+      }
+    }
+    saveCompositionMode();
+  }
+
+  if (modeToggle) {
+    // preventFocus: the toggle leaves the focus in the editor.
+    modeToggle.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+    });
+  }
+  textarea.addEventListener("keydown", function (event) {
+    if (
+      event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !event.shiftKey &&
+      (event.key === "m" || event.key === "M") &&
+      modeToggle
+    ) {
+      event.preventDefault();
+      toggleRichEditor();
+    }
+  });
+  drawModeToggle();
 
   // The new-topic and new-message routes (routes/new-topic.js,
   // new-message.js) as composer.openNewTopic and openNewMessage take
@@ -3466,7 +3720,7 @@
 
   function addText(text) {
     insertText(text);
-    textarea.focus();
+    focusEditor();
     updatePreview();
     scheduleDraft();
   }
@@ -3732,6 +3986,10 @@
   };
 
   control.addEventListener("click", function (event) {
+    if (event.target.closest(".composer-toggle-switch")) {
+      toggleRichEditor();
+      return;
+    }
     var tool = event.target.closest(".toolbar__button");
     if (tool && actions[tool.dataset.action]) {
       actions[tool.dataset.action]();
@@ -3868,7 +4126,8 @@
     textarea.setRangeText(text, start, end, "end");
     textarea.setSelectionRange(start + text.length, start + text.length);
     textarea.blur();
-    textarea.focus({ preventScroll: true });
+    syncRichEditor();
+    focusEditor({ preventScroll: true });
     updatePreview();
     scheduleDraft();
   }
@@ -3888,6 +4147,7 @@
     }
     if (state && control.classList.contains("draft")) {
       textarea.value = textarea.value + "\n" + d.quote;
+      syncRichEditor();
       expand();
       updatePreview();
       scheduleDraft();
@@ -4002,6 +4262,7 @@
   function insertText(text) {
     var start = textarea.selectionStart;
     textarea.setRangeText(text, start, textarea.selectionEnd, "end");
+    syncRichEditor();
   }
 
   // replaceText: the first occurrence, keeping the cursor where it was
@@ -4017,6 +4278,7 @@
       var moved = Math.max(at + to.length, cursor + to.length - from.length);
       textarea.selectionStart = textarea.selectionEnd = moved;
     }
+    syncRichEditor();
     updatePreview();
     scheduleDraft();
   }

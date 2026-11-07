@@ -6,7 +6,10 @@
 //! data attributes) and posts through /posts, with the tag chooser
 //! (MiniTagChooser) for a member who may tag topics.
 //!
-//! Not ported yet: the heading and emoji menus and the rich text editor.
+//! The toggle switches to the rich editor (static/js/rich-editor.js,
+//! docs/rich-editor.md) in the member's composition mode.
+//!
+//! Not ported yet: the heading and emoji menus.
 
 use std::collections::HashMap;
 
@@ -715,6 +718,51 @@ fn user_selector(list: &ListContext, pm: &PmUi) -> String {
     )
 }
 
+/// ComposerToggleSwitch, first in d-editor's button bar while no editor
+/// mode is forced (showEditorModeToggle): the switch between the markdown
+/// and the rich editor, `rich` in composition mode 1. Labelled for a
+/// keyboard outside Apple's platforms (formatShortcut("ctrl+m")): composer.js
+/// relabels it from #reply-control's data attributes for the platform, the
+/// pointer (the `_no_shortcut` forms without a keyboard) and each switch.
+fn toggle_switch(list: &ListContext, rich: bool) -> String {
+    let ctrl = t(list, "shortcut_modifier_key.ctrl");
+    let key = if rich {
+        "composer.switch_to_markdown"
+    } else {
+        "composer.switch_to_rich_text"
+    };
+    let label = t(list, key).replace("%{keyboardShortcut}", &format!("{ctrl} M"));
+    let active = |on: bool| if on { " --active" } else { "" };
+    format!(
+        "<button aria-checked=\"{rich}\" aria-keyshortcuts=\"{}\" aria-label=\"{label}\" class=\"composer-toggle-switch {}\" data-rich-editor=\"{rich}\" role=\"switch\" title=\"{label}\" type=\"button\"><span class=\"composer-toggle-switch__slider\"><span aria-hidden=\"true\" class=\"composer-toggle-switch__left-icon{}\">{}</span><span aria-hidden=\"true\" class=\"composer-toggle-switch__right-icon{}\">{}</span></span></button>",
+        escape(&format!("{ctrl}+M")),
+        if rich { "--rte" } else { "--markdown" },
+        active(!rich),
+        icon("fab-markdown", None),
+        active(rich),
+        icon("a", None),
+        label = escape(&label),
+    )
+}
+
+/// The rich editor's data on #reply-control for composer.js: the member's
+/// composition mode, the toggle's labels (with `%{keyboardShortcut}` left
+/// in), the key names it formats the shortcut with, and the alert for a
+/// post the rich editor cannot hold.
+fn rich_editor_data(list: &ListContext, rich: bool) -> String {
+    format!(
+        " data-composition-mode=\"{}\" data-label-switch-to-markdown=\"{}\" data-label-switch-to-rich-text=\"{}\" data-label-switch-to-markdown-no-shortcut=\"{}\" data-label-switch-to-rich-text-no-shortcut=\"{}\" data-label-key-ctrl=\"{}\" data-label-key-control=\"{}\" data-label-unsupported-token=\"{}\"",
+        if rich { 1 } else { 0 },
+        escape(&t(list, "composer.switch_to_markdown")),
+        escape(&t(list, "composer.switch_to_rich_text")),
+        escape(&t(list, "composer.switch_to_markdown_no_shortcut")),
+        escape(&t(list, "composer.switch_to_rich_text_no_shortcut")),
+        escape(&t(list, "shortcut_modifier_key.ctrl")),
+        escape(&t(list, "shortcut_modifier_key.control")),
+        escape(&t(list, "composer.unsupported_token")),
+    )
+}
+
 /// The closed composer with its category chooser. `default_category` is
 /// the category a new topic starts in (default_composer_category).
 /// `preview` is where the preview's WebAssembly and render settings are
@@ -727,6 +775,7 @@ pub fn render(
     default_category: Option<i64>,
     preview: Option<(&str, &str, i64)>,
     allow_preview: bool,
+    rich: bool,
     presence: Option<&serde_json::Value>,
     upload: Option<&UploadUi>,
     options: Option<(&[PopupOption], &[&str])>,
@@ -963,7 +1012,7 @@ pub fn render(
         ),
     );
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data}{route_data}{pm_data}{save_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" data-pointer-drag=\"none\" data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger composer-actions-trigger btn-flat btn-icon-text composer-actions\" data-trigger=\"\" type=\"button\" data-composer-actions=\"{actions_data}\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\">{user_selector}<div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{rich_data}{preview_data}{draft_data}{upload_data}{presence_data}{popup_data}{route_data}{pm_data}{save_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" data-pointer-drag=\"none\" data-resize-axis=\"vertical\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area{reply_area_tags} with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button aria-expanded=\"false\" class=\"btn btn-icon-text fk-d-menu__trigger composer-actions-trigger btn-flat btn-icon-text composer-actions\" data-trigger=\"\" type=\"button\" data-composer-actions=\"{actions_data}\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container {container_mode}\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\">{user_selector}<div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div>{tags_input}</div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{toggle}{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -1022,6 +1071,13 @@ pub fn render(
             .unwrap_or_default(),
         user_selector = user_selector(list, &route.pm),
         actions_data = actions_data(list, &route.actions),
+        rich_data = rich_editor_data(list, rich),
+        toggle = toggle_switch(list, rich),
+        container_mode = if rich {
+            "--rich-editor-enabled"
+        } else {
+            "--markdown-editor-enabled"
+        },
     )
 }
 

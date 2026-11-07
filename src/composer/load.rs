@@ -213,6 +213,7 @@ pub(crate) async fn load(
             settings.get("max_oneboxes_per_post")?.to_i(),
         )),
         allow_preview,
+        options.map(|o| o.composition_mode) == Some(1),
         presence.as_ref(),
         super::view::UploadUi::for_user(
             &settings.get("authorized_extensions")?.to_s(),

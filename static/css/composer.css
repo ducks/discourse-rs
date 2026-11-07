@@ -167,7 +167,8 @@ body.d-resizing-ns {
   color: var(--primary-medium) !important;
 }
 /* d-editor.scss:116 */
-.hide-preview .d-editor-preview-wrapper {
+.hide-preview .d-editor-preview-wrapper,
+.--rich-editor-enabled .d-editor-preview-wrapper {
   display: none;
   flex: 0;
 }
