@@ -3820,8 +3820,9 @@ route table has been made, so this list may be short.
     with topic voting's votes filters and discourse-solved's
     status:solved and status:unsolved; the topic_ids and state list
     filters (routes/list.rs:54; topic_query.rs:368)
-198. `feat/posts-show` S: GET /posts/:id.json (PostsController#show; the
-    `not_yet` case solved/post_as_admin)
+198. ~~`feat/posts-show`~~ (done) S: GET /posts/:id.json (PostsController#show),
+    ported with 194e for the review queue's edit action; the `not_yet` case
+    solved/post_as_admin matches and lost its mark (5716e3a3)
 199. `feat/site-json-rest` S: the /site.json keys parity/cases still
     ignores: markdown_additional_options, hashtag_configurations,
     hashtag_icons, access_control, valid_flag_applies_to_types,
