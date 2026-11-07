@@ -20,8 +20,12 @@
 //     keymap,         // the host's { "ctrl+m": fn } keys, as d-editor's
 //     focusIn, focusOut, toggleRichEditor,
 //     context,        // getContext extras: siteSettings, i18n(key),
-//                     // icon(name), appEvents, markdownOptions and the
-//                     // host's own (the composer's, rich-editor-context)
+//                     // icon(name), appEvents, markdownOptions, modal
+//                     // (show(name, { model }): the node views' modals,
+//                     // "wrap-attributes", "poll-ui-builder",
+//                     // "math-edit", "policy-builder",
+//                     // "local-dates-create") and the host's own (the
+//                     // composer's, rich-editor-context)
 //   })
 //
 // returns { view, schema, parser, serializer, setValue, getValue,
@@ -53,7 +57,9 @@ import Serializer from "discourse/rich-editor/serializer";
 
 export { UnsupportedTokenError };
 export { wasmEngine } from "discourse/rich-editor/engine";
+export { registerPluginExtensions } from "discourse/rich-editor/plugins";
 export { renderToolbarButtons } from "discourse/rich-editor/toolbar";
+export { showWrapAttributesModal } from "discourse/rich-editor/wrap-modal";
 
 var AUTOCOMPLETE_KEY_DOWN_SUPPRESS = ["Enter", "Tab", "ArrowDown", "ArrowUp"];
 
@@ -370,7 +376,16 @@ export function createEditor(options) {
     return true;
   }
 
-  var opened = setValue(options.value);
+  // A markdown the parse itself refuses (the markdown crate's "not ported
+  // yet") leaves no editor behind.
+  var opened;
+  try {
+    opened = setValue(options.value);
+  } catch (e) {
+    view.destroy();
+    container.remove();
+    throw e;
+  }
 
   return {
     view: view,
