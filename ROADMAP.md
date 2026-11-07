@@ -388,8 +388,9 @@ Visible if clicked, avoid them in a scripted demo:
   Not a demo blocker: the reject reason modal (194e2), which only a
   user reviewable opens, and the queue lists none yet.
 - [ ] The composer's rich editor and its toolbar buttons (196r1 to 196r3;
-  196r1, the core and the composer's toggle, is done); the profile's About
-  me editor follows it (196r5).
+  196r1, the core and the composer's toggle, and 196r2, the everyday
+  extensions, are done); the profile's About me editor follows it
+  (196r5).
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -3959,20 +3960,52 @@ route table has been made, so this list may be short.
     (a documented, temporary deviation: Discourse's default_composition_mode
     1 would put the seed's, imported and new members in the rich editor
     before its extensions); the toggle and Ctrl+M still switch and save
-    196r2. `feat/rich-editor-extensions` L: the everyday extensions: emoji,
-    mentions, hashtags, links and the link toolbar, images and uploads
-    (upload placeholder, image node view, grid), quotes, code blocks with
-    highlighting (prosemirror-highlightjs over the vendored highlight.js),
-    lists, headings, tables, html blocks and inline html, paste (markdown
-    paste, word paste's clean-up in to-markdown); each extension's parse
-    spec over the node tree and the reference's tests for it
+    196r2. ~~`feat/rich-editor-extensions`~~ (done) L: the everyday
+    extensions, each from the reference's extensions/ as plain ES modules
+    (static/js/rich-editor/extensions/, node-views/, table/) registered in
+    register-default.ts's order: emoji (with the only-emoji decoration and
+    the emoticon input rule), mention, hashtag, link (marks by markup,
+    attachments, upload links, linkify as the member types or pastes over
+    a selection) and the link toolbar (floating, or in the button bar's
+    place without room), quote (its node view and title selection), code
+    block (prosemirror-highlightjs over the page's highlight.js, the
+    language select, Tab indenting, formatCode, pasted line wrappers), html
+    inline (the engine's allow list, the outline, small text) and html
+    block, trailing inline space, table (lib/table: grips, menus, append
+    bars, editing, paste, repair), image (the media node view with its
+    toolbar, alt text, scale, lightbox and grid moves, short url lookup,
+    data: image uploads), video, upload placeholder, grid, override drag
+    ghost, markdown paste and word paste (also in to-markdown). The node
+    tree writes the JS tokens of mentions, raw hashtags, quotes and grids
+    (JsToken) and applies upload-protocol's client half; the engine
+    (rich-editor/engine.js over markdown.wasm, render/editor.rs) answers
+    linkify, the allow list, emoji images, emoticons and emojiUnescape.
+    The composer gives the editor its context (src/composer/rich_editor.rs:
+    settings, strings, hashtag order; appEvents, replaceToolbar), puts
+    uploads in as placeholder nodes in rich mode, and GET
+    /composer/mentions (ComposerController#mentions) answers the mention
+    extension. 196r1's parser gained the reference's closing of inline
+    nodes at a block token, the keymap its Enter in a table cell, and
+    float.js now takes a padding of 0 as given. Tests: browser
+    rich-editor-extensions (107), rich-editor-table (98),
+    rich-editor-media (28), rich-editor-to-markdown (41) and
+    rich-editor-word-paste (23), the reference's QUnit bodies run as
+    written where they are not table-driven; tree.rs and editor.rs;
+    tests/composer_mentions.rs. Still refused: 196r4's constructs and
+    [wrap]. Left to 196r3: Edit link (UpsertHyperlink), Load preview
+    (onebox), Tab nesting list items (text-manipulation). Not ported here:
+    ComposerMessages (the mention warnings are triggered, nothing shows
+    them), A11y's live regions (table and video announcements are
+    skipped), quote avatars in the composer (as its preview)
     196r3. `feat/rich-editor-toolbar` M: the toolbar and its menus wired to
     the rich editor (text-manipulation.ts: bold, italic, link, quote, code,
-    lists, headings, emoji, upload, the options menu), onebox and its
-    toolbar, the preview toolbar
+    lists, headings, emoji, upload, the options menu, Tab nesting list
+    items), UpsertHyperlink for the link toolbar's Edit, onebox and its
+    toolbar (with the link toolbar's Load preview), the preview toolbar
     196r4. `feat/rich-editor-plugins` L: the plugins' extensions: poll's
     node view (PollNodeView and the builder's Edit poll mode), checklist,
-    details, spoiler, footnotes, math, local dates, policy, events
+    details, spoiler, footnotes, math, local dates, policy, events, and
+    [wrap] (its extension and the wrap node view)
     196r5. `feat/rich-editor-default` S: once 196r2 and 196r4 land, turn
     composer::OPEN_IN_STORED_MODE (src/composer/load.rs) on and remove it,
     so the composer opens in the stored composition_mode as Ember does;
