@@ -2716,13 +2716,41 @@ have handlers now.
     item opening its thread as a boosted navigation (the router's
     transition) instead of a load. Tests in tests/chat_threads_rest.rs
     and tests/browser/chat-threads.spec.js. Left, as 160b1.
-    160b1. `feat/chat-threads-navbar-live` S: the navbar's thread
-    indicators following the tracking state (ChatThreadsListButton and
-    ThreadHeaderUnreadIndicator over threadsManager.unreadThreadCount,
-    drawn once by the server now); UserThreads hearing the channels of
-    the pages it loads later (trackChannel, only the first page's now);
-    one ChatHistory for the drawer and full-page chat (chat-drawer.js
-    keeps its own).
+    160b1. ~~`feat/chat-threads-navbar-live`~~ (done) S: one ChatHistory
+    for the drawer and full-page chat, as Ember's service is one:
+    static/js/chat-thread.js keeps it (Discourse.chatHistory) and
+    chat-drawer.js visits it from the drawer's stateFor (the previous
+    route read once the drawer's scripts are loaded), so a thread opened
+    in the drawer after full-page My Threads backs to them, and a
+    full-page thread after the drawer's threads list backs to the list.
+    Its routes as router.recognize gives them: the leaf's name with its
+    own params only (a channel's index has none, so two channels in a
+    row are one visit), the drawer's an index route's parent
+    (#forceParentRouteForIndex), the info routes as chat.channel.info.*
+    (they were chat.channel-info.*); visits come from full-page chat only
+    (a drawer url in the address bar is not the page's route).
+    UserThreads#trackChannel for the pages loaded later: a page's new
+    channels heard on /chat/:id (the stream opened again from its last
+    event), the threads' tracking over every followed channel's new
+    messages as ChatSubscriptionsManager hears them (the first page's
+    channels only before). Tests in tests/browser/chat-threads.spec.js
+    and tests/browser/chat-drawer-routes.spec.js. Left, as 160b2.
+    160b2. `feat/chat-threads-navbar-indicators` S: the navbar's thread
+    indicators following the tracking state (ChatThreadsListButton's
+    has-unreads and ThreadHeaderUnreadIndicator over
+    threadsManager.unreadThreadCount, and ChatThreadHeader#backLink's
+    pick by it, drawn once by the server now). Needs the server to draw
+    on .c-navbar__threads-list-button and the thread's
+    .c-navbar__back-button (plugins/chat/page.rs, thread_view.rs): the
+    channel id, its unread_thread_overview (thread ids to last reply
+    times, threadsManager.unreadThreadOverview), the viewer's id and
+    ignored users (currentUser.ignored_users, which _onNewChannelMessage
+    and _onNewThreadMessage skip) and js.chat.unread_threads_count's one
+    and other forms (the indicator's title, set when it is drawn; the
+    page has no strings for it). Then chat-thread.js keeps the overview
+    from /chat/:id/new-messages (followed) and
+    /chat/user-tracking-state/:id, the threads' memberships through
+    threadsManager.find (GET /chat/api/channels/:id/threads/:id).
 161. `feat/chat-uploads` M: ~~chat message uploads~~ (done,
     feat/chat-uploads: Chat::CreateMessage and Chat::UpdateMessage take
     upload_ids, the sender's own uploads (user_uploads) while

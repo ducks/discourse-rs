@@ -7,8 +7,8 @@
 //     (lost on a reload, as Ember's are), the full page or drawer
 //     preference (localStorage discourse_chat_preferred_mode), the last
 //     chat URL and the last forum URL
-//   - ChatHistory: the routes the drawer visited, which the channel
-//     route's back button and the footer read
+//   - ChatHistory's visits (chat-thread.js's, shared with full-page
+//     chat), which the channel and thread routes' back buttons read
 //   - the chat route's beforeModel: a navigation to a chat URL the drawer
 //     handles opens it in the drawer when the drawer is preferred and the
 //     page isn't full-page chat (the header icon, the sidebar's channels,
@@ -44,11 +44,10 @@
   var state = {
     active: false,
     expanded: false,
-    // The drawer's route: its URL, the history entry and the previous
-    // route its back button follows.
+    // The drawer's route: its URL and the previous route its back
+    // button follows (ChatHistory's).
     url: null,
     previous: "",
-    history: [],
     chatURL: null,
     appURL: null,
     channelId: null,
@@ -331,13 +330,31 @@
     });
   }
 
-  // ChatHistory#visit
+  // ChatHistory#visit from stateFor: the route drawn for `url`, by its
+  // name (a redirect's target, the list routes, has no params).
   function visit(name, url) {
-    var current = state.history[state.history.length - 1];
-    if (current && current.name === name && current.url === url) {
+    var history = Discourse.chatHistory;
+    if (!history) {
       return;
     }
-    state.history = state.history.slice(-9).concat([{ name: name, url: url }]);
+    var route = history.drawerRoute(url);
+    history.visit(route && route.name === name ? route : { name: name, params: {} });
+  }
+
+  // The previous route once stateFor visits the url's route: the current
+  // one, or the one before when the visit is the current route again.
+  function previousFor(url) {
+    var history = Discourse.chatHistory;
+    if (!history) {
+      return "";
+    }
+    var current = history.currentRoute();
+    var route = history.drawerRoute(url);
+    if (route && history.sameRoute(current, route)) {
+      var before = history.previousRoute();
+      return before ? before.name : "";
+    }
+    return current ? current.name : "";
   }
 
   function routeURL() {
@@ -456,20 +473,24 @@
   function openURL(url) {
     url = url || "/";
     var fallback = state.active && state.url ? { url: state.url, previous: state.previous } : null;
-    var current = state.history[state.history.length - 1];
-    if (current && current.url === url) {
-      var before = state.history[state.history.length - 2];
-      state.previous = before ? before.name : "";
-    } else {
-      state.previous = current ? current.name : "";
-    }
     state.url = url;
     state.active = true;
     state.expanded = true;
     state.chatURL = url;
     applyClasses();
     updateIcon();
-    load(fallback);
+    // ChatHistory is chat-thread.js's, which full-page chat shares: the
+    // route's previous one is read once it is loaded (without it, as on
+    // a failed load, there is none).
+    loadScripts()
+      .catch(function () {})
+      .then(function () {
+        if (state.url !== url || !state.active) {
+          return;
+        }
+        state.previous = previousFor(url);
+        load(fallback);
+      });
   }
 
   // didCloseDrawer

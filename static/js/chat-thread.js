@@ -14,7 +14,8 @@
 //     message scrolled to and highlighted, jumps to a message of the
 //     thread, the scroll to bottom arrow (GET /live/chat/:channel_id
 //     /messages?thread_id=)
-//   - the header's back link from the previous chat route (ChatHistory),
+//   - the header's back link from the previous chat route (ChatHistory,
+//     one for the page and the drawer, Discourse.chatHistory),
 //     the settings modal (ChatModalThreadSettings) from the title or the
 //     gear, the title prompt's toast on a phone (ChatThreadTitlePrompt)
 //   - the side panel's resizer, its width kept
@@ -257,20 +258,25 @@
   }
 
   // A bus subscription over /bus/events, its messages handled one at a
-  // time and in order.
-  function subscribe(channels, handle, onGap) {
+  // time and in order. From the page's bus position, or `from` (a
+  // stream's last event, its channels heard on with more beside them);
+  // the source keeps its last event's position.
+  function subscribe(channels, handle, onGap, from) {
     if (!window.EventSource) {
       return null;
     }
     var meta = document.querySelector("meta[name='bus-position']");
+    var position = from || (meta && meta.content);
     var url =
       basePath() +
       "/bus/events?channels=" +
       encodeURIComponent(channels.join(",")) +
-      (meta && meta.content ? "&position=" + encodeURIComponent(meta.content) : "");
+      (position ? "&position=" + encodeURIComponent(position) : "");
     var source = new EventSource(url, { withCredentials: true });
+    source.position = from || null;
     var queue = Promise.resolve();
     source.addEventListener("message", function (event) {
+      source.position = event.lastEventId || source.position;
       var message = JSON.parse(event.data);
       queue = queue
         .then(function () {
@@ -706,60 +712,155 @@
   });
 
   // ChatHistory: the chat routes visited since the page loaded, the last
-  // ten, each once in a row (visit), by the route Ember recognizes for
-  // the url. A service's state: page.js swaps pages in without a load,
-  // and a load (a reload, a url typed) starts it empty as Ember's boot
-  // does.
+  // ten, each once in a row (visit: the same name and params). One for
+  // full-page chat (onPageChange's visit, the route Ember recognizes for
+  // the url) and the drawer (chat-drawer.js's, as chatDrawerRouter's
+  // stateFor visits its route). A service's state: page.js swaps pages in
+  // without a load, and a load (a reload, a url typed) starts it empty as
+  // Ember's boot does.
   var chatHistory = [];
 
-  function routeOf(pathname) {
+  function decode(segment) {
+    try {
+      return decodeURIComponent(segment);
+    } catch (e) {
+      return segment;
+    }
+  }
+
+  // router.recognize over chat-route-map.js: the leaf route's name and its
+  // own dynamic segments (a RouteInfo's params, its parents' not
+  // included), and an index route's parent. Static segments win over
+  // dynamic ones, as route-recognizer ranks them. Null for a url that
+  // isn't a chat route.
+  function recognize(url) {
     var base = basePath();
-    var path = pathname.indexOf(base) === 0 ? pathname.slice(base.length) : pathname;
-    var m;
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/(\d+)\/t\/(\d+)\/?$/.exec(path))) {
-      return { name: "chat.channel.near-message-with-thread", params: [m[1], m[2], m[3]] };
+    var path = String(url).split(/[?#]/)[0];
+    if (base && path.indexOf(base) === 0) {
+      path = path.slice(base.length);
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/t\/(\d+)\/(\d+)\/?$/.exec(path))) {
-      return { name: "chat.channel.thread.near-message", params: [m[1], m[2], m[3]] };
+    path = path.replace(/\/+$/, "");
+    var leaf = function (name, params) {
+      return { name: name, params: params || {}, parent: null };
+    };
+    var index = function (name, params) {
+      return { name: name + ".index", params: {}, parent: { name: name, params: params || {} } };
+    };
+    if (path === "/chat") {
+      return index("chat");
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/t\/(\d+)\/?$/.exec(path))) {
-      return { name: "chat.channel.thread.index", params: [m[1], m[2]] };
+    if (path.indexOf("/chat/") !== 0) {
+      return null;
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/t\/?$/.exec(path))) {
-      return { name: "chat.channel.threads", params: [m[1]] };
+    var seg = path.slice("/chat/".length).split("/").map(decode);
+    var simple = ["disabled", "search", "direct-messages", "channels", "starred-channels", "threads", "new-message"];
+    if (seg.length === 1 && simple.indexOf(seg[0]) !== -1) {
+      return leaf("chat." + seg[0]);
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/pins\/?$/.exec(path))) {
-      return { name: "chat.channel.pins", params: [m[1]] };
+    if (seg[0] === "browse") {
+      if (seg.length === 1) {
+        return index("chat.browse");
+      }
+      if (seg.length === 2 && ["all", "closed", "open", "archived"].indexOf(seg[1]) !== -1) {
+        return leaf("chat.browse." + seg[1]);
+      }
+      return null;
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/info(?:\/(\w+))?\/?$/.exec(path))) {
-      return { name: "chat.channel-info." + (m[2] || "index"), params: [m[1]] };
+    if (seg[0] === "message" && seg.length === 2) {
+      return leaf("chat.message", { messageId: seg[1] });
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/(\d+)\/?$/.exec(path))) {
-      return { name: "chat.channel.near-message", params: [m[1], m[2]] };
+    if (seg[0] !== "c" || seg.length < 3) {
+      return null;
     }
-    if ((m = /^\/chat\/c\/[^/]+\/(\d+)\/?$/.exec(path))) {
-      return { name: "chat.channel.index", params: [m[1]] };
+    var channel = { channelTitle: seg[1], channelId: seg[2] };
+    var rest = seg.slice(3);
+    if (rest.length === 0) {
+      return index("chat.channel", channel);
     }
-    if ((m = /^\/chat\/([\w-]+)/.exec(path))) {
-      return { name: "chat." + m[1], params: [] };
+    if (rest[0] === "info") {
+      if (rest.length === 1) {
+        return index("chat.channel.info", channel);
+      }
+      if (rest.length === 2 && (rest[1] === "members" || rest[1] === "settings")) {
+        return leaf("chat.channel.info." + rest[1]);
+      }
+      return null;
     }
-    if (/^\/chat\/?$/.test(path)) {
-      return { name: "chat.index", params: [] };
+    if (rest[0] === "t") {
+      if (rest.length === 1) {
+        return leaf("chat.channel.threads");
+      }
+      if (rest.length === 2) {
+        return index("chat.channel.thread", { threadId: rest[1] });
+      }
+      if (rest.length === 3) {
+        return leaf("chat.channel.thread.near-message", { messageId: rest[2] });
+      }
+      return null;
+    }
+    if (rest[0] === "pins") {
+      return rest.length === 1 ? leaf("chat.channel.pins") : null;
+    }
+    if (rest.length === 1) {
+      return leaf("chat.channel.near-message", { messageId: rest[0] });
+    }
+    if (rest.length === 3 && rest[1] === "t") {
+      return leaf("chat.channel.near-message-with-thread", { messageId: rest[0], threadId: rest[2] });
     }
     return null;
   }
 
-  function visit(pathname) {
-    var route = routeOf(pathname);
-    if (!route) {
-      return;
-    }
-    var current = chatHistory[chatHistory.length - 1];
-    if (current && current.name === route.name && current.params.join("/") === route.params.join("/")) {
-      return;
-    }
-    chatHistory = chatHistory.slice(-9).concat([route]);
+  // deepEqual over a route's params: strings, in the order recognize
+  // puts them.
+  function sameRoute(a, b) {
+    return !!a && !!b && a.name === b.name && JSON.stringify(a.params) === JSON.stringify(b.params);
   }
+
+  function visitRoute(route) {
+    var current = chatHistory[chatHistory.length - 1];
+    if (sameRoute(current, route)) {
+      return;
+    }
+    chatHistory = chatHistory.slice(-9).concat([{ name: route.name, params: route.params }]);
+  }
+
+  function previousRoute() {
+    return chatHistory.length > 1 ? chatHistory[chatHistory.length - 2] : null;
+  }
+
+  function currentRoute() {
+    return chatHistory.length > 0 ? chatHistory[chatHistory.length - 1] : null;
+  }
+
+  // onPageChange: a full-page chat route. The drawer's routes aren't the
+  // page's (the chat route's beforeModel opens them in the drawer).
+  function visit() {
+    if (!document.querySelector(".full-page-chat")) {
+      return;
+    }
+    var route = recognize(location.pathname + location.search);
+    if (route && route.name.indexOf("chat.") === 0) {
+      visitRoute(route);
+    }
+  }
+
+  // For chat-drawer.js: the drawer's visits, and its previous route for
+  // the route it is about to draw.
+  Discourse.chatHistory = {
+    recognize: recognize,
+    sameRoute: sameRoute,
+    visit: visitRoute,
+    previousRoute: previousRoute,
+    currentRoute: currentRoute,
+    // #forceParentRouteForIndex: the drawer's route for a url.
+    drawerRoute: function (url) {
+      var route = recognize(url);
+      if (route && route.parent) {
+        return { name: route.parent.name, params: route.parent.params };
+      }
+      return route && { name: route.name, params: route.params };
+    },
+  };
 
   // ChatThreadHeader#backLink: the threads list after the threads list,
   // or after the channel on desktop; my threads after my threads; else
@@ -769,7 +870,7 @@
     if (!back) {
       return;
     }
-    var previous = chatHistory.length > 1 ? chatHistory[chatHistory.length - 2].name : null;
+    var previous = previousRoute() && previousRoute().name;
     var desktop = !document.documentElement.classList.contains("mobile-view");
     var target = null;
     if (previous === "chat.channel.threads" || (previous === "chat.channel.index" && desktop)) {
@@ -1051,6 +1152,8 @@
         more.dataset.offset = String(Number(more.dataset.offset || 0) + page.count);
         if (box === more.parentNode) {
           sortThreads(more);
+        } else if (more.chatTrackChannels) {
+          more.chatTrackChannels();
         }
         if (!box.isConnected) {
           return;
@@ -1356,57 +1459,77 @@
       }
       sortThreads(channelMore);
     }
-    // UserThreads#trackChannel: each channel shown, a thread's preview
-    // drawn again where it is; its tracking as the channel's list's, in
-    // place (the list keeps its order).
+    // UserThreads#trackChannel: each channel shown, the first page's and
+    // each one loaded after, a thread's preview drawn again where it is;
+    // its tracking as the channel's list's, in place (the list keeps its
+    // order), over every followed channel's new messages as
+    // ChatSubscriptionsManager hears them. A page bringing channels not
+    // heard yet hears them too: the stream again from its last event.
     var userMore = document.querySelector(".c-user-threads__load-more");
     if (userMore) {
       var userViewer = viewerOf(userMore);
-      var tracked = {};
-      document.querySelectorAll(".c-user-thread[data-channel-id]").forEach(function (node) {
-        tracked[node.dataset.channelId] = true;
-      });
-      var ids = Object.keys(tracked);
+      var tracked = [];
+      var userSource = null;
       var userNode = function (threadId) {
         return itemsBox(userMore).querySelector(".c-user-thread[data-id='" + Number(threadId) + "']");
       };
-      if (ids.length) {
-        var userChannels = ids.map(function (id) {
+      var onUserMessage = function (message) {
+        var data = message.data || {};
+        var node;
+        if (/^\/chat\/\d+\/new-messages$/.test(message.channel)) {
+          node = data.type === "thread" && data.thread_id && userNode(data.thread_id);
+          if (node) {
+            onNewThreadMessage(node, data, userViewer);
+          }
+        } else if (message.channel === "/chat/user-tracking-state/" + userViewer.id) {
+          node = data.thread_id && data.thread_tracking && userNode(data.thread_id);
+          if (node) {
+            onThreadTracking(node, data);
+          }
+        } else if (data.type === "update_thread_original_message" && data.thread_id) {
+          return reloadThreads(userMore, String(data.thread_id));
+        }
+      };
+      var trackChannels = function () {
+        var added = false;
+        itemsBox(userMore)
+          .querySelectorAll(".c-user-thread[data-channel-id]")
+          .forEach(function (node) {
+            if (tracked.indexOf(node.dataset.channelId) === -1) {
+              tracked.push(node.dataset.channelId);
+              added = true;
+            }
+          });
+        if (!added) {
+          return;
+        }
+        var channels = tracked.map(function (id) {
           return "/chat/" + id;
         });
-        ids.forEach(function (id) {
-          if (userViewer.followed.indexOf(id) !== -1) {
-            userChannels.push("/chat/" + id + "/new-messages");
-          }
+        userViewer.followed.forEach(function (id) {
+          channels.push("/chat/" + id + "/new-messages");
         });
         if (userViewer.id) {
-          userChannels.push("/chat/user-tracking-state/" + userViewer.id);
+          channels.push("/chat/user-tracking-state/" + userViewer.id);
         }
-        var userSource = subscribe(
-          userChannels,
-          function (message) {
-            var data = message.data || {};
-            var node;
-            if (/^\/chat\/\d+\/new-messages$/.test(message.channel)) {
-              node = data.type === "thread" && data.thread_id && userNode(data.thread_id);
-              if (node) {
-                onNewThreadMessage(node, data, userViewer);
-              }
-            } else if (message.channel === "/chat/user-tracking-state/" + userViewer.id) {
-              node = data.thread_id && data.thread_tracking && userNode(data.thread_id);
-              if (node) {
-                onThreadTracking(node, data);
-              }
-            } else if (data.type === "update_thread_original_message" && data.thread_id) {
-              return reloadThreads(userMore, String(data.thread_id));
-            }
-          },
-          function () {}
-        );
+        var from = null;
+        if (userSource) {
+          from = userSource.position;
+          userSource.close();
+          if (sources.indexOf(userSource) !== -1) {
+            sources.splice(sources.indexOf(userSource), 1);
+          }
+        }
+        userSource = subscribe(channels, onUserMessage, function () {}, from);
         if (userSource) {
           sources.push(userSource);
         }
-      }
+      };
+      trackChannels();
+      userMore.chatTrackChannels = trackChannels;
+      cleanups.push(function () {
+        delete userMore.chatTrackChannels;
+      });
     }
     return function () {
       cleanups.forEach(function (fn) {
@@ -1487,7 +1610,7 @@
         history.replaceState(history.state, "", threadPath + location.search);
       }
     }
-    visit(location.pathname);
+    visit();
     if (pane) {
       drawBackLink();
     }
