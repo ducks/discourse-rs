@@ -250,6 +250,9 @@ end
 def reset_plugin_caches
   Site.clear_cache
   Emoji.clear_cache
+  # The preloaded banner, which a banner topic's save clears after commit
+  # and setup SQL never does.
+  ApplicationLayoutPreloader.banner_json_cache.clear
   # The theme caches (the user selectable and parent theme ids) and the
   # stylesheet manager's, which settings (default_theme_id) and theme
   # writes expire after commit, so never within a case.

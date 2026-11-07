@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_profiles SET dismissed_banner_key = 35 WHERE user_id = (SELECT id FROM users WHERE username = 'user1')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user1.json", "params": { "dismissed_banner_key": "" } },
+    { "method": "GET", "path": "/session/current.json" }
+  ]
+}

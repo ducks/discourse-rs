@@ -1,0 +1,6 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "GET", "path": "/site/banner.json" }
+  ]
+}

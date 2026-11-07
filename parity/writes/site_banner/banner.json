@@ -1,0 +1,74 @@
+{
+  "name": "banner",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/site/banner.json"
+    }
+  ],
+  "started_at": "2026-11-07T03:48:50.192509",
+  "transaction_started_at": "2026-11-07T03:48:48.419077",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "html": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
+        "key": 35,
+        "url": "http://localhost:3048/t/parity-fixture-replies-and-posters/35"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "a6cmjKTJOxBYjwTA0TbWoZVBP64=",
+            "created_at": "2026-11-07T03:48:48.801156",
+            "rotated_at": "2026-11-07T03:48:48.797712",
+            "updated_at": "2026-11-07T03:48:48.801156",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "a6cmjKTJOxBYjwTA0TbWoZVBP64=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T03:48:50.198639",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "a6cmjKTJOxBYjwTA0TbWoZVBP64=",
+            "created_at": "2026-11-07T03:48:48.801156",
+            "rotated_at": "2026-11-07T03:48:48.797712",
+            "updated_at": "2026-11-07T03:48:48.801156",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "a6cmjKTJOxBYjwTA0TbWoZVBP64=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET archetype = 'banner' WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "d938b891486d20263b0fa6b879899f35a35e7fccb2439d54a5744d74b1ddf4f4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

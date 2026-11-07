@@ -376,8 +376,9 @@ Visible if clicked, avoid them in a scripted demo:
   admin wrench isn't drawn (194, 262a): the wrench and the post admin
   menu, feat/topic-admin-menus (194a), and claims and notes,
   feat/review-claims-notes (194b), done; the topic menu's actions
-  (feat/topic-admin-actions, 194c) done but the timer modal,
-  multi-select and nested replies (194c1); the post menu's unported
+  (feat/topic-admin-actions, 194c) and the banner atop pages
+  (feat/site-banner, 194c2) done but the timer modal, multi-select and
+  nested replies (194c1); the post menu's unported
   actions are refused (194d).
 - [x] The review queue's client actions (edit, suspend, silence) and
   editing a reviewable (194e): done, feat/review-client-actions, with
@@ -3760,10 +3761,25 @@ route table has been made, so this list may be short.
     TopicTimerInfo), selecting posts (the topic's multi-select mode and
     its bulk actions) and the nested replies toggle (PUT
     /n/:slug/:id/toggle)
-    194c2. `feat/site-banner` S: the banner topic drawn atop every page
-    (ApplicationLayoutPreloader's banner, DiscourseBanner, dismissing it
-    through dismissed_banner_key, the `/site/banner` messages): banners
-    are made and removed (194c) but not shown
+    194c2. ~~`feat/site-banner`~~ (done) S: the banner topic drawn where
+    Ember draws DiscourseBanner: atop the discovery layout (the lists and
+    the categories page), the tags index and the topic (in a container of
+    its own, only while the first post is loaded). The banner is
+    ApplicationLayoutPreloader#banner_json (src/topics/banner.rs: the
+    first banner topic's Topic#banner, nothing for a read restricted
+    category or a visitor while login is required; a translated banner
+    refused), in the chrome (Chrome::site_banner) and at GET /site/banner.
+    static/js/site-banner.js draws it with the staff edit link and the
+    close button: dismissing it PUTs the member's dismissed_banner_key
+    (User#dismissBanner), a visitor's goes to localStorage
+    (discourse_dismissed_banner_key). make_banner! and remove_banner!
+    publish `/site/banner` (the banner, or null), which /live sends as a
+    `banner` event to everyone; the categories page, the tags index and
+    every list now keep a stream for a visitor too. record_writes.rb
+    clears the preloader's banner cache per case. Recorded on rs-ref-a
+    (parity/writes/site_banner, 10 cases); browser specs in
+    tests/browser/topic-admin-actions.spec.js (drawn, dismissed by a
+    member and a visitor, live)
     194d. `feat/post-admin-actions` M: what the post admin menu refuses:
     the staff color (PUT /posts/:id/post_type), the post notice modal
     (PUT /posts/:id/notice), unhiding (PUT /posts/:id/unhide), the

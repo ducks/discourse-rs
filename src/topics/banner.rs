@@ -3,15 +3,20 @@
 //! Topic.ensure_consistency!'s expired banners): the archetype, the small
 //! action saying so, the save, and the scheduled removal cancelled.
 //!
-//! The banner itself (ApplicationLayoutPreloader's banner, drawn atop
-//! every page, and its `/site/banner` messages) is not drawn by the port.
+//! The banner itself: ApplicationLayoutPreloader#banner_json (the
+//! preloaded `banner`, GET /site/banner) and Topic#banner, which
+//! `/site/banner` carries when a banner is made (null when removed);
+//! crate::html draws it atop the pages Ember draws DiscourseBanner on.
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use sqlx::PgConnection;
 
-use crate::AppError;
+use crate::guardian::Guardian;
 use crate::posting::Ctx;
 use crate::posting::small_action::{self, SmallAction};
+use crate::site_settings::SiteSettings;
+use crate::url::Urls;
+use crate::{AppError, Unsupported};
 
 /// `Topic#make_banner!(user)`: the banner there is removed first (one at
 /// a time), every dismissed banner is shown again, then the topic becomes
@@ -36,7 +41,16 @@ pub async fn make_banner(
     )
     .execute(&mut *conn)
     .await?;
-    change(conn, ctx, topic_id, user_id, "banner", "banner.enabled").await
+    change(conn, ctx, topic_id, user_id, "banner", "banner.enabled").await?;
+    // MessageBus.publish("/site/banner", banner): to everyone, as
+    // Topic#banner without a guardian.
+    let urls = Urls {
+        config: ctx.config,
+        settings: ctx.settings,
+    };
+    let message = banner(&mut *conn, ctx.settings, &urls, topic_id, None).await?;
+    ctx.bus.publish(&mut *conn, CHANNEL, &message, None).await?;
+    Ok(())
 }
 
 /// `Topic#remove_banner!(user)`: back to a regular topic, said so even
@@ -47,7 +61,11 @@ pub async fn remove_banner(
     topic_id: i32,
     user_id: i32,
 ) -> Result<(), AppError> {
-    change(conn, ctx, topic_id, user_id, "regular", "banner.disabled").await
+    change(conn, ctx, topic_id, user_id, "regular", "banner.disabled").await?;
+    ctx.bus
+        .publish(&mut *conn, CHANNEL, &Value::Null, None)
+        .await?;
+    Ok(())
 }
 
 /// The archetype set and bannered_until cleared (the controller gives no
@@ -122,4 +140,79 @@ pub async fn remove_banner_job(
         remove_banner(conn, ctx, topic_id as i32, -1).await?;
     }
     Ok(())
+}
+
+/// The channel DiscourseBanner's initializer (instance-initializers/
+/// banner.js) hears: the banner made, or null once removed.
+pub const CHANNEL: &str = "/site/banner";
+
+/// `Topic#banner(guardian)`: the first post's cooked, the topic's id as
+/// the key the dismissal stores, and its url (Topic#url, absolute).
+/// A translated first post (ContentLocalization.show_translated_post?
+/// for the viewer) is refused.
+pub async fn banner(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    urls: &Urls<'_>,
+    topic_id: i32,
+    guardian: Option<&Guardian>,
+) -> Result<Value, AppError> {
+    // ordered_posts.first: the trashed ones left out by Post's scope.
+    let row: Option<(String, Option<String>, String, Option<String>)> = sqlx::query_as(
+        "SELECT p.cooked, p.locale, p.raw, t.slug FROM topics t \
+         JOIN posts p ON p.topic_id = t.id AND p.deleted_at IS NULL \
+         WHERE t.id = $1 ORDER BY p.sort_order LIMIT 1",
+    )
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((cooked, locale, raw, slug)) = row else {
+        return Err(Unsupported("a banner topic without posts").into());
+    };
+    if guardian.is_some()
+        && settings.get("content_localization_enabled")?.truthy()
+        && locale.is_some_and(|l| !l.is_empty())
+        && !raw.trim().is_empty()
+    {
+        return Err(Unsupported("a translated banner (content localization)").into());
+    }
+    // Topic#slug writes one for a topic without; refused instead.
+    let Some(slug) = slug else {
+        return Err(Unsupported("a banner topic without a slug").into());
+    };
+    // Topic.url(id, slug): the slug segment only when present.
+    let mut url = format!("{}/t/", urls.base_url()?);
+    if !slug.is_empty() {
+        url.push_str(&slug);
+        url.push('/');
+    }
+    url.push_str(&topic_id.to_string());
+    Ok(json!({ "html": cooked, "key": topic_id, "url": url }))
+}
+
+/// `ApplicationLayoutPreloader#banner_json`: nothing for a visitor while
+/// login is required, else the first banner topic's banner unless its
+/// category is read restricted (an empty object for none). Rails caches it
+/// per locale until a banner topic is saved; it is read each time here.
+pub async fn preloaded(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    urls: &Urls<'_>,
+    guardian: &Guardian,
+) -> Result<Value, AppError> {
+    if guardian.is_anonymous() && settings.get("login_required")?.truthy() {
+        return Ok(json!({}));
+    }
+    // Topic.where(archetype: banner).first, by id.
+    let topic: Option<(i32, bool)> = sqlx::query_as(
+        "SELECT t.id, COALESCE(c.read_restricted, false) FROM topics t \
+         LEFT JOIN categories c ON c.id = t.category_id \
+         WHERE t.archetype = 'banner' AND t.deleted_at IS NULL ORDER BY t.id LIMIT 1",
+    )
+    .fetch_optional(&mut *conn)
+    .await?;
+    match topic {
+        Some((id, false)) => banner(conn, settings, urls, id, Some(guardian)).await,
+        _ => Ok(json!({})),
+    }
 }

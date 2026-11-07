@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use askama::Template;
 use chrono::NaiveDateTime;
-use serde_json::Value;
+use serde_json::{Value, json};
 use sqlx::PgConnection;
 
 use crate::i18n::I18n;
@@ -222,6 +222,13 @@ pub struct Chrome {
     /// GlobalNotice above the page's content: the read-only notice while
     /// the site is read only, empty otherwise.
     pub global_notice: String,
+    /// DiscourseBanner's config for static/js/site-banner.js: the preloaded
+    /// banner (ApplicationLayoutPreloader#banner_json, `{}` for none), the
+    /// member's username, staff and dismissed_banner_key
+    /// (CurrentUserSerializer), the view and the `banner.*` strings, as
+    /// JSON. The pages Ember draws the banner on place it (macros.html
+    /// site_banner).
+    pub site_banner: String,
     /// The sidebar's markup, empty when the page has none
     /// (ApplicationController#sidebarEnabled).
     pub sidebar: String,
@@ -798,6 +805,45 @@ fn drafts_menu_trigger(i18n: &I18n, draft_count: i64) -> String {
     )
 }
 
+/// Chrome::site_banner: the preloaded banner with what DiscourseBanner
+/// reads of the current user (`dismissed_banner_key`, `staff`, whom
+/// dismissBanner's PUT names) and of the site (`desktopView`), and its
+/// strings.
+async fn site_banner_config(
+    conn: &mut PgConnection,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    urls: &crate::url::Urls<'_>,
+    guardian: &crate::guardian::Guardian,
+) -> Result<String, crate::AppError> {
+    let banner = crate::topics::banner::preloaded(&mut *conn, settings, urls, guardian).await?;
+    let user = match guardian.user() {
+        Some(user) => {
+            let dismissed: Option<i32> = sqlx::query_scalar(
+                "SELECT dismissed_banner_key FROM user_profiles WHERE user_id = $1",
+            )
+            .bind(user.id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten();
+            json!({
+                "username": user.username,
+                "staff": guardian.is_staff(),
+                "dismissed_banner_key": dismissed,
+            })
+        }
+        None => Value::Null,
+    };
+    let t = |key: &str| state.i18n.t(key).unwrap_or(key).to_string();
+    Ok(json!({
+        "banner": banner,
+        "currentUser": user,
+        "desktopView": !crate::mobile::mobile_view(),
+        "strings": { "edit": t("js.banner.edit"), "close": t("js.banner.close") },
+    })
+    .to_string())
+}
+
 /// What the sidebar renders from: the Site's sidebar fields and the member
 /// (with `tracking`), None for a visitor.
 pub async fn sidebar_inputs(
@@ -857,6 +903,8 @@ impl Site {
         let mode = crate::readonly::mode(&mut *conn).await?;
         self.chrome.global_notice =
             crate::readonly::notice(&state.i18n, mode, guardian.user().is_some());
+        self.chrome.site_banner =
+            site_banner_config(&mut *conn, state, settings, &urls, guardian).await?;
         self.chrome.logo_url = crate::site_icons::site_url(&mut *conn, &urls, "logo").await?;
         self.chrome.logo_small_url =
             crate::site_icons::site_url(&mut *conn, &urls, "logo_small").await?;

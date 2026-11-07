@@ -20,6 +20,8 @@
 //!   current user's subscriptions): the member's own status redraws the
 //!   avatar's bubble, and on a topic page the posts it shows by or
 //!   mentioning a user whose status changed are drawn again with it.
+//! - `banner`, for everyone: `/site/banner`'s banner (null once removed),
+//!   which static/js/site-banner.js draws.
 //!
 //! The stream starts after the Last-Event-ID header (the browser
 //! reconnecting), else `position` (the page's `bus-position`), else now;
@@ -161,7 +163,8 @@ pub async fn page(
     let lists = since.is_some() || user_id.is_some();
 
     let user_status = settings.get("enable_user_status")?.truthy();
-    let mut channels = Vec::new();
+    // The site banner (the banner initializer's subscription), everyone's.
+    let mut channels = vec![crate::topics::banner::CHANNEL.to_string()];
     if user_status && (topic_id.is_some() || user_id.is_some()) {
         channels.push("/user-status".to_string());
     }
@@ -390,6 +393,14 @@ async fn handle_batch(
             let data = serde_json::json!({ "post_id": message.data["post_id"] });
             live.pending
                 .push_back(Event::default().event("poll").id(id).data(data.to_string()));
+        } else if message.channel == crate::topics::banner::CHANNEL {
+            // BannerInit#onMessage: the banner made, or null.
+            live.pending.push_back(
+                Event::default()
+                    .event("banner")
+                    .id(id)
+                    .data(message.data.to_string()),
+            );
         } else if notification.as_ref() == Some(&message.channel) {
             // onNotification's counts.
             let count = |key: &str| message.data[key].as_i64().unwrap_or(0);

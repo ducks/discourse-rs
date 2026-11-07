@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
+{% import "macros.html" as m %}
 {% block title %}{{ chrome.t("tagging.tags") }} - {{ site_title }}{% endblock %}
 {% block content %}
+{% call m::site_banner(base_path, chrome, true, false) %}
 <div class="tag-crawler">
   {% for group in groups %}
   <div class="tag-list">
@@ -15,3 +17,5 @@
   {% endfor %}
 </div>
 {% endblock %}
+{#- A visitor hears the banner too. -#}
+{% block live %}{% call m::live_sink_for_member(true, base_path, bus_position, chrome.live_params) %}{% endblock %}

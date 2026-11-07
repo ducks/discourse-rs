@@ -2829,6 +2829,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
+        .route("/site/banner", get(site::banner))
+        .route("/site/banner.json", get(site::banner))
         .route("/about", get(about::page))
         .route("/about.json", get(about::show))
         // static#show: the guidelines, terms and privacy pages.

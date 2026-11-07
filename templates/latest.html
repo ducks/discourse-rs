@@ -4,6 +4,7 @@
 {% block content %}
 {{ banner|safe }}
 {%- if !banner.is_empty() %}<script src="{{ crate::assets::url(base_path, "welcome-banner.js") }}"></script>{% endif %}
+{% call m::site_banner(base_path, chrome, false, false) %}
 {% if let Some(h) = heading %}{% if !category_nav %}
 <h1 class="category-heading">
   {% if let Some(p) = h.parent %}<a href="{{ p.url }}">{{ p.name }}</a> &rsaquo; {% endif %}<a href="{{ h.url }}">{{ h.name }}</a>
@@ -61,5 +62,5 @@
 {% if !dismiss_strings.is_empty() %}<script src="{{ crate::assets::url(base_path, "topic-dismiss.js") }}" data-topic-dismiss data-strings="{{ dismiss_strings }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
-    stream. -#}
-{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, false, live_filter, live_since, chrome.live_params) %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position, chrome.live_params) %}{% endif %}{% endblock %}
+    stream, and the site banner's messages for anyone. -#}
+{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, false, live_filter, live_since, chrome.live_params) %}{% else %}{% call m::live_sink_for_member(true, base_path, bus_position, chrome.live_params) %}{% endif %}{% endblock %}

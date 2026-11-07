@@ -4,16 +4,18 @@
     posts are appended), `filter` a list; `params` (Chrome::live_params)
     names the nav pill and sidebar to keep counted. A `poll` event (a
     topic's polls changed) is static/js/poll.js's, which draws them again
-    and swaps nothing here. -#}
+    and swaps nothing here; a `banner` event (`/site/banner`) is
+    static/js/site-banner.js's. -#}
 {% macro live_sink(base_path, bus_position, topic_id, tail, filter, since, params) %}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}{{ params }}" sse-swap="post,list,header,chat,poll"></div>
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}{{ params }}" sse-swap="post,list,header,chat,poll,banner"></div>
 {% endmacro %}
 
 {#- The stream every page has for a member: their notifications and
-    counts, nothing more. -#}
+    counts, nothing more; a visitor's too where the banner is drawn, for
+    its `banner` events. -#}
 {% macro live_sink_for_member(member, base_path, bus_position, params) %}
 {% if member && !bus_position.is_empty() %}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{{ params }}" sse-swap="post,list,header,chat"></div>
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{{ params }}" sse-swap="post,list,header,chat,banner"></div>
 {% endif %}
 {% endmacro %}
 
@@ -76,3 +78,13 @@
   </div>
 </div>
 {% endmacro %}
+
+{#- DiscourseBanner, where Ember draws it: atop the discovery layout, the
+    tags index and the topic. On the last two it sits in a container of its
+    own (`wrap`); on the topic only while the first post is loaded
+    (`first_post`), as shouldHideScrollableContentAbove hides it.
+    static/js/site-banner.js draws it beside this slot from the chrome's
+    config, and again as the page's stream brings `/site/banner`. -#}
+{% macro site_banner(base_path, chrome, wrap, first_post) %}
+<template class="site-banner-slot" data-config="{{ chrome.site_banner }}"{% if wrap %} data-wrap{% endif %}{% if first_post %} data-first-post{% endif %}></template><script src="{{ crate::assets::url(base_path, "site-banner.js") }}"></script>
+{%- endmacro %}

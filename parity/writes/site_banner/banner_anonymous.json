@@ -1,0 +1,33 @@
+{
+  "name": "banner_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/site/banner.json"
+    }
+  ],
+  "started_at": "2026-11-07T03:48:47.711198",
+  "transaction_started_at": "2026-11-07T03:48:46.25847",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "html": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
+        "key": 35,
+        "url": "http://localhost:3048/t/parity-fixture-replies-and-posters/35"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET archetype = 'banner' WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "e43272bfc2e70e6b6d1a07cd74c2e303188e285708e5ca713e5053ba6dc1dfc8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

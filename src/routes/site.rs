@@ -94,3 +94,21 @@ pub async fn site(
     };
     Ok(Json(site.json_for().await?))
 }
+
+/// GET /site/banner: ApplicationLayoutPreloader#banner_json, the banner
+/// the pages preload.
+pub async fn banner(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Json<serde_json::Value>, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    Ok(Json(
+        crate::topics::banner::preloaded(&mut conn, &settings, &urls, &guardian).await?,
+    ))
+}
