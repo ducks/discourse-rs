@@ -1087,6 +1087,167 @@
       "files": [
         "js/submit-on-load-lti.js"
       ]
+    },
+    {
+      "name": "prosemirror/orderedmap.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/orderedmap/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-codemark/index.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-codemark/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-codemark/plugin.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-codemark/plugin.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-codemark/actions.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-codemark/actions.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-codemark/inputRules.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-codemark/inputRules.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-codemark/utils.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-codemark/utils.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-codemark/types.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-codemark/types.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-commands.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-commands/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-dropcursor.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-dropcursor/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-gapcursor.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-gapcursor/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-highlightjs.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-highlightjs/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-history.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-history/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-inputrules.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-inputrules/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-keymap.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-keymap/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-markdown.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-markdown/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-model.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-model/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-schema-list.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-schema-list/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-state.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-state/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-transform.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-transform/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/prosemirror-view.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/prosemirror-view/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/rope-sequence.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/rope-sequence/index.js"
+      ]
+    },
+    {
+      "name": "prosemirror/w3c-keyname.js",
+      "content_type": "js",
+      "files": [
+        "vendor/prosemirror/w3c-keyname/index.js"
+      ]
+    },
+    {
+      "name": "rich-editor/markdown-it-stub.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/markdown-it-stub.js"
+      ]
     }
   ]
 }

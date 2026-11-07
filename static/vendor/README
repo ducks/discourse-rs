@@ -154,3 +154,52 @@ The gem ships no license files; MathJax is Apache-2.0 and KaTeX MIT.
 Copied from an installed gem and compared with `diff -r`. To update,
 install the new gem version, replace both trees and bump
 BUNDLE_VERSION and the route in src/routes/mod.rs.
+
+  prosemirror/<package>/index.js
+                <package>'s ES module build (dist/index.js; w3c-keyname's
+                index.js), served as /assets/prosemirror/<package>.js:
+                  orderedmap@2.1.1
+                  prosemirror-commands@1.7.2
+                  prosemirror-dropcursor@1.8.3
+                  prosemirror-gapcursor@1.4.1
+                  prosemirror-highlightjs@0.9.1
+                  prosemirror-history@1.5.0
+                  prosemirror-inputrules@1.5.1
+                  prosemirror-keymap@1.2.3
+                  prosemirror-markdown@1.13.7
+                  prosemirror-model@1.25.11
+                  prosemirror-schema-list@1.5.1
+                  prosemirror-state@1.4.4
+                  prosemirror-transform@1.12.1
+                  prosemirror-view@1.42.3
+                  rope-sequence@1.3.4
+                  w3c-keyname@2.2.8
+  prosemirror/<package>/LICENSE
+                <package>'s LICENSE (MIT, Marijn Haverbeke and others;
+                prosemirror-highlightjs's Ben Kelly)
+  prosemirror/prosemirror-codemark/*.js
+                prosemirror-codemark@0.4.2, dist/esm/{index,plugin,actions,
+                inputRules,utils,types}.js (served as
+                /assets/prosemirror/prosemirror-codemark/<file>.js)
+
+The rich editor's ProseMirror packages (ROADMAP 196r1): every prosemirror-*
+package frontend/discourse/package.json lists and the editor imports, at
+the version Discourse's pnpm-lock.yaml resolves, and their runtime
+dependencies (orderedmap, rope-sequence, w3c-keyname). Each tarball was
+checked against the lockfile's integrity (sha512) and each file is
+byte-identical to the tarball and to the reference's node_modules,
+source map comments included (the maps are not vendored).
+
+They are loaded as ES modules through the import map static/js/rich-editor.js
+writes, with no bundler: the files keep their bare imports
+('prosemirror-model'), and prosemirror-codemark's extensionless relative
+ones ('./plugin') are mapped by url. prosemirror-codemark ships no license
+file; package.json says MIT (curvenote/editor). prosemirror-highlightjs
+takes the highlight.js instance as an argument and imports nothing from
+it; the code block extension (196r2) hands it highlightjs/core.min.js.
+
+prosemirror-markdown imports markdown-it and builds its
+defaultMarkdownParser with it at module load. markdown-it is not vendored:
+the editor parses with the port's own markdown crate (crates/markdown, as
+WebAssembly), so the import map points 'markdown-it' at
+static/js/rich-editor/markdown-it-stub.js, whose parse throws.
