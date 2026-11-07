@@ -280,9 +280,11 @@ pub fn reactions(
     cx: &ListContext,
     ui: &crate::plugins::reactions::view::ReactionsUi,
     reactions: &[Value],
+    acting_username: Option<&str>,
+    include_likes: bool,
 ) -> String {
     format!(
         "<section class=\"user-content\" id=\"user-content\"><div class=\"notification-history user-stream\">{}{LOAD_MORE}</div></section>",
-        crate::user_profile_view::reactions_list(cx, ui, reactions)
+        crate::user_profile_view::reactions_list(cx, ui, reactions, acting_username, include_likes)
     )
 }

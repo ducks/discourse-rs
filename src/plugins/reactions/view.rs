@@ -29,6 +29,8 @@ pub struct ReactionsUi {
     pub enable_emoji: bool,
     pub emojis: std::sync::Arc<crate::emojis::Emojis>,
     pub prioritize_username: bool,
+    /// `discourse_reactions_allow_any_emoji`: the picker's emoji picker.
+    pub allow_any_emoji: bool,
 }
 
 impl ReactionsUi {
@@ -55,6 +57,9 @@ impl ReactionsUi {
             enable_emoji: settings.get("enable_emoji")?.truthy(),
             emojis: settings.emojis().clone(),
             prioritize_username: settings.get("prioritize_username_in_ux")?.truthy(),
+            allow_any_emoji: settings
+                .get("discourse_reactions_allow_any_emoji")?
+                .truthy(),
         }))
     }
 
@@ -186,8 +191,9 @@ impl PostReactions<'_> {
     }
 
     /// DiscourseReactionsPicker#reactionInfo and #optimalColsCount, for
-    /// the browser to draw the picker from. The emoji picker that
-    /// discourse_reactions_allow_any_emoji adds is not ported.
+    /// the browser to draw the picker from, with the EmojiPicker trigger
+    /// discourse_reactions_allow_any_emoji adds after the reactions (its
+    /// DMenu trigger, @btnClass "btn-icon btn-flat", counted as a cell).
     fn picker(&self) -> Value {
         let mut ids = self.ui.enabled.clone();
         if !ids.contains(&self.ui.main) {
@@ -227,7 +233,15 @@ impl PostReactions<'_> {
                 })
             })
             .collect();
-        serde_json::json!({"cols": optimal_cols(entries.len()), "reactions": entries})
+        let count = entries.len() + usize::from(self.ui.allow_any_emoji);
+        let mut picker = serde_json::json!({"cols": optimal_cols(count), "reactions": entries});
+        if self.ui.allow_any_emoji {
+            picker["anyEmoji"] = Value::String(format!(
+                "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger emoji-picker-trigger btn-icon btn-flat\" data-identifier=\"emoji-picker\" data-trigger=\"\" type=\"button\">{}&#8203;</button>",
+                d_icon("discourse-emojis", None)
+            ));
+        }
+        picker
     }
 
     /// ReactionsActionSummary: the counter, when someone reacted.

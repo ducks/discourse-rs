@@ -1,9 +1,9 @@
 // The post menu (topic.js, post-stream.js) and the plugin buttons in it:
-// discourse-reactions' like and picker, discourse-solved's accept and
-// unaccept, discourse-assign's modal and unassign; show more, copy link,
-// bookmark and the flag modal. Each action is checked on the page and in
-// the database.
-const { test, expect, login, topic, sql, label } = require("./helpers");
+// discourse-reactions' like, picker and the picker's emoji picker,
+// discourse-solved's accept and unaccept, discourse-assign's modal and
+// unassign; show more, copy link, bookmark and the flag modal. Each action
+// is checked on the page and in the database.
+const { test, expect, login, api, topic, sql, label } = require("./helpers");
 
 async function setup(session, context) {
   const user1 = await session("user1");
@@ -103,6 +103,53 @@ test("discourse-reactions: like, then another reaction from the picker", async (
       ),
     )
     .toEqual([["clap"]]);
+});
+
+test("discourse-reactions: any emoji from the picker's emoji picker", async ({ page, context, session }) => {
+  const { t, answer } = await setup(session, context);
+  await api(context, "PUT", "/admin/site_settings/discourse_reactions_allow_any_emoji", {
+    discourse_reactions_allow_any_emoji: "true",
+  });
+  try {
+    await page.goto(t.url);
+    const post = page.locator(`article[data-post-id="${answer}"]`);
+    const actions = post.locator(`#discourse-reactions-actions-${answer}-right`);
+    await page.mouse.move(0, 0);
+    await actions.locator(".discourse-reactions-reaction-button").hover();
+    const picker = actions.locator(".discourse-reactions-picker.is-expanded");
+    await expect(picker).toBeVisible();
+    // After the reactions.
+    const container = picker.locator(".discourse-reactions-picker-container");
+    const trigger = container.locator(".emoji-picker-trigger");
+    await expect(container.locator(":scope > *").last()).toHaveClass(/emoji-picker-trigger/);
+    await expect(trigger.locator("use")).toHaveAttribute("href", "#discourse-emojis");
+
+    await trigger.click();
+    const menu = page.locator(".fk-d-menu .emoji-picker");
+    await expect(menu).toBeVisible();
+    // The picker stays while its emoji picker is open, the pointer gone.
+    await page.mouse.move(0, 0);
+    await page.waitForTimeout(800);
+    await expect(picker).toBeVisible();
+
+    await menu.locator(".filter-input").fill("tada");
+    await menu.locator('.emoji-picker__section.filtered .emoji[data-emoji="tada"]').click();
+    await expect(menu).toHaveCount(0);
+    await expect(picker).toHaveCount(0);
+    await expect(actions).toHaveAttribute("data-current-reaction", "tada");
+    await expect
+      .poll(() =>
+        sql(
+          "SELECT r.reaction_value FROM discourse_reactions_reaction_users ru JOIN discourse_reactions_reactions r ON r.id = ru.reaction_id WHERE ru.post_id = :'p1' AND ru.user_id = 1",
+          answer,
+        ),
+      )
+      .toEqual([["tada"]]);
+  } finally {
+    await api(context, "PUT", "/admin/site_settings/discourse_reactions_allow_any_emoji", {
+      discourse_reactions_allow_any_emoji: "false",
+    });
+  }
 });
 
 test("discourse-solved: accept and unaccept the answer", async ({ page, context, session }) => {

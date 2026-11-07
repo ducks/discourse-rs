@@ -1,0 +1,61 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (35, 0, 'clap', 1, now() - interval '60 minutes', now() - interval '60 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 35, now() - interval '60 minutes', now() - interval '60 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'hugs', 1, now() - interval '40 minutes', now() - interval '40 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 52, now() - interval '40 minutes', now() - interval '40 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (49, 0, 'laughing', 1, now() - interval '20 minutes', now() - interval '20 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 49, now() - interval '20 minutes', now() - interval '20 minutes' FROM discourse_reactions_reactions WHERE post_id = 49 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 4, 2, now() - interval '50 minutes', now() - interval '50 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 5, 2, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (49, 3, 2, now() - interval '10 minutes', now() - interval '10 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/reactions-received.json",
+      "params": {
+        "username": "user0",
+        "include_likes": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/reactions-received.json",
+      "params": {
+        "username": "user0",
+        "include_likes": "true",
+        "before_reaction_user_id": "{{responses.0.body.1.id}}",
+        "before_like_id": "{{responses.0.body.2.id}}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/reactions-received.json",
+      "params": {
+        "username": "user0",
+        "include_likes": "true",
+        "acting_username": "user2",
+        "before_like_id": "{{responses.0.body.2.id}}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/reactions-received.json",
+      "params": {
+        "username": "user0",
+        "before_reaction_user_id": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/reactions-received.json",
+      "params": {
+        "username": "user0",
+        "before_reaction_user_id": "",
+        "before_post_id": "{{responses.0.body.1.id}}"
+      }
+    }
+  ]
+}

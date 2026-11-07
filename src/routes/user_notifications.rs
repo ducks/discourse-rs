@@ -135,6 +135,11 @@ pub async fn page(
     }
     let notifications: Vec<Value> = doc["notifications"].as_array().cloned().unwrap_or_default();
 
+    // UserNotificationsReactionsReceived#model: its query params (the
+    // notification links send both), or the next page
+    // discourse-reactions.js asks for.
+    let reactions_params = super::reactions::list_page_params(&uri, &headers);
+    let reactions_query = super::reactions::ReceivedQuery::parse(&reactions_params);
     let mut reactions = Vec::new();
     if route == Route::ReactionsReceived {
         let mut reader = crate::plugins::reactions::users::Reader {
@@ -144,15 +149,7 @@ pub async fn page(
             guardian: &guardian,
         };
         reactions = reader
-            .reactions_received(
-                user.id,
-                &crate::plugins::reactions::users::ReceivedParams {
-                    before_reaction_user_id: None,
-                    before_like_id: None,
-                    acting_username: None,
-                    include_likes: false,
-                },
-            )
+            .reactions_received(user.id, &reactions_query.params())
             .await?
             .as_array()
             .cloned()
@@ -222,7 +219,10 @@ pub async fn page(
             filter.as_deref().unwrap_or("all"),
         ),
         Route::ReactionsReceived => match &reactions_ui {
-            Some(ui) => view::reactions(&cx, ui, &reactions),
+            Some(ui) => {
+                let p = reactions_query.params();
+                view::reactions(&cx, ui, &reactions, p.acting_username, p.include_likes)
+            }
             None => String::new(),
         },
         stream_route => view::stream(&cx, stream_route.action_type().unwrap_or(0), &stream),
@@ -272,6 +272,14 @@ pub async fn page(
     page.chrome
         .body_classes
         .push_str(" user-notifications-page");
+    // PostList's hideApplicationFooter while a full page leaves more to
+    // load.
+    if route == Route::ReactionsReceived
+        && reactions.len() >= crate::plugins::reactions::users::PAGE_SIZE as usize
+    {
+        page.chrome.show_footer = false;
+        page.chrome.defer_footer = true;
+    }
     // The route's titleToken, UserNotifications', the user's.
     page.page_title = format!(
         "{} - {} - {}",

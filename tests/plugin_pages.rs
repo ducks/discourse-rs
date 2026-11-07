@@ -1,6 +1,8 @@
 //! The bundled plugins' UI on the server-rendered pages. discourse-reactions:
 //! the reaction controls in the post menu, with what the browser side reads
-//! to draw the picker and the users menu, and the activity Reactions tab.
+//! to draw the picker (and its emoji picker) and the users menu, and the
+//! activity Reactions tab and reactions received with what their next
+//! pages read.
 //! discourse-solved: the solved status, the accepted answers under the
 //! first post, the Solved button, "Me too" and the activity Solved tab.
 //! discourse-poll: each cooked poll drawn as its widget, and drawn again
@@ -217,6 +219,138 @@ async fn the_activity_reactions_tab_lists_the_users_reactions() {
             "<span class=\"title\"><a href=\"/t/parity-fixture-replies-and-posters/35\">"
         )
     );
+}
+
+#[tokio::test]
+async fn allow_any_emoji_adds_the_emoji_picker_to_the_picker() {
+    let db = TestDb::new().await;
+    clap(&db).await;
+    sqlx::query(
+        "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
+         VALUES ('discourse_reactions_allow_any_emoji', 5, 't', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user2 = Client::logged_in(st, "user2").await;
+    let html = user2.page("/t/parity-fixture-replies-and-posters/35").await;
+    let picker = html
+        .split("id=\"discourse-reactions-actions-35-right\"")
+        .nth(1)
+        .and_then(|r| r.split("data-picker=\"").nth(1))
+        .and_then(|p| p.split('"').next())
+        .expect("the picker's data")
+        .replace("&quot;", "\"")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&#x3D;", "=")
+        .replace("&#x27;", "'")
+        .replace("&#39;", "'");
+    let picker: serde_json::Value = serde_json::from_str(&picker).unwrap();
+    // Seven reactions and the emoji picker: eight cells, eight columns.
+    assert_eq!(picker["reactions"].as_array().unwrap().len(), 7);
+    assert_eq!(picker["cols"], 8);
+    let trigger = picker["anyEmoji"].as_str().unwrap();
+    assert!(trigger.starts_with(
+        "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger emoji-picker-trigger btn-icon btn-flat\" data-identifier=\"emoji-picker\" data-trigger=\"\" type=\"button\">"
+    ), "{trigger}");
+    assert!(trigger.contains("href=\"#discourse-emojis\""));
+    // What the emoji picker draws with, and its script.
+    assert!(html.contains("<template class=\"emoji-picker-template\""));
+    assert!(html.contains("/assets/emoji-picker.js"));
+}
+
+#[tokio::test]
+async fn reactions_received_reads_its_query_and_the_next_pages_cursors() {
+    let db = TestDb::new().await;
+    clap(&db).await;
+    // user2's like on the same post, no reaction's shadow.
+    sqlx::query(
+        "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) \
+         VALUES (35, 4, 2, '2026-10-01 05:00:00', '2026-10-01 05:00:00')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let clap_id: i64 =
+        sqlx::query_scalar("SELECT id FROM discourse_reactions_reaction_users WHERE post_id = 35")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user0 = Client::logged_in(st, "user0").await;
+    let path = "/u/user0/notifications/reactions-received";
+
+    let html = user0.page(path).await;
+    assert!(html.contains("data-reaction-value=\"clap\""), "{html}");
+    assert!(!html.contains("data-reaction-value=\"heart\""));
+    assert!(html.contains(&format!("data-reaction-user-id=\"{clap_id}\"")));
+    assert!(html.contains(
+        "data-reactions-list=\"{&quot;mainReaction&quot;:&quot;heart&quot;,&quot;canLoadMore&quot;:false}\""
+    ));
+    assert!(html.contains("/assets/discourse-reactions.js"));
+
+    // A notification's link: the acting user's, likes included.
+    let html = user0
+        .page(&format!("{path}?acting_username=user2&include_likes=true"))
+        .await;
+    assert!(html.contains("data-reaction-value=\"heart\""));
+    assert!(!html.contains("data-reaction-value=\"clap\""));
+    assert!(html.contains("&quot;actingUsername&quot;:&quot;user2&quot;"));
+    assert!(html.contains("&quot;includeLikes&quot;:true"));
+    // Blank ones are not sent.
+    let html = user0
+        .page(&format!("{path}?acting_username=&include_likes="))
+        .await;
+    assert!(html.contains("data-reaction-value=\"clap\""));
+    assert!(!html.contains("data-reaction-value=\"heart\""));
+
+    // A page load starts at the top; the next page goes on from the cursor.
+    let cursor = format!("{path}?before_reaction_user_id={clap_id}");
+    assert!(
+        user0
+            .page(&cursor)
+            .await
+            .contains("data-reaction-value=\"clap\"")
+    );
+    let next = user0.send(Method::GET, &cursor, "").await;
+    assert!(!next.contains("data-reaction-value=\"clap\""), "{next}");
+    assert!(next.contains("post-list__empty-text"));
+}
+
+#[tokio::test]
+async fn the_reactions_tab_goes_on_from_the_cursor() {
+    let db = TestDb::new().await;
+    clap(&db).await;
+    let clap_id: i64 =
+        sqlx::query_scalar("SELECT id FROM discourse_reactions_reaction_users WHERE post_id = 35")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let cursor = format!("/u/user1/activity/reactions?before_reaction_user_id={clap_id}");
+    assert!(
+        user1
+            .page(&cursor)
+            .await
+            .contains("data-reaction-value=\"clap\"")
+    );
+    let next = user1.send(Method::GET, &cursor, "").await;
+    assert!(!next.contains("data-reaction-value=\"clap\""), "{next}");
+    let next = user1
+        .send(
+            Method::GET,
+            &format!(
+                "/u/user1/activity/reactions?before_reaction_user_id={}",
+                clap_id + 1
+            ),
+            "",
+        )
+        .await;
+    assert!(next.contains("data-reaction-value=\"clap\""));
 }
 
 /// General takes accepted answers; user0, topic 35's author, accepted
