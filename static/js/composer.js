@@ -1123,6 +1123,9 @@
         render.tree = function (raw) {
           return JSON.parse(call(wasm.rich_editor_tree, raw));
         };
+        // The editor's engine (rich-editor/engine.js wasmEngine).
+        render.wasm = wasm;
+        render.call = call;
         return render;
       });
     }
@@ -1251,6 +1254,113 @@
   var richOpening = null;
   var preferenceTimer = null;
   var isApple = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || "");
+  var richEngine = null;
+
+  // The appEvents the editor's extensions and this file exchange
+  // (composer:upload-progress:<id>, composer:cancel-upload, ...).
+  var richEvents = (function () {
+    var handlers = {};
+    return {
+      on: function (name, fn) {
+        (handlers[name] = handlers[name] || []).push(fn);
+      },
+      off: function (name, fn) {
+        handlers[name] = (handlers[name] || []).filter(function (h) {
+          return h !== fn;
+        });
+      },
+      trigger: function (name) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        (handlers[name] || []).slice().forEach(function (fn) {
+          fn.apply(null, args);
+        });
+      },
+    };
+  })();
+
+  // d-editor's replaceToolbar: an extension's toolbar (the link toolbar
+  // without room to float) in the button bar's place, with a back button,
+  // until it gives the bar back (null, from the toolbar it put there).
+  var replacedToolbar = null;
+  function replaceToolbar(editorModule, toolbar, owner) {
+    if (toolbar === null && owner && replacedToolbar !== owner) {
+      return;
+    }
+    replacedToolbar = toolbar;
+    var bar = control.querySelector(".d-editor-button-bar");
+    if (!bar) {
+      return;
+    }
+    var holder = bar.querySelector(".d-editor-button-bar__replaced");
+    if (holder) {
+      holder.remove();
+    }
+    bar.classList.toggle("--replaced-toolbar", !!toolbar);
+    Array.prototype.forEach.call(bar.children, function (child) {
+      child.hidden = !!toolbar;
+    });
+    if (!toolbar) {
+      return;
+    }
+    holder = document.createElement("div");
+    holder.className = "d-editor-button-bar__replaced";
+    holder.style.display = "contents";
+    var back = document.createElement("button");
+    back.type = "button";
+    back.className = "btn no-text btn-icon d-editor-button-bar__back";
+    back.innerHTML = svg("angle-left") + '<span aria-hidden="true">&#8203;</span>';
+    back.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+    });
+    back.addEventListener("click", function () {
+      replaceToolbar(editorModule, null);
+    });
+    var buttons = document.createElement("div");
+    buttons.style.display = "contents";
+    editorModule.renderToolbarButtons(buttons, toolbar, { isFirst: false });
+    holder.appendChild(back);
+    holder.appendChild(buttons);
+    bar.appendChild(holder);
+  }
+
+  // The editor's getContext (prosemirror-editor.gts): the site settings,
+  // strings and site data its extensions read, from the server
+  // (src/composer/rich_editor.rs), and the composer's own state.
+  var richContextData = null;
+  function richEditorContext(editorModule) {
+    if (!richContextData) {
+      richContextData = JSON.parse(data.richEditorContext || "{}");
+    }
+    var labels = richContextData.labels || {};
+    return {
+      siteSettings: richContextData.siteSettings || {},
+      site: richContextData.site || {},
+      currentUser: richContextData.currentUser || null,
+      i18n: function (key, params) {
+        if (params && params.count !== undefined) {
+          var count = Number(params.count);
+          var form = count === 0 && key + ".zero" in labels ? "zero" : count === 1 ? "one" : "other";
+          if (key + "." + form in labels) {
+            key = key + "." + form;
+          }
+        }
+        var text = key in labels ? labels[key] : key;
+        Object.keys(params || {}).forEach(function (name) {
+          text = text.split("%{" + name + "}").join(String(params[name]));
+        });
+        return text;
+      },
+      topicId: state ? state.topicId || null : null,
+      appEvents: richEvents,
+      capabilities: {
+        viewport: { sm: window.matchMedia("(min-width: 40rem)").matches },
+      },
+      markdownOptions: {},
+      replaceToolbar: function (toolbar, owner) {
+        replaceToolbar(editorModule, toolbar, owner);
+      },
+    };
+  }
 
   // capabilities.hasKeyboard
   function hasKeyboard() {
@@ -1333,6 +1443,9 @@
       richEditor.destroy();
       richEditor = null;
     }
+    if (replacedToolbar) {
+      replaceToolbar(null, null);
+    }
     richOpening = null;
   }
 
@@ -1372,7 +1485,8 @@
         var editor = loaded[0].createEditor({
           container: control.querySelector(".d-editor-textarea-wrapper"),
           value: textarea.value,
-          parseTree: loaded[1].tree,
+          engine: (richEngine = richEngine || loaded[0].wasmEngine(loaded[1].wasm, loaded[1].call)),
+          context: richEditorContext(loaded[0]),
           placeholder: textarea.placeholder,
           className: "d-editor-input",
           keymap: {
@@ -4388,7 +4502,31 @@
     showProgress();
   }
 
-  function uploadFile(file, pasted) {
+  // The rich editor's side (ProsemirrorPlaceholderHandler,
+  // rich-editor/extensions/upload-placeholder.js): the placeholder is a
+  // node of its document, and the upload's markdown replaces it there.
+  var richUploadsModule = null;
+  function richUploads() {
+    if (!richUploadsModule) {
+      richUploadsModule = import("discourse/rich-editor/extensions/upload-placeholder");
+    }
+    return richUploadsModule;
+  }
+
+  // composer:upload-progress:<id> for the placeholder's node view.
+  function richProgress(upload) {
+    if (upload.rich) {
+      richEvents.trigger(
+        "composer:upload-progress:" + upload.fileId,
+        Math.round((upload.sent / Math.max(upload.total, 1)) * 100)
+      );
+    }
+  }
+
+  // opts.skipPlaceholder: the rich editor's own upload of a pasted data:
+  // image, answered with composer:upload-success / composer:upload-error.
+  function uploadFile(file, pasted, opts) {
+    var skipPlaceholder = !!(opts && opts.skipPlaceholder);
     var upload = {
       id: ++uploadSequence,
       sent: 0,
@@ -4396,8 +4534,23 @@
       placeholder: uploadPlaceholder(file),
       xhr: new XMLHttpRequest(),
     };
+    upload.fileId = "composer-upload-" + upload.id;
+    upload.file = { id: upload.fileId, name: file.name, data: file };
     uploads.push(upload);
-    insertText(upload.placeholder);
+    if (skipPlaceholder) {
+      upload.skip = true;
+    } else if (richEditor) {
+      upload.rich = true;
+      upload.editor = richEditor;
+      upload.handler = richUploads().then(function (module) {
+        var handler = module.placeholderHandler(upload.editor, data.labelUploadingFilename);
+        handler.insert(upload.file);
+        upload.module = module;
+        return handler;
+      });
+    } else {
+      insertText(upload.placeholder);
+    }
     updatePreview();
     showProgress();
 
@@ -4419,6 +4572,7 @@
         upload.sent = e.loaded;
         upload.total = e.total;
         showProgress();
+        richProgress(upload);
       }
     });
     xhr.addEventListener("load", function () {
@@ -4432,9 +4586,9 @@
       if (xhr.status >= 200 && xhr.status < 300 && json && json.short_url) {
         // cacheShortUploadUrl: the preview needs no lookup for it.
         shortUrls[json.short_url] = { url: json.url, short_path: json.short_path };
-        replaceText(upload.placeholder.trim(), uploadMarkdown(json));
+        uploadDone(upload, json);
       } else {
-        replaceText(upload.placeholder, "");
+        uploadFailed(upload);
         showError(
           json && json.errors ? json.errors.join(" ") : "Could not upload (" + xhr.status + ")."
         );
@@ -4442,10 +4596,49 @@
     });
     xhr.addEventListener("error", function () {
       finishUpload(upload);
-      replaceText(upload.placeholder, "");
+      uploadFailed(upload);
       showError("Could not upload " + file.name + ".");
     });
     xhr.send(body);
+  }
+
+  // The upload's markdown where its placeholder is: the textarea's, the
+  // rich editor's node (success), or the textarea's cursor when the
+  // member has switched editors meanwhile.
+  function uploadDone(upload, json) {
+    var markdown = uploadMarkdown(json);
+    if (upload.skip) {
+      richEvents.trigger("composer:upload-success", upload.file.name, json);
+      return;
+    }
+    if (!upload.rich) {
+      replaceText(upload.placeholder.trim(), markdown);
+      return;
+    }
+    upload.handler.then(function (handler) {
+      upload.module.cacheShortUploadUrl(json.short_url, { url: json.url, short_path: json.short_path });
+      if (richEditor === upload.editor) {
+        handler.success(upload.file, markdown);
+      } else {
+        insertText(markdown);
+        updatePreview();
+        scheduleDraft();
+      }
+    });
+  }
+
+  function uploadFailed(upload) {
+    if (upload.skip) {
+      richEvents.trigger("composer:upload-error", upload.file.name);
+    } else if (upload.rich) {
+      upload.handler.then(function (handler) {
+        if (richEditor === upload.editor) {
+          handler.cancel(upload.file);
+        }
+      });
+    } else {
+      replaceText(upload.placeholder, "");
+    }
   }
 
   function addFiles(files, pasted) {
@@ -4463,9 +4656,29 @@
     uploads.slice().forEach(function (upload) {
       upload.xhr.abort();
       finishUpload(upload);
-      replaceText(upload.placeholder, "");
+      uploadFailed(upload);
     });
   }
+
+  // The rich editor's placeholder cancelled (its button, or the member
+  // deleting it), and its own uploads of pasted data: images.
+  richEvents.on("composer:cancel-upload", function (event) {
+    uploads.slice().forEach(function (upload) {
+      if (upload.fileId === (event && event.fileId)) {
+        upload.xhr.abort();
+        finishUpload(upload);
+        uploadFailed(upload);
+      }
+    });
+  });
+  richEvents.on("composer:add-files", function (files, opts) {
+    if (!state) {
+      return;
+    }
+    Array.prototype.forEach.call(files, function (file) {
+      uploadFile(file, false, opts);
+    });
+  });
 
   if (fileInput) {
     fileInput.addEventListener("change", function () {
@@ -4476,8 +4689,9 @@
       e.preventDefault();
       cancelUploads();
     });
-    // _pasteEventListener: files pasted without text are uploaded.
-    textarea.addEventListener("paste", function (event) {
+    // _pasteEventListener: files pasted without text are uploaded, in the
+    // textarea or the rich editor.
+    var pasteFiles = function (event) {
       var clipboard = event.clipboardData;
       if (!clipboard) {
         return;
@@ -4490,7 +4704,20 @@
         event.preventDefault();
         addFiles(clipboard.files, true);
       }
-    });
+    };
+    textarea.addEventListener("paste", pasteFiles);
+    var richWrapper = control.querySelector(".d-editor-textarea-wrapper");
+    if (richWrapper) {
+      richWrapper.addEventListener(
+        "paste",
+        function (event) {
+          if (event.target.closest && event.target.closest(".ProseMirror")) {
+            pasteFiles(event);
+          }
+        },
+        true
+      );
+    }
     // DropTarget: files dropped anywhere on the composer.
     control.addEventListener("dragover", function (event) {
       if (event.dataTransfer && Array.prototype.includes.call(event.dataTransfer.types, "Files")) {
