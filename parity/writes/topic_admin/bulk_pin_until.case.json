@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/topics/bulk.json",
+      "params": {
+        "topic_ids": [
+          "35"
+        ],
+        "operation": {
+          "type": "pin",
+          "pinned_until": "2030-03-01 12:00+02:00"
+        }
+      }
+    }
+  ]
+}

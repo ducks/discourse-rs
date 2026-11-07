@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/recover",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/999999/recover",
+      "params": {}
+    }
+  ]
+}

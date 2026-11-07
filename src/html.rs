@@ -2974,13 +2974,14 @@ pub async fn topic_page(
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
     let topic_bookmarks_menu = crate::post_view::topic_bookmarks_menu(&cx, view);
     // The flag modal for members; for staff the penalty modal its take
-    // action opens.
+    // action opens, whose date input the topic admin menu's modals draw
+    // too.
     let mut flag_menus = String::new();
     if let Some(username) = viewer {
         flag_menus.push_str(
             &crate::flag_modal_view::config(&mut *conn, i18n, settings, &base, view, staff).await?,
         );
-        if staff {
+        if staff || !topic_admin_menu.is_empty() {
             let timezone: Option<String> = sqlx::query_scalar::<_, Option<String>>(
                 "SELECT o.timezone FROM user_options o JOIN users u ON u.id = o.user_id \
                  WHERE u.username_lower = $1",

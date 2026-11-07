@@ -1860,6 +1860,15 @@ async fn staff_get_the_topic_and_post_admin_menus() {
         include_str!("../parity/menus/topic-admin-menu-t35-admin.html").trim_end()
     );
     assert!(html.contains("/assets/topic-admin-menu.js?v="));
+    // Its modals (FeatureTopic, ChangeTimestamp, EditSlowMode,
+    // ConvertToPublicTopic), the topic's state and strings in data-topic,
+    // and the date input's config.
+    assert!(html.contains("/assets/topic-admin-modals.js?v="));
+    assert!(html.contains(
+        "&quot;categoryLink&quot;:&quot;&lt;a class&#x3D;\\&quot;badge-category__wrapper"
+    ));
+    assert!(html.contains("&quot;topic.feature_topic.title&quot;:&quot;Feature this topic&quot;"));
+    assert!(html.contains("id=\"penalize-user-config\""));
     // Post 2: the wrench among the collapsed buttons, before show more
     // (Ember draws them once it is pressed), its menu after the buttons.
     let post = &html[html.find("id=\"post_2\"").unwrap()..];

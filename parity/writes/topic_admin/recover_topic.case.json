@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/35.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/recover",
+      "params": {
+        "context": "/t/parity-fixture-replies-and-posters/35"
+      }
+    }
+  ]
+}

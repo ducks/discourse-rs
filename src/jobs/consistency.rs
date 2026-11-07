@@ -26,7 +26,7 @@ pub async fn ensure_db_consistency(state: &AppState) -> Result<(), AppError> {
     let now = crate::clock::now_naive();
     let last_seen = now - Duration::hours(13);
     let ten_minutes_ago = now - Duration::minutes(10);
-    preflight(&mut conn, &s, &state.i18n, now).await?;
+    preflight(&mut conn, &s, &state.i18n).await?;
 
     let c = &mut *conn;
     logged(ENSURE, "UserVisit", user_visit(c).await)?;
@@ -38,7 +38,7 @@ pub async fn ensure_db_consistency(state: &AppState) -> Result<(), AppError> {
         super::handlers::featured_users(c, None).await,
     )?;
     logged(ENSURE, "PostRevision", post_revision(c).await)?;
-    logged(ENSURE, "Topic", topic(c, now).await)?;
+    logged(ENSURE, "Topic", topic(c, state, &s, now).await)?;
     logged(ENSURE, "Badge", badge(c).await)?;
     logged(ENSURE, "CategoryUser", category_user(c).await)?;
     logged(ENSURE, "UserOption", user_option(c, &s).await)?;
@@ -82,7 +82,6 @@ async fn preflight(
     conn: &mut PgConnection,
     s: &SiteSettings,
     i18n: &crate::i18n::I18n,
-    now: NaiveDateTime,
 ) -> Result<(), AppError> {
     crate::roles::check_automatic_groups(conn, i18n).await?;
     let refuse = |found: bool, reason: &'static str| -> Result<(), AppError> {
@@ -91,14 +90,6 @@ async fn preflight(
         }
         Ok(())
     };
-    // Topic: expired banners (Topic#remove_banner!).
-    refuse(
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM topics WHERE bannered_until < $1)")
-            .bind(now)
-            .fetch_one(&mut *conn)
-            .await?,
-        "removing an expired banner (Topic#remove_banner!)",
-    )?;
     // Category: a definition without its first post is destroyed.
     refuse(
         sqlx::query_scalar(
@@ -208,16 +199,39 @@ async fn post_revision(conn: &mut PgConnection) -> Result<(), AppError> {
     .await
 }
 
-/// `Topic.ensure_consistency!`: topics pinned until a time past unpinned
-/// (expired banners are refused up front).
-async fn topic(conn: &mut PgConnection, now: NaiveDateTime) -> Result<(), AppError> {
+/// `Topic.ensure_consistency!`: topics pinned until a time past unpinned,
+/// then each banner shown until a time past removed by the system user.
+async fn topic(
+    conn: &mut PgConnection,
+    state: &AppState,
+    s: &SiteSettings,
+    now: NaiveDateTime,
+) -> Result<(), AppError> {
     sqlx::query(
         "UPDATE topics SET pinned_at = NULL, pinned_globally = false, pinned_until = NULL \
          WHERE pinned_until < $1",
     )
     .bind(now)
-    .execute(conn)
+    .execute(&mut *conn)
     .await?;
+    // find_each: by id.
+    let banners: Vec<i32> = sqlx::query_scalar(
+        "SELECT id FROM topics WHERE bannered_until < $1 AND deleted_at IS NULL ORDER BY id",
+    )
+    .bind(now)
+    .fetch_all(&mut *conn)
+    .await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    for id in banners {
+        crate::topics::banner::remove_banner(&mut *conn, &ctx, id, -1).await?;
+    }
     Ok(())
 }
 

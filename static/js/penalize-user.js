@@ -278,9 +278,26 @@
     return config().timezone || window.moment.tz.guess();
   }
 
-  // lib/time-shortcut's extendedDefaultTimeShortcuts, custom, then
-  // hideDynamicTimeShortcuts, as DFutureDateInput lists them.
-  function shortcuts() {
+  // lib/time-shortcut's extendedDefaultTimeShortcuts (or the shortcuts a
+  // caller names, DFutureDateInput's @customShortcuts: ids, or {id,
+  // label} to relabel one), custom, then hideDynamicTimeShortcuts, as
+  // DFutureDateInput lists them.
+  var EXTENDED_DEFAULT = [
+    "later_today",
+    "tomorrow",
+    "later_this_week",
+    "start_of_next_business_week",
+    "two_weeks",
+    "next_month",
+    "two_months",
+    "three_months",
+    "four_months",
+    "six_months",
+    "one_year",
+    "forever",
+  ];
+
+  function shortcuts(custom) {
     var m = window.moment;
     var tz = timezone();
     var now = function () {
@@ -297,9 +314,10 @@
       return later.minutes() < 30 ? later.startOf("hour") : later.add(30, "minutes").startOf("hour");
     };
     var day = now().day();
-    var list = [
+    var all = [
       { id: "later_today", icon: "far-clock", label: "later_today", time: laterToday(), format: "dates.time" },
       { id: "tomorrow", icon: "calendar-day", label: "tomorrow", time: startOfDay(now().add(1, "day")), format: "dates.time_short_day" },
+      { id: "two_days", icon: "calendar-days", label: "two_days", time: startOfDay(now().add(2, "days")), format: "dates.time_short_day" },
       { id: "later_this_week", icon: "calendar-days", label: "later_this_week", time: startOfDay(now().add(2, "days")), format: "dates.time_short_day" },
       {
         id: "start_of_next_business_week",
@@ -318,6 +336,20 @@
       { id: "forever", icon: "gavel", label: "forever", time: startOfDay(now().add(1000, "years").startOf("month")), format: "dates.long_with_year" },
       { id: "custom", icon: "calendar-days", label: "custom", time: null, format: null },
     ];
+    var byId = {};
+    all.forEach(function (s) {
+      byId[s.id] = s;
+    });
+    var list = (custom && custom.length ? custom : EXTENDED_DEFAULT)
+      .map(function (pick) {
+        var s = byId[typeof pick === "string" ? pick : pick.id];
+        if (s && typeof pick === "object" && pick.label) {
+          s = Object.assign({}, s, { label: pick.label });
+        }
+        return s;
+      })
+      .filter(Boolean)
+      .concat([byId.custom]);
     var hide = {};
     if (now().hour() >= 17) {
       hide.later_today = true;
@@ -593,10 +625,11 @@
 
   // DFutureDateInput: the shortcut combo box, then with "custom" the
   // DatePickerFuture and the time input; onChangeInput(FORMAT string or
-  // null).
+  // null). opts: { input, label, labelClasses, className,
+  // customShortcuts, onChangeInput }.
   function futureDateInput(root, opts) {
     var m = window.moment;
-    var list = shortcuts();
+    var list = shortcuts(opts.customShortcuts);
     var selection = null;
     var date = null;
     var time = null;
@@ -620,7 +653,12 @@
 
     var wrapper = document.createElement("div");
     wrapper.className = "future-date-input " + opts.className;
-    wrapper.innerHTML = '<div class="control-group"><label>' + escapeHtml(opts.label) + "</label></div>";
+    wrapper.innerHTML =
+      '<div class="control-group"><label' +
+      (opts.labelClasses ? ' class="' + escapeHtml(opts.labelClasses) + '"' : "") +
+      ">" +
+      escapeHtml(opts.label) +
+      "</label></div>";
     root.appendChild(wrapper);
 
     function dateTimeChanged() {
@@ -1158,4 +1196,16 @@
   }
 
   Discourse.penalizeUser = { show: show, find: find };
+  // DFutureDateInput and the select-kit ComboBox for the other modals
+  // (the topic admin menu's): load() brings moment (and its time
+  // zones) in first; loadPikaday() the date picker; t() the strings of
+  // #penalize-user-config.
+  Discourse.futureDateInput = {
+    load: loadMoment,
+    loadPikaday: loadPikaday,
+    draw: futureDateInput,
+    comboBox: comboBox,
+    t: t,
+    FORMAT: FORMAT,
+  };
 })();

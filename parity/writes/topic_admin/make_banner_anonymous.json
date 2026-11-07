@@ -1,0 +1,32 @@
+{
+  "name": "make_banner_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/make-banner",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T02:32:45.629582",
+  "transaction_started_at": "2026-11-07T02:32:44.788404",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "741cdd9addb8aa22a942212bd7c6075e3c0b545f7ac2554c3100a7fbc39c9329",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

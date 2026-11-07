@@ -92,6 +92,7 @@ mod tag_groups;
 mod tag_search;
 mod tags;
 pub(crate) mod themes;
+mod topic_admin;
 mod topic_convert;
 mod topic_excerpts;
 mod topic_move;
@@ -944,6 +945,27 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
+        // The topic admin menu's actions; {slug} holds the topic id.
+        .route("/t/{slug}/make-banner", put(topic_admin::make_banner))
+        .route("/t/{slug}/remove-banner", put(topic_admin::remove_banner))
+        .route("/t/{slug}/recover", put(topic_admin::recover))
+        .route(
+            "/t/{slug}/change-timestamp",
+            put(topic_admin::change_timestamps),
+        )
+        .route(
+            "/t/{slug}/reset-bump-date",
+            put(topic_admin::reset_bump_date),
+        )
+        .route(
+            "/t/{slug}/reset-bump-date/{post_id}",
+            put(topic_admin::reset_bump_date_to_post),
+        )
+        .route("/topics/feature_stats", get(topic_admin::feature_stats))
+        .route(
+            "/topics/feature_stats.json",
+            get(topic_admin::feature_stats),
+        )
         // TopicsController#move_posts; {slug} holds the topic id.
         .route("/t/{slug}/move-posts", post(topic_move::move_posts))
         .route("/t/{slug}/move-posts.json", post(topic_move::move_posts))
@@ -3160,6 +3182,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/post-stream.js", get(asset))
         .route("/assets/discovery-topic-list.js", get(asset))
         .route("/assets/topic-admin-menu.js", get(asset))
+        .route("/assets/topic-admin-modals.js", get(asset))
         .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))
         .route("/assets/post-voting.js", get(asset))

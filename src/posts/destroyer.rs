@@ -1,11 +1,11 @@
 //! PostDestroyer for staff: deleting a reply or a whole topic (its first
-//! post), and recovering a deleted reply.
+//! post), and recovering a deleted reply or topic.
 //!
 //! Refused: an author deleting their own post (marked for deletion,
 //! through PostRevisor), permanent deletion, posts in messages, posts with
 //! links or a pending flag, posts quoted or linked elsewhere,
-//! published pages and embeds, and recovering topics or replies with
-//! quotes, likes or a reply target to restore.
+//! published pages and embeds, recovering a post's likes, and recovering
+//! an embedded topic.
 
 use chrono::NaiveDateTime;
 use serde_json::json;
@@ -20,6 +20,7 @@ use crate::{AppError, Unsupported};
 const DELETE_POST: i32 = 17;
 const DELETE_TOPIC: i32 = 18;
 const RECOVER_POST: i32 = 126;
+const RECOVER_TOPIC: i32 = 55;
 
 /// The post being deleted or recovered, as PostDestroyer reads it.
 #[derive(sqlx::FromRow)]
@@ -1274,6 +1275,404 @@ pub async fn recover_post(
     Ok(Outcome::Done)
 }
 
+/// `TopicsController#recover` from the topic lookup on: the topic's first
+/// post (deleted with it) recovered by who moderates it, which recovers
+/// the topic (`staff_recovered`, then `Topic#recover!`).
+pub async fn recover_topic(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    topic_id: i32,
+    context: Option<&str>,
+) -> Result<Outcome, AppError> {
+    let s = ctx.settings;
+    // Topic.where(id:).with_deleted.first
+    let Some(topic_ctx) =
+        crate::topic_guardian::TopicCtx::load(&mut *conn, s, guardian, topic_id).await?
+    else {
+        return Ok(Outcome::Forbidden);
+    };
+    let secure = guardian.secure_category_ids(&mut *conn, s).await?;
+    if !guardian
+        .can_recover_topic(&mut *conn, s, &topic_ctx, &secure)
+        .await?
+    {
+        return Ok(Outcome::Forbidden);
+    }
+    let user = guardian
+        .user()
+        .ok_or(Unsupported("recovering anonymously"))?;
+    // topic.posts.with_deleted.order(:post_number).first
+    let first: Option<i32> =
+        sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = $1 ORDER BY post_number LIMIT 1")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let first = first.ok_or(Unsupported("recovering a topic without posts"))?;
+    let can_see_topic = guardian.can_see_topic(s, &topic_ctx, true, &secure)?;
+    // post_is_reviewable? (staff) || can_moderate_this_topic?
+    let can_moderate = guardian.is_staff()
+        || guardian.can_perform_action_available_to_group_moderators(s, can_see_topic)?
+        || guardian.can_delete_all_posts_and_topics(s)?;
+    let first_deleted: bool =
+        sqlx::query_scalar("SELECT deleted_at IS NOT NULL FROM posts WHERE id = $1")
+            .bind(first)
+            .fetch_one(&mut *conn)
+            .await?;
+    if !(can_moderate && first_deleted) {
+        return Err(Unsupported(
+            "recovering a topic whose first post isn't deleted (user_recovered)",
+        )
+        .into());
+    }
+    staff_recover_topic_in(conn, ctx, user.id, first, context).await?;
+    Ok(Outcome::Done)
+}
+
+/// `PostDestroyer.new(user, first_post, context:).recover` for a deleted
+/// topic's deleted first post, by who moderates it: `staff_recovered`
+/// (the post, its links and quotes, the category's latest, the author's
+/// topic count and the repliers' post counts), `Topic#recover!` (the
+/// category's and its tags' counts, the row, the topic_recovered
+/// listeners), the statistics, the user actions and the staff log. An
+/// embedded topic and the boards plugin's sync are refused.
+async fn staff_recover_topic_in(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    post_id: i32,
+    context: Option<&str>,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let post = load_post(&mut *conn, post_id).await?;
+    let topic = load_topic(&mut *conn, post.topic_id).await?;
+    let pm = topic.archetype == "private_message";
+    let (deleted_likes, embedded): (bool, bool) = sqlx::query_as(
+        "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions'), \
+                EXISTS (SELECT 1 FROM topic_embeds WHERE topic_id = $2)",
+    )
+    .bind(post.id)
+    .bind(topic.id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if deleted_likes {
+        return Err(Unsupported("recovering a post's likes (deleted_public_actions)").into());
+    }
+    if embedded {
+        return Err(Unsupported("recovering an embedded topic (TopicEmbed#recover!)").into());
+    }
+    if s.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+        return Err(Unsupported("the boards plugin's topic_recovered sync").into());
+    }
+    let Some(author) = post.user_id else {
+        return Err(Unsupported("recovering posts without an author").into());
+    };
+    let topic_deleted: bool =
+        sqlx::query_scalar("SELECT deleted_at IS NOT NULL FROM topics WHERE id = $1")
+            .bind(topic.id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let (cooked, reply_quoted): (String, bool) =
+        sqlx::query_as("SELECT cooked, reply_quoted FROM posts WHERE id = $1")
+            .bind(post.id)
+            .fetch_one(&mut *conn)
+            .await?;
+
+    // staff_recovered: user_deleted cleared, the row recovered; Post#recover!
+    // extracts its links and quotes again, then updates the category's
+    // latest post.
+    sqlx::query("UPDATE posts SET user_deleted = FALSE, deleted_at = NULL, deleted_by_id = NULL WHERE id = $1")
+        .bind(post.id)
+        .execute(&mut *conn)
+        .await?;
+    let urls = crate::url::Urls {
+        config: ctx.config,
+        settings: s,
+    };
+    let hostname = urls.current_hostname()?;
+    crate::posting::links::extract_from(
+        &mut *conn,
+        &crate::posting::links::Site {
+            hostname: &hostname,
+            base_path: ctx.config.globals.relative_url_root(),
+            base_url_no_prefix: &urls.base_url_no_prefix()?,
+            settings: s,
+        },
+        &crate::posting::links::LinkPost {
+            id: post.id,
+            user_id: author,
+            topic_id: topic.id,
+            cooked: &cooked,
+        },
+    )
+    .await?;
+    crate::posting::rebake::extract_quoted_posts(
+        &mut *conn,
+        post.id,
+        topic.id,
+        post.post_number,
+        post.reply_to_post_number,
+        reply_quoted,
+        &cooked,
+    )
+    .await?;
+    let quoted = crate::posting::quotes::quoted_post_numbers(&post.raw, topic.id, post.post_number);
+    crate::posting::quotes::save_reply_relationships(
+        &mut *conn,
+        crate::posting::quotes::ReplyingPost {
+            id: post.id,
+            topic_id: topic.id,
+            post_type: post.post_type,
+            reply_to_post_number: post.reply_to_post_number,
+            deleted: false,
+        },
+        &quoted,
+    )
+    .await?;
+    if let Some(category_id) = topic.category_id {
+        category_update_latest(&mut *conn, category_id, None).await?;
+    }
+    // mark_topic_changed
+    sqlx::query("UPDATE topics SET updated_at = clock_timestamp() WHERE id = $1")
+        .bind(topic.id)
+        .execute(&mut *conn)
+        .await?;
+    if !pm {
+        // The author's topic count, then the repliers' post counts
+        // (update_post_counts(:increment), not below zero).
+        sqlx::query("UPDATE user_stats SET topic_count = topic_count + 1 WHERE user_id = $1")
+            .bind(author)
+            .execute(&mut *conn)
+            .await?;
+        sqlx::query(
+            "UPDATE user_stats us SET post_count = GREATEST(us.post_count + c.n, 0) \
+             FROM (SELECT user_id, COUNT(*)::int AS n FROM posts \
+                   WHERE post_type = $2 AND topic_id = $1 AND post_number > 1 AND deleted_at IS NULL \
+                   GROUP BY user_id) c \
+             WHERE us.user_id = c.user_id",
+        )
+        .bind(topic.id)
+        .bind(post_types::REGULAR)
+        .execute(&mut *conn)
+        .await?;
+    }
+    crate::bus::publish_post_change(
+        ctx,
+        &mut *conn,
+        post.id,
+        "recovered",
+        Default::default(),
+        true,
+    )
+    .await?;
+    crate::topic_tracking_state::publish_recover(ctx.bus, &mut *conn, topic.id).await?;
+    if topic.user_id.is_none() {
+        sqlx::query("UPDATE topics SET user_id = -1 WHERE id = $1")
+            .bind(topic.id)
+            .execute(&mut *conn)
+            .await?;
+    }
+
+    // Topic#recover!(user): the category's count, the row, and
+    // :topic_recovered (its web hooks, topic voting's reclaim).
+    let payloads = crate::web_hooks::Payloads {
+        settings: s,
+        i18n: ctx.i18n,
+        config: ctx.config,
+    };
+    if topic_deleted {
+        if topic.visible
+            && let Some(category_id) = topic.category_id
+        {
+            sqlx::query(
+                "UPDATE categories SET topic_count = topic_count + 1 \
+                 WHERE id = $1 AND (topic_id <> $2 OR topic_id IS NULL)",
+            )
+            .bind(category_id)
+            .bind(topic.id)
+            .execute(&mut *conn)
+            .await?;
+        }
+        // CategoryTagStat.topic_recovered: each tag's count in the
+        // category, a row made for a tag without one.
+        if let Some(category_id) = topic.category_id {
+            let tag_ids: Vec<i32> =
+                sqlx::query_scalar("SELECT tag_id FROM topic_tags WHERE topic_id = $1 ORDER BY id")
+                    .bind(topic.id)
+                    .fetch_all(&mut *conn)
+                    .await?;
+            if !tag_ids.is_empty() {
+                let updated: Vec<i32> = sqlx::query_scalar(
+                    "UPDATE category_tag_stats SET topic_count = topic_count + 1 \
+                     WHERE tag_id = ANY($1) AND category_id = $2 RETURNING tag_id::int",
+                )
+                .bind(&tag_ids)
+                .bind(category_id)
+                .fetch_all(&mut *conn)
+                .await?;
+                for tag_id in tag_ids.iter().filter(|t| !updated.contains(t)) {
+                    sqlx::query(
+                        "INSERT INTO category_tag_stats (tag_id, category_id, topic_count) VALUES ($1, $2, 1)",
+                    )
+                    .bind(tag_id)
+                    .bind(category_id)
+                    .execute(&mut *conn)
+                    .await?;
+                }
+            }
+        }
+    }
+    sqlx::query("UPDATE topics SET deleted_at = NULL, deleted_by_id = NULL WHERE id = $1")
+        .bind(topic.id)
+        .execute(&mut *conn)
+        .await?;
+    if topic_deleted {
+        topic_recovered_event(&mut *conn, ctx, &payloads, &topic).await?;
+    }
+
+    // Topic#update_statistics!: reset_highest, feature_topic_users (inline),
+    // update_action_counts.
+    reset_highest(&mut *conn, topic.id).await?;
+    crate::jobs::choose_featured_users(&mut *conn, topic.id).await?;
+    sqlx::query(
+        "UPDATE topics SET like_count = (SELECT COALESCE(SUM(like_count), 0) FROM posts \
+                                         WHERE topic_id = $1 AND post_type <> $2 AND deleted_at IS NULL) \
+         WHERE id = $1",
+    )
+    .bind(topic.id)
+    .bind(post_types::WHISPER)
+    .execute(&mut *conn)
+    .await?;
+    crate::bus::publish_topic_stats(ctx, &mut *conn, topic.id, "recovered").await?;
+
+    // DiscourseEvent :post_recovered: its web hooks and listeners.
+    let posts_count: i32 = sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
+        .bind(topic.id)
+        .fetch_one(&mut *conn)
+        .await?;
+    crate::web_hooks::enqueue_post_hooks(
+        &mut *conn,
+        &payloads,
+        "post_recovered",
+        post.id,
+        crate::topic_view::Held {
+            topic_loaded: true,
+            just_created: false,
+            topic_posts_count: Some(posts_count),
+        },
+    )
+    .await?;
+    crate::plugins::assign::lifecycle::post_recovered(&mut *conn, ctx, post.id).await?;
+    crate::plugins::narrative_bot::post_recovered(&mut *conn, s, user_id, post.id).await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "sync_topic_user_bookmarked",
+        json!({ "topic_id": topic.id }),
+    )
+    .await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "notify_mailing_list_subscribers",
+        json!({ "post_id": post.id }),
+    )
+    .await?;
+
+    // UserActionManager.topic_created: the row of the other kind removed,
+    // then the topic's own (and a message's recipients').
+    let owner: Option<i32> = sqlx::query_scalar("SELECT user_id FROM topics WHERE id = $1")
+        .bind(topic.id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if let Some(owner) = owner {
+        let (own, other) = if pm {
+            (user_actions::NEW_PRIVATE_MESSAGE, user_actions::NEW_TOPIC)
+        } else {
+            (user_actions::NEW_TOPIC, user_actions::NEW_PRIVATE_MESSAGE)
+        };
+        remove_user_action(&mut *conn, other, owner, owner, topic.id, -1, pm).await?;
+        crate::posting::log_user_action_by(
+            &mut *conn,
+            own,
+            owner,
+            owner,
+            topic.id,
+            -1,
+            topic.created_at,
+        )
+        .await?;
+        if pm {
+            let recipients: Vec<i32> = sqlx::query_scalar(
+                "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 AND user_id <> $2 ORDER BY id",
+            )
+            .bind(topic.id)
+            .bind(owner)
+            .fetch_all(&mut *conn)
+            .await?;
+            for recipient in recipients {
+                crate::posting::log_user_action_by(
+                    &mut *conn,
+                    user_actions::GOT_PRIVATE_MESSAGE,
+                    recipient,
+                    owner,
+                    topic.id,
+                    -1,
+                    topic.created_at,
+                )
+                .await?;
+            }
+        }
+    }
+    // PostDestroyer's own :topic_recovered.
+    topic_recovered_event(&mut *conn, ctx, &payloads, &topic).await?;
+    if post.user_id != Some(user_id) {
+        let user = user_label(&mut *conn, owner)
+            .await?
+            .unwrap_or_else(|| "(deleted user)".into());
+        let details = [
+            format!("id: {}", topic.id),
+            format!("created_at: {}", ruby_time(topic.created_at)),
+            format!("user: {user}"),
+            format!("title: {}", topic.title),
+            format!("raw: {}", truncate(&post.raw)),
+        ]
+        .join("\n");
+        log(
+            &mut *conn,
+            RECOVER_TOPIC,
+            user_id,
+            Some(topic.id),
+            None,
+            context,
+            None,
+            &details,
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// DiscourseEvent :topic_recovered's listeners: the topic_recovered web
+/// hooks and topic voting's reclaim of an open topic's votes.
+async fn topic_recovered_event(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    payloads: &crate::web_hooks::Payloads<'_>,
+    topic: &Topic,
+) -> Result<(), AppError> {
+    crate::web_hooks::enqueue_topic_hooks(&mut *conn, payloads, "topic_recovered", topic.id, None)
+        .await?;
+    if crate::plugins::topic_voting::enabled(ctx.settings)? {
+        crate::plugins::topic_voting::lifecycle::topic_recovered(
+            &mut *conn,
+            topic.id,
+            topic.closed,
+            topic.archived,
+        )
+        .await?;
+    }
+    Ok(())
+}
+
 /// `PostDestroyer.new(user, post).recover` as staff recover a deleted
 /// reply (`staff_recovered`), on the caller's transaction: with
 /// `deferred`, the jobs Rails enqueues from after-commit callbacks wait
@@ -1289,7 +1688,10 @@ pub async fn staff_recover_in(
     let post = load_post(&mut *conn, post_id).await?;
     let topic = load_topic(&mut *conn, post.topic_id).await?;
     if post.is_first_post() {
-        return Err(Unsupported("recovering topics").into());
+        return Err(Unsupported(
+            "recovering a topic through its first post (PUT /posts/:id/recover)",
+        )
+        .into());
     }
     // The topic's posts_count as PostDestroyer holds it (its statistics
     // are updated in the row only).

@@ -2,10 +2,10 @@
 //! archiving, unarchiving, listing, unlisting, pinning and unpinning a
 //! topic: the column, the small action post saying so, what the change
 //! takes with it (featured topics, the category's count, hot scores), and
-//! the staff action log.
-//!
-//! Refused: pinning until a time.
+//! the staff action log. Pinning until a time schedules the unpin job
+//! (`Topic#update_pinned`, `Jobs::UnpinTopic`).
 
+use chrono::NaiveDateTime;
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
@@ -186,24 +186,13 @@ pub async fn apply(
     // change
     let updated = match status {
         Status::Pinned | Status::PinnedGlobally => {
-            if until.is_some_and(|u| !u.trim().is_empty()) {
-                return Err(Unsupported("pinning until a time (the unpin job)").into());
-            }
-            // update_pinned: update_columns, then the scheduled unpin goes.
-            sqlx::query(
-                "UPDATE topics SET pinned_at = CASE WHEN $2 THEN clock_timestamp() END, \
-                                   pinned_globally = $3, pinned_until = NULL WHERE id = $1",
+            update_pinned(
+                &mut *conn,
+                topic.id,
+                enabled,
+                status == Status::PinnedGlobally,
+                until,
             )
-            .bind(topic.id)
-            .bind(enabled)
-            .bind(status == Status::PinnedGlobally)
-            .execute(&mut *conn)
-            .await?;
-            sqlx::query(
-                "DELETE FROM discourse_rs.jobs WHERE name = 'unpin_topic' AND args->>'topic_id' = $1::text",
-            )
-            .bind(topic.id)
-            .execute(&mut *conn)
             .await?;
             true
         }
@@ -448,6 +437,112 @@ pub async fn apply(
                     .await?;
             }
         }
+    }
+    Ok(())
+}
+
+/// Discourse::InvalidParameters for a param: a 400 naming it.
+#[derive(Debug)]
+pub struct InvalidParameters(pub &'static str);
+
+impl std::fmt::Display for InvalidParameters {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Discourse::InvalidParameters: {}", self.0)
+    }
+}
+
+impl std::error::Error for InvalidParameters {}
+
+/// `Time.parse(s)` of a time the pin and banner forms send
+/// (FutureDateInputSelector's FORMAT, "YYYY-MM-DD HH:mmZ", or ISO 8601),
+/// in UTC. What Date._parse finds nothing in raises ArgumentError
+/// (InvalidParameters for `param`); any other form is refused.
+pub fn parse_time(s: &str, param: &'static str) -> Result<NaiveDateTime, AppError> {
+    let v = s.trim();
+    for format in [
+        "%Y-%m-%d %H:%M%:z",
+        "%Y-%m-%d %H:%M%z",
+        "%Y-%m-%d %H:%M:%S%:z",
+    ] {
+        if let Ok(t) = chrono::DateTime::parse_from_str(v, format) {
+            return Ok(t.naive_utc());
+        }
+    }
+    if let Ok(t) = chrono::DateTime::parse_from_rfc3339(v) {
+        return Ok(t.naive_utc());
+    }
+    let h = crate::ruby_date::parse(v);
+    let nothing = h.year.is_none()
+        && h.yday.is_none()
+        && h.mon.is_none()
+        && h.mday.is_none()
+        && h.hour.is_none()
+        && h.min.is_none()
+        && h.sec.is_none()
+        && !h.sec_fraction;
+    if v.is_ascii() && nothing {
+        return Err(InvalidParameters(param).into());
+    }
+    Err(Unsupported("a time Time.parse reads that isn't the pin form's").into())
+}
+
+/// `Topic#update_pinned(status, global, pinned_until)`: the columns, then
+/// the scheduled unpin cancelled and, with a time, scheduled again.
+pub async fn update_pinned(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    enabled: bool,
+    global: bool,
+    until: Option<&str>,
+) -> Result<(), AppError> {
+    let until = until.map(|u| parse_time(u, "pinned_until")).transpose()?;
+    sqlx::query(
+        "UPDATE topics SET pinned_at = CASE WHEN $2 THEN clock_timestamp() END, \
+                           pinned_globally = $3, pinned_until = $4 WHERE id = $1",
+    )
+    .bind(topic_id)
+    .bind(enabled)
+    .bind(global)
+    .bind(until)
+    .execute(&mut *conn)
+    .await?;
+    sqlx::query(
+        "DELETE FROM discourse_rs.jobs WHERE name = 'unpin_topic' AND args->>'topic_id' = $1::text",
+    )
+    .bind(topic_id)
+    .execute(&mut *conn)
+    .await?;
+    if let Some(at) = until {
+        crate::jobs::enqueue_at(
+            &mut *conn,
+            at,
+            "unpin_topic",
+            json!({ "topic_id": topic_id }),
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// `Jobs::UnpinTopic`: a topic that is still there unpinned (its columns
+/// only; no small action).
+pub async fn unpin_topic_job(conn: &mut PgConnection, args: &Value) -> Result<(), AppError> {
+    let topic_id = match &args["topic_id"] {
+        Value::Number(n) => n.as_i64(),
+        Value::String(s) if !crate::ruby::is_blank(s) => Some(crate::ruby::to_i(s)),
+        _ => None,
+    };
+    let Some(topic_id) = topic_id else {
+        return Ok(());
+    };
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND deleted_at IS NULL)",
+    )
+    .bind(topic_id as i32)
+    .fetch_one(&mut *conn)
+    .await?;
+    if exists {
+        update_pinned(conn, topic_id as i32, false, false, None).await?;
     }
     Ok(())
 }

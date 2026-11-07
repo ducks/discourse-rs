@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET archetype = 'banner' WHERE id = 41",
+    "UPDATE user_profiles SET dismissed_banner_key = 41 WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/make-banner",
+      "params": {}
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/reset-bump-date/36",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/reset-bump-date/40",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/reset-bump-date/999999",
+      "params": {}
+    }
+  ]
+}

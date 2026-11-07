@@ -1,0 +1,87 @@
+{
+  "name": "make_banner_forbidden",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/make-banner",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/remove-banner",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T02:32:48.44109",
+  "transaction_started_at": "2026-11-07T02:32:47.393802",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7IdZ1f0kbikDOqdJfHUhz/782DU=",
+            "created_at": "2026-11-07T02:32:47.735883",
+            "rotated_at": "2026-11-07T02:32:47.734962",
+            "updated_at": "2026-11-07T02:32:47.735883",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "7IdZ1f0kbikDOqdJfHUhz/782DU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T02:32:48.446818",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7IdZ1f0kbikDOqdJfHUhz/782DU=",
+            "created_at": "2026-11-07T02:32:47.735883",
+            "rotated_at": "2026-11-07T02:32:47.734962",
+            "updated_at": "2026-11-07T02:32:47.735883",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "7IdZ1f0kbikDOqdJfHUhz/782DU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "935f1c29e8ad26b9e9be05b82e42ec12d18ac8d3aeb840003c36bc0c01cb0d08",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

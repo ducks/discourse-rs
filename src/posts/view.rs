@@ -2181,6 +2181,23 @@ pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
         "archived": archived,
         "visible": visible,
         "stayAfterDelete": m.stay_after_delete,
+        // The modals' (static/js/topic-admin-modals.js).
+        "pinned_at": view["pinned_at"],
+        "pinned_globally": view["pinned_globally"] == true,
+        "pinned_until": view["pinned_until"],
+        "archetype": view["archetype"],
+        "category_id": view["category_id"],
+        "categoryLink": view["category_id"]
+            .as_i64()
+            .and_then(|id| l.categories.get(&id))
+            .map(|c| crate::topic_list_view::category_badge_html(l, c, true, false))
+            .unwrap_or_default(),
+        "slow_mode_seconds": view["slow_mode_seconds"],
+        "slow_mode_enabled_until": view["slow_mode_enabled_until"],
+        "can_pin_unpin_topic": d["can_pin_unpin_topic"] == true,
+        "can_banner_topic": d["can_banner_topic"] == true,
+        "canManageTopic": m.can_manage_topic,
+        "strings": topic_admin_strings(l),
     });
     if let Some(views) = m.delete_confirm_views {
         data["deleteConfirm"] = serde_json::json!({
@@ -2196,6 +2213,89 @@ pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
         "<template class=\"topic-admin-menu-template\" data-topic=\"{}\"><ul class=\"dropdown-menu\">{items}</ul></template>",
         escape(&data.to_string())
     )
+}
+
+/// The strings the topic admin menu's modals draw (FeatureTopic,
+/// ChangeTimestamp, EditSlowMode, ConvertToPublicTopic), by their `js.`
+/// key; a count key as its `one` and `other` forms.
+fn topic_admin_strings(l: &ListContext) -> Value {
+    const KEYS: &[&str] = &[
+        "topic.feature_topic.title",
+        "topic.feature_topic.pin",
+        "topic.feature_topic.unpin",
+        "topic.feature_topic.unpin_until",
+        "topic.feature_topic.pin_note",
+        "topic.feature_topic.pin_until",
+        "topic.feature_topic.pin_validation",
+        "topic.feature_topic.not_pinned",
+        "topic.feature_topic.pin_globally",
+        "topic.feature_topic.unpin_globally",
+        "topic.feature_topic.unpin_globally_until",
+        "topic.feature_topic.global_pin_note",
+        "topic.feature_topic.not_pinned_globally",
+        "topic.feature_topic.make_banner",
+        "topic.feature_topic.remove_banner",
+        "topic.feature_topic.banner_note",
+        "topic.feature_topic.no_banner_exists",
+        "topic.feature_topic.banner_exists",
+        "topic.feature.pin",
+        "topic.feature.unpin",
+        "topic.feature.pin_globally",
+        "topic.feature.make_banner",
+        "topic.feature.remove_banner",
+        "topic.change_timestamp.title",
+        "topic.change_timestamp.action",
+        "topic.change_timestamp.invalid_timestamp",
+        "topic.change_timestamp.error",
+        "topic.change_timestamp.instructions",
+        "saving",
+        "generic_error",
+        "topic.slow_mode_update.title",
+        "topic.slow_mode_update.description",
+        "topic.slow_mode_update.select",
+        "topic.slow_mode_update.hours",
+        "topic.slow_mode_update.minutes",
+        "topic.slow_mode_update.seconds",
+        "topic.slow_mode_update.enabled_until",
+        "topic.slow_mode_update.update",
+        "topic.slow_mode_update.enable",
+        "topic.slow_mode_update.remove",
+        "topic.slow_mode_update.durations.10_minutes",
+        "topic.slow_mode_update.durations.15_minutes",
+        "topic.slow_mode_update.durations.30_minutes",
+        "topic.slow_mode_update.durations.45_minutes",
+        "topic.slow_mode_update.durations.1_hour",
+        "topic.slow_mode_update.durations.2_hours",
+        "topic.slow_mode_update.durations.4_hours",
+        "topic.slow_mode_update.durations.8_hours",
+        "topic.slow_mode_update.durations.12_hours",
+        "topic.slow_mode_update.durations.24_hours",
+        "topic.slow_mode_update.durations.custom",
+        "topic.make_public.title",
+        "topic.make_public.choose_category",
+        "category.choose",
+        "composer.modal_ok",
+        "cancel",
+        "generic_error_with_reason",
+        "multiple_errors",
+    ];
+    const COUNT_KEYS: &[&str] = &[
+        "topic.feature_topic.already_pinned",
+        "topic.feature_topic.confirm_pin_globally",
+        "topic.feature_topic.already_pinned_globally",
+        "form_kit.errors_summary_title",
+    ];
+    let mut strings = serde_json::Map::new();
+    for key in KEYS {
+        strings.insert(key.to_string(), Value::String(t(l, key)));
+    }
+    for key in COUNT_KEYS {
+        for form in ["one", "other"] {
+            let full = format!("{key}.{form}");
+            strings.insert(full.clone(), Value::String(t(l, &full)));
+        }
+    }
+    Value::Object(strings)
 }
 
 /// TopicBookmarksMenu's grouped DMenu content (DDropdownMenu), once per
