@@ -4,7 +4,7 @@
 // toolbar's Build poll (discourse-poll's builder, with its group chooser,
 // date and time input and results combo box, and the item's condition in
 // a PM with a non-human user), in composer.js and poll-builder.js.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 const trigger = (page) => page.locator("#reply-control .composer-actions-trigger");
 const menu = (page) => page.locator(".composer-actions-dropdown");
@@ -220,7 +220,9 @@ test("a post voting topic from the actions menu draws its voting", async ({ page
 });
 
 test("Build poll inserts the poll it builds, which draws once posted", async ({ page, context }) => {
-  await login(context, "user1");
+  // A member of its own: a repeated run would post the same body as user1
+  // within unique_posts_mins.
+  await login(context, member().name);
   await page.goto("/latest");
   await page.locator("#create-topic").click();
   const editor = page.locator("#reply-control .d-editor-input");
@@ -435,7 +437,9 @@ test("Build poll shows in a PM with a non-human user for a member who may not cr
     poll_create_allowed_groups: "14",
   });
   try {
-    await login(context, "user1");
+    // A member of its own: user1 may have posted the same poll within
+    // unique_posts_mins, which refuses a repeated body.
+    await login(context, member().name);
     const options = page.locator(".toolbar-menu__options-content");
     const buildPoll = options.locator("button[title='Build poll']");
 
@@ -479,9 +483,9 @@ test("Build poll shows in a PM with a non-human user for a member who may not cr
     await buildPoll.click();
     const modal = page.locator(".d-modal.poll-ui-builder");
     await expect(modal).toBeVisible();
-    await modal.locator(".poll-option-value input").first().fill("Tea");
+    await modal.locator(".poll-option-value input").first().fill(label("Tea"));
     await modal.locator(".poll-option-add").click();
-    await modal.locator(".poll-option-value input").nth(1).fill("Coffee");
+    await modal.locator(".poll-option-value input").nth(1).fill(label("Coffee"));
     await modal.locator(".insert-poll").click();
     await expect(modal).toHaveCount(0);
     await page.locator("#reply-control .save-or-cancel .create").click();
