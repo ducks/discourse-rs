@@ -2359,6 +2359,9 @@ pub struct TopicPage {
     pub stream: PostStreamState,
     /// discourse-reactions is on: its script runs the reaction controls.
     pub reactions: bool,
+    /// discourse_reactions_allow_any_emoji: the emoji picker its picker
+    /// opens (static/js/emoji-picker.js and its template).
+    pub reactions_emoji_picker: String,
     /// discourse-solved is on: its script runs the Solved button and the
     /// accepted answers.
     pub solved: bool,
@@ -3145,6 +3148,21 @@ pub async fn topic_page(
         // New posts land at the end; pages before it stay as they are.
         live: loaded_all,
         reactions: post_settings.reactions.is_some(),
+        reactions_emoji_picker: match post_settings.reactions.as_ref() {
+            Some(ui) if ui.allow_any_emoji => {
+                let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
+                format!(
+                    "{}<script src=\"{}\"></script>",
+                    crate::plugins::chat::actions_view::picker_template(
+                        &t,
+                        &base,
+                        settings.emojis()
+                    ),
+                    crate::assets::url(&base, "emoji-picker.js")
+                )
+            }
+            _ => String::new(),
+        },
         solved: post_settings.solved.is_some(),
         assign: post_settings.assign.is_some(),
         ignored_users: ignored_users.join(","),

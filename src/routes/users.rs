@@ -753,7 +753,8 @@ async fn respond(
             .unwrap_or_default();
     }
     // discourse-reactions' reactions tab: its route's first page of
-    // CustomReactionsController#reactions_given, with the same checks.
+    // CustomReactionsController#reactions_given, with the same checks,
+    // or the next one discourse-reactions.js asks for.
     let mut reactions = Vec::new();
     if filter == Some(ActivityFilter::Reactions) {
         if !crate::plugins::reactions::enabled(&settings)? {
@@ -776,8 +777,9 @@ async fn respond(
             urls: &urls,
             guardian: &guardian,
         };
+        let p = super::reactions::list_page_params(&uri, &headers);
         reactions = reader
-            .reactions_given(user.id, None)
+            .reactions_given(user.id, super::reactions::given_before(&p))
             .await?
             .as_array()
             .cloned()
@@ -935,6 +937,14 @@ async fn respond(
         &settings,
     )
     .await?;
+    // PostList's hideApplicationFooter while a full page of reactions
+    // leaves more to load.
+    if filter == Some(ActivityFilter::Reactions)
+        && reactions.len() >= crate::plugins::reactions::users::PAGE_SIZE as usize
+    {
+        page.chrome.show_footer = false;
+        page.chrome.defer_footer = true;
+    }
     if matches!(action, Action::DeletedPosts) {
         if guardian.is_staff() {
             // The route has no titleToken: the user's.

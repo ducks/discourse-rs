@@ -21,7 +21,7 @@ use crate::{AppError, Unsupported, avatar};
 /// `MAX_USERS_COUNT`
 const MAX_USERS_COUNT: i64 = 26;
 /// `PAGE_SIZE`
-const PAGE_SIZE: i64 = 20;
+pub(crate) const PAGE_SIZE: i64 = 20;
 
 /// Ruby's `Time#to_s` for a UTC time.
 fn ruby_time(t: NaiveDateTime) -> String {

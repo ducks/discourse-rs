@@ -6038,17 +6038,42 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     stale "reactions in messages are refused" note
     (plugins/reactions/toggle.rs:11): no refusal is left and the react_pm
     cases cover them
-232. `feat/reactions-ui` M: the allow-any-emoji picker button
-    (plugins/reactions/view.rs:190), infinite scroll on the Reactions tab
-    and the reactions received page past the first 20
-    (routes/users.rs:757; routes/user_notifications.rs:145;
-    user_profile_view.rs:1418), reactions received's acting_username and
-    include_likes, which notification links send
-    (routes/user_notifications.rs:148-153), the `l` shortcut, the admin
-    emoji list's locked like reaction (admin_site_settings_view.rs:1486),
-    touch long press, vibration and the animations
-    (static/js/discourse-reactions.js:7), the mobile users modal and
-    stylesheet, the user nav links once core's user nav panel exists
+232. ~~`feat/reactions-ui`~~ (done, the rest split to 232a) M: the
+    allow-any-emoji picker button, infinite scroll on the Reactions tab
+    and the reactions received page past the first 20, reactions
+    received's acting_username and include_likes. The picker's data
+    (plugins/reactions/view.rs) carries EmojiPicker's DMenu trigger after
+    the reactions when discourse_reactions_allow_any_emoji is on, counted
+    as a cell by optimalColsCount, and the topic page loads
+    static/js/emoji-picker.js with its template then.
+    discourse-reactions.js opens it with the discourse-reactions context;
+    while it is open the picker neither collapses on pointer out nor on a
+    click outside (preventCollapse, disableClickOutside), and a picked
+    emoji is toggled as onSelectEmoji does. The lists: each item carries
+    its reaction user's id and reaction, the sentinel the route's
+    acting_username and include_likes (as findReactions sends them: when
+    not blank), the main reaction and canLoadMore (a full page);
+    discourse-reactions.js, loaded on the user pages that draw one, is
+    UserActivityReactions#loadMore under PostList's DLoadMore (100ms
+    debounce, #updateBeforeIds with likes and other reactions apart under
+    include_likes), asking the page again as an XHR, which alone reads
+    the cursors (routes/reactions.rs list_page_params); a page that brings
+    nothing ends the list and shows the footer a full first page
+    deferred. Reactions received reads acting_username and include_likes
+    on a page load, so a notification's link lists what it names.
+    reactions_received's blank before_reaction_user_id now stands as
+    Rails leaves it (id < 0) unless before_post_id replaces it. The admin
+    emoji list's locked like reaction was already on main
+    (admin/site_settings_view.rs emoji_list). Measured by
+    parity/writes/reactions/received_paged_with_likes (both cursors,
+    acting_username, the blank cursor and before_post_id), tests in
+    tests/plugin_pages.rs, browser specs tests/browser/post-menu.spec.js
+    (the emoji picker) and tests/browser/reactions-lists.spec.js.
+    232a. `feat/reactions-ui-rest` M: the `l` shortcut (after core's
+    keyboard post selection, none in static/js), touch long press,
+    vibration and the toggle animations (static/js/discourse-reactions.js:8),
+    the mobile users modal and stylesheet, the user nav links once core's
+    user nav panel exists
 233. `feat/solved-lifecycle` M: what core's events and services owe
     discourse-solved: unaccepting a destroyed answer
     (on(:post_destroyed), absent from post_destroyer.rs), unaccepting

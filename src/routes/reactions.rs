@@ -113,6 +113,68 @@ fn query_param(p: &Map<String, Value>, key: &str) -> Option<String> {
     p.get(key).and_then(params::scalar)
 }
 
+/// reactions_received's params as the controller reads them: the cursor
+/// falls back to the old before_post_id when blank (a blank one left
+/// standing compares with 0), acting_username and include_likes count
+/// when present.
+pub(crate) struct ReceivedQuery {
+    before_reaction_user_id: Option<i64>,
+    before_like_id: Option<i64>,
+    acting_username: Option<String>,
+    include_likes: bool,
+}
+
+impl ReceivedQuery {
+    pub(crate) fn parse(p: &Map<String, Value>) -> Self {
+        let mut before_reaction = query_param(p, "before_reaction_user_id");
+        if before_reaction
+            .as_deref()
+            .is_none_or(|v| v.trim().is_empty())
+            && let Some(old) = query_param(p, "before_post_id")
+        {
+            before_reaction = Some(old);
+        }
+        ReceivedQuery {
+            before_reaction_user_id: before_reaction.map(|v| crate::ruby::to_i(&v)),
+            before_like_id: query_param(p, "before_like_id").map(|v| crate::ruby::to_i(&v)),
+            acting_username: query_param(p, "acting_username"),
+            include_likes: p.contains_key("include_likes"),
+        }
+    }
+
+    pub(crate) fn params(&self) -> ReceivedParams<'_> {
+        ReceivedParams {
+            before_reaction_user_id: self.before_reaction_user_id,
+            before_like_id: self.before_like_id,
+            acting_username: self.acting_username.as_deref(),
+            include_likes: self.include_likes,
+        }
+    }
+}
+
+/// What the reactions lists' HTML (the Reactions tab, reactions
+/// received) reads from the request, as findReactions would send it: the
+/// route's query params acting_username and include_likes when not blank,
+/// and the cursors only on the next page discourse-reactions.js asks for
+/// (an XHR); a page load starts at the top.
+pub(crate) fn list_page_params(uri: &Uri, headers: &HeaderMap) -> Map<String, Value> {
+    let next_page = headers
+        .get("x-requested-with")
+        .is_some_and(|v| v == "XMLHttpRequest");
+    let mut p = params::parse(uri.query(), headers, &Bytes::new());
+    p.retain(|k, v| match k.as_str() {
+        "acting_username" | "include_likes" => params::scalar(v).is_some_and(|s| !s.is_empty()),
+        "before_reaction_user_id" | "before_like_id" => next_page,
+        _ => false,
+    });
+    p
+}
+
+/// The Reactions tab's cursor (reactions_given reads no other).
+pub(crate) fn given_before(p: &Map<String, Value>) -> Option<i64> {
+    query_param(p, "before_reaction_user_id").map(|v| crate::ruby::to_i(&v))
+}
+
 /// The settings and the plugin check the reads share.
 async fn front(state: &AppState) -> Result<Result<SiteSettings, Response>, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -317,7 +379,7 @@ async fn feed(
             {
                 return Ok(super::topics::not_found_response(&state));
             }
-            let before = query_param(&p, "before_reaction_user_id").map(|v| crate::ruby::to_i(&v));
+            let before = given_before(&p);
             let mut reader = Reader {
                 conn: &mut conn,
                 settings: &settings,
@@ -331,23 +393,14 @@ async fn feed(
             if !(guardian.is_me(user_id) || guardian.is_admin()) {
                 return Ok(super::search::invalid_access(&state));
             }
-            let before_reaction = query_param(&p, "before_reaction_user_id")
-                .filter(|v| !v.trim().is_empty())
-                .or_else(|| query_param(&p, "before_post_id"));
-            let acting = query_param(&p, "acting_username");
-            let params = ReceivedParams {
-                before_reaction_user_id: before_reaction.map(|v| crate::ruby::to_i(&v)),
-                before_like_id: query_param(&p, "before_like_id").map(|v| crate::ruby::to_i(&v)),
-                acting_username: acting.as_deref(),
-                include_likes: p.contains_key("include_likes"),
-            };
+            let query = ReceivedQuery::parse(&p);
             let mut reader = Reader {
                 conn: &mut conn,
                 settings: &settings,
                 urls: &urls,
                 guardian: &guardian,
             };
-            reader.reactions_received(user_id, &params).await?
+            reader.reactions_received(user_id, &query.params()).await?
         }
     };
     Ok(Json(body).into_response())

@@ -939,7 +939,7 @@ fn activity_content(
         && let Some(ui) = settings.reactions.as_ref()
     {
         out.push_str("<section class=\"user-content\" id=\"user-content\"><div>");
-        out.push_str(&reactions_list(cx, ui, reactions));
+        out.push_str(&reactions_list(cx, ui, reactions, None, false));
         out.push_str("</div></section>");
         return out;
     }
@@ -1407,11 +1407,17 @@ fn solved_list(cx: &ListContext, viewing_self: bool, user_path: &str, posts: &[V
 
 /// discourse-reactions' user-activity/reactions: a PostList of the
 /// reactions (flattenForPostList), each with the reaction and its user
-/// above the excerpt (DiscourseReactionsReactionEmoji).
+/// above the excerpt (DiscourseReactionsReactionEmoji). Each item carries
+/// its reaction user's id and reaction for the next page's cursors, and
+/// the sentinel what discourse-reactions.js asks for it with
+/// (UserActivityReactions#loadMore): the route's acting_username and
+/// include_likes, the main reaction, and canLoadMore (a full page).
 pub(crate) fn reactions_list(
     cx: &ListContext,
     ui: &crate::plugins::reactions::view::ReactionsUi,
     reactions: &[Value],
+    acting_username: Option<&str>,
+    include_likes: bool,
 ) -> String {
     let base = cx.base_path;
     let mut out = String::from("<div class=\"post-list user-stream\">");
@@ -1426,7 +1432,9 @@ pub(crate) fn reactions_list(
         let username = s(&post["username"]);
         let u = escape(username);
         out.push_str(&format!(
-            "<div class=\"post-list-item user-stream-item\"><div class=\"post-list-item__header info\"><a class=\"avatar-link\" data-user-card=\"{u}\" href=\"{base}/u/{}\"><div class=\"avatar-wrapper\">{}</div></a>",
+            "<div class=\"post-list-item user-stream-item\" data-reaction-user-id=\"{}\" data-reaction-value=\"{}\"><div class=\"post-list-item__header info\"><a class=\"avatar-link\" data-user-card=\"{u}\" href=\"{base}/u/{}\"><div class=\"avatar-wrapper\">{}</div></a>",
+            r["id"].as_i64().unwrap_or(0),
+            escape(s(&r["reaction"]["reaction_value"])),
             escape(&username.to_lowercase()),
             avatar(cx, s(&post["avatar_template"]), 48).replacen(
                 "class=\"avatar\"",
@@ -1496,7 +1504,20 @@ pub(crate) fn reactions_list(
             s(&post["excerpt"])
         ));
     }
-    out.push_str("</div><div class=\"loading-container\"></div><div aria-hidden=\"true\" class=\"load-more-sentinel\"></div>");
+    let mut more = serde_json::json!({
+        "mainReaction": ui.main,
+        "canLoadMore": reactions.len() >= crate::plugins::reactions::users::PAGE_SIZE as usize,
+    });
+    if let Some(acting) = acting_username {
+        more["actingUsername"] = Value::String(acting.to_string());
+    }
+    if include_likes {
+        more["includeLikes"] = Value::Bool(true);
+    }
+    out.push_str(&format!(
+        "</div><div class=\"loading-container\"></div><div aria-hidden=\"true\" class=\"load-more-sentinel\" data-reactions-list=\"{}\"></div>",
+        escape(&more.to_string())
+    ));
     out
 }
 

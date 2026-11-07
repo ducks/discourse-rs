@@ -1,10 +1,15 @@
 // discourse-reactions on the topic page (DiscourseReactionsActions and the
 // components it draws): the reaction button toggles the viewer's reaction
-// (their own, or the main one), hovering it opens the picker of reactions,
+// (their own, or the main one), hovering it opens the picker of reactions
+// (with discourse_reactions_allow_any_emoji, an EmojiPicker after them),
 // and the counter opens who reacted (DiscourseReactionsUsersMenu over
 // core's UsersPopup). The post comes back redrawn over the live stream
 // (publish_change_to_clients :acted). An anonymous reader is sent to log
 // in. Ember's animations and touch gestures are not ported.
+//
+// On the user pages, the reactions lists (user-activity/reactions and
+// reactions received, UserActivityReactions) load their next page as
+// PostList's DLoadMore asks for it.
 (function () {
   "use strict";
 
@@ -100,6 +105,34 @@
     }
   }
 
+  // The picker's EmojiPicker (static/js/emoji-picker.js) is open: the
+  // picker stays (preventCollapse, disableClickOutside) until it closes
+  // (reenableCollapse); a picked emoji is toggled (onSelectEmoji).
+  var emojiPickerOpen = false;
+  // clickOutside reads it as the click began, before the emoji picker's
+  // own click outside closes it.
+  var clickOutsideDisabled = false;
+
+  function openAnyEmoji(actions, trigger) {
+    if (!Discourse.emojiPicker) {
+      return;
+    }
+    Discourse.emojiPicker.open(trigger, {
+      context: "discourse-reactions",
+      maxWidth: 405,
+      onSelect: function (emoji) {
+        react(actions, emoji);
+      },
+      onClose: function () {
+        emojiPickerOpen = false;
+      },
+    });
+    if (Discourse.emojiPicker.isOpen()) {
+      emojiPickerOpen = true;
+      cancelCollapse();
+    }
+  }
+
   function expandPicker(actions) {
     cancelCollapse();
     if (picker && picker.parentElement === actions) {
@@ -126,7 +159,8 @@
     picker = document.createElement("div");
     picker.className = "discourse-reactions-picker is-expanded";
     picker.innerHTML =
-      '<div class="discourse-reactions-picker-container col-' + info.cols + '">' + html + "</div>";
+      '<div class="discourse-reactions-picker-container col-' + info.cols + '">' + html +
+      (info.anyEmoji || "") + "</div>";
     actions.prepend(picker);
     // computePosition(button, picker, { placement: "top", offset(-5), shift,
     // flip }), relative to the picker's offset parent.
@@ -175,6 +209,11 @@
     var to = event.relatedTarget && event.relatedTarget.closest
       ? event.relatedTarget.closest(".discourse-reactions-reaction-button, .discourse-reactions-picker")
       : null;
+    // DiscourseReactionsPicker#pointerOut waits while its emoji picker is
+    // open.
+    if (from === picker && emojiPickerOpen) {
+      return;
+    }
     if (from && from !== to) {
       scheduleCollapse();
     }
@@ -401,16 +440,29 @@
       react(picker.parentElement, pickable.dataset.reaction);
       return;
     }
+    var anyEmoji = event.target.closest(".emoji-picker-trigger");
+    if (anyEmoji && picker && picker.contains(anyEmoji)) {
+      openAnyEmoji(picker.parentElement, anyEmoji);
+      return;
+    }
     var button = event.target.closest(".discourse-reactions-reaction-button");
     if (button) {
       var actions = button.closest(".discourse-reactions-actions");
       react(actions, actions.dataset.currentReaction || actions.dataset.mainReaction);
       return;
     }
-    if (picker && !event.target.closest(".discourse-reactions-actions")) {
+    if (picker && !clickOutsideDisabled && !event.target.closest(".discourse-reactions-actions")) {
       collapsePicker();
     }
   });
+
+  document.addEventListener(
+    "click",
+    function () {
+      clickOutsideDisabled = emojiPickerOpen;
+    },
+    true
+  );
 
   window.addEventListener(
     "scroll",
@@ -420,11 +472,173 @@
     },
     { passive: true }
   );
+  // The reactions lists: UserActivityReactions#loadMore under PostList's
+  // loadMore, each page asked for with the cursors the items it has drawn
+  // leave (#updateBeforeIds: with include_likes, the last like and the
+  // last other reaction apart), the route's acting_username and
+  // include_likes. A page that brings nothing ends it and the footer
+  // shows.
+  var list = null;
+
+  function listItems(root) {
+    var postList = root && root.querySelector("#user-content .post-list");
+    return postList ? Array.prototype.slice.call(postList.querySelectorAll(":scope > .post-list-item")) : [];
+  }
+
+  function lastReactionUserId(items) {
+    return items.length ? items[items.length - 1].dataset.reactionUserId : null;
+  }
+
+  function updateBeforeIds(l, items) {
+    if (l.config.includeLikes) {
+      var likes = [];
+      var reactions = [];
+      items.forEach(function (item) {
+        (item.dataset.reactionValue === l.config.mainReaction ? likes : reactions).push(item);
+      });
+      l.beforeLikeId = lastReactionUserId(likes);
+      l.beforeReactionUserId = lastReactionUserId(reactions);
+    } else {
+      l.beforeReactionUserId = lastReactionUserId(items);
+    }
+  }
+
+  function setLoading(l, on) {
+    var spinner = l.sentinel.previousElementSibling;
+    if (!spinner || !spinner.classList.contains("loading-container")) {
+      return;
+    }
+    spinner.classList.toggle("visible", on);
+    if (on) {
+      spinner.setAttribute("data-loading", "true");
+      spinner.innerHTML = '<div class="spinner"></div>';
+    } else {
+      spinner.removeAttribute("data-loading");
+      spinner.innerHTML = "";
+    }
+  }
+
+  function endList(l) {
+    l.ended = true;
+    if (Discourse.showFooter) {
+      Discourse.showFooter();
+    }
+  }
+
+  function loadMoreReactions() {
+    var l = list;
+    if (!l || l.ended || l.loading) {
+      return;
+    }
+    // The controller's loadMore answers [] once it can load no more.
+    if (!l.canLoadMore) {
+      endList(l);
+      return;
+    }
+    l.loading = true;
+    if (!l.beforeReactionUserId) {
+      updateBeforeIds(l, listItems(document));
+    }
+    // CustomReaction.findReactions sends what is set.
+    var params = new URLSearchParams();
+    if (l.beforeReactionUserId) {
+      params.set("before_reaction_user_id", l.beforeReactionUserId);
+    }
+    if (l.beforeLikeId) {
+      params.set("before_like_id", l.beforeLikeId);
+    }
+    if (l.config.includeLikes) {
+      params.set("include_likes", "true");
+    }
+    if (l.config.actingUsername) {
+      params.set("acting_username", l.config.actingUsername);
+    }
+    setLoading(l, true);
+    fetch(location.pathname + "?" + params.toString(), {
+      credentials: "same-origin",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.status + " " + r.statusText);
+        }
+        return r.text();
+      })
+      .then(function (html) {
+        if (list !== l) {
+          return;
+        }
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var fresh = listItems(doc);
+        var postList = document.querySelector("#user-content .post-list");
+        fresh.forEach(function (item) {
+          postList.appendChild(document.adoptNode(item));
+        });
+        updateBeforeIds(l, fresh);
+        if (fresh.length === 0) {
+          l.canLoadMore = false;
+          endList(l);
+        }
+      })
+      .catch(function (e) {
+        if (Discourse.dialog) {
+          Discourse.dialog.popupAjaxError(e.message);
+        } else {
+          window.alert(e.message);
+        }
+      })
+      .finally(function () {
+        l.loading = false;
+        setLoading(l, false);
+      });
+  }
+
+  // DLoadMore: the sentinel coming into view, debounced 100ms.
+  function watchList() {
+    var sentinel = document.querySelector("#user-content .load-more-sentinel[data-reactions-list]");
+    if (!sentinel) {
+      return null;
+    }
+    var l = {
+      sentinel: sentinel,
+      config: JSON.parse(sentinel.dataset.reactionsList),
+      canLoadMore: false,
+      loading: false,
+      ended: false,
+      beforeLikeId: null,
+      beforeReactionUserId: null,
+      observer: null,
+      timer: null,
+    };
+    l.canLoadMore = !!l.config.canLoadMore;
+    if (window.IntersectionObserver) {
+      l.observer = new IntersectionObserver(function (entries) {
+        var seen = entries.some(function (e) {
+          return e.isIntersecting;
+        });
+        if (seen) {
+          clearTimeout(l.timer);
+          l.timer = setTimeout(loadMoreReactions, 100);
+        }
+      });
+      l.observer.observe(sentinel);
+    }
+    return l;
+  }
+
   // A page swapped out takes its open picker and menu with it (page.js).
   Discourse.onPage(function () {
+    list = watchList();
     return function () {
       collapsePicker();
       closeMenu();
+      if (list) {
+        clearTimeout(list.timer);
+        if (list.observer) {
+          list.observer.disconnect();
+        }
+        list = null;
+      }
     };
   });
 })();
