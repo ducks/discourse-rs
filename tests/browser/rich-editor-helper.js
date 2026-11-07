@@ -309,9 +309,12 @@ function harness() {
   };
 }
 
-// "/" with the loader and the engine, and richSpec.
+// /faq with the loader and the engine, and richSpec. A static page: the
+// host is appended to the body, and on a topic list scrolling to it
+// brings the list's load-more sentinel near the window, so the next page's
+// rows push the editor (and a floating toolbar's reference) away.
 async function openEditorPage(page) {
-  await page.goto("/");
+  await page.goto("/faq");
   await page.addScriptTag({ content: asset("js/rich-editor.js") });
   await page.addScriptTag({ content: `(${harness.toString()})()` });
   await page.evaluate(
