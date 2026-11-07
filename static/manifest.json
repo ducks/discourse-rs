@@ -32,6 +32,7 @@
         "css/user-stream.css",
         "css/user-card.css",
         "css/composer.css",
+        "css/rich-editor.css",
         "css/kit.css",
         "css/modal.css",
         "css/date-picker.css",
@@ -1247,6 +1248,76 @@
       "content_type": "js",
       "files": [
         "js/rich-editor/markdown-it-stub.js"
+      ]
+    },
+    {
+      "name": "rich-editor.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor.js"
+      ]
+    },
+    {
+      "name": "rich-editor/editor.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/editor.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions.js"
+      ]
+    },
+    {
+      "name": "rich-editor/inputrules.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/inputrules.js"
+      ]
+    },
+    {
+      "name": "rich-editor/keymap.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/keymap.js"
+      ]
+    },
+    {
+      "name": "rich-editor/parser.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/parser.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugin-utils.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugin-utils.js"
+      ]
+    },
+    {
+      "name": "rich-editor/schema.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/schema.js"
+      ]
+    },
+    {
+      "name": "rich-editor/serializer.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/serializer.js"
+      ]
+    },
+    {
+      "name": "rich-editor/to-markdown.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/to-markdown.js"
       ]
     }
   ]
