@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "PUT", "path": "/posts/36/locked", "params": { "locked": "true" } },
+    { "method": "GET", "path": "/t/35.json" }
+  ]
+}

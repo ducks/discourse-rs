@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "settings": {
+    "whispers_allowed_groups": "3"
+  },
+  "requests": [
+    { "method": "PUT", "path": "/posts/52/post_type", "params": { "post_type": "4" } }
+  ]
+}

@@ -2340,6 +2340,30 @@ impl TopicView<'_> {
         .await?;
         let mut link_counts = self.link_counts(&post_ids).await?;
         let custom_fields = PostFields::load(&mut *self.conn, &post_ids).await?;
+        // post_notice_created_by_users, for staff: the real users who wrote
+        // the posts' staff notices, as BasicUserSerializer has them.
+        let mut notice_creators: HashMap<i64, Value> = HashMap::new();
+        if self.guardian.is_staff() {
+            let mut ids: Vec<i32> = post_ids
+                .iter()
+                .filter_map(|id| custom_fields.notice(*id))
+                .filter_map(|n| n["created_by_user_id"].as_i64())
+                .filter_map(|id| i32::try_from(id).ok())
+                .collect();
+            ids.sort_unstable();
+            ids.dedup();
+            let real: Vec<i32> = sqlx::query_scalar(
+                "SELECT id FROM users WHERE id = ANY($1) AND id > 0 \
+                   AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id)",
+            )
+            .bind(&ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            for id in real {
+                let user = self.basic_user(id, logo_small_url.as_deref()).await?;
+                notice_creators.insert(i64::from(id), user);
+            }
+        }
         // @user_custom_fields: User.custom_fields_for_ids over the posts'
         // users, for the fields User.allowed_user_custom_fields allows.
         let user_custom_fields = {
@@ -2689,9 +2713,7 @@ impl TopicView<'_> {
             // notice trust level; custom notices to everyone.
             if let Some(notice) = custom_fields.notice(post.id) {
                 let show = match notice["type"].as_str() {
-                    Some("custom") => {
-                        return Err(Unsupported("custom post notices").into());
-                    }
+                    Some("custom") => true,
                     Some("new_user") => {
                         g.is_authenticated()
                             && !yours
@@ -2704,6 +2726,17 @@ impl TopicView<'_> {
                     }
                     _ => false,
                 };
+                // notice_created_by_user: for staff while any of the
+                // view's notices has its writer, null but for a custom one.
+                if g.is_staff() && !notice_creators.is_empty() {
+                    let creator = (notice["type"] == "custom")
+                        .then(|| notice["created_by_user_id"].as_i64())
+                        .flatten()
+                        .and_then(|id| notice_creators.get(&id))
+                        .cloned()
+                        .unwrap_or(Value::Null);
+                    p.insert("notice_created_by_user".into(), creator);
+                }
                 if show {
                     p.insert("notice".into(), notice);
                 }

@@ -990,11 +990,34 @@ fn notice(cx: &PostContext, p: &Value) -> String {
                 )
             )
         }
-        "custom" => format!(
-            "{}<div class=\"post-notice-message\">{}</div>",
-            icon("user-shield", None),
-            s(&p["notice"]["cooked"])
-        ),
+        "custom" => {
+            // PostNoticeCustom: the writer, for staff, linked in its span.
+            let mut message = s(&p["notice"]["cooked"]).to_string();
+            if let Some(user) = p["notice_created_by_user"].as_object() {
+                let username = user["username"].as_str().unwrap_or_default();
+                // prioritizeNameInUx
+                let shown = match user["name"].as_str().filter(|n| !n.trim().is_empty()) {
+                    Some(name) if !cx.settings.prioritize_username_in_ux => name,
+                    _ => username,
+                };
+                let link = format!(
+                    "<span class='custom_created_by'><a title=\"{}\"{}>{}</a></span>",
+                    escape(shown),
+                    user_link_attrs(cx, username, false),
+                    escape(shown)
+                );
+                message.push(' ');
+                message.push_str(&t_with(
+                    cx.list,
+                    "post.notice.custom_created_by",
+                    &[("userLinkHTML", &link)],
+                ));
+            }
+            format!(
+                "{}<div class=\"post-notice-message\">{message}</div>",
+                icon("user-shield", None)
+            )
+        }
         _ => return String::new(),
     };
     format!(
@@ -1671,8 +1694,9 @@ fn dropdown_item(
 const DROPDOWN_DIVIDER: &str = "<li><hr class=\"dropdown-menu__divider\"></li>";
 
 /// AdminPostMenu's DDropdownMenu, in a template static/js/topic-admin-menu.js
-/// opens (the menu service's show, modalForMobile). Its links work; the
-/// actions behind its buttons are refused there, named, until ported.
+/// opens (the menu service's show, modalForMobile). Its links work and it
+/// performs its buttons' actions on the post data-post describes; those
+/// not ported are refused there, named.
 fn admin_post_menu(cx: &PostContext, p: &Value) -> String {
     let l = cx.list;
     let m = &cx.topic.menus;
@@ -1868,8 +1892,17 @@ fn admin_post_menu(cx: &PostContext, p: &Value) -> String {
             1,
         ));
     }
+    // What topic-admin-menu.js acts on: the post's id, type, wiki and
+    // staff notice (the ChangePostNoticeModal's text).
+    let post = serde_json::json!({
+        "id": p["id"],
+        "post_type": p["post_type"],
+        "wiki": p["wiki"] == true,
+        "notice": (!p["notice"].is_null()).then(|| serde_json::json!({ "raw": p["notice"]["raw"] })),
+    });
     format!(
-        "<template class=\"admin-post-menu-content\"><ul class=\"dropdown-menu\">{items}</ul></template>"
+        "<template class=\"admin-post-menu-content\" data-post=\"{}\"><ul class=\"dropdown-menu\">{items}</ul></template>",
+        escape(&post.to_string())
     )
 }
 

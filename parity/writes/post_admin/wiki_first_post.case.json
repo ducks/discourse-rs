@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topic_users SET notification_level = 3 WHERE topic_id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/35/wiki",
+      "params": {
+        "wiki": "true"
+      }
+    }
+  ],
+  "unordered_responses": [
+    "/jobs/0/1/user_ids"
+  ]
+}

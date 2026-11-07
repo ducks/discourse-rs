@@ -25,6 +25,38 @@ pub async fn rebake(
     post_id: i32,
     priority: Option<&str>,
 ) -> Result<(), AppError> {
+    rebake_with(
+        pool,
+        ctx,
+        post_id,
+        &Options {
+            priority,
+            ..Default::default()
+        },
+    )
+    .await
+}
+
+/// `Post#rebake!`'s keywords.
+#[derive(Default)]
+pub struct Options<'a> {
+    pub priority: Option<&'a str>,
+    /// `invalidate_broken_images:` the post's failed hotlinked media
+    /// forgotten, to be tried again.
+    pub invalidate_broken_images: bool,
+    /// `invalidate_oneboxes:` (posts#rebake): no :rebaked message, the
+    /// post processor publishing :revised once the oneboxes are in.
+    pub invalidate_oneboxes: bool,
+}
+
+/// `Post#rebake!(**opts)`.
+pub async fn rebake_with(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    post_id: i32,
+    opts: &Options<'_>,
+) -> Result<(), AppError> {
+    let priority = opts.priority;
     let s = ctx.settings;
     #[derive(sqlx::FromRow)]
     struct Row {
@@ -120,6 +152,15 @@ pub async fn rebake(
             .execute(&mut *tx)
             .await?;
     }
+    if opts.invalidate_broken_images {
+        sqlx::query(
+            "DELETE FROM post_hotlinked_media WHERE post_id = $1 \
+               AND status IN ('download_failed', 'upload_create_failed')",
+        )
+        .bind(post_id)
+        .execute(&mut *tx)
+        .await?;
+    }
     // TopicLink.extract_from
     if let Some(user_id) = post.user_id {
         let urls = crate::url::Urls {
@@ -165,9 +206,18 @@ pub async fn rebake(
         args["queue"] = serde_json::json!(queue);
     }
     crate::jobs::enqueue(&mut tx, "process_post", args).await?;
-    // publish_change_to_clients!(:rebaked)
-    crate::bus::publish_post_change(ctx, &mut tx, post_id, "rebaked", Default::default(), false)
+    // publish_change_to_clients!(:rebaked), unless the oneboxes wait.
+    if !opts.invalidate_oneboxes {
+        crate::bus::publish_post_change(
+            ctx,
+            &mut tx,
+            post_id,
+            "rebaked",
+            Default::default(),
+            false,
+        )
         .await?;
+    }
     tx.commit().await?;
     Ok(())
 }

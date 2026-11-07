@@ -1,0 +1,104 @@
+{
+  "name": "post_type_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36/post_type",
+      "params": {
+        "post_type": "-1"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/36/post_type",
+      "params": {
+        "post_type": "3"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/36/post_type",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T04:22:45.551861",
+  "transaction_started_at": "2026-11-07T04:22:44.56316",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: post_type"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: post_type"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: post_type"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "H04FOgiZbob0CF+A3TlxVcPVoIs=",
+            "created_at": "2026-11-07T04:22:44.891445",
+            "rotated_at": "2026-11-07T04:22:44.890535",
+            "updated_at": "2026-11-07T04:22:44.891445",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "H04FOgiZbob0CF+A3TlxVcPVoIs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:22:45.55821",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "H04FOgiZbob0CF+A3TlxVcPVoIs=",
+            "created_at": "2026-11-07T04:22:44.891445",
+            "rotated_at": "2026-11-07T04:22:44.890535",
+            "updated_at": "2026-11-07T04:22:44.891445",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "H04FOgiZbob0CF+A3TlxVcPVoIs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "6cbbbabaf4f328e0a2b3ea2ee11b844e930267e42b9cbbc6b29ec0447b975297",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

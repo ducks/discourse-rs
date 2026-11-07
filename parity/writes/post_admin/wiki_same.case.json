@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 36"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/posts/36/wiki", "params": { "wiki": "true" } }
+  ]
+}

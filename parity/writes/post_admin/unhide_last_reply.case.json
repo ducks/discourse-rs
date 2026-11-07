@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-05 10:00:00', hidden_reason_id = 1 WHERE id = 52",
+    "UPDATE topics SET bumped_at = '2026-10-01 10:00:00' WHERE id = 35"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/posts/52/unhide", "params": {} }
+  ]
+}

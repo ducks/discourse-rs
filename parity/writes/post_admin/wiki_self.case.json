@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "settings": {
+    "self_wiki_allowed_groups": "1|2|12"
+  },
+  "requests": [
+    { "method": "PUT", "path": "/posts/36/wiki", "params": { "wiki": "true" } }
+  ]
+}

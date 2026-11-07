@@ -378,8 +378,9 @@ Visible if clicked, avoid them in a scripted demo:
   feat/review-claims-notes (194b), done; the topic menu's actions
   (feat/topic-admin-actions, 194c) and the banner atop pages
   (feat/site-banner, 194c2) done but the timer modal, multi-select and
-  nested replies (194c1); the post menu's unported
-  actions are refused (194d).
+  nested replies (194c1); the post menu's actions done
+  (feat/post-admin-actions, 194d) but its owner, badge, permanent
+  deletion and publish modals (194d1).
 - [x] The review queue's client actions (edit, suspend, silence) and
   editing a reviewable (194e): done, feat/review-client-actions, with
   the raw email modal, and the tags field (feat/review-edit-tags,
@@ -3780,13 +3781,37 @@ route table has been made, so this list may be short.
     (parity/writes/site_banner, 10 cases); browser specs in
     tests/browser/topic-admin-actions.spec.js (drawn, dismissed by a
     member and a visitor, live)
-    194d. `feat/post-admin-actions` M: what the post admin menu refuses:
-    the staff color (PUT /posts/:id/post_type), the post notice modal
-    (PUT /posts/:id/notice), unhiding (PUT /posts/:id/unhide), the
-    ChangePostOwner modal (POST /t/:id/change-owner is ported), the
-    GrantBadgeModal, locking (PUT /posts/:id/locked), permanent deletion
-    (force_destroy), wiki (PUT /posts/:id/wiki), PublishPageModal and
-    rebaking (PUT /posts/:id/rebake)
+    194d. ~~`feat/post-admin-actions`~~ (done) M: the post admin menu's
+    actions (static/js/topic-admin-menu.js, on the post its template's
+    data-post describes, the post drawn again after through GET
+    /live/post/:id): the staff color (PUT /posts/:id/post_type: staff,
+    PostRevisor.valid_post_type?, no whisper for a first post,
+    invalid_whisper_access) and wiki (PUT /posts/:id/wiki, can_wiki?),
+    both through PostRevisor, which now takes wiki and post_type (the wiki
+    param always revises, as its string never equals the column; the new
+    version and its revision, a change undone within the grace period
+    giving the version back and advancing the draft sequence of who
+    edited before, the wiki first post's bump and its watchers'
+    notify_post_revision; a moderator action or whisper may have its type
+    or wiki changed, and the revisions page shows wiki_changes and
+    post_type_changes). Unhiding (PUT /posts/:id/unhide, Post#unhide! in
+    src/posts/admin.rs: a first post hidden by its flags lists its topic
+    again; the review queue's approve_and_unhide uses it too, first posts
+    included), locking (PUT /posts/:id/locked, PostLocker and its staff
+    log), the post notice (ChangePostNoticeModal, PUT /posts/:id/notice:
+    the notice cooked without oneboxes, save_custom_fields with
+    ActiveSupport's JSON, log_post_staff_note; the topic view serializes
+    custom notices and, for staff, notice_created_by_user, drawn with who
+    added it, no longer refused) and rebuilding the HTML (PUT
+    /posts/:id/rebake, Post#rebake! with invalidate_broken_images and
+    invalidate_oneboxes, which leaves the :rebaked message to the post
+    processor). Recorded on rs-ref-a (parity/writes/post_admin, 38
+    cases); browser specs in tests/browser/post-admin-actions.spec.js. The
+    rest is 194d1
+    194d1. `feat/post-admin-modals` M: what the post admin menu still
+    refuses: the ChangePostOwner modal (POST /t/:id/change-owner is
+    ported), the GrantBadgeModal, permanent deletion (force_destroy) and
+    the PublishPageModal (the published pages endpoints)
     194e. ~~`feat/review-client-actions`~~ (done) M: the review queue's
     client actions: suspend and silence open the penalty modal
     (penalize-user.js, now on /review) for the author with the post and

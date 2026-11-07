@@ -41,9 +41,6 @@ const SCORE_AGREED: i32 = 1;
 const SCORE_DISAGREED: i32 = 2;
 /// `ReviewableScore.types[:needs_approval]`
 const NEEDS_APPROVAL: i32 = 9;
-/// `Post.types`
-const REGULAR: i32 = 1;
-const WHISPER: i32 = 4;
 /// `Group::AUTO_GROUPS[:staff]`
 const STAFF_GROUP: i32 = 3;
 
@@ -1125,11 +1122,8 @@ async fn delete_author(
 struct ReviewedPost {
     id: i32,
     user_id: Option<i32>,
-    topic_id: i32,
     post_number: i32,
-    post_type: i32,
     hidden: bool,
-    created_at: NaiveDateTime,
     deleted_at: Option<NaiveDateTime>,
 }
 
@@ -1150,13 +1144,15 @@ async fn reviewed(
         return Ok(Performed::InvalidAction);
     }
     let post: Option<ReviewedPost> = match row.target_id {
-        Some(id) => sqlx::query_as(
-            "SELECT id, user_id, topic_id, post_number, post_type, hidden, created_at, deleted_at \
+        Some(id) => {
+            sqlx::query_as(
+                "SELECT id, user_id, post_number, hidden, deleted_at \
                  FROM posts WHERE id = $1",
-        )
-        .bind(id)
-        .fetch_optional(&mut *conn)
-        .await?,
+            )
+            .bind(id)
+            .fetch_optional(&mut *conn)
+            .await?
+        }
         None => None,
     };
     let post = post.ok_or(Unsupported("a post review without its post"))?;
@@ -1236,7 +1232,7 @@ async fn reviewed(
             APPROVED
         }
         "approve_and_unhide" => {
-            unhide(&mut *conn, &post).await?;
+            crate::posts::admin::unhide(&mut *conn, ctx, post.id).await?;
             APPROVED
         }
         "reject_and_delete" => {
@@ -1278,44 +1274,6 @@ async fn reviewed(
         updates: None,
         created: None,
     })
-}
-
-/// `Post#unhide!` for a reply: shown again, the author's post count back
-/// (UserStatCountUpdater.increment!), the topic's bumped_at back to it
-/// when it is the last reply.
-async fn unhide(conn: &mut PgConnection, post: &ReviewedPost) -> Result<(), AppError> {
-    if post.post_number == 1 {
-        return Err(Unsupported("unhiding a topic's first post (its visibility)").into());
-    }
-    sqlx::query("UPDATE posts SET hidden = FALSE, updated_at = clock_timestamp() WHERE id = $1")
-        .bind(post.id)
-        .execute(&mut *conn)
-        .await?;
-    let (highest, archetype): (i32, String) =
-        sqlx::query_as("SELECT highest_post_number, archetype FROM topics WHERE id = $1")
-            .bind(post.topic_id)
-            .fetch_one(&mut *conn)
-            .await?;
-    if highest == post.post_number && post.post_type != WHISPER {
-        sqlx::query(
-            "UPDATE topics SET bumped_at = $2, updated_at = clock_timestamp() \
-             WHERE id = $1 AND bumped_at IS DISTINCT FROM $2",
-        )
-        .bind(post.topic_id)
-        .bind(post.created_at)
-        .execute(&mut *conn)
-        .await?;
-    }
-    if archetype != "private_message"
-        && post.post_type == REGULAR
-        && let Some(author) = post.user_id
-    {
-        sqlx::query("UPDATE user_stats SET post_count = post_count + 1 WHERE user_id = $1")
-            .bind(author)
-            .execute(&mut *conn)
-            .await?;
-    }
-    Ok(())
 }
 
 /// `reviewable.perform(actor, action)` from UserDestroyer#agree_with_flags

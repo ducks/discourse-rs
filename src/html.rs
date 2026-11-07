@@ -522,6 +522,26 @@ pub(crate) fn dialog_strings(i18n: &I18n) -> String {
     .replace('<', "\\u003c")
 }
 
+/// The `#post-admin-config` block: what topic-admin-menu.js's
+/// ChangePostNoticeModal says.
+fn post_admin_config(i18n: &I18n) -> String {
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
+    let config = serde_json::json!({
+        "strings": {
+            "add_post_notice": t("post.controls.add_post_notice"),
+            "change_post_notice": t("post.controls.change_post_notice"),
+            "delete_post_notice": t("post.controls.delete_post_notice"),
+            "save": t("save"),
+            "saving": t("saving"),
+            "cancel": t("cancel"),
+        }
+    });
+    format!(
+        "<script type=\"application/json\" id=\"post-admin-config\">{}</script>",
+        config.to_string().replace('<', "\\u003c")
+    )
+}
+
 /// The search menu's strings (search-menu.js), by the name it reads them
 /// with, from their js.search.* keys.
 fn search_menu_strings(i18n: &I18n) -> String {
@@ -3046,6 +3066,10 @@ pub async fn topic_page(
                 None,
             ));
         }
+    }
+    // The post admin menu's ChangePostNoticeModal strings.
+    if viewer.is_some() {
+        flag_menus.push_str(&post_admin_config(i18n));
     }
     let topic_menus = format!(
         "{topic_admin_menu}{topic_bookmarks_menu}{}{flag_menus}",
