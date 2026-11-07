@@ -6,20 +6,20 @@ with 1 vCPU and 2 GiB RAM. Nix supplies the tested runtime dependencies
 and PostgreSQL 16 with pgvector; systemd manages the services. Caddy and
 image/video tools are installed through Ubuntu packages.
 
-The deployed release is `d4da48c4`, binary and frontend package alike.
-Since the previous release (`129e995f` with the `32f3f543` package) it
-adds topic views recorded from the browser's page views, user status,
-the review queue's client actions and editing a queued post, and the
-chat threads lists following the tracking state. The binary's SHA-256 is
-`d0fc87c252414c42e1887760080ecb7c5a7fa056b161f61ed7f8bf45e88486c5` and
+The deployed release is `d1597764`, binary and frontend package alike.
+Since the previous release (`d4da48c4`) it adds the poll's close and
+open and its breakdown modal, editing a queued topic's tags in the
+review queue, the chat drawer's live pins and search markup, and the
+reactions picker's emoji picker with paged reactions lists. The
+binary's SHA-256 is
+`a882b8eaaaaffa7caa860bee540e5a6ecc0e470e8e262a5d75fc53515ae798d8` and
 the package's manifest's is
-`f19b055f06db3850b25814e6c58de36dec36f19a552524ee863b3aba6aee4978`.
-The November 6 local optimized build took 13 minutes, 4 seconds,
-reusing dependencies. Twenty-nine focused browser tests passed against
-that binary before the upload, and the CI gate on `d4da48c4` passed
-before activation. After it, a guest's topic visit recorded staging's
-first topic view. The previous `129e995f` binary and its
-`frontend-32f3f543` package are retained for rollback.
+`f84d3899b6d68e3fe79c0d8233f94b3f4d1c8e045ed59b8f739629e7f41a544e`.
+The November 6 local optimized build took 13 minutes, 22 seconds,
+reusing dependencies. Thirty-nine focused browser tests passed against
+that binary before the upload, and the CI gate on `d1597764` passed
+before activation. The previous `d4da48c4` binary and its
+`frontend-d4da48c4` package are retained for rollback.
 
 ## Access
 
@@ -52,7 +52,7 @@ systemctl restart discourse-rs
 ```
 
 All three services are enabled at boot. The binary is
-`/opt/discourse-rs/discourse-rs-d4da48c4`, selected by
+`/opt/discourse-rs/discourse-rs-d1597764`, selected by
 `/usr/local/bin/discourse-rs`; its frontend package is the one
 `/opt/discourse-rs/frontend-current` points at (`DISCOURSE_FRONTEND_DIR`
 in the env file). Nix GC roots under `/opt/discourse-rs/`
