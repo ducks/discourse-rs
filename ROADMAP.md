@@ -354,7 +354,9 @@ Visible if clicked, avoid them in a scripted demo:
 - [x] Polls draw a "0 voters" stub and can't be voted on (228):
   feat/poll-ui-vote (228a), done: the widget votes, changes and removes
   votes; its results say they are not ported yet (228b), as do ranked
-  choice polls and the actions menu (228b, 228c).
+  choice polls and the actions menu (228b, 228c). Both done since:
+  the results (228b), close, open and the breakdown (228c); export
+  waits for data explorer (202).
 - [x] No Build Poll (229): feat/poll-builder-widgets, done: Build poll
   draws its groups, automatic close and results with Discourse's
   GroupChooser, DDateTimeInput and ComboBox, and shows in a PM with
@@ -5839,10 +5841,10 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     transaction rolled back). A web hook's message and a DM target
     vanishing mid-request (read in the same request; Rails holds the
     records) are internal errors. Tests in tests/chat_pages_rest.rs.
-228. `feat/poll-ui` L: poll has no client: nothing in static/js or the
-    templates draws a poll, so a post shows its cooked list with a "0
-    voters" stub. Split into the slices below. Export results waits for
-    data explorer (202).
+228. ~~`feat/poll-ui`~~ (done, 228a-c) L: poll has no client: nothing
+    in static/js or the templates draws a poll, so a post shows its
+    cooked list with a "0 voters" stub. Split into the slices below.
+    Export results waits for data explorer (202).
     228a. ~~`feat/poll-ui-vote`~~ (done) M: each cooked `div.poll` of a
     post in the topic's stream is replaced by Ember's widget
     (attachPolls: not one whose parent is a blockquote, a name the post
@@ -5942,10 +5944,50 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the same). Tests in tests/plugin_pages.rs and plugins::poll::view.
     Refused still, said in place: the dropdown's close and open, the
     breakdown (228c) and export (202).
-    228c. `feat/poll-ui-breakdown` S: the actions dropdown's close and
-    open with their confirm (toggleStatus, with the on_close refresh)
-    and the breakdown modal over /polls/grouped_poll_results with
-    per-group pies, poll-breakdown.scss (already in poll.css).
+    228c. ~~`feat/poll-ui-breakdown`~~ (done) S: the actions dropdown's
+    close and open and its breakdown, where 228a and 228b refused them
+    (static/js/poll.js). toggleStatus: nothing for an automatically
+    closed poll, else Discourse.dialog.yesNoConfirm with
+    poll.close.confirm or poll.open.confirm, PUT /polls/toggle_status,
+    the results shown while an on_close or always poll is closed (kept as
+    the poll object's showResultsToggle), the widget drawn again from the
+    server, which has an on_close poll's votes once it is closed as
+    Ember's route refresh brings them, popupAjaxError else
+    poll.error_while_toggling_status. The breakdown is PollBreakdownModal:
+    DModal.poll-breakdown.has-tabs with the Percentage and Count tabs in
+    its header (static/js/modal.js takes a headerBelowTitle; the has-tabs
+    rules of modal-overrides.scss in static/css/modal.css), the sidebar
+    (the poll's title HTML, else the topic's title; the votes line drawn
+    by the server; a PollBreakdownOption per option with getColors'
+    swatch and I18n.toNumber's share, or the count, its HTML run through
+    the cooked decorators), the group ComboBox (poll-builder.js's, loaded
+    with it as Discourse.pollBuilder.comboBox) over
+    poll_groupable_user_fields labelled as groupableUserFields classifies
+    them, fetching /polls/grouped_poll_results.json again on a change,
+    and a PollBreakdownChart per group (its label, a Chart.js pie over the
+    options with votes, aspectRatio 1.1, chartjs-plugin-datalabels'
+    share or count, onHover highlighting the slice's option). The
+    widget's state carries the modal's model whenever there are groupable
+    fields (plugins/poll/view.rs, breakdown_model; Widget.topic_title
+    from the topic page and /live/poll, none for a quoted post's poll),
+    so an open modal follows the poll as Ember's tracked poll object
+    does. chartjs-plugin-datalabels 2.2.0 is vendored as
+    frontend/discourse/package.json pins it (static/vendor/README) and
+    loaded after Chart.js as loadChartJSDatalabels does. Measured with
+    playwright against rs-ref-a on a three option poll with four voters
+    in two cities and none: the modal's normalized DOM equal in both tabs
+    but for attribute order and the ComboBox's class order
+    (poll-builder.js's, as in 229). Ember throws drawing a highlighted
+    PollBreakdownOption (Chart.helpers.getHoverColor, and chart.js/auto's
+    Chart has no helpers), after the row's background and before its
+    swatch, and renders nothing more: the port draws the row's highlight,
+    keeps the swatch's color and leaves the pies as they are, as Ember
+    does, but goes on rendering (the highlight follows the pointer, the
+    tabs and the group chooser keep working). A failed grouped fetch
+    shows its error and keeps the pies (Ember goes on to read
+    grouped_results of undefined and throws). Tests in
+    tests/plugin_pages.rs, plugins::poll::view and
+    tests/browser/poll.spec.js. Left: export (202).
 229. ~~`feat/poll-builder`~~ (done, as feat/poll-builder-widgets) M: the
     markdown builder shipped in 196a: types, title, options and
     validation, min/max/step, results visibility, public default, chart

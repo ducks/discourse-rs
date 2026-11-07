@@ -1673,7 +1673,19 @@ fn poll_state(widget: &str) -> serde_json::Value {
         .nth(1)
         .and_then(|s| s.split('"').next())
         .unwrap_or_else(|| panic!("no state: {widget}"));
-    serde_json::from_str(&raw.replace("&quot;", "\"").replace("&amp;", "&")).unwrap()
+    // The attribute as escape() wrote it.
+    let decoded = [
+        ("&quot;", "\""),
+        ("&lt;", "<"),
+        ("&gt;", ">"),
+        ("&#x27;", "'"),
+        ("&#x60;", "`"),
+        ("&#x3D;", "="),
+        ("&amp;", "&"),
+    ]
+    .iter()
+    .fold(raw.to_string(), |s, (from, to)| s.replace(from, to));
+    serde_json::from_str(&decoded).unwrap()
 }
 
 #[tokio::test]
@@ -2204,4 +2216,153 @@ async fn chat_new_message_goes_where_the_route_goes() {
         visitor.head("/chat/new-message?recipients=user0").await,
         (302, Some("/latest".into()))
     );
+}
+
+#[tokio::test]
+async fn poll_states_carry_the_breakdown_and_the_page_its_scripts() {
+    let db = TestDb::new().await;
+    common::set_setting(
+        &db.pool,
+        "poll_groupable_user_fields",
+        8,
+        "city|favorite_team",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let raw = "Breakdowns:\n\n\
+        [poll name=titled]\n# Best *pet*\n* Cats\n* Dogs\n[/poll]\n\n\
+        [poll name=plain]\n* Tea\n* Coffee\n[/poll]";
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let created = user0
+        .send(
+            Method::POST,
+            "/posts",
+            &format!(
+                "title={}&raw={}&category=4",
+                urlencode("Polls & their breakdowns"),
+                urlencode(raw)
+            ),
+        )
+        .await;
+    let created: serde_json::Value = serde_json::from_str(&created).expect(&created);
+    let post_id = created["id"].as_i64().unwrap();
+    let topic_id = created["topic_id"].as_i64().unwrap();
+    let digests: Vec<String> = sqlx::query_scalar(
+        "SELECT po.digest FROM poll_options po JOIN polls p ON p.id = po.poll_id \
+         WHERE p.post_id = $1 AND p.name = 'titled' ORDER BY po.id",
+    )
+    .bind(post_id as i32)
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let voted = user1
+        .send(
+            Method::PUT,
+            "/polls/vote",
+            &format!(
+                "post_id={post_id}&poll_name=titled&options%5B%5D={}",
+                digests[1]
+            ),
+        )
+        .await;
+    assert!(voted.contains("\"voters\":1"), "{voted}");
+
+    let slug = created["topic_slug"].as_str().unwrap();
+    let page = user0.page(&format!("/t/{slug}/{topic_id}")).await;
+    // PollBreakdownModal's model: the poll's title HTML, the votes line,
+    // the options in the poll's order and the fields.
+    let titled = poll_state(poll_widget(&page, "titled"));
+    assert_eq!(
+        titled["breakdown"],
+        serde_json::json!({
+            "title": "Best <em>pet</em>",
+            "votes": "1 votes",
+            "options": [{"html": "Cats", "votes": 0}, {"html": "Dogs", "votes": 1}],
+            "fields": ["city", "favorite_team"],
+        }),
+        "{titled}"
+    );
+    // The gear menu: the breakdown, and for the author the close.
+    let widget = poll_widget(&page, "titled");
+    assert!(widget.contains("show-breakdown"), "{widget}");
+    assert!(widget.contains("toggle-status"), "{widget}");
+    // An untitled poll's breakdown has the topic's title, escaped.
+    let plain = poll_state(poll_widget(&page, "plain"));
+    assert_eq!(
+        plain["breakdown"]["title"], "Polls &amp; their breakdowns",
+        "{plain}"
+    );
+    assert_eq!(plain["breakdown"]["votes"], "0 votes", "{plain}");
+    // No voters: no breakdown in the dropdown, though the model is there
+    // for an open modal to follow.
+    assert!(
+        !poll_widget(&page, "plain").contains("showBreakdown"),
+        "{page}"
+    );
+
+    // Drawn again, the topic's title comes along; a quoted post's poll has
+    // no topic to take it from.
+    let live =
+        |name: &str, state: &str| format!("/live/poll/{post_id}/{name}?state={}", urlencode(state));
+    let html = user1.page(&live("plain", "{}")).await;
+    assert_eq!(
+        poll_state(&html)["breakdown"]["title"],
+        "Polls &amp; their breakdowns"
+    );
+    let html = user1.page(&live("plain", "{\"quoted\":true}")).await;
+    assert_eq!(poll_state(&html)["breakdown"]["title"], "");
+
+    // The script's strings: the confirms, the breakdown's and the group
+    // chooser's; where datalabels and the ComboBox are.
+    let strings = page
+        .split("<script type=\"application/json\" id=\"poll-strings\">")
+        .nth(1)
+        .and_then(|s| s.split("</script>").next())
+        .unwrap();
+    let strings: serde_json::Value = serde_json::from_str(strings).unwrap();
+    assert_eq!(
+        strings["poll.close.confirm"],
+        "Are you sure you want to close this poll?"
+    );
+    assert_eq!(
+        strings["poll.open.confirm"],
+        "Are you sure you want to open this poll?"
+    );
+    assert_eq!(
+        strings["poll.error_while_toggling_status"],
+        "Sorry, there was an error toggling the status of this poll."
+    );
+    assert_eq!(strings["poll.breakdown.title"], "Poll results");
+    assert_eq!(strings["poll.breakdown.percentage"], "Percentage");
+    assert_eq!(strings["number.percent"], "%{count}%");
+    assert_eq!(strings["number.format.separator"], ".");
+    assert_eq!(strings["select_kit.filter_by"], "Filter by: %{name}");
+    let datalabels = page
+        .split("data-chart-datalabels=\"")
+        .nth(1)
+        .and_then(|s| s.split('"').next())
+        .unwrap();
+    assert!(
+        datalabels.starts_with("/assets/chartjs-plugin-datalabels.min.js?v="),
+        "{datalabels}"
+    );
+    assert!(
+        page.contains("data-poll-builder=\"/assets/poll-builder.js"),
+        "{page}"
+    );
+    let script = user1.page(datalabels).await;
+    assert!(
+        script.starts_with("/*!\n * chartjs-plugin-datalabels v2.2.0"),
+        "{}",
+        &script[..100.min(script.len())]
+    );
+
+    // Without fields, no model.
+    common::set_setting(&db.pool, "poll_groupable_user_fields", 8, "").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page(&live("titled", "{}")).await;
+    assert!(poll_state(&html).get("breakdown").is_none(), "{html}");
+    assert!(!html.contains("showBreakdown"), "{html}");
 }

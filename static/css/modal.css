@@ -1,6 +1,7 @@
 /* DModal as Rails compiles common/base/modal.scss, with the fullscreen
-   table and code modals', the quick palette's and the flag modal's rules
-   from modal-overrides.scss (modal.js, flag-modal.js). */
+   table and code modals', the quick palette's, the flag modal's and the
+   tabbed modal's rules from modal-overrides.scss (modal.js, flag-modal.js,
+   poll.js). */
 
 /* modal.scss:295 */
 @keyframes fade {
@@ -493,4 +494,37 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   .flag-modal-body .flag-message {
     height: 3em;
   }
+}
+/* modal-overrides.scss:1107, a modal with tabs (the poll breakdown,
+   poll.js) */
+.d-modal.has-tabs .modal-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  flex: 1 0 auto;
+  margin: 0;
+}
+/* modal-overrides.scss:1113 */
+.d-modal.has-tabs .modal-tabs .modal-tab {
+  list-style: none;
+  padding: 4px 8px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+/* modal-overrides.scss:1119 */
+.d-modal.has-tabs .modal-tabs .modal-tab.is-active {
+  color: var(--secondary);
+  background: var(--danger);
+}
+/* modal-overrides.scss:1123 */
+.d-modal.has-tabs .modal-tabs .modal-tab.is-active.single-tab {
+  background: none;
+  color: var(--primary);
+  padding: 0;
+  font-size: var(--font-up-3);
+  font-weight: bold;
+}
+/* modal-overrides.scss:1136 */
+.d-modal:not(.has-tabs) .modal-tab {
+  position: absolute;
+  width: 95%;
 }

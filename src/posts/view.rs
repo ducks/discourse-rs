@@ -145,6 +145,8 @@ impl PostSettings {
 pub struct TopicInfo {
     pub id: i64,
     pub slug: String,
+    /// `topic.title`, the raw title.
+    pub title: String,
     /// `details.created_by.id`
     pub created_by_id: Option<i64>,
     /// `details.created_by.username`
@@ -332,6 +334,7 @@ impl TopicInfo {
         TopicInfo {
             id: view["id"].as_i64().unwrap_or(0),
             slug: view["slug"].as_str().unwrap_or("").to_string(),
+            title: view["title"].as_str().unwrap_or("").to_string(),
             created_by_id: view["details"]["created_by"]["id"].as_i64(),
             created_by_username: view["details"]["created_by"]["username"]
                 .as_str()
@@ -831,6 +834,7 @@ fn decorated_cooked(cx: &PostContext, p: &Value) -> String {
             ui,
             cx.topic.poll_viewer.as_ref(),
             cx.topic.archived,
+            Some(&cx.topic.title),
             p,
             cooked,
         ),
@@ -4306,6 +4310,7 @@ mod tests {
         let topic = TopicInfo {
             id: 9,
             slug: "t".into(),
+            title: String::new(),
             created_by_id: Some(1),
             created_by_username: None,
             accepted_answers: Vec::new(),
@@ -4592,6 +4597,7 @@ mod tests {
         let topic = TopicInfo {
             id: 9,
             slug: "t".into(),
+            title: String::new(),
             created_by_id: Some(1),
             created_by_username: None,
             accepted_answers: Vec::new(),

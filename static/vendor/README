@@ -84,6 +84,21 @@ admin dashboard's charts, checked against the tarballs' npm integrity and
 byte-identical to the reference's node_modules. The adapter is a UMD
 script that reads window.moment and window.Chart, so both load before it.
 
+  chartjs-plugin-datalabels.min.js
+                                chartjs-plugin-datalabels@2.2.0,
+                                dist/chartjs-plugin-datalabels.min.js
+  chartjs-plugin-datalabels-LICENSE.md
+                                chartjs-plugin-datalabels@2.2.0, LICENSE.md (MIT)
+
+chartjs-plugin-datalabels is the version frontend/discourse/package.json
+pins (exactly 2.2.0), the plugin chart-js-bundle exports as
+ChartDataLabels for loadChartJSDatalabels (the poll breakdown's pies,
+static/js/poll.js). Checked against the tarball's npm integrity (sha512,
+also the integrity pnpm-lock.yaml records) and byte-identical to the
+reference's node_modules. The UMD build reads window.Chart, so Chart.js
+loads before it; it defines window.ChartDataLabels and registers nothing
+by itself.
+
   admin.css   Discourse's admin stylesheet as Rails compiles it at the
               vendored commit (app/assets/stylesheets/admin.scss, served
               as /stylesheets/admin_<digest>.css to staff), less its byte
