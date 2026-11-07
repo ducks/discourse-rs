@@ -1,0 +1,501 @@
+// The rich editor's specs share this (as the reference's
+// tests/helpers/rich-editor-helper.gjs): a page with the editor's modules
+// loaded through the loader's import map and the markdown engine
+// (markdown.wasm, configured with the site's settings as the composer's
+// preview is), and testMarkdown / setupRichEditor, which open an editor
+// over some markdown with every default extension and check the HTML it
+// shows and the markdown an edit serializes.
+//
+// The editor lives in the page; window.richSpec holds it:
+//   richSpec.setup(markdown, opts) -> { html, value }
+//   richSpec.editor            the createEditor() result (view, ...)
+//   richSpec.value             the markdown of the last edit
+//   richSpec.html()            the editor's HTML less ProseMirror's own
+// Specs drive it with page.evaluate or Playwright's input on
+// "#rich-spec-host .ProseMirror".
+const { expect, asset } = require("./helpers");
+
+// The reference's test site settings the extensions read: Discourse's
+// defaults (config/site_settings.yml).
+const SITE_SETTINGS = {
+  default_code_lang: "auto",
+  here_mention: "here",
+  unicode_usernames: false,
+  max_image_width: 690,
+  max_image_height: 500,
+  simultaneous_uploads: 5,
+  enable_emoji_shortcuts: true,
+  authorized_extensions: "jpg|jpeg|png|gif|heic|heif|webp|avif|svg",
+  authorized_extensions_for_staff: "",
+  avatar_sizes: "24|48|72|96|144|288",
+};
+
+// The English strings of the keys the extensions look up (client.en.yml).
+const LABELS = {
+  cancel: "Cancel",
+  "composer.table.default_heading": "Column %{number}",
+  "composer.table.add_row": "Add row",
+  "composer.table.add_column": "Add column",
+  "composer.table.insert_row_above": "Insert above",
+  "composer.table.insert_header_above": "Insert header above",
+  "composer.table.insert_row_below": "Insert below",
+  "composer.table.insert_column_left": "Insert left",
+  "composer.table.insert_column_right": "Insert right",
+  "composer.table.duplicate_row": "Duplicate row",
+  "composer.table.duplicate_column": "Duplicate column",
+  "composer.table.move_row_up": "Move row up",
+  "composer.table.move_row_down": "Move row down",
+  "composer.table.move_column_left": "Move column left",
+  "composer.table.move_column_right": "Move column right",
+  "composer.table.clear_contents": "Clear contents",
+  "composer.table.delete_row": "Delete row",
+  "composer.table.delete_column": "Delete column",
+  "composer.table.delete_table": "Delete table",
+  "composer.table.align_left": "Align left",
+  "composer.table.align_center": "Align center",
+  "composer.table.align_right": "Align right",
+  "composer.table.row_actions": "Row %{number} actions",
+  "composer.table.column_actions": "Column %{number} actions",
+  "composer.table.row_inserted": "Row inserted",
+  "composer.table.header_inserted": "Header row inserted",
+  "composer.table.column_inserted": "Column inserted",
+  "composer.table.row_duplicated": "Row duplicated",
+  "composer.table.column_duplicated": "Column duplicated",
+  "composer.table.row_moved_up": "Row moved up",
+  "composer.table.row_moved_down": "Row moved down",
+  "composer.table.column_moved_left": "Column moved left",
+  "composer.table.column_moved_right": "Column moved right",
+  "composer.table.contents_cleared": "Cell contents cleared",
+  "composer.table.row_deleted": "Row deleted",
+  "composer.table.column_deleted": "Column deleted",
+  "composer.table.table_deleted": "Table deleted",
+  "composer.table.alignment_left": "left",
+  "composer.table.alignment_center": "center",
+  "composer.table.alignment_right": "right",
+  "composer.table.alignment_changed": "Column alignment changed to %{alignment}",
+  "composer.table.rows_added.one": "%{count} row added",
+  "composer.table.rows_added.other": "%{count} rows added",
+  "composer.table.columns_added.one": "%{count} column added",
+  "composer.table.columns_added.other": "%{count} columns added",
+  "composer.table.rows_removed.one": "%{count} row removed",
+  "composer.table.rows_removed.other": "%{count} rows removed",
+  "composer.table.columns_removed.one": "%{count} column removed",
+  "composer.table.columns_removed.other": "%{count} columns removed",
+  "composer.image": "image",
+  "composer.heading_level_small_text": "Small text",
+  "upload_selector.default_image_alt_text": "image",
+  "composer.link_toolbar.edit": "Edit link",
+  "composer.link_toolbar.copy": "Copy link",
+  "composer.link_toolbar.remove": "Remove link",
+  "composer.link_toolbar.visit": "Open link in external tab",
+  "composer.link_toolbar.link_copied": "Link copied!",
+  "composer.link_toolbar.load_preview": "Load preview",
+  "composer.image_alt_text.aria_label": "Alt text for image",
+  "composer.image_alt_text.title": "Add image description",
+  "composer.image_toolbar.alt_text": "Add image description",
+  "composer.image_toolbar.zoom_out": "Decrease image size",
+  "composer.image_toolbar.zoom_in": "Increase image size",
+  "composer.image_toolbar.remove": "Remove image",
+  "composer.image_toolbar.add_to_grid": "Add to grid",
+  "composer.image_toolbar.move_outside_grid": "Move outside grid",
+  "composer.grid_mode_grid": "Grid",
+  "composer.grid_mode_carousel": "Carousel",
+  "composer.grid_mode_title": "Set image gallery style to %{mode}",
+  "composer.remove_grid": "Remove grid",
+  play_video: "Play video",
+  cannot_render_video: "This video cannot be rendered because your browser does not support the codec.",
+  invalid_video_url: "This video cannot be played because the URL is invalid or unavailable.",
+};
+
+// In the page: the engine, the context and richSpec.
+function harness() {
+  const handlers = {};
+  window.richSpec = {
+    engine: null,
+    editor: null,
+    value: null,
+    // composer.js's richEvents
+    appEvents: {
+      on(name, fn) {
+        (handlers[name] = handlers[name] || []).push(fn);
+      },
+      off(name, fn) {
+        handlers[name] = (handlers[name] || []).filter((h) => h !== fn);
+      },
+      trigger(name, ...args) {
+        (handlers[name] || []).slice().forEach((fn) => fn(...args));
+      },
+    },
+
+    clean(html) {
+      return html
+        .replace(' class="ProseMirror-selectednode"', "")
+        .replace('<img class="ProseMirror-separator" alt="">', "")
+        .replace('<br class="ProseMirror-trailingBreak">', "")
+        .replace(' class=""', "")
+        .replace(/<p>(<br class="ProseMirror-trailingBreak">)?<\/p>$/, "")
+        .replace('<span class="fake-cursor ProseMirror-widget" contenteditable="false"></span>', "");
+    },
+
+    html() {
+      return this.clean(this.editor.view.dom.innerHTML);
+    },
+
+    // rich-editor-helper.gjs and @ember/test-helpers, for the bodies.
+    qunitHelpers() {
+      const spec = this;
+      const settled = () => new Promise((resolve) => setTimeout(resolve, 100));
+      const setupRichEditor = async (assert, markdown, opts) => {
+        const result = await spec.setup(markdown, opts);
+        const editor = {
+          get view() {
+            return spec.editor.view;
+          },
+          get value() {
+            return spec.value;
+          },
+        };
+        return [editor, result.html];
+      };
+      const testMarkdown = async (assert, markdown, expectedHtml, expectedMarkdown, opts) => {
+        const [editor, html] = await setupRichEditor(assert, markdown, opts);
+        if (typeof expectedHtml === "function") {
+          expectedHtml(assert);
+        } else {
+          assert.strictEqual(html, expectedHtml, `HTML should match for "${markdown}"`);
+        }
+        assert.strictEqual(editor.value, expectedMarkdown, `Markdown should match for "${markdown}"`);
+      };
+      const find = (selector) => document.querySelector(selector);
+      const click = async (selector) => {
+        const el = typeof selector === "string" ? find(selector) : selector;
+        const rect = el.getBoundingClientRect();
+        const init = {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          button: 0,
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2,
+        };
+        el.dispatchEvent(new MouseEvent("mousedown", init));
+        el.dispatchEvent(new MouseEvent("mouseup", init));
+        el.dispatchEvent(new MouseEvent("click", init));
+        await settled();
+      };
+      const triggerKeyEvent = async (selector, type, key, modifiers) => {
+        const el = typeof selector === "string" ? find(selector) : selector;
+        el.dispatchEvent(
+          new KeyboardEvent(type, Object.assign({ key, bubbles: true, cancelable: true }, modifiers || {}))
+        );
+        await settled();
+      };
+      return { settled, setupRichEditor, testMarkdown, find, click, triggerKeyEvent };
+    },
+
+    // What the reference's QUnit bodies import (inPage).
+    async modules() {
+      const editor = await window.Discourse.richEditor.load();
+      const engine = await import("discourse/rich-editor/engine");
+      engine.setEngine(this.engine);
+      const tada = this.engine.emoji("tada");
+      return {
+        editor,
+        engine,
+        richSpec: this,
+        toMarkdown: (await import("discourse/rich-editor/to-markdown")).default,
+        wordPaste: await import("discourse/rich-editor/extensions/word-paste"),
+        codeBlock: await import("discourse/rich-editor/extensions/code-block"),
+        extensions: await import("discourse/rich-editor/extensions"),
+        pmState: await import("prosemirror-state"),
+        pmModel: await import("prosemirror-model"),
+        v: tada ? tada.url.split("?v=")[1] : "",
+        helpers: this.qunitHelpers(),
+      };
+    },
+
+    destroy() {
+      if (this.editor) {
+        this.editor.destroy();
+        this.editor = null;
+      }
+      const host = document.getElementById("rich-spec-host");
+      if (host) {
+        host.remove();
+      }
+    },
+
+    async create(markdown, opts) {
+      const editorModule = await window.Discourse.richEditor.load();
+      const extensionsModule = await import("discourse/rich-editor/extensions");
+      this.destroy();
+      const host = document.createElement("div");
+      host.id = "rich-spec-host";
+      host.className = "d-editor-textarea-wrapper";
+      // The composer's room: floating toolbars are clipped to the editor.
+      if (!document.getElementById("rich-spec-style")) {
+        const style = document.createElement("style");
+        style.id = "rich-spec-style";
+        style.textContent = "#rich-spec-host .ProseMirror { min-height: 200px; }";
+        document.head.appendChild(style);
+      }
+      document.body.appendChild(host);
+      this.value = null;
+      const labels = Object.assign({}, window.richSpecLabels, opts.labels);
+      this.editor = editorModule.createEditor({
+        container: host,
+        value: markdown,
+        engine: this.engine,
+        extensions: opts.defaultsOnly ? [] : extensionsModule.getExtensions(),
+        className: "d-editor-input",
+        disabled: opts.disabled,
+        context: Object.assign(
+          {
+            siteSettings: Object.assign({}, window.richSpecSiteSettings, opts.siteSettings),
+            // composer.js's richEditorContext i18n
+            i18n: (key, params) => {
+              if (params && params.count !== undefined) {
+                const count = Number(params.count);
+                const form = count === 0 && key + ".zero" in labels ? "zero" : count === 1 ? "one" : "other";
+                if (key + "." + form in labels) {
+                  key = key + "." + form;
+                }
+              }
+              let text = key in labels ? labels[key] : key;
+              Object.keys(params || {}).forEach((name) => {
+                text = text.split("%{" + name + "}").join(String(params[name]));
+              });
+              return text;
+            },
+            markdownOptions: opts.markdownOptions || {},
+            topicId: opts.topicId,
+            currentUser: { staff: false },
+            site: { hashtag_configurations: { "topic-composer": ["category", "tag"] } },
+            capabilities: { viewport: { sm: true } },
+            appEvents: this.appEvents,
+          },
+          opts.context
+        ),
+        onChange: (value) => {
+          this.value = value;
+        },
+        onUnsupported: (e) => {
+          this.unsupported = e;
+        },
+      });
+      return this.editor;
+    },
+
+    // setupRichEditor: the editor over the markdown (re-created twice more
+    // with multiToggle, as toggling to markdown and back does), then a
+    // paragraph inserted and deleted again so the value is what an edit
+    // serializes.
+    async setup(markdown, opts) {
+      opts = opts || {};
+      await this.create(markdown, opts);
+      if (opts.multiToggle) {
+        await this.create(markdown, opts);
+        await this.create(markdown, opts);
+      }
+      const view = this.editor.view;
+      const tr = view.state.tr;
+      tr.insert(tr.doc.content.size, view.state.schema.node("paragraph", null, view.state.schema.text("X")));
+      tr.delete(tr.doc.content.size - 3, tr.doc.content.size);
+      view.dispatch(tr);
+      // The extensions' async work (hljs, lookups) settles first.
+      await new Promise((resolve) => setTimeout(resolve, opts.settle === undefined ? 50 : opts.settle));
+      return { html: this.html(), value: this.value };
+    },
+  };
+}
+
+// "/" with the loader and the engine, and richSpec.
+async function openEditorPage(page) {
+  await page.goto("/");
+  await page.addScriptTag({ content: asset("js/rich-editor.js") });
+  await page.addScriptTag({ content: `(${harness.toString()})()` });
+  await page.evaluate(
+    async ({ siteSettings, labels }) => {
+      window.richSpecSiteSettings = siteSettings;
+      window.richSpecLabels = labels;
+      const editorModule = await window.Discourse.richEditor.load();
+      const [wasm, settings] = await Promise.all([
+        WebAssembly.instantiateStreaming(fetch("/assets/markdown.wasm"), {}),
+        fetch("/assets/markdown-settings.json").then((r) => r.text()),
+      ]);
+      const exports = wasm.instance.exports;
+      const call = (fn, text) => {
+        const bytes = new TextEncoder().encode(text);
+        const ptr = exports.alloc(bytes.length);
+        new Uint8Array(exports.memory.buffer, ptr, bytes.length).set(bytes);
+        const status = fn(ptr, bytes.length);
+        exports.dealloc(ptr, bytes.length);
+        const out = new TextDecoder().decode(
+          new Uint8Array(exports.memory.buffer, exports.output_ptr(), exports.output_len())
+        );
+        if (status !== 0) {
+          throw new Error(out);
+        }
+        return out;
+      };
+      call(exports.configure, settings);
+      window.richSpec.engine = editorModule.wasmEngine(exports, call);
+    },
+    { siteSettings: SITE_SETTINGS, labels: LABELS }
+  );
+}
+
+// setupRichEditor: { html, value } of the editor opened over markdown.
+function setupRichEditor(page, markdown, opts = {}) {
+  return page.evaluate(({ markdown, opts }) => window.richSpec.setup(markdown, opts), { markdown, opts });
+}
+
+// testMarkdown: the HTML (or `expectedHtml(page)`'s own checks, awaited)
+// and the markdown an edit writes.
+async function testMarkdown(page, markdown, expectedHtml, expectedMarkdown, opts = {}) {
+  const result = await setupRichEditor(page, markdown, opts);
+  if (typeof expectedHtml === "function") {
+    await expectedHtml(page, result);
+  } else {
+    expect(result.html, `HTML should match for ${JSON.stringify(markdown)}`).toBe(expectedHtml);
+  }
+  expect(result.value, `Markdown should match for ${JSON.stringify(markdown)}`).toBe(expectedMarkdown);
+  return result;
+}
+
+// The current markdown of the open editor, as the last edit wrote it.
+function editorValue(page) {
+  return page.evaluate(() => window.richSpec.value);
+}
+
+// pretender's response(): a route answering JSON.
+async function respond(page, pattern, body) {
+  await page.route(pattern, (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) })
+  );
+}
+
+
+// A reference QUnit test's body run in the page, ported as written:
+// `body(assert, modules)` with a QUnit-like assert (strictEqual, deepEqual,
+// true, false, ok, notOk, equal) and the modules the bodies import
+// (toMarkdown, the word-paste and code-block exports, the editor and
+// prosemirror modules, `v` the emoji images' ?v=). Resolves to the
+// failures, which the spec expects to be none.
+async function inPage(page, body, args) {
+  return page.evaluate(`(async (args) => {
+    const failures = [];
+    const show = (value) => {
+      try {
+        return JSON.stringify(value);
+      } catch (e) {
+        return String(value);
+      }
+    };
+    const check = (pass, message, detail) => {
+      if (!pass) {
+        failures.push((message || "assertion") + (detail ? ": " + detail : ""));
+      }
+    };
+    const assert = {
+      strictEqual: (actual, expected, message) =>
+        check(actual === expected, message, "got " + show(actual) + ", expected " + show(expected)),
+      equal: (actual, expected, message) =>
+        check(actual == expected, message, "got " + show(actual) + ", expected " + show(expected)),
+      notStrictEqual: (actual, expected, message) => check(actual !== expected, message, "got " + show(actual)),
+      deepEqual: (actual, expected, message) =>
+        check(show(actual) === show(expected), message, "got " + show(actual) + ", expected " + show(expected)),
+      true: (value, message) => check(value === true, message, "got " + show(value)),
+      false: (value, message) => check(value === false, message, "got " + show(value)),
+      ok: (value, message) => check(!!value, message, "got " + show(value)),
+      notOk: (value, message) => check(!value, message, "got " + show(value)),
+    };
+    const normalize = (text) => (text || "").replace(/\\s+/g, " ").trim();
+    // qunit-dom's assert.dom, as far as the bodies use it
+    assert.dom = (selector) => {
+      const all = () => Array.from(document.querySelectorAll(selector));
+      const el = () => document.querySelector(selector);
+      const one = (name, message, fn) => {
+        const found = el();
+        check(!!found, message, selector + " not found for " + name);
+        if (found) {
+          fn(found);
+        }
+      };
+      const chain = {
+        exists: (opts, message) => {
+          if (typeof opts === "string") {
+            message = opts;
+            opts = null;
+          }
+          const count = all().length;
+          check(opts && opts.count !== undefined ? count === opts.count : count > 0, message, selector + ": " + count);
+          return chain;
+        },
+        doesNotExist: (message) => {
+          check(all().length === 0, message, selector + " exists");
+          return chain;
+        },
+        hasClass: (name, message) => {
+          one("hasClass", message, (e) => check(e.classList.contains(name), message, selector + " lacks ." + name));
+          return chain;
+        },
+        doesNotHaveClass: (name, message) => {
+          one("doesNotHaveClass", message, (e) => check(!e.classList.contains(name), message, selector + " has ." + name));
+          return chain;
+        },
+        hasAttribute: (name, value, message) => {
+          one("hasAttribute", message, (e) => {
+            const actual = e.getAttribute(name);
+            const pass =
+              value === undefined
+                ? e.hasAttribute(name)
+                : value instanceof RegExp
+                  ? actual !== null && value.test(actual)
+                  : actual === String(value);
+            check(pass, message, selector + "[" + name + "] is " + show(actual) + ", expected " + String(value));
+          });
+          return chain;
+        },
+        doesNotHaveAttribute: (name, message) => {
+          one("doesNotHaveAttribute", message, (e) => check(!e.hasAttribute(name), message, selector + " has " + name));
+          return chain;
+        },
+        hasText: (text, message) => {
+          one("hasText", message, (e) =>
+            check(normalize(e.textContent) === normalize(text), message, selector + " text " + show(normalize(e.textContent)))
+          );
+          return chain;
+        },
+      };
+      return chain;
+    };
+    const modules = await window.richSpec.modules();
+    await (${body.toString()})(assert, modules, args);
+    return failures;
+  })(${JSON.stringify(args === undefined ? null : args)})`);
+}
+
+// A Playwright test running a reference QUnit body (inPage) on the editor
+// page.
+function qunitTest(test, name, body, opts = {}) {
+  test(name, async ({ page }) => {
+    if (opts.before) {
+      await opts.before(page);
+    }
+    await openEditorPage(page);
+    expect(await inPage(page, body, opts.args)).toEqual([]);
+  });
+}
+
+module.exports = {
+  SITE_SETTINGS,
+  LABELS,
+  openEditorPage,
+  setupRichEditor,
+  testMarkdown,
+  editorValue,
+  respond,
+  inPage,
+  qunitTest,
+};

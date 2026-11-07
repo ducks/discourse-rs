@@ -364,7 +364,7 @@ test.describe("the rich editor", () => {
 
   test("goes back to markdown with the alert on what it cannot hold yet", async ({ page, context, session }) => {
     const { writer } = await replyTo(page, context, session, 0);
-    await textarea(page).fill("hello :tada: there");
+    await textarea(page).fill("[details=more]\nhello there\n[/details]");
     const saved = savedMode(page, writer.name, 0);
     await toggle(page).click();
     const dialog = page.locator(".dialog-container");
@@ -372,7 +372,7 @@ test.describe("the rich editor", () => {
       "The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.",
     );
     await expect(textarea(page)).toBeVisible();
-    await expect(textarea(page)).toHaveValue("hello :tada: there");
+    await expect(textarea(page)).toHaveValue("[details=more]\nhello there\n[/details]");
     await expect(rich(page)).toHaveCount(0);
     await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
     expect((await saved).ok()).toBeTruthy();

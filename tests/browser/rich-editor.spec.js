@@ -14,14 +14,15 @@
 //
 // Three ways in:
 // - "serializes": the document built from the expected HTML by the
-//   schema's parseDOM rules, edited in as the member would paste it. Runs
-//   now: schema, view and serializer.
+//   schema's parseDOM rules, edited in as the member would paste it:
+//   schema, view and serializer.
 // - "maps": the document from a node tree written here as the markdown
-//   crate's export is to write it (docs/rich-editor.md). Runs now: the
-//   parser's mapping layer (rich-editor/parser.js tokensFromTree).
+//   crate's export writes it (docs/rich-editor.md): the parser's mapping
+//   layer (rich-editor/parser.js tokensFromTree).
 // - "round-trips": markdown through the export itself (markdown.wasm's
-//   rich_editor_tree), skipped until a build has it (196r1 phase B).
-const { test, expect, asset } = require("./helpers");
+//   rich_editor_tree).
+const { test, expect } = require("./helpers");
+const { openEditorPage } = require("./rich-editor-helper");
 
 // The node tree, as markdown-it's token stream nests (docs/rich-editor.md).
 const t = (content) => ({ type: "text", content });
@@ -367,13 +368,8 @@ const TO_MARKDOWN = {
   "converts ol with custom start attribute": [[`<ol start="5"><li>Fifth</li><li>Sixth</li></ol>`, `5. Fifth\n6. Sixth`]],
 };
 
-// The page: the loader as the composer's pages will carry it, and the
-// editor module it loads.
-async function openEditorPage(page) {
-  await page.goto("/");
-  await page.addScriptTag({ content: asset("js/rich-editor.js") });
-  await page.evaluate(() => window.Discourse.richEditor.load());
-}
+// The page: the loader as the composer's pages carry it, the editor
+// module it loads and the markdown engine (rich-editor-helper.js).
 
 // In the page: an editor (defaults alone, or the core extensions) holding
 // the document `build` makes, then testMarkdown's checks. `build` is
@@ -391,10 +387,11 @@ function check(page, build, input, defaultsOnly) {
       host.className = "rich-editor-spec";
       document.body.appendChild(host);
       let value = null;
-      const parseTree = build === "html" ? null : build === "tree" ? () => input : window.richEditorSpecTree;
+      const parseTree = build === "tree" ? () => input : undefined;
       const editor = editorModule.createEditor({
         container: host,
         extensions,
+        engine: window.richSpec.engine,
         parseTree,
         value: build === "html" ? "" : build === "tree" ? "(the tree)" : input,
         onChange: (markdown) => {
@@ -470,6 +467,7 @@ test.describe("rich editor", () => {
       window.richEditorTyped = [];
       window.richEditorTyping = createEditor({
         container: host,
+        engine: window.richSpec.engine,
         value: "",
         placeholder: "Type here",
         className: "d-editor-input",
@@ -506,8 +504,8 @@ test.describe("rich editor", () => {
       const refused = [];
       createEditor({
         container: host,
-        value: ":smile:",
-        parseTree: () => ({ type: "doc", children: [{ type: "paragraph", children: [{ type: "inline", children: [{ type: "emoji", content: "smile" }] }] }] }),
+        value: "[details=x]\ny\n[/details]",
+        parseTree: () => ({ type: "doc", children: [{ type: "unported:details" }] }),
         onUnsupported: (e) => refused.push(e.name),
       });
       let missing = null;
@@ -554,37 +552,6 @@ test.describe("rich editor", () => {
 
       test(`round-trips ${name}`, async ({ page }) => {
         await openEditorPage(page);
-        // markdown.wasm's node tree export (crates/markdown/src/wasm.rs,
-        // docs/rich-editor.md), configured with the site's settings as the
-        // composer's preview is.
-        const exported = await page.evaluate(async () => {
-          const [wasm, settings] = await Promise.all([
-            WebAssembly.instantiateStreaming(fetch("/assets/markdown.wasm"), {}),
-            fetch("/assets/markdown-settings.json").then((r) => r.text()),
-          ]);
-          const exports = wasm.instance.exports;
-          if (typeof exports.rich_editor_tree !== "function") {
-            return false;
-          }
-          const call = (fn, text) => {
-            const bytes = new TextEncoder().encode(text);
-            const ptr = exports.alloc(bytes.length);
-            new Uint8Array(exports.memory.buffer, ptr, bytes.length).set(bytes);
-            const status = fn(ptr, bytes.length);
-            exports.dealloc(ptr, bytes.length);
-            const out = new TextDecoder().decode(
-              new Uint8Array(exports.memory.buffer, exports.output_ptr(), exports.output_len())
-            );
-            if (status !== 0) {
-              throw new Error(out);
-            }
-            return out;
-          };
-          call(exports.configure, settings);
-          window.richEditorSpecTree = (raw) => JSON.parse(call(exports.rich_editor_tree, raw));
-          return true;
-        });
-        test.skip(!exported, "markdown.wasm has no rich_editor_tree export yet (ROADMAP 196r1, phase B)");
         for (const [markdown, , html, out] of cases) {
           const result = await check(page, "markdown", markdown, defaultsOnly);
           expect(result.html, `HTML for ${JSON.stringify(markdown)}`).toBe(html);

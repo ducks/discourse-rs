@@ -2,16 +2,32 @@
 // the core ones from static/prosemirror/extensions/. An extension is a plain
 // object with any of: nodeSpec, markSpec (schema.js), parse (parser.js),
 // serializeNode, serializeMark (serializer.js), inputRules (inputrules.js),
-// keymap (keymap.js), plugins, nodeViews, commands, state (editor.js), each
-// a value or a function of the plugin params (editor.js pluginParams).
+// keymap (keymap.js), plugins, nodeViews, commands, state (editor.js),
+// transformParsedHTML (to-markdown.js), each a value or a function of the
+// plugin params (editor.js pluginParams).
 //
-// register-default.ts's list less what later steps bring (ROADMAP 196r2,
-// 196r3, 196r4): emoji, image, onebox and its toolbar, link and its
-// toolbar, code block, quote, hashtag, mention, html inline and block,
-// table, markdown and word paste, wrap, trailing inline space, drag ghost,
-// grid, upload placeholder, preview source and toolbar.
+// register-default.ts's list, the larger ones in extensions/, less what
+// later steps bring (ROADMAP 196r3: onebox and its toolbar, preview source
+// and toolbar) and [wrap], which is not ported: its token is refused.
 import { schema } from "prosemirror-markdown";
 import codemark from "prosemirror-codemark";
+import codeBlock from "discourse/rich-editor/extensions/code-block";
+import emoji from "discourse/rich-editor/extensions/emoji";
+import grid from "discourse/rich-editor/extensions/grid";
+import hashtag from "discourse/rich-editor/extensions/hashtag";
+import htmlBlock from "discourse/rich-editor/extensions/html-block";
+import htmlInline from "discourse/rich-editor/extensions/html-inline";
+import image from "discourse/rich-editor/extensions/image";
+import link from "discourse/rich-editor/extensions/link";
+import linkToolbar from "discourse/rich-editor/extensions/link-toolbar";
+import markdownPaste from "discourse/rich-editor/extensions/markdown-paste";
+import mention from "discourse/rich-editor/extensions/mention";
+import overrideDragGhost from "discourse/rich-editor/extensions/override-drag-ghost";
+import quote from "discourse/rich-editor/extensions/quote";
+import table from "discourse/rich-editor/extensions/table";
+import trailingInlineSpace from "discourse/rich-editor/extensions/trailing-inline-space";
+import uploadPlaceholder from "discourse/rich-editor/extensions/upload-placeholder";
+import wordPaste from "discourse/rich-editor/extensions/word-paste";
 
 var registered = [];
 
@@ -31,7 +47,7 @@ export function clearRichEditorExtensions() {
 
 export function resetRichEditorExtensions() {
   registered.length = 0;
-  coreExtensions.forEach(registerRichEditorExtension);
+  defaultExtensions.forEach(registerRichEditorExtension);
 }
 
 // lib/list-utils.js isListTight: no <li> holds a <p> directly.
@@ -293,17 +309,34 @@ function isEmptyParagraph(node) {
   return node.type.name === "paragraph" && node.nodeSize === 2;
 }
 
-// register-default.ts's order, of the ones here.
-export var coreExtensions = [
+// register-default.ts's order.
+export var defaultExtensions = [
+  emoji,
+  image,
   code,
+  link,
+  linkToolbar,
   heading,
+  codeBlock,
+  quote,
+  hashtag,
+  mention,
   strikethrough,
   strong,
   underline,
+  htmlInline,
+  htmlBlock,
   trailingParagraph,
+  table,
+  markdownPaste,
+  wordPaste,
   orderedList,
   bulletList,
+  trailingInlineSpace,
+  overrideDragGhost,
   hardBreak,
+  grid,
+  uploadPlaceholder,
 ];
 
-coreExtensions.forEach(registerRichEditorExtension);
+defaultExtensions.forEach(registerRichEditorExtension);
