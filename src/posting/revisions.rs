@@ -361,16 +361,10 @@ async fn serialize(
     let suppress = !staff && (previous_side_hidden || current_hidden);
 
     let field = |r: &Flat, k: &str| r.fields.get(k).cloned().unwrap_or(Value::Null);
-    for k in [
-        "user_id",
-        "reply_to_post_number",
-        "wiki",
-        "post_type",
-        "locale",
-    ] {
+    for k in ["user_id", "reply_to_post_number", "locale"] {
         if !suppress && field(previous, k) != field(current, k) {
             return Err(Unsupported(
-                "revisions changing more than the body, title and edit reason",
+                "revisions changing more than the body, title, edit reason, wiki and post type",
             )
             .into());
         }
@@ -528,8 +522,9 @@ async fn serialize(
         };
         out.insert("tags_changes".into(), changes);
     }
-    // The compared fields PostRevisor's track_topic_field adds.
-    for k in ["archetype", "featured_link"] {
+    // The compared fields: the serializer's own (wiki, post_type) and
+    // those PostRevisor's track_topic_field adds.
+    for k in ["wiki", "post_type", "archetype", "featured_link"] {
         if !suppress && field(previous, k) != field(current, k) {
             out.insert(
                 format!("{k}_changes"),

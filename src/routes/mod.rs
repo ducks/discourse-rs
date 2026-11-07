@@ -39,6 +39,7 @@ mod omniauth;
 mod permalinks;
 mod pm_invite;
 mod post_actions;
+mod post_admin;
 mod post_destroy;
 mod post_voting;
 mod posts;
@@ -2686,6 +2687,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/posts/{id}/pending.json", get(user_activity::pending))
         .route("/posts/{id}/recover", put(post_destroy::recover_post))
         .route("/posts/{id}/recover.json", put(post_destroy::recover_post))
+        // The post admin menu's actions.
+        .route("/posts/{id}/post_type", put(post_admin::post_type))
+        .route("/posts/{id}/post_type.json", put(post_admin::post_type))
+        .route("/posts/{id}/wiki", put(post_admin::wiki))
+        .route("/posts/{id}/wiki.json", put(post_admin::wiki))
+        .route("/posts/{id}/unhide", put(post_admin::unhide))
+        .route("/posts/{id}/unhide.json", put(post_admin::unhide))
+        .route("/posts/{id}/locked", put(post_admin::locked))
+        .route("/posts/{id}/locked.json", put(post_admin::locked))
+        .route("/posts/{id}/notice", put(post_admin::notice))
+        .route("/posts/{id}/notice.json", put(post_admin::notice))
+        .route("/posts/{id}/rebake", put(post_admin::rebake))
+        .route("/posts/{id}/rebake.json", put(post_admin::rebake))
         .route("/posts/{id}/revisions/{revision}", get(posts::revision))
         .route("/session", post(session::create))
         .route("/session.json", post(session::create))
@@ -2829,6 +2843,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
+        .route("/site/banner", get(site::banner))
+        .route("/site/banner.json", get(site::banner))
         .route("/about", get(about::page))
         .route("/about.json", get(about::show))
         // static#show: the guidelines, terms and privacy pages.

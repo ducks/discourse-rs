@@ -1,0 +1,57 @@
+/*
+ * The site banner (DiscourseBanner), ported from
+ * common/components/banner.scss.
+ */
+
+#banner {
+  padding: 1em;
+  background: var(--tertiary-low);
+  color: var(--primary);
+  z-index: 2;
+  margin-bottom: 1em;
+  max-height: 20vh;
+  overflow: auto;
+}
+
+#banner .floated-buttons {
+  float: right;
+  display: flex;
+}
+
+#banner .floated-buttons > .btn {
+  padding-top: 0;
+  padding-bottom: 0;
+  color: var(--primary-high);
+}
+
+#banner .floated-buttons > .btn .d-icon {
+  color: var(--primary-medium);
+}
+
+#banner .floated-buttons > .btn:hover {
+  color: var(--primary);
+}
+
+#banner .floated-buttons > .btn:hover .d-icon {
+  color: var(--primary-high);
+}
+
+.desktop-view #banner .floated-buttons .btn.close {
+  margin-left: 0.25em;
+}
+
+#banner-content hr {
+  border-color: var(--primary-medium);
+}
+
+#banner-content > p:first-child {
+  margin-top: 0;
+}
+
+#banner-content > p:last-child {
+  margin-bottom: 0;
+}
+
+#banner-content a.anchor {
+  display: none;
+}

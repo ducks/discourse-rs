@@ -15,6 +15,7 @@
         "css/menu-panel.css",
         "css/navs.css",
         "css/welcome-banner.css",
+        "css/banner.css",
         "css/topic-list.css",
         "css/categories.css",
         "css/sidebar.css",
@@ -252,6 +253,13 @@
       "content_type": "js",
       "files": [
         "js/welcome-banner.js"
+      ]
+    },
+    {
+      "name": "site-banner.js",
+      "content_type": "js",
+      "files": [
+        "js/site-banner.js"
       ]
     },
     {

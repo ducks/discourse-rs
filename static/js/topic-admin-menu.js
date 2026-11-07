@@ -16,7 +16,12 @@
 // timestamp (ChangeTimestamp) and slow mode (EditSlowMode) open their
 // modals (static/js/topic-admin-modals.js). The post menu is the menu
 // service's (modalForMobile, autofocus); its Moderation History links
-// work. What either opens that is not ported is refused, named.
+// work, and its actions are the topic controller's on the post its
+// template's data-post describes: the staff color (PUT post_type),
+// unhiding, locking, wiki and rebuilding the HTML PUT to the post, the
+// notice opens ChangePostNoticeModal (PUT notice), and the post is drawn
+// again after (GET /live/post/:id), where Ember re-renders it. What
+// either opens that is not ported is refused, named.
 (function () {
   "use strict";
 
@@ -249,20 +254,163 @@
     },
   };
 
-  // AdminPostMenu's actions, by the button's class.
+  // The post admin menu's post, as its template has it: id, post_type,
+  // wiki and the staff notice's text.
+  function postData(template) {
+    try {
+      return JSON.parse(template.dataset.post);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // scheduleRerender: the post drawn again as the viewer sees it now.
+  function redrawPost(post) {
+    if (window.htmx) {
+      window.htmx.ajax("GET", base() + "/live/post/" + post.id, { swap: "none" });
+    }
+  }
+
+  // Post#updatePostField: PUT /posts/:id/<field>, popupAjaxError on a
+  // failure. jQuery leaves an undefined value out of the form.
+  function updatePostField(post, field, value) {
+    var form = {};
+    if (value !== undefined) {
+      form[field] = String(value);
+    }
+    return request("PUT", "/posts/" + post.id + "/" + field, form).then(function (r) {
+      if (!r.ok) {
+        return popupError(r).then(function () {
+          return null;
+        });
+      }
+      return r.json().catch(function () {
+        return {};
+      });
+    });
+  }
+
+  function postAdminStrings() {
+    var el = document.getElementById("post-admin-config");
+    try {
+      return (el && JSON.parse(el.textContent).strings) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function footerButton(className, label) {
+    var button = document.createElement("button");
+    button.className = "btn " + className;
+    button.type = "button";
+    button.innerHTML = '<span class="d-button-label"></span>';
+    button.firstChild.textContent = label;
+    return button;
+  }
+
+  // ChangePostNoticeModal: the notice's text, saved (disabled while it is
+  // empty or unchanged) or deleted; the modal closes once the PUT is done.
+  function changeNotice(post) {
+    var s = postAdminStrings();
+    // The post's notice (any kind), and a staff notice's text.
+    var current = post.notice || null;
+    var raw = current && typeof current.raw === "string" ? current.raw : null;
+    return new Promise(function (resolve) {
+      if (!Discourse.modal) {
+        resolve();
+        return;
+      }
+      var textarea;
+      Discourse.modal.show({
+        className: "change-post-notice-modal",
+        title: current ? s.change_post_notice : s.add_post_notice,
+        body: function (body) {
+          var form = document.createElement("form");
+          textarea = document.createElement("textarea");
+          textarea.value = raw || "";
+          form.appendChild(textarea);
+          body.appendChild(form);
+        },
+        footer: function (footer, close) {
+          var saving = false;
+          var save = footerButton("btn-primary", s.save);
+          var remove = current ? footerButton("btn-danger", s.delete_post_notice) : null;
+          var cancel = footerButton("btn-flat d-modal-cancel", s.cancel);
+          function refresh() {
+            var value = textarea.value;
+            save.disabled = saving || value === "" || value === raw;
+            if (remove) {
+              remove.disabled = saving;
+            }
+          }
+          function setNotice(notice) {
+            saving = true;
+            save.firstChild.textContent = s.saving;
+            refresh();
+            updatePostField(post, "notice", notice).then(close, close);
+          }
+          textarea.addEventListener("input", refresh);
+          save.addEventListener("click", function () {
+            setNotice(textarea.value);
+          });
+          footer.appendChild(save);
+          if (remove) {
+            remove.addEventListener("click", function () {
+              setNotice(undefined);
+            });
+            footer.appendChild(remove);
+          }
+          cancel.addEventListener("click", close);
+          footer.appendChild(cancel);
+          refresh();
+        },
+        onClose: resolve,
+      });
+    });
+  }
+
+  // The topic controller's post actions, by the button's class.
   var POST_ACTIONS = {
-    "toggle-post-type": "changing a post's type (PUT /posts/:id/post_type)",
-    "add-notice": "the post notice modal (ChangePostNoticeModal, PUT /posts/:id/notice)",
-    "change-notice": "the post notice modal (ChangePostNoticeModal, PUT /posts/:id/notice)",
-    "unhide-post": "unhiding a post (PUT /posts/:id/unhide)",
-    "change-owner": "the change ownership modal (ChangePostOwner)",
-    "grant-badge": "the grant badge modal (GrantBadgeModal)",
-    "lock-post": "locking a post (PUT /posts/:id/locked)",
-    "unlock-post": "unlocking a post (PUT /posts/:id/locked)",
-    "permanently-delete": "permanently deleting posts (force_destroy)",
-    wiki: "wiki posts (PUT /posts/:id/wiki)",
-    "publish-page": "publishing pages (PublishPageModal)",
-    "rebuild-html": "rebuilding a post's HTML (PUT /posts/:id/rebake)",
+    // togglePostType: a moderator action back to regular, else one.
+    "toggle-post-type": function (post) {
+      return updatePostField(post, "post_type", post.post_type === 2 ? 1 : 2);
+    },
+    "add-notice": changeNotice,
+    "change-notice": changeNotice,
+    // Post#unhide: Ember leaves a failure unhandled.
+    "unhide-post": function (post) {
+      return request("PUT", "/posts/" + post.id + "/unhide").then(function (r) {
+        if (!r.ok) {
+          console.error("/posts/" + post.id + "/unhide: " + r.status);
+        }
+      });
+    },
+    "lock-post": function (post) {
+      return updatePostField(post, "locked", true);
+    },
+    "unlock-post": function (post) {
+      return updatePostField(post, "locked", false);
+    },
+    // toggleWiki
+    wiki: function (post) {
+      return updatePostField(post, "wiki", !post.wiki);
+    },
+    // Post#rebake
+    "rebuild-html": function (post) {
+      return request("PUT", "/posts/" + post.id + "/rebake").then(function (r) {
+        if (!r.ok) {
+          return popupError(r);
+        }
+      });
+    },
+  };
+
+  // What the post admin menu opens that is not ported.
+  var POST_UNPORTED = {
+    "change-owner": "the change ownership modal (ChangePostOwner, 194d1)",
+    "grant-badge": "the grant badge modal (GrantBadgeModal, 194d1)",
+    "permanently-delete": "permanently deleting posts (force_destroy, 194d1)",
+    "publish-page": "publishing pages (PublishPageModal, 194d1)",
   };
 
   var openMenu = null;
@@ -343,12 +491,27 @@
         },
         function (item) {
           var button = item.querySelector("button");
-          if (!button) {
+          var post = postData(postTemplate);
+          if (!button || !post) {
             return;
           }
-          for (var name in POST_ACTIONS) {
+          var name;
+          for (name in POST_UNPORTED) {
             if (button.classList.contains(name)) {
-              unported(POST_ACTIONS[name]);
+              unported(POST_UNPORTED[name]);
+              return;
+            }
+          }
+          for (name in POST_ACTIONS) {
+            if (button.classList.contains(name)) {
+              // topicAction: the action, then the post drawn again.
+              Promise.resolve(POST_ACTIONS[name](post))
+                .catch(function (e) {
+                  console.error(e);
+                })
+                .then(function () {
+                  redrawPost(post);
+                });
               return;
             }
           }

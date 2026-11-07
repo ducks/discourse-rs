@@ -1,0 +1,72 @@
+{
+  "name": "wiki_missing",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36/wiki",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T04:23:13.349409",
+  "transaction_started_at": "2026-11-07T04:23:12.331617",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: wiki"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uCxEXTYAHzxluvCiWWFA7Ij2DoY=",
+            "created_at": "2026-11-07T04:23:12.675857",
+            "rotated_at": "2026-11-07T04:23:12.675068",
+            "updated_at": "2026-11-07T04:23:12.675857",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uCxEXTYAHzxluvCiWWFA7Ij2DoY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:23:13.35592",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uCxEXTYAHzxluvCiWWFA7Ij2DoY=",
+            "created_at": "2026-11-07T04:23:12.675857",
+            "rotated_at": "2026-11-07T04:23:12.675068",
+            "updated_at": "2026-11-07T04:23:12.675857",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uCxEXTYAHzxluvCiWWFA7Ij2DoY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "20ed06bc16c7ecbed63eaa9ad2135a3a7bb55b4be96b6b94f9bbf6af5489d409",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

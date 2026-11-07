@@ -1,0 +1,117 @@
+{
+  "name": "notice_create_new",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/52/notice",
+      "params": {
+        "notice": "A note on a post without one"
+      }
+    }
+  ],
+  "started_at": "2026-11-07T04:22:35.689937",
+  "transaction_started_at": "2026-11-07T04:22:34.698007",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "cooked_notice": "<p>A note on a post without one</p>"
+      }
+    }
+  ],
+  "changes": {
+    "post_custom_fields": {
+      "inserted": [
+        {
+          "id": 4,
+          "name": "notice",
+          "value": "{\"type\":\"custom\",\"raw\":\"A note on a post without one\",\"cooked\":\"\\u003cp\\u003eA note on a post without one\\u003c/p\\u003e\",\"created_by_user_id\":1}",
+          "post_id": 52,
+          "created_at": "2026-11-07T04:22:35.763281",
+          "updated_at": "2026-11-07T04:22:35.763281"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tJ0aPXUaSqNMJPJke83vBOVlX9s=",
+            "created_at": "2026-11-07T04:22:35.024087",
+            "rotated_at": "2026-11-07T04:22:35.022459",
+            "updated_at": "2026-11-07T04:22:35.024087",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "tJ0aPXUaSqNMJPJke83vBOVlX9s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:22:35.704422",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tJ0aPXUaSqNMJPJke83vBOVlX9s=",
+            "created_at": "2026-11-07T04:22:35.024087",
+            "rotated_at": "2026-11-07T04:22:35.022459",
+            "updated_at": "2026-11-07T04:22:35.024087",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "tJ0aPXUaSqNMJPJke83vBOVlX9s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 95,
+          "context": null,
+          "details": null,
+          "post_id": 52,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "A note on a post without one",
+          "admin_only": false,
+          "created_at": "2026-11-07T04:22:35.768812",
+          "ip_address": null,
+          "updated_at": "2026-11-07T04:22:35.768812",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "post_custom_fields": 4,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "054a91a4026d3d0dd1bfe8930894a36e36aced7546bace856080d9ff23e3e267",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "name": "notice_change",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36/notice",
+      "params": {
+        "notice": "New note"
+      }
+    }
+  ],
+  "started_at": "2026-11-07T04:22:31.37387",
+  "transaction_started_at": "2026-11-07T04:22:30.32623",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "cooked_notice": "<p>New note</p>"
+      }
+    }
+  ],
+  "changes": {
+    "post_custom_fields": {
+      "inserted": [
+        {
+          "id": 4,
+          "name": "notice",
+          "value": "{\"type\":\"custom\",\"raw\":\"New note\",\"cooked\":\"\\u003cp\\u003eNew note\\u003c/p\\u003e\",\"created_by_user_id\":1}",
+          "post_id": 36,
+          "created_at": "2026-11-07T04:22:32.501959",
+          "updated_at": "2026-11-07T04:22:32.501959"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 2,
+          "name": "notice",
+          "value": "{\"type\":\"custom\",\"raw\":\"Old note\",\"cooked\":\"<p>Old note</p>\",\"created_by_user_id\":1}",
+          "post_id": 36,
+          "created_at": "2026-09-30T07:28:29.098389",
+          "updated_at": "2026-10-05T10:00:00"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iDqs+I3QPNutEgGBFqziq20FJVE=",
+            "created_at": "2026-11-07T04:22:30.643717",
+            "rotated_at": "2026-11-07T04:22:30.642911",
+            "updated_at": "2026-11-07T04:22:30.643717",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iDqs+I3QPNutEgGBFqziq20FJVE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:22:31.380107",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iDqs+I3QPNutEgGBFqziq20FJVE=",
+            "created_at": "2026-11-07T04:22:30.643717",
+            "rotated_at": "2026-11-07T04:22:30.642911",
+            "updated_at": "2026-11-07T04:22:30.643717",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iDqs+I3QPNutEgGBFqziq20FJVE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 95,
+          "context": null,
+          "details": null,
+          "post_id": 36,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "New note",
+          "admin_only": false,
+          "created_at": "2026-11-07T04:22:32.506239",
+          "ip_address": null,
+          "updated_at": "2026-11-07T04:22:32.506239",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Old note",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "post_custom_fields": 4,
+    "user_histories": 74
+  },
+  "setup": [
+    "UPDATE post_custom_fields SET value = '{\"type\":\"custom\",\"raw\":\"Old note\",\"cooked\":\"<p>Old note</p>\",\"created_by_user_id\":1}', updated_at = '2026-10-05 10:00:00' WHERE post_id = 36 AND name = 'notice'"
+  ],
+  "recorded_from": {
+    "case": "967aa7880ad623d16af8b242545ce69047d7ffb680d11aa047dc026834854db9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

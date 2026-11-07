@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO post_hotlinked_media (post_id, url, status, created_at, updated_at) VALUES (36, 'https://example.com/a.png', 'download_failed', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (36, 'https://example.com/b.png', 'too_large', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/posts/36/rebake", "params": {} }
+  ]
+}

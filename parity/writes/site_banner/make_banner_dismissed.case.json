@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_profiles SET dismissed_banner_key = 41 WHERE user_id = (SELECT id FROM users WHERE username = 'user1')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/t/35/make-banner", "params": {} },
+    { "method": "GET", "path": "/site/banner.json" }
+  ]
+}

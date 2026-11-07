@@ -1,0 +1,9 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE post_custom_fields SET value = '{\"type\":\"custom\",\"raw\":\"Old note\",\"cooked\":\"<p>Old note</p>\",\"created_by_user_id\":1}', updated_at = '2026-10-05 10:00:00' WHERE post_id = 36 AND name = 'notice'"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/t/35.json" }
+  ]
+}

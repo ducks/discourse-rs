@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-05 10:00:00', hidden_reason_id = 1 WHERE id = 37"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/posts/37/unhide", "params": {} }
+  ]
+}

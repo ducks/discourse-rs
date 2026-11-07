@@ -1,0 +1,73 @@
+{
+  "name": "unhide_not_hidden",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/37/unhide",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-11-07T04:23:06.526855",
+  "transaction_started_at": "2026-11-07T04:23:05.480142",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gzWv7r+g3FiEI00G0BkrCD4UyGw=",
+            "created_at": "2026-11-07T04:23:05.805731",
+            "rotated_at": "2026-11-07T04:23:05.804837",
+            "updated_at": "2026-11-07T04:23:05.805731",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gzWv7r+g3FiEI00G0BkrCD4UyGw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:23:06.533232",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gzWv7r+g3FiEI00G0BkrCD4UyGw=",
+            "created_at": "2026-11-07T04:23:05.805731",
+            "rotated_at": "2026-11-07T04:23:05.804837",
+            "updated_at": "2026-11-07T04:23:05.805731",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gzWv7r+g3FiEI00G0BkrCD4UyGw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "5b4bf81b2246b9c3902349504a7d72ac1336410e6861aec60b9730b141a888f6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

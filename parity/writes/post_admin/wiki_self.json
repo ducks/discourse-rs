@@ -1,0 +1,78 @@
+{
+  "name": "wiki_self",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36/wiki",
+      "params": {
+        "wiki": "true"
+      }
+    }
+  ],
+  "started_at": "2026-11-07T04:23:19.077161",
+  "transaction_started_at": "2026-11-07T04:23:18.063017",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vsfxrrpuzbjCRhrzhvJNM9KeaY4=",
+            "created_at": "2026-11-07T04:23:18.396785",
+            "rotated_at": "2026-11-07T04:23:18.395483",
+            "updated_at": "2026-11-07T04:23:18.396785",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "vsfxrrpuzbjCRhrzhvJNM9KeaY4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:23:19.083105",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vsfxrrpuzbjCRhrzhvJNM9KeaY4=",
+            "created_at": "2026-11-07T04:23:18.396785",
+            "rotated_at": "2026-11-07T04:23:18.395483",
+            "updated_at": "2026-11-07T04:23:18.396785",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "vsfxrrpuzbjCRhrzhvJNM9KeaY4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "self_wiki_allowed_groups": "1|2|12"
+  },
+  "recorded_from": {
+    "case": "cd41477ac5b56eb75937b6569490918ad4d6218c29ec92a8ae58ef484d26ecef",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

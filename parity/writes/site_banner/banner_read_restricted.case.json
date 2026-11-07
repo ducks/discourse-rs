@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET archetype = 'banner' WHERE id = 35",
+    "UPDATE categories SET read_restricted = true WHERE id = (SELECT category_id FROM topics WHERE id = 35)"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/site/banner.json" }
+  ]
+}

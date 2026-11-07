@@ -3,6 +3,7 @@
 {% block title %}{{ title }} - {{ site_title }}{% endblock %}
 {% block content %}
 <div class="{{ archetype }}">
+{% call m::site_banner(base_path, chrome, true, true) %}
 <div class="container" id="topic-title">{{ title_html|safe }}</div>
 {#- The docked header's logo and topic info (header-topic-info.js). -#}
 {{ header_topic_info|safe }}

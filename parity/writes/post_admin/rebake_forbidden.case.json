@@ -1,0 +1,6 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "PUT", "path": "/posts/37/rebake", "params": {} }
+  ]
+}

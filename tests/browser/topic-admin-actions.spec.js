@@ -243,3 +243,111 @@ test("the timer and multi-select stay refused, named", async ({ page, context, s
     "Not ported yet: selecting posts (the topic's multi-select mode, 194c1).",
   );
 });
+
+// The site banner (DiscourseBanner, static/js/site-banner.js): the banner
+// topic drawn atop the lists, the categories page, the tags index and the
+// topic, dismissed (the member's dismissed_banner_key, a visitor's in
+// localStorage) and drawn or taken away live as it is made and removed.
+// Here, with the topic admin specs, so no other file makes a banner
+// meanwhile; each test removes its banner.
+async function bannerTopic(session) {
+  const user1 = await session("user1");
+  const text = label("The first post of the banner");
+  const t = await topic(user1, label("Banner topic"), text);
+  return { ...t, text };
+}
+
+function removeBanners() {
+  sql("UPDATE topics SET archetype = 'regular' WHERE archetype = 'banner'");
+}
+
+test.afterEach(removeBanners);
+
+test("the banner is drawn atop pages and a member dismisses it", async ({ page, context, session }) => {
+  await login(context, "admin");
+  const t = await bannerTopic(session);
+  await api(context, "PUT", `/t/${t.id}/make-banner`, {});
+
+  // Staff: the edit link to the topic, with its label on the desktop.
+  await page.goto("/latest");
+  const banner = page.locator("#banner");
+  await expect(banner.locator("#banner-content")).toHaveText(t.text);
+  await expect(banner.locator(".edit-banner")).toHaveText("Edit");
+  await expect(banner.locator(".edit-banner")).toHaveAttribute("href", new RegExp(`/t/[^/]+/${t.id}$`));
+  // Atop the discovery layout, before the list controls.
+  expect(
+    await page.evaluate(() => {
+      const b = document.getElementById("banner").closest(".container");
+      const controls = document.querySelector(".list-controls");
+      return !!(b.compareDocumentPosition(controls) & Node.DOCUMENT_POSITION_FOLLOWING);
+    }),
+  ).toBe(true);
+
+  const member = await session("user1");
+  const memberPage = await member.newPage();
+  for (const path of ["/latest", "/categories", "/tags", t.url]) {
+    await memberPage.goto(path);
+    await expect(memberPage.locator("#banner #banner-content"), path).toHaveText(t.text);
+    await expect(memberPage.locator("#banner .edit-banner")).toHaveCount(0);
+  }
+  // The topic and the tags index draw it in a container of its own.
+  await expect(memberPage.locator(".container > .container > .row > #banner")).toHaveCount(1);
+
+  await memberPage.locator("#banner .close").click();
+  await expect(memberPage.locator("#banner")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      sql("SELECT dismissed_banner_key FROM user_profiles WHERE user_id = (SELECT id FROM users WHERE username = 'user1')"),
+    )
+    .toEqual([[String(t.id)]]);
+  await memberPage.goto("/latest");
+  await expect(memberPage.locator(".topic-list")).toBeVisible();
+  await expect(memberPage.locator("#banner")).toHaveCount(0);
+  // The admin still has it.
+  await page.reload();
+  await expect(page.locator("#banner")).toHaveCount(1);
+});
+
+test("a visitor dismisses the banner until it changes", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const t = await bannerTopic(session);
+  await api(admin, "PUT", `/t/${t.id}/make-banner`, {});
+  await page.goto("/categories");
+  await expect(page.locator("#banner #banner-content")).toHaveText(t.text);
+  await page.locator("#banner .close").click();
+  await expect(page.locator("#banner")).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem("discourse_dismissed_banner_key"))).toBe(String(t.id));
+  await page.goto("/latest");
+  await expect(page.locator(".topic-list")).toBeVisible();
+  await expect(page.locator("#banner")).toHaveCount(0);
+
+  // Another banner has another key.
+  const other = await bannerTopic(session);
+  await api(admin, "PUT", `/t/${other.id}/make-banner`, {});
+  await page.goto("/latest");
+  await expect(page.locator("#banner #banner-content")).toHaveText(other.text);
+});
+
+test("the banner arrives and goes live", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const t = await bannerTopic(session);
+  await login(context, "user1");
+  await page.goto("/latest");
+  await expect(page.locator(".topic-list")).toBeVisible();
+  await expect(page.locator("#banner")).toHaveCount(0);
+  // A visitor on the categories page hears it too.
+  const visitor = await session(null);
+  const visitorPage = await visitor.newPage();
+  await visitorPage.goto("/categories");
+  await expect(visitorPage.locator("#banner")).toHaveCount(0);
+  // The pages' streams are up before the banner is made.
+  await page.waitForTimeout(1000);
+
+  await api(admin, "PUT", `/t/${t.id}/make-banner`, {});
+  await expect(page.locator("#banner #banner-content")).toHaveText(t.text);
+  await expect(visitorPage.locator("#banner #banner-content")).toHaveText(t.text);
+
+  await api(admin, "PUT", `/t/${t.id}/remove-banner`, {});
+  await expect(page.locator("#banner")).toHaveCount(0);
+  await expect(visitorPage.locator("#banner")).toHaveCount(0);
+});

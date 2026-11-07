@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET locked_by_id = 1 WHERE id = 36"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/posts/36/locked", "params": { "locked": "false" } }
+  ]
+}

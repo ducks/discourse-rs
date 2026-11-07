@@ -4,6 +4,7 @@
 {% block content %}
 {{ banner|safe }}
 {%- if !banner.is_empty() %}<script src="{{ crate::assets::url(base_path, "welcome-banner.js") }}"></script>{% endif %}
+{% call m::site_banner(base_path, chrome, false, false) %}
 {% if !main.is_empty() %}
 {% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, false, self.dismiss_top()) %}{% endif %}
 <div class="container list-container --categories">
@@ -53,3 +54,5 @@
 </table>
 {% endif %}
 {% endblock %}
+{#- A visitor hears the banner too. -#}
+{% block live %}{% call m::live_sink_for_member(true, base_path, bus_position, chrome.live_params) %}{% endblock %}

@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "PUT", "path": "/posts/36/post_type", "params": { "post_type": "2" } }
+  ]
+}

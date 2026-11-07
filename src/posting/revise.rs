@@ -54,6 +54,11 @@ pub struct Changes {
     /// `preserve_cooked_token:` sent with the revised message, so the
     /// client that already drew the change keeps its drawing.
     pub preserve_cooked_token: Option<String>,
+    /// `wiki:` from posts#wiki, which hands the revisor the param as a
+    /// string: it never equals the post's boolean, so it always revises.
+    pub wiki: Option<bool>,
+    /// `post_type:` from posts#post_type, already validated.
+    pub post_type: Option<i32>,
 }
 
 #[derive(Debug)]
@@ -218,10 +223,17 @@ pub async fn revise(
         .map(|r| normalize_whitespaces(&r).trim_end().to_string());
     let edit_reason = changes.edit_reason.filter(|r| !r.trim().is_empty());
 
+    // posts#update always hands over the raw key (nil without one); the
+    // wiki and post type endpoints hand over their field alone.
+    let has_raw = raw.is_some() || (changes.wiki.is_none() && changes.post_type.is_none());
+    let new_wiki = changes.wiki.unwrap_or(post.wiki);
+    let new_post_type = changes.post_type.unwrap_or(post.post_type);
     let post_changed = raw.as_ref().is_some_and(|r| *r != post.raw)
         || edit_reason
             .as_ref()
-            .is_some_and(|r| Some(r) != post.edit_reason.as_ref());
+            .is_some_and(|r| Some(r) != post.edit_reason.as_ref())
+        || changes.wiki.is_some()
+        || new_post_type != post.post_type;
     let topic_changed = !changes.topic.is_empty();
     if topic_changed && post.post_number != 1 {
         return Err(Unsupported("topic fields revised on a reply").into());
@@ -247,7 +259,9 @@ pub async fn revise(
     if post.hidden {
         return Err(Unsupported("editing hidden posts").into());
     }
-    if post.post_type != super::post_types::REGULAR
+    // A moderator action or a whisper only has its type or wiki changed.
+    if has_raw
+        && post.post_type != super::post_types::REGULAR
         && post.post_type != super::post_types::SMALL_ACTION
     {
         return Err(Unsupported("editing posts other than regular and small action ones").into());
@@ -464,8 +478,11 @@ pub async fn revise(
         )
         .await?
     };
-    // discourse-policy's validate_policy on a changed raw, before poll's.
-    if raw_changed
+    let wiki_changed = new_wiki != post.wiki;
+    let type_changed = new_post_type != post.post_type;
+    // discourse-policy's validate_policy on a changed raw or wiki, before
+    // poll's.
+    if (raw_changed || wiki_changed)
         && !changes.skip_validations
         && let Some(error) = crate::plugins::policy::lifecycle::validate_post(
             &mut conn,
@@ -475,7 +492,7 @@ pub async fn revise(
             &crate::plugins::policy::lifecycle::Saving {
                 old_cooked: Some(&post.cooked),
                 new_raw: &new_raw,
-                wiki: post.wiki,
+                wiki: new_wiki,
                 acting_user_id: Some(editor_user.id),
                 user_id: post.user_id,
             },
@@ -546,7 +563,8 @@ pub async fn revise(
                 self_edits = self_edits + $7, version = $8, public_version = $9, last_version_at = $10, \
                 updated_at = clock_timestamp(), \
                 baked_at = CASE WHEN $11 THEN clock_timestamp() ELSE baked_at END, \
-                baked_version = CASE WHEN $11 THEN $12 ELSE baked_version END, quote_count = $13 \
+                baked_version = CASE WHEN $11 THEN $12 ELSE baked_version END, quote_count = $13, \
+                wiki = $14, post_type = $15 \
          WHERE id = $1 RETURNING updated_at",
     )
     .bind(post.id)
@@ -562,6 +580,8 @@ pub async fn revise(
     .bind(raw_changed)
     .bind(BAKED_VERSION)
     .bind(quoted.len() as i32)
+    .bind(new_wiki)
+    .bind(new_post_type)
     .fetch_one(&mut *tx)
     .await?;
     let _ = updated_at;
@@ -581,7 +601,7 @@ pub async fn revise(
         super::quotes::ReplyingPost {
             id: post.id,
             topic_id: post.topic_id,
-            post_type: post.post_type,
+            post_type: new_post_type,
             reply_to_post_number: post.reply_to_post_number,
             deleted: false,
         },
@@ -646,6 +666,12 @@ pub async fn revise(
             [json!(post.edit_reason), json!(new_edit_reason)],
         ));
     }
+    if wiki_changed {
+        fields.push(("wiki", [json!(post.wiki), json!(new_wiki)]));
+    }
+    if type_changed {
+        fields.push(("post_type", [json!(post.post_type), json!(new_post_type)]));
+    }
     fields.extend(topic_diff.iter().cloned());
     if use_cached_original {
         for (field, change) in fields.iter_mut() {
@@ -696,7 +722,7 @@ pub async fn revise(
                 author_id: post.user_id,
                 editor_id: editor_user.id,
                 first_post: post.post_number == 1,
-                wiki: post.wiki,
+                wiki: new_wiki,
                 private_message: new_archetype == "private_message",
                 silent: false,
                 category_changed,
@@ -744,8 +770,19 @@ pub async fn revise(
             .execute(&mut *tx)
             .await?;
     }
-    // advance_draft_sequence for the (new) last editor.
-    next_draft_sequence(&mut tx, editor_user.id, &format!("topic_{}", post.topic_id)).await?;
+    // advance_draft_sequence for the (new) last editor: who edited before
+    // when the revision just went.
+    let last_editor = if revision_dropped {
+        sqlx::query_scalar::<_, Option<i32>>("SELECT last_editor_id FROM posts WHERE id = $1")
+            .bind(post.id)
+            .fetch_one(&mut *tx)
+            .await?
+    } else {
+        Some(editor_user.id)
+    };
+    if let Some(last_editor) = last_editor {
+        next_draft_sequence(&mut tx, last_editor, &format!("topic_{}", post.topic_id)).await?;
+    }
     // What Rails sends from after_commit goes out before what revise!
     // does after its transaction.
     deferred.enqueue(&mut tx, ctx).await?;
@@ -813,9 +850,16 @@ pub async fn revise(
     tx.commit().await?;
 
     // bump_topic, after the transaction as Rails does. should_bump?: a new
-    // version that changed the post (every edit that gets this far) of a
-    // wiki first post, unless bypass_bump.
-    if new_version && post.post_number == 1 && post.wiki && !changes.bypass_bump {
+    // version that changed the post's fields (a wiki param that changes
+    // nothing changes none) of a wiki first post, unless bypass_bump.
+    let post_fields_changed =
+        raw_changed || new_edit_reason != post.edit_reason || wiki_changed || type_changed;
+    if new_version
+        && post.post_number == 1
+        && new_wiki
+        && post_fields_changed
+        && !changes.bypass_bump
+    {
         let mut tx = pool.begin().await?;
         sqlx::query("UPDATE topics SET bumped_at = clock_timestamp() WHERE id = $1")
             .bind(post.topic_id)
@@ -829,11 +873,11 @@ pub async fn revise(
     }
 
     let mut conn = pool.acquire().await?;
-    if s.get("staff_edit_locks_post")?.truthy() && !post.wiki && editor.is_staff() {
+    if has_raw && s.get("staff_edit_locks_post")?.truthy() && !new_wiki && editor.is_staff() {
         return Err(Unsupported("staff_edit_locks_post").into());
     }
     // StaffActionLogger#log_post_edit for staff editing someone else's raw.
-    if editor.is_staff() && post.user_id != Some(editor_user.id) {
+    if has_raw && editor.is_staff() && post.user_id != Some(editor_user.id) {
         let truncate = |s: &str| {
             if s.chars().count() > 50_000 {
                 format!("{}...", s.chars().take(50_001).collect::<String>())

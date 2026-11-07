@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE topics SET archetype = 'banner' WHERE id IN (35, 41)",
+    "UPDATE posts SET deleted_at = now() WHERE topic_id = 35 AND post_number = 1"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/site/banner.json" }
+  ]
+}

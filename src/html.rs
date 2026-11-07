@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use askama::Template;
 use chrono::NaiveDateTime;
-use serde_json::Value;
+use serde_json::{Value, json};
 use sqlx::PgConnection;
 
 use crate::i18n::I18n;
@@ -222,6 +222,13 @@ pub struct Chrome {
     /// GlobalNotice above the page's content: the read-only notice while
     /// the site is read only, empty otherwise.
     pub global_notice: String,
+    /// DiscourseBanner's config for static/js/site-banner.js: the preloaded
+    /// banner (ApplicationLayoutPreloader#banner_json, `{}` for none), the
+    /// member's username, staff and dismissed_banner_key
+    /// (CurrentUserSerializer), the view and the `banner.*` strings, as
+    /// JSON. The pages Ember draws the banner on place it (macros.html
+    /// site_banner).
+    pub site_banner: String,
     /// The sidebar's markup, empty when the page has none
     /// (ApplicationController#sidebarEnabled).
     pub sidebar: String,
@@ -515,6 +522,26 @@ pub(crate) fn dialog_strings(i18n: &I18n) -> String {
     .replace('<', "\\u003c")
 }
 
+/// The `#post-admin-config` block: what topic-admin-menu.js's
+/// ChangePostNoticeModal says.
+fn post_admin_config(i18n: &I18n) -> String {
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
+    let config = serde_json::json!({
+        "strings": {
+            "add_post_notice": t("post.controls.add_post_notice"),
+            "change_post_notice": t("post.controls.change_post_notice"),
+            "delete_post_notice": t("post.controls.delete_post_notice"),
+            "save": t("save"),
+            "saving": t("saving"),
+            "cancel": t("cancel"),
+        }
+    });
+    format!(
+        "<script type=\"application/json\" id=\"post-admin-config\">{}</script>",
+        config.to_string().replace('<', "\\u003c")
+    )
+}
+
 /// The search menu's strings (search-menu.js), by the name it reads them
 /// with, from their js.search.* keys.
 fn search_menu_strings(i18n: &I18n) -> String {
@@ -798,6 +825,45 @@ fn drafts_menu_trigger(i18n: &I18n, draft_count: i64) -> String {
     )
 }
 
+/// Chrome::site_banner: the preloaded banner with what DiscourseBanner
+/// reads of the current user (`dismissed_banner_key`, `staff`, whom
+/// dismissBanner's PUT names) and of the site (`desktopView`), and its
+/// strings.
+async fn site_banner_config(
+    conn: &mut PgConnection,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    urls: &crate::url::Urls<'_>,
+    guardian: &crate::guardian::Guardian,
+) -> Result<String, crate::AppError> {
+    let banner = crate::topics::banner::preloaded(&mut *conn, settings, urls, guardian).await?;
+    let user = match guardian.user() {
+        Some(user) => {
+            let dismissed: Option<i32> = sqlx::query_scalar(
+                "SELECT dismissed_banner_key FROM user_profiles WHERE user_id = $1",
+            )
+            .bind(user.id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten();
+            json!({
+                "username": user.username,
+                "staff": guardian.is_staff(),
+                "dismissed_banner_key": dismissed,
+            })
+        }
+        None => Value::Null,
+    };
+    let t = |key: &str| state.i18n.t(key).unwrap_or(key).to_string();
+    Ok(json!({
+        "banner": banner,
+        "currentUser": user,
+        "desktopView": !crate::mobile::mobile_view(),
+        "strings": { "edit": t("js.banner.edit"), "close": t("js.banner.close") },
+    })
+    .to_string())
+}
+
 /// What the sidebar renders from: the Site's sidebar fields and the member
 /// (with `tracking`), None for a visitor.
 pub async fn sidebar_inputs(
@@ -857,6 +923,8 @@ impl Site {
         let mode = crate::readonly::mode(&mut *conn).await?;
         self.chrome.global_notice =
             crate::readonly::notice(&state.i18n, mode, guardian.user().is_some());
+        self.chrome.site_banner =
+            site_banner_config(&mut *conn, state, settings, &urls, guardian).await?;
         self.chrome.logo_url = crate::site_icons::site_url(&mut *conn, &urls, "logo").await?;
         self.chrome.logo_small_url =
             crate::site_icons::site_url(&mut *conn, &urls, "logo_small").await?;
@@ -2998,6 +3066,10 @@ pub async fn topic_page(
                 None,
             ));
         }
+    }
+    // The post admin menu's ChangePostNoticeModal strings.
+    if viewer.is_some() {
+        flag_menus.push_str(&post_admin_config(i18n));
     }
     let topic_menus = format!(
         "{topic_admin_menu}{topic_bookmarks_menu}{}{flag_menus}",

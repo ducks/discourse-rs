@@ -1,0 +1,84 @@
+{
+  "name": "post_type_same",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36/post_type",
+      "params": {
+        "post_type": "1"
+      }
+    }
+  ],
+  "started_at": "2026-11-07T04:22:50.972001",
+  "transaction_started_at": "2026-11-07T04:22:49.995194",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "sequence": 1,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U06LRvuFCldbWFJH2b0ST3G/Gl4=",
+            "created_at": "2026-11-07T04:22:50.294695",
+            "rotated_at": "2026-11-07T04:22:50.293845",
+            "updated_at": "2026-11-07T04:22:50.294695",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "U06LRvuFCldbWFJH2b0ST3G/Gl4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T04:22:50.977583",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U06LRvuFCldbWFJH2b0ST3G/Gl4=",
+            "created_at": "2026-11-07T04:22:50.294695",
+            "rotated_at": "2026-11-07T04:22:50.293845",
+            "updated_at": "2026-11-07T04:22:50.294695",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "U06LRvuFCldbWFJH2b0ST3G/Gl4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "draft_sequences": 1
+  },
+  "recorded_from": {
+    "case": "8fcb94899dd52bf0a6468cd9d7b65e20ef8a3b3de17cf72c32ecf2b3a67e40a5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
