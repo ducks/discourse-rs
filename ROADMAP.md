@@ -17,8 +17,10 @@ work, so the two together are the count of what is left.
 
 Implemented and locally validated, including an optimized release build and
 its focused browser checks. See [frontend packages](docs/frontend-assets.md) for the package
-format, deployment path, checks and measured packaging times. The live demo
-still uses the previous embedded-assets binary.
+format, deployment path, checks and measured packaging times. Staging has
+run frontend packages since November 3 (`35832017`) and took a JS-only
+update (the `32f3f543` package) on November 6; see
+[staging](docs/ubuntu-staging.md) for the current release.
 
 The November 2 Categories/Tags fix required rebuilding the Rust application
 because `src/assets.rs` embeds JavaScript and CSS. The release target also
@@ -69,8 +71,10 @@ rehearsal steps with no failures or skips. Runtime source is at 1819a61f;
 the local release report is
 `tmp/rehearsal/release-20261101-focus/report/index.html`.
 
-Remaining chat follow-ups include thread tracking/live updates (160b),
-GIFs (224b) and further reviewable cases (148b).
+Remaining chat follow-ups include the navbar's live thread indicators
+(160b1), GIFs (224b), live user status (130c) and further reviewable
+cases (148b). Thread tracking (160b) and the drawer's routes (223e) are
+done. The demo checklist's one open blocker is the rich editor (196).
 Performance item 285 is low priority. Full parity remains the long-term
 goal; the older counts below are a dated snapshot, not current totals.
 
@@ -365,21 +369,20 @@ Visible if clicked, avoid them in a scripted demo:
   feat/post-video-audio, done: such posts are created and edited, the
   video drawn as its placeholder with the play button and the audio as
   its player; the composer doesn't make a video's thumbnail yet (139).
-- [ ] ~~Checklists can't be checked (242)~~ (done: feat/checklist-toggle,
-  boxes toggle with their batching, retries and optimistic drawing); user
-  status can't be set (130).
+- [x] Checklists can't be checked (242): feat/checklist-toggle, done,
+  boxes toggle with their batching, retries and optimistic drawing. User
+  status can't be set (130): done in 130a and 130b; what's left is 130c.
 - [x] The review queue's claims and notes are refused (194), and the topic
   admin wrench isn't drawn (194, 262a): the wrench and the post admin
   menu, feat/topic-admin-menus (194a), and claims and notes,
   feat/review-claims-notes (194b), done; the menus' unported actions are
   refused (194c, 194d).
-- [ ] The review queue's client actions (edit, suspend, silence), its
-  reject reason modal and editing a reviewable are refused (194e); the
-  revise modal is done (feat/review-queued-posts). The client actions,
-  editing a queued post's title, category and raw and its raw email
-  are done (feat/review-client-actions, 194e), its tags field too
-  (feat/review-edit-tags, 194e1); the reject reason modal is refused
-  until user reviewables are listed (194e2).
+- [x] The review queue's client actions (edit, suspend, silence) and
+  editing a reviewable (194e): done, feat/review-client-actions, with
+  the raw email modal, and the tags field (feat/review-edit-tags,
+  194e1); the revise modal was done before (feat/review-queued-posts).
+  Not a demo blocker: the reject reason modal (194e2), which only a
+  user reviewable opens, and the queue lists none yet.
 - [ ] The composer's rich editor and its toolbar buttons (196); the
   profile's About me editor follows it.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
@@ -1972,7 +1975,7 @@ have handlers now.
     category_list.rs:349), default tag preferences at signup
     (signup.rs:971), staff groups' category and tag notification
     defaults (roles.rs:163)
-130. `feat/user-status` M: user status (UserStatus, the /user-status
+130. ~~`feat/user-status`~~ (done in 130a and 130b; left: 130c) M: user status (UserStatus, the /user-status
     routes, the status modal) wherever a user is serialized (users.rs:540;
     current_user.rs:304; about.rs:253; bus.rs:476; directory.rs:650;
     topic_view.rs:1766; routes/groups.rs:867; routes/admin_api_keys.rs:74;
