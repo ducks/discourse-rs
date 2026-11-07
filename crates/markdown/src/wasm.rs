@@ -201,3 +201,14 @@ pub unsafe extern "C" fn emoji_translations(ptr: *const u8, len: usize) -> i32 {
         Ok(crate::render::editor::emoji_translations())
     })
 }
+
+/// lib/text's `emojiUnescape(text)`, as a JSON string.
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn emoji_unescape(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |text, settings| {
+        Ok(crate::render::editor::emoji_unescape(text, settings))
+    })
+}

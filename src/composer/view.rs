@@ -491,6 +491,8 @@ pub struct RouteData {
     pub actions: ActionsUi,
     /// discourse-poll's builder, when the options menu offers it.
     pub poll_builder: Option<PollBuilderUi>,
+    /// The rich editor's getContext data (rich_editor::context), as JSON.
+    pub rich_editor_context: String,
 }
 
 /// What static/js/poll-builder.js (PollUiBuilderModal) is drawn with.
@@ -745,13 +747,14 @@ fn toggle_switch(list: &ListContext, rich: bool) -> String {
     )
 }
 
-/// The rich editor's data on #reply-control for composer.js: the member's
-/// composition mode, the toggle's labels (with `%{keyboardShortcut}` left
-/// in), the key names it formats the shortcut with, and the alert for a
-/// post the rich editor cannot hold.
-fn rich_editor_data(list: &ListContext, rich: bool) -> String {
+/// The rich editor's data on #reply-control for composer.js: its
+/// extensions' context (rich_editor::context), the member's composition
+/// mode, the toggle's labels (with `%{keyboardShortcut}` left in), the key
+/// names it formats the shortcut with, and the alert for a post the rich
+/// editor cannot hold.
+fn rich_editor_data(list: &ListContext, rich: bool, context: &str) -> String {
     format!(
-        " data-composition-mode=\"{}\" data-label-switch-to-markdown=\"{}\" data-label-switch-to-rich-text=\"{}\" data-label-switch-to-markdown-no-shortcut=\"{}\" data-label-switch-to-rich-text-no-shortcut=\"{}\" data-label-key-ctrl=\"{}\" data-label-key-control=\"{}\" data-label-unsupported-token=\"{}\"",
+        " data-composition-mode=\"{}\" data-label-switch-to-markdown=\"{}\" data-label-switch-to-rich-text=\"{}\" data-label-switch-to-markdown-no-shortcut=\"{}\" data-label-switch-to-rich-text-no-shortcut=\"{}\" data-label-key-ctrl=\"{}\" data-label-key-control=\"{}\" data-label-unsupported-token=\"{}\" data-rich-editor-context=\"{}\"",
         if rich { 1 } else { 0 },
         escape(&t(list, "composer.switch_to_markdown")),
         escape(&t(list, "composer.switch_to_rich_text")),
@@ -760,6 +763,7 @@ fn rich_editor_data(list: &ListContext, rich: bool) -> String {
         escape(&t(list, "shortcut_modifier_key.ctrl")),
         escape(&t(list, "shortcut_modifier_key.control")),
         escape(&t(list, "composer.unsupported_token")),
+        escape(context),
     )
 }
 
@@ -1071,7 +1075,7 @@ pub fn render(
             .unwrap_or_default(),
         user_selector = user_selector(list, &route.pm),
         actions_data = actions_data(list, &route.actions),
-        rich_data = rich_editor_data(list, rich),
+        rich_data = rich_editor_data(list, rich, &route.rich_editor_context),
         toggle = toggle_switch(list, rich),
         container_mode = if rich {
             "--rich-editor-enabled"

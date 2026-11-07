@@ -7,6 +7,7 @@
 // produced, so MarkdownParser and every extension's parse spec, written
 // against markdown-it tokens, work as they do in the reference.
 import { defaultMarkdownParser, MarkdownParser } from "prosemirror-markdown";
+import { getEngine } from "discourse/rich-editor/engine";
 
 export function UnsupportedTokenError(message) {
   this.name = "UnsupportedTokenError";
@@ -227,7 +228,7 @@ export default function Parser(extensions, params, includeDefault, parseTree) {
 }
 
 Parser.prototype.convert = function (schema, text) {
-  var parseTree = this.parseTree;
+  var parseTree = this.parseTree || (getEngine() && getEngine().tree);
   if (typeof parseTree !== "function") {
     throw new Error("the rich editor has no parser: the markdown crate's node tree export is not loaded");
   }
@@ -242,6 +243,20 @@ Parser.prototype.convert = function (schema, text) {
   );
 
   Object.assign(parser.tokenHandlers, this.postParseTokens);
+
+  // An inline node left open by unbalanced HTML must not outlive its block.
+  // The length guard spares extensions that swap in a single-entry stack.
+  Object.keys(parser.tokenHandlers).forEach(function (type) {
+    var handler = parser.tokenHandlers[type];
+    parser.tokenHandlers[type] = function (state, token, tokens, i) {
+      if (token.block) {
+        while (state.stack.length > 1 && state.top().type.isInline) {
+          state.closeNode();
+        }
+      }
+      return handler(state, token, tokens, i);
+    };
+  });
 
   try {
     return parser.parse(text);

@@ -5,6 +5,8 @@
 //       highlights el's `pre code[class]` blocks (every `pre code` with
 //       autohighlight_all_code), loading highlight.js the first time a
 //       page has one. Returns a promise. Each block is looked at once.
+//   Discourse.highlightSyntax.ensureHighlightJs()
+//       ensureHighlightJs: the configured instance, loaded once.
 //
 // Runs on every cooked post (Discourse.decorateCooked); the composer's
 // preview and chat messages call it themselves. The page's
@@ -92,6 +94,12 @@
         }
       });
     });
+  };
+
+  // The rich editor's code blocks highlight with the same instance.
+  Discourse.highlightSyntax.ensureHighlightJs = function () {
+    var meta = config();
+    return meta ? ensureHighlightJs(meta) : Promise.reject(new Error("no highlight.js configured"));
   };
 
   function ensureHighlightJs(meta) {

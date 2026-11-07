@@ -1,11 +1,13 @@
 // The helpers extensions receive as params.utils, from the reference's
 // static/prosemirror/lib/plugin-utils.js. isWhiteSpace and isBoundary are
 // markdown-it's own (common/utils.mjs: isWhiteSpace, isPunctChar as P or S),
-// written out here since the editor loads no markdown-it. getLinkify (the
-// link extension's, 196r2) and buildBBCodeAttrs (the bbcode block
-// extensions', 196r4) arrive with the extensions that use them.
+// written out here since the editor loads no markdown-it; getLinkify is the
+// engine's (engine.js). buildBBCodeAttrs (the bbcode block extensions',
+// 196r4) arrives with the extensions that use it.
 import { InputRule } from "prosemirror-inputrules";
 import { StepMap } from "prosemirror-transform";
+
+export { getLinkify } from "discourse/rich-editor/engine";
 
 var PUNCT_OR_SYMBOL = /[\p{P}\p{S}]/u;
 

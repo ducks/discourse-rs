@@ -165,6 +165,8 @@ pub fn build(
                 shortcuts: settings.emoji_shortcuts,
                 inline: settings.inline_emoji,
                 lazy: true,
+                custom: None,
+                denied: &[],
             },
         )
     };

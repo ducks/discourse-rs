@@ -1060,63 +1060,12 @@ impl Site<'_> {
         })
     }
 
-    /// `HashtagAutocompleteService.enabled_data_sources`: (type, icon) of
-    /// core's category and tag sources, then chat's channel source while
-    /// chat is on (a filtered register).
     fn hashtag_data_sources(&self, tagging: bool) -> Result<Vec<(&str, &str)>, SiteError> {
-        let mut sources = vec![("category", "folder")];
-        if tagging {
-            sources.push(("tag", "tag"));
-        }
-        if crate::plugins::chat::enabled(self.settings)?
-            && crate::plugins::chat::site_integration::hashtag_source_enabled(self.settings)?
-        {
-            sources.push((
-                crate::plugins::chat::site_integration::HASHTAG_TYPE,
-                crate::plugins::chat::site_integration::HASHTAG_ICON,
-            ));
-        }
-        Ok(sources)
+        hashtag_data_sources(self.settings, tagging)
     }
 
-    /// `HashtagAutocompleteService.contexts_with_ordered_types`: each
-    /// context of the type priorities (core's, then chat's while it is
-    /// on), its types by priority without those no enabled source has.
     fn hashtag_configurations(&self, tagging: bool) -> Result<Value, SiteError> {
-        let enabled: Vec<&str> = self
-            .hashtag_data_sources(tagging)?
-            .into_iter()
-            .map(|(t, _)| t)
-            .collect();
-        let mut priorities = vec![
-            ("category", "topic-composer", 100),
-            ("tag", "topic-composer", 50),
-        ];
-        if crate::plugins::chat::enabled(self.settings)? {
-            priorities.extend(crate::plugins::chat::site_integration::HASHTAG_TYPE_PRIORITIES);
-        }
-        let mut contexts: Vec<&str> = Vec::new();
-        for (_, context, _) in &priorities {
-            if !contexts.contains(context) {
-                contexts.push(context);
-            }
-        }
-        let mut out = Map::new();
-        for context in contexts {
-            let mut of: Vec<(&str, i64)> = priorities
-                .iter()
-                .filter(|(_, c, _)| *c == context)
-                .map(|(t, _, p)| (*t, *p))
-                .collect();
-            of.sort_by_key(|(_, p)| -p);
-            let types: Vec<&str> = of
-                .into_iter()
-                .map(|(t, _)| t)
-                .filter(|t| enabled.contains(t))
-                .collect();
-            out.insert(context.to_string(), json!(types));
-        }
-        Ok(Value::Object(out))
+        hashtag_configurations(self.settings, tagging)
     }
 
     /// `HashtagAutocompleteService.data_source_icon_map`
@@ -1373,6 +1322,70 @@ impl From<crate::guardian::GuardianError> for SiteError {
             crate::guardian::GuardianError::Unsupported(e) => SiteError::Unsupported(e),
         }
     }
+}
+
+/// `HashtagAutocompleteService.enabled_data_sources`: (type, icon) of
+/// core's category and tag sources, then chat's channel source while
+/// chat is on (a filtered register).
+pub(crate) fn hashtag_data_sources(
+    settings: &SiteSettings,
+    tagging: bool,
+) -> Result<Vec<(&'static str, &'static str)>, SiteError> {
+    let mut sources = vec![("category", "folder")];
+    if tagging {
+        sources.push(("tag", "tag"));
+    }
+    if crate::plugins::chat::enabled(settings)?
+        && crate::plugins::chat::site_integration::hashtag_source_enabled(settings)?
+    {
+        sources.push((
+            crate::plugins::chat::site_integration::HASHTAG_TYPE,
+            crate::plugins::chat::site_integration::HASHTAG_ICON,
+        ));
+    }
+    Ok(sources)
+}
+
+/// `HashtagAutocompleteService.contexts_with_ordered_types`: each
+/// context of the type priorities (core's, then chat's while it is
+/// on), its types by priority without those no enabled source has.
+pub(crate) fn hashtag_configurations(
+    settings: &SiteSettings,
+    tagging: bool,
+) -> Result<Value, SiteError> {
+    let enabled: Vec<&str> = hashtag_data_sources(settings, tagging)?
+        .into_iter()
+        .map(|(t, _)| t)
+        .collect();
+    let mut priorities = vec![
+        ("category", "topic-composer", 100),
+        ("tag", "topic-composer", 50),
+    ];
+    if crate::plugins::chat::enabled(settings)? {
+        priorities.extend(crate::plugins::chat::site_integration::HASHTAG_TYPE_PRIORITIES);
+    }
+    let mut contexts: Vec<&str> = Vec::new();
+    for (_, context, _) in &priorities {
+        if !contexts.contains(context) {
+            contexts.push(context);
+        }
+    }
+    let mut out = Map::new();
+    for context in contexts {
+        let mut of: Vec<(&str, i64)> = priorities
+            .iter()
+            .filter(|(_, c, _)| *c == context)
+            .map(|(t, _, p)| (*t, *p))
+            .collect();
+        of.sort_by_key(|(_, p)| -p);
+        let types: Vec<&str> = of
+            .into_iter()
+            .map(|(t, _)| t)
+            .filter(|t| enabled.contains(t))
+            .collect();
+        out.insert(context.to_string(), json!(types));
+    }
+    Ok(Value::Object(out))
 }
 
 #[cfg(test)]

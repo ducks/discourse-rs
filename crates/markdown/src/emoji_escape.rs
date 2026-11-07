@@ -232,9 +232,10 @@ pub fn perform_emoji_escape(s: &str, shortcuts: bool, inline: bool) -> String {
     String::from_utf16_lossy(&pass)
 }
 
-/// The `performEmojiUnescape` options of a quoted topic's title
-/// (discourse-markdown-it's quotes.js): no custom emoji, no deny list,
-/// `lazy`.
+/// The `performEmojiUnescape` options: a quoted topic's title
+/// (discourse-markdown-it's quotes.js) has no custom emoji, no deny list
+/// and `lazy`; lib/text's emojiUnescape (the rich editor's hashtags) has
+/// the site's custom emoji and deny list.
 pub struct UnescapeOptions<'a> {
     pub emoji_set: &'a str,
     /// `getURL(emojiCDNUrl || "/images/emoji")`.
@@ -242,12 +243,19 @@ pub struct UnescapeOptions<'a> {
     pub shortcuts: bool,
     pub inline: bool,
     pub lazy: bool,
+    /// `customEmoji`: a custom emoji's (lowercase) name to its image url.
+    pub custom: Option<&'a std::collections::BTreeMap<String, String>>,
+    /// `emojiDenyList`
+    pub denied: &'a [String],
 }
 
-/// `buildEmojiUrl(code, opts)` without custom emoji: the image of a known
-/// emoji or alias, a tone as a path segment.
+/// `buildEmojiUrl(code, opts)`: a custom emoji's image, else a known
+/// emoji's or alias's, a tone as a path segment.
 fn emoji_url(code: &str, opts: &UnescapeOptions) -> Option<String> {
     let code = code.to_lowercase();
+    if let Some(url) = opts.custom.and_then(|custom| custom.get(&code)) {
+        return Some(format!("{url}?v={}", crate::emoji::image_version()));
+    }
     // `code.match(/([^:]+):?/)`
     let no_tone = code.split(':').find(|s| !s.is_empty())?;
     if opts.emoji_set.is_empty() || !DATA.exists(no_tone) {
@@ -279,6 +287,18 @@ pub fn perform_emoji_unescape(s: &str, opts: &UnescapeOptions) -> String {
         };
         let ending_colon = m.last() == Some(&u16::from(b':'));
         let url = emoji_url(&value, opts)?;
+        let custom = opts
+            .custom
+            .is_some_and(|custom| custom.contains_key(&value.to_lowercase()));
+        let class = if custom {
+            "emoji emoji-custom"
+        } else {
+            "emoji"
+        };
+        // A denied emoji or alias is hidden.
+        if opts.denied.contains(&value) {
+            return Some(Vec::new());
+        }
         if !((emoticon.is_some() || ending_colon || unicode.is_some())
             && replaceable(&original, index, opts.inline))
         {
@@ -286,7 +306,7 @@ pub fn perform_emoji_unescape(s: &str, opts: &UnescapeOptions) -> String {
         }
         let lazy = if opts.lazy { "loading='lazy' " } else { "" };
         Some(utf16(&format!(
-            "<img width=\"20\" height=\"20\" src='{url}' title='{value}' {lazy}alt='{value}' class='emoji'>"
+            "<img width=\"20\" height=\"20\" src='{url}' title='{value}' {lazy}alt='{value}' class='{class}'>"
         )))
     };
     let pass = replace_all(&original, emoji_at, replace);
@@ -360,6 +380,8 @@ mod tests {
             shortcuts: true,
             inline: false,
             lazy: true,
+            custom: None,
+            denied: &[],
         };
         let v = crate::emoji::image_version();
         assert_eq!(

@@ -165,6 +165,8 @@ pub fn build(info: &TagInfo, content: Vec<Node>, settings: &RenderSettings, ctx:
                             shortcuts: settings.emoji_shortcuts,
                             inline: settings.inline_emoji,
                             lazy: true,
+                            custom: None,
+                            denied: &[],
                         },
                     )
                 } else {

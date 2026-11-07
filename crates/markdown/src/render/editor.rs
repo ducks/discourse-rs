@@ -64,13 +64,31 @@ pub fn html_attr_allowed(tag: &str, name: &str, value: &str, settings: &RenderSe
 /// `buildEmojiUrl(code)` and `isCustomEmoji(code)` for a code that
 /// exists (`emojiExists`), else null.
 pub fn emoji(code: &str, settings: &RenderSettings) -> Value {
-    if !settings.emoji {
-        return Value::Null;
-    }
     super::emoji::image(code, settings).map_or(
         Value::Null,
         |(url, custom)| json!({ "url": url, "custom": custom }),
     )
+}
+
+/// lib/text's `emojiUnescape(text)`: the text with its emoji as images
+/// (custom ones and the deny list included, not lazy), or as it is with
+/// emoji off.
+pub fn emoji_unescape(text: &str, settings: &RenderSettings) -> Value {
+    if !settings.emoji {
+        return json!(text);
+    }
+    json!(crate::emoji_escape::perform_emoji_unescape(
+        text,
+        &crate::emoji_escape::UnescapeOptions {
+            emoji_set: &settings.emoji_set,
+            emoji_base_path: &settings.emoji_base_path,
+            shortcuts: settings.emoji_shortcuts,
+            inline: settings.inline_emoji,
+            lazy: false,
+            custom: Some(&settings.custom_emoji),
+            denied: &settings.emoji_deny_list,
+        },
+    ))
 }
 
 /// pretty-text/emoji/data's `translations`: emoticon to emoji name.
@@ -177,5 +195,13 @@ mod tests {
         assert_eq!(emoji("party_parrot", &s)["custom"], true);
         assert_eq!(emoji("not_an_emoji", &s), Value::Null);
         assert_eq!(emoji_translations()[":)"], "slight_smile");
+        assert_eq!(
+            emoji_unescape("hello :wave: :party_parrot:", &s),
+            format!(
+                "hello <img width=\"20\" height=\"20\" src='/images/emoji/twitter/wave.png?v={v}' title='wave' alt='wave' class='emoji'> \
+                 <img width=\"20\" height=\"20\" src='/uploads/parrot.gif?v={v}' title='party_parrot' alt='party_parrot' class='emoji emoji-custom'>",
+                v = crate::emoji::image_version()
+            )
+        );
     }
 }
