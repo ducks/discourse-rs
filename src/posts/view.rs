@@ -878,12 +878,6 @@ fn mention_statuses(cx: &PostContext, p: &Value, cooked: String) -> String {
         let Some(status) = user.get("status").filter(|s| s.is_object()) else {
             continue;
         };
-        let href = format!(
-            "{}/u/{}",
-            cx.list.base_path,
-            s(&user["username"]).to_lowercase()
-        );
-        let open = format!("<a class=\"mention\" href=\"{}\">", escape(&href));
         let wrapper = format!(
             "<span class=\"user-status-message-wrapper\">{}</span>",
             crate::users::views::status::message(
@@ -893,14 +887,12 @@ fn mention_statuses(cx: &PostContext, p: &Value, cooked: String) -> String {
                 false
             )
         );
-        let mut from = 0;
-        while let Some(at) = out[from..].find(&open).map(|i| i + from) {
-            let Some(close) = out[at..].find("</a>").map(|i| i + at) else {
-                break;
-            };
-            out.insert_str(close, &wrapper);
-            from = close + wrapper.len() + "</a>".len();
-        }
+        out = crate::users::views::status::in_mentions(
+            &out,
+            cx.list.base_path,
+            s(&user["username"]),
+            &wrapper,
+        );
     }
     out
 }

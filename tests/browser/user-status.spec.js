@@ -4,9 +4,11 @@
 // status (the row, the header bubble); the emoji drawn by a poster's
 // name with its tooltip, on a mention and on the user card; the account
 // preferences' status saved with the tab; a status change redrawing a
-// watched topic's posts live. enable_user_status is on for the suite
-// (setup.sql); each test works on a member of its own (cloned from
-// user2), so no other spec meets a status.
+// watched topic's posts (by the user or mentioning them) live; chat's
+// statuses (the author, mentions, a DM's title and sidebar link, the
+// members list, the composer's autocomplete). enable_user_status is on
+// for the suite (setup.sql); each test works on a member of its own
+// (cloned from user2), so no other spec meets a status.
 const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 function status(id) {
@@ -116,10 +118,13 @@ test("a status shows by the poster's name, on mentions and on the user card, and
   await page.keyboard.press("Escape");
 
   // UserStatusManager: the poster's new status redraws their posts.
+  // The mentions decorator tracks the mentioned user: their mention too.
   await api(poster, "PUT", "/user-status.json", { description: "Back at work", emoji: "computer" });
   await expect(message.locator("img.emoji")).toHaveAttribute("alt", "computer");
+  await expect(mention.locator(".user-status-message-wrapper img.emoji")).toHaveAttribute("alt", "computer");
   await api(poster, "DELETE", "/user-status.json");
   await expect(first.locator(".user-status-message-wrap")).toHaveCount(0);
+  await expect(mention.locator(".user-status-message-wrapper")).toHaveCount(0);
 });
 
 test("the account preferences save the status with the tab", async ({ page, context }) => {
@@ -142,4 +147,63 @@ test("the account preferences save the status with the tab", async ({ page, cont
   await page.locator(".save-changes").click();
   await expect(page.locator(".save-button .saved")).toBeVisible();
   expect(status(m.id)).toEqual([["speech_balloon", "Reading", "f"]]);
+});
+
+test("chat draws a status by the author, on mentions, in the DM's title, the sidebar and the members", async ({
+  page,
+  context,
+  session,
+}) => {
+  const m = member();
+  const them = await session(m.name);
+  await api(them, "PUT", "/user-status.json", { description: "At the dentist", emoji: "tooth" });
+  const user0 = await session("user0");
+  const dm = await api(user0, "POST", "/chat/api/direct-message-channels.json", { "target_usernames[]": m.name });
+  const id = dm.channel.id;
+  await api(them, "POST", `/chat/${id}.json`, { message: label("a message from the dentist") });
+  await api(user0, "POST", `/chat/${id}.json`, { message: label(`hello @${m.name} there`) });
+
+  await login(context, "user0");
+  await page.goto(`/chat/c/-/${id}`);
+  // ChatMessageInfo: the emoji by the author's name, its tooltip on hover.
+  const info = page.locator(".chat-message-info__status .user-status-message").first();
+  await expect(info.locator("img.emoji")).toHaveAttribute("alt", "tooth");
+  await info.hover();
+  const tooltip = page.locator('[data-identifier="user-status-message-tooltip"][data-content]');
+  await expect(tooltip.locator(".user-status-tooltip-description")).toHaveText("At the dentist");
+  // updateUserStatusOnMention: a UserStatusMessage in the mention.
+  const mention = page.locator(`.chat-cooked a.mention[href="/u/${m.name.toLowerCase()}"]`);
+  await expect(mention.locator(".user-status-message img.emoji")).toHaveAttribute("alt", "tooth");
+  // ChatChannelName's status for a DM with one other user, and the
+  // sidebar link's (ChatSidebarIndicators).
+  await expect(
+    page.locator(".chat-channel-title .chat-channel-name__label .chat-channel__user-status-message img.emoji"),
+  ).toHaveAttribute("alt", "tooth");
+  await expect(
+    page.locator(`.sidebar-section[data-section-name="chat-dms"] .channel-${id} .user-status-message img.emoji`),
+  ).toHaveAttribute("alt", "tooth");
+
+  // ChatUserInfo in the members list, with its description.
+  await page.goto(`/chat/c/-/${id}/info/members`);
+  await expect(
+    page.locator(".c-channel-members__list-item .user-status .user-status-message-description"),
+  ).toHaveText("At the dentist");
+});
+
+test("the chat composer's mention autocomplete shows a status", async ({ page, context }) => {
+  const m = member();
+  sql(
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at) VALUES (:'p1'::int, 'tooth', 'At the dentist', now())",
+    m.id,
+  );
+  await login(context, "user0");
+  await page.goto("/chat/c/general/2");
+  const composer = page.locator(".full-page-chat .chat-composer__input");
+  await composer.pressSequentially(`@${m.name}`, { delay: 20 });
+  // initUserStatusHtml and renderUserStatusHtml: the user's item carries
+  // its index and the status with its description.
+  const item = page.locator(".autocomplete.ac-user li[data-index]");
+  await expect(item.locator(".user-status-message img.emoji")).toHaveAttribute("alt", "tooth");
+  await expect(item.locator(".user-status-message .user-status-message-description")).toHaveText("At the dentist");
+  await composer.press("Escape");
 });

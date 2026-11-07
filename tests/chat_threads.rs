@@ -275,6 +275,112 @@ async fn watched_thread_notifications_consolidate() {
     assert_eq!(data["description"], "Hello **world**");
 }
 
+/// The threaded channel with statuses for user0 (2) and user1 (3), a
+/// mention of user0 in user0's channel message, and enable_user_status.
+async fn with_statuses(db: &TestDb) {
+    threaded(db).await;
+    for sql in [
+        "UPDATE chat_messages SET message = '@user0 chatter', cooked = '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> chatter</p>' WHERE id = 4",
+        "INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (4, 'Chat::UserMention', 2, now(), now())",
+        "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (2, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')",
+        "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'coffee', 'on a break', now() - interval '1 hour', NULL)",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    common::set_setting(&db.pool, "enable_user_status", 5, "t").await;
+}
+
+// Chat::Publisher serializes messages with MessageSerializer, whose
+// MessageUserSerializer gets include_status and no scope; the thread's
+// preview (ThreadPreviewSerializer's ::BasicUserSerializer) gets none.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_bus_carries_the_authors_status() {
+    let db = TestDb::new().await;
+    with_statuses(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let from = st.bus.now().await.unwrap();
+    let (status, body) = user1
+        .send(
+            Method::POST,
+            "/chat/2.json",
+            "message=more+in+the+thread&thread_id=1&staged_id=s",
+        )
+        .await;
+    assert_eq!(status, 200, "{body}");
+    let messages = bus_messages(
+        &st,
+        from,
+        &["/chat/2", "/chat/2/thread/1", "/chat/2/new-messages"],
+    )
+    .await;
+    let sent = of_type(&messages, "/chat/2/thread/1", "sent");
+    assert_eq!(sent.len(), 1, "{messages:?}");
+    let user = sent[0]["chat_message"]["user"].as_object().unwrap();
+    assert_eq!(
+        user["status"],
+        json!({"description": "on a break", "emoji": "coffee", "ends_at": null, "message_bus_last_id": 0})
+    );
+    let new = of_type(&messages, "/chat/2/new-messages", "thread");
+    assert_eq!(new[0]["message"]["user"]["status"]["emoji"], "coffee");
+    let preview = of_type(&messages, "/chat/2", "update_thread_original_message");
+    assert_eq!(preview.len(), 1);
+    assert!(
+        preview[0]["preview"]["last_reply_user"]
+            .get("status")
+            .is_none()
+    );
+    for u in preview[0]["preview"]["participant_users"]
+        .as_array()
+        .unwrap()
+    {
+        assert!(u.get("status").is_none(), "{u}");
+    }
+
+    let from = st.bus.now().await.unwrap();
+    let (status, body) = user1
+        .send(
+            Method::PUT,
+            "/chat/2/react/4.json",
+            "emoji=heart&react_action=add",
+        )
+        .await;
+    assert_eq!(status, 200, "{body}");
+    let messages = bus_messages(&st, from, &["/chat/2"]).await;
+    let reaction = of_type(&messages, "/chat/2", "reaction");
+    assert_eq!(reaction.len(), 1, "{messages:?}");
+    // The reaction's BasicUserSerializer gets no include_status.
+    assert!(reaction[0]["user"].get("status").is_none());
+}
+
+// Where chat draws a status: by the author's name (ChatMessageInfo), on
+// a mention (updateUserStatusOnMention), in the members list
+// (ChatUserInfo with its description).
+#[tokio::test(flavor = "multi_thread")]
+async fn the_channel_page_draws_statuses() {
+    let db = TestDb::new().await;
+    with_statuses(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let page = user1.page("/chat/c/general/2").await;
+    assert!(
+        page.contains("type=\"button\">user0</button><span class=\"chat-message-info__status\"><span aria-expanded=\"false\" class=\"fk-d-tooltip__trigger user-status-message\" data-identifier=\"user-status-message-tooltip\" data-trigger=\"\" role=\"button\" data-emoji=\"tooth\" data-description=\"at the dentist\" data-ends-at=\"4070944800000\">"),
+        "{page}"
+    );
+    assert!(
+        page.contains("@user0<span class=\"user-status-message\" data-identifier=\"user-status-message-tooltip\" data-emoji=\"tooth\" data-description=\"at the dentist\" data-ends-at=\"4070944800000\"><img"),
+        "{page}"
+    );
+    let members = user1.page("/chat/c/general/2/info/members").await;
+    assert!(
+        members.contains("<div class=\"user-status\"><span aria-expanded=\"false\" class=\"fk-d-tooltip__trigger user-status-message\" data-identifier=\"user-status-message-tooltip\" data-trigger=\"\" role=\"button\" data-emoji=\"tooth\""),
+        "{members}"
+    );
+    assert!(
+        members.contains("<span class=\"user-status-message-description\">at the dentist</span>")
+    );
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn a_threaded_channel_page_shows_the_thread_indicator() {
     let db = TestDb::new().await;

@@ -487,7 +487,14 @@
             .join(", ")
         : cfg.username;
     }
-    return '<div class="chat-channel-name"><div class="chat-channel-name__label">' + escapeHtml(title) + "</div></div>";
+    // showUserStatus: a DM with one other user, their status (no
+    // description: @showDescription reads a site ChatChannelName lacks).
+    var dmUsers = (channel.chatable && channel.chatable.users) || [];
+    var status =
+      isDirectMessage(channel) && dmUsers.length === 1 && dmUsers[0].status && Discourse.userStatus
+        ? Discourse.userStatus.messageHtml(dmUsers[0].status, false, "chat-channel__user-status-message")
+        : "";
+    return '<div class="chat-channel-name"><div class="chat-channel-name__label">' + escapeHtml(title) + status + "</div></div>";
   }
 
   // ChatChannelTitle
@@ -529,7 +536,9 @@
         avatar(item.model) +
         displayName(item.model) +
         (userUrgent || userUnread ? '<div class="unread-indicator' + (userUrgent ? " -urgent" : "") + '"></div>' : "") +
-        '<div class="user-status"></div>' +
+        '<div class="user-status">' +
+        (item.model.status && Discourse.userStatus ? Discourse.userStatus.messageHtml(item.model.status, true) : "") +
+        "</div>" +
         (item.enabled ? "" : '<span class="chat-message-creator__disabled-warning">' + escapeHtml(s.disabledUser) + "</span>") +
         "</div>"
       );

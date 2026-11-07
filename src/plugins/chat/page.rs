@@ -1445,14 +1445,37 @@ pub(crate) fn channel_title(
     let icon = channel_icon(c, emojis, base_path, online);
     if c["chatable_type"] == "DirectMessage" {
         return format!(
-            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
-            escape(c["unicode_title"].as_str().unwrap_or(s(&c["title"])))
+            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}{}</div></div></div>",
+            escape(c["unicode_title"].as_str().unwrap_or(s(&c["title"]))),
+            dm_user_status(c, emojis, base_path)
         );
     }
     format!(
         "<div class=\"chat-channel-title is-category\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
         escape(s(&c["unicode_title"]))
     )
+}
+
+/// ChatChannelName#showUserStatus: a DM with one other user shows their
+/// status after its title. Its @showDescription reads `this.site`, which
+/// ChatChannelName does not inject, so the description never shows.
+pub(crate) fn dm_user_status(c: &Value, emojis: &crate::emojis::Emojis, base_path: &str) -> String {
+    let users = c["chatable"]["users"].as_array();
+    match users.map(Vec::as_slice) {
+        Some([user]) if c["chatable_type"] == "DirectMessage" => {
+            match user.get("status").filter(|s| s.is_object()) {
+                Some(status) => crate::users::views::status::message_with_class(
+                    emojis,
+                    base_path,
+                    status,
+                    false,
+                    Some("chat-channel__user-status-message"),
+                ),
+                None => String::new(),
+            }
+        }
+        _ => String::new(),
+    }
 }
 
 /// ChannelIcon: a DM's first user, emoji or member count, a category
@@ -1931,7 +1954,7 @@ pub(super) fn message_html(
         .as_array()
         .map(Vec::as_slice)
         .unwrap_or_default();
-    let cooked = s(&m["cooked"]);
+    let cooked = &mention_statuses(s(&m["cooked"]), m, v);
     if super::collapser::is_collapsible(cooked, uploads) {
         let page_url = format!("{}/chat/", v.base_url);
         let opts = super::collapser::Opts {
@@ -2515,8 +2538,16 @@ fn message_info(m: &Value, date: &str, v: &View) -> String {
     let hook = &m["chat_webhook_event"];
     let mut out = if hook.is_null() {
         classes.push("clickable".into());
+        // showStatus: the author's status by their name.
+        let status = match user.get("status").filter(|s| s.is_object()) {
+            Some(status) => format!(
+                "<span class=\"chat-message-info__status\">{}</span>",
+                crate::users::views::status::message(&v.emojis, v.base_path, status, false)
+            ),
+            None => String::new(),
+        };
         format!(
-            "<div class=\"chat-message-info\"><span class=\"{}\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{n}</button></span><span class=\"chat-message-info__date\">{date}</span>",
+            "<div class=\"chat-message-info\"><span class=\"{}\"><button class=\"chat-message-info__username__name\" data-user-card=\"{u}\" type=\"button\">{n}</button>{status}</span><span class=\"chat-message-info__date\">{date}</span>",
             escape(&classes.join(" ")),
             u = escape(s(&user["username"])),
             n = escape(author_name(user, v))
@@ -3146,6 +3177,27 @@ impl Context<'_> {
         out.push_str("</div></div>");
         Ok(out)
     }
+}
+
+/// ChatMessage#decorateMentions: each mentioned user's status
+/// (updateUserStatusOnMention, a UserStatusMessage) at the end of their
+/// mentions.
+fn mention_statuses(cooked: &str, m: &Value, v: &View) -> String {
+    let mut out = cooked.to_string();
+    for user in m["mentioned_users"].as_array().into_iter().flatten() {
+        let Some(status) = user.get("status").filter(|s| s.is_object()) else {
+            continue;
+        };
+        let html =
+            crate::users::views::status::plain_message(&v.emojis, v.base_path, status, false);
+        out = crate::users::views::status::in_mentions(
+            &out,
+            v.base_path,
+            s(&user["username"]),
+            &html,
+        );
+    }
+    out
 }
 
 /// A message drawn with @context="pinned" @interactive={{false}}: the

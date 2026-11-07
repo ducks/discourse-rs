@@ -3,7 +3,6 @@
 //! by Chat::MessagesSerializer and Chat::MessageSerializer; a thread's
 //! (Chat::ListChannelThreadMessages) over the same query.
 //!
-//! Refused as Unsupported until their slices port them: user status (130b).
 //! The two writes Rails defers (Scheduler::Defer) to after the response,
 //! the membership's last_viewed_at and the user's last chat channel, are
 //! made before it.
@@ -140,6 +139,9 @@ struct Shared {
     /// A direct message channel: no notify flags.
     direct_message: bool,
     users: HashMap<i32, UserRow>,
+    /// The users' statuses as an unscoped serializer with include_status
+    /// shows them.
+    statuses: HashMap<i32, Value>,
     groups: HashMap<i32, crate::groups::Group>,
     /// The messages' uploads, by message.
     uploads: HashMap<i64, Vec<MessageUpload>>,
@@ -1081,18 +1083,15 @@ impl Context<'_> {
         .bind(&user_ids)
         .fetch_all(&mut *self.conn)
         .await?;
-        let user_status = settings.get("enable_user_status")?.truthy();
-        if user_status {
-            let any: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = ANY($1) AND (ends_at IS NULL OR ends_at > now()))",
-            )
-            .bind(&user_ids)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if any {
-                return Err(Unsupported("user status in chat (130b)").into());
-            }
-        }
+        // MessageUserSerializer and the mentioned users' serializer get
+        // include_status but no scope: Guardian.new decides.
+        let statuses = crate::users::status::visible(
+            &mut *self.conn,
+            settings,
+            &crate::guardian::Guardian::anonymous(),
+            &user_ids,
+        )
+        .await?;
         let group_ids: Vec<i32> = users
             .iter()
             .flat_map(|u| [u.primary_group_id, u.flair_group_id])
@@ -1149,6 +1148,7 @@ impl Context<'_> {
             threading_enabled: channel.threading_enabled,
             direct_message: channel.chatable_type == "DirectMessage",
             users: users.into_iter().map(|u| (u.id, u)).collect(),
+            statuses,
             groups,
             uploads,
             threads,
@@ -1275,6 +1275,9 @@ impl Context<'_> {
                     .map(|g| g.name.clone())
             ),
         );
+        if let Some(status) = s.statuses.get(&u.id) {
+            crate::users::status::prepend(&mut out, status.clone());
+        }
         Ok(Value::Object(out))
     }
 
@@ -1334,8 +1337,14 @@ impl Context<'_> {
         mentioned.sort_by_key(|u| u.id);
         let mentioned: Vec<Value> = mentioned
             .into_iter()
-            .map(|u| self.basic_user(s, u, false).map(Value::Object))
-            .collect::<Result<_, _>>()?;
+            .map(|u| {
+                let mut user = self.basic_user(s, u, false)?;
+                if let Some(status) = s.statuses.get(&u.id) {
+                    crate::users::status::prepend(&mut user, status.clone());
+                }
+                Ok(Value::Object(user))
+            })
+            .collect::<Result<_, AppError>>()?;
         out.insert("mentioned_users".into(), Value::Array(mentioned));
 
         // reactions, grouped by emoji in the order they were made; five
@@ -1513,8 +1522,9 @@ impl Context<'_> {
     /// message, nor notify_user to a bot, or by
     /// a viewer who can't send personal messages) when the viewer may
     /// flag the message. Rails also compares the viewer with the
-    /// serialized user, which never matches.
-    fn available_flags(&self, s: &Shared, m: &MessageRow, author: Option<&UserRow>) -> Vec<String> {
+    /// serialized user, which never matches. A type left out is a nil in
+    /// its place (`next` inside `map`).
+    fn available_flags(&self, s: &Shared, m: &MessageRow, author: Option<&UserRow>) -> Vec<Value> {
         // can_flag_chat_message?
         let Some(author) = author else {
             return Vec::new();
@@ -1529,12 +1539,12 @@ impl Context<'_> {
         }
         s.flag_types
             .iter()
-            .filter(|t| {
-                !(s.direct_message
-                    && (t.as_str() == "notify_moderators" || t.as_str() == "notify_user"))
+            .map(|t| {
+                let notify = t == "notify_moderators" || t == "notify_user";
+                let skipped = (s.direct_message && notify)
+                    || (t == "notify_user" && (author.id <= 0 || !s.can_message));
+                if skipped { Value::Null } else { json!(t) }
             })
-            .filter(|t| !(t.as_str() == "notify_user" && (author.id <= 0 || !s.can_message)))
-            .cloned()
             .collect()
     }
 }

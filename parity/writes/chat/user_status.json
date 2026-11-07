@@ -1,0 +1,876 @@
+{
+  "name": "user_status",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/messages.json"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/threads.json"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/threads/1.json"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/pins.json"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/memberships.json"
+    }
+  ],
+  "started_at": "2026-11-07T01:30:28.601387",
+  "transaction_started_at": "2026-11-07T01:30:25.698053",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "messages": [
+          {
+            "id": 1,
+            "message": "Hello **world**",
+            "cooked": "<p>Hello <strong>world</strong></p>",
+            "created_at": "2026-11-07T00:40:25Z",
+            "excerpt": "Hello world",
+            "thread_id": 1,
+            "chat_channel_id": 2,
+            "streaming": false,
+            "user": {
+              "status": {
+                "description": "at the dentist",
+                "emoji": "tooth",
+                "ends_at": "2099-01-01T10:00:00Z",
+                "message_bus_last_id": 0
+              },
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null,
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "new_user": false,
+              "primary_group_name": null
+            },
+            "mentioned_users": [],
+            "available_flags": [
+              "notify_user",
+              "off_topic",
+              "inappropriate",
+              "spam",
+              "illegal",
+              "notify_moderators"
+            ],
+            "thread": {
+              "id": 1,
+              "title": null,
+              "status": "open",
+              "channel_id": 2,
+              "meta": {
+                "message_bus_last_ids": {
+                  "thread_message_bus_last_id": 0
+                }
+              },
+              "reply_count": 2,
+              "current_user_membership": {
+                "notification_level": 2,
+                "thread_id": 1,
+                "last_read_message_id": 3,
+                "thread_title_prompt_seen": false
+              },
+              "preview": {
+                "last_reply_created_at": "2026-11-07T00:55:25Z",
+                "last_reply_excerpt": "thread reply two",
+                "last_reply_id": 3,
+                "participant_count": 3,
+                "reply_count": 2,
+                "participant_users": [
+                  {
+                    "id": 2,
+                    "username": "user0",
+                    "name": "User0",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+                  },
+                  {
+                    "id": 3,
+                    "username": "user1",
+                    "name": "User1",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+                  },
+                  {
+                    "id": 1,
+                    "username": "admin",
+                    "name": "Admin",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                  }
+                ],
+                "last_reply_user": {
+                  "id": 1,
+                  "username": "admin",
+                  "name": "Admin",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                }
+              },
+              "last_message_id": 3,
+              "force": false,
+              "original_message": {
+                "id": 1,
+                "message": "Hello **world**",
+                "cooked": "<p>Hello <strong>world</strong></p>",
+                "created_at": "2026-11-07T00:40:25.698Z",
+                "excerpt": "Hello world",
+                "chat_channel_id": 2,
+                "deleted_at": null,
+                "mentioned_users": [],
+                "user": {
+                  "status": {
+                    "description": "at the dentist",
+                    "emoji": "tooth",
+                    "ends_at": "2099-01-01T10:00:00Z",
+                    "message_bus_last_id": 0
+                  },
+                  "id": 2,
+                  "username": "user0",
+                  "name": "User0",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                  "can_chat": null,
+                  "has_chat_enabled": null
+                }
+              }
+            },
+            "blocks": [],
+            "pinned": true,
+            "is_action": false,
+            "chat_webhook_event": null,
+            "uploads": []
+          },
+          {
+            "id": 4,
+            "message": "@user1 @user0 ping",
+            "cooked": "<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>",
+            "created_at": "2026-11-07T01:00:25Z",
+            "excerpt": "@user1 @user0 ping",
+            "thread_id": null,
+            "chat_channel_id": 2,
+            "streaming": false,
+            "user": {
+              "status": {
+                "description": "at the dentist",
+                "emoji": "tooth",
+                "ends_at": "2099-01-01T10:00:00Z",
+                "message_bus_last_id": 0
+              },
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null,
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "new_user": false,
+              "primary_group_name": null
+            },
+            "mentioned_users": [
+              {
+                "status": {
+                  "description": "at the dentist",
+                  "emoji": "tooth",
+                  "ends_at": "2099-01-01T10:00:00Z",
+                  "message_bus_last_id": 0
+                },
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "can_chat": null,
+                "has_chat_enabled": null
+              },
+              {
+                "id": 3,
+                "username": "user1",
+                "name": "User1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "can_chat": null,
+                "has_chat_enabled": null
+              }
+            ],
+            "available_flags": [
+              "notify_user",
+              "off_topic",
+              "inappropriate",
+              "spam",
+              "illegal",
+              "notify_moderators"
+            ],
+            "blocks": [],
+            "pinned": true,
+            "is_action": false,
+            "chat_webhook_event": null,
+            "uploads": []
+          }
+        ],
+        "tracking": {
+          "channel_tracking": {},
+          "thread_tracking": {
+            "1": {
+              "channel_id": 2,
+              "mention_count": 0,
+              "unread_count": 0,
+              "watched_threads_unread_count": 0
+            }
+          }
+        },
+        "meta": {
+          "target_message_id": null,
+          "can_load_more_future": false,
+          "can_load_more_past": false
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "meta": {
+          "load_more_url": "/chat/api/channels/2/threads?offset=10",
+          "channel_id": 2
+        },
+        "threads": [
+          {
+            "id": 1,
+            "title": null,
+            "status": "open",
+            "channel_id": 2,
+            "channel": {
+              "id": 2,
+              "auto_join_users": true,
+              "allow_channel_wide_mentions": true,
+              "chatable": {
+                "id": 4,
+                "name": "General",
+                "color": "25AAE2",
+                "text_color": "FFFFFF",
+                "style_type": "emoji",
+                "icon": null,
+                "emoji": "blue_book",
+                "slug": "general",
+                "topic_count": 3,
+                "post_count": 6,
+                "position": 3,
+                "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+                "description_text": "Create topics here that don’t fit into any other existing category.",
+                "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+                "topic_url": "/t/about-the-general-category/3",
+                "read_restricted": false,
+                "permission": null,
+                "notification_level": null,
+                "topic_template": null,
+                "topic_title_placeholder": null,
+                "has_children": null,
+                "subcategory_count": null,
+                "sort_order": null,
+                "sort_ascending": null,
+                "show_subcategory_list": false,
+                "num_featured_topics": 3,
+                "default_view": null,
+                "subcategory_list_style": "rows_with_featured_topics",
+                "default_top_period": "all",
+                "default_list_filter": "all",
+                "minimum_required_tags": 0,
+                "navigate_to_first_post_after_read": false,
+                "uploaded_logo": null,
+                "uploaded_logo_dark": null,
+                "uploaded_background": null,
+                "uploaded_background_dark": null
+              },
+              "chatable_id": 4,
+              "chatable_type": "Category",
+              "chatable_url": "/c/general/4",
+              "title": "General",
+              "unicode_title": "General",
+              "slug": "general",
+              "status": "open",
+              "memberships_count": 3,
+              "meta": {
+                "message_bus_last_ids": {
+                  "channel_message_bus_last_id": 0,
+                  "new_messages": 0,
+                  "new_mentions": 0,
+                  "kick": 0
+                },
+                "can_join_chat_channel": true,
+                "can_flag": true,
+                "user_silenced": false,
+                "can_moderate": true,
+                "can_delete_self": true,
+                "can_delete_others": true,
+                "can_remove_members": true,
+                "can_manage_pins": true
+              },
+              "threading_enabled": true,
+              "pinned_messages_count": 2,
+              "last_message": {
+                "id": 4,
+                "message": "@user1 @user0 ping",
+                "cooked": "<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>",
+                "created_at": "2026-11-07T01:00:25Z",
+                "excerpt": "@user1 @user0 ping",
+                "deleted_at": null,
+                "deleted_by_id": null,
+                "thread_id": null,
+                "chat_channel_id": 2,
+                "streaming": false
+              }
+            },
+            "meta": {
+              "message_bus_last_ids": {
+                "thread_message_bus_last_id": 0
+              }
+            },
+            "reply_count": 2,
+            "current_user_membership": {
+              "notification_level": 2,
+              "thread_id": 1,
+              "last_read_message_id": 3,
+              "thread_title_prompt_seen": false
+            },
+            "preview": {
+              "last_reply_created_at": "2026-11-07T00:55:25Z",
+              "last_reply_excerpt": "thread reply two",
+              "last_reply_id": 3,
+              "participant_count": 3,
+              "reply_count": 2,
+              "participant_users": [
+                {
+                  "id": 2,
+                  "username": "user0",
+                  "name": "User0",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+                },
+                {
+                  "id": 3,
+                  "username": "user1",
+                  "name": "User1",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+                },
+                {
+                  "id": 1,
+                  "username": "admin",
+                  "name": "Admin",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                }
+              ],
+              "last_reply_user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            },
+            "last_message_id": 3,
+            "force": false,
+            "original_message": {
+              "id": 1,
+              "message": "Hello **world**",
+              "cooked": "<p>Hello <strong>world</strong></p>",
+              "created_at": "2026-11-07T00:40:25.698Z",
+              "excerpt": "Hello world",
+              "chat_channel_id": 2,
+              "deleted_at": null,
+              "mentioned_users": [],
+              "user": {
+                "status": {
+                  "description": "at the dentist",
+                  "emoji": "tooth",
+                  "ends_at": "2099-01-01T10:00:00Z",
+                  "message_bus_last_id": 0
+                },
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "can_chat": null,
+                "has_chat_enabled": null
+              }
+            }
+          }
+        ],
+        "tracking": {
+          "1": {
+            "channel_id": 2,
+            "mention_count": 0,
+            "unread_count": 0,
+            "watched_threads_unread_count": 0
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "thread": {
+          "id": 1,
+          "title": null,
+          "status": "open",
+          "channel_id": 2,
+          "meta": {
+            "message_bus_last_ids": {
+              "thread_message_bus_last_id": 0
+            }
+          },
+          "reply_count": 2,
+          "current_user_membership": {
+            "notification_level": 2,
+            "thread_id": 1,
+            "last_read_message_id": 3,
+            "thread_title_prompt_seen": false
+          },
+          "preview": {
+            "last_reply_created_at": "2026-11-07T00:55:25Z",
+            "last_reply_excerpt": "thread reply two",
+            "last_reply_id": 3,
+            "participant_count": 3,
+            "reply_count": 2,
+            "participant_users": [
+              {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              },
+              {
+                "id": 3,
+                "username": "user1",
+                "name": "User1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+              },
+              {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            ],
+            "last_reply_user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            }
+          },
+          "last_message_id": 3,
+          "force": false,
+          "original_message": {
+            "id": 1,
+            "message": "Hello **world**",
+            "cooked": "<p>Hello <strong>world</strong></p>",
+            "created_at": "2026-11-07T00:40:25.698Z",
+            "excerpt": "Hello world",
+            "chat_channel_id": 2,
+            "deleted_at": null,
+            "mentioned_users": [],
+            "user": {
+              "status": {
+                "description": "at the dentist",
+                "emoji": "tooth",
+                "ends_at": "2099-01-01T10:00:00Z",
+                "message_bus_last_id": 0
+              },
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": null,
+              "has_chat_enabled": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "pinned_messages": [
+          {
+            "id": 1,
+            "chat_message_id": 1,
+            "pinned_at": "2026-11-07T01:25:25.698Z",
+            "excerpt": "Hello world",
+            "pinned_by": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+            },
+            "message": {
+              "id": 1,
+              "message": "Hello **world**",
+              "cooked": "<p>Hello <strong>world</strong></p>",
+              "created_at": "2026-11-07T00:40:25Z",
+              "excerpt": "Hello world",
+              "thread_id": 1,
+              "chat_channel_id": 2,
+              "streaming": false,
+              "user": {
+                "status": {
+                  "description": "at the dentist",
+                  "emoji": "tooth",
+                  "ends_at": "2099-01-01T10:00:00Z",
+                  "message_bus_last_id": 0
+                },
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "can_chat": null,
+                "has_chat_enabled": null,
+                "moderator": false,
+                "admin": false,
+                "staff": false,
+                "new_user": false,
+                "primary_group_name": null
+              },
+              "mentioned_users": [],
+              "available_flags": [
+                "notify_user",
+                "off_topic",
+                "inappropriate",
+                "spam",
+                "illegal",
+                "notify_moderators"
+              ],
+              "thread": {
+                "id": 1,
+                "title": null,
+                "status": "open",
+                "channel_id": 2,
+                "meta": {
+                  "message_bus_last_ids": {
+                    "thread_message_bus_last_id": 0
+                  }
+                },
+                "reply_count": 2,
+                "preview": {
+                  "last_reply_created_at": "2026-11-07T00:55:25Z",
+                  "last_reply_excerpt": "thread reply two",
+                  "last_reply_id": 3,
+                  "reply_count": 2,
+                  "last_reply_user": {
+                    "id": 1,
+                    "username": "admin",
+                    "name": "Admin",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                  }
+                },
+                "last_message_id": 3,
+                "force": false,
+                "original_message": {
+                  "id": 1,
+                  "message": "Hello **world**",
+                  "cooked": "<p>Hello <strong>world</strong></p>",
+                  "created_at": "2026-11-07T00:40:25.698Z",
+                  "excerpt": "Hello world",
+                  "chat_channel_id": 2,
+                  "deleted_at": null,
+                  "mentioned_users": [],
+                  "user": {
+                    "status": {
+                      "description": "at the dentist",
+                      "emoji": "tooth",
+                      "ends_at": "2099-01-01T10:00:00Z",
+                      "message_bus_last_id": 0
+                    },
+                    "id": 2,
+                    "username": "user0",
+                    "name": "User0",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                    "can_chat": null,
+                    "has_chat_enabled": null
+                  }
+                }
+              },
+              "blocks": [],
+              "pinned": true,
+              "is_action": false,
+              "chat_webhook_event": null,
+              "uploads": []
+            }
+          },
+          {
+            "id": 2,
+            "chat_message_id": 4,
+            "pinned_at": "2026-11-07T01:26:25.698Z",
+            "excerpt": "<a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping",
+            "pinned_by": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+            },
+            "message": {
+              "id": 4,
+              "message": "@user1 @user0 ping",
+              "cooked": "<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>",
+              "created_at": "2026-11-07T01:00:25Z",
+              "excerpt": "@user1 @user0 ping",
+              "thread_id": null,
+              "chat_channel_id": 2,
+              "streaming": false,
+              "user": {
+                "status": {
+                  "description": "at the dentist",
+                  "emoji": "tooth",
+                  "ends_at": "2099-01-01T10:00:00Z",
+                  "message_bus_last_id": 0
+                },
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "can_chat": null,
+                "has_chat_enabled": null,
+                "moderator": false,
+                "admin": false,
+                "staff": false,
+                "new_user": false,
+                "primary_group_name": null
+              },
+              "mentioned_users": [
+                {
+                  "status": {
+                    "description": "at the dentist",
+                    "emoji": "tooth",
+                    "ends_at": "2099-01-01T10:00:00Z",
+                    "message_bus_last_id": 0
+                  },
+                  "id": 2,
+                  "username": "user0",
+                  "name": "User0",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                  "can_chat": null,
+                  "has_chat_enabled": null
+                },
+                {
+                  "id": 3,
+                  "username": "user1",
+                  "name": "User1",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                  "can_chat": null,
+                  "has_chat_enabled": null
+                }
+              ],
+              "available_flags": [
+                "notify_user",
+                "off_topic",
+                "inappropriate",
+                "spam",
+                "illegal",
+                "notify_moderators"
+              ],
+              "blocks": [],
+              "pinned": true,
+              "is_action": false,
+              "chat_webhook_event": null,
+              "uploads": []
+            }
+          }
+        ],
+        "membership": {
+          "following": true,
+          "muted": false,
+          "notification_level": "mention",
+          "chat_channel_id": 2,
+          "last_read_message_id": 4,
+          "last_viewed_at": "2026-11-07T01:30:28.729Z",
+          "last_viewed_pins_at": null,
+          "starred": false,
+          "has_unseen_pins": true,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "can_chat": true,
+            "has_chat_enabled": true
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "memberships": [
+          {
+            "user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "can_chat": true,
+              "has_chat_enabled": true
+            }
+          },
+          {
+            "user": {
+              "status": {
+                "description": "at the dentist",
+                "emoji": "tooth",
+                "ends_at": "2099-01-01T10:00:00Z",
+                "message_bus_last_id": 0
+              },
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": true,
+              "has_chat_enabled": true
+            }
+          }
+        ],
+        "meta": {
+          "total_rows": 3,
+          "load_more_url": "/chat/api/channels/2/memberships?offset=50&limit=50&username="
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 687,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
+            "created_at": "2026-11-07T01:30:26.913701",
+            "rotated_at": "2026-11-07T01:30:26.909602",
+            "updated_at": "2026-11-07T01:30:26.913701",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 687,
+            "seen_at": "2026-11-07T01:30:28.624776",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
+            "created_at": "2026-11-07T01:30:26.913701",
+            "rotated_at": "2026-11-07T01:30:26.909602",
+            "updated_at": "2026-11-07T01:30:26.913701",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "muted": false,
+            "starred": false,
+            "user_id": 1,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T15:42:53.424176",
+            "updated_at": "2026-10-01T15:42:53.424176",
+            "last_viewed_at": "2026-10-01T15:42:53.42449",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": 4,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 3,
+            "muted": false,
+            "starred": false,
+            "user_id": 1,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T15:42:53.424176",
+            "updated_at": "2026-11-07T01:30:28.730033",
+            "last_viewed_at": "2026-11-07T01:30:28.729506",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": 4,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          }
+        }
+      ]
+    },
+    "user_custom_fields": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "last_chat_channel_id",
+          "value": "2",
+          "user_id": 1,
+          "created_at": "2026-11-07T01:30:28.734419",
+          "updated_at": "2026-11-07T01:30:28.734419"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_custom_fields": 1
+  },
+  "settings": {
+    "enable_user_status": true,
+    "chat_pinned_messages": "true"
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, in_reply_to_id) VALUES (2, 2, 3, now() - interval '40 minutes', now() - interval '40 minutes', '@user0 hi back', '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>', 1, 3, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (3, 2, 1, now() - interval '35 minutes', now() - interval '35 minutes', 'thread reply two', '<p>thread reply two</p>', 1, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (4, 2, 2, now() - interval '30 minutes', now() - interval '30 minutes', '@user1 @user0 ping', '<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>', 1, 2)",
+    "SELECT setval('chat_messages_id_seq', 4)",
+    "UPDATE chat_channels SET last_message_id = 4, messages_count = 4, threading_enabled = true WHERE id = 2",
+    "INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 'Chat::UserMention', 2, now() - interval '40 minutes', now() - interval '40 minutes'), (4, 'Chat::UserMention', 3, now() - interval '30 minutes', now() - interval '30 minutes'), (4, 'Chat::UserMention', 2, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO chat_threads (id, channel_id, original_message_id, original_message_user_id, status, replies_count, force, last_message_id, created_at, updated_at) VALUES (1, 2, 1, 2, 0, 2, false, 3, now() - interval '40 minutes', now() - interval '35 minutes')",
+    "SELECT setval('chat_threads_id_seq', 1)",
+    "UPDATE chat_messages SET thread_id = 1 WHERE id IN (1, 2, 3)",
+    "INSERT INTO user_chat_thread_memberships (user_id, thread_id, notification_level, last_read_message_id, created_at, updated_at) VALUES (2, 1, 2, NULL, now() - interval '40 minutes', now() - interval '40 minutes'), (3, 1, 2, 2, now() - interval '40 minutes', now() - interval '40 minutes'), (1, 1, 2, 3, now() - interval '35 minutes', now() - interval '35 minutes')",
+    "UPDATE user_chat_channel_memberships SET last_read_message_id = 4 WHERE chat_channel_id = 2",
+    "INSERT INTO chat_pinned_messages (chat_message_id, chat_channel_id, pinned_by_id, created_at, updated_at) VALUES (1, 2, 2, now() - interval '5 minutes', now() - interval '5 minutes'), (4, 2, 2, now() - interval '4 minutes', now() - interval '4 minutes')",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (2, 'tooth', 'at the dentist', now() - interval '1 hour', '2099-01-01 10:00:00')",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (3, 'coffee', 'on a break', now() - interval '1 hour', NULL)",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at, ends_at) VALUES (1, 'zzz', 'long gone', now() - interval '1 hour', now() - interval '10 minutes')",
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 3"
+  ],
+  "recorded_from": {
+    "case": "2f48900e502b166b0db8664aa3414661bea6297ee1cb5d37fbe243a2ae9e6a40",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

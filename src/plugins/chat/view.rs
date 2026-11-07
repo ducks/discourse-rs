@@ -1173,7 +1173,7 @@ impl Context<'_> {
             )
         };
         format!(
-            "<a class=\"chat-channel-row{} can-leave{}\" tabindex=\"0\" data-chat-channel-id=\"{id}\" href=\"{}/chat/c/{}/{id}\"><div class=\"chat-channel-row__content is-dm\">{}<div class=\"chat-channel-row__info\"><div class=\"chat-channel-row__name-container\"><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div>{indicator}</div></div><div class=\"chat-channel__metadata\">{}</div>{tail}</div>{leave}</div></a>",
+            "<a class=\"chat-channel-row{} can-leave{}\" tabindex=\"0\" data-chat-channel-id=\"{id}\" href=\"{}/chat/c/{}/{id}\"><div class=\"chat-channel-row__content is-dm\">{}<div class=\"chat-channel-row__info\"><div class=\"chat-channel-row__name-container\"><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}{}</div>{indicator}</div></div><div class=\"chat-channel__metadata\">{}</div>{tail}</div>{leave}</div></a>",
             if channel.muted { " muted" } else { "" },
             if channel.unread > 0 || channel.unread_threads_since_viewed > 0 {
                 " has-unread"
@@ -1184,6 +1184,7 @@ impl Context<'_> {
             escape(&channel.slug),
             super::page::channel_icon(c, emojis, self.base_path, online),
             crate::topic_list_view::emoji_unescape(&escape(title), emojis, self.base_path),
+            super::page::dm_user_status(c, emojis, self.base_path),
             self.metadata_date(c, now),
             id = channel.id,
         )
@@ -1563,16 +1564,27 @@ impl Context<'_> {
             } else {
                 c.unread_threads_since_viewed
             };
-            let suffix_html = if c.unread + c.mentions + c.watched_threads + threads > 0 {
+            // Its userStatus: a one on one DM's other user's.
+            let mut suffix_html = match c.dm.as_ref().map(|dm| dm.users.as_slice()) {
+                Some([user]) => match user.get("status").filter(|s| s.is_object()) {
+                    Some(status) => crate::users::views::status::message(
+                        self.settings.emojis(),
+                        self.base_path,
+                        status,
+                        false,
+                    ),
+                    None => String::new(),
+                },
+                _ => String::new(),
+            };
+            if c.unread + c.mentions + c.watched_threads + threads > 0 {
                 let urgent = c.urgent() > 0 || (c.dm.is_some() && c.unread > 0);
-                format!(
+                suffix_html.push_str(&format!(
                     "<span class=\"sidebar-section-link-content-badge icon {}\">{}</span>",
                     if urgent { "urgent" } else { "unread" },
                     d_icon("circle", None)
-                )
-            } else {
-                String::new()
-            };
+                ));
+            }
             let extra = LinkExtra {
                 classes: classes.join(" "),
                 suffix_html,
