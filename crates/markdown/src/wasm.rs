@@ -2,8 +2,10 @@
 //! bindings generator: strings cross as UTF-8 in this module's memory. The
 //! page allocates a buffer (`alloc`), writes into it, and calls `configure`
 //! with the site's RenderSettings as JSON once, then `preview` with the
-//! post's markdown. Each returns 0 on success, 1 on failure, and leaves its
-//! text (the cooked HTML, or the error) at `output_ptr`/`output_len`.
+//! post's markdown, or `rich_editor_tree` for the rich editor's node
+//! tree. Each returns 0 on success, 1 on failure, and leaves its text (the
+//! cooked HTML, the tree's JSON, or the error) at
+//! `output_ptr`/`output_len`.
 
 use std::cell::RefCell;
 
@@ -90,6 +92,24 @@ pub unsafe extern "C" fn preview(ptr: *const u8, len: usize) -> i32 {
         None => output("not configured".into(), false),
         Some(settings) => match render(&raw, settings, Lookups::default()) {
             Ok((html, _)) => output(html, true),
+            Err(e) => output(e.to_string(), false),
+        },
+    })
+}
+
+/// The rich editor's node tree for the markdown, as JSON
+/// (docs/rich-editor.md), parsed with the configured settings less the
+/// typographer, onebox, watched words and censored.
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rich_editor_tree(ptr: *const u8, len: usize) -> i32 {
+    let raw = unsafe { input(ptr, len) };
+    SETTINGS.with(|s| match s.borrow().as_ref() {
+        None => output("not configured".into(), false),
+        Some(settings) => match crate::render::rich_editor_tree(&raw, settings) {
+            Ok(tree) => output(tree.to_string(), true),
             Err(e) => output(e.to_string(), false),
         },
     })

@@ -34,6 +34,7 @@ mod table;
 mod text_join;
 mod text_post_process;
 mod tight;
+mod tree;
 mod typographer;
 mod untrimmed;
 mod uploads;
@@ -275,6 +276,73 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     md
 }
 
+/// The parse of `cook`: the parsers, then the core rules in markdown-it's
+/// order up to emoji. What follows in `render` is the cook's alone: the
+/// censored, heading anchor and watched words rules and the renderer's
+/// (breaks, code, tables, tight lists). `uploads` runs upload-protocol,
+/// which this port does in one pass with the image and link renderers
+/// (images become their HTML), so the rich editor's tree leaves it out.
+fn parse(
+    md: &MarkdownIt,
+    raw: &str,
+    settings: &RenderSettings,
+    uploads: bool,
+) -> Result<Node, Unsupported> {
+    let ctx = md.ext.get::<Context>().expect("context");
+    let raw = link_pipes::protect(md, raw);
+    let mut root: Node = md.parse(&raw);
+    untrimmed::restore(&mut root);
+    element::seal_inline_code(&mut root);
+    footnotes::tail(&mut root);
+    bbcode::pair(&mut root, settings);
+    if let Some(linkify) = &settings.linkify {
+        if let Some(what) = linkify::run(&mut root, linkify, md) {
+            return Err(Unsupported(what));
+        }
+        if settings.onebox {
+            onebox::run(&mut root);
+        }
+    }
+    if settings.typographer && settings.chat {
+        typographer::markdown_it_apply(&mut root);
+    } else if settings.typographer {
+        typographer::apply(&mut root);
+        smartquotes::run(&mut root, md);
+    }
+    // markdown-it's text_join, before the core rules Discourse adds.
+    text_join::apply(&mut root);
+    checklist::run(&mut root, settings);
+    if uploads {
+        uploads::run(&mut root, settings, ctx);
+    }
+    text_post_process::apply(&mut root, settings, ctx);
+    emoji::run(&mut root, settings).map_err(Unsupported)?;
+    Ok(root)
+}
+
+/// The rich editor's node tree for `raw` (docs/rich-editor.md): the parse
+/// as markdown-it's token stream nests it, built as the rich editor builds
+/// its engine: the typographer off, and the onebox, watched words and
+/// censored features left out whatever the site's settings say.
+pub fn rich_editor_tree(
+    raw: &str,
+    settings: &RenderSettings,
+) -> Result<serde_json::Value, Unsupported> {
+    let mut settings = settings.clone();
+    settings.typographer = false;
+    settings.onebox = false;
+    settings.censored.clear();
+    settings.watched_replace.clear();
+    settings.watched_link.clear();
+    let md = engine(&settings, Lookups::default());
+    let ctx = md.ext.get::<Context>().expect("context");
+    let root = parse(&md, raw, &settings, false)?;
+    if let Some(what) = ctx.unsupported() {
+        return Err(Unsupported(what));
+    }
+    Ok(tree::doc(&root))
+}
+
 /// One pass of `cook(raw, options)` of discourse-markdown-it's engine:
 /// parse, run the core rules in markdown-it's order, render, sanitize,
 /// trim. Returns the HTML and what the pass wanted to look up.
@@ -293,32 +361,7 @@ pub fn render(
     }
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
-    let raw = link_pipes::protect(&md, raw);
-    let mut root: Node = md.parse(&raw);
-    untrimmed::restore(&mut root);
-    element::seal_inline_code(&mut root);
-    footnotes::tail(&mut root);
-    bbcode::pair(&mut root, settings);
-    if let Some(linkify) = &settings.linkify {
-        if let Some(what) = linkify::run(&mut root, linkify, &md) {
-            return Err(Unsupported(what));
-        }
-        if settings.onebox {
-            onebox::run(&mut root);
-        }
-    }
-    if settings.typographer && settings.chat {
-        typographer::markdown_it_apply(&mut root);
-    } else if settings.typographer {
-        typographer::apply(&mut root);
-        smartquotes::run(&mut root, &md);
-    }
-    // markdown-it's text_join, before the core rules Discourse adds.
-    text_join::apply(&mut root);
-    checklist::run(&mut root, settings);
-    uploads::run(&mut root, settings, ctx);
-    text_post_process::apply(&mut root, settings, ctx);
-    emoji::run(&mut root, settings).map_err(Unsupported)?;
+    let mut root = parse(&md, raw, settings, true)?;
     // features/index.js: censored after emoji and code, before anchor.
     watched_words::censor(&mut root, settings).map_err(Unsupported)?;
     anchor::apply(&mut root, settings);

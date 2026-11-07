@@ -3,7 +3,29 @@
 //! level (which the text passes do not visit).
 
 use markdown_it::common::utils::escape_html;
+use markdown_it::parser::extset::NodeExt;
 use markdown_it::{Node, NodeValue, Renderer};
+
+/// The markdown-it token an Element stands for, where the rule that built
+/// it pushes one the rich editor parses (docs/rich-editor.md): its type
+/// less `_open` / `_close`, and its markup. The tag alone cannot tell
+/// `[b]`'s `bbcode_b` from any other span.
+#[derive(Debug)]
+pub struct JsToken {
+    pub kind: String,
+    pub markup: String,
+}
+
+impl NodeExt for JsToken {}
+
+impl JsToken {
+    pub fn on(node: &mut Node, kind: &str, markup: &str) {
+        node.ext.insert(JsToken {
+            kind: kind.to_string(),
+            markup: markup.to_string(),
+        });
+    }
+}
 
 /// A `Token` opened and closed around its children. Rendered as
 /// markdown-it's `renderToken` does: a block tag is followed by a newline
