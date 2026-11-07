@@ -1333,7 +1333,7 @@
       richContextData = JSON.parse(data.richEditorContext || "{}");
     }
     var labels = richContextData.labels || {};
-    return {
+    var context = {
       siteSettings: richContextData.siteSettings || {},
       site: richContextData.site || {},
       currentUser: richContextData.currentUser || null,
@@ -1360,7 +1360,43 @@
       replaceToolbar: function (toolbar, owner) {
         replaceToolbar(editorModule, toolbar, owner);
       },
+      // The modal service, for the node views' modals: core's wrap
+      // attributes, and the plugins' builders where their scripts are in.
+      modal: {
+        show: function (name, opts) {
+          var model = (opts && opts.model) || {};
+          if (name === "wrap-attributes") {
+            editorModule.showWrapAttributesModal(model, context.i18n);
+          } else if (name === "poll-ui-builder") {
+            showPollBuilder(model);
+          } else if (name === "math-edit" && Discourse.mathEdit) {
+            Discourse.mathEdit.show(model);
+          } else if (name === "policy-builder" && Discourse.policyBuilder) {
+            Discourse.policyBuilder.edit(model);
+          } else if (name === "local-dates-create" && Discourse.localDatesCreate) {
+            Discourse.localDatesCreate.show(model.insertDate, model.initialValues);
+          }
+        },
+      },
     };
+    return context;
+  }
+
+  // The plugins' extensions (rich-editor/plugins.js), and what their nodes
+  // draw with before the editor opens: local dates' moment.
+  function richEditorPlugins(editorModule) {
+    if (!richContextData) {
+      richContextData = JSON.parse(data.richEditorContext || "{}");
+    }
+    var plugins = richContextData.plugins || [];
+    editorModule.registerPluginExtensions(plugins);
+    if (plugins.indexOf("local-dates") !== -1 && Discourse.localDates) {
+      // Without it the dates show as written.
+      return Discourse.localDates.loadMoment().catch(function (e) {
+        console.error(e);
+      });
+    }
+    return Promise.resolve();
   }
 
   // capabilities.hasKeyboard
@@ -1476,6 +1512,11 @@
     var opening = Promise.resolve()
       .then(function () {
         return Promise.all([Discourse.richEditor.load(), loadRenderer()]);
+      })
+      .then(function (loaded) {
+        return richEditorPlugins(loaded[0]).then(function () {
+          return loaded;
+        });
       })
       .then(function (loaded) {
         // Superseded: switched back to markdown meanwhile.
@@ -3938,7 +3979,9 @@
     // first time, once the menu has closed (and given the focus back to
     // its trigger).
     poll: function (closing) {
-      (closing || Promise.resolve()).then(showPollBuilder);
+      (closing || Promise.resolve()).then(function () {
+        showPollBuilder();
+      });
     },
     // discourse-policy's builder (static/js/policy.js).
     policy: function () {
@@ -3954,18 +3997,23 @@
     },
   };
 
-  function showPollBuilder() {
+  // edit: the rich editor's Edit poll ({ poll, onSave }).
+  function showPollBuilder(edit) {
     var config = {};
     try {
       config = JSON.parse(data.pollBuilder || "{}");
     } catch (_) {}
     var showBuilder = function () {
-      Discourse.pollBuilder.show(config, {
-        getText: function () {
-          return textarea.value;
+      Discourse.pollBuilder.show(
+        config,
+        {
+          getText: function () {
+            return textarea.value;
+          },
+          addText: addText,
         },
-        addText: addText,
-      });
+        edit
+      );
     };
     if (Discourse.pollBuilder) {
       showBuilder();

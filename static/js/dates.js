@@ -731,6 +731,11 @@
     format: format,
     fill: fill,
     relativeAge: relativeAge,
+    // relativeAge(date, { addAgo: true }) and moment().to(date, true)
+    relativeAgeWithAgo: function (ms, zone) {
+      return relativeAgeTiny(ms, zone, null, true);
+    },
+    humanize: humanize,
     longDate: longDate,
     timelineDate: timelineDate,
     i18n: i18n,

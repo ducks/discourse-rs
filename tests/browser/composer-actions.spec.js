@@ -497,3 +497,168 @@ test("Build poll shows in a PM with a non-human user for a member who may not cr
     });
   }
 });
+
+// The rich editor's Edit poll (196r4): the builder over a poll's settings,
+// its options and title left to the document, as poll-ui-builder-test's
+// editing cases render it with a model of { poll, onSave }.
+test.describe("Edit poll in the builder", () => {
+  // The builder shown with the composer's config over `poll`; resolves to
+  // what Save hands onSave.
+  async function editPoll(page, poll, before) {
+    await page.evaluate(
+      async ({ poll }) => {
+        const control = document.getElementById("reply-control");
+        const config = JSON.parse(control.dataset.pollBuilder);
+        if (!window.Discourse.pollBuilder) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = config.src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+        window.savedPolls = [];
+        window.Discourse.pollBuilder.show(
+          config,
+          { getText: () => "", addText: () => {} },
+          { poll, onSave: (attrs) => window.savedPolls.push(attrs) }
+        );
+      },
+      { poll }
+    );
+    const modal = page.locator(".d-modal.poll-ui-builder");
+    await expect(modal).toBeVisible();
+    if (before) {
+      await before(modal);
+    }
+    await modal.locator(".insert-poll").click();
+    await expect(modal).toHaveCount(0);
+    return page.evaluate(() => window.savedPolls[0]);
+  }
+
+  test.beforeEach(async ({ page, context }) => {
+    await login(context, "user1");
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(page.locator("#reply-control.open")).toBeVisible();
+  });
+
+  test("editing keeps the settings the builder does not show", async ({ page }) => {
+    const saved = await editPoll(
+      page,
+      {
+        name: "existing",
+        type: "regular",
+        optionCount: 2,
+        public: "false",
+        groups: "custom_group",
+        close: "2050-01-01",
+        status: "closed",
+        order: "desc",
+      },
+      async (modal) => {
+        await expect(modal.locator(".d-modal__title-text")).toHaveText("Edit poll");
+        // options are edited in the document, not in the builder
+        await expect(modal.locator(".poll-options")).toHaveCount(0);
+        // neither is the title
+        await expect(modal.locator(".poll-title")).toHaveCount(0);
+        // every remaining setting is shown, so there is no advanced mode
+        await expect(modal.locator(".advanced-mode-btn")).toHaveCount(0);
+        // the close date is one of them
+        await expect(modal.locator(".poll-date")).toHaveCount(1);
+        await expect(modal.locator(".insert-poll")).toHaveText("Save Changes");
+      }
+    );
+    // keeps what it carried and adds no default it lacked
+    expect(saved).toEqual({
+      name: "existing",
+      type: "regular",
+      results: null,
+      min: null,
+      max: null,
+      step: null,
+      public: "false",
+      chartType: null,
+      dynamic: null,
+      groups: "custom_group",
+      close: "2050-01-01",
+      status: "closed",
+      order: "desc",
+    });
+  });
+
+  test("editing writes no attribute that matches its default", async ({ page }) => {
+    // saving an untouched poll leaves its markdown alone
+    expect(await editPoll(page, { optionCount: 2 })).toEqual({
+      name: null,
+      type: null,
+      results: null,
+      min: null,
+      max: null,
+      step: null,
+      public: null,
+      chartType: null,
+      dynamic: null,
+      groups: null,
+      close: null,
+      status: null,
+      order: null,
+    });
+  });
+
+  test("editing leaves a range the poll did not carry to the options", async ({ page }) => {
+    const saved = await editPoll(page, { type: "multiple", optionCount: 2 });
+    // no minimum, so one option stays enough; no maximum, so a later
+    // option is still selectable
+    expect([saved.min, saved.max]).toEqual([null, null]);
+  });
+
+  test("editing keeps a range the poll spelled out", async ({ page }) => {
+    const saved = await editPoll(page, { type: "multiple", optionCount: 3, min: "1", max: "2" });
+    expect([saved.min, saved.max]).toEqual(["1", "2"]);
+  });
+
+  test("editing a number poll leaves its implied range out", async ({ page }) => {
+    const saved = await editPoll(page, { type: "number" });
+    // the range still follows the setting, and no step of one
+    expect([saved.min, saved.max, saved.step]).toEqual([null, null, null]);
+  });
+
+  test("editing keeps a number poll's own step", async ({ page }) => {
+    expect((await editPoll(page, { type: "number", step: "5" })).step).toBe("5");
+  });
+
+  test("a range field cannot be dropped by emptying it", async ({ page }) => {
+    await editPoll(page, { type: "number", min: "1", max: "5", step: "1" }, async (modal) => {
+      const insert = modal.locator(".insert-poll");
+      // the poll starts out saveable
+      await expect(insert).toBeEnabled();
+      // an empty maximum is refused, not read as having none
+      await modal.locator(".poll-options-max").fill("");
+      await expect(insert).toBeDisabled();
+      // and an empty minimum is not read as zero
+      await modal.locator(".poll-options-max").fill("5");
+      await modal.locator(".poll-options-min").fill("");
+      await expect(insert).toBeDisabled();
+      await modal.locator(".poll-options-min").fill("1");
+    });
+  });
+
+  test("editing a poll with more options than the site allows", async ({ page }) => {
+    // the option count belongs to the document, not the builder: the
+    // settings still save
+    const saved = await editPoll(page, { type: "regular", optionCount: 25 }, async (modal) => {
+      await expect(modal.locator(".insert-poll")).toBeEnabled();
+    });
+    expect(saved).toBeTruthy();
+  });
+
+  test("editing a ranked choice poll leaves range attributes out", async ({ page }) => {
+    const saved = await editPoll(page, { type: "ranked_choice", optionCount: 2, min: "3" }, async (modal) => {
+      // a stale range does not block saving a type without one
+      await expect(modal.locator(".insert-poll")).toBeEnabled();
+    });
+    expect([saved.min, saved.max]).toEqual([null, null]);
+  });
+});

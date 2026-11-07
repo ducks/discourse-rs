@@ -513,6 +513,8 @@ pub struct PollBuilderUi {
 const POLL_BUILDER_STRINGS: &[&str] = &[
     "poll.ui_builder.title",
     "poll.ui_builder.insert",
+    "poll.ui_builder.edit",
+    "save",
     "poll.ui_builder.help.options_min_count",
     "poll.ui_builder.help.options_max_count",
     "poll.ui_builder.help.invalid_min_value",

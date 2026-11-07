@@ -7,7 +7,9 @@
 // while the timezone differs from the member's, a preview of the date as
 // the post will show it. Insert puts the [date] or [date-range] markup in
 // the composer at the cursor. composer.js opens it from the toolbar's
-// options menu (Discourse.localDatesCreate.show(insert)).
+// options menu (Discourse.localDatesCreate.show(insert)), and the rich
+// editor's date chips to edit theirs (show(insert, initialValues), Save in
+// place of Insert).
 (function () {
   "use strict";
 
@@ -431,7 +433,9 @@
     });
   }
 
-  function show(insertDate) {
+  // initialValues: a date the rich editor edits (its node's values), which
+  // the modal opens on, titled and saved as an edit.
+  function show(insertDate, initialValues) {
     var moment = window.moment;
     var config = (ld() && ld().config) || {};
     var state = {
@@ -448,7 +452,24 @@
       fromSelected: true,
       toSelected: false,
       minDate: null,
+      countdown: null,
+      displayedTimezone: null,
     };
+    var isEditing = !!initialValues;
+    if (initialValues) {
+      // A date without a timezone keeps the member's.
+      Object.keys(initialValues).forEach(function (key) {
+        if (initialValues[key] !== null && initialValues[key] !== undefined) {
+          state[key] = initialValues[key];
+        }
+      });
+      // the advanced pane, for an option only editable there
+      state.advancedMode = !!(
+        initialValues.format ||
+        initialValues.recurring ||
+        (initialValues.timezones && initialValues.timezones.length)
+      );
+    }
     var currentUserTimezone = userTimezone();
     var picker = null;
     var kits = [];
@@ -501,6 +522,9 @@
         timezones: state.timezones,
         timezone: state.timezone,
         format: state.format,
+        // no UI of their own: carried so an edit keeps them
+        countdown: state.countdown,
+        displayedTimezone: state.displayedTimezone,
       };
     }
 
@@ -592,7 +616,7 @@
       footerEl.innerHTML =
         (isValid()
           ? '<button class="btn btn-primary" type="button"><span class="d-button-label">' +
-            escapeHtml(t("discourse_local_dates.create.form.insert")) + "</span></button>"
+            escapeHtml(t(isEditing ? "discourse_local_dates.create.form.save" : "discourse_local_dates.create.form.insert")) + "</span></button>"
           : "") +
         '<button class="btn btn-flat" type="button"><span class="d-button-label">' + escapeHtml(t("cancel")) +
         "</span></button>" +
@@ -744,7 +768,7 @@
 
     closeModal = Discourse.modal.show({
       className: "discourse-local-dates-create-modal --large",
-      title: t("discourse_local_dates.title"),
+      title: t(isEditing ? "discourse_local_dates.edit" : "discourse_local_dates.title"),
       body: function (body) {
         bodyEl = body;
         body.innerHTML =
@@ -878,14 +902,14 @@
 
   Discourse.localDatesCreate = {
     // The modal, once moment and its timezones (and locale) are in.
-    show: function (insertDate) {
+    show: function (insertDate, initialValues) {
       if (!ld()) {
         return Promise.resolve();
       }
       return ld()
         .loadMoment()
         .then(function () {
-          return show(insertDate);
+          return show(insertDate, initialValues);
         });
     },
     // The shortcut's markup for now in the member's timezone.

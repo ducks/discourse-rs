@@ -364,7 +364,8 @@ test.describe("the rich editor", () => {
 
   test("goes back to markdown with the alert on what it cannot hold yet", async ({ page, context, session }) => {
     const { writer } = await replyTo(page, context, session, 0);
-    await textarea(page).fill("[details=more]\nhello there\n[/details]");
+    // calendar and events are not ported (ROADMAP 202): refused
+    await textarea(page).fill('[event start="2030-01-01 10:00"]\n[/event]');
     const saved = savedMode(page, writer.name, 0);
     await toggle(page).click();
     const dialog = page.locator(".dialog-container");
@@ -372,12 +373,51 @@ test.describe("the rich editor", () => {
       "The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.",
     );
     await expect(textarea(page)).toBeVisible();
-    await expect(textarea(page)).toHaveValue("[details=more]\nhello there\n[/details]");
+    await expect(textarea(page)).toHaveValue('[event start="2030-01-01 10:00"]\n[/event]');
     await expect(rich(page)).toHaveCount(0);
     await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
     expect((await saved).ok()).toBeTruthy();
     await dialog.locator(".dialog-footer .btn-primary").click();
     await expect(dialog).toBeHidden();
+  });
+
+  // 196r4: the site's plugins' extensions, from the composer's context,
+  // and the node views' modals through the composer's.
+  test("opens the plugins' constructs, and Edit poll saves the builder's settings", async ({ page, context, session }) => {
+    await replyTo(page, context, session, 0);
+    await textarea(page).fill("[details=more]\nhello there\n[/details]\n\n[poll type=multiple]\n* a\n* b\n[/poll]");
+    await toggle(page).click();
+    await expect(rich(page).locator("details summary")).toHaveText("more");
+    await expect(rich(page).locator(".composer-poll-node__content li")).toHaveCount(2);
+
+    await rich(page).locator(".composer-poll-node__edit").click();
+    const modal = page.locator(".d-modal.poll-ui-builder");
+    await expect(modal).toBeVisible();
+    await expect(modal.locator(".poll-options")).toHaveCount(0);
+    await modal.locator(".poll-public .d-toggle-switch__checkbox-slider").click();
+    await modal.locator(".insert-poll").click();
+    await expect(modal).toHaveCount(0);
+    await expect(rich(page).locator(".poll")).toHaveAttribute("data-poll-public", "true");
+
+    await toggle(page).click();
+    await expect(textarea(page)).toHaveValue(
+      '[details="more"]\nhello there\n\n[/details]\n\n[poll type=multiple public=true]\n* a\n* b\n\n[/poll]\n\n'
+    );
+  });
+
+  test("a wrap's indicator opens Edit Wrap", async ({ page, context, session }) => {
+    await replyTo(page, context, session, 0);
+    await textarea(page).fill("[wrap=outer]\nhello\n[/wrap]");
+    await toggle(page).click();
+    await rich(page).locator(".d-wrap-indicator").click();
+    const modal = page.locator(".wrap-attributes-modal");
+    await expect(modal.getByLabel("Wrap name")).toHaveValue("outer");
+    await modal.getByLabel("Wrap name").fill("inner");
+    await modal.getByRole("button", { name: "Apply" }).click();
+    await expect(modal).toHaveCount(0);
+    await expect(rich(page).locator(".d-wrap-indicator")).toHaveText("[wrap=inner]");
+    await toggle(page).click();
+    await expect(textarea(page)).toHaveValue("[wrap=inner]\nhello\n\n[/wrap]\n\n");
   });
 
   test("posts the markdown the rich editor writes", async ({ page, context, session }) => {
