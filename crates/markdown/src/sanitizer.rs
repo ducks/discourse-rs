@@ -70,6 +70,27 @@ impl AllowList {
     pub fn allow_custom(&mut self, custom: Custom) {
         self.custom.push(custom);
     }
+
+    /// `getAllowList().tagList`'s tags.
+    pub fn tags(&self) -> Vec<&str> {
+        let mut tags: Vec<&str> = self.attrs.keys().map(String::as_str).collect();
+        tags.sort_unstable();
+        tags
+    }
+
+    /// The rich editor's check of an HTML attribute (html-inline.js
+    /// extractHtmlAttrs): `isAllowListedAttr` for the tag's list, or a
+    /// feature's custom check. None for a tag that is not on the list.
+    pub fn allows_attr(&self, tag: &str, name: &str, value: &str) -> Option<bool> {
+        let for_tag = self.attrs.get(tag)?;
+        let for_attr = for_tag.iter().find(|(n, _)| n == name).map(|(_, v)| v);
+        let listed = for_attr.is_some_and(|v| v.iter().any(|x| x == "*" || x == value));
+        let data = !name.contains("data-html-")
+            && name.starts_with("data-")
+            && (for_tag.iter().any(|(n, _)| n == "data-*")
+                || test_data_attribute(for_tag, name, value));
+        Some(listed || data || self.custom.iter().any(|custom| custom(tag, name, value)))
+    }
 }
 
 fn entry_mut<'a>(attrs: &'a mut Vec<(String, Vec<String>)>, name: &str) -> &'a mut Vec<String> {

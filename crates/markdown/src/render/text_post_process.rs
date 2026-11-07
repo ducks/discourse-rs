@@ -15,7 +15,7 @@ use markdown_it::plugins::html::html_inline::HtmlInline;
 
 use super::RenderSettings;
 use super::context::Context;
-use super::element::Element;
+use super::element::{Element, JsToken};
 use super::local_dates;
 use super::md_utils::{is_punct_char, is_white_space};
 use crate::sanitizer::AllowList;
@@ -65,6 +65,7 @@ fn text(content: &str) -> Node {
 /// that name a user or group into links.
 fn mention(username: &str) -> Node {
     let mut span = Element::inline("span", &[("class", "mention")]);
+    JsToken::on(&mut span, "mention", "");
     span.children.push(text(&format!("@{username}")));
     span
 }
@@ -74,6 +75,7 @@ fn mention(username: &str) -> Node {
 fn hashtag(matched: &str, slug: &str, ctx: &Context) -> Node {
     let Some(found) = ctx.hashtag(slug) else {
         let mut span = Element::inline("span", &[("class", "hashtag-raw")]);
+        JsToken::on(&mut span, "span", "");
         span.children.push(text(matched));
         return span;
     };

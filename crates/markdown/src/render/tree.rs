@@ -116,19 +116,64 @@ impl Token {
 }
 
 /// The tree's root: `{"type": "doc", "children": [...]}`.
-pub fn doc(root: &Node) -> Value {
+pub fn doc(root: &Node, base_path: &str) -> Value {
     let source = root
         .cast::<Root>()
         .map(|r| r.content.as_str())
         .unwrap_or("");
     let mut children = Vec::new();
-    let walker = Walker { source };
+    let walker = Walker { source, base_path };
     walker.block_children(root, &mut children);
     json!({ "type": "doc", "children": children })
 }
 
 struct Walker<'a> {
     source: &'a str,
+    base_path: &'a str,
+}
+
+/// HTML naming an upload: upload-protocol rewrites an `img`'s `upload://`
+/// src inside it through the xss filter, which is not ported here.
+fn names_upload(html: &str) -> bool {
+    html.contains("upload://")
+}
+
+/// `getURL`
+fn get_url(base_path: &str, path: &str) -> String {
+    format!("{base_path}{path}")
+}
+
+impl Walker<'_> {
+    /// upload-protocol.js without a lookup (as in the client): an `img`'s
+    /// or an `a`'s first `upload://` attribute points at a placeholder and
+    /// is kept as `data-orig-src` or `data-orig-href`.
+    fn upload_protocol(&self, token: &mut Token) {
+        let tag = token.owned_tag.as_deref().unwrap_or(token.tag);
+        if tag != "img" && tag != "a" {
+            return;
+        }
+        let Some(i) = token
+            .attrs
+            .iter()
+            .position(|(_, value)| value.starts_with("upload://"))
+        else {
+            return;
+        };
+        let original = token.attrs[i].1.clone();
+        if tag == "img" {
+            // No point in a transparent png for audio or video.
+            let path = if token.content.contains("|video") || token.content.contains("|audio") {
+                "/404"
+            } else {
+                "/images/transparent.png"
+            };
+            token.attrs[i].1 = get_url(self.base_path, path);
+            token.attrs.push(("data-orig-src".into(), original));
+        } else {
+            token.attrs[i].1 = get_url(self.base_path, "/404");
+            token.attrs.push(("data-orig-href".into(), original));
+        }
+    }
 }
 
 /// Blocks whose inline content is their only child in JS (an `inline`
@@ -259,6 +304,10 @@ impl Walker<'_> {
             );
             return;
         } else if let Some(html) = node.cast::<HtmlBlock>() {
+            if names_upload(&html.content) {
+                out.push(unported(node));
+                return;
+            }
             let mut token = Token::new("html_block", "");
             token.content = html.content.clone();
             out.push(token.json(None));
@@ -396,6 +445,7 @@ impl Walker<'_> {
             if let Some(title) = &link.title {
                 token = token.attr("title", title.clone());
             }
+            self.upload_protocol(&mut token);
             out.push(token.json(Some(self.inline_children(node))));
             return;
         } else if let Some(link) = node.cast::<Autolink>() {
@@ -403,6 +453,7 @@ impl Walker<'_> {
                 .attr("href", link.url.clone())
                 .markup("autolink");
             token.info = "auto".into();
+            self.upload_protocol(&mut token);
             out.push(token.json(Some(self.inline_children(node))));
             return;
         } else if let Some(link) = node.cast::<Linkified>() {
@@ -415,6 +466,7 @@ impl Walker<'_> {
             }
             token = token.markup("linkify");
             token.info = "auto".into();
+            self.upload_protocol(&mut token);
             out.push(token.json(Some(self.inline_children(node))));
             return;
         } else if let Some(image) = node.cast::<Image>() {
@@ -426,6 +478,7 @@ impl Walker<'_> {
             }
             token.content = self.label(node);
             token.leaf_with_children = true;
+            self.upload_protocol(&mut token);
             out.push(token.json(Some(self.inline_children(node))));
             return;
         } else if let Some(code) = node.cast::<CodeInline>() {
@@ -434,6 +487,10 @@ impl Walker<'_> {
             token.content = code_text(node);
             token
         } else if let Some(html) = node.cast::<HtmlInline>() {
+            if names_upload(&html.content) {
+                out.push(unported(node));
+                return;
+            }
             let mut token = Token::new("html_inline", "");
             token.content = html.content.clone();
             token
@@ -453,6 +510,7 @@ impl Walker<'_> {
                 token.content = code_text(node);
                 out.push(token.json(None));
             } else {
+                self.upload_protocol(&mut token);
                 out.push(token.json(Some(self.inline_children(node))));
             }
             return;
@@ -1067,13 +1125,137 @@ mod tests {
 
     #[test]
     fn what_is_not_written_yet_is_unported() {
-        // A mention's span records no token yet: the editor refuses it.
-        let tree = tree("hi @sam");
-        let mention = &tree["children"][0]["children"][0]["children"][1];
-        assert!(
-            mention["type"].as_str().unwrap().starts_with("unported:"),
-            "{mention}"
+        // 196r4's constructs record no token: the editor refuses them.
+        for raw in ["[details=x]\ny\n[/details]", "[wrap=toc]\nx\n[/wrap]"] {
+            let tree = tree(raw);
+            let block = &tree["children"][0];
+            assert!(
+                block["type"].as_str().unwrap().starts_with("unported:"),
+                "{raw:?}: {block}"
+            );
+        }
+    }
+
+    #[test]
+    fn mentions_and_hashtags() {
+        check(vec![(
+            "hi @sam and #dev",
+            doc(vec![p(
+                "hi @sam and #dev",
+                vec![
+                    t("hi "),
+                    json!({"type": "mention", "tag": "span", "attrs": [["class", "mention"]],
+                           "children": [t("@sam")]}),
+                    t(" and "),
+                    // No lookup in the editor's engine: every hashtag is raw.
+                    json!({"type": "span", "tag": "span", "attrs": [["class", "hashtag-raw"]],
+                           "children": [t("#dev")]}),
+                ],
+            )]),
+        )]);
+    }
+
+    #[test]
+    fn quotes() {
+        let aside = |attrs: Value, title: Option<&str>, children: Vec<Value>| {
+            let mut kids = Vec::new();
+            if let Some(title) = title {
+                kids.push(json!({"type": "quote_header", "tag": "div",
+                "attrs": [["class", "title"]],
+                "children": [
+                    {"type": "quote_controls", "tag": "div",
+                     "attrs": [["class", "quote-controls"]], "children": []},
+                    {"type": "text", "content": format!(" {title}:")},
+                ]}));
+            }
+            kids.push(json!({"type": "bbcode", "tag": "blockquote", "children": children}));
+            json!({"type": "bbcode", "tag": "aside", "attrs": attrs, "children": kids})
+        };
+        check(vec![
+            (
+                "[quote]\nThis is a quote.\n[/quote]",
+                doc(vec![aside(
+                    json!([["class", "quote no-group"]]),
+                    None,
+                    vec![p("This is a quote.", vec![t("This is a quote.")])],
+                )]),
+            ),
+            (
+                "[quote=\"Full Name, post:123, topic:456, username:user123\"]\nx\n[/quote]",
+                doc(vec![aside(
+                    json!([
+                        ["class", "quote no-group"],
+                        ["data-username", "user123"],
+                        ["data-display-name", "Full Name"],
+                        ["data-post", "123"],
+                        ["data-topic", "456"]
+                    ]),
+                    Some("Full Name"),
+                    vec![p("x", vec![t("x")])],
+                )]),
+            ),
+        ]);
+    }
+
+    #[test]
+    fn quotes_ignore_the_topic() {
+        // The editor's engine has no topic: another topic's quote still
+        // names its user.
+        let mut settings = settings();
+        settings.topic_id = Some(1);
+        let tree =
+            rich_editor_tree("[quote=\"sam, post:2, topic:9\"]\nx\n[/quote]", &settings).unwrap();
+        let header = &tree["children"][0]["children"][0];
+        assert_eq!(header["type"], "quote_header");
+        assert_eq!(header["children"][1], t(" sam:"));
+    }
+
+    #[test]
+    fn grids() {
+        let tree = tree("[grid mode=carousel]\n![a](b)\n[/grid]");
+        let grid = &tree["children"][0];
+        assert_eq!(grid["type"], "bbcode");
+        assert_eq!(grid["tag"], "div");
+        assert_eq!(
+            grid["attrs"],
+            json!([["class", "d-image-grid"], ["data-mode", "carousel"]])
         );
+        assert_eq!(grid["children"][0]["type"], "paragraph");
+    }
+
+    #[test]
+    fn uploads_point_at_placeholders() {
+        let image =
+            &tree("![x|690x388](upload://abc.png)")["children"][0]["children"][0]["children"][0];
+        assert_eq!(
+            image["attrs"],
+            json!([
+                ["src", "/images/transparent.png"],
+                ["alt", ""],
+                ["data-orig-src", "upload://abc.png"]
+            ])
+        );
+        assert_eq!(image["content"], "x|690x388");
+        let video =
+            &tree("![v|video](upload://abc.mp4)")["children"][0]["children"][0]["children"][0];
+        assert_eq!(video["attrs"][0], json!(["src", "/404"]));
+        let link =
+            &tree("[f|attachment](upload://abc.pdf)")["children"][0]["children"][0]["children"][0];
+        assert_eq!(
+            link["attrs"],
+            json!([["href", "/404"], ["data-orig-href", "upload://abc.pdf"]])
+        );
+        let mut settings = settings();
+        settings.base_path = "/forum".into();
+        let tree = rich_editor_tree("![x](upload://abc.png)", &settings).unwrap();
+        assert_eq!(
+            tree["children"][0]["children"][0]["children"][0]["attrs"][0],
+            json!(["src", "/forum/images/transparent.png"])
+        );
+        // An upload inside HTML is rewritten through the xss filter, which
+        // the tree does not port: refused.
+        let html = &self::tree("<img src=\"upload://abc.png\">\n\nx")["children"][0];
+        assert!(html.to_string().contains("unported:"), "{html}");
     }
 
     #[test]

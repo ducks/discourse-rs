@@ -531,7 +531,9 @@ impl BlockRule for BlockBbcode {
                         None,
                     ));
                 }
-                wrap("div", attrs, children)
+                let mut grid = wrap("div", attrs, children);
+                JsToken::on(&mut grid, "bbcode", "");
+                grid
             }
             BlockTag::Details => {
                 let mut attrs = Vec::new();

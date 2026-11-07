@@ -157,6 +157,12 @@ fn emoji_name(content: &[u16], pos: usize, inline_emoji: bool) -> Option<String>
     Some(slice(content, pos, pos + length))
 }
 
+/// `buildEmojiUrl` and `isCustomEmoji` for the rich editor's emoji node:
+/// the image of a code that exists, and whether it is a custom emoji.
+pub fn image(code: &str, settings: &RenderSettings) -> Option<(String, bool)> {
+    emoji_node(code, settings).map(|emoji| (emoji.url, emoji.custom))
+}
+
 /// `imageFor` / `buildEmojiUrl`: the image of a custom emoji (its upload),
 /// else of a known emoji or alias, a tone as a path segment.
 fn emoji_node(code: &str, settings: &RenderSettings) -> Option<Emoji> {

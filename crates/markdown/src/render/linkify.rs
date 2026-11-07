@@ -267,6 +267,11 @@ impl LinkifyIt {
     /// `matchAtStart(text)`: a link with a schema starting the text, as
     /// its normalized url.
     pub fn match_at_start(&self, text: &str) -> Option<String> {
+        self.link_at_start(text).map(|link| link.url)
+    }
+
+    /// `matchAtStart(text)` as linkify-it's Match.
+    pub fn link_at_start(&self, text: &str) -> Option<LinkMatch> {
         let caps = self.schema_at_start.captures(text).ok()??;
         let whole = caps.get(0)?;
         let schema = caps.get(2)?.as_str();
@@ -275,15 +280,16 @@ impl LinkifyIt {
             return None;
         }
         let index = caps.get(1).map_or(0, |m| m.end());
-        let raw = &text[index..whole.end() + len];
-        // LinkifyIt#normalize
-        if schema.eq_ignore_ascii_case("mailto:")
-            && !raw.to_ascii_lowercase().starts_with("mailto:")
-        {
-            Some(format!("mailto:{raw}"))
-        } else {
-            Some(raw.to_string())
-        }
+        let last_index = whole.end() + len;
+        Some(link_match(text, &schema.to_lowercase(), index, last_index))
+    }
+
+    /// `match(text)` as linkify-it's Matches, in byte offsets.
+    pub fn link_matches(&self, text: &str) -> Vec<LinkMatch> {
+        self.matches(text)
+            .iter()
+            .map(|m| link_match(text, &m.schema, m.index, m.last_index))
+            .collect()
     }
 
     /// `testSchemaAt`: how much of the text after a schema is its link.
@@ -453,6 +459,34 @@ impl LinkifyIt {
             result.push(candidate);
         }
         result
+    }
+}
+
+/// linkify-it's `Match`: where the link is (byte offsets), as written and
+/// as `normalize` makes it a url.
+#[derive(Debug, Clone, PartialEq)]
+pub struct LinkMatch {
+    pub index: usize,
+    pub last_index: usize,
+    pub raw: String,
+    pub url: String,
+}
+
+fn link_match(text: &str, schema: &str, index: usize, last_index: usize) -> LinkMatch {
+    let raw = text[index..last_index].to_string();
+    // LinkifyIt#normalize
+    let url = if schema.is_empty() {
+        format!("http://{raw}")
+    } else if schema == "mailto:" && !raw.to_ascii_lowercase().starts_with("mailto:") {
+        format!("mailto:{raw}")
+    } else {
+        raw.clone()
+    };
+    LinkMatch {
+        index,
+        last_index,
+        raw,
+        url,
     }
 }
 
