@@ -9,12 +9,19 @@ use markdown_it::{Node, NodeValue, Renderer};
 /// The markdown-it token an Element stands for, where the rule that built
 /// it pushes one the rich editor parses (docs/rich-editor.md): its type
 /// less `_open` / `_close`, and its markup. The tag alone cannot tell
-/// `[b]`'s `bbcode_b` from any other span.
+/// `[b]`'s `bbcode_b` from any other span. A kind without the suffixes
+/// (`wrap_bbcode`) is written with `bare` (JsWrap).
 #[derive(Debug)]
 pub struct JsToken {
     pub kind: String,
     pub markup: String,
 }
+
+/// Marks an Element whose JsToken is a pair of tokens of the same type.
+#[derive(Debug)]
+pub struct JsBare;
+
+impl NodeExt for JsBare {}
 
 impl NodeExt for JsToken {}
 
@@ -26,6 +33,33 @@ impl JsToken {
         });
     }
 }
+
+/// A token pair whose open and close tokens are both `kind`, nesting 1
+/// and -1 (bbcode-block's `wrap_bbcode`), where the node renders as other
+/// nodes: a Holder whose first and last children are the rule's own raw
+/// HTML tags, which the editor's tree leaves out.
+#[derive(Debug)]
+pub struct JsWrap {
+    pub kind: String,
+    pub tag: String,
+    pub attrs: Vec<(String, String)>,
+}
+
+impl NodeExt for JsWrap {}
+
+/// Properties a rule sets on its token beyond markdown-it's own (the poll's
+/// `poll_attrs`), for the editor's tree.
+#[derive(Debug)]
+pub struct JsFields(pub serde_json::Map<String, serde_json::Value>);
+
+impl NodeExt for JsFields {}
+
+/// The editor's tree nodes (docs/rich-editor.md) for what a rule writes as
+/// raw HTML from tokens of its own: the poll's generated options and info.
+#[derive(Debug)]
+pub struct JsTree(pub Vec<serde_json::Value>);
+
+impl NodeExt for JsTree {}
 
 /// A `Token` opened and closed around its children. Rendered as
 /// markdown-it's `renderToken` does: a block tag is followed by a newline

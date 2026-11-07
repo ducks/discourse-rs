@@ -2,17 +2,18 @@
 //! `[poll ...]` around a list becomes the poll's container, each option
 //! carrying the md5 of its text as its id, followed by the voters count.
 
-use markdown_it::Node;
 use markdown_it::parser::extset::RootExt;
 use markdown_it::parser::inline::InlineRoot;
 use markdown_it::plugins::cmark::block::heading::ATXHeading;
 use markdown_it::plugins::cmark::block::lheading::SetextHeader;
 use markdown_it::plugins::cmark::block::list::{BulletList, ListItem, OrderedList};
+use markdown_it::{Node, NodeValue, Renderer};
+use serde_json::{Map, Value, json};
 
 use super::RenderSettings;
 use super::bbcode::TagInfo;
 use super::context::Context;
-use super::element::{Element, Holder, RawHtml};
+use super::element::{Element, Holder, JsFields, JsToken, JsTree, RawHtml};
 use super::quotes::parse_int;
 use crate::sanitizer::AllowList;
 
@@ -39,6 +40,61 @@ const ALLOWED_ATTRIBUTES: [&str; 13] = [
     "dynamic",
 ];
 const DEFAULT_MAXIMUM_OPTIONS: i64 = 20;
+
+/// The title's `poll_title` div around the heading's inline content.
+#[derive(Debug)]
+pub struct PollTitle;
+
+impl NodeValue for PollTitle {
+    fn render(&self, node: &Node, fmt: &mut dyn Renderer) {
+        fmt.text_raw("<div class=\"poll-title\">");
+        fmt.contents(&node.children);
+        fmt.text_raw("</div>\n");
+    }
+}
+
+/// A `text` token pushed among block tokens, in the editor's tree.
+fn tree_text(content: &str) -> Value {
+    json!({"type": "text", "content": content})
+}
+
+/// The tokens addNumberListItems pushes.
+fn number_list_tree(items: &[(String, String)]) -> Value {
+    let items: Vec<Value> = items
+        .iter()
+        .map(|(id, text)| {
+            json!({"type": "list_item", "tag": "li", "attrs": [["data-poll-option-id", id]],
+                   "children": [{"type": "paragraph", "tag": "p", "hidden": true,
+                                 "children": [tree_text(text)]}]})
+        })
+        .collect();
+    json!({"type": "bullet_list", "tag": "ul", "children": items})
+}
+
+/// The tokens addPollInfo pushes.
+fn info_tree(label: &str) -> Value {
+    let div = |kind: &str, class: &str, children: Vec<Value>| json!({"type": kind, "tag": "div", "attrs": [["class", class]], "children": children});
+    let span = |kind: &str, class: &str, text: &str| {
+        json!({"type": kind, "tag": "span", "attrs": [["class", class]],
+               "children": [tree_text(text)]})
+    };
+    div(
+        "poll_info",
+        "poll-info",
+        vec![div(
+            "poll_info_counts",
+            "poll-info_counts",
+            vec![div(
+                "poll_info_counts_count",
+                "poll-info_counts-count",
+                vec![
+                    span("poll_info_number", "info-number", "0"),
+                    span("poll_info_label", "info-label", label),
+                ],
+            )],
+        )],
+    )
+}
 
 /// `md5(JSON.stringify([text]))`
 fn option_id(text: &str) -> String {
@@ -148,7 +204,7 @@ pub fn build(
         title = Some(std::mem::take(&mut heading.children));
     }
 
-    let mut generated: Option<String> = None;
+    let mut generated: Option<(String, Vec<(String, String)>)> = None;
     if attr("type") == Some("number") {
         if !content.is_empty() {
             // A number poll with content of its own is no poll.
@@ -166,18 +222,18 @@ pub fn build(
         if min <= max {
             // The JS pushes these tokens without block, so no newlines.
             let mut list = String::from("<ul>");
+            let mut items = Vec::new();
             let mut i = min;
             let mut count = 0;
             while i <= max && count < maximum + 1 {
-                list.push_str(&format!(
-                    "<li data-poll-option-id=\"{}\">{i}</li>",
-                    option_id(&i.to_string())
-                ));
+                let id = option_id(&i.to_string());
+                list.push_str(&format!("<li data-poll-option-id=\"{id}\">{i}</li>"));
+                items.push((id, i.to_string()));
                 i += step;
                 count += 1;
             }
             list.push_str("</ul>");
-            generated = Some(list);
+            generated = Some((list, items));
         }
     }
 
@@ -192,6 +248,17 @@ pub fn build(
         attrs,
         block: true,
     });
+    JsToken::on(&mut poll, "poll", "");
+    // `token.poll_attrs = { ...DEFAULT_POLL, ...attrs }`
+    let mut poll_attrs = Map::new();
+    poll_attrs.insert("name".into(), json!("poll"));
+    poll_attrs.insert("status".into(), json!("open"));
+    for (key, value) in &info.attrs {
+        poll_attrs.insert(key.clone(), json!(value));
+    }
+    let mut fields = Map::new();
+    fields.insert("poll_attrs".into(), Value::Object(poll_attrs));
+    poll.ext.insert(JsFields(fields));
 
     // Anything but a list first leaves the JS with an opened poll and
     // nothing in it.
@@ -204,27 +271,29 @@ pub fn build(
     }
 
     let mut container = Element::block("div", &[("class", "poll-container")]);
+    JsToken::on(&mut container, "poll_container", "");
     if let Some(title) = title {
         // The title's inline content sits right inside its div.
-        container
-            .children
-            .push(Node::new(RawHtml("<div class=\"poll-title\">".into())));
-        container.children.extend(title);
-        container
-            .children
-            .push(Node::new(RawHtml("</div>\n".into())));
+        let mut node = Node::new(PollTitle);
+        node.children = title;
+        container.children.push(node);
     }
     add_option_ids(&mut content);
     container.children.extend(content);
-    if let Some(list) = generated {
-        container.children.push(Node::new(RawHtml(list)));
+    if let Some((list, items)) = generated {
+        let mut node = Node::new(RawHtml(list));
+        node.ext.insert(JsTree(vec![number_list_tree(&items)]));
+        container.children.push(node);
     }
     poll.children.push(container);
-    poll.children.push(Node::new(RawHtml(format!(
+    let mut info = Node::new(RawHtml(format!(
         "<div class=\"poll-info\">\n<div class=\"poll-info_counts\">\n<div class=\"poll-info_counts-count\">\n\
          <span class=\"info-number\">0</span>\n<span class=\"info-label\">{}</span>\n</div>\n</div>\n</div>\n",
         markdown_it::common::utils::escape_html(&settings.poll_voters_label)
-    ))));
+    )));
+    info.ext
+        .insert(JsTree(vec![info_tree(&settings.poll_voters_label)]));
+    poll.children.push(info);
     poll
 }
 

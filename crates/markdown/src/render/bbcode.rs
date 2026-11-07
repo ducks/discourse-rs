@@ -20,7 +20,7 @@ use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
 
 use super::context::Context;
-use super::element::{BlockText, Element, Holder, JsToken, RawHtml};
+use super::element::{BlockText, Element, Holder, JsBare, JsToken, JsWrap, RawHtml};
 use super::linkify::Linkified;
 use super::{RenderSettings, poll, quotes, untrimmed};
 
@@ -507,15 +507,27 @@ impl BlockRule for BlockBbcode {
             BlockTag::Code | BlockTag::Graphviz | BlockTag::ChatTranscript => {
                 unreachable!("handled above")
             }
-            BlockTag::Excerpt => wrap("div", class("excerpt"), children),
-            BlockTag::Spoiler => wrap("div", class("spoiler"), children),
+            // `wrap: "div.excerpt"`: a `wrap_bbcode` pair.
+            BlockTag::Excerpt | BlockTag::Spoiler => {
+                let name = if let BlockTag::Excerpt = kind {
+                    "excerpt"
+                } else {
+                    "spoiler"
+                };
+                let mut div = wrap("div", class(name), children);
+                JsToken::on(&mut div, "wrap_bbcode", "");
+                div.ext.insert(JsBare);
+                div
+            }
             BlockTag::Policy => policy(&info, children),
             BlockTag::Quote => quotes::build(&info, children, settings, ctx),
             BlockTag::Poll => poll::build(&info, children, nested_poll, settings, ctx),
             BlockTag::Wrap => {
                 let mut attrs = class("d-wrap");
                 attrs.extend(data_attributes(&info.attrs, Some("wrap")));
-                wrap("div", attrs, children)
+                let mut div = wrap("div", attrs, children);
+                JsToken::on(&mut div, "wrap", "");
+                div
             }
             BlockTag::Grid => {
                 let mut attrs = class("d-image-grid");
@@ -541,12 +553,15 @@ impl BlockRule for BlockBbcode {
                     attrs.push(("open".to_string(), String::new()));
                 }
                 let mut summary = Element::block("summary", &[]);
+                JsToken::on(&mut summary, "bbcode", "");
                 summary.children.push(Node::new(BlockText(
                     info.attr("_default").unwrap_or("").to_string(),
                 )));
                 let mut all = vec![summary];
                 all.extend(children);
-                wrap("details", attrs, all)
+                let mut details = wrap("details", attrs, all);
+                JsToken::on(&mut details, "bbcode", "");
+                details
             }
         };
         Some((node, lines))
@@ -633,6 +648,7 @@ impl InlineRule for InlineBbcode {
                     attrs,
                     block: false,
                 });
+                JsToken::on(&mut span, "wrap", "");
                 if !content.is_empty() {
                     span.children.push(Node::new(Text {
                         content: content.to_string(),
@@ -704,7 +720,9 @@ fn policy(info: &TagInfo, children: Vec<Node>) -> Node {
     }
     attrs.sort_by(|a, b| a.0.encode_utf16().cmp(b.0.encode_utf16()));
     let mut open = String::from("<div class=\"policy\"");
+    let mut token_attrs = vec![("class".to_string(), "policy".to_string())];
     for (key, value) in attrs {
+        token_attrs.push((format!("data-{key}"), value.clone()));
         open.push_str(&format!(
             " data-{}=\"{}\"",
             markdown_it::common::utils::escape_html(&key),
@@ -713,6 +731,11 @@ fn policy(info: &TagInfo, children: Vec<Node>) -> Node {
     }
     open.push('>');
     let mut node = Node::new(Holder);
+    node.ext.insert(JsWrap {
+        kind: "wrap_bbcode".into(),
+        tag: "div".into(),
+        attrs: token_attrs,
+    });
     node.children
         .push(Node::new(RawHtml(format!("{open}{}", super::table::GLUE))));
     node.children.extend(children);

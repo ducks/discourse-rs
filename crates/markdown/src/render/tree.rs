@@ -40,9 +40,14 @@ use markdown_it::plugins::html::html_inline::HtmlInline;
 use serde_json::{Map, Value, json};
 
 use super::blocks;
-use super::element::{BlockText, CodeText, Element, Holder, JsToken, RawHtml};
+use super::element::{
+    BlockText, CodeText, Element, Holder, JsBare, JsFields, JsToken, JsTree, JsWrap, RawHtml,
+};
 use super::emoji::Emoji;
+use super::footnotes::{NoteItem, NoteList, Reference};
 use super::linkify::Linkified;
+use super::math::{MathBlock, MathInline};
+use super::poll::PollTitle;
 
 /// One token's fields; empty ones are left out of the JSON.
 #[derive(Default)]
@@ -57,6 +62,12 @@ struct Token {
     hidden: bool,
     /// A single token whose `children` are its own (an image's alt).
     leaf_with_children: bool,
+    /// `token.meta`.
+    meta: Option<Value>,
+    /// A rule's own token properties (JsFields).
+    fields: Option<Map<String, Value>>,
+    /// Open and close tokens of the same type (JsBare).
+    bare: bool,
 }
 
 impl Token {
@@ -104,6 +115,15 @@ impl Token {
         }
         if self.hidden {
             node.insert("hidden".into(), Value::Bool(true));
+        }
+        if let Some(meta) = self.meta {
+            node.insert("meta".into(), meta);
+        }
+        if let Some(fields) = self.fields {
+            node.insert("fields".into(), Value::Object(fields));
+        }
+        if self.bare {
+            node.insert("bare".into(), Value::Bool(true));
         }
         if let Some(children) = children {
             if self.leaf_with_children {
@@ -183,6 +203,7 @@ fn holds_inline(node: &Node) -> bool {
         || node.is::<ATXHeading>()
         || node.is::<SetextHeader>()
         || node.is::<TableCell>()
+        || node.is::<PollTitle>()
 }
 
 impl Walker<'_> {
@@ -194,7 +215,7 @@ impl Walker<'_> {
                 .map(|(_, sources)| sources.concat())
                 .unwrap_or_default();
             // heading.mjs trims what follows the #s.
-            if node.is::<ATXHeading>() {
+            if node.is::<ATXHeading>() || node.is::<PollTitle>() {
                 content = content.trim().to_string();
             }
             out.push(self.inline(content, &node.children.iter().collect::<Vec<_>>()));
@@ -246,10 +267,45 @@ impl Walker<'_> {
     }
 
     fn block(&self, node: &Node, out: &mut Vec<Value>) {
+        if let Some(tree) = node.ext.get::<JsTree>() {
+            out.extend(tree.0.iter().cloned());
+            return;
+        }
         if node.is::<Holder>() {
-            for child in &node.children {
-                self.block(child, out);
+            let Some(wrap) = node.ext.get::<JsWrap>() else {
+                for child in &node.children {
+                    self.block(child, out);
+                }
+                return;
+            };
+            // The rule's own tags are its first and last children.
+            let inner = match node.children.len() {
+                0..=2 => &[][..],
+                n => &node.children[1..n - 1],
+            };
+            let mut children = Vec::new();
+            for child in inner {
+                self.block(child, &mut children);
             }
+            let mut token = Token::new(&wrap.kind, "");
+            token.owned_tag = Some(wrap.tag.clone());
+            token.attrs = wrap.attrs.clone();
+            token.bare = true;
+            out.push(token.json(Some(children)));
+            return;
+        }
+        if let Some(math) = node.cast::<MathBlock>() {
+            let mut token = Token::new("math_block", "");
+            token.content = math.content.clone();
+            out.push(token.json(None));
+            return;
+        }
+        if node.is::<NoteList>() {
+            let mut notes = Vec::new();
+            for item in &node.children {
+                notes.push(self.note(item));
+            }
+            out.push(Token::new("footnote_block", "").json(Some(notes)));
             return;
         }
         let token = if node.is::<Paragraph>() {
@@ -325,6 +381,8 @@ impl Walker<'_> {
         } else if let Some(table) = node.cast::<Table>() {
             out.push(self.table(node, table));
             return;
+        } else if node.is::<PollTitle>() {
+            Token::new("poll_title", "div").attr("class", "poll-title")
         } else if let Some(element) = node.cast::<Element>() {
             let token = element_token(node, element);
             let mut children = Vec::new();
@@ -348,9 +406,42 @@ impl Walker<'_> {
         }
         let mut token = Token::new("list_item", "li").markup(marker.to_string());
         token.info = number.unwrap_or_default();
+        // A poll option's id.
+        for (name, value) in &item.attrs {
+            token = token.attr(name, value.clone());
+        }
         let mut children = Vec::new();
         self.block_children(item, &mut children);
         token.json(Some(children))
+    }
+
+    /// footnote_tail's `footnote_open` (meta: its id and label), the note's
+    /// blocks, and an anchor back to each reference before the close of
+    /// its last paragraph.
+    fn note(&self, item: &Node) -> Value {
+        let Some(note) = item.cast::<NoteItem>() else {
+            return unported(item);
+        };
+        let mut children = Vec::new();
+        for child in &item.children {
+            self.block(child, &mut children);
+        }
+        let anchors = (0..note.count).map(|sub| {
+            let mut anchor = Token::new("footnote_anchor", "");
+            anchor.meta = Some(footnote_meta(note.id, Some(sub), note.label.as_deref()));
+            anchor.json(None)
+        });
+        match children.last_mut() {
+            Some(last) if last["type"] == "paragraph" => {
+                if let Some(kids) = last["children"].as_array_mut() {
+                    kids.extend(anchors);
+                }
+            }
+            _ => children.extend(anchors),
+        }
+        let mut open = Token::new("footnote", "");
+        open.meta = Some(footnote_meta(note.id, None, note.label.as_deref()));
+        open.json(Some(children))
     }
 
     /// The digits an ordered item starts with in the source.
@@ -498,6 +589,25 @@ impl Walker<'_> {
             let mut token = Token::new("html_raw", "");
             token.content = html.0.clone();
             token
+        } else if let Some(math) = node.cast::<MathInline>() {
+            let mut token = Token::new("math_inline", "");
+            token.content = math.content.clone();
+            let kind = if math.asciimath { "asciimath" } else { "tex" };
+            token.meta = Some(json!({ "mathType": kind }));
+            token
+        } else if let Some(reference) = node.cast::<Reference>() {
+            // An inline note's content went to the list (footnotes::tail).
+            let mut token = Token::new("footnote_ref", "");
+            token.meta = Some(if reference.inline {
+                json!({ "id": reference.id })
+            } else {
+                footnote_meta(
+                    reference.id,
+                    Some(reference.sub_id),
+                    reference.label.as_deref(),
+                )
+            });
+            token
         } else if let Some(emoji) = node.cast::<Emoji>() {
             let mut token = Token::new("emoji", "img");
             for (name, value) in emoji.attrs() {
@@ -537,6 +647,20 @@ impl Walker<'_> {
     }
 }
 
+/// markdown-it-footnote's meta: `{ id, subId, label }`, the label left out
+/// where it is undefined.
+fn footnote_meta(id: usize, sub_id: Option<usize>, label: Option<&str>) -> Value {
+    let mut meta = Map::new();
+    meta.insert("id".into(), json!(id));
+    if let Some(sub_id) = sub_id {
+        meta.insert("subId".into(), json!(sub_id));
+    }
+    if let Some(label) = label {
+        meta.insert("label".into(), json!(label));
+    }
+    Value::Object(meta)
+}
+
 fn heading_tag(level: u8) -> &'static str {
     ["h1", "h2", "h3", "h4", "h5", "h6"][usize::from(level.clamp(1, 6)) - 1]
 }
@@ -572,6 +696,8 @@ fn element_token(node: &Node, element: &Element) -> Token {
     };
     token.owned_tag = Some(element.tag.clone());
     token.attrs = element.attrs.clone();
+    token.bare = node.ext.contains::<JsBare>();
+    token.fields = node.ext.get::<JsFields>().map(|f| f.0.clone());
     token
 }
 
@@ -1124,16 +1250,200 @@ mod tests {
     }
 
     #[test]
-    fn what_is_not_written_yet_is_unported() {
-        // 196r4's constructs record no token: the editor refuses them.
-        for raw in ["[details=x]\ny\n[/details]", "[wrap=toc]\nx\n[/wrap]"] {
-            let tree = tree(raw);
-            let block = &tree["children"][0];
-            assert!(
-                block["type"].as_str().unwrap().starts_with("unported:"),
-                "{raw:?}: {block}"
-            );
-        }
+    fn what_no_extension_takes_is_raw_html() {
+        // discourse-graphviz's graph (its extension is 196r3's preview
+        // node): raw HTML, which no parse spec takes, so the editor refuses
+        // it.
+        let mut settings = settings();
+        settings.graphviz = true;
+        let tree = rich_editor_tree("[graphviz]\na\n[/graphviz]", &settings).unwrap();
+        assert_eq!(tree["children"][0]["type"], "html_raw");
+    }
+
+    #[test]
+    fn details() {
+        check(vec![(
+            "[details=\"Summary\" open]\nHidden\n[/details]",
+            doc(vec![
+                json!({"type": "bbcode", "tag": "details", "attrs": [["open", ""]],
+                "children": [
+                    {"type": "bbcode", "tag": "summary", "children": [t("Summary")]},
+                    p("Hidden", vec![t("Hidden")]),
+                ]}),
+            ]),
+        )]);
+    }
+
+    #[test]
+    fn spoilers() {
+        let tree = tree("[spoiler]\nx\n[/spoiler]\n\nHey [spoiler]y[/spoiler]");
+        assert_eq!(
+            tree["children"][0],
+            json!({"type": "wrap_bbcode", "tag": "div", "attrs": [["class", "spoiler"]],
+                   "bare": true, "children": [p("x", vec![t("x")])]})
+        );
+        assert_eq!(
+            tree["children"][1]["children"][0]["children"][1],
+            json!({"type": "bbcode_spoiler", "tag": "span", "attrs": [["class", "spoiler"]],
+                   "markup": "[spoiler]", "children": [t("y")]})
+        );
+        // bbcode-block's wrap_bbcode, which no extension takes
+        assert_eq!(tree_of("[excerpt]\nx\n[/excerpt]")["type"], "wrap_bbcode");
+    }
+
+    fn tree_of(raw: &str) -> Value {
+        tree(raw)["children"][0].clone()
+    }
+
+    #[test]
+    fn wraps() {
+        assert_eq!(
+            tree_of("[wrap=toc id=1]\nx\n[/wrap]"),
+            json!({"type": "wrap", "tag": "div",
+                   "attrs": [["class", "d-wrap"], ["data-id", "1"], ["data-wrap", "toc"]],
+                   "children": [p("x", vec![t("x")])]})
+        );
+        // d-wrap's inline rule: the content as one text token
+        assert_eq!(
+            tree_of("a [wrap=b]*c*[/wrap]")["children"][0]["children"][1],
+            json!({"type": "wrap", "tag": "span", "attrs": [["class", "d-wrap"], ["data-wrap", "b"]],
+                   "children": [t("*c*")]})
+        );
+    }
+
+    #[test]
+    fn policies() {
+        let mut settings = settings();
+        settings.policy = true;
+        let tree =
+            rich_editor_tree("[policy group=staff accept=yes]\nx\n[/policy]", &settings).unwrap();
+        assert_eq!(
+            tree["children"][0],
+            json!({"type": "wrap_bbcode", "tag": "div",
+                   "attrs": [["class", "policy"], ["data-accept", "yes"], ["data-group", "staff"],
+                             ["data-version", "1"]],
+                   "bare": true, "children": [p("x", vec![t("x")])]})
+        );
+    }
+
+    #[test]
+    fn checklists() {
+        let item = &tree("- [x] done")["children"][0]["children"][0]["children"][0]["children"][0];
+        assert_eq!(
+            item["children"][0],
+            json!({"type": "check", "tag": "span",
+                   "attrs": [["class", "chcklst-box checked fa fa-square-check-o"],
+                             ["data-chk-src", "0:0"]],
+                   "children": []})
+        );
+        assert_eq!(item["children"][1], t(" done"));
+    }
+
+    #[test]
+    fn footnotes() {
+        let tree = tree("a[^1] ^[b]\n\n[^1]: c");
+        let refs = &tree["children"][0]["children"][0]["children"];
+        assert_eq!(
+            refs[1],
+            json!({"type": "footnote_ref", "meta": {"id": 0, "subId": 0, "label": "1"}})
+        );
+        assert_eq!(refs[3], json!({"type": "footnote_ref", "meta": {"id": 1}}));
+        let block = &tree["children"][1];
+        assert_eq!(block["type"], "footnote_block");
+        let note = &block["children"][0];
+        assert_eq!(note["type"], "footnote");
+        assert_eq!(note["meta"], json!({"id": 0, "label": "1"}));
+        // the anchor back sits in the last paragraph, after its inline
+        let paragraph = &note["children"][0]["children"];
+        assert_eq!(paragraph[0]["children"][0], t("c"));
+        assert_eq!(
+            paragraph[1],
+            json!({"type": "footnote_anchor", "meta": {"id": 0, "subId": 0, "label": "1"}})
+        );
+        let inline_note = &block["children"][1];
+        assert_eq!(inline_note["meta"], json!({"id": 1}));
+        assert_eq!(
+            inline_note["children"][0]["children"][0]["children"][0],
+            t("b")
+        );
+    }
+
+    #[test]
+    fn math() {
+        let mut settings = settings();
+        settings.math = true;
+        let tree = rich_editor_tree("$a$\n\n$$\nb\n$$", &settings).unwrap();
+        assert_eq!(
+            tree["children"][0]["children"][0]["children"][0],
+            json!({"type": "math_inline", "content": "a", "meta": {"mathType": "tex"}})
+        );
+        assert_eq!(
+            tree["children"][1],
+            json!({"type": "math_block", "content": "b"})
+        );
+    }
+
+    #[test]
+    fn local_dates() {
+        let date = &tree_of("[date=2021-01-01 time=12:00:00]")["children"][0]["children"][0];
+        assert_eq!(date["type"], "span");
+        assert_eq!(date["attrs"][0], json!(["class", "discourse-local-date"]));
+        assert_eq!(date["attrs"][1], json!(["data-date", "2021-01-01"]));
+        assert_eq!(date["children"][0]["type"], "text");
+        let range =
+            &tree_of("[date-range from=2021-01-01 to=2021-01-02]")["children"][0]["children"];
+        let types: Vec<&Value> = range
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|n| &n["type"])
+            .collect();
+        assert_eq!(types, vec!["span", "text", "span"]);
+    }
+
+    #[test]
+    fn polls() {
+        let poll =
+            tree_of("[poll type=multiple min=1 max=2 anonymous=true]\n# Pick\n* a\n* b\n[/poll]");
+        assert_eq!(poll["type"], "poll");
+        assert_eq!(
+            poll["fields"],
+            json!({"poll_attrs": {"name": "poll", "status": "open", "type": "multiple",
+                                  "min": "1", "max": "2", "anonymous": "true"}})
+        );
+        let container = &poll["children"][0];
+        assert_eq!(container["type"], "poll_container");
+        assert_eq!(
+            container["children"][0],
+            json!({"type": "poll_title", "tag": "div", "attrs": [["class", "poll-title"]],
+                   "children": [inline("Pick", vec![t("Pick")])]})
+        );
+        let item = &container["children"][1]["children"][0];
+        assert_eq!(item["attrs"][0][0], "data-poll-option-id");
+        let info = &poll["children"][1];
+        assert_eq!(info["type"], "poll_info");
+        let count = &info["children"][0]["children"][0]["children"];
+        assert_eq!(count[0]["type"], "poll_info_number");
+        assert_eq!(count[1]["children"][0], t("voters"));
+        // a number poll's generated options: text pushed in hidden paragraphs
+        let generated =
+            &tree_of("[poll type=number min=1 max=2]\n[/poll]")["children"][0]["children"][0];
+        assert_eq!(generated["type"], "bullet_list");
+        assert_eq!(
+            generated["children"][1]["children"][0],
+            json!({"type": "paragraph", "tag": "p", "hidden": true, "children": [t("2")]})
+        );
+        // The cook is the same as before.
+        let (html, _) = render(
+            "[poll]\n# Pick\n* a\n[/poll]",
+            &settings(),
+            Default::default(),
+        )
+        .unwrap();
+        assert!(
+            html.contains("<div class=\"poll-title\">Pick</div>\n"),
+            "{html}"
+        );
     }
 
     #[test]
