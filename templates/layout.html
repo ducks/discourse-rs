@@ -95,6 +95,13 @@
     {#- The mobile view's nav menu; loaded in both views, so a redraw in the
         other layout (page.js) brings no head of its own. -#}
     <script src="{{ crate::assets::url(base_path, "navigation-bar.js") }}" defer></script>
+    {%- if viewer.is_some() %}
+    {#- The composer's rich editor loader (docs/rich-editor.md): classic and
+        not deferred, so the import map it writes precedes every module
+        import, lightbox.js's included, on any page an htmx navigation may
+        bring the composer to. -#}
+    <script src="{{ crate::assets::url(base_path, "rich-editor.js") }}" data-assets="{{ crate::assets::rich_editor_urls(base_path) }}" data-base-path="{{ base_path }}"></script>
+    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "lightbox.js") }}" defer data-lightbox="{{ crate::assets::url(base_path, "photoswipe-lightbox.esm.min.js") }}" data-photoswipe="{{ crate::assets::url(base_path, "photoswipe.esm.min.js") }}"{{ chrome.lightbox_attrs|safe }}></script>
     {#- The icon sprite (SvgSprite.path), long cached: it sets
         window.__svg_sprite before the body is parsed. -#}

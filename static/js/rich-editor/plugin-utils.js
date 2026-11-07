@@ -1,0 +1,334 @@
+// The helpers extensions receive as params.utils, from the reference's
+// static/prosemirror/lib/plugin-utils.js. isWhiteSpace and isBoundary are
+// markdown-it's own (common/utils.mjs: isWhiteSpace, isPunctChar as P or S),
+// written out here since the editor loads no markdown-it. getLinkify (the
+// link extension's, 196r2) and buildBBCodeAttrs (the bbcode block
+// extensions', 196r4) arrive with the extensions that use them.
+import { InputRule } from "prosemirror-inputrules";
+import { StepMap } from "prosemirror-transform";
+
+var PUNCT_OR_SYMBOL = /[\p{P}\p{S}]/u;
+
+function isWhiteSpaceCode(code) {
+  if (code >= 0x2000 && code <= 0x200a) {
+    return true;
+  }
+  switch (code) {
+    case 0x09:
+    case 0x0a:
+    case 0x0b:
+    case 0x0c:
+    case 0x0d:
+    case 0x20:
+    case 0xa0:
+    case 0x1680:
+    case 0x202f:
+    case 0x205f:
+    case 0x3000:
+      return true;
+  }
+  return false;
+}
+
+export function isWhiteSpace(str, index) {
+  return !str || isWhiteSpaceCode(str.charCodeAt(index));
+}
+
+export function isBoundary(str, index) {
+  return (
+    !str ||
+    isWhiteSpaceCode(str.charCodeAt(index)) ||
+    PUNCT_OR_SYMBOL.test(String.fromCharCode(str.charCodeAt(index)))
+  );
+}
+
+// An InputRule applying a mark over its match: a single group is the
+// marked text, and getAttrs may give the mark's attrs and override the
+// match or its start (inputrules.js adapts two-group patterns that way).
+// Initially from https://discuss.prosemirror.net/t/input-rules-for-wrapping-marks/537
+export function markInputRule(regexp, markType, getAttrs) {
+  return new InputRule(regexp, function (state, match, start, end) {
+    var attrs = getAttrs instanceof Function ? getAttrs(match) : getAttrs;
+    var tr = state.tr;
+
+    var markAttrs = {};
+    var attrsMatch;
+    var attrsStart;
+    if (attrs) {
+      Object.keys(attrs).forEach(function (key) {
+        if (key === "match") {
+          attrsMatch = attrs[key];
+        } else if (key === "start") {
+          attrsStart = attrs[key];
+        } else {
+          markAttrs[key] = attrs[key];
+        }
+      });
+    }
+
+    match = attrsMatch !== undefined && attrsMatch !== null ? attrsMatch : match;
+    start = start + (attrsStart !== undefined && attrsStart !== null ? attrsStart : 0);
+
+    if (match[1]) {
+      var fullMatch = match[0];
+      var capturedContent = match[1];
+      var contentStart = fullMatch.indexOf(capturedContent);
+      var contentEnd = contentStart + capturedContent.length;
+
+      var ranges = [];
+      if (contentStart > 0) {
+        ranges.push([start, start + contentStart]);
+      }
+      if (contentEnd < fullMatch.length) {
+        ranges.push([start + contentEnd, start + fullMatch.length]);
+      }
+
+      for (var i = 0; i < ranges.length; i++) {
+        var hasCodeMark = false;
+        state.doc.nodesBetween(ranges[i][0], ranges[i][1], function (node) {
+          if (
+            node.isInline &&
+            node.marks.some(function (m) {
+              return m.type.spec.code;
+            })
+          ) {
+            hasCodeMark = true;
+            return false;
+          }
+        });
+        if (hasCodeMark) {
+          return null;
+        }
+      }
+    }
+
+    if (match[1]) {
+      var textStart = start + match[0].indexOf(match[1]);
+      var textEnd = textStart + match[1].length;
+      if (textEnd < end) {
+        tr.delete(textEnd, end);
+      }
+      if (textStart > start) {
+        tr.delete(start, textStart);
+      }
+
+      tr.addMark(start, start + match[1].length, markType.create(markAttrs));
+      tr.setStoredMarks(tr.doc.resolve(start + match[1].length + 1).marks());
+    } else {
+      tr.delete(start, end);
+      tr.insertText(" ");
+      tr.addMark(start, start + 1, markType.create(markAttrs));
+      tr.removeStoredMark(markType);
+      tr.insertText(" ");
+
+      tr.setSelection(state.selection.constructor.create(tr.doc, start, start + 1));
+    }
+
+    return tr;
+  });
+}
+
+export function getChangedRanges(tr) {
+  var steps = tr.steps;
+  var mapping = tr.mapping;
+  var changes = [];
+
+  mapping.maps.forEach(function (stepMap, index) {
+    var ranges = [];
+
+    if (stepMap === StepMap.empty) {
+      if (steps[index].from === undefined || steps[index].to === undefined) {
+        return;
+      }
+
+      ranges.push(steps[index]);
+    } else {
+      stepMap.forEach(function (from, to) {
+        ranges.push({ from: from, to: to });
+      });
+    }
+
+    ranges.forEach(function (range) {
+      var change = { new: {}, old: {} };
+      change.new.from = mapping.slice(index).map(range.from, -1);
+      change.new.to = mapping.slice(index).map(range.to);
+      change.old.from = mapping.invert().map(change.new.from, -1);
+      change.old.to = mapping.invert().map(change.new.to);
+
+      changes.push(change);
+    });
+  });
+
+  return changes;
+}
+
+// From prosemirror-commands' atBlockStart.
+export function atBlockStart(state, view) {
+  var $cursor = state.selection.$cursor;
+  if (
+    !$cursor ||
+    (view ? !view.endOfTextblock("backward", state) : $cursor.parentOffset > 0)
+  ) {
+    return null;
+  }
+  return $cursor;
+}
+
+// https://github.com/discourse/discourse/pull/31933#discussion_r2019739410
+export function changedDescendants(old, cur, f, offset) {
+  offset = offset || 0;
+  var oldSize = old.childCount;
+  var curSize = cur.childCount;
+  outer: for (var i = 0, j = 0; i < curSize; i++) {
+    var child = cur.child(i);
+    for (var scan = j, e = Math.min(oldSize, i + 5); scan < e; scan++) {
+      if (old.child(scan) === child) {
+        j = scan + 1;
+        offset += child.nodeSize;
+        continue outer;
+      }
+    }
+    f(child, offset);
+    if (j < oldSize && old.child(j).sameMarkup(child)) {
+      changedDescendants(old.child(j), child, f, offset + 1);
+    } else {
+      child.nodesBetween(0, child.content.size, f, offset + 1);
+    }
+    offset += child.nodeSize;
+  }
+}
+
+// The continuous range of a mark of `type` (matching `attrs`) at $pos:
+// { from, to, mark }, or undefined.
+export function getMarkRange($pos, type, attrs) {
+  attrs = attrs || {};
+  if (!$pos || !type) {
+    return;
+  }
+
+  // The node after, then the one before.
+  var start = $pos.parent.childAfter($pos.parentOffset);
+  if (!start.node || !findMarkOfType(start.node.marks, type, attrs)) {
+    start = $pos.parent.childBefore($pos.parentOffset);
+    if (!start.node || !findMarkOfType(start.node.marks, type, attrs)) {
+      return;
+    }
+  }
+
+  var mark = findMarkOfType(start.node.marks, type, attrs);
+
+  var from = $pos.start() + start.offset;
+  var to = from + start.node.nodeSize;
+
+  var index = start.index;
+  while (index > 0 && findMarkOfType($pos.parent.child(index - 1).marks, type, mark.attrs)) {
+    index--;
+    from -= $pos.parent.child(index).nodeSize;
+  }
+
+  index = start.index + 1;
+  while (
+    index < $pos.parent.childCount &&
+    findMarkOfType($pos.parent.child(index).marks, type, mark.attrs)
+  ) {
+    to += $pos.parent.child(index).nodeSize;
+    index++;
+  }
+
+  return { from: from, to: to, mark: mark };
+}
+
+export function findMarkOfType(marks, type, attrs) {
+  attrs = attrs || {};
+  return marks.find(function (item) {
+    return (
+      item.type === type &&
+      Object.keys(attrs).every(function (key) {
+        return item.attrs[key] === attrs[key];
+      })
+    );
+  });
+}
+
+// A mark of the type in the selection, optionally with these attrs.
+export function hasMark(state, markType, attrs) {
+  attrs = attrs || {};
+  var selection = state.selection;
+
+  // An empty selection: the stored marks or the marks at the position.
+  if (selection.empty) {
+    var storedMarks = state.storedMarks || selection.$from.marks();
+    return !!findMarkOfType(storedMarks, markType, attrs);
+  }
+
+  return (
+    state.doc.rangeHasMark(selection.from, selection.to, markType) &&
+    (!Object.keys(attrs).length ||
+      state.doc.rangeHasMark(selection.from, selection.to, markType.create(attrs)))
+  );
+}
+
+// The selection is inside a node of the type, optionally with these attrs.
+export function inNode(state, nodeType, attrs) {
+  attrs = attrs || {};
+  var $from = state.selection.$from;
+
+  for (var depth = $from.depth; depth >= 0; depth--) {
+    var node = $from.node(depth);
+    if (node.type === nodeType) {
+      if (!Object.keys(attrs).length) {
+        return true;
+      }
+
+      return Object.keys(attrs).every(function (key) {
+        return node.attrs[key] === attrs[key];
+      });
+    }
+  }
+
+  return false;
+}
+
+// The node type (with these attrs) is active in the selection and no node
+// of another type is in it.
+export function isNodeActive(state, nodeType, attrs) {
+  attrs = attrs || {};
+  var selection = state.selection;
+  var from = selection.from;
+  var to = selection.to;
+  var nodeRanges = [];
+
+  state.doc.nodesBetween(from, to, function (node, pos) {
+    if (node.isText) {
+      return;
+    }
+
+    nodeRanges.push({
+      node: node,
+      from: Math.max(from, pos),
+      to: Math.min(to, pos + node.nodeSize),
+    });
+  });
+
+  var selectionRange = to - from;
+
+  var matchedNodeRanges = nodeRanges.filter(function (nodeRange) {
+    return (
+      nodeType.name === nodeRange.node.type.name &&
+      Object.keys(attrs).every(function (key) {
+        return nodeRange.node.attrs[key] === attrs[key];
+      })
+    );
+  });
+
+  if (selection.empty) {
+    return !!matchedNodeRanges.length;
+  }
+
+  // No gaps between the matched ranges: nothing else is selected.
+  var range = matchedNodeRanges.reduce(function (sum, nodeRange) {
+    return sum + nodeRange.to - nodeRange.from;
+  }, 0);
+
+  return range >= selectionRange;
+}

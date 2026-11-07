@@ -25,26 +25,30 @@ pub struct Emoji {
     only_emoji: bool,
 }
 
-impl NodeValue for Emoji {
-    fn render(&self, _: &Node, fmt: &mut dyn Renderer) {
+impl Emoji {
+    /// The `emoji` token's attrs (getEmojiTokenByName).
+    pub fn attrs(&self) -> [(&'static str, String); 7] {
         let class = match (self.custom, self.only_emoji) {
             (true, true) => "emoji emoji-custom only-emoji",
             (true, false) => "emoji emoji-custom",
             (false, true) => "emoji only-emoji",
             (false, false) => "emoji",
         };
-        fmt.self_close(
-            "img",
-            &[
-                ("src", self.url.clone()),
-                ("title", self.title.clone()),
-                ("class", class.into()),
-                ("alt", self.title.clone()),
-                ("loading", "lazy".into()),
-                ("width", "20".into()),
-                ("height", "20".into()),
-            ],
-        );
+        [
+            ("src", self.url.clone()),
+            ("title", self.title.clone()),
+            ("class", class.into()),
+            ("alt", self.title.clone()),
+            ("loading", "lazy".into()),
+            ("width", "20".into()),
+            ("height", "20".into()),
+        ]
+    }
+}
+
+impl NodeValue for Emoji {
+    fn render(&self, _: &Node, fmt: &mut dyn Renderer) {
+        fmt.self_close("img", &self.attrs());
     }
 }
 

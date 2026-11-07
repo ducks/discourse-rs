@@ -249,3 +249,155 @@ test("a tag picked in a new topic survives its draft", async ({ page, context })
   await expect(page.locator("#reply-title")).toHaveValue(title);
   await expect(tags.locator("summary .formatted-selection")).toHaveText("guide");
 });
+
+// The rich editor (ROADMAP 196r1, docs/rich-editor.md): d-editor's toggle
+// and Ctrl+M switch the composer between the markdown textarea and the
+// ProseMirror editor, the textarea keeps the markdown the editor writes,
+// and the mode is the member's composition_mode, saved after a second.
+test.describe("the rich editor", () => {
+  const rich = (page) => page.locator("#reply-control .ProseMirror.d-editor-input");
+  const textarea = (page) => page.locator("#reply-control textarea.d-editor-input");
+  const toggle = (page) => page.locator("#reply-control .composer-toggle-switch");
+  const savedMode = (page, name, mode) =>
+    page.waitForResponse(
+      (r) =>
+        r.url().endsWith(`/u/${name}.json`) &&
+        r.request().method() === "PUT" &&
+        (r.request().postData() || "") === `composition_mode=${mode}`,
+    );
+
+  async function replyTo(page, context, session, mode) {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = :'p1' WHERE user_id = :'p2'", mode, writer.id);
+    const user0 = await session("user0");
+    const t = await topic(user0, label("Rich editor topic"), label("A topic the rich editor replies to"));
+    await login(context, writer.name);
+    await page.goto(t.url);
+    await page.locator("#topic-footer-buttons .create").click();
+    await expect(page.locator("#reply-control.open")).toBeVisible();
+    return { writer, t };
+  }
+
+  test("switches to rich and back, the markdown being what was typed", async ({ page, context, session }) => {
+    const { writer } = await replyTo(page, context, session, 0);
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+    await expect(toggle(page)).toHaveClass(/--markdown/);
+    await expect(toggle(page)).toHaveAttribute("title", "Switch to new rich text editor (Ctrl M)");
+    await expect(textarea(page)).toBeVisible();
+    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeVisible();
+
+    const toRich = savedMode(page, writer.name, 1);
+    await toggle(page).click();
+    await expect(rich(page)).toBeVisible();
+    await expect(textarea(page)).toBeHidden();
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
+    await expect(toggle(page)).toHaveClass(/--rte/);
+    await expect(toggle(page)).toHaveAttribute("title", "Switch to standard Markdown editor (Ctrl M)");
+    await expect(page.locator("#reply-control .d-editor-container")).toHaveClass(/--rich-editor-enabled/);
+    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeHidden();
+    await expect(rich(page)).toBeFocused();
+
+    // The input rules: "## " a heading, "**bold**" a strong mark, "* " a list.
+    await page.keyboard.type("## Title");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("some **bold** words");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("* one");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("two");
+    await expect(rich(page).locator("h2")).toHaveText("Title");
+    await expect(rich(page).locator("ul li")).toHaveCount(2);
+    expect((await toRich).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+
+    // Ctrl+M from the editor goes back, the textarea holding the markdown.
+    const toMarkdown = savedMode(page, writer.name, 0);
+    await page.keyboard.press("Control+m");
+    await expect(rich(page)).toHaveCount(0);
+    await expect(textarea(page)).toBeVisible();
+    await expect(textarea(page)).toHaveValue("## Title\n\nsome **bold** words\n\n* one\n* two");
+    await expect(page.locator("#reply-control .d-editor-container")).toHaveClass(/--markdown-editor-enabled/);
+    await expect(page.locator("#reply-control .d-editor-preview h2")).toHaveText("Title");
+    expect((await toMarkdown).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["0"]]);
+
+    // And Ctrl+M from the textarea opens it again on that markdown.
+    await textarea(page).focus();
+    await page.keyboard.press("Control+m");
+    await expect(rich(page).locator("h2")).toHaveText("Title");
+    await expect(rich(page).locator("p strong")).toHaveText("bold");
+    await expect(rich(page).locator("ul li")).toHaveCount(2);
+  });
+
+  // Until 196r5 the composer opens in markdown whatever the stored mode
+  // (src/composer/load.rs OPEN_IN_STORED_MODE, off): the seed's and an
+  // imported site's members are on Discourse's default of 1. The toggle
+  // still switches and saves, and the stored mode is left as saved.
+  test("opens in markdown for a stored mode 1, and the toggle still switches and saves", async ({
+    page,
+    context,
+    session,
+  }) => {
+    const { writer, t } = await replyTo(page, context, session, 1);
+    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "0");
+    await expect(textarea(page)).toBeVisible();
+    await expect(rich(page)).toHaveCount(0);
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeVisible();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+
+    const saved = savedMode(page, writer.name, 1);
+    await toggle(page).click();
+    await expect(rich(page)).toBeVisible();
+    await expect(textarea(page)).toBeHidden();
+    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeHidden();
+    expect((await saved).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+
+    // A fresh page opens in markdown again, the saved mode kept.
+    await page.goto(t.url);
+    await page.locator("#topic-footer-buttons .create").click();
+    await expect(textarea(page)).toBeVisible();
+    await expect(rich(page)).toHaveCount(0);
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+  });
+
+  test("goes back to markdown with the alert on what it cannot hold yet", async ({ page, context, session }) => {
+    const { writer } = await replyTo(page, context, session, 0);
+    await textarea(page).fill("hello :tada: there");
+    const saved = savedMode(page, writer.name, 0);
+    await toggle(page).click();
+    const dialog = page.locator(".dialog-container");
+    await expect(dialog.locator(".dialog-body")).toHaveText(
+      "The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.",
+    );
+    await expect(textarea(page)).toBeVisible();
+    await expect(textarea(page)).toHaveValue("hello :tada: there");
+    await expect(rich(page)).toHaveCount(0);
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+    expect((await saved).ok()).toBeTruthy();
+    await dialog.locator(".dialog-footer .btn-primary").click();
+    await expect(dialog).toBeHidden();
+  });
+
+  test("posts the markdown the rich editor writes", async ({ page, context, session }) => {
+    const { writer, t } = await replyTo(page, context, session, 0);
+    await toggle(page).click();
+    await expect(rich(page)).toBeFocused();
+    const marker = label("rich reply");
+    await page.keyboard.type(`A **bold** reply, ${marker}`);
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("> quoted");
+    await expect(rich(page).locator("blockquote p")).toHaveText("quoted");
+    await page.locator("#reply-control .save-or-cancel .create").click();
+    await expect(page.locator("#reply-control.open")).toHaveCount(0);
+    const post = page.locator(".topic-post .cooked", { hasText: marker });
+    await expect(post.locator("strong")).toHaveText("bold");
+    await expect(post.locator("blockquote")).toHaveText("quoted");
+    // The raw is the serializer's markdown (compared in SQL: it spans lines).
+    const raw = `A **bold** reply, ${marker}\n\n> quoted`;
+    expect(
+      sql("SELECT p.raw = :'p3' FROM posts p WHERE p.topic_id = :'p1' AND p.user_id = :'p2'", t.id, writer.id, raw),
+    ).toEqual([["t"]]);
+  });
+});

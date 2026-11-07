@@ -20,7 +20,7 @@ use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
 
 use super::context::Context;
-use super::element::{BlockText, Element, Holder, RawHtml};
+use super::element::{BlockText, Element, Holder, JsToken, RawHtml};
 use super::linkify::Linkified;
 use super::{RenderSettings, poll, quotes, untrimmed};
 
@@ -618,6 +618,7 @@ impl InlineRule for InlineBbcode {
         let node = match info.tag.as_str() {
             "code" => {
                 let mut code = Element::inline("code", &[]);
+                JsToken::on(&mut code, "code_inline", "");
                 code.children
                     .push(Node::new(BlockText(content.to_string())));
                 code
@@ -649,6 +650,7 @@ impl InlineRule for InlineBbcode {
                         ("data-bbcode", "true"),
                     ],
                 );
+                JsToken::on(&mut link, "link", "");
                 link.children.push(Node::new(Text {
                     content: content.to_string(),
                 }));
@@ -791,7 +793,11 @@ fn url_link(
     let mut parsed = parsed;
     let mut children = unwrap_links(std::mem::take(&mut parsed.children));
     let mut node = match url {
-        Some(url) => Element::inline("a", &[("href", &url), ("data-bbcode", "true")]),
+        Some(url) => {
+            let mut link = Element::inline("a", &[("href", &url), ("data-bbcode", "true")]);
+            JsToken::on(&mut link, "link", "");
+            link
+        }
         None => {
             // Without a link the JS pushes the content straight onto the
             // token list, ahead of the pending text written before the
@@ -828,8 +834,16 @@ pub fn pair(root: &mut Node, settings: &RenderSettings) {
                 if let (Some(open), Some(class)) = (open, inline_wrap(&tag, settings)) {
                     let mut inner: Vec<Node> = node.children.drain(open..=i).collect();
                     inner.pop();
-                    inner.remove(0);
+                    let opening = inner.remove(0);
+                    let markup = opening.cast::<Delimiter>().map(|d| d.raw.clone());
                     let mut span = Element::inline("span", &[("class", class)]);
+                    // processBBCode: the open token becomes `bbcode_<tag>_open`,
+                    // its markup the tag as written.
+                    JsToken::on(
+                        &mut span,
+                        &format!("bbcode_{tag}"),
+                        &markup.unwrap_or_default(),
+                    );
                     span.children = inner;
                     node.children.insert(open, span);
                     i = open + 1;

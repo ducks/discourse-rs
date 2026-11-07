@@ -22,8 +22,9 @@ VALUES
   ('enable_user_status', 5, 't', now(), now())
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
--- user1 writes in the markdown editor (composition_mode 0), so the
--- composer draws its preview; the seed has everyone on the rich editor,
--- which the port draws as the textarea alone (196).
-UPDATE user_options SET composition_mode = 0
-WHERE user_id = (SELECT id FROM users WHERE username = 'user1');
+-- The seed has everyone on the rich editor (Discourse's
+-- default_composition_mode); the suite's members write in the markdown
+-- editor (composition_mode 0), with its preview, as markdown stays the
+-- port's default until the rich editor has its extensions (ROADMAP 196r5).
+-- composer.spec.js opts its own members in.
+UPDATE user_options SET composition_mode = 0;

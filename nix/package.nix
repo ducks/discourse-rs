@@ -44,6 +44,8 @@ let
             ../static/css
             ../static/site.css
             (fs.maybeMissing ../static/manifest.json)
+            # The rich editor's ES modules, served from the package only.
+            (fs.maybeMissing ../static/vendor/prosemirror)
           ]
         ))
         ../templates

@@ -118,3 +118,14 @@ fn owners(children: &[Node], spans: &[Span]) -> Vec<Option<usize>> {
         })
         .collect()
 }
+
+/// The inline blocks `node`'s children came from, as `each_block` groups
+/// them: per child the block it came from (an index into the sources, none
+/// for a block child), and each block's source.
+pub(super) fn inline_blocks(node: &Node) -> Option<(Vec<Option<usize>>, Vec<&str>)> {
+    let InlineSpans(spans) = node.ext.get::<InlineSpans>()?;
+    Some((
+        owners(&node.children, spans),
+        spans.iter().map(|s| s.source.as_str()).collect(),
+    ))
+}
