@@ -36,10 +36,18 @@ async function openMenu(page, id) {
   await expect(page.locator(MENU)).toBeVisible();
 }
 
-async function postAction(page, id, name) {
+// A menu button that opens a modal or is refused, drawing nothing again.
+async function menuButton(page, id, name) {
   await openMenu(page, id);
   await page.locator(`${MENU} button.${name}`).click();
   await expect(page.locator(MENU)).toHaveCount(0);
+}
+
+async function postAction(page, id, name) {
+  await menuButton(page, id, name);
+  // Each action draws the post again (redrawPost), collapsed: show-more,
+  // which expanding removed, is back once the redraw lands.
+  await expect(article(page, id).locator(".post-action-menu__show-more")).toBeVisible();
 }
 
 function postRow(id, columns) {
@@ -118,7 +126,7 @@ test("rebuild a post's HTML", async ({ page, context, session }) => {
 test("the post notice modal adds, changes and deletes the notice", async ({ page, context, session }) => {
   const { t, reply } = await setup(session, context);
   await page.goto(t.url);
-  await postAction(page, reply, "add-notice");
+  await menuButton(page, reply, "add-notice");
   const modal = page.locator(".d-modal.change-post-notice-modal");
   await expect(modal.locator(".d-modal__title-text")).toHaveText("Add Official Notice…");
   const save = modal.locator(".d-modal__footer .btn-primary");
@@ -137,7 +145,7 @@ test("the post notice modal adds, changes and deletes the notice", async ({ page
   await expect(notice).toContainText(text);
   await expect(notice.locator(".custom_created_by a")).toHaveAttribute("data-user-card", "admin");
 
-  await postAction(page, reply, "change-notice");
+  await menuButton(page, reply, "change-notice");
   await expect(modal.locator(".d-modal__title-text")).toHaveText("Change Official Notice…");
   await expect(modal.locator("textarea")).toHaveValue(text);
   // Unchanged, it can't be saved.
@@ -156,10 +164,10 @@ test("the post notice modal adds, changes and deletes the notice", async ({ page
 test("the modals not ported stay refused, named", async ({ page, context, session }) => {
   const { t, reply } = await setup(session, context);
   await page.goto(t.url);
-  await postAction(page, reply, "change-owner");
+  await menuButton(page, reply, "change-owner");
   await expect(page.locator("#page-error")).toHaveText(
     "Not ported yet: the change ownership modal (ChangePostOwner, 194d1).",
   );
-  await postAction(page, reply, "grant-badge");
+  await menuButton(page, reply, "grant-badge");
   await expect(page.locator("#page-error")).toHaveText("Not ported yet: the grant badge modal (GrantBadgeModal, 194d1).");
 });
