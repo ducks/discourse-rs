@@ -19,9 +19,10 @@
 //! average rating, and PollResultsPie's canvas and legend, which poll.js
 //! fills with Chart.js from the options the state carries.
 //!
-//! Not ported yet: the actions behind PollButtonsDropdown other than the
-//! tally toggle (the breakdown, export, close and open), whose buttons
-//! are drawn but refuse when clicked.
+//! PollButtonsDropdown's close and open and its breakdown are poll.js's,
+//! the breakdown drawn from what the state carries of PollBreakdownModal's
+//! model. Not ported yet: export, whose button is drawn but refuses when
+//! clicked (it runs a data explorer query).
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -327,6 +328,9 @@ pub struct Widget<'a> {
     pub title_html: Option<String>,
     /// The cooked poll's `data-poll-dynamic`.
     pub dynamic_attr: bool,
+    /// `post.topic.title`, the breakdown's title for a poll without one;
+    /// none for a quoted post's poll, whose post has no topic.
+    pub topic_title: Option<&'a str>,
     pub state: &'a UiState,
 }
 
@@ -738,6 +742,9 @@ impl Widget<'_> {
                 }),
             );
         }
+        if !self.ui.groupable_user_fields.is_empty() {
+            state.insert("breakdown".into(), self.breakdown_model());
+        }
         if self.is_ranked_choice() {
             state.insert(
                 "options".into(),
@@ -750,6 +757,43 @@ impl Widget<'_> {
             );
         }
         Value::Object(state)
+    }
+
+    /// What PollBreakdownModal reads of its model, for poll.js to draw it
+    /// from: the title (the poll's HTML, else the topic's title), the
+    /// votes line, the options in the poll's order and the groupable
+    /// fields. Carried whenever there are fields, so an open modal follows
+    /// the poll as Ember's tracked poll object does.
+    fn breakdown_model(&self) -> Value {
+        let title = if truthy(&self.poll["title"]) {
+            self.s("title").to_string()
+        } else {
+            escape(self.topic_title.unwrap_or(""))
+        };
+        let voters = self.voters();
+        // i18n("poll.breakdown.votes", { count }): pluralized where the
+        // locale has forms, else interpolated as English's plain string.
+        let votes = self
+            .cx
+            .i18n
+            .t_count("js.poll.breakdown.votes", voters, &[])
+            .unwrap_or_else(|| {
+                t_with(
+                    self.cx,
+                    "poll.breakdown.votes",
+                    &[("count", &voters.to_string())],
+                )
+            });
+        json!({
+            "title": title,
+            "votes": votes,
+            "options": self
+                .options()
+                .iter()
+                .map(|o| json!({"html": o["html"], "votes": o["votes"]}))
+                .collect::<Vec<_>>(),
+            "fields": self.ui.groupable_user_fields,
+        })
     }
 
     /// The component's `id`.
@@ -1690,16 +1734,33 @@ impl Widget<'_> {
     }
 }
 
-/// The js.* strings poll.js shows: its errors.
-const SCRIPT_STRINGS: [&str; 3] = [
+/// The js.* strings poll.js shows: its errors, toggleStatus' confirms,
+/// the breakdown modal's (with I18n.toNumber's number.format) and the
+/// group ComboBox's header and filter.
+const SCRIPT_STRINGS: &[&str] = &[
     "poll.error_while_casting_votes",
     "poll.error_while_fetching_voters",
+    "poll.error_while_toggling_status",
+    "poll.close.confirm",
+    "poll.open.confirm",
+    "poll.breakdown.title",
+    "poll.breakdown.breakdown",
+    "poll.breakdown.percentage",
+    "poll.breakdown.count",
+    "number.percent",
+    "number.format.separator",
+    "number.format.delimiter",
+    "select_kit.filter_by",
+    "select_kit.select_to_filter",
+    "select_kit.filter_placeholder",
     "generic_error",
 ];
 
 /// The topic page's script for its polls, with its strings and where
-/// Chart.js is, which it loads for a pie as loadChartJS does. The dialogs
-/// it reports errors in come with the page's dialog.js.
+/// Chart.js and chartjs-plugin-datalabels are, which it loads for a pie
+/// and the breakdown as loadChartJS and loadChartJSDatalabels do, and
+/// poll-builder.js, whose ComboBox the breakdown's group chooser is. The
+/// dialogs it reports errors in come with the page's dialog.js.
 pub fn page_scripts(i18n: &crate::i18n::I18n, base_path: &str) -> String {
     let own: Map<String, Value> = SCRIPT_STRINGS
         .iter()
@@ -1712,10 +1773,12 @@ pub fn page_scripts(i18n: &crate::i18n::I18n, base_path: &str) -> String {
         })
         .collect();
     format!(
-        "<script type=\"application/json\" id=\"poll-strings\">{}</script><script src=\"{}\" data-chart-js=\"{}\"></script>",
+        "<script type=\"application/json\" id=\"poll-strings\">{}</script><script src=\"{}\" data-chart-js=\"{}\" data-chart-datalabels=\"{}\" data-poll-builder=\"{}\"></script>",
         Value::Object(own).to_string().replace('<', "\\u003c"),
         crate::assets::url(base_path, "poll.js"),
         crate::assets::url(base_path, "chart.umd.min.js"),
+        crate::assets::url(base_path, "chartjs-plugin-datalabels.min.js"),
+        crate::assets::url(base_path, "poll-builder.js"),
     )
 }
 
@@ -1805,6 +1868,7 @@ pub fn decorate(
     ui: &PollUi,
     viewer: Option<&PollViewer>,
     topic_archived: bool,
+    topic_title: Option<&str>,
     post: &Value,
     cooked: &str,
 ) -> String {
@@ -1831,6 +1895,7 @@ pub fn decorate(
                 .unwrap_or_default(),
             title_html: cooked_poll.title_html.clone(),
             dynamic_attr: cooked_poll.dynamic,
+            topic_title,
             state: &state,
         }
         .render()
@@ -1932,6 +1997,17 @@ mod tests {
 
     /// The widget of `poll` for user 7 (post by user 9), in `state`.
     fn draw(poll: &Value, saved: Vec<Value>, state: &UiState) -> String {
+        draw_with(poll, saved, state, Vec::new(), None)
+    }
+
+    /// The same with `poll_groupable_user_fields` and the topic's title.
+    fn draw_with(
+        poll: &Value,
+        saved: Vec<Value>,
+        state: &UiState,
+        groupable_user_fields: Vec<String>,
+        topic_title: Option<&str>,
+    ) -> String {
         let i18n = crate::i18n::I18n::vendored().unwrap();
         let categories = std::collections::HashMap::new();
         let cx = ListContext {
@@ -1945,7 +2021,7 @@ mod tests {
             settings: list_settings(),
         };
         let ui = PollUi {
-            groupable_user_fields: Vec::new(),
+            groupable_user_fields,
             data_explorer_enabled: false,
             export_query_id: 0,
             export_ranked_choice_query_id: 0,
@@ -1965,9 +2041,70 @@ mod tests {
             saved,
             title_html: None,
             dynamic_attr: false,
+            topic_title,
             state,
         }
         .render()
+    }
+
+    /// The data-poll-state of a drawn widget.
+    fn state_of(html: &str) -> Value {
+        let raw = html
+            .split("data-poll-state=\"")
+            .nth(1)
+            .and_then(|s| s.split('"').next())
+            .unwrap();
+        let decoded = [
+            ("&quot;", "\""),
+            ("&lt;", "<"),
+            ("&gt;", ">"),
+            ("&#x27;", "'"),
+            ("&#x60;", "`"),
+            ("&#x3D;", "="),
+            ("&amp;", "&"),
+        ]
+        .iter()
+        .fold(raw.to_string(), |s, (from, to)| s.replace(from, to));
+        serde_json::from_str(&decoded).unwrap()
+    }
+
+    #[test]
+    fn the_state_carries_the_breakdown_model_while_there_are_fields() {
+        let mut poll = json!({
+            "name": "poll", "type": "regular", "status": "open", "results": "always",
+            "chart_type": "bar", "voters": 2, "title": "A <em>title</em>",
+            "options": [
+                {"id": "b", "html": "Beta", "votes": 1},
+                {"id": "a", "html": "<strong>Alpha</strong>", "votes": 1},
+            ],
+        });
+        let fields = vec!["city".to_string(), "favorite_team".to_string()];
+        let topic = Some("Tom & Jerry");
+        let html = draw_with(&poll, Vec::new(), &shown(), fields.clone(), topic);
+        assert_eq!(
+            state_of(&html)["breakdown"],
+            json!({
+                "title": "A <em>title</em>",
+                "votes": "2 votes",
+                "options": [
+                    {"html": "Beta", "votes": 1},
+                    {"html": "<strong>Alpha</strong>", "votes": 1},
+                ],
+                "fields": ["city", "favorite_team"],
+            })
+        );
+        // Behind the gear, with the tally.
+        assert!(html.contains("show-breakdown"), "{html}");
+        // Untitled: the topic's title, as text; none for a quoted post's.
+        poll["title"] = Value::Null;
+        let html = draw_with(&poll, Vec::new(), &shown(), fields.clone(), topic);
+        assert_eq!(state_of(&html)["breakdown"]["title"], "Tom &amp; Jerry");
+        let html = draw_with(&poll, Vec::new(), &shown(), fields, None);
+        assert_eq!(state_of(&html)["breakdown"]["title"], "");
+        // No fields: neither the model nor the action.
+        let html = draw(&poll, Vec::new(), &shown());
+        assert!(state_of(&html).get("breakdown").is_none(), "{html}");
+        assert!(!html.contains("showBreakdown"), "{html}");
     }
 
     fn shown() -> UiState {

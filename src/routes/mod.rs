@@ -3153,6 +3153,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/site-settings.js", get(asset))
         .route("/assets/dialog.js", get(asset))
         .route("/assets/chart.umd.min.js", get(asset))
+        .route("/assets/chartjs-plugin-datalabels.min.js", get(asset))
         .route("/assets/chartjs-adapter-moment.min.js", get(asset))
         .route("/assets/navigation-bar.js", get(asset))
         .route("/assets/topic.js", get(asset))

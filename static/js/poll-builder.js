@@ -1296,5 +1296,6 @@
     return close;
   }
 
-  Discourse.pollBuilder = { show: show };
+  // The ComboBox is the poll breakdown's group chooser too (poll.js).
+  Discourse.pollBuilder = { show: show, comboBox: comboBox };
 })();

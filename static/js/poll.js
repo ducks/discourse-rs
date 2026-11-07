@@ -18,9 +18,11 @@
 // vote_poll is not ported). The results' tally toggle, tabs and voters'
 // load more (over /polls/voters.json, merged as Ember merges them) are the
 // component's own state, drawn by the server; the pie chart is drawn here
-// with Chart.js. Not ported yet, and refused when clicked: the other
-// actions behind PollButtonsDropdown (the breakdown, export, close and
-// open).
+// with Chart.js. PollButtonsDropdown's close and open ask first and draw
+// the widget again; its breakdown is PollBreakdownModal, the group pies
+// from /polls/grouped_poll_results drawn with Chart.js and
+// chartjs-plugin-datalabels. Not ported yet, and refused when clicked:
+// export (data explorer).
 (function () {
   "use strict";
 
@@ -46,7 +48,8 @@
   }
 
   var strings = null;
-  function t(key) {
+  // I18n.t: the string, its %{name}s filled from vars.
+  function t(key, vars) {
     if (!strings) {
       var el = document.getElementById("poll-strings");
       try {
@@ -55,7 +58,11 @@
         strings = {};
       }
     }
-    return strings[key] === undefined ? key : strings[key];
+    var s = strings[key] === undefined ? key : strings[key];
+    Object.keys(vars || {}).forEach(function (name) {
+      s = s.split("%{" + name + "}").join(vars[name]);
+    });
+    return s;
   }
 
   function csrfHeaders() {
@@ -270,6 +277,9 @@
       var top = options.keepPosition ? buttonsTop(outer) : null;
       outer.replaceWith(widget);
       drawPie(widget);
+      if (breakdown && breakdown.key === key && breakdown.quoted === !!state.quoted) {
+        breakdown.update(stateOf(widget).breakdown);
+      }
       if (top !== null) {
         var shift = buttonsTop(widget) - top;
         if (shift) {
@@ -584,26 +594,44 @@
       });
   }
 
-  // loadChartJS: Chart.js, loaded once on the first pie.
-  var chartJs = null;
-  function loadChartJS() {
-    if (window.Chart) {
-      return Promise.resolve(window.Chart);
+  // A script loaded once, resolving with what it defines (defined()).
+  var loading = {};
+  function loadScript(src, defined) {
+    if (defined()) {
+      return Promise.resolve(defined());
     }
-    if (!chartJs) {
-      chartJs = new Promise(function (resolve, reject) {
+    if (!loading[src]) {
+      loading[src] = new Promise(function (resolve, reject) {
         var script = document.createElement("script");
-        script.src = chartSrc;
+        script.src = src;
         script.onload = function () {
-          resolve(window.Chart);
+          resolve(defined());
         };
         script.onerror = reject;
         document.head.appendChild(script);
       });
     }
-    return chartJs;
+    return loading[src];
   }
-  var chartSrc = document.currentScript ? document.currentScript.dataset.chartJs : null;
+
+  var scriptData = document.currentScript ? document.currentScript.dataset : {};
+
+  // loadChartJS: Chart.js, loaded once on the first pie.
+  function loadChartJS() {
+    return loadScript(scriptData.chartJs, function () {
+      return window.Chart;
+    });
+  }
+
+  // loadChartJSDatalabels: chartjs-plugin-datalabels, whose UMD build
+  // reads window.Chart.
+  function loadChartJSDatalabels() {
+    return loadChartJS().then(function () {
+      return loadScript(scriptData.chartDatalabels, function () {
+        return window.ChartDataLabels;
+      });
+    });
+  }
 
   // lib/chart-colors.js
   function cssColor(name) {
@@ -768,23 +796,482 @@
     });
   }
 
-  // PollButtonsDropdown's other actions are not ported: each says so.
-  var unported = {
-    showBreakdown: "the poll's breakdown",
-    exportResults: "the poll's export",
-    toggleStatus: "closing and opening a poll",
-  };
+  // toggleStatus: closes or opens the poll once confirmed; the results
+  // show while an on_close or always poll is closed. Ember refreshes the
+  // route after closing an on_close poll to get its votes: the widget
+  // drawn again from the server has them.
+  function toggleStatus(outer) {
+    var state = stateOf(outer);
+    if (state.automatically_closed || !Discourse.dialog) {
+      return;
+    }
+    Discourse.dialog.yesNoConfirm({
+      message: t(state.closed ? "poll.open.confirm" : "poll.close.confirm"),
+      didConfirm: function () {
+        var current = stateOf(findWidget(state) || outer);
+        var key = keyOf(current.post_id, current.name);
+        ajax("PUT", "/polls/toggle_status", {
+          post_id: current.post_id,
+          poll_name: current.name,
+          status: current.closed ? "open" : "closed",
+        }).then(
+          function (result) {
+            var poll = (result && result.poll) || {};
+            var changes = {};
+            if (poll.results === "on_close" || poll.results === "always") {
+              var results = poll.status === "closed";
+              changes.results = results;
+              changes.toggle = results;
+              keptFor(key).toggle = results;
+            }
+            var widget = findWidget(current) || outer;
+            redraw(widget, uiState(stateOf(widget), changes));
+          },
+          function (error) {
+            popupAjaxError(error, "poll.error_while_toggling_status");
+          }
+        );
+      },
+    });
+  }
+
+  // I18n.toNumber(number, { precision }) with the locale's number.format.
+  function toNumber(number, precision) {
+    // prepareOptions' defaults where the locale has none (the server
+    // sends a missing string as its full key).
+    var format = function (key, fallback) {
+      var value = t(key);
+      return value === key || value === "js." + key ? fallback : value;
+    };
+    var separator = format("number.format.separator", ".");
+    var delimiter = format("number.format.delimiter", ",");
+    var negative = number < 0;
+    var parts = Math.abs(number).toFixed(precision).toString().split(".");
+    var whole = parts[0];
+    var buffer = [];
+    while (whole.length > 0) {
+      var pos = Math.max(0, whole.length - 3);
+      buffer.unshift(whole.slice(pos, pos + 3));
+      whole = whole.slice(0, -3);
+    }
+    var formatted = buffer.join(delimiter);
+    if (precision > 0) {
+      formatted += separator + parts[1];
+    }
+    return negative ? "-" + formatted : formatted;
+  }
+
+  // @ember/string's classify.
+  function classify(str) {
+    return str
+      .split("/")
+      .map(function (part) {
+        return part
+          .replace(/^(\-|_)+(.)?/, function (match, separator, chr) {
+            return chr ? "_" + chr.toUpperCase() : "";
+          })
+          .replace(/(.)(\-|\_|\.|\s)+(.)?/g, function (match, initialChar, separator, chr) {
+            return initialChar + (chr ? chr.toUpperCase() : "");
+          });
+      })
+      .join("/")
+      .replace(/(^|\/|\.)([a-z])/g, function (match) {
+        return match.toUpperCase();
+      });
+  }
+
+  // PollBreakdownModal's groupableUserFields.
+  function groupableUserFields(fields) {
+    return fields.map(function (field) {
+      var transformed = field.split("_").filter(Boolean);
+      if (transformed.length > 1) {
+        transformed[0] = classify(transformed[0]);
+      }
+      return { id: field, label: transformed.join(" ") };
+    });
+  }
+
+  // The ComboBox poll-builder.js draws, loaded with it.
+  function loadComboBox() {
+    return loadScript(scriptData.pollBuilder, function () {
+      return Discourse.pollBuilder && Discourse.pollBuilder.comboBox;
+    });
+  }
+
+  // The breakdown modal open now: its poll's key, and how it follows the
+  // poll as the widget is drawn again (Ember's modal holds the tracked
+  // poll object).
+  var breakdown = null;
+
+  // PollBreakdownChart: a group's pie over the options with votes, the
+  // option under the pointer highlighted in the modal.
+  function breakdownChart(m, group, options) {
+    var container = document.createElement("div");
+    container.className = "poll-breakdown-chart-container";
+    var label = document.createElement("label");
+    label.className = "poll-breakdown-chart-label";
+    label.textContent = group;
+    var canvas = document.createElement("canvas");
+    canvas.className = "poll-breakdown-chart-chart";
+    container.appendChild(label);
+    container.appendChild(canvas);
+    var c = {
+      element: container,
+      options: options,
+      optionToSlice: {},
+      previousDisplayMode: null,
+      chart: null,
+      destroyed: false,
+    };
+
+    c.config = function () {
+      var data = (c.options && c.options.map ? c.options.map(function (item) {
+        return item.votes;
+      }) : null) || [];
+      var displayMode = m.displayMode;
+      var transformedData = [];
+      var counter = 0;
+      c.optionToSlice = {};
+      data.forEach(function (votes, index) {
+        if (votes > 0) {
+          transformedData.push(votes);
+          c.optionToSlice[index] = counter++;
+        }
+      });
+      var totalVotes = transformedData.reduce(function (sum, votes) {
+        return sum + votes;
+      }, 0);
+      var colors = getColors(data.length).filter(function (color, index) {
+        return data[index] > 0;
+      });
+      return {
+        type: "pie",
+        data: {
+          datasets: [{ data: transformedData, backgroundColor: colors, hoverBorderColor: "#fff" }],
+        },
+        options: {
+          plugins: {
+            tooltip: false,
+            datalabels: {
+              color: "#333",
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              borderRadius: 2,
+              font: { family: getComputedStyle(document.body).fontFamily, size: 16 },
+              padding: { top: 2, right: 6, bottom: 2, left: 6 },
+              formatter: function (votes) {
+                if (displayMode !== "percentage") {
+                  return votes;
+                }
+                return toNumber((votes / totalVotes) * 100.0, 1) + "%";
+              },
+            },
+          },
+          responsive: true,
+          aspectRatio: 1.1,
+          animation: { duration: 0 },
+          // Ember's next(): hover sends many events.
+          onHover: function (event, activeElements) {
+            if (!activeElements.length) {
+              setTimeout(function () {
+                m.setHighlighted(null);
+              });
+              return;
+            }
+            var sliceIndex = activeElements[0].index;
+            var optionIndex = Object.keys(c.optionToSlice).find(function (option) {
+              return c.optionToSlice[option] === sliceIndex;
+            });
+            setTimeout(function () {
+              m.setHighlighted(Number(optionIndex));
+            });
+          },
+        },
+      };
+    };
+
+    // didReceiveAttrs: _updateDisplayMode, then _updateHighlight, which
+    // Ember reaches only while no option is highlighted (setHighlighted),
+    // so it never makes a slice active.
+    c.update = function () {
+      if (!c.chart) {
+        return;
+      }
+      if (m.displayMode !== c.previousDisplayMode) {
+        var config = c.config();
+        c.chart.data.datasets = config.data.datasets;
+        c.chart.options = config.options;
+        c.chart.update();
+        c.previousDisplayMode = m.displayMode;
+      }
+      c.chart.setActiveElements([]);
+      c.chart.update();
+    };
+
+    c.destroy = function () {
+      c.destroyed = true;
+      if (c.chart) {
+        c.chart.destroy();
+      }
+    };
+
+    Promise.all([loadChartJS(), loadChartJSDatalabels()]).then(function (loaded) {
+      if (c.destroyed) {
+        return;
+      }
+      var config = c.config();
+      config.plugins = [loaded[1]];
+      c.chart = new loaded[0](canvas.getContext("2d"), config);
+    });
+    return c;
+  }
+
+  // PollBreakdownModal over the poll's state: the options with their
+  // share or count beside each group's pie from
+  // /polls/grouped_poll_results, grouped by the user field chosen.
+  function showBreakdown(outer) {
+    var state = stateOf(outer);
+    if (!state.breakdown || !Discourse.modal) {
+      return;
+    }
+    var fields = groupableUserFields(state.breakdown.fields || []);
+    var m = {
+      model: state.breakdown,
+      displayMode: "percentage",
+      highlighted: null,
+      groupedBy: fields[0] && fields[0].id,
+      charts: [],
+      destroyed: false,
+    };
+    var tabs, sidebar, chartsEl;
+
+    function drawTabs() {
+      tabs.querySelectorAll(".modal-tab").forEach(function (tab) {
+        tab.classList.toggle("is-active", tab.classList.contains(m.displayMode));
+      });
+    }
+
+    function totalVotes() {
+      return (m.model.options || []).reduce(function (sum, option) {
+        return sum + option.votes;
+      }, 0);
+    }
+
+    // PollBreakdownOption: its highlight, swatch and share or count. A
+    // highlighted option's swatch would take Chart.helpers.getHoverColor,
+    // but the Chart loadChartJS gives Ember is chart.js/auto's, which has
+    // no helpers: drawing it throws, after the row's background and before
+    // the swatch, and the render stops there. The swatch keeps its color.
+    function drawOption(li, option, index, colors, total) {
+      if (m.highlighted === index) {
+        li.setAttribute("style", "background: rgba(0, 0, 0, 0.1);");
+      } else {
+        li.removeAttribute("style");
+      }
+      li.querySelector(".poll-breakdown-option-color").setAttribute("style", "background: " + colors[index] + ";");
+      li.querySelector(".poll-breakdown-option-count").textContent =
+        m.displayMode === "percentage"
+          ? t("number.percent", { count: toNumber((option.votes / total) * 100.0, 1) })
+          : String(option.votes);
+    }
+
+    function drawOptions() {
+      var options = m.model.options || [];
+      var colors = getColors(options.length);
+      var total = totalVotes();
+      sidebar.querySelectorAll(".poll-breakdown-option").forEach(function (li, index) {
+        drawOption(li, options[index], index, colors, total);
+      });
+    }
+
+    // The sidebar from the model: drawn again as the poll changes.
+    function drawSidebar() {
+      sidebar.innerHTML =
+        '<p class="poll-breakdown-title"></p><div class="poll-breakdown-total-votes"></div><ul class="poll-breakdown-options"></ul>';
+      sidebar.querySelector(".poll-breakdown-title").innerHTML = m.model.title || "";
+      sidebar.querySelector(".poll-breakdown-total-votes").textContent = m.model.votes || "";
+      var list = sidebar.querySelector(".poll-breakdown-options");
+      (m.model.options || []).forEach(function (option, index) {
+        var li = document.createElement("li");
+        li.className = "poll-breakdown-option";
+        li.setAttribute("role", "button");
+        li.innerHTML =
+          '<span class="poll-breakdown-option-color"></span><span class="poll-breakdown-option-count"></span><span class="poll-breakdown-option-text"></span>';
+        // decoratePollOption: the HTML, run through the cooked decorators.
+        var text = li.querySelector(".poll-breakdown-option-text");
+        if (option.html) {
+          text.innerHTML = option.html;
+          if (Discourse.decorateCooked && Discourse.decorateCooked.apply) {
+            Discourse.decorateCooked.apply(text);
+          }
+        }
+        li.addEventListener("mouseover", function () {
+          m.setHighlighted(index);
+        });
+        li.addEventListener("mouseout", function () {
+          m.setHighlighted(null);
+        });
+        list.appendChild(li);
+      });
+      drawOptions();
+    }
+
+    // highlightedOption, set by hovering an option or a slice. With an
+    // option highlighted Ember's render throws in its PollBreakdownOption
+    // (drawOption) before it reaches the pies, which are left as they
+    // are. Ember renders nothing more after that throw; the port keeps
+    // drawing, so the row's highlight goes with the pointer.
+    m.setHighlighted = function (value) {
+      if (m.destroyed || m.highlighted === value) {
+        return;
+      }
+      m.highlighted = value;
+      drawOptions();
+      var options = m.model.options || [];
+      var optionHighlighted = typeof value === "number" && value >= 0 && value < options.length;
+      if (!optionHighlighted) {
+        m.charts.forEach(function (c) {
+          c.update();
+        });
+      }
+    };
+
+    function setDisplayMode(mode) {
+      if (m.displayMode === mode) {
+        return;
+      }
+      m.displayMode = mode;
+      drawTabs();
+      drawOptions();
+      m.charts.forEach(function (c) {
+        c.update();
+      });
+    }
+
+    function setCharts(groups) {
+      m.charts.forEach(function (c) {
+        c.destroy();
+      });
+      chartsEl.innerHTML = "";
+      m.charts = (groups || []).map(function (chart) {
+        var c = breakdownChart(m, chart.group, chart.options);
+        chartsEl.appendChild(c.element);
+        return c;
+      });
+    }
+
+    function fetchGroupedPollData() {
+      ajax("GET", "/polls/grouped_poll_results.json", {
+        post_id: state.post_id,
+        poll_name: state.name,
+        user_field_name: m.groupedBy,
+      }).then(
+        function (result) {
+          if (!m.destroyed) {
+            setCharts(result.grouped_results);
+          }
+        },
+        function (error) {
+          popupAjaxError(error, "poll.error_while_fetching_voters");
+        }
+      );
+    }
+
+    var modalEl = null;
+    Discourse.modal.show({
+      className: "poll-breakdown has-tabs",
+      title: t("poll.breakdown.title"),
+      headerBelowTitle: function () {
+        tabs = document.createElement("ul");
+        tabs.className = "modal-tabs";
+        ["percentage", "count"].forEach(function (mode) {
+          var li = document.createElement("li");
+          li.className = "modal-tab " + mode;
+          li.textContent = t("poll.breakdown." + mode);
+          li.addEventListener("click", function () {
+            setDisplayMode(mode);
+          });
+          tabs.appendChild(li);
+        });
+        drawTabs();
+        return tabs;
+      },
+      body: function (el) {
+        modalEl = el.closest(".d-modal");
+        el.innerHTML =
+          '<div class="poll-breakdown-sidebar"></div><div class="poll-breakdown-body"><div class="poll-breakdown-body-header"><label class="poll-breakdown-body-header-label"></label></div><div class="poll-breakdown-charts"></div></div>';
+        sidebar = el.querySelector(".poll-breakdown-sidebar");
+        chartsEl = el.querySelector(".poll-breakdown-charts");
+        el.querySelector(".poll-breakdown-body-header-label").textContent = t("poll.breakdown.breakdown");
+        drawSidebar();
+        var header = el.querySelector(".poll-breakdown-body-header");
+        loadComboBox().then(function (comboBox) {
+          if (m.destroyed) {
+            return;
+          }
+          header.appendChild(
+            comboBox(t, {
+              className: "poll-breakdown-dropdown",
+              content: fields.map(function (f) {
+                return { id: f.id, name: f.label };
+              }),
+              value: m.groupedBy,
+              onChange: function (value) {
+                m.groupedBy = value;
+                fetchGroupedPollData();
+              },
+            })
+          );
+        });
+      },
+      onClose: function () {
+        m.destroyed = true;
+        m.charts.forEach(function (c) {
+          c.destroy();
+        });
+        if (breakdown && breakdown.m === m) {
+          breakdown = null;
+        }
+      },
+    });
+    // A click outside an open select-kit closes it (the select-kit
+    // service's clickOutside).
+    if (modalEl) {
+      modalEl.addEventListener("click", function (event) {
+        if (!event.target.isConnected) {
+          return;
+        }
+        modalEl.querySelectorAll("details.select-kit[open]").forEach(function (kit) {
+          if (!kit.contains(event.target)) {
+            kit.open = false;
+          }
+        });
+      });
+    }
+    breakdown = {
+      m: m,
+      key: keyOf(state.post_id, state.name),
+      quoted: !!state.quoted,
+      update: function (model) {
+        if (model && !m.destroyed) {
+          m.model = model;
+          drawSidebar();
+        }
+      },
+    };
+    fetchGroupedPollData();
+  }
 
   // PollButtonsDropdown's dropDownClick, from the gear menu or its one
-  // button.
+  // button. Export waits for data explorer.
   function dropDownClick(outer, action, menu) {
     if (action === "toggleDisplayMode") {
       toggleDisplayMode(outer, menu);
-      return;
-    }
-    var what = unported[action] || action;
-    if (Discourse.dialog) {
-      Discourse.dialog.alert("Not ported yet: " + what + ".");
+    } else if (action === "toggleStatus") {
+      toggleStatus(outer);
+    } else if (action === "showBreakdown") {
+      showBreakdown(outer);
+    } else if (Discourse.dialog) {
+      Discourse.dialog.alert("Not ported yet: the poll's export.");
     }
   }
 

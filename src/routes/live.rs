@@ -923,6 +923,7 @@ async fn render_post(
     let topic = crate::post_view::TopicInfo {
         id: i64::from(topic_id),
         slug: post["topic_slug"].as_str().unwrap_or_default().to_string(),
+        title: topic_title(&mut conn, topic_id).await?,
         created_by_id: topic_ctx.user_id.map(i64::from),
         created_by_username: match topic_ctx.user_id {
             Some(id) => {
@@ -1484,6 +1485,17 @@ pub async fn posts(
         .into_response())
 }
 
+/// `topic.title`, as the post's topic model has it.
+async fn topic_title(conn: &mut sqlx::PgConnection, topic_id: i32) -> Result<String, sqlx::Error> {
+    Ok(
+        sqlx::query_scalar::<_, String>("SELECT title FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .unwrap_or_default(),
+    )
+}
+
 #[derive(Deserialize, Default)]
 pub struct PollParams {
     /// The widget's state as static/js/poll.js keeps it (UiState as JSON).
@@ -1569,6 +1581,12 @@ pub async fn poll(
         && crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, topic_id)
             .await?
             .is_some_and(|t| t.archived);
+    // Nor a title, which the breakdown falls back on for an untitled poll.
+    let title = if ui_state.quoted {
+        None
+    } else {
+        Some(topic_title(&mut conn, topic_id).await?)
+    };
     let viewer = match guardian.user_id() {
         Some(id) => crate::plugins::poll::view::PollViewer::load(&mut conn, id).await?,
         None => None,
@@ -1599,6 +1617,7 @@ pub async fn poll(
             .unwrap_or_default(),
         title_html: cooked_poll.title_html,
         dynamic_attr: cooked_poll.dynamic,
+        topic_title: title.as_deref(),
         state: &ui_state,
     }
     .render();

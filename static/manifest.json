@@ -640,6 +640,13 @@
       ]
     },
     {
+      "name": "chartjs-plugin-datalabels.min.js",
+      "content_type": "js",
+      "files": [
+        "vendor/chartjs-plugin-datalabels.min.js"
+      ]
+    },
+    {
       "name": "chartjs-adapter-moment.min.js",
       "content_type": "js",
       "files": [
