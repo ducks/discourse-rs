@@ -26,8 +26,21 @@ function status(postId) {
   return sql("SELECT status, closed_by_id IS NOT NULL FROM polls WHERE post_id = :'p1'", postId);
 }
 
+// A poll author of the test's own, also in trust_level_4: composer-actions
+// narrows poll_create_allowed_groups to 14 for one test, and a member only
+// in the default 11 would be refused a poll while that test runs.
+function pollAuthor() {
+  const author = member();
+  sql(
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) \
+     VALUES (14, :'p1', 2, now(), now()) ON CONFLICT DO NOTHING",
+    author.id,
+  );
+  return author;
+}
+
 test("the author closes and opens a poll once confirmed", async ({ page, context, session }) => {
-  await login(context, "user1");
+  await login(context, pollAuthor().name);
   const t = await topic(context, label("A poll to close"), "Results when it closes.\n\n[poll results=on_close]\n* Now\n* Later\n[/poll]");
   const voter = await session("user2");
   await vote(voter, t.posts[0], "poll", digests(t.posts[0], "poll").Later);
@@ -78,7 +91,7 @@ test("the breakdown modal shows each group's pie by the field chosen", async ({ 
     poll_groupable_user_fields: "city|favorite_team",
   });
   try {
-    await login(context, "user1");
+    await login(context, pollAuthor().name);
     const t = await topic(context, label("Pets by city"), "Which pet?\n\n[poll]\n# Pets\n* Cats\n* Dogs\n* Fish\n[/poll]");
     const options = digests(t.posts[0], "poll");
     const voters = [member(), member(), member()];
@@ -93,7 +106,7 @@ test("the breakdown modal shows each group's pie by the field chosen", async ({ 
     for (const [m, pick] of [[voters[0], "Cats"], [voters[1], "Dogs"], [voters[2], "Dogs"]]) {
       await vote(await session(m.name), t.posts[0], "poll", options[pick]);
     }
-    // user1's own vote: a member without the field, "No Data".
+    // The author's own vote: a member without the field, "No Data".
     await vote(context, t.posts[0], "poll", options.Dogs);
 
     await page.goto(t.url);
