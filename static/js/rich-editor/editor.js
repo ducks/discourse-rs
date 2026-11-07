@@ -6,8 +6,11 @@
 //   createEditor({
 //     container,      // element the .ProseMirror-container goes in
 //     value,          // the markdown to start from
+//     engine,         // the markdown engine (engine.js wasmEngine): its
+//                     // tree, linkify, allow list and emoji
 //     parseTree,      // markdown -> the markdown crate's node tree
-//                     // (docs/rich-editor.md); without it only "" opens
+//                     // (docs/rich-editor.md), by default the engine's;
+//                     // without either only "" opens
 //     onChange,       // (markdown) after each edit that can be undone
 //     onUnsupported,  // (error) the markdown has what no extension parses;
 //                     // the reference alerts composer.unsupported_token
@@ -15,7 +18,10 @@
 //     extensions,     // default: getExtensions()
 //     includeDefault, placeholder, disabled, className,
 //     keymap,         // the host's { "ctrl+m": fn } keys, as d-editor's
-//     focusIn, focusOut, toggleRichEditor, context (getContext extras)
+//     focusIn, focusOut, toggleRichEditor,
+//     context,        // getContext extras: siteSettings, i18n(key),
+//                     // icon(name), appEvents, markdownOptions and the
+//                     // host's own (the composer's, rich-editor-context)
 //   })
 //
 // returns { view, schema, parser, serializer, setValue, getValue,
@@ -35,7 +41,9 @@ import { EditorState, Plugin } from "prosemirror-state";
 import * as ProsemirrorTransform from "prosemirror-transform";
 import * as ProsemirrorView from "prosemirror-view";
 import { EditorView } from "prosemirror-view";
+import { setEngine } from "discourse/rich-editor/engine";
 import { getExtensions, placeholder } from "discourse/rich-editor/extensions";
+import { authorizesOneOrMoreExtensions } from "discourse/rich-editor/extensions/image";
 import { buildInputRules } from "discourse/rich-editor/inputrules";
 import { buildKeymap } from "discourse/rich-editor/keymap";
 import Parser, { UnsupportedTokenError } from "discourse/rich-editor/parser";
@@ -44,6 +52,8 @@ import { createSchema } from "discourse/rich-editor/schema";
 import Serializer from "discourse/rich-editor/serializer";
 
 export { UnsupportedTokenError };
+export { wasmEngine } from "discourse/rich-editor/engine";
+export { renderToolbarButtons } from "discourse/rich-editor/toolbar";
 
 var AUTOCOMPLETE_KEY_DOWN_SUPPRESS = ["Enter", "Tab", "ArrowDown", "ArrowUp"];
 
@@ -193,6 +203,10 @@ function buildListNode(schema, listType, lines) {
 }
 
 export function createEditor(options) {
+  if (options.engine) {
+    setEngine(options.engine);
+  }
+  var parseTree = options.parseTree || (options.engine && options.engine.tree);
   var given = options.extensions || getExtensions();
   // The placeholder is always there.
   var extensions = given.indexOf(placeholder) >= 0 ? given : [placeholder].concat(given);
@@ -229,11 +243,24 @@ export function createEditor(options) {
     pmSchemaList: ProsemirrorSchemaList,
     pmCommands: ProsemirrorCommands,
     getContext: function () {
-      return Object.assign({}, options.context, context);
+      return Object.assign(
+        {
+          siteSettings: {},
+          i18n: function (key) {
+            return key;
+          },
+        },
+        options.context,
+        context
+      );
     },
   };
 
   function handleAsyncPlugin(plugin) {
+    // The editor may be gone by the time the plugin resolves.
+    if (view.isDestroyed) {
+      return;
+    }
     view.updateState(view.state.reconfigure({ plugins: view.state.plugins.concat(plugin) }));
   }
 
@@ -246,7 +273,7 @@ export function createEditor(options) {
     history(),
   ].concat(extractPlugins(extensions, params, handleAsyncPlugin));
 
-  parser = new Parser(extensions, params, includeDefault, options.parseTree);
+  parser = new Parser(extensions, params, includeDefault, parseTree);
   serializer = new Serializer(extensions, params, includeDefault);
 
   var container = document.createElement("div");
@@ -286,6 +313,33 @@ export function createEditor(options) {
         }
         return false;
       },
+      // Without an extension to upload, the uploader is not set up, and it
+      // is what keeps a pasted file out.
+      paste: function (_, event) {
+        var context = params.getContext();
+        var staff = !!(context.currentUser && context.currentUser.staff);
+        if (event.clipboardData.files.length > 0 && !authorizesOneOrMoreExtensions(staff, context.siteSettings)) {
+          event.preventDefault();
+        }
+      },
+      drop: function (_, event) {
+        if (view.dragging) {
+          // A drag from this editor is a move, but the browser exposes the
+          // dragged content as a file too: kept from the upload drop target
+          // on an ancestor, which would upload it again.
+          event.stopPropagation();
+          return;
+        }
+
+        if (
+          Array.prototype.some.call(event.dataTransfer.items, function (item) {
+            return item.kind === "file";
+          })
+        ) {
+          // the composer's uploader drops files
+          return true;
+        }
+      },
     },
     handleKeyDown: function (_, event) {
       // The autocomplete's keys while it is open.
@@ -302,7 +356,7 @@ export function createEditor(options) {
     }
     var doc;
     try {
-      doc = value === "" && !options.parseTree ? schema.topNodeType.createAndFill() : convertFromMarkdown(value);
+      doc = value === "" && !parseTree ? schema.topNodeType.createAndFill() : convertFromMarkdown(value);
     } catch (e) {
       if (e instanceof UnsupportedTokenError && options.onUnsupported) {
         options.onUnsupported(e);

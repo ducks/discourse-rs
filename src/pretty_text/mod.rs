@@ -558,6 +558,7 @@ pub fn render_settings(
     Ok(render::RenderSettings {
         breaks: !settings.get("traditional_markdown_linebreaks")?.truthy(),
         linkify_tlds,
+        link_matcher_tlds: split("markdown_linkify_tlds")?,
         linkify: None,
         typographer: settings.get("enable_markdown_typographer")?.truthy(),
         mentions: settings.get("enable_mentions")?.truthy(),

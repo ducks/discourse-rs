@@ -1,9 +1,8 @@
 /* The rich editor's core styles: common/rich-editor/rich-editor.scss
    (the container, the document, its placeholder and the sections from
    prosemirror-view, prosemirror-gapcursor and prosemirror-codemark) and
-   common/components/composer-toggle-switch.scss. The extensions' rules
-   (upload placeholders, html blocks, code language select, images, grids,
-   tables, the toolbars) come with them (ROADMAP 196r2, 196r3). */
+   common/components/composer-toggle-switch.scss, then the everyday
+   extensions' rules (196r2) at the end. */
 
 .ProseMirror-container {
   margin: 0;
@@ -336,4 +335,137 @@ span:focus .fake-cursor {
 
 .--rte .composer-toggle-switch__right-icon {
   color: var(--primary);
+}
+
+/* The everyday extensions' rules (rich-editor.scss, ROADMAP 196r2): table
+   cells, kbd, code blocks' language select, HTML blocks, the outline of
+   inline HTML with no look of its own, and the link toolbar. Images,
+   uploads and grids are in rich-editor-media.css, tables in
+   rich-editor-table.css. */
+.ProseMirror td {
+  padding: 3px 3px 3px 0.5em;
+}
+
+.ProseMirror th {
+  padding-bottom: 2px;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.ProseMirror kbd {
+  display: inline;
+  padding-top: 0.2rem;
+}
+
+.ProseMirror .code-language-select {
+  position: absolute;
+  right: 0.25rem;
+  top: -0.6rem;
+  border: 1px solid var(--content-border-color);
+  border-radius: var(--d-border-radius);
+  background-color: var(--primary-very-low);
+  color: var(--primary-medium);
+  font-size: var(--font-down-1-rem);
+}
+
+.ProseMirror pre {
+  position: relative;
+}
+
+.ProseMirror .html-block {
+  border: 2px dashed var(--primary-low-mid);
+  border-radius: var(--d-border-radius);
+}
+
+.ProseMirror .html-block.ProseMirror-selectednode {
+  outline-offset: -2px;
+  border-radius: calc(var(--d-border-radius) + 2px);
+}
+
+.ProseMirror .html-block::after {
+  position: absolute;
+  right: 0;
+  top: 0;
+  content: "HTML";
+  font-size: var(--font-down-2-rem);
+  color: var(--primary-medium);
+  z-index: 1;
+  background: var(--secondary-very-high);
+  padding: 0 var(--space-1);
+  border-bottom-left-radius: var(--d-border-radius);
+  border-top-right-radius: var(--d-border-radius);
+}
+
+.ProseMirror .composer-html-inline-node {
+  outline: 1px dashed var(--primary-low-mid);
+  padding-inline: 1px;
+  border-radius: 2px;
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] {
+  user-select: none;
+  /* z("composer", "dropdown") */
+  z-index: 700;
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .fk-d-menu__inner-content {
+  overflow: visible;
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button {
+  background-color: var(--secondary);
+  color: var(--primary-medium);
+  border-radius: var(--d-border-radius);
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button .d-icon {
+  color: var(--primary-medium);
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:hover:not(:disabled) {
+  color: var(--primary);
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:hover:not(:disabled) .d-icon {
+  color: var(--primary);
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:active {
+  background: var(--secondary);
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:focus-visible {
+  outline: 2px solid var(--d-focus-color, var(--tertiary));
+  outline-offset: -2px;
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button.--active {
+  background: var(--d-selected);
+  color: var(--d-selected-text-color);
+}
+
+.fk-d-menu[data-identifier="composer-link-toolbar"] .composer-link-toolbar__visit .d-button-label {
+  max-width: 12rem;
+}
+
+.composer-link-toolbar__visit {
+  min-width: 0;
+  align-items: center;
+  /* the visit link's icon is on its right */
+  flex-direction: row-reverse;
+}
+
+.composer-link-toolbar__visit .d-icon {
+  margin-right: 0;
+}
+
+.composer-link-toolbar__visit .d-button-label {
+  font-size: var(--font-down-1-rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-link-toolbar__visit:not(:disabled) .d-button-label {
+  margin-right: 0.5rem;
 }

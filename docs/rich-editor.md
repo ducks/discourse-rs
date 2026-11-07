@@ -20,23 +20,34 @@ pass; the rich editor is reachable through the member's `composition_mode`
 |---|---|
 | `static/js/rich-editor.js` | `lib/load-rich-editor.js`: the import map and `Discourse.richEditor.load()` |
 | `rich-editor/editor.js` | `components/prosemirror-editor.gts`, `core/plugin.js`, `core/commands.js` |
-| `rich-editor/extensions.js` | `lib/composer/rich-editor-extensions.ts` and the core extensions: code (codemark), heading, strikethrough, strong, underline, trailing paragraph, ordered and bullet lists, hard break, placeholder |
+| `rich-editor/extensions.js` | `lib/composer/rich-editor-extensions.ts`, `extensions/register-default.ts` and the small core extensions: code (codemark), heading, strikethrough, strong, underline, trailing paragraph, ordered and bullet lists, hard break, placeholder |
+| `rich-editor/extensions/*.js` | `extensions/`: emoji, mention, hashtag, link, link-toolbar, quote, code-block, html-inline, html-block, trailing-inline-space, markdown-paste, word-paste, table, image, upload-placeholder, grid, override-drag-ghost |
+| `rich-editor/node-views/*.js` | `components/`: image (with media and video dispatch), video, grid, upload placeholder and image alt text input, as plain DOM node views |
+| `rich-editor/table/*.js` | `lib/table/` |
+| `rich-editor/engine.js` | `lib/markdown-it.js`: the markdown engine the extensions ask (below) |
+| `rich-editor/toolbar.js` | `lib/composer/toolbar.ts` ToolbarBase, `components/composer/toolbar-buttons.gjs`, `lib/roving-button-bar.js`, iconHTML and a success toast, for the extensions' floating toolbars |
 | `rich-editor/schema.js` | `core/schema.js` |
 | `rich-editor/parser.js` | `core/parser.js`, plus the node tree mapping below |
 | `rich-editor/serializer.js` | `core/serializer.js`, `lib/expel-boundary-punctuation.ts` |
 | `rich-editor/keymap.js` | `core/keymap.js` |
 | `rich-editor/inputrules.js` | `core/inputrules.js` |
-| `rich-editor/plugin-utils.js` | `lib/plugin-utils.js` (less getLinkify and buildBBCodeAttrs, which arrive with their extensions) |
-| `rich-editor/to-markdown.js` | `to-markdown.js` (less word-paste's clean-up, 196r2) |
+| `rich-editor/plugin-utils.js` | `lib/plugin-utils.js` (less buildBBCodeAttrs, which arrives with 196r4's bbcode block extensions) |
+| `rich-editor/to-markdown.js` | `to-markdown.js` |
 | `rich-editor/markdown-it-stub.js` | none: what `markdown-it` resolves to |
-| `static/css/rich-editor.css` | `common/rich-editor/rich-editor.scss` (core rules), `common/components/composer-toggle-switch.scss` |
+| `static/css/rich-editor.css` | `common/rich-editor/rich-editor.scss` (core rules and the everyday extensions'), `common/components/composer-toggle-switch.scss` |
+| `static/css/rich-editor-table.css` | `common/rich-editor/composer-table.scss` |
+| `static/css/rich-editor-media.css` | `rich-editor.scss`'s image, upload placeholder, video and grid rules, `composer-image-gallery.scss` |
+| `src/composer/rich_editor.rs` | what getContext gives the extensions: site settings, strings, the hashtag order |
+| `src/routes/composer_mentions.rs` | `ComposerController#mentions` (GET /composer/mentions), which the mention extension asks |
 
 Extensions keep the reference's shape (nodeSpec, markSpec, parse,
 serializeNode, serializeMark, inputRules, keymap, plugins, nodeViews,
-commands, state, each a value or a function of the plugin params), so the
-remaining ones port one by one (196r2, 196r4) without changing the core.
-Node views are classes or functions; the Glimmer component descriptors have
-no counterpart.
+commands, state, transformParsedHTML, each a value or a function of the
+plugin params), so 196r4's extensions port one by one without changing the
+core.
+Node views are classes (extractNodeViews builds them with `new`) or
+functions returning one; the Glimmer component descriptors have no
+counterpart, so the components are plain DOM node views.
 
 ## Loading
 
@@ -154,13 +165,35 @@ Discourse's other tokens are written the same way where the crate already
 knows the token: html_block, html_inline, html_raw, emoji (with
 getEmojiTokenByName's attrs), tables (`table`, `thead`, `tbody`, `tr`, `th`,
 `td` with their `text-align` style), `[code]` as `code_inline`, `[url]` and
-`[email]` as `link`. The rest (mentions, hashtags, quotes and the other
-bbcode blocks, checklists, footnotes, math, the plugins') is written as
+`[email]` as `link`.
+
+### The everyday extensions' types (196r2)
+
+| type | tag | attrs | from |
+|---|---|---|---|
+| `mention` | `span` | `class` `mention`; its child is the `@name` text | mentions.js, as text-post-process runs it |
+| `span` | `span` | `class` `hashtag-raw`; its child is the `#slug` text | hashtag-autocomplete.js: the editor's engine looks nothing up, so every hashtag is raw |
+| `bbcode` | `aside` | `class` `quote no-group`, `data-username`, `data-display-name`, `data-post`, `data-topic`, `data-full` | quotes.js, then a `bbcode` `blockquote` around the content |
+| `quote_header` | `div` | `class` `title`; a `quote_controls` div, then the ` name:` text | quotes.js, for a quote naming a user |
+| `bbcode` | `div` | `class` `d-image-grid`, `data-mode` | image-grid.js |
+
+upload-protocol runs as in the client, with no lookup: an `img`'s or an
+`a`'s first `upload://` attribute (an image, a link, a linkified or
+bbcode url) becomes getURL of `/images/transparent.png` (`/404` for an
+image whose alt says `|video` or `|audio`, `/404` for a link), the short
+url going to `data-orig-src` or `data-orig-href`. HTML naming an upload is
+refused: upload-protocol rewrites its `img` through the xss filter, which
+the tree does not port. The engine's options have no topic, so a quote
+of another topic names its user rather than linking to the topic, as the
+reference's buildEngine does.
+
+The rest (the other bbcode blocks: details, wrap, spoiler, policy;
+checklists, footnotes, math, local dates, events, polls) is written as
 `unported:<name>` (the Element's tag, or the crate node's name) until its
-extension records its JS token (196r2, 196r4). No parse spec handles
-either yet, so they refuse the post as unsupported. Text may be split or merged differently from markdown-it's
-(the parser merges adjacent text), so the test is the document a tree gives,
-not equality with markdown-it's tokens.
+extension records its JS token (196r4). No parse spec handles it, so it
+refuses the post as unsupported. Text may be split or merged differently
+from markdown-it's (the parser merges adjacent text), so the test is the
+document a tree gives, not equality with markdown-it's tokens.
 
 tests/browser/rich-editor.spec.js writes the trees for each of the
 reference's cases (its `doc(...)` builders): those are the expected shape.
@@ -186,32 +219,76 @@ emoji:
    (`render::anchor`, an empty link pair in JS that gives the editor
    nothing, so left out), the sanitizer, text post-processing for HTML.
    The upload pass is left out too: this port runs upload-protocol together
-   with the image and link renderers (images become their HTML), so an
-   `upload://` image is an image token with its short url until the image
-   extension (196r2) records what upload-protocol adds.
+   with the image and link renderers (images become their HTML), so tree.rs
+   applies upload-protocol's client half to the tokens itself (above).
 5. The settings: typographer off; onebox, watched words and censored off
-   whatever the site's settings say.
+   whatever the site's settings say; no topic id and no forced quote link.
+
+## The engine
+
+The reference's extensions ask its markdown-it engine more than a parse
+(`lib/markdown-it.js`): `getLinkify()` to find links as the member types or
+pastes and in the link toolbar, `getAllowLister()` for the inline HTML it
+keeps, and pretty-text's emoji data for images and emoticons. The port's
+engine is markdown.wasm configured with the site's settings
+(`rich-editor/engine.js` `wasmEngine`, `crates/markdown/src/render/editor.rs`),
+set by createEditor's `engine` option:
+
+| engine.js | export | the reference's |
+|---|---|---|
+| `tree(markdown)` | `rich_editor_tree` | `parse(text)` |
+| `linkify.match`, `.test`, `.matchAtStart` | `linkify_match`, `linkify_match_at_start` | linkify-it's, with markdown_linkify_tlds whether linkify is on or not (RenderSettings' `link_matcher_tlds`); offsets in UTF-16 units |
+| `allowList.tags`, `.attrAllowed(tag, name, value)` | `html_allow_list`, `html_attr_allowed` | `getAllowList().tagList`, `isAllowListedAttr` or a custom check |
+| `emoji(code)` | `emoji_image` | `buildEmojiUrl` and `isCustomEmoji` of a code that exists |
+| `emojiTranslations` | `emoji_translations` | pretty-text/emoji/data's `translations` |
+| `emojiUnescape(text)` | `emoji_unescape` | lib/text's `emojiUnescape` (custom emoji and the deny list, not lazy) |
+
+`isWhiteSpace` and `isBoundary` are markdown-it's own, written out in
+plugin-utils.js.
 
 ## Tests
 
-`tests/browser/rich-editor.spec.js` ports the reference's
-`prosemirror-markdown-test.js` (the editor with prosemirror-markdown's
-defaults alone), `strikethrough-test.js` and `underline-test.js`, checked as
-`tests/helpers/rich-editor-helper.gjs` does (the editor's HTML less
-ProseMirror's artifacts, and the markdown an edit serializes), three ways:
+`tests/browser/rich-editor-helper.js` is the reference's
+`tests/helpers/rich-editor-helper.gjs`: a page with the loader, the editor's
+modules and the engine, `testMarkdown` and `setupRichEditor` (the editor's
+HTML less ProseMirror's artifacts, and the markdown an edit serializes,
+with every default extension), and `qunitTest`, which runs a reference
+QUnit body as written in the page with a QUnit-like `assert` (and
+`assert.dom`) and the @ember/test-helpers it calls (click,
+triggerKeyEvent, settled). The reference's pretender routes are Playwright
+routes.
 
-- `serializes`: the document built from the expected HTML (parseDOM), so the
-  schema, view and serializer;
-- `maps`: the document from the case's node tree, so `tokensFromTree` and
-  the parse specs;
-- `round-trips`: markdown through markdown.wasm's `rich_editor_tree` (all
-  18 pass; the case skips itself on a build without the export).
+- `rich-editor.spec.js` ports `prosemirror-markdown-test.js` (the editor
+  with prosemirror-markdown's defaults alone), `strikethrough-test.js` and
+  `underline-test.js`, three ways: `serializes` (the document built from the
+  expected HTML, so the schema, view and serializer), `maps` (from the
+  case's node tree, so `tokensFromTree` and the parse specs) and
+  `round-trips` (markdown through markdown.wasm's `rich_editor_tree`), with
+  the import map's urls, typing, undo and the refusals.
+- `rich-editor-extensions.spec.js` ports the emoji, mention, hashtag, link,
+  quote, code-block, html-inline and html-block tests and
+  prosemirror-editor-test.gjs's registry cases, the link toolbar and the
+  paste extensions.
+- `rich-editor-table.spec.js` ports `table-test.js` and the to-markdown
+  table cases; `rich-editor-media.spec.js` `image-test.js`, the grid cases
+  of prosemirror-editor-test.gjs, the to-markdown image cases and an upload
+  through the composer in rich mode.
+- `rich-editor-to-markdown.spec.js` and `rich-editor-word-paste.spec.js` run
+  `to-markdown-test.js` (less its table and image cases) and
+  `word-paste-test.js` as written.
 
-It also checks the import map serves every module, typing through the input
-rules and undo, the refusals, and the to-markdown cases the core covers.
-Run it with `scripts/browser-test rich-editor`. The Rust tests in tree.rs
-check the same cases' trees after the editor's text merging, and what the
-overrides leave out.
+Cases the port cannot run say why where they would be: prosemirror-editor-
+test's [wrap] registry case (wrap is 196r4's, so its token is refused) and
+code-block-test's "Tab still nests list items" (the list Tab is
+text-manipulation's, 196r3). The site's highlight.js bundle has languages
+the reference's test bundle lacks, so the code block cases list the
+bundle's and the HTML block cases set its highlighting aside.
+
+Run them with `scripts/browser-test rich-editor`. The Rust tests in tree.rs
+check the trees (the core cases after the editor's text merging, the
+extensions' tokens, the upload placeholders and what the overrides leave
+out) and editor.rs the engine's answers; tests/composer_mentions.rs covers
+GET /composer/mentions.
 
 ## In the composer
 
@@ -237,27 +314,66 @@ overrides leave out.
 - `static/js/composer.js` follows d-editor's toggleRichEditor. The toggle,
   Ctrl+M (in the textarea, or the editor's keymap) or opening the composer
   in mode 1 loads `Discourse.richEditor` and the preview's renderer (whose
-  `tree` is `rich_editor_tree`), then `createEditor` in
+  `tree` is `rich_editor_tree`), then `createEditor` with the engine and the
+  context below in
   `.d-editor-textarea-wrapper` over the textarea's value. The textarea
   stays, hidden: each edit writes its markdown there and fires `input`, so
   drafts, presence and the save read it as before, and wherever composer.js
   writes the textarea itself (the text it opens with, the toolbar until
-  196r3, a quote, a template, upload placeholders) the editor's `setValue`
-  follows. A refusal alerts `composer.unsupported_token` and switches back
-  to markdown. Each switch redraws the container, the preview and the
+  196r3, a quote, a template) the editor's `setValue` follows. A refusal
+  alerts `composer.unsupported_token` and switches back to markdown. Each switch redraws the container, the preview and the
   toggle (relabelled for the platform, or the `_no_shortcut` forms without
   a fine pointer) and saves `composition_mode` with PUT
   /u/:username.json after a second of quiet.
+- `src/composer/rich_editor.rs` writes `data-rich-editor-context` on
+  `#reply-control`: the client site settings the extensions read
+  (default_code_lang, here_mention, max_image_width and so on), the strings
+  they show (each plural key's forms as `key.one`, `key.other`), the
+  current user's staff flag and `site.hashtag_configurations`'
+  `topic-composer` order. composer.js's `richEditorContext` hands the editor
+  that as getContext's `siteSettings`, `site`, `currentUser` and `i18n(key,
+  params)`, with the composer's `topicId`, an `appEvents` emitter the upload
+  code and the extensions share, `capabilities.viewport.sm` and
+  d-editor's `replaceToolbar` (an extension's toolbar in the button bar's
+  place, with a back button). The editor's engine is `wasmEngine` over the
+  preview's markdown.wasm, built once.
+- In rich mode an upload goes in as the upload placeholder node (or an
+  image node with `placeholder`), as text-manipulation's placeholder
+  handler does: its progress, then the upload's markdown in its place, or
+  nothing when it is cancelled from the node, the cancel link or by
+  deleting it. Pasted files and the editor's own `data:` images upload
+  through the same code.
+- GET /composer/mentions (`src/routes/composer_mentions.rs`) answers the
+  mention extension: an @name that is no user or visible group, nor
+  @here, goes back to text, and the reasons are triggered as
+  `composer-messages:create`, which nothing shows yet: the composer's
+  messages (ComposerMessages) are not ported.
+
+What the composer and the editor do not do yet, as the reference does:
+
+- The quote node view draws the quoted post's avatar from
+  `markdownOptions.lookupAvatarTemplateByPostNumber`, which the composer
+  does not give (its preview has no quote avatars either).
+- The link toolbar's Edit opens UpsertHyperlink, the link modal of the
+  composer's toolbar (196r3): until the host gives `upsertHyperlink` the
+  button is not drawn. Load preview needs the onebox extension (196r3) and
+  is never offered.
+- A11y announcements (tables, videos) go through `getContext().a11y`; the
+  port's pages have no live regions (A11y's), so the composer gives none
+  and they are skipped.
+- The strings' plural forms are picked by English's rule (one for 1, zero
+  where the locale has it, other otherwise).
 
 A temporary deviation: Ember opens the composer in the member's stored
 mode (d-editor's setupEditorMode), but Discourse ships
 `default_composition_mode` 1, so the seed's members, an imported site's and
-new signups would all open in a rich editor that refuses a post with a
-mention, an emoji, a quote or any other construct whose extension is
-196r2's or 196r4's. Until then `composer::OPEN_IN_STORED_MODE`
-(`src/composer/load.rs`) is off: the composer always opens in markdown
-(`data-composition-mode="0"`, the preview allowed) whatever is stored. The
-toggle and Ctrl+M still switch and still save `composition_mode`, and no
-stored value is rewritten. 196r5 turns the switch on and removes it. The
-browser suite's members are on markdown too (`tests/browser/setup.sql`);
-composer.spec.js gives its own the mode each case needs.
+new signups would all open in a rich editor that refuses a post with any
+construct whose extension is 196r4's (a poll, details, a checklist,
+footnotes, math, local dates, a policy, an event, [wrap]). Until then
+`composer::OPEN_IN_STORED_MODE` (`src/composer/load.rs`) is off: the
+composer always opens in markdown (`data-composition-mode="0"`, the
+preview allowed) whatever is stored. The toggle and Ctrl+M still switch
+and still save `composition_mode`, and no stored value is rewritten.
+196r5 turns the switch on and removes it. The browser suite's members are
+on markdown too (`tests/browser/setup.sql`); composer.spec.js gives its own
+the mode each case needs.

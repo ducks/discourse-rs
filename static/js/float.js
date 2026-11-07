@@ -134,7 +134,10 @@
   }
 
   function padding(options) {
-    return options.padding || { top: headerOffset(), left: 10, right: 10, bottom: 10 };
+    // `??`: a padding of 0 is one.
+    return options.padding !== undefined && options.padding !== null
+      ? options.padding
+      : { top: headerOffset(), left: 10, right: 10, bottom: 10 };
   }
 
   // horizontalViewportInset()

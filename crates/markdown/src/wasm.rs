@@ -114,3 +114,101 @@ pub unsafe extern "C" fn rich_editor_tree(ptr: *const u8, len: usize) -> i32 {
         },
     })
 }
+
+/// The configured settings' answer to the rich editor's engine question
+/// (render::editor): `f` takes the request's text.
+fn engine_call(
+    request: &str,
+    f: impl Fn(&str, &RenderSettings) -> Result<serde_json::Value, String>,
+) -> i32 {
+    SETTINGS.with(|s| match s.borrow().as_ref() {
+        None => output("not configured".into(), false),
+        Some(settings) => match f(request, settings) {
+            Ok(value) => output(value.to_string(), true),
+            Err(e) => output(e, false),
+        },
+    })
+}
+
+/// `getLinkify().match(text)`, as JSON.
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn linkify_match(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |text, settings| {
+        crate::render::editor::link_matches(text, settings).map_err(|e| e.to_string())
+    })
+}
+
+/// `getLinkify().matchAtStart(text)`, as JSON.
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn linkify_match_at_start(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |text, settings| {
+        crate::render::editor::link_at_start(text, settings).map_err(|e| e.to_string())
+    })
+}
+
+/// The allow list's tags, as a JSON array (the request is ignored).
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn html_allow_list(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |_, settings| {
+        Ok(crate::render::editor::html_tags(settings))
+    })
+}
+
+/// Whether the allow list keeps an attribute: the request is the JSON
+/// `[tag, name, value]`, the answer true, false or null (no such tag).
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn html_attr_allowed(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |request, settings| {
+        let (tag, name, value): (String, String, String) =
+            serde_json::from_str(request).map_err(|e| format!("html_attr_allowed: {e}"))?;
+        Ok(crate::render::editor::html_attr_allowed(
+            &tag, &name, &value, settings,
+        ))
+    })
+}
+
+/// An emoji code's image as JSON `{url, custom}`, or null.
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn emoji_image(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |code, settings| {
+        Ok(crate::render::editor::emoji(code, settings))
+    })
+}
+
+/// The emoticons and their emoji names, as a JSON object (the request is
+/// ignored).
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn emoji_translations(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |_, _| {
+        Ok(crate::render::editor::emoji_translations())
+    })
+}
+
+/// lib/text's `emojiUnescape(text)`, as a JSON string.
+///
+/// # Safety
+/// `ptr` and `len` are a buffer from `alloc` holding `len` written bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn emoji_unescape(ptr: *const u8, len: usize) -> i32 {
+    engine_call(&unsafe { input(ptr, len) }, |text, settings| {
+        Ok(crate::render::editor::emoji_unescape(text, settings))
+    })
+}

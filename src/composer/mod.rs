@@ -2,6 +2,7 @@
 
 mod load;
 pub mod preview;
+pub mod rich_editor;
 pub mod view;
 
 pub use load::OPEN_IN_STORED_MODE;

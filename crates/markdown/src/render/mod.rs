@@ -16,6 +16,7 @@ mod chat_transcript;
 mod checklist;
 mod code;
 pub mod context;
+pub mod editor;
 mod element;
 mod emoji;
 mod footnotes;
@@ -63,6 +64,11 @@ pub struct RenderSettings {
     /// `linkify`, compiled from linkify_tlds by `compiled`.
     #[serde(skip)]
     pub linkify: Option<Arc<LinkifyIt>>,
+    /// `markdown_linkify_tlds` whatever enable_markdown_linkify says: the
+    /// engine's `linkify` always has them, and the rich editor finds links
+    /// with it as it types (`getLinkify`, docs/rich-editor.md).
+    #[serde(default)]
+    pub link_matcher_tlds: Vec<String>,
     pub typographer: bool,
     /// `features.mentions`
     pub mentions: bool,
@@ -334,13 +340,17 @@ pub fn rich_editor_tree(
     settings.censored.clear();
     settings.watched_replace.clear();
     settings.watched_link.clear();
+    // The editor's engine has the site's settings alone: no topic, so a
+    // quote names its user rather than linking to another topic.
+    settings.topic_id = None;
+    settings.force_quote_link = false;
     let md = engine(&settings, Lookups::default());
     let ctx = md.ext.get::<Context>().expect("context");
     let root = parse(&md, raw, &settings, false)?;
     if let Some(what) = ctx.unsupported() {
         return Err(Unsupported(what));
     }
-    Ok(tree::doc(&root))
+    Ok(tree::doc(&root, &settings.base_path))
 }
 
 /// One pass of `cook(raw, options)` of discourse-markdown-it's engine:

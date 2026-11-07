@@ -216,6 +216,19 @@ pub(crate) async fn load(
     } else {
         None
     };
+    let tagging = settings.get("tagging_enabled")?.truthy();
+    let hashtag_order: Vec<String> =
+        crate::site::hashtag_configurations(settings, tagging)?["topic-composer"]
+            .as_array()
+            .map(|types| {
+                types
+                    .iter()
+                    .filter_map(|t| t.as_str().map(str::to_string))
+                    .collect()
+            })
+            .unwrap_or_default();
+    let rich_editor_context =
+        super::rich_editor::context(&state.i18n, settings, guardian.is_staff(), &hashtag_order)?;
     let html = super::view::render(
         &list,
         &chooser,
@@ -256,6 +269,7 @@ pub(crate) async fn load(
             },
             actions,
             poll_builder,
+            rich_editor_context: rich_editor_context.to_string(),
         },
     );
     Ok(Loaded { html, categories })

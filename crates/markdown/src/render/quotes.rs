@@ -7,7 +7,7 @@ use markdown_it::Node;
 use super::RenderSettings;
 use super::bbcode::TagInfo;
 use super::context::Context;
-use super::element::{BlockText, Element, RawHtml};
+use super::element::{BlockText, Element, JsToken, RawHtml};
 use crate::sanitizer::AllowList;
 
 /// JavaScript's `parseInt(s, 10)`: the leading integer, if there is one.
@@ -134,12 +134,14 @@ pub fn build(info: &TagInfo, content: Vec<Node>, settings: &RenderSettings, ctx:
         attrs,
         block: true,
     });
+    JsToken::on(&mut aside, "bbcode", "");
 
     if !name.is_empty() {
         let mut title = Element::block("div", &[("class", "title")]);
-        title
-            .children
-            .push(Element::block("div", &[("class", "quote-controls")]));
+        JsToken::on(&mut title, "quote_header", "");
+        let mut controls = Element::block("div", &[("class", "quote-controls")]);
+        JsToken::on(&mut controls, "quote_controls", "");
+        title.children.push(controls);
         if let Some(img) = avatar {
             title.children.push(Node::new(RawHtml(img)));
         }
@@ -163,6 +165,8 @@ pub fn build(info: &TagInfo, content: Vec<Node>, settings: &RenderSettings, ctx:
                             shortcuts: settings.emoji_shortcuts,
                             inline: settings.inline_emoji,
                             lazy: true,
+                            custom: None,
+                            denied: &[],
                         },
                     )
                 } else {
@@ -181,6 +185,7 @@ pub fn build(info: &TagInfo, content: Vec<Node>, settings: &RenderSettings, ctx:
     }
 
     let mut blockquote = Element::block("blockquote", &[]);
+    JsToken::on(&mut blockquote, "bbcode", "");
     blockquote.children = content;
     aside.children.push(blockquote);
     aside

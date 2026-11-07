@@ -9,6 +9,9 @@
 //   Discourse.hashtags.decorate(el)
 //       decorateHashtags: each a.hashtag-cooked's icon placeholder becomes
 //       its type's icon, and the link gets an aria-label.
+//   Discourse.hashtags.generateIconHtml(type, hashtag)
+//       the registered type's generateIconHTML (category, tag, channel),
+//       null for another type; the rich editor's hashtag nodes use it.
 //
 // Posts come decorated from the server; a channel hashtag in one still
 // loads its color here, as generateIconHTML does. The color classes go to
@@ -320,7 +323,7 @@
       });
   }
 
-  Discourse.hashtags = { resolve: resolve, decorate: decorate };
+  Discourse.hashtags = { resolve: resolve, decorate: decorate, generateIconHtml: generateIconHtml };
 
   // A post's channel hashtags load their colors.
   if (Discourse.onPage) {

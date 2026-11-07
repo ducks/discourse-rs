@@ -33,6 +33,8 @@
         "css/user-card.css",
         "css/composer.css",
         "css/rich-editor.css",
+        "css/rich-editor-table.css",
+        "css/rich-editor-media.css",
         "css/kit.css",
         "css/modal.css",
         "css/date-picker.css",
@@ -1318,6 +1320,244 @@
       "content_type": "js",
       "files": [
         "js/rich-editor/to-markdown.js"
+      ]
+    },
+    {
+      "name": "rich-editor/engine.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/engine.js"
+      ]
+    },
+    {
+      "name": "rich-editor/toolbar.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/toolbar.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/emoji.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/emoji.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/mention.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/mention.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/hashtag.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/hashtag.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/link.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/link.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/link-toolbar.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/link-toolbar.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/quote.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/quote.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/code-block.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/code-block.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/html-inline.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/html-inline.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/html-block.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/html-block.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/trailing-inline-space.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/trailing-inline-space.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/markdown-paste.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/markdown-paste.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/word-paste.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/word-paste.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/table.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/table.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/chrome.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/chrome.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/commands.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/commands.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/drag-autoscroll.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/drag-autoscroll.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/editing.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/editing.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/grid.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/grid.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/menu.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/menu.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/node-view.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/node-view.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/paste.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/paste.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/repair.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/repair.js"
+      ]
+    },
+    {
+      "name": "rich-editor/table/track-pointer.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/table/track-pointer.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/image.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/image.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/upload-placeholder.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/upload-placeholder.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/grid.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/grid.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/override-drag-ghost.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/override-drag-ghost.js"
+      ]
+    },
+    {
+      "name": "rich-editor/node-views/image.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/image.js"
+      ]
+    },
+    {
+      "name": "rich-editor/node-views/video.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/video.js"
+      ]
+    },
+    {
+      "name": "rich-editor/node-views/grid.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/grid.js"
+      ]
+    },
+    {
+      "name": "rich-editor/node-views/upload-placeholder.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/upload-placeholder.js"
+      ]
+    },
+    {
+      "name": "rich-editor/node-views/image-alt-text-input.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/image-alt-text-input.js"
       ]
     }
   ]

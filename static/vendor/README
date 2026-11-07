@@ -196,7 +196,8 @@ writes, with no bundler: the files keep their bare imports
 ones ('./plugin') are mapped by url. prosemirror-codemark ships no license
 file; package.json says MIT (curvenote/editor). prosemirror-highlightjs
 takes the highlight.js instance as an argument and imports nothing from
-it; the code block extension (196r2) hands it highlightjs/core.min.js.
+it; the code block extension hands it the one static/js/highlight-syntax.js
+loads for cooked posts (highlightjs/core.min.js and the site's bundle).
 
 prosemirror-markdown imports markdown-it and builds its
 defaultMarkdownParser with it at module load. markdown-it is not vendored:
