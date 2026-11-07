@@ -1,9 +1,9 @@
 // The editor's keys (static/prosemirror/core/keymap.js): the host's keymap,
 // each extension's keymap chained before it, then undo and redo,
 // Backspace's input rule undo and block unsetting, Escape, and with the
-// default schema Shift-Enter, Enter's double-space hard break and list
-// splitting, and Mod-Shift-_ for a horizontal rule. baseKeymap goes after
-// this one (editor.js).
+// default schema Shift-Enter, Enter in a table cell (a hard break),
+// Enter's double-space hard break and list splitting, and Mod-Shift-_ for
+// a horizontal rule. baseKeymap goes after this one (editor.js).
 import {
   chainCommands,
   exitCode,
@@ -14,7 +14,9 @@ import {
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { splitListItem } from "prosemirror-schema-list";
+import { TextSelection } from "prosemirror-state";
 import { atBlockStart, inNode } from "discourse/rich-editor/plugin-utils";
+import { cellAround } from "discourse/rich-editor/table/grid";
 
 var BACKSPACE_UNSET_NODES = ["heading", "code_block"];
 
@@ -81,12 +83,14 @@ export function buildKeymap(extensions, initialKeymap, params, includeDefault) {
     return keys;
   }
 
-  chainWithExisting("Shift-Enter", exitCode, function (state, dispatch) {
+  function insertHardBreak(state, dispatch) {
     if (dispatch) {
       dispatch(state.tr.replaceSelectionWith(schema.nodes.hard_break.create()).scrollIntoView());
     }
     return true;
-  });
+  }
+
+  chainWithExisting("Shift-Enter", exitCode, insertHardBreak);
 
   function doubleSpaceHardBreak(state, dispatch) {
     var $from = state.selection.$from;
@@ -103,6 +107,16 @@ export function buildKeymap(extensions, initialKeymap, params, includeDefault) {
     }
     return false;
   }
+
+  // Cells are isolating, so the default Enter chain cannot split them.
+  function cellBreak(state, dispatch) {
+    return (
+      state.selection instanceof TextSelection &&
+      !!cellAround(state.selection.$from) &&
+      ((state.selection.empty && doubleSpaceHardBreak(state, dispatch)) || insertHardBreak(state, dispatch))
+    );
+  }
+  keys.Enter = keys.Enter ? chainCommands(cellBreak, keys.Enter) : cellBreak;
 
   chainWithExisting("Enter", doubleSpaceHardBreak, unsetHashtags, splitListItem(schema.nodes.list_item));
 
