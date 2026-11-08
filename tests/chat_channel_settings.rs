@@ -833,3 +833,47 @@ async fn the_members_tab_lists_and_filters_members() {
         .await;
     assert!(none.contains("-no-results"), "{none}");
 }
+
+/// Chat::ChannelMembershipsQuery keeps a read restricted category's groups
+/// to its category channels: a DM whose direct message's id is such a
+/// category's (3, Staff) lists its members all the same.
+#[tokio::test]
+async fn a_dms_members_are_listed_whatever_its_direct_message_id() {
+    let db = TestDb::new().await;
+    let day = "now() - interval '1 day'";
+    assert!(scalar::<bool>(&db, "SELECT read_restricted FROM categories WHERE id = 3").await);
+    for sql in [
+        format!(
+            "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (3, false, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (3, 3, {day}, {day}), (3, 4, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 3, 'DirectMessageChannel', 0, 2, NULL, 0, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, {day}, {day}), (4, 3, true, false, 2, {day}, {day})"
+        ),
+    ] {
+        exec(&db, &sql).await;
+    }
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    // A DM with a message: its members list, not the add members mode.
+    let (status, sent) = user1
+        .json(
+            Method::POST,
+            "/chat/3.json",
+            Some(json!({ "message": "hello" })),
+        )
+        .await;
+    assert_eq!(status, 200, "{sent}");
+    let (status, location, _) = user1.page("/chat/c/-/3/info/members").await;
+    assert_eq!(status, 302);
+    let (status, _, html) = user1.page(&location.unwrap()).await;
+    assert_eq!(status, 200, "{html}");
+    assert!(html.contains("data-username=\"user1\""), "{html}");
+    assert!(html.contains("data-username=\"user2\""), "{html}");
+    assert!(!html.contains("-no-results"), "{html}");
+}

@@ -514,12 +514,16 @@ impl Context<'_> {
                AND (users.silenced_till IS NULL OR users.silenced_till <= $2)",
         );
         // A read restricted category's channel: only members of the
-        // groups that can see it, and staff.
-        let restricted: Option<bool> =
+        // groups that can see it, and staff. A DM's chatable_id is no
+        // category's.
+        let restricted: Option<bool> = if channel.chatable_type == "Category" {
             sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
                 .bind(category_id(channel.chatable_id))
                 .fetch_optional(&mut *self.conn)
-                .await?;
+                .await?
+        } else {
+            None
+        };
         if restricted == Some(true) {
             let mut groups: Vec<i32> =
                 sqlx::query_scalar("SELECT group_id FROM category_groups WHERE category_id = $1")

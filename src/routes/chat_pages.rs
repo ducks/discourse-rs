@@ -85,7 +85,10 @@ async fn gate(
     Ok(Ok(settings))
 }
 
-/// The page around a route's content.
+/// The page around a route's content. `bus_position` is the route's
+/// crate::bus::page_position, taken before it read the content's data:
+/// a message processed while the page renders (its mentions, oneboxes)
+/// is then delivered to it instead of missed.
 #[allow(clippy::too_many_arguments)]
 async fn render(
     state: &AppState,
@@ -97,9 +100,9 @@ async fn render(
     title: String,
     content: &str,
     chat_view: bool,
+    bus_position: String,
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root();
-    let bus_position = crate::bus::page_position(&state.bus).await?;
     let vs = super::session::viewer_state(state, headers, settings, guardian)?;
     let mut site = crate::html::Site::from_settings(settings, base_path)?;
     site.viewer = vs.viewer.clone();
@@ -195,6 +198,7 @@ pub async fn index(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     let preferred = settings.get("chat_preferred_index")?.to_s().to_string();
     let public = settings.get("enable_public_channels")?.truthy();
@@ -241,6 +245,7 @@ pub async fn index(
             title,
             &content,
             true,
+            bus_position,
         )
         .await;
     }
@@ -321,6 +326,7 @@ pub async fn browse(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     if !settings.get("enable_public_channels")?.truthy() {
         return Ok(redirect(homepage(&settings, base_path)?));
@@ -343,6 +349,7 @@ pub async fn browse(
         title,
         &content,
         false,
+        bus_position,
     )
     .await
 }
@@ -453,6 +460,7 @@ pub async fn new_message(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     let query: std::collections::HashMap<String, String> =
         url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
@@ -509,6 +517,7 @@ pub async fn new_message(
         title,
         "",
         true,
+        bus_position,
     )
     .await
 }
@@ -524,6 +533,7 @@ pub async fn channel(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     let get = |name: &str| params.get(name).cloned();
     let slug = get("slug").unwrap_or_default();
@@ -582,6 +592,7 @@ pub async fn channel(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -602,6 +613,7 @@ pub async fn channel_thread(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     let get = |name: &str| params.get(name).cloned();
     let slug = get("slug").unwrap_or_default();
@@ -693,6 +705,7 @@ pub async fn channel_thread(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -726,6 +739,7 @@ pub async fn direct_messages(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let content = context(&state, &mut conn, &settings, &guardian)
         .direct_messages_route(None)
         .await?;
@@ -741,6 +755,7 @@ pub async fn direct_messages(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -759,6 +774,7 @@ pub async fn starred_channels(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     if !crate::mobile::mobile_view() {
         return Ok(redirect(format!("{base_path}/chat")));
@@ -780,6 +796,7 @@ pub async fn starred_channels(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -796,6 +813,7 @@ pub async fn threads(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let content = context(&state, &mut conn, &settings, &guardian)
         .threads_route()
         .await?;
@@ -810,6 +828,7 @@ pub async fn threads(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -827,6 +846,7 @@ pub async fn search(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     if !settings.get("chat_search_enabled")?.truthy() {
         return Ok(redirect(format!(
             "{}/chat",
@@ -850,6 +870,7 @@ pub async fn search(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -865,6 +886,7 @@ pub async fn disabled(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let content = page::disabled_page(&state.i18n, state.config.globals.relative_url_root());
     let title = format!("{} - ", chat_title(&state));
     render(
@@ -877,6 +899,7 @@ pub async fn disabled(
         title,
         &content,
         true,
+        bus_position,
     )
     .await
 }
@@ -1354,6 +1377,7 @@ pub async fn channel_info(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     let tab = match tab.as_str() {
         "settings" => Tab::Settings,
@@ -1386,6 +1410,7 @@ pub async fn channel_info(
         title,
         &content,
         false,
+        bus_position,
     )
     .await
 }

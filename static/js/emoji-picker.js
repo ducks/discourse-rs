@@ -362,21 +362,39 @@
     return { x: x, y: y };
   }
 
+  // A trigger in a fixed container (a modal, the composer) gets a picker
+  // fixed to the viewport too. Absolute, the picker moves with the page
+  // under the container: a live update above a scrolled list makes scroll
+  // anchoring shift the page (html.modal-open's overflow: hidden doesn't
+  // stop that), and a press made before the shift is released beside the
+  // emoji, so no click reaches it.
+  function strategyFor(trigger) {
+    for (var node = trigger; node && node !== document.documentElement; node = node.parentElement) {
+      if (getComputedStyle(node).position === "fixed") {
+        return "fixed";
+      }
+    }
+    return "absolute";
+  }
+
   // DMenu's updatePosition (float.js over floating-ui): offset, flip
   // through FLOAT_UI_PLACEMENTS within the viewport less the header, then
   // shift on both axes, so a picker too tall for either side stays below
   // the header instead of opening above the viewport. The fit check below
   // is for a page without float.js.
   function place(trigger, content, placements) {
+    var strategy = strategyFor(trigger);
     if (window.FloatingUIDOM && window.Discourse && Discourse.float && Discourse.float.position) {
       // MENU's options: its placement, FLOAT_UI_PLACEMENTS (float.js's
       // default) as the fallbacks, the menu offset.
       Discourse.float.position(trigger, content, {
         placement: placements[0],
         offset: MENU_OFFSET,
+        strategy: strategy,
       });
       return;
     }
+    content.dataset.strategy = strategy;
     var t = trigger.getBoundingClientRect();
     var w = content.offsetWidth;
     var h = content.offsetHeight;
@@ -392,9 +410,10 @@
         break;
       }
     }
+    var scrolled = strategy === "absolute";
     content.dataset.placement = chosen;
-    content.style.left = spot.x + window.scrollX + "px";
-    content.style.top = spot.y + window.scrollY + "px";
+    content.style.left = spot.x + (scrolled ? window.scrollX : 0) + "px";
+    content.style.top = spot.y + (scrolled ? window.scrollY : 0) + "px";
     content.style.visibility = "visible";
   }
 
