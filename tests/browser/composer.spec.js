@@ -329,37 +329,151 @@ test.describe("the rich editor", () => {
     await expect(rich(page).locator("ul li")).toHaveCount(2);
   });
 
-  // Until 196r5 the composer opens in markdown whatever the stored mode
-  // (src/composer/load.rs OPEN_IN_STORED_MODE, off): the seed's and an
-  // imported site's members are on Discourse's default of 1. The toggle
-  // still switches and saves, and the stored mode is left as saved.
-  test("opens in markdown for a stored mode 1, and the toggle still switches and saves", async ({
+  // d-editor's setupEditorMode: the composer opens in the stored mode,
+  // Discourse's default of 1 the rich editor.
+  test("opens in the rich editor for a stored mode 1, and the toggle switches and saves", async ({
     page,
     context,
     session,
   }) => {
     const { writer, t } = await replyTo(page, context, session, 1);
-    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "0");
-    await expect(textarea(page)).toBeVisible();
-    await expect(rich(page)).toHaveCount(0);
-    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
-    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeVisible();
-    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
-
-    const saved = savedMode(page, writer.name, 1);
-    await toggle(page).click();
+    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "1");
     await expect(rich(page)).toBeVisible();
     await expect(textarea(page)).toBeHidden();
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator("#reply-control .d-editor-container")).toHaveClass(/--rich-editor-enabled/);
     await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeHidden();
-    expect((await saved).ok()).toBeTruthy();
-    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
 
-    // A fresh page opens in markdown again, the saved mode kept.
+    const saved = savedMode(page, writer.name, 0);
+    await toggle(page).click();
+    await expect(rich(page)).toHaveCount(0);
+    await expect(textarea(page)).toBeVisible();
+    await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeVisible();
+    expect((await saved).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["0"]]);
+
+    // A fresh page opens in the mode saved.
     await page.goto(t.url);
     await page.locator("#topic-footer-buttons .create").click();
     await expect(textarea(page)).toBeVisible();
     await expect(rich(page)).toHaveCount(0);
-    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["1"]]);
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+  });
+
+  // What the editor still refuses (a chat transcript, which chat's
+  // extension would take; docs/rich-editor.md) opens in markdown for a
+  // stored mode 1: the alert, the raw kept, and the mode saved as 0, as
+  // the alert's toggleRichEditor does.
+  test("an edit of what the editor refuses falls back to markdown for a stored mode 1", async ({
+    page,
+    context,
+  }) => {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = 1 WHERE user_id = :'p1'", writer.id);
+    await login(context, writer.name);
+    const raw =
+      label("A transcript the rich editor refuses") +
+      '\n\n[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2"]\nhi\n[/chat]';
+    const t = await topic(context, label("Rich editor refusal topic"), raw);
+    await page.goto(t.url);
+    const post = page.locator(`article[data-post-id="${t.posts[0]}"]`);
+    const showMore = post.locator(".post-action-menu__show-more");
+    if (await showMore.isVisible()) {
+      await showMore.click();
+    }
+    const saved = savedMode(page, writer.name, 0);
+    await post.locator(".post-action-menu__edit").click();
+    const dialog = page.locator(".dialog-container");
+    await expect(dialog.locator(".dialog-body")).toHaveText(
+      "The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.",
+    );
+    await expect(textarea(page)).toBeVisible();
+    await expect(textarea(page)).toHaveValue(raw);
+    await expect(rich(page)).toHaveCount(0);
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+    await expect(page.locator("#reply-control .d-editor-container")).toHaveClass(/--markdown-editor-enabled/);
+    expect((await saved).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["0"]]);
+    await dialog.locator(".dialog-footer .btn-primary").click();
+    await expect(dialog).toBeHidden();
+  });
+
+  // The profile's About me (preferences/profile.gjs' DEditor, no mode
+  // forced): the member's composition mode, the toggle switching and
+  // saving it, and Save Changes sending the markdown the editor wrote.
+  test("the About me editor opens in the stored mode and saves the editor's markdown", async ({ page, context }) => {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = 1 WHERE user_id = :'p1'", writer.id);
+    sql("UPDATE user_profiles SET bio_raw = 'Some **bold** words' WHERE user_id = :'p1'", writer.id);
+    await login(context, writer.name);
+    await page.goto(`/u/${writer.name}/preferences/profile`);
+    const bio = page.locator(".pref-bio");
+    const bioRich = bio.locator(".ProseMirror.d-editor-input");
+    const bioArea = bio.locator("textarea.d-editor-input");
+    const bioToggle = bio.locator(".composer-toggle-switch");
+    await expect(bioRich.locator("p strong")).toHaveText("bold");
+    await expect(bioArea).toBeHidden();
+    await expect(bioToggle).toHaveAttribute("aria-checked", "true");
+    await expect(bio.locator(".d-editor-container")).toHaveClass(/--rich-editor-enabled/);
+    await expect(bio.locator(".d-editor-preview-wrapper")).toBeHidden();
+
+    await bioRich.click();
+    await page.keyboard.press("Control+End");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("## About");
+    await expect(bioRich.locator("h2")).toHaveText("About");
+    const put = page.waitForResponse(
+      (r) => r.url().endsWith(`/u/${writer.name}.json`) && (r.request().postData() || "").includes("bio_raw"),
+    );
+    await page.locator(".user-preferences .save-changes").click();
+    expect((await put).ok()).toBeTruthy();
+    expect(
+      sql(
+        "SELECT bio_raw = 'Some **bold** words' || chr(10) || chr(10) || '## About' FROM user_profiles WHERE user_id = :'p1'",
+        writer.id,
+      ),
+    ).toEqual([["t"]]);
+
+    const saved = savedMode(page, writer.name, 0);
+    await bioToggle.click();
+    await expect(bioRich).toHaveCount(0);
+    await expect(bioArea).toBeVisible();
+    await expect(bioArea).toHaveValue("Some **bold** words\n\n## About");
+    await expect(bio.locator(".d-editor-preview h2")).toHaveText("About");
+    expect((await saved).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["0"]]);
+
+    // Ctrl+M from the textarea opens it again, and the composer follows.
+    const savedRich = savedMode(page, writer.name, 1);
+    await bioArea.focus();
+    await page.keyboard.press("Control+m");
+    await expect(bioRich.locator("h2")).toHaveText("About");
+    expect((await savedRich).ok()).toBeTruthy();
+    await expect(page.locator("#reply-control")).toHaveAttribute("data-composition-mode", "1");
+  });
+
+  test("the About me editor falls back to markdown on what the editor refuses", async ({ page, context }) => {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = 1 WHERE user_id = :'p1'", writer.id);
+    // calendar and events are not ported (ROADMAP 202): refused
+    sql(
+      "UPDATE user_profiles SET bio_raw = '[event start=\"2030-01-01 10:00\"]' || chr(10) || '[/event]' WHERE user_id = :'p1'",
+      writer.id,
+    );
+    await login(context, writer.name);
+    const saved = savedMode(page, writer.name, 0);
+    await page.goto(`/u/${writer.name}/preferences/profile`);
+    const bio = page.locator(".pref-bio");
+    const dialog = page.locator(".dialog-container");
+    await expect(dialog.locator(".dialog-body")).toHaveText(
+      "The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.",
+    );
+    await expect(bio.locator("textarea.d-editor-input")).toBeVisible();
+    await expect(bio.locator("textarea.d-editor-input")).toHaveValue('[event start="2030-01-01 10:00"]\n[/event]');
+    await expect(bio.locator(".ProseMirror")).toHaveCount(0);
+    await expect(bio.locator(".composer-toggle-switch")).toHaveAttribute("aria-checked", "false");
+    expect((await saved).ok()).toBeTruthy();
+    expect(sql("SELECT composition_mode FROM user_options WHERE user_id = :'p1'", writer.id)).toEqual([["0"]]);
   });
 
   test("goes back to markdown with the alert on what it cannot hold yet", async ({ page, context, session }) => {

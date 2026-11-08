@@ -366,6 +366,10 @@
       }).catch(popupAjaxError);
       return;
     }
+    if (event.target.closest(".pref-bio .composer-toggle-switch") && Discourse.composerRichEditor) {
+      toggleBioRich();
+      return;
+    }
     var tool = event.target.closest(".pref-bio .toolbar__button");
     if (tool) {
       bioAction(tool.dataset.action);
@@ -1358,7 +1362,132 @@
   // The bio: the composer's markdown around the selection, and its
   // preview from the composer's renderer.
   function bioArea() {
-    return document.querySelector(".pref-bio .d-editor-input");
+    return document.querySelector(".pref-bio textarea.d-editor-input");
+  }
+
+  // The bio's d-editor forces no mode: it opens in the member's
+  // composition mode, and its toggle and Ctrl+M switch and save it as the
+  // composer's do (setupEditorMode, toggleRichEditor), with the composer's
+  // rich editor (Discourse.composerRichEditor, composer.js). The textarea
+  // stays, hidden, holding the markdown the editor writes, so Save Changes
+  // reads it as before.
+  var bioRich = null;
+  var bioOpening = null;
+  var bioMode = false;
+
+  function drawBioMode() {
+    var group = document.querySelector(".pref-bio");
+    var container = group.querySelector(".d-editor-container");
+    container.classList.toggle("--rich-editor-enabled", bioMode);
+    container.classList.toggle("--markdown-editor-enabled", !bioMode);
+    bioArea().hidden = Boolean(bioRich);
+    var toggle = group.querySelector(".composer-toggle-switch");
+    if (toggle) {
+      Discourse.composerRichEditor.drawToggle(toggle, bioMode);
+    }
+  }
+
+  function openBioRich(focus) {
+    var api = Discourse.composerRichEditor;
+    if (bioRich || bioOpening) {
+      return;
+    }
+    var opening = api.create(document.querySelector(".pref-bio"), bioArea(), toggleBioRich).then(function (handle) {
+      // Superseded: switched back, or another page.
+      if (bioOpening !== opening) {
+        handle.destroy();
+        return;
+      }
+      bioOpening = null;
+      bioRich = handle;
+      drawBioMode();
+      if (focus) {
+        handle.editor.focus();
+      }
+    });
+    bioOpening = opening;
+    opening.catch(function (e) {
+      if (bioOpening !== opening) {
+        return;
+      }
+      bioOpening = null;
+      // What the editor cannot hold: the markdown editor, saved, as the
+      // alert's toggleRichEditor does.
+      bioMode = false;
+      api.saveMode(false);
+      drawBioMode();
+      bioPreview();
+      api.failed(e);
+    });
+  }
+
+  function closeBioRich() {
+    if (bioRich) {
+      bioRich.destroy();
+      bioRich = null;
+    }
+    bioOpening = null;
+  }
+
+  function toggleBioRich() {
+    bioMode = !bioMode;
+    if (bioMode) {
+      openBioRich(true);
+    } else {
+      closeBioRich();
+      bioPreview();
+      bioArea().focus();
+    }
+    drawBioMode();
+    Discourse.composerRichEditor.saveMode(bioMode);
+  }
+
+  // The markdown a toolbar button wrote, into the editor.
+  function syncBioRich() {
+    if (!bioRich) {
+      return;
+    }
+    var refused = null;
+    try {
+      if (!bioRich.editor.setValue(bioArea().value)) {
+        refused = { name: "UnsupportedTokenError" };
+      }
+    } catch (e) {
+      refused = e;
+    }
+    if (refused) {
+      closeBioRich();
+      bioMode = false;
+      Discourse.composerRichEditor.saveMode(false);
+      drawBioMode();
+      Discourse.composerRichEditor.failed(refused);
+    } else {
+      bioRich.editor.focus();
+    }
+  }
+
+  function bioSetup() {
+    if (!document.querySelector(".pref-bio .composer-toggle-switch")) {
+      return null;
+    }
+    var start = function () {
+      // No composer, no rich editor: the textarea alone.
+      if (!Discourse.composerRichEditor) {
+        return;
+      }
+      bioMode = Discourse.composerRichEditor.rich();
+      drawBioMode();
+      if (bioMode) {
+        openBioRich(false);
+      }
+    };
+    // composer.js is deferred: on a full load it runs after this.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+      start();
+    }
+    return closeBioRich;
   }
 
   function surround(before, after, example) {
@@ -1420,6 +1549,7 @@
       actions[action]();
       textarea.dataset.dirty = "true";
       bioPreview();
+      syncBioRich();
     }
   }
 
@@ -2085,7 +2215,30 @@
       .catch(popupAjaxError);
   }
 
+  // preventFocus: the toggle leaves the focus in the editor.
+  document.addEventListener("mousedown", function (event) {
+    if (event.target.closest(".pref-bio .composer-toggle-switch")) {
+      event.preventDefault();
+    }
+  });
+  // Ctrl+M from the textarea (the editor's keymap has its own).
+  document.addEventListener("keydown", function (event) {
+    if (
+      event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !event.shiftKey &&
+      (event.key === "m" || event.key === "M") &&
+      event.target.closest(".pref-bio textarea.d-editor-input") &&
+      Discourse.composerRichEditor
+    ) {
+      event.preventDefault();
+      toggleBioRich();
+    }
+  });
+
   Discourse.onPage(function () {
+    var cleanup = bioSetup();
     associateFromUrl();
     pushSetup();
     // send_shortcut's meta key: Cmd on a Mac (formatShortcut("mod")).
@@ -2099,5 +2252,6 @@
         }
       });
     }
+    return cleanup;
   });
 })();

@@ -193,6 +193,33 @@ async fn the_profile_tab_draws_the_profile_fields() {
     assert_eq!(attrs["default_calendar"], "none_selected");
 }
 
+/// The About me editor is a d-editor with no forced mode: it opens in the
+/// viewer's composition_mode (currentUser.useRichEditor), the toggle first
+/// in its button bar.
+#[tokio::test]
+async fn the_bio_editor_opens_in_the_viewers_composition_mode() {
+    let (db, mut user1) = client("user1").await;
+    // The seed has user1 on Discourse's default, the rich editor.
+    let html = user1.page("/u/user1/preferences/profile").await.html;
+    let bio = &html[html.find("control-group pref-bio").unwrap()..];
+    let bio = &bio[..bio.find("</textarea>").unwrap()];
+    assert!(bio.contains("<div class=\"d-editor-container --rich-editor-enabled\">"));
+    assert!(bio.contains("data-d-scroll-axis=\"horizontal\"><button aria-checked=\"true\" aria-keyshortcuts=\"Ctrl+M\" aria-label=\"Switch to standard Markdown editor (Ctrl M)\" class=\"composer-toggle-switch --rte\" data-rich-editor=\"true\""));
+    assert!(bio.contains("toolbar__button bold"));
+
+    sqlx::query(
+        "UPDATE user_options SET composition_mode = 0 \
+         WHERE user_id = (SELECT id FROM users WHERE username = 'user1')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let html = user1.page("/u/user1/preferences/profile").await.html;
+    let bio = &html[html.find("control-group pref-bio").unwrap()..];
+    assert!(bio.contains("<div class=\"d-editor-container --markdown-editor-enabled\">"));
+    assert!(bio.contains("class=\"composer-toggle-switch --markdown\" data-rich-editor=\"false\""));
+}
+
 #[tokio::test]
 async fn the_notifications_tab_draws_the_options_and_plugins() {
     let (_db, mut user1) = client("user1").await;

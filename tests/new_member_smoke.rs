@@ -214,6 +214,17 @@ async fn signs_up_activates_and_logs_in() {
     let me = client.get("/session/current.json").await;
     assert_eq!(me.status, StatusCode::OK, "{}", me.body);
     assert_eq!(me.json()["current_user"]["username"], "smokenew");
+    // default_composition_mode 1, as Discourse ships: a new member writes
+    // in the rich editor, the composer opening in it.
+    assert_eq!(
+        me.json()["current_user"]["user_option"]["composition_mode"],
+        1
+    );
+    let page = client.get("/latest").await;
+    assert!(
+        page.body
+            .contains(r#"data-allow-preview="false" data-composition-mode="1""#)
+    );
 }
 
 #[tokio::test]
