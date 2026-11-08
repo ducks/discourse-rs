@@ -334,6 +334,32 @@ test.describe("rich editor checklist", () => {
     await expect(editor(page).locator("li .chcklst-box")).toHaveCount(1);
     await expect(editor(page)).toContainText("First itemSecond item");
   });
+
+  // Home and Backspace sent together, as the browser's input queue can
+  // hand them over: Backspace's keydown comes before Home's
+  // selectionchange, so the view has not read the caret's move yet.
+  test("Backspace right after Home joins before the view reads the caret", async ({ page }) => {
+    await openEditorPage(page, { plugins: ALL });
+    await setupRichEditor(page, "");
+    await editor(page).click();
+    await page.keyboard.type("* [ ] First item");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("Second item");
+    await expect(editor(page).locator("li .chcklst-box")).toHaveCount(2);
+    const cdp = await page.context().newCDPSession(page);
+    const key = (type, name, keyCode) =>
+      cdp.send("Input.dispatchKeyEvent", { type, key: name, code: name, windowsVirtualKeyCode: keyCode });
+    await Promise.all([
+      key("rawKeyDown", "Home", 36),
+      key("keyUp", "Home", 36),
+      key("rawKeyDown", "Backspace", 8),
+      key("keyUp", "Backspace", 8),
+    ]);
+    await expect(editor(page).locator("li .chcklst-box")).toHaveCount(1);
+    // the caret at the join, not where it was before Home
+    await page.keyboard.type("X");
+    await expect(editor(page)).toContainText("First itemXSecond item");
+  });
 });
 
 test.describe("rich editor footnotes", () => {
