@@ -48,6 +48,9 @@ const LABELS: &[&str] = &[
     "composer.link_toolbar.load_preview",
     "composer.link_toolbar.preview_failed",
     "composer.link_toolbar.preview_limit_reached",
+    "composer.preview_node.show_source",
+    "composer.preview_node.show_preview",
+    "graphviz.fullscreen",
     "composer.onebox_toolbar.copy",
     "composer.onebox_toolbar.remove_preview",
     "composer.onebox_toolbar.visit",
@@ -201,6 +204,7 @@ const LABELS: &[&str] = &[
 const PLUGINS: &[(&str, &str)] = &[
     ("checklist", "checklist_enabled"),
     ("details", "details_enabled"),
+    ("graphviz", "discourse_graphviz_enabled"),
     ("local-dates", "discourse_local_dates_enabled"),
     ("math", "discourse_math_enabled"),
     ("policy", "policy_enabled"),

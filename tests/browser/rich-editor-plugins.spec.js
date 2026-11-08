@@ -1031,17 +1031,10 @@ test.describe("rich editor refusals", () => {
     );
   });
 
-  // discourse-graphviz's extension is a preview node (preview-source.js,
-  // 196r3's): its graph is written as raw HTML, which no parse spec takes.
-  test("a [graphviz] is refused until the preview node is ported", async ({ page }) => {
-    await openEditorPage(page, { plugins: ALL, render: { graphviz: true } });
-    await setupRichEditor(page, "[graphviz]\ndigraph { a -> b }\n[/graphviz]");
-    expect(await page.evaluate(() => window.richSpec.unsupported && window.richSpec.unsupported.name)).toBe(
-      "UnsupportedTokenError"
-    );
-  });
+  // discourse-graphviz's preview block is rich-editor-toolbar.spec.js'
+  // (the preview toolbar's).
 
-  // chat's transcript is raw HTML too: chat's extension is not ported.
+  // chat's transcript is raw HTML: chat's extension is not ported.
   test("a [chat] transcript is refused until chat's extension is ported", async ({ page }) => {
     await openEditorPage(page, { plugins: ALL, render: { chat_transcript: true } });
     await setupRichEditor(page, '[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2"]\nhi\n[/chat]');

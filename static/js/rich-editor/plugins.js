@@ -6,6 +6,7 @@
 import { getExtensions, registerRichEditorExtension } from "discourse/rich-editor/extensions";
 import checklist from "discourse/rich-editor/plugins/checklist";
 import details from "discourse/rich-editor/plugins/details";
+import graphviz from "discourse/rich-editor/plugins/graphviz";
 import footnote from "discourse/rich-editor/plugins/footnote";
 import localDates from "discourse/rich-editor/plugins/local-dates";
 import math from "discourse/rich-editor/plugins/math";
@@ -16,6 +17,7 @@ import spoiler from "discourse/rich-editor/plugins/spoiler";
 export var PLUGIN_EXTENSIONS = {
   checklist: checklist,
   details: details,
+  graphviz: graphviz,
   "local-dates": localDates,
   math: math,
   policy: policy,

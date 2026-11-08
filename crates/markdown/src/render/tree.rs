@@ -1274,14 +1274,29 @@ mod tests {
     }
 
     #[test]
-    fn what_no_extension_takes_is_raw_html() {
-        // discourse-graphviz's graph (its extension is 196r3's preview
-        // node): raw HTML, which no parse spec takes, so the editor refuses
-        // it.
+    fn graphviz_is_its_token() {
+        // discourse-graphviz's rule pushes a graphviz token with the source
+        // between the tags and an engine it knows, or dot.
         let mut settings = settings();
         settings.graphviz = true;
-        let tree = rich_editor_tree("[graphviz]\na\n[/graphviz]", &settings).unwrap();
-        assert_eq!(tree["children"][0]["type"], "html_raw");
+        let tree = rich_editor_tree(
+            "[graphviz engine=neato]\na -> b\n[/graphviz]\n\n[graphviz engine=nope]\nc\n[/graphviz]",
+            &settings,
+        )
+        .unwrap();
+        assert_eq!(
+            tree["children"][0],
+            json!({"type": "graphviz", "tag": "div", "attrs": [["data-engine", "neato"]], "content": "a -> b"})
+        );
+        assert_eq!(
+            tree["children"][1]["attrs"],
+            json!([["data-engine", "dot"]])
+        );
+    }
+
+    #[test]
+    fn what_no_extension_takes_is_raw_html() {
+        let mut settings = settings();
         // chat's transcript (chat's extension is not ported).
         settings.chat_transcript = true;
         let tree = rich_editor_tree(

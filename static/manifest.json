@@ -1591,6 +1591,27 @@
       ]
     },
     {
+      "name": "rich-editor/node-views/preview.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/preview.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/preview-source.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/preview-source.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/preview-toolbar.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/preview-toolbar.js"
+      ]
+    },
+    {
       "name": "rich-editor/node-views/wrap.js",
       "content_type": "js",
       "files": [
@@ -1623,6 +1644,13 @@
       "content_type": "js",
       "files": [
         "js/rich-editor/plugins/checklist.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/graphviz.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/graphviz.js"
       ]
     },
     {

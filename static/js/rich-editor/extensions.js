@@ -25,6 +25,8 @@ import mention from "discourse/rich-editor/extensions/mention";
 import onebox from "discourse/rich-editor/extensions/onebox";
 import oneboxToolbar from "discourse/rich-editor/extensions/onebox-toolbar";
 import overrideDragGhost from "discourse/rich-editor/extensions/override-drag-ghost";
+import previewSource from "discourse/rich-editor/extensions/preview-source";
+import previewToolbar from "discourse/rich-editor/extensions/preview-toolbar";
 import quote from "discourse/rich-editor/extensions/quote";
 import table from "discourse/rich-editor/extensions/table";
 import trailingInlineSpace from "discourse/rich-editor/extensions/trailing-inline-space";
@@ -343,6 +345,8 @@ export var defaultExtensions = [
   hardBreak,
   grid,
   uploadPlaceholder,
+  previewSource,
+  previewToolbar,
 ];
 
 defaultExtensions.forEach(registerRichEditorExtension);

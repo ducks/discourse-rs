@@ -469,52 +469,61 @@ span:focus .fake-cursor {
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"],
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"],
+.fk-d-menu[data-identifier="composer-preview-toolbar"] {
   user-select: none;
   /* z("composer", "dropdown") */
   z-index: 700;
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .fk-d-menu__inner-content,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .fk-d-menu__inner-content {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .fk-d-menu__inner-content,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .fk-d-menu__inner-content {
   overflow: visible;
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button {
   background-color: var(--secondary);
   color: var(--primary-medium);
   border-radius: var(--d-border-radius);
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button .d-icon,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button .d-icon {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button .d-icon,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button .d-icon {
   color: var(--primary-medium);
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:hover:not(:disabled),
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:hover:not(:disabled) {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:hover:not(:disabled),
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button:hover:not(:disabled) {
   color: var(--primary);
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:hover:not(:disabled) .d-icon,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:hover:not(:disabled) .d-icon {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:hover:not(:disabled) .d-icon,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button:hover:not(:disabled) .d-icon {
   color: var(--primary);
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:active,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:active {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:active,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button:active {
   background: var(--secondary);
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button:focus-visible,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:focus-visible {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button:focus-visible,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button:focus-visible {
   outline: 2px solid var(--d-focus-color, var(--tertiary));
   outline-offset: -2px;
 }
 
 .fk-d-menu[data-identifier="composer-link-toolbar"] .toolbar__button.--active,
-.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button.--active {
+.fk-d-menu[data-identifier="composer-onebox-toolbar"] .toolbar__button.--active,
+.fk-d-menu[data-identifier="composer-preview-toolbar"] .toolbar__button.--active {
   background: var(--d-selected);
   color: var(--d-selected-text-color);
 }
@@ -543,4 +552,63 @@ span:focus .fake-cursor {
 
 .composer-link-toolbar__visit:not(:disabled) .d-button-label {
   margin-right: 0.5rem;
+}
+
+/* rich-editor.scss:362: a preview block (node-views/preview.js); both faces
+   share one grid cell, so swapping them does not move the document */
+.ProseMirror .composer-preview-node {
+  position: relative;
+  display: grid;
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+  margin-block: var(--space-4);
+  overflow: hidden;
+}
+
+.ProseMirror .composer-preview-node > * {
+  grid-area: 1/1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ProseMirror .composer-preview-node.ProseMirror-selectednode {
+  outline: 2px solid var(--tertiary);
+  outline-offset: 2px;
+}
+
+.ProseMirror .composer-preview-node:not(.--source) .composer-preview-node__source,
+.ProseMirror .composer-preview-node.--source .composer-preview-node__preview {
+  visibility: hidden;
+}
+
+.ProseMirror .composer-preview-node__source {
+  max-height: var(--composer-preview-node-source-max-height, 14lh);
+}
+
+.ProseMirror .composer-preview-node__source pre {
+  margin: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+.ProseMirror .composer-preview-node__source pre code {
+  box-sizing: border-box;
+  min-height: 100%;
+  max-height: none;
+}
+
+.ProseMirror .composer-preview-node__preview {
+  user-select: none;
+  cursor: pointer;
+}
+
+.ProseMirror .composer-preview-node__preview [hidden] {
+  display: none;
+}
+
+/* discourse-graphviz's graphviz.scss:16: the block frames the diagram as
+   the cooked wrapper does */
+.ProseMirror .composer-graphviz-node {
+  --composer-preview-node-source-max-height: 100%;
+  aspect-ratio: 16/9;
 }

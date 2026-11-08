@@ -1797,3 +1797,287 @@ test.describe("the onebox extension", () => {
     { before: before() },
   );
 });
+
+// preview-node-view-test.gjs (node-views/preview.js and the preview
+// toolbar's activePreviewBlock) with its test block, and discourse-
+// graphviz's rich-editor-extension-test.js, as written in the page. The
+// graphviz case "constrains a diagram with tall source" measures the
+// page's stylesheets, which the editor page does not load.
+test.describe("preview blocks", () => {
+  // The test block and the PreviewStub, registered before the editor
+  // opens: what the bodies share.
+  async function previewHelpers() {
+    const { registerRichEditorExtension } = await import("discourse/rich-editor/extensions");
+    const preview = await import("discourse/rich-editor/node-views/preview");
+    const { NodeSelection } = await import("prosemirror-state");
+    registerRichEditorExtension({
+      nodeSpec: {
+        test_preview: {
+          group: "block",
+          content: "preview_source",
+          atom: true,
+          defining: true,
+          isolating: true,
+          parseDOM: [{ tag: "div.test-preview", preserveWhitespace: "full" }],
+          toDOM: () => ["div", { class: "test-preview" }, 0],
+        },
+      },
+      nodeViews: {
+        test_preview: preview.previewNodeView((element, node, source) => {
+          const stub = document.createElement("span");
+          stub.className = "preview-stub";
+          stub.textContent = source;
+          element.appendChild(stub);
+        }),
+      },
+      serializeNode: {
+        test_preview(state, node) {
+          state.write("[test]\n");
+          state.text(node.textContent, false);
+          state.write("\n[/test]");
+          state.closeBlock(node);
+        },
+      },
+    });
+    const settled = () => new Promise((resolve) => setTimeout(resolve, 100));
+    return {
+      settled,
+      // no markdown rule here, so blocks are inserted directly
+      async insertBlock(view, source) {
+        const { schema } = view.state;
+        const block = schema.nodes.test_preview.createAndFill(
+          null,
+          source ? schema.nodes.preview_source.create(null, schema.text(source)) : null
+        );
+        const tr = view.state.tr.replaceWith(0, view.state.doc.content.size, block);
+        view.dispatch(tr.setSelection(NodeSelection.create(tr.doc, 0)));
+        await settled();
+      },
+      // the seam the toolbar's button acts on
+      async toggleSource(view) {
+        preview.previewNodeViewFor(view.nodeDOM(0)).toggleSource();
+        await settled();
+      },
+    };
+  }
+
+  const ptest = (name, body, opts = {}) =>
+    qtest(name, body, Object.assign({ args: previewHelpers.toString() }, opts));
+
+  ptest("shows the rendered source, and swaps faces on toggle", async function (assert, { helpers }, src) {
+    const { insertBlock, toggleSource } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "the source");
+
+    assert.dom(".composer-preview-node").doesNotHaveClass("--source");
+    assert.dom(".preview-stub").hasText("the source");
+
+    await toggleSource(editorClass.view);
+    assert.dom(".composer-preview-node").hasClass("--source");
+
+    await toggleSource(editorClass.view);
+    assert.dom(".composer-preview-node").doesNotHaveClass("--source");
+  });
+
+  ptest("puts the caret in the source when it is shown", async function (assert, { helpers }, src) {
+    const { insertBlock, toggleSource } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "abc");
+
+    await toggleSource(editorClass.view);
+
+    const { selection } = editorClass.view.state;
+    assert.strictEqual(selection.$head.parent.type.name, "preview_source", "the caret is inside the source");
+    assert.strictEqual(selection.$head.parentOffset, 3, "the caret is at the end of the source");
+  });
+
+  ptest("selects the block again when the source is hidden", async function (assert, { helpers }, src) {
+    const { insertBlock, toggleSource } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "abc");
+
+    await toggleSource(editorClass.view);
+    await toggleSource(editorClass.view);
+
+    assert.strictEqual(
+      editorClass.view.state.selection.node && editorClass.view.state.selection.node.type.name,
+      "test_preview",
+      "the block is selected, so its toolbar stays up"
+    );
+    assert.strictEqual(editorClass.value.trim(), "[test]\nabc\n[/test]", "and the markdown is untouched");
+  });
+
+  ptest("starts on the source when there is nothing to preview yet", async function (assert, { helpers }, src) {
+    const { insertBlock } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "");
+
+    assert.dom(".composer-preview-node").hasClass("--source");
+  });
+
+  ptest("holds the preview still while the source is edited", async function (assert, { helpers }, src) {
+    const { insertBlock, toggleSource, settled } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "before");
+
+    await toggleSource(editorClass.view);
+
+    const { view } = editorClass;
+    view.dispatch(view.state.tr.insertText("-after", 2, 8));
+    await settled();
+
+    assert.dom(".preview-stub").hasText("before", "the preview keeps the source it last rendered");
+
+    await toggleSource(view);
+    assert.dom(".preview-stub").hasText("-after", "and catches up once the source is hidden again");
+  });
+
+  ptest("finds the block a selection acts on, so the toolbar follows it", async function (assert, { helpers, pmState }, src) {
+    const { insertBlock, toggleSource, settled } = await (0, eval)(`(${src})`)();
+    const { activePreviewBlock } = await import("discourse/rich-editor/extensions/preview-toolbar");
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "the source");
+    const { view } = editorClass;
+
+    const selected = activePreviewBlock(view.state);
+    assert.strictEqual(selected && selected.node.type.name, "test_preview", "the selected block");
+
+    await toggleSource(view);
+    const inSource = activePreviewBlock(view.state);
+    assert.strictEqual(
+      inSource && inSource.node.type.name,
+      "test_preview",
+      "the block whose source the caret is in, not the source itself"
+    );
+    assert.strictEqual(view.state.doc.nodeAt(inSource.pos).type.name, "test_preview", "at the block's own position");
+
+    view.dispatch(view.state.tr.setSelection(pmState.TextSelection.atEnd(view.state.doc)));
+    await settled();
+
+    assert.strictEqual(activePreviewBlock(view.state), null, "and nothing once the caret leaves");
+  });
+
+  ptest("keeps a long source line inside the block", async function (assert, { helpers }, src) {
+    const { insertBlock, toggleSource } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "x".repeat(400));
+    await toggleSource(editorClass.view);
+
+    const block = document.querySelector(".composer-preview-node");
+    const source = document.querySelector(".composer-preview-node__source");
+
+    assert.true(source.clientWidth <= block.clientWidth, "the source face stays within the block rather than widening it");
+    assert.true(block.clientWidth <= block.parentElement.clientWidth, "so the block stays within the editor");
+  });
+
+  ptest("renders again when the source changes under a shown preview", async function (assert, { helpers }, src) {
+    const { insertBlock, settled } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "");
+    await insertBlock(editorClass.view, "before");
+
+    const { view } = editorClass;
+    view.dispatch(view.state.tr.insertText("-after", 2, 8));
+    await settled();
+
+    assert.dom(".preview-stub").hasText("-after", "the preview catches up");
+  });
+
+  ptest("source without a language ignores default_code_lang", async function (assert, { helpers }, src) {
+    const { insertBlock, toggleSource } = await (0, eval)(`(${src})`)();
+    const [editorClass] = await helpers.setupRichEditor(assert, "", { siteSettings: { default_code_lang: "javascript" } });
+    await insertBlock(editorClass.view, 'console.log("Hello, world!");');
+    await toggleSource(editorClass.view);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    assert.dom("pre.preview-source [class^='hljs-']").doesNotExist("the source stays plain text");
+  });
+
+  // discourse-graphviz's rich-editor-extension-test.js
+  const GRAPH = "[graphviz]\ndigraph G {\n  a -> b;\n}\n[/graphviz]";
+  const graphviz = { plugins: ["graphviz"], render: { graphviz: true } };
+
+  for (const [name, markdown] of [
+    ["no engine", GRAPH],
+    ["an engine", GRAPH.replace("[graphviz]", "[graphviz engine=neato]")],
+  ]) {
+    qtest(
+      `round-trips a graph with ${name}`,
+      async function (assert, { helpers }, markdown) {
+        await helpers.testMarkdown(assert, markdown, () => {}, markdown);
+      },
+      Object.assign({ args: markdown }, graphviz),
+    );
+  }
+
+  qtest(
+    "keeps the line breaks of a pasted diagram",
+    async function (assert, { helpers }) {
+      const [editorClass] = await helpers.setupRichEditor(assert, "");
+      const { view } = editorClass;
+
+      view.pasteHTML(
+        '<div class="graphviz is-loading" data-engine="neato">\ndigraph G {\n  a -&gt; b;\n  b -&gt; c;\n}\n</div>'
+      );
+
+      assert.strictEqual(
+        editorClass.value.trim(),
+        "[graphviz engine=neato]\ndigraph G {\n  a -> b;\n  b -> c;\n}\n[/graphviz]",
+        "the source survives the round trip through cooked HTML"
+      );
+    },
+    graphviz,
+  );
+
+  qtest(
+    "puts the caret in the source of a diagram it just inserted",
+    async function (assert, { helpers }) {
+      const [editorClass] = await helpers.setupRichEditor(assert, "before");
+      const { view } = editorClass;
+
+      view.dispatch(view.state.tr.insertText("[graphviz"));
+      const pos = view.state.selection.from;
+      view.someProp("handleTextInput", (f) => f(view, pos, pos, "]"));
+
+      const { selection } = view.state;
+      assert.strictEqual(selection.$head.parent.type.name, "preview_source", "typing carries on inside the new diagram");
+    },
+    graphviz,
+  );
+
+  // edit_graphviz_in_rich_editor_spec.rb's toolbar, on the editor page:
+  // the floating preview toolbar swaps the faces, follows the selection
+  // and runs the block's controls.
+  qtest(
+    "the preview toolbar swaps a diagram between its source and its drawing",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settled, click } = helpers;
+      const [editorClass] = await setupRichEditor(assert, "");
+      const { view } = editorClass;
+      view.focus();
+      view.dispatch(view.state.tr.insertText("[graphviz"));
+      const pos = view.state.selection.from;
+      view.someProp("handleTextInput", (f) => f(view, pos, pos, "]"));
+      view.dispatch(view.state.tr.insertText("digraph G { a -> b; }"));
+      await settled();
+
+      const toolbar = '[data-identifier="composer-preview-toolbar"]';
+      assert.dom(`${toolbar} .composer-preview-toolbar__show-preview`).exists("the source is shown: show preview");
+      assert.dom(`${toolbar} .composer-preview-toolbar__graphviz-fullscreen`).exists("the block's control");
+      await click(`${toolbar} .composer-preview-toolbar__show-preview`);
+      assert.dom(".composer-preview-node").doesNotHaveClass("--source");
+      assert.dom(`${toolbar} .composer-preview-toolbar__show-source`).exists("the drawing is shown: show source");
+      assert.strictEqual(view.state.selection.node && view.state.selection.node.type.name, "graphviz");
+
+      view.dispatch(view.state.tr.setSelection(pmState.TextSelection.atEnd(view.state.doc)));
+      await settled();
+      assert.dom(toolbar).doesNotExist("no toolbar once the selection leaves the block");
+
+      view.dispatch(view.state.tr.setSelection(pmState.NodeSelection.create(view.state.doc, 0)));
+      await settled();
+      await click(`${toolbar} .composer-preview-toolbar__show-source`);
+      assert.dom(".composer-preview-node").hasClass("--source");
+      assert.strictEqual(editorClass.value.trim(), "[graphviz]\ndigraph G { a -> b; }\n[/graphviz]");
+    },
+    graphviz,
+  );
+});
