@@ -24,11 +24,14 @@ reference's alert.
 | `static/js/rich-editor.js` | `lib/load-rich-editor.js`: the import map and `Discourse.richEditor.load()` |
 | `rich-editor/editor.js` | `components/prosemirror-editor.gts`, `core/plugin.js`, `core/commands.js` |
 | `rich-editor/extensions.js` | `lib/composer/rich-editor-extensions.ts`, `extensions/register-default.ts` and the small core extensions: code (codemark), heading, strikethrough, strong, underline, trailing paragraph, ordered and bullet lists, hard break, placeholder |
-| `rich-editor/extensions/*.js` | `extensions/`: emoji, mention, hashtag, link, link-toolbar, quote, code-block, html-inline, html-block, trailing-inline-space, markdown-paste, word-paste, table, image, upload-placeholder, grid, override-drag-ghost, wrap |
+| `rich-editor/extensions/*.js` | `extensions/`: emoji, mention, hashtag, link, link-toolbar, quote, code-block, html-inline, html-block, trailing-inline-space, markdown-paste, word-paste, table, image, upload-placeholder, grid, override-drag-ghost, wrap, onebox, onebox-toolbar, preview-source, preview-toolbar |
+| `rich-editor/text-manipulation.js` | `lib/text-manipulation.ts`: the TextManipulation the composer's toolbar acts through (below) |
+| `static/js/editor-toolbar.js` | `lib/composer/toolbar.ts`'s Toolbar, d-editor's newToolbarEvent and keymap, and the toolbar half of `lib/textarea-text-manipulation.ts`, shipped in front of composer.js |
+| `static/js/upsert-hyperlink.js` | `components/modal/upsert-hyperlink.gjs`, shipped in front of composer.js |
 | `rich-editor/plugins.js` | each bundled plugin's `api.registerRichEditorExtension`: the extensions of the plugins the composer's context lists, registered once, after the defaults, in the plugins' load order |
-| `rich-editor/plugins/*.js` | the plugins' `lib/rich-editor-extension.js`: checklist, discourse-details (details), discourse-local-dates (local-dates, with `local-date-node-view.js`), discourse-math (math), discourse-policy (policy, from its initializer), footnote, poll (with `components/poll-node-view.gjs` and `poll-info.gjs` in `poll-node-view.js`), spoiler-alert (spoiler) |
+| `rich-editor/plugins/*.js` | the plugins' `lib/rich-editor-extension.js`: checklist, discourse-details (details), discourse-graphviz (graphviz, a preview block), discourse-local-dates (local-dates, with `local-date-node-view.js`), discourse-math (math), discourse-policy (policy, from its initializer), footnote, poll (with `components/poll-node-view.gjs` and `poll-info.gjs` in `poll-node-view.js`), spoiler-alert (spoiler) |
 | `rich-editor/wrap-utils.js`, `rich-editor/wrap-modal.js` | `lib/wrap-utils.js`, `components/wrap-attributes-modal.gjs` |
-| `rich-editor/node-views/*.js` | `components/`: image (with media and video dispatch), video, grid, upload placeholder, image alt text input and wrap, as plain DOM node views |
+| `rich-editor/node-views/*.js` | `components/`: image (with media and video dispatch), video, grid, upload placeholder, image alt text input and wrap, and `components/composer/preview-node-view.gjs` with `lib/composer/preview-block.js` (preview), as plain DOM node views |
 | `rich-editor/table/*.js` | `lib/table/` |
 | `rich-editor/engine.js` | `lib/markdown-it.js`: the markdown engine the extensions ask (below) |
 | `rich-editor/toolbar.js` | `lib/composer/toolbar.ts` ToolbarBase, `components/composer/toolbar-buttons.gjs`, `lib/roving-button-bar.js`, iconHTML and a success toast, for the extensions' floating toolbars |
@@ -222,11 +225,13 @@ and last children are the rule's own tags, `JsFields` for a token's own
 properties, `JsBare` for a `wrap_bbcode` Element); the cook's HTML is
 unchanged.
 
+discourse-graphviz's `[graphviz]` (196r3) is its rule's `graphviz` token:
+`div`, `data-engine` (an engine it knows, else `dot`) and the source
+between the tags as `content`, a JsTree on the raw HTML it cooks to.
+
 What no extension takes yet is still refused: HTML naming an upload
 (above), and what the crate writes as `html_raw` with no parse spec:
-discourse-graphviz's `[graphviz]` (its extension is a preview node,
-`preview-source.js`, 196r3's) and chat's `[chat]` transcripts (chat's
-extension is not ported). discourse-events' `[event]` and the calendar's
+chat's `[chat]` transcripts (chat's extension is not ported). discourse-events' `[event]` and the calendar's
 blocks are refused by the crate itself, the plugins not being ported
 (ROADMAP 202), which the composer answers as an unsupported token. An
 `[excerpt]` is refused where both spoiler-alert and discourse-policy are
@@ -332,10 +337,28 @@ Playwright routes.
   editing cases on the builder, and composer.spec.js the plugins in the
   composer: details and a poll opened, Edit poll and Edit Wrap.
 
-Cases the port cannot run say why where they would be: code-block-test's
-"Tab still nests list items" and the checklist's and footnote's
-text-manipulation tests (text-manipulation's, 196r3), and the toolbar's
-cases of the system specs (196r3). The site's highlight.js bundle has languages
+- `rich-editor-toolbar.spec.js` (196r3) runs `text-manipulation-test.gjs`,
+  the checklist's and footnote's text-manipulation tests,
+  `onebox-test.js`, `preview-node-view-test.gjs` and discourse-graphviz's
+  rich-editor-extension-test.js as written in the page (the helper's
+  `tm` gives text-manipulation-test's setupEditor and friends,
+  `settledRequests` waits out the page's requests where the reference's
+  settled waits for its ajax, and create-pretender's /onebox and
+  /inline-onebox answers are routes), and on the composer the toolbar's
+  cases of prosemirror_toolbar_spec.rb, prosemirror_keymap_spec.rb,
+  prosemirror_links_spec.rb, prosemirror_onebox_spec.rb,
+  prosemirror_onebox_toolbar_spec.rb, composer_spoiler_spec.rb and
+  prosemirror_wrap_spec.rb, composer-hyperlink-test.js on the markdown
+  editor, and the emoji, upload and options menu buttons in both editors.
+  The helper's editor has d-editor's Tab keys, so rich-editor-extensions
+  runs code-block-test's "Tab still nests list items".
+
+Cases the port cannot run say why where they would be: onebox-test's
+markdown-it case (the node tree's contract) and graphviz's "constrains a
+diagram with tall source" (the editor page loads no site stylesheets);
+spoiler's `composer:apply-surround` app event cases have no app events
+service to send them, and edit_graphviz_in_rich_editor_spec.rb runs on
+the editor page, as the test site has graphviz off. The site's highlight.js bundle has languages
 the reference's test bundle lacks, so the code block cases list the
 bundle's and the HTML block cases set its highlighting aside.
 
@@ -374,8 +397,9 @@ GET /composer/mentions.
   `.d-editor-textarea-wrapper` over the textarea's value. The textarea
   stays, hidden: each edit writes its markdown there and fires `input`, so
   drafts, presence and the save read it as before, and wherever composer.js
-  writes the textarea itself (the text it opens with, the toolbar until
-  196r3, a quote, a template) the editor's `setValue` follows. A refusal
+  writes the textarea itself (the text it opens with, a draft) the
+  editor's `setValue` follows; the toolbar, a quote and a template go in
+  through its TextManipulation (below). A refusal
   alerts `composer.unsupported_token` and switches back to markdown. Each switch redraws the container, the preview and the
   toggle (relabelled for the platform, or the `_no_shortcut` forms without
   a fine pointer) and saves `composition_mode` with PUT
@@ -418,8 +442,45 @@ GET /composer/mentions.
   the refusal's alert). Its textarea stays, hidden, as the composer's
   does, and Save Changes sends it; the toggle, Ctrl+M and a refusal save
   `composition_mode`, and a closed composer follows the switch, as Ember's
-  opens anew in the saved mode. Its toolbar buttons write the textarea
-  and the editor follows, as the composer's do until 196r3.
+  opens anew in the saved mode. Its toolbar is the composer's
+  (`Discourse.composerRichEditor.toolbar`), with no emoji button: its
+  page draws no picker template.
+- The toolbar (196r3, `static/js/editor-toolbar.js`): toolbar.ts's
+  buttons, drawn by the server (`composer::view::editor_toolbar`: bold,
+  italic, the heading menu, link, blockquote, code, upload, the list
+  menu, emoji where enable_emoji is on, the options menu), act on
+  d-editor's newToolbarEvent over the open editor's TextManipulation:
+  the rich editor's (`editor.textManipulation`,
+  `rich-editor/text-manipulation.js`) or the textarea's (editor-toolbar.js'
+  port of textarea-text-manipulation.ts' toolbar half). The rich editor
+  reports its toolbar state after each transaction (`onStateChange`), and
+  the buttons draw `--active` and the heading and list icons from it; the
+  menus mark their active options. The buttons' and the menus' shortcuts
+  (mod+B, I, K, E, Shift+7/8/9, Alt+0 to 5, the options' Shift+D, M, .)
+  are the rich editor's keymap and the textarea's keydown, and Tab and
+  Shift+Tab indent (nest and lift list items in the rich editor). Link
+  and mod+K open UpsertHyperlink (`static/js/upsert-hyperlink.js`); the
+  link toolbar's Edit opens it through the context's modal service
+  (`upsert-hyperlink`). Emoji opens the emoji picker (emoji-picker.js,
+  loaded the first time) and the pick goes in through `emojiSelected`.
+  The options menu's items act on the toolbar event once the menu has
+  closed (details, footnote, spoiler's toggleSpoiler, graphviz, local
+  dates, math, the poll and policy builders, toggle-wrap's
+  WrapAttributesModal over insertWrap, updateWrap and removeWrap, the
+  touch view's format-code); checklist adds its item to the list menu.
+  Insert table and Change reply to are not ported. What a button inserts
+  that the editor refuses alerts and goes back to markdown, as an opening
+  does.
+- Oneboxes (196r3): the onebox extension turns a linkified link the
+  cursor has left into its preview or inline title, loaded through
+  `Discourse.oneboxes` (oneboxes.js' `html` and `inlineTitles`, the
+  preview's queue and caches) with the topic and a new topic's category,
+  within max_oneboxes_per_post; the onebox toolbar removes a preview, and
+  the link toolbar's Load preview forces one. A preview block
+  (`node-views/preview.js`, discourse-graphviz's) shows its source or its
+  drawing (graphviz.js' `Discourse.graphvizDiagram`), the preview toolbar
+  swapping them and running the block's controls (Expand diagram,
+  `Discourse.graphvizFullscreen`).
 - GET /composer/mentions (`src/routes/composer_mentions.rs`) answers the
   mention extension: an @name that is no user or visible group, nor
   @here, goes back to text, and the reasons are triggered as
@@ -431,10 +492,6 @@ What the composer and the editor do not do yet, as the reference does:
 - The quote node view draws the quoted post's avatar from
   `markdownOptions.lookupAvatarTemplateByPostNumber`, which the composer
   does not give (its preview has no quote avatars either).
-- The link toolbar's Edit opens UpsertHyperlink, the link modal of the
-  composer's toolbar (196r3): until the host gives `upsertHyperlink` the
-  button is not drawn. Load preview needs the onebox extension (196r3) and
-  is never offered.
 - A11y announcements (tables, videos) go through `getContext().a11y`; the
   port's pages have no live regions (A11y's), so the composer gives none
   and they are skipped.

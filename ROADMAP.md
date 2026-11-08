@@ -387,11 +387,12 @@ Visible if clicked, avoid them in a scripted demo:
   194e1); the revise modal was done before (feat/review-queued-posts).
   Not a demo blocker: the reject reason modal (194e2), which only a
   user reviewable opens, and the queue lists none yet.
-- [ ] The composer's rich editor and its toolbar buttons (196r1 to 196r3;
-  196r1, the core and the composer's toggle, 196r2, the everyday
-  extensions, 196r4, the plugins' extensions, and 196r5, rich as the
-  default with the profile's About me editor, are done); the toolbar
-  buttons (196r3) remain.
+- [x] The composer's rich editor and its toolbar buttons (196r1 to 196r5,
+  done: the core and the composer's toggle, the everyday extensions, the
+  toolbar and its menus with UpsertHyperlink, oneboxes and the preview
+  toolbar, the plugins' extensions, and rich as the default with the
+  profile's About me editor). Not ported from the options menu: Insert
+  table and Change reply to.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -3897,7 +3898,7 @@ route table has been made, so this list may be short.
 196. `feat/client-rest` L: the client's leftovers named under done
     items: the rich editor (ProseMirror, split into 196r1 to 196r5 below)
     and its toggle, the composer's
-    actions, heading, list, options and emoji menus, the insert-date
+    actions menu (196a) and toolbar menus (196r3), the insert-date
     modal (49, 96), the desktop header's search menu (94; the advanced
     filters panel was 143i), the do not disturb and user status modals (95),
     the drafts and post menus as sheets, the jump to post prompt (98),
@@ -3998,11 +3999,36 @@ route table has been made, so this list may be short.
     ComposerMessages (the mention warnings are triggered, nothing shows
     them), A11y's live regions (table and video announcements are
     skipped), quote avatars in the composer (as its preview)
-    196r3. `feat/rich-editor-toolbar` M: the toolbar and its menus wired to
-    the rich editor (text-manipulation.ts: bold, italic, link, quote, code,
-    lists, headings, emoji, upload, the options menu, Tab nesting list
-    items), UpsertHyperlink for the link toolbar's Edit, onebox and its
-    toolbar (with the link toolbar's Load preview), the preview toolbar
+    196r3. ~~`feat/rich-editor-toolbar`~~ (done) M: the toolbar and its
+    menus wired to the rich editor. rich-editor/text-manipulation.js is
+    text-manipulation.ts (createEditor's textManipulation, its state after
+    each transaction); static/js/editor-toolbar.js is toolbar.ts's
+    Toolbar, d-editor's newToolbarEvent and keymap and the textarea's
+    toolbar half, over whichever editor is open, for the composer and the
+    About me: bold, italic, the heading menu, link, blockquote, code,
+    upload, the list menu (with checklist's item), emoji (the picker,
+    emojiSelected), their active states, icons and shortcuts, Tab and
+    Shift+Tab nesting list items; the server draws the menus' triggers
+    (composer::view::editor_toolbar). UpsertHyperlink
+    (static/js/upsert-hyperlink.js) for the link button, mod+K and the
+    link toolbar's Edit. The options menu acts on the toolbar event:
+    details, footnote, spoiler's command, graphviz, local dates, math,
+    the poll and policy builders, toggle-wrap and the touch view's
+    format-code, with active items and the shortcuts in the rich editor.
+    The onebox extension and its toolbar (oneboxes.js answering promises)
+    with the link toolbar's Load preview; the preview block, its toolbar
+    and discourse-graphviz's extension over the crate's graphviz token
+    (tree.rs). The serializer writes a selection's inline content with its
+    marks and a bare link's following bracket unescaped. Tests: browser
+    rich-editor-toolbar (the reference's text-manipulation, onebox,
+    preview node view and graphviz QUnit tests, the plugins'
+    text-manipulation tests, the system specs' toolbar, keymap, links,
+    onebox, spoiler and wrap cases, composer-hyperlink-test), the
+    extensions' "Tab still nests list items" and Edit; tree.rs. Not
+    ported: Insert table and Change reply to in the options menu (still
+    "not supported yet"), the About me's emoji button (its page has no
+    picker template), spoiler's composer:apply-surround app event (no app
+    events service)
     196r4. ~~`feat/rich-editor-plugins`~~ (done) L: the plugins'
     extensions, each from its plugin's lib/rich-editor-extension.js as
     plain ES modules (static/js/rich-editor/plugins/), registered by
@@ -4034,8 +4060,8 @@ route table has been made, so this list may be short.
     builder editing cases and composer.spec.js's plugins in the composer;
     tree.rs; tests/policy.rs. Still refused: discourse-events' [event] and
     the calendar's blocks (the crate refuses them, the plugins unported,
-    202), [graphviz] (a preview node, 196r3's preview-source) and chat's
-    [chat] transcripts (chat's extension, not ported), both raw HTML in the
+    202), [graphviz] (a preview node, 196r3's preview-source, since
+    done) and chat's [chat] transcripts (chat's extension, not ported), both raw HTML in the
     tree; [excerpt] as in the reference (no extension). Not ported here:
     the checklist's and footnote's text-manipulation tests and the
     system specs' toolbar cases (196r3)
@@ -4067,8 +4093,8 @@ route table has been made, so this list may be short.
     behind it for Save Changes. What it refuses falls back to markdown
     with the alert in the composer, an edit and the About me, saving mode
     0 as toggleRichEditor does. Still refused: [event] (202), [graphviz]
-    (196r3), [chat] transcripts (chat's extension), [excerpt] as in the
-    reference. The browser suite's members stay on markdown
+    (196r3, since done), [chat] transcripts (chat's extension), [excerpt]
+    as in the reference. The browser suite's members stay on markdown
     (setup.sql), as its specs drive the textarea; demo-rehearsal switches
     a rich composer to markdown before typing. Tests: load.rs,
     preferences_pages (the bio's mode), sessions (the composer in mode 1),
