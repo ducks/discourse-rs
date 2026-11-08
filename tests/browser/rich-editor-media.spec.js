@@ -5,12 +5,44 @@
 // tests/unit/lib/to-markdown-test.js's image cases, on the editor the
 // helper opens (rich-editor-helper.js), and an upload in the composer's
 // rich mode.
+const crypto = require("crypto");
+const zlib = require("zlib");
 const { test, expect, login, topic, label, sql, member } = require("./helpers");
 const { openEditorPage, setupRichEditor, editorValue } = require("./rich-editor-helper");
 
 const host = "#rich-spec-host";
 // assert.dom("img"): the first image, not ProseMirror's separator.
 const IMG = "img:not(.ProseMirror-separator)";
+
+// A 1x1 RGB PNG of a random colour. Uploads are deduplicated by sha1 and
+// a duplicate comes back with the first upload's original_filename, so a
+// test that checks the name needs bytes no other spec has uploaded.
+function uniquePng() {
+  const crc32 = (buf) => {
+    let c = ~0;
+    for (const byte of buf) {
+      c ^= byte;
+      for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+    }
+    return ~c >>> 0;
+  };
+  const chunk = (type, data) => {
+    const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(data.length);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body));
+    return Buffer.concat([length, body, crc]);
+  };
+  const ihdr = Buffer.from([0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0]);
+  const row = Buffer.concat([Buffer.from([0]), crypto.randomBytes(3)]);
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", zlib.deflateSync(row)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
 
 function requestedShortUrls(request) {
   return new URLSearchParams(request.postData() || "").getAll("short_urls[]");
@@ -692,12 +724,9 @@ test.describe("uploads in the rich editor", () => {
       await route.continue();
     });
 
-    // A 1x1 PNG.
-    const png = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-      "base64"
-    );
-    await page.locator("#file-uploader").setInputFiles({ name: "rich-upload.png", mimeType: "image/png", buffer: png });
+    await page
+      .locator("#file-uploader")
+      .setInputFiles({ name: "rich-upload.png", mimeType: "image/png", buffer: uniquePng() });
     const placeholder = rich.locator(".composer-image-node.upload-placeholder.--image");
     await expect(placeholder).toHaveCount(1);
     await expect(placeholder.locator("img")).toHaveAttribute("alt", /rich-upload\.png/);

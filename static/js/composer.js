@@ -592,6 +592,7 @@
     // Editing a first post: the topic's title, category and tags, as
     // the topic model holds them in Ember.
     var topicLoad = s.firstPost ? loadTopic(s) : Promise.resolve();
+    s.topicLoad = topicLoad;
     Promise.all([lookup, topicLoad])
       .then(function (results) {
         if (opts.carry) {
@@ -3018,11 +3019,18 @@
     if (!wanted || s.mode !== "edit" || s.firstPost || !s.topicId) {
       return;
     }
-    loadActionTopic(s.topicId).then(function (topic) {
+    s.editTopicLoad = loadActionTopic(s.topicId).then(function (topic) {
       if (state === s) {
         s.editTopic = topic;
       }
     });
+  }
+
+  // What the options menu's conditions read, loaded as the composer opens:
+  // the topic replied in or edited (in Ember the composer's topic model is
+  // there before the toolbar draws).
+  function menuContext(s) {
+    return Promise.all([s.actionContext, s.topicLoad, s.editTopicLoad]).catch(function () {});
   }
 
   function postVotingOnly(s) {
@@ -3806,9 +3814,9 @@
     return true;
   }
 
-  function popupMenuContent() {
+  function popupMenuContent(items) {
     var html = '<ul class="dropdown-menu">';
-    popup.items.filter(popupItemShown).forEach(function (item) {
+    items.forEach(function (item) {
       html +=
         '<li class="dropdown-menu__item"><button class="btn no-text btn-icon" title="' + escapeHtml(item.label) + '"' +
         (item.named ? ' data-name="' + escapeHtml(item.name) + '"' : "") + ' type="button">' + svg(item.icon) +
@@ -4002,33 +4010,40 @@
         showError(data.labelUnported + " " + popup.unported.join(", "));
         return;
       }
-      var menu = Discourse.float.menu(optionsTrigger, {
-        identifier: "toolbar-menu__options",
-        mainClass: "toolbar-menu__options-content toolbar-popup-menu-options",
-        placement: "bottom",
-        fallbackPlacements: ["top"],
-        offset: 5,
-        modalForMobile: true,
-        content: popupMenuContent(),
-      });
-      var content = menu && menu.content;
-      if (content) {
-        content.addEventListener("click", function (e) {
-          var button = e.target.closest(".dropdown-menu__item button");
-          if (!button) {
-            return;
-          }
-          var index = Array.prototype.indexOf.call(
-            content.querySelectorAll(".dropdown-menu__item button"),
-            button
-          );
-          var item = popup.items.filter(popupItemShown)[index];
-          var closing = menu.close();
-          if (item) {
-            runPopupAction(item, false, closing);
-          }
+      var s = state;
+      (s ? menuContext(s) : Promise.resolve()).then(function () {
+        if (state !== s) {
+          return;
+        }
+        var shown = popup.items.filter(popupItemShown);
+        var menu = Discourse.float.menu(optionsTrigger, {
+          identifier: "toolbar-menu__options",
+          mainClass: "toolbar-menu__options-content toolbar-popup-menu-options",
+          placement: "bottom",
+          fallbackPlacements: ["top"],
+          offset: 5,
+          modalForMobile: true,
+          content: popupMenuContent(shown),
         });
-      }
+        var content = menu && menu.content;
+        if (content) {
+          content.addEventListener("click", function (e) {
+            var button = e.target.closest(".dropdown-menu__item button");
+            if (!button) {
+              return;
+            }
+            var index = Array.prototype.indexOf.call(
+              content.querySelectorAll(".dropdown-menu__item button"),
+              button
+            );
+            var item = shown[index];
+            var closing = menu.close();
+            if (item) {
+              runPopupAction(item, false, closing);
+            }
+          });
+        }
+      });
     });
   }
 

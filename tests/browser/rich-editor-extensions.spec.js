@@ -319,6 +319,10 @@ test.describe("rich editor links", () => {
     await page.keyboard.type("see https://example.com now");
     await expect(editor.locator('a[data-markup="linkify"]')).toHaveAttribute("href", "https://example.com");
     expect(await editorValue(page)).toBe("see https://example.com now");
+    // The toolbars typing opened and left close animated, then focus the
+    // view, which writes its selection back to the DOM: an arrow key whose
+    // selectionchange is still pending would be undone.
+    await expect(page.locator('[data-identifier="composer-link-toolbar"]')).toHaveCount(0);
 
     // Back into the link: the floating toolbar, without unlink for an
     // automatic link, with the visit link.
