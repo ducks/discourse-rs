@@ -15,6 +15,7 @@ use markdown_it::plugins::cmark::block::fence::{CodeFence, FenceScanner};
 use markdown_it::plugins::cmark::block::paragraph::Paragraph;
 use markdown_it::plugins::cmark::inline::autolink::Autolink;
 use markdown_it::plugins::cmark::inline::emphasis::Strong;
+use markdown_it::plugins::cmark::inline::image::Image;
 use markdown_it::plugins::cmark::inline::link::Link;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
@@ -678,12 +679,14 @@ impl InlineRule for InlineBbcode {
                 if content.starts_with("upload://") {
                     ctx.refuse("[img] bbcode with an upload:// url");
                 }
-                // An image token without children: no alt text, so the
-                // image renderer marks it as presentation.
-                Node::new(super::element::RawHtml(format!(
-                    "<img src=\"{}\" alt=\"\" role=\"presentation\">",
-                    markdown_it::common::utils::escape_html(content)
-                )))
+                // An image token without children, its src the content as
+                // written: no alt text, so the image renderer (uploads.rs)
+                // marks it as presentation, and the rich editor's tree
+                // writes it as any image.
+                Node::new(Image {
+                    url: content.to_string(),
+                    title: None,
+                })
             }
             "url" => {
                 let start = state.pos + info.length;

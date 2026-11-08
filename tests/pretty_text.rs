@@ -332,6 +332,38 @@ async fn graphviz_cooks_as_rails_when_enabled() {
     }
 }
 
+/// bbcode-inline's [img], an image token: pretty_text_spec.rb's cooked
+/// image and its escaped src (the same DOM), and pretty-text-test.js' two
+/// images and an image in a [url], with the rel PrettyText.cleanup adds.
+#[tokio::test]
+async fn bbcode_img_cooks_as_rails() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    let opts = MarkdownOptions::default();
+    let cases = [
+        (
+            "[img]http://www.image/test.png[/img]",
+            "<p><img src=\"http://www.image/test.png\" alt=\"\" role=\"presentation\"></p>",
+        ),
+        (
+            "[img]http://aaa.com/?a=1&b=<script>alert(1);</script>[/img]",
+            "<p><img src=\"http://aaa.com/?a=1&amp;b=<script>alert(1);</script>\" alt=\"\" role=\"presentation\"></p>",
+        ),
+        (
+            "[img]http://eviltrout.com/eviltrout.png[/img][img]http://samsaffron.com/samsaffron.png[/img]",
+            "<p><img src=\"http://eviltrout.com/eviltrout.png\" alt=\"\" role=\"presentation\"><img src=\"http://samsaffron.com/samsaffron.png\" alt=\"\" role=\"presentation\"></p>",
+        ),
+        (
+            "[url=http://www.example.com][img]http://example.com/logo.png[/img][/url]",
+            "<p><a href=\"http://www.example.com\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\"><img src=\"http://example.com/logo.png\" alt=\"\" role=\"presentation\"></a></p>",
+        ),
+    ];
+    for (raw, rails) in cases {
+        let ours = cook(&host, raw, &opts).await.unwrap();
+        assert_eq!(ours, rails, "{raw}");
+    }
+}
+
 /// Each raw cooks to the html Rails gives it.
 async fn cooks_as(host: &Host, cases: &[(&str, &str)]) {
     for (raw, rails) in cases {

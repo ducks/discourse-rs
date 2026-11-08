@@ -276,7 +276,8 @@ const EXTENSIONS = {
 // bbcode_b and bbcode_i are strong and em (core/parser.js), [code] a
 // code_inline token, [url] and [email] a link_open with no markup (so the
 // [text](href) form; parseDOM drops a link whose text is its href, so
-// these round-trip only).
+// these round-trip only), [img] an image token with an empty alt (the
+// image extension's ![alt](src), as for ![](src)).
 const BBCODE_ROUND_TRIPS = [
   ["[b]Hello[/b]", "<p><strong>Hello</strong></p>", "**Hello**"],
   ["[i]Hello[/i]", "<p><em>Hello</em></p>", "*Hello*"],
@@ -292,6 +293,16 @@ const BBCODE_ROUND_TRIPS = [
     "[email]sam@example.com[/email]",
     '<p><a href="mailto:sam@example.com">sam@example.com</a></p>',
     "[sam@example.com](mailto:sam@example.com)",
+  ],
+  [
+    "[img]https://example.com/a.png[/img]",
+    '<p><span class="composer-image-node" contenteditable="false" draggable="true"><img alt="" role="button" src="https://example.com/a.png"></span></p>',
+    "![](https://example.com/a.png)",
+  ],
+  [
+    "Hey [img]https://example.com/a.png[/img] there",
+    '<p>Hey <span class="composer-image-node" contenteditable="false" draggable="true"><img alt="" role="button" src="https://example.com/a.png"></span> there</p>',
+    "Hey ![](https://example.com/a.png) there",
   ],
 ];
 
