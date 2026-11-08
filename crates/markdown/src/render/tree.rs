@@ -1258,6 +1258,14 @@ mod tests {
         settings.graphviz = true;
         let tree = rich_editor_tree("[graphviz]\na\n[/graphviz]", &settings).unwrap();
         assert_eq!(tree["children"][0]["type"], "html_raw");
+        // chat's transcript (chat's extension is not ported).
+        settings.chat_transcript = true;
+        let tree = rich_editor_tree(
+            "[chat quote=\"user2;1;2026-10-01T00:00:00Z\" channel=\"General\" channelId=\"2\"]\nhi\n[/chat]",
+            &settings,
+        )
+        .unwrap();
+        assert_eq!(tree["children"][0]["type"], "html_raw");
     }
 
     #[test]
