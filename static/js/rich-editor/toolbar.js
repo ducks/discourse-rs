@@ -258,6 +258,11 @@ export function renderToolbarButtons(container, toolbar, opts) {
 // toasts.success({ duration: "short", data: { message } }), as
 // static/js/quote-button.js draws it.
 export function toastSuccess(text) {
+  toast(text, "success");
+}
+
+// toasts.default (no icon) or toasts.success.
+export function toast(text, type) {
   var section = document.querySelector("section.fk-d-toasts");
   if (!section) {
     section = document.createElement("section");
@@ -268,9 +273,9 @@ export function toastSuccess(text) {
   output.className = "fk-d-toast";
   output.setAttribute("role", "status");
   output.innerHTML =
-    '<div class="fk-d-default-toast -success"><div class="fk-d-default-toast__icon-container">' +
-    iconHtml("check") +
-    '</div><div class="fk-d-default-toast__main-container"><div class="fk-d-default-toast__texts"><div class="fk-d-default-toast__message"></div></div></div><div class="fk-d-default-toast__close-container"><button class="btn no-text btn-icon btn-transparent" type="button">' +
+    '<div class="fk-d-default-toast' +
+    (type === "success" ? ' -success"><div class="fk-d-default-toast__icon-container">' + iconHtml("check") + "</div>" : ' -default">') +
+    '<div class="fk-d-default-toast__main-container"><div class="fk-d-default-toast__texts"><div class="fk-d-default-toast__message"></div></div></div><div class="fk-d-default-toast__close-container"><button class="btn no-text btn-icon btn-transparent" type="button">' +
     iconHtml("xmark") +
     '<span aria-hidden="true">&#8203;</span></button></div></div>';
   output.querySelector(".fk-d-default-toast__message").textContent = text;

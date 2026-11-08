@@ -28,6 +28,7 @@ const SITE_SETTINGS = {
   authorized_extensions: "jpg|jpeg|png|gif|heic|heif|webp|avif|svg",
   authorized_extensions_for_staff: "",
   avatar_sizes: "24|48|72|96|144|288",
+  max_oneboxes_per_post: 50,
 };
 
 // The English strings of the keys the extensions look up (client.en.yml).
@@ -90,6 +91,11 @@ const LABELS = {
   "composer.link_toolbar.visit": "Open link in external tab",
   "composer.link_toolbar.link_copied": "Link copied!",
   "composer.link_toolbar.load_preview": "Load preview",
+  "composer.link_toolbar.preview_failed": "Could not load preview",
+  "composer.onebox_toolbar.copy": "Copy link",
+  "composer.onebox_toolbar.remove_preview": "Remove preview",
+  "composer.onebox_toolbar.visit": "Open link",
+  "composer.onebox_toolbar.link_copied": "Link copied!",
   "composer.image_alt_text.aria_label": "Alt text for image",
   "composer.image_alt_text.title": "Add image description",
   "composer.image_toolbar.alt_text": "Add image description",
@@ -163,6 +169,13 @@ const LABELS = {
 // In the page: the engine, the context and richSpec.
 function harness() {
   const handlers = {};
+  // The page's requests in flight, for settledRequests.
+  let pending = 0;
+  const pageFetch = window.fetch;
+  window.fetch = function () {
+    pending++;
+    return pageFetch.apply(this, arguments).finally(() => pending--);
+  };
   window.richSpec = {
     engine: null,
     editor: null,
@@ -198,6 +211,16 @@ function harness() {
     qunitHelpers() {
       const spec = this;
       const settled = () => new Promise((resolve) => setTimeout(resolve, 100));
+      // @ember/test-helpers' settled where a test waits on the server
+      // (oneboxes.js' queue starts a request 150ms after it is asked): no
+      // request in flight across two looks 200ms apart.
+      const settledRequests = async () => {
+        let quiet = 0;
+        for (let i = 0; i < 25 && quiet < 2; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          quiet = pending === 0 ? quiet + 1 : 0;
+        }
+      };
       // opts.onSetup gets the editor's TextManipulation, as
       // ProsemirrorEditor's @onSetup does.
       const setupRichEditor = async (assert, markdown, opts) => {
@@ -252,7 +275,7 @@ function harness() {
         );
         await settled();
       };
-      return { settled, setupRichEditor, testMarkdown, find, click, triggerKeyEvent };
+      return { settled, settledRequests, setupRichEditor, testMarkdown, find, click, triggerKeyEvent };
     },
 
     // What the reference's QUnit bodies import (inPage).

@@ -22,6 +22,8 @@ import link from "discourse/rich-editor/extensions/link";
 import linkToolbar from "discourse/rich-editor/extensions/link-toolbar";
 import markdownPaste from "discourse/rich-editor/extensions/markdown-paste";
 import mention from "discourse/rich-editor/extensions/mention";
+import onebox from "discourse/rich-editor/extensions/onebox";
+import oneboxToolbar from "discourse/rich-editor/extensions/onebox-toolbar";
 import overrideDragGhost from "discourse/rich-editor/extensions/override-drag-ghost";
 import quote from "discourse/rich-editor/extensions/quote";
 import table from "discourse/rich-editor/extensions/table";
@@ -314,6 +316,8 @@ function isEmptyParagraph(node) {
 export var defaultExtensions = [
   emoji,
   image,
+  onebox,
+  oneboxToolbar,
   code,
   link,
   linkToolbar,

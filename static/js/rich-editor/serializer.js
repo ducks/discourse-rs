@@ -10,6 +10,10 @@ import { Transform } from "prosemirror-transform";
 
 var FLANKING_SENSITIVE_MARKS = ["strong", "em", "strikethrough"];
 
+// What may follow a bare link unescaped (the link serializer records where
+// it ended, state.linkifyEnd): escaping it would end the link's text.
+var LINKIFY_BOUNDARY = /^[*[\]]/;
+
 // markdown-it's isPunctChar (P or S).
 var PUNCTUATION = /[\p{P}\p{S}]/u;
 var LEADING_PUNCTUATION = new RegExp("^" + PUNCTUATION.source + "+", "u");
@@ -88,7 +92,13 @@ export default function Serializer(extensions, pluginParams, includeDefault) {
     state.write(state.inTable ? "<br>" : "\n");
   };
   this.nodes.text = function (state, node) {
-    state.text(node.text, !state.inAutolink);
+    if (state.out.length !== state.linkifyEnd || !LINKIFY_BOUNDARY.test(node.text)) {
+      state.text(node.text, !state.inAutolink);
+      return;
+    }
+
+    state.text(node.text[0], false);
+    state.text(node.text.slice(1));
   };
 
   this.marks = includeDefault ? Object.assign({}, defaultMarkdownSerializer.marks) : {};

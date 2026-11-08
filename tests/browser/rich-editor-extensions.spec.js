@@ -335,7 +335,7 @@ test.describe("rich editor links", () => {
     await expect(toolbar.locator(".composer-link-toolbar__unlink")).toHaveCount(0);
     await expect(toolbar.locator("a.composer-link-toolbar__visit")).toHaveAttribute("href", "https://example.com");
     await expect(toolbar.locator(".composer-link-toolbar__edit")).toBeVisible();
-    // Load preview waits for the onebox extension (196r3).
+    // No Load preview: a top-level url inline gets no onebox.
     await expect(toolbar.locator(".composer-link-toolbar__show-preview")).toHaveCount(0);
   });
 

@@ -132,6 +132,7 @@ export default {
         }
 
         if (linkMarkup === "linkify") {
+          state.linkifyEnd = state.out.length;
           return "";
         }
 

@@ -23,6 +23,7 @@ const SITE_SETTINGS: &[&str] = &[
     "authorized_extensions",
     "authorized_extensions_for_staff",
     "avatar_sizes",
+    "max_oneboxes_per_post",
 ];
 
 /// The client strings the extensions show (client.en.yml, less `js.`).
@@ -45,6 +46,12 @@ const LABELS: &[&str] = &[
     "composer.link_toolbar.visit",
     "composer.link_toolbar.link_copied",
     "composer.link_toolbar.load_preview",
+    "composer.link_toolbar.preview_failed",
+    "composer.link_toolbar.preview_limit_reached",
+    "composer.onebox_toolbar.copy",
+    "composer.onebox_toolbar.remove_preview",
+    "composer.onebox_toolbar.visit",
+    "composer.onebox_toolbar.link_copied",
     "composer.image_alt_text.aria_label",
     "composer.image_alt_text.title",
     "composer.image_toolbar.alt_text",

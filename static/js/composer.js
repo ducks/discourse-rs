@@ -1391,6 +1391,14 @@
       currentUser: richContext().currentUser || null,
       i18n: richI18n,
       topicId: state && slot === composerToolbar ? state.topicId || null : null,
+      // The category a new topic is in, for the oneboxes the editor loads.
+      get categoryId() {
+        if (!state || slot !== composerToolbar || state.mode !== "create-topic") {
+          return null;
+        }
+        var value = chooser.querySelector("summary").dataset.value;
+        return value ? parseInt(value, 10) : null;
+      },
       appEvents: richEvents,
       capabilities: {
         viewport: { sm: window.matchMedia("(min-width: 40rem)").matches },

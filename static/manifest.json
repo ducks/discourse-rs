@@ -1381,6 +1381,20 @@
       ]
     },
     {
+      "name": "rich-editor/extensions/onebox.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/onebox.js"
+      ]
+    },
+    {
+      "name": "rich-editor/extensions/onebox-toolbar.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/onebox-toolbar.js"
+      ]
+    },
+    {
       "name": "rich-editor/extensions/quote.js",
       "content_type": "js",
       "files": [

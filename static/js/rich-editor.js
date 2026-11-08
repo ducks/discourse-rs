@@ -68,6 +68,8 @@
     "extensions/hashtag",
     "extensions/link",
     "extensions/link-toolbar",
+    "extensions/onebox",
+    "extensions/onebox-toolbar",
     "extensions/quote",
     "extensions/code-block",
     "extensions/html-inline",

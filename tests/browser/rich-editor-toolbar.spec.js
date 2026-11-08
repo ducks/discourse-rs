@@ -1313,3 +1313,487 @@ test.describe("the toolbar's options menu", () => {
     await expect(textarea(page)).toHaveValue("* [ ] An item");
   });
 });
+
+// The onebox extension and its toolbar (prosemirror_onebox_spec.rb and
+// prosemirror_onebox_toolbar_spec.rb), the link toolbar's Load preview:
+// /onebox and /inline-onebox answered as the reference's stubbed sites
+// cook them.
+test.describe("oneboxes in the rich editor", () => {
+  const rich = (page) => page.locator("#reply-control .ProseMirror.d-editor-input");
+  const textarea = (page) => page.locator("#reply-control textarea.d-editor-input");
+  const toolbar = (page) => page.locator('[data-identifier="composer-onebox-toolbar"]:not(.-closing)');
+  const titles = { "example.com": "Example Site 1", "example2.com": "Example Site 2" };
+  const titleOf = (url) => titles[new URL(url).hostname];
+
+  async function openComposer(page, context) {
+    await page.route(/\/onebox\?/, (route) => {
+      const url = new URL(route.request().url()).searchParams.get("url");
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<aside class="onebox allowlistedgeneric" data-onebox-src="${url}"><article class="onebox-body"><h3><a href="${url}">${titleOf(url)}</a></h3><p>This is an example site</p></article></aside>`,
+      });
+    });
+    await page.route(/\/inline-onebox\?/, (route) => {
+      const urls = new URL(route.request().url()).searchParams.getAll("urls[]");
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ "inline-oneboxes": urls.map((url) => ({ url, title: titleOf(url) })) }),
+      });
+    });
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = 1 WHERE user_id = :'p1'", writer.id);
+    await login(context, writer.name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(rich(page)).toBeVisible();
+    await rich(page).click();
+    await expect(rich(page)).toBeFocused();
+  }
+
+  test("an inline onebox for a link within text", async ({ page, context }) => {
+    await openComposer(page, context);
+    await page.keyboard.type("Check out this link https://example.com/x ");
+    await expect(rich(page).locator("a.inline-onebox[href='https://example.com/x']")).toHaveText("Example Site 1");
+    await page.keyboard.type("in the middle of text");
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("Check out this link https://example.com/x in the middle of text");
+  });
+
+  test("a full onebox for a link alone on its line, none in a code block", async ({ page, context }) => {
+    await openComposer(page, context);
+    await page.keyboard.type("https://example.com");
+    await page.keyboard.press("Enter");
+    const onebox = rich(page).locator("div.onebox-wrapper[data-onebox-src='https://example.com']");
+    await expect(onebox).toContainText("Example Site 1");
+    await expect(onebox).toContainText("This is an example site");
+    await expect(rich(page)).toBeFocused();
+    await page.keyboard.type("```");
+    await page.keyboard.type("https://example2.com");
+    await expect(rich(page).locator("pre code")).toHaveText("https://example2.com");
+    await expect(rich(page).locator("div.onebox-wrapper")).toHaveCount(1);
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("https://example.com\n\n```\nhttps://example2.com\n```");
+  });
+
+  test("the full onebox's toolbar removes the preview, and Load preview brings it back", async ({ page, context }) => {
+    await openComposer(page, context);
+    await page.keyboard.type("https://example.com");
+    await page.keyboard.press("Enter");
+    await expect(rich(page).locator("div.onebox-wrapper")).toHaveCount(1);
+    await rich(page).locator("div.onebox-wrapper").click();
+    await expect(toolbar(page).locator(".composer-onebox-toolbar__copy")).toBeVisible();
+    await expect(toolbar(page).locator("a.composer-onebox-toolbar__visit")).toHaveAttribute("href", "https://example.com");
+    await toolbar(page).locator(".composer-onebox-toolbar__remove-preview").click();
+    await expect(rich(page).locator("div.onebox-wrapper")).toHaveCount(0);
+    await expect(rich(page).locator("a[href='https://example.com']")).toHaveText("https://example.com");
+
+    // Not taken again once the cursor moves off it.
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("some more text");
+    await expect(rich(page).locator("div.onebox-wrapper")).toHaveCount(0);
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("<https://example.com>\n\nsome more text");
+    await page.locator("#reply-control .composer-toggle-switch").click();
+
+    await rich(page).locator("a[href='https://example.com']").click();
+    const linkToolbar = page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing)');
+    await linkToolbar.locator(".composer-link-toolbar__show-preview").click();
+    await expect(rich(page).locator("div.onebox-wrapper")).toContainText("Example Site 1");
+  });
+
+  test("the inline onebox's toolbar removes the preview, and Load preview brings it back", async ({ page, context }) => {
+    await openComposer(page, context);
+    await page.keyboard.type("Check https://example.com/x ");
+    await expect(rich(page).locator("a.inline-onebox")).toHaveText("Example Site 1");
+    await rich(page).locator("a.inline-onebox").click();
+    await expect(toolbar(page).locator(".composer-onebox-toolbar__copy")).toBeVisible();
+    await toolbar(page).locator(".composer-onebox-toolbar__remove-preview").click();
+    await expect(rich(page).locator("a.inline-onebox")).toHaveCount(0);
+    await expect(rich(page).locator("a[href='https://example.com/x']")).toHaveText("https://example.com/x");
+
+    await rich(page).locator("a[href='https://example.com/x']").click();
+    const linkToolbar = page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing)');
+    await linkToolbar.locator(".composer-link-toolbar__show-preview").click();
+    await expect(rich(page).locator("a.inline-onebox")).toHaveText("Example Site 1");
+  });
+});
+
+// onebox-test.js, run as written in the page; create-pretender's /onebox
+// and /inline-onebox answers are Playwright routes. Its first case (the
+// markdown-it feature left out) is the node tree's contract
+// (docs/rich-editor.md), tested in tree.rs.
+async function pretenderOneboxes(page, opts = {}) {
+  await page.route(/\/inline-onebox\?/, async (route) => {
+    if (opts.inlineGate) {
+      await page.evaluate(() => window.oneboxGate);
+    }
+    const urls = new URL(route.request().url()).searchParams.getAll("urls[]");
+    const answer = opts.inline
+      ? opts.inline(urls)
+      : urls.includes("http://www.example.com/has-title.html")
+        ? [{ url: "http://www.example.com/has-title.html", title: "This is a great title" }]
+        : [];
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ "inline-oneboxes": answer }) });
+  });
+  await page.route(/\/onebox\?/, (route) => {
+    const url = new URL(route.request().url()).searchParams.get("url");
+    let body = null;
+    if (opts.onebox) {
+      body = opts.onebox;
+    } else if (url === "http://www.example.com/has-title.html") {
+      body =
+        '<aside class="onebox"><article class="onebox-body"><h3><a href="http://www.example.com/article.html">An interesting article</a></h3></article></aside>';
+    } else if (url === "http://www.example.com/no-title.html") {
+      body = '<aside class="onebox"><article class="onebox-body"><p>No title</p></article></aside>';
+    }
+    route.fulfill(body ? { status: 200, contentType: "text/html", body } : { status: 404, body: "" });
+  });
+}
+
+test.describe("the onebox extension", () => {
+  const before = (opts) => (page) => pretenderOneboxes(page, opts);
+
+  qtest(
+    "respects max_oneboxes_per_post site setting",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const URL = "http://www.example.com/has-title.html";
+      const lastParagraphStart = (doc) => {
+        let pos = null;
+        doc.descendants((node, nodePos) => {
+          if (node.type.name === "paragraph") {
+            pos = nodePos + 1;
+          }
+        });
+        return pos;
+      };
+      const [editor] = await setupRichEditor(assert, "a\n\nb", { siteSettings: { max_oneboxes_per_post: 0 } });
+      const { view } = editor;
+
+      view.dispatch(view.state.tr.insertText(URL, 1, 2));
+      view.dispatch(view.state.tr.setSelection(pmState.TextSelection.create(view.state.doc, lastParagraphStart(view.state.doc))));
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").doesNotExist("does not render a onebox");
+      assert.dom("a.inline-onebox").doesNotExist("does not render an inline onebox");
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "each copy of a repeated onebox takes a slot",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const URL = "http://www.example.com/has-title.html";
+      const lastParagraphStart = (doc) => {
+        let pos = null;
+        doc.descendants((node, nodePos) => {
+          if (node.type.name === "paragraph") {
+            pos = nodePos + 1;
+          }
+        });
+        return pos;
+      };
+      const [editor] = await setupRichEditor(assert, `${URL}\n\n${URL}\n\nb`, { siteSettings: { max_oneboxes_per_post: 1 } });
+
+      editor.view.dispatch(
+        editor.view.state.tr.setSelection(pmState.TextSelection.create(editor.view.state.doc, lastParagraphStart(editor.view.state.doc)))
+      );
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").exists({ count: 1 });
+      assert.dom(`a[href="${URL}"]`).hasText(URL);
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "demotes a onebox pushed past max_oneboxes_per_post by an earlier link",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const { TextSelection } = pmState;
+      const URL = "http://www.example.com/has-title.html";
+      const OTHER_URL = "http://www.example.com/no-title.html";
+      const lastParagraphStart = (doc) => {
+        let pos = null;
+        doc.descendants((node, nodePos) => {
+          if (node.type.name === "paragraph") {
+            pos = nodePos + 1;
+          }
+        });
+        return pos;
+      };
+      const [editor] = await setupRichEditor(assert, `a\n\n${OTHER_URL}\n\nb`, { siteSettings: { max_oneboxes_per_post: 1 } });
+      const { view } = editor;
+
+      view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, lastParagraphStart(view.state.doc))));
+      await settledRequests();
+      assert.dom(".onebox-wrapper").hasText("No title");
+
+      const tr = view.state.tr.insertText(URL, 1, 2);
+      tr.setSelection(TextSelection.atEnd(tr.doc));
+      view.dispatch(tr);
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").exists({ count: 1 });
+      assert.ok(document.querySelector(".onebox-wrapper").textContent.includes("An interesting article"));
+      assert.dom(`a[href="${OTHER_URL}"]`).hasText(OTHER_URL);
+      assert.strictEqual(editor.value, `${URL}\n\n${OTHER_URL}\n\nb`);
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "links that never cook to a onebox do not take a slot",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const URL = "http://www.example.com/has-title.html";
+      const lastParagraphStart = (doc) => {
+        let pos = null;
+        doc.descendants((node, nodePos) => {
+          if (node.type.name === "paragraph") {
+            pos = nodePos + 1;
+          }
+        });
+        return pos;
+      };
+      const [editor] = await setupRichEditor(assert, `# http://www.example.com\n\nfoo@example.com\n\n${URL}\n\nb`, {
+        siteSettings: { max_oneboxes_per_post: 1 },
+      });
+
+      editor.view.dispatch(
+        editor.view.state.tr.setSelection(pmState.TextSelection.create(editor.view.state.doc, lastParagraphStart(editor.view.state.doc)))
+      );
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").exists({ count: 1 });
+      assert.ok(document.querySelector(".onebox-wrapper").textContent.includes("An interesting article"));
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "keeps marks when demoting an inline onebox",
+    async function (assert, { helpers }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const URL = "http://www.example.com/has-title.html";
+      const [editor] = await setupRichEditor(assert, "see x here", { siteSettings: { max_oneboxes_per_post: 0 } });
+      const { view } = editor;
+      const { schema } = view.state;
+
+      view.dispatch(
+        view.state.tr.replaceWith(5, 6, [
+          schema.nodes.onebox_inline.create({ url: URL, title: "Title" }, null, [schema.marks.strong.create()]),
+        ])
+      );
+      await settledRequests();
+
+      assert.dom("a.inline-onebox").doesNotExist();
+      assert.strictEqual(editor.value, `see **${URL}** here`);
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "show preview past max_oneboxes_per_post keeps the link and shows a toast",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests, click } = helpers;
+      const URL = "http://www.example.com/has-title.html";
+      const lastParagraphStart = (doc) => {
+        let pos = null;
+        doc.descendants((node, nodePos) => {
+          if (node.type.name === "paragraph") {
+            pos = nodePos + 1;
+          }
+        });
+        return pos;
+      };
+      const [editor] = await setupRichEditor(assert, `a\n\n<${URL}>`, { siteSettings: { max_oneboxes_per_post: 0 } });
+      editor.view.focus();
+      editor.view.dispatch(
+        editor.view.state.tr.setSelection(
+          pmState.TextSelection.create(editor.view.state.doc, lastParagraphStart(editor.view.state.doc) + 5)
+        )
+      );
+      await settledRequests();
+
+      await click(".composer-link-toolbar__show-preview");
+
+      assert.dom(".onebox-wrapper").doesNotExist();
+      assert.strictEqual(editor.value, `a\n\n<${URL}>`);
+      assert.dom(".fk-d-toasts .fk-d-toast").exists({ count: 1 });
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "renders an inline onebox when the cursor moves while it loads",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const { TextSelection } = pmState;
+      let release;
+      window.oneboxGate = new Promise((resolve) => (release = resolve));
+      const wait = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+      const url = "http://www.example.com/loads-slowly.html";
+      const [editor] = await setupRichEditor(assert, "see x here\n\nb");
+      const { view } = editor;
+
+      const tr = view.state.tr.insertText(url, 5, 6);
+      tr.setSelection(TextSelection.atEnd(tr.doc));
+      view.dispatch(tr);
+      await wait();
+
+      view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 2)));
+      await wait();
+
+      release();
+      await settledRequests();
+
+      assert.dom("a.inline-onebox").hasText("Loaded title");
+    },
+    {
+      before: before({
+        inlineGate: true,
+        inline: (urls) => urls.map((url) => ({ url, title: "Loaded title" })),
+      }),
+    },
+  );
+
+  qtest(
+    "saves an inline onebox URL unescaped",
+    async function (assert, { helpers }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const url = "http://www.example.com/~user/has-title.html";
+      const [editor] = await setupRichEditor(assert, "see x here");
+      const { view } = editor;
+
+      view.dispatch(view.state.tr.replaceWith(5, 6, view.state.schema.nodes.onebox_inline.create({ url, title: "Title" })));
+      await settledRequests();
+
+      assert.strictEqual(editor.value, `see ${url} here`);
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "saves the bracket after a bare link unescaped",
+    async function (assert, { helpers }) {
+      const { setupRichEditor } = helpers;
+      const OTHER_URL = "http://www.example.com/no-title.html";
+      const [editor] = await setupRichEditor(assert, `see [${OTHER_URL}] here`);
+
+      assert.strictEqual(editor.value, `see \\[${OTHER_URL}] here`);
+    },
+    { before: before({ inline: () => [] }) },
+  );
+
+  qtest(
+    "ignores nested editor states",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor } = helpers;
+      const { EditorState, TextSelection } = pmState;
+      const { oneboxPluginKey } = await import("discourse/rich-editor/extensions/onebox");
+      const URL = "http://www.example.com/has-title.html";
+      const [editor] = await setupRichEditor(assert, `> ${URL}\n>\n> b`);
+      const { view } = editor;
+
+      const inner = EditorState.create({ doc: view.state.doc.firstChild, plugins: view.state.plugins });
+      const tr = inner.tr.insertText("c", inner.doc.content.size - 1);
+      tr.setSelection(TextSelection.atEnd(tr.doc));
+      const { state } = inner.applyTransaction(tr);
+
+      assert.strictEqual(oneboxPluginKey.getState(state).find().length, 0);
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "holds a lone link inline while the cursor is on its line, and promotes it when the cursor leaves",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const { TextSelection } = pmState;
+      const URL = "http://www.example.com/has-title.html";
+      const lastParagraphStart = (doc) => {
+        let pos = null;
+        doc.descendants((node, nodePos) => {
+          if (node.type.name === "paragraph") {
+            pos = nodePos + 1;
+          }
+        });
+        return pos;
+      };
+      const [editor] = await setupRichEditor(assert, "a\n\nb");
+      const { view } = editor;
+
+      const text = `${URL} `;
+      const tr = view.state.tr.insertText(text, 1, 2);
+      tr.setSelection(TextSelection.create(tr.doc, 1 + text.length));
+      view.dispatch(tr);
+      await settledRequests();
+
+      assert.dom("a.inline-onebox").exists("renders an inline onebox");
+      assert.dom(".onebox-wrapper").doesNotExist("does not render a full onebox yet");
+
+      view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, lastParagraphStart(view.state.doc))));
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").exists("promotes to a full onebox");
+      assert.dom("a.inline-onebox").doesNotExist("is no longer an inline onebox");
+      assert.strictEqual(editor.value, `${URL} \n\nb`, "leaves the markdown the user typed alone");
+    },
+    { before: before() },
+  );
+
+  qtest(
+    "a top-level URL alone on its line becomes a full onebox with no empty paragraph before it",
+    async function (assert, { helpers }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const topLevelUrl = "http://www.example.com";
+      const [editor] = await setupRichEditor(assert, "x");
+      const { view } = editor;
+
+      view.dispatch(view.state.tr.insertText(`${topLevelUrl} `, 1, 2));
+      await settledRequests();
+      assert.dom(".onebox-wrapper").doesNotExist("stays a plain link while the cursor is on the line");
+
+      view.dispatch(view.state.tr.split(view.state.selection.from));
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").exists("becomes a full onebox");
+      assert.strictEqual(view.state.doc.firstChild.type.name, "onebox", "the onebox is the first node, no empty paragraph before it");
+    },
+    {
+      before: before({
+        onebox:
+          '<aside class="onebox"><article class="onebox-body"><h3><a href="http://www.example.com">Example</a></h3></article></aside>',
+      }),
+    },
+  );
+
+  qtest(
+    "a URL followed by a hard break and text splits into onebox + paragraph",
+    async function (assert, { helpers, pmState }) {
+      const { setupRichEditor, settledRequests } = helpers;
+      const { NodeSelection, TextSelection } = pmState;
+      const URL = "http://www.example.com/has-title.html";
+      const [editor] = await setupRichEditor(assert, "x");
+      const { view } = editor;
+      const { schema } = view.state;
+
+      const linkMark = schema.marks.link.create({ href: URL, markup: "linkify" });
+      const tr = view.state.tr.replaceWith(1, 2, [schema.text(URL, [linkMark]), schema.nodes.hard_break.create(), schema.text("asd")]);
+      tr.setSelection(TextSelection.create(tr.doc, 1 + URL.length + 1));
+      view.dispatch(tr);
+      await settledRequests();
+
+      assert.dom(".onebox-wrapper").exists("becomes a full onebox");
+      assert.strictEqual(view.state.doc.firstChild.type.name, "onebox", "the onebox is the first node, no empty paragraph before it");
+      assert.strictEqual(editor.value, `${URL}\nasd`, "leaves the markdown the user typed alone");
+      assert.false(view.state.selection instanceof NodeSelection, "the cursor lands after the onebox, not selecting the block");
+    },
+    { before: before() },
+  );
+});
