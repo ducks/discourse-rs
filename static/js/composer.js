@@ -1282,13 +1282,17 @@
   // d-editor's replaceToolbar: an extension's toolbar (the link toolbar
   // without room to float) in the button bar's place, with a back button,
   // until it gives the bar back (null, from the toolbar it put there).
-  var replacedToolbar = null;
-  function replaceToolbar(editorModule, toolbar, owner) {
-    if (toolbar === null && owner && replacedToolbar !== owner) {
+  // A slot is a d-editor's: the composer's, or the profile's About me.
+  function toolbarSlot(host) {
+    return { host: host, replaced: null };
+  }
+  var composerToolbar = toolbarSlot(control);
+  function replaceToolbar(slot, editorModule, toolbar, owner) {
+    if (toolbar === null && owner && slot.replaced !== owner) {
       return;
     }
-    replacedToolbar = toolbar;
-    var bar = control.querySelector(".d-editor-button-bar");
+    slot.replaced = toolbar;
+    var bar = slot.host.querySelector(".d-editor-button-bar");
     if (!bar) {
       return;
     }
@@ -1314,7 +1318,7 @@
       event.preventDefault();
     });
     back.addEventListener("click", function () {
-      replaceToolbar(editorModule, null);
+      replaceToolbar(slot, editorModule, null);
     });
     var buttons = document.createElement("div");
     buttons.style.display = "contents";
@@ -1326,9 +1330,11 @@
 
   // The editor's getContext (prosemirror-editor.gts): the site settings,
   // strings and site data its extensions read, from the server
-  // (src/composer/rich_editor.rs), and the composer's own state.
+  // (src/composer/rich_editor.rs), and the composer's own state, or for
+  // another d-editor (`slot`, not the composer's) no topic.
   var richContextData = null;
-  function richEditorContext(editorModule) {
+  function richEditorContext(editorModule, slot) {
+    slot = slot || composerToolbar;
     if (!richContextData) {
       richContextData = JSON.parse(data.richEditorContext || "{}");
     }
@@ -1351,14 +1357,14 @@
         });
         return text;
       },
-      topicId: state ? state.topicId || null : null,
+      topicId: state && slot === composerToolbar ? state.topicId || null : null,
       appEvents: richEvents,
       capabilities: {
         viewport: { sm: window.matchMedia("(min-width: 40rem)").matches },
       },
       markdownOptions: {},
       replaceToolbar: function (toolbar, owner) {
-        replaceToolbar(editorModule, toolbar, owner);
+        replaceToolbar(slot, editorModule, toolbar, owner);
       },
       // The modal service, for the node views' modals: core's wrap
       // attributes, and the plugins' builders where their scripts are in.
@@ -1407,9 +1413,12 @@
   // ComposerToggleSwitch's label: formatShortcut("ctrl+m"), a literal
   // Control key everywhere (⌃ on Apple's platforms).
   function drawModeToggle() {
-    if (!modeToggle) {
-      return;
+    if (modeToggle) {
+      drawToggle(modeToggle, richMode);
     }
+  }
+
+  function drawToggle(modeToggle, richMode) {
     var key = richMode ? "labelSwitchToMarkdown" : "labelSwitchToRichText";
     var keyboard = hasKeyboard();
     var label = keyboard
@@ -1442,7 +1451,12 @@
   }
 
   function saveCompositionMode() {
-    var mode = richMode ? "1" : "0";
+    saveMode(richMode);
+  }
+
+  // #saveRichEditorPreference, from whichever d-editor switched.
+  function saveMode(rich) {
+    var mode = rich ? "1" : "0";
     data.compositionMode = mode;
     clearTimeout(preferenceTimer);
     preferenceTimer = setTimeout(function () {
@@ -1480,8 +1494,8 @@
       richEditor.destroy();
       richEditor = null;
     }
-    if (replacedToolbar) {
-      replaceToolbar(null, null);
+    if (composerToolbar.replaced) {
+      replaceToolbar(composerToolbar, null, null);
     }
     richOpening = null;
   }
@@ -1490,11 +1504,6 @@
   // the markdown crate itself refuses): the reference's alert, and the
   // markdown editor again. Anything else is a bug, shown as it is.
   function richEditorFailed(e) {
-    var unsupported =
-      e && (e.name === "UnsupportedTokenError" || /^not ported yet/.test(e.message || ""));
-    if (!unsupported) {
-      console.error(e);
-    }
     closeRichEditor();
     if (richMode) {
       richMode = false;
@@ -1502,6 +1511,15 @@
     }
     drawEditorMode();
     updatePreview();
+    alertRichFailure(e);
+  }
+
+  function alertRichFailure(e) {
+    var unsupported =
+      e && (e.name === "UnsupportedTokenError" || /^not ported yet/.test(e.message || ""));
+    if (!unsupported) {
+      console.error(e);
+    }
     alertText(unsupported ? data.labelUnsupportedToken : (e && e.message) || String(e));
   }
 
@@ -1632,6 +1650,73 @@
     }
   });
   drawModeToggle();
+
+  // Another d-editor with no forced mode (the profile's About me,
+  // preferences.js) opens in and saves the same composition mode
+  // (currentUser.user_option.composition_mode), with the composer's engine,
+  // extensions and context. A closed composer follows a switch made there,
+  // as Ember's d-editor opens anew in the saved mode.
+  Discourse.composerRichEditor = {
+    rich: function () {
+      return data.compositionMode === "1";
+    },
+    drawToggle: drawToggle,
+    saveMode: function (rich) {
+      saveMode(rich);
+      if (control.classList.contains("closed") && richMode !== rich) {
+        richMode = rich;
+        if (!rich) {
+          closeRichEditor();
+        }
+        drawEditorMode();
+      }
+    },
+    // createEditor over `textarea` in `host`'s textarea wrapper: resolves
+    // to { editor, destroy }, or rejects with what refused the markdown.
+    create: function (host, textarea, toggle) {
+      var slot = toolbarSlot(host);
+      var hostWrapper = host.querySelector(".d-editor-textarea-wrapper");
+      return Promise.all([Discourse.richEditor.load(), loadRenderer()]).then(function (loaded) {
+        return richEditorPlugins(loaded[0]).then(function () {
+          var refused = null;
+          var editor = loaded[0].createEditor({
+            container: hostWrapper,
+            value: textarea.value,
+            engine: (richEngine = richEngine || loaded[0].wasmEngine(loaded[1].wasm, loaded[1].call)),
+            context: richEditorContext(loaded[0], slot),
+            placeholder: textarea.placeholder,
+            className: "d-editor-input",
+            keymap: { "ctrl+m": toggle },
+            onChange: function (markdown) {
+              textarea.value = markdown;
+              textarea.dispatchEvent(new Event("input", { bubbles: true }));
+            },
+            onUnsupported: function (e) {
+              refused = e;
+            },
+            focusIn: function () {
+              hostWrapper.classList.add("in-focus");
+            },
+            focusOut: function () {
+              hostWrapper.classList.remove("in-focus");
+            },
+          });
+          var destroy = function () {
+            editor.destroy();
+            if (slot.replaced) {
+              replaceToolbar(slot, null, null);
+            }
+          };
+          if (refused) {
+            destroy();
+            throw refused;
+          }
+          return { editor: editor, destroy: destroy };
+        });
+      });
+    },
+    failed: alertRichFailure,
+  };
 
   // The new-topic and new-message routes (routes/new-topic.js,
   // new-message.js) as composer.openNewTopic and openNewMessage take

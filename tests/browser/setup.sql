@@ -23,8 +23,9 @@ VALUES
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
 -- The seed has everyone on the rich editor (Discourse's
--- default_composition_mode); the suite's members write in the markdown
--- editor (composition_mode 0), with its preview, as markdown stays the
--- port's default until the rich editor has its extensions (ROADMAP 196r5).
--- composer.spec.js opts its own members in.
+-- default_composition_mode), and the composer opens in the stored mode;
+-- the suite's members write in the markdown editor (composition_mode 0),
+-- with its preview, as the specs type into and read the composer's
+-- textarea. composer.spec.js gives its own members the mode each case
+-- needs, the rich editor's included.
 UPDATE user_options SET composition_mode = 0;

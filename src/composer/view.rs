@@ -728,7 +728,7 @@ fn user_selector(list: &ListContext, pm: &PmUi) -> String {
 /// keyboard outside Apple's platforms (formatShortcut("ctrl+m")): composer.js
 /// relabels it from #reply-control's data attributes for the platform, the
 /// pointer (the `_no_shortcut` forms without a keyboard) and each switch.
-fn toggle_switch(list: &ListContext, rich: bool) -> String {
+pub(crate) fn toggle_switch(list: &ListContext, rich: bool) -> String {
     let ctrl = t(list, "shortcut_modifier_key.ctrl");
     let key = if rich {
         "composer.switch_to_markdown"

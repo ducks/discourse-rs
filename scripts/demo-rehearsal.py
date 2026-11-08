@@ -565,11 +565,22 @@ def scroll_to_topic_end(page):
 
 def open_composer_reply(page):
     page.locator("#topic-footer-buttons .create, .topic-footer-main-buttons button.create").first.click()
-    return expect_visible(page.locator("#reply-control.open .d-editor-input"), "the composer to open")
+    expect_visible(page.locator("#reply-control.open"), "the composer to open")
+    return markdown_composer(page)
+
+
+def markdown_composer(page):
+    """The composer's markdown textarea, which the script types and reads:
+    a member on the rich editor (Discourse's default composition mode, the
+    mode the composer opens in) switches it to markdown first."""
+    toggle = page.locator("#reply-control .composer-toggle-switch[aria-checked=true]")
+    if toggle.count():
+        toggle.click()
+    return expect_visible(page.locator("#reply-control textarea.d-editor-input"), "the composer's markdown editor")
 
 
 def type_in_composer(page, text, delay=0):
-    editor = page.locator("#reply-control .d-editor-input")
+    editor = markdown_composer(page)
     editor.click()
     if delay:
         editor.press_sequentially(text, delay=delay)
@@ -579,10 +590,10 @@ def type_in_composer(page, text, delay=0):
 
 
 def upload_in_composer(page, path, what):
-    editor = page.locator("#reply-control .d-editor-input")
+    editor = markdown_composer(page)
     page.locator("#reply-control input[type=file]").first.set_input_files(path)
     wait_until(page,
-               "() => { const v = document.querySelector('#reply-control .d-editor-input').value;"
+               "() => { const v = document.querySelector('#reply-control textarea.d-editor-input').value;"
                " return /upload:\\/\\//.test(v) && !/\\[Uploading/.test(v); }",
                None, f"the {what} to finish uploading into the composer", timeout=30_000)
     return editor.input_value()
@@ -999,7 +1010,7 @@ def define_steps(run):
         builder.locator(".insert-poll").click()
         expect_gone(builder, "the poll builder to close")
         wait_until(page, "() => /\\[poll [^\\]]*\\]\\n\\* Rust\\n\\* Ruby\\n\\* Both\\n\\[\\/poll\\]/"
-                   ".test(document.querySelector('#reply-control .d-editor-input').value)",
+                   ".test(document.querySelector('#reply-control textarea.d-editor-input').value)",
                    None, "the built poll in the composer")
         editor.press("Control+End")
         editor.press_sequentially("\n[ ] write the demo script\n[ ] rehearse it\n", delay=5)

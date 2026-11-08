@@ -1250,6 +1250,30 @@ mod tests {
     }
 
     #[test]
+    fn bbcode_img_is_an_image_token() {
+        // bbcode-inline's image rule: an image token, src the content and
+        // an empty alt, with no children.
+        assert_eq!(
+            tree_of("[img]https://example.com/a.png[/img]")["children"][0]["children"][0],
+            json!({"type": "image", "tag": "img", "nesting": 0, "children": [],
+                   "attrs": [["src", "https://example.com/a.png"], ["alt", ""]]})
+        );
+        // Cooked as pretty-text-test.js cooks it, before PrettyText.cleanup
+        // serializes the empty alt as alt="" (tests/pretty_text.rs).
+        let cook = |raw| render(raw, &settings(), Default::default()).unwrap().0;
+        assert_eq!(
+            cook(
+                "[img]http://eviltrout.com/eviltrout.png[/img][img]http://samsaffron.com/samsaffron.png[/img]"
+            ),
+            "<p><img src=\"http://eviltrout.com/eviltrout.png\" alt role=\"presentation\"><img src=\"http://samsaffron.com/samsaffron.png\" alt role=\"presentation\"></p>"
+        );
+        assert_eq!(
+            cook("[url=http://www.example.com][img]http://example.com/logo.png[/img][/url]"),
+            "<p><a href=\"http://www.example.com\" data-bbcode=\"true\"><img src=\"http://example.com/logo.png\" alt role=\"presentation\"></a></p>"
+        );
+    }
+
+    #[test]
     fn what_no_extension_takes_is_raw_html() {
         // discourse-graphviz's graph (its extension is 196r3's preview
         // node): raw HTML, which no parse spec takes, so the editor refuses
@@ -1257,6 +1281,14 @@ mod tests {
         let mut settings = settings();
         settings.graphviz = true;
         let tree = rich_editor_tree("[graphviz]\na\n[/graphviz]", &settings).unwrap();
+        assert_eq!(tree["children"][0]["type"], "html_raw");
+        // chat's transcript (chat's extension is not ported).
+        settings.chat_transcript = true;
+        let tree = rich_editor_tree(
+            "[chat quote=\"user2;1;2026-10-01T00:00:00Z\" channel=\"General\" channelId=\"2\"]\nhi\n[/chat]",
+            &settings,
+        )
+        .unwrap();
         assert_eq!(tree["children"][0]["type"], "html_raw");
     }
 

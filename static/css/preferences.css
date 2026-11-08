@@ -477,6 +477,12 @@ html.text-size-largest {
   border: var(--d-input-border);
 }
 
+/* The textarea behind the rich editor, which Ember leaves out of the DOM:
+   hidden, over .form-vertical's display. */
+.user-preferences .bio-composer textarea[hidden] {
+  display: none;
+}
+
 .user-preferences .bio-composer .d-editor-preview-wrapper {
   max-width: 100%;
   margin: 0;

@@ -271,6 +271,41 @@ const EXTENSIONS = {
   ],
 };
 
+// bbcode-inline.js' other tags, which the reference's editor tests leave
+// out: [markdown, the editor's HTML, the markdown it writes back], expected from the reference's tokens and parse specs:
+// bbcode_b and bbcode_i are strong and em (core/parser.js), [code] a
+// code_inline token, [url] and [email] a link_open with no markup (so the
+// [text](href) form; parseDOM drops a link whose text is its href, so
+// these round-trip only), [img] an image token with an empty alt (the
+// image extension's ![alt](src), as for ![](src)).
+const BBCODE_ROUND_TRIPS = [
+  ["[b]Hello[/b]", "<p><strong>Hello</strong></p>", "**Hello**"],
+  ["[i]Hello[/i]", "<p><em>Hello</em></p>", "*Hello*"],
+  ["Hey [b]bold[/b] and [i]it[/i]", "<p>Hey <strong>bold</strong> and <em>it</em></p>", "Hey **bold** and *it*"],
+  ["Hey [code]a * b[/code]", "<p>Hey <code>a * b</code></p>", "Hey `a * b`"],
+  ["[url=https://example.com]site[/url]", '<p><a href="https://example.com">site</a></p>', "[site](https://example.com)"],
+  [
+    "[url]https://example.com[/url]",
+    '<p><a href="https://example.com">https://example.com</a></p>',
+    "[https://example.com](https://example.com)",
+  ],
+  [
+    "[email]sam@example.com[/email]",
+    '<p><a href="mailto:sam@example.com">sam@example.com</a></p>',
+    "[sam@example.com](mailto:sam@example.com)",
+  ],
+  [
+    "[img]https://example.com/a.png[/img]",
+    '<p><span class="composer-image-node" contenteditable="false" draggable="true"><img alt="" role="button" src="https://example.com/a.png"></span></p>',
+    "![](https://example.com/a.png)",
+  ],
+  [
+    "Hey [img]https://example.com/a.png[/img] there",
+    '<p>Hey <span class="composer-image-node" contenteditable="false" draggable="true"><img alt="" role="button" src="https://example.com/a.png"></span> there</p>',
+    "Hey ![](https://example.com/a.png) there",
+  ],
+];
+
 // to-markdown-test.js's cases the core extensions cover: [html, markdown]
 const TO_MARKDOWN = {
   "converts styles between normal words": [
@@ -560,6 +595,15 @@ test.describe("rich editor", () => {
       });
     }
   }
+
+  test("round-trips bbcode-inline's other tags", async ({ page }) => {
+    await openEditorPage(page);
+    for (const [markdown, html, out] of BBCODE_ROUND_TRIPS) {
+      const result = await check(page, "markdown", markdown, false);
+      expect(result.html, `HTML for ${JSON.stringify(markdown)}`).toBe(html);
+      expect(result.value, `markdown for ${JSON.stringify(markdown)}`).toBe(out);
+    }
+  });
 
   for (const [name, cases] of Object.entries(TO_MARKDOWN)) {
     test(`to-markdown ${name}`, async ({ page }) => {

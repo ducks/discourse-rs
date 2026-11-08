@@ -1013,4 +1013,13 @@ test.describe("rich editor refusals", () => {
       "UnsupportedTokenError"
     );
   });
+
+  // chat's transcript is raw HTML too: chat's extension is not ported.
+  test("a [chat] transcript is refused until chat's extension is ported", async ({ page }) => {
+    await openEditorPage(page, { plugins: ALL, render: { chat_transcript: true } });
+    await setupRichEditor(page, '[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2"]\nhi\n[/chat]');
+    expect(await page.evaluate(() => window.richSpec.unsupported && window.richSpec.unsupported.name)).toBe(
+      "UnsupportedTokenError"
+    );
+  });
 });

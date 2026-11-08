@@ -746,6 +746,7 @@ pub async fn page(
                             "moment-timezone-with-data-10-year-range.min.js",
                         ),
                     ),
+                    rich: current_user["user_option"]["composition_mode"] == 1,
                 },
             )?
         }

@@ -389,8 +389,9 @@ Visible if clicked, avoid them in a scripted demo:
   user reviewable opens, and the queue lists none yet.
 - [ ] The composer's rich editor and its toolbar buttons (196r1 to 196r3;
   196r1, the core and the composer's toggle, 196r2, the everyday
-  extensions, and 196r4, the plugins' extensions, are done); the
-  profile's About me editor follows it (196r5).
+  extensions, 196r4, the plugins' extensions, and 196r5, rich as the
+  default with the profile's About me editor, are done); the toolbar
+  buttons (196r3) remain.
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -4038,13 +4039,45 @@ route table has been made, so this list may be short.
     tree; [excerpt] as in the reference (no extension). Not ported here:
     the checklist's and footnote's text-manipulation tests and the
     system specs' toolbar cases (196r3)
-    196r5. `feat/rich-editor-default` S: once 196r2 and 196r4 land, turn
-    composer::OPEN_IN_STORED_MODE (src/composer/load.rs) on and remove it,
-    so the composer opens in the stored composition_mode as Ember does;
-    the profile's About me editor in rich mode, then rich as the default
-    composition mode
+    196r5. ~~`feat/rich-editor-default`~~ (done) S: once 196r2 and 196r4
+    land, turn composer::OPEN_IN_STORED_MODE (src/composer/load.rs) on and
+    remove it, so the composer opens in the stored composition_mode as
+    Ember does; the profile's About me editor in rich mode, then rich as
+    the default composition mode
     (default_composition_mode 1, as Discourse ships) once the round-trip
-    tests pass
+    tests pass. The switch is gone (load.rs opens_rich: mode 1). The
+    round-trip tests, markdown through rich_editor_tree and the editor to
+    the markdown an edit writes: rich-editor.spec.js' round-trips cases
+    and the testMarkdown and setupRichEditor cases of
+    rich-editor-extensions, -plugins, -table and -media (all seven
+    rich-editor specs 458 of 458 with to-markdown and word-paste);
+    bbcode-inline's [b], [i], [code], [url], [email] and [img] had none,
+    and their new round-trips case passes.
+    [img] was refused: the crate wrote raw HTML where the reference
+    pushes an image token. It is an image node now, cooked as before
+    (pretty_text_spec.rb's and pretty-text-test.js' cases), and the
+    editor writes ![](src) for it. The
+    default needed nothing else: the vendored setting, the column and
+    signup (option_defaults) already give 1, and the seed's members have
+    it. The About me (preferences/profile.gjs' DEditor, no mode forced)
+    opens in the viewer's mode with the toggle first in its bar, through
+    composer.js' Discourse.composerRichEditor (the composer's engine,
+    extensions and context, its own replaceToolbar slot, the mode's save,
+    a closed composer following a switch); its textarea stays hidden
+    behind it for Save Changes. What it refuses falls back to markdown
+    with the alert in the composer, an edit and the About me, saving mode
+    0 as toggleRichEditor does. Still refused: [event] (202), [graphviz]
+    (196r3), [chat] transcripts (chat's extension), [excerpt] as in the
+    reference. The browser suite's members stay on markdown
+    (setup.sql), as its specs drive the textarea; demo-rehearsal switches
+    a rich composer to markdown before typing. Tests: load.rs,
+    preferences_pages (the bio's mode), sessions (the composer in mode 1),
+    new_member_smoke (a signup's mode and composer), tree.rs (the
+    transcript's raw HTML, [img]'s image token and its cook), pretty_text
+    ([img] cooked as Rails); browser composer.spec.js (opening in mode 1,
+    an edit falling back, the About me's mode, save, Ctrl+M and fallback),
+    rich-editor.spec.js (the bbcode round trips), rich-editor-plugins
+    ([chat] refused)
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
     status:solved and status:unsolved; the topic_ids and state list
