@@ -386,6 +386,45 @@
     },
   };
 
+  // PostMenu#showMoreActions: the collapsed buttons shown, show more gone.
+  var shownMore = new WeakSet();
+  function showMore(nav) {
+    nav.querySelectorAll(".actions > [hidden]").forEach(function (b) {
+      b.hidden = false;
+    });
+    nav.classList.replace("collapsed", "expanded");
+    var more = nav.querySelector(".post-action-menu__show-more");
+    if (more) {
+      more.remove();
+    }
+    shownMore.add(nav);
+  }
+
+  // PostMenu keeps `collapsed` across its post's re-render; a redraw here
+  // (an action's, the live stream's) swaps in the post's markup drawn
+  // collapsed, so a menu the viewer showed more is shown more again.
+  var redrawnShownMore = [];
+  document.addEventListener("htmx:oobBeforeSwap", function (event) {
+    var target = event.detail && event.detail.target;
+    if (!target || !target.matches || !target.matches("#posts > [data-post-number]")) {
+      return;
+    }
+    var nav = target.querySelector("nav.post-controls");
+    if (nav && shownMore.has(nav)) {
+      redrawnShownMore.push(target.dataset.postNumber);
+    }
+  });
+  document.addEventListener("htmx:oobAfterSwap", function () {
+    var numbers = redrawnShownMore;
+    redrawnShownMore = [];
+    numbers.forEach(function (number) {
+      var nav = document.querySelector('#posts > [data-post-number="' + number + '"] nav.post-controls');
+      if (nav) {
+        showMore(nav);
+      }
+    });
+  });
+
   // Ember draws a post's changes in place, so the body post:highlight
   // focused keeps its tabindex and the focus; a live update here swaps the
   // post's markup, and the new body takes them over.
@@ -889,12 +928,7 @@
     // Show more: the post menu's collapsed buttons.
     var more = event.target.closest(".post-action-menu__show-more");
     if (more) {
-      var nav = more.closest("nav.post-controls");
-      nav.querySelectorAll(".actions > [hidden]").forEach(function (b) {
-        b.hidden = false;
-      });
-      nav.classList.replace("collapsed", "expanded");
-      more.remove();
+      showMore(more.closest("nav.post-controls"));
       return;
     }
     // An anonymous reader's reply asks them to log in.
