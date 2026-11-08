@@ -124,6 +124,9 @@ test("a browse card's members link opens the channel's members in the drawer", a
   await drawer.locator(".chat-channel-list-options-button").first().click();
   await page.locator("[data-menu-option-id='browseChannels']").click();
   await expect(drawer.locator(".c-drawer-routes.--browse")).toBeVisible();
+  // The list shows ten at a time by name, and the channels earlier tests
+  // left sort ahead of this one: found by its name.
+  await drawer.locator(".chat-browse-view .d-filter-controls__input").fill(channel.name);
   const card = drawer.locator(".chat-channel-card", { hasText: channel.name });
   await expect(card).toBeVisible();
   await card.locator(".chat-channel-card__members").click();
