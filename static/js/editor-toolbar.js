@@ -716,6 +716,7 @@
         },
       },
       upload: { sendAction: actions.upload },
+      emoji: { sendAction: actions.emoji },
       list: {
         active: function (state) {
           return LIST_OPTIONS.some(function (option) {

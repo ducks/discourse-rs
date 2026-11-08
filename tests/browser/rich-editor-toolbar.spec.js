@@ -1126,3 +1126,61 @@ test.describe("the toolbar's link modal", () => {
     await expect(textarea(page)).toHaveValue("[Encoded URL](https://example.com/100%25/working%201)");
   });
 });
+
+// enable-emoji.js' button and the composer's upload button, in both
+// editors: the picked emoji goes in at the selection (emojiSelected).
+test.describe("the toolbar's emoji and upload buttons", () => {
+  const rich = (page) => page.locator("#reply-control .ProseMirror.d-editor-input");
+  const textarea = (page) => page.locator("#reply-control textarea.d-editor-input");
+  const button = (page, name) => page.locator(`#reply-control .d-editor-button-bar .toolbar__button.${name}`);
+
+  async function openComposer(page, context, mode) {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = :'p1' WHERE user_id = :'p2'", mode, writer.id);
+    await login(context, writer.name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(page.locator("#reply-control.open")).toBeVisible();
+    if (mode === 1) {
+      await expect(rich(page)).toBeVisible();
+      await rich(page).click();
+      await expect(rich(page)).toBeFocused();
+    }
+  }
+
+  async function pick(page, emoji) {
+    const picker = page.locator(".emoji-picker");
+    await expect(picker.locator(".filter-input")).toBeFocused();
+    await picker.locator(".filter-input").fill(emoji);
+    await picker.locator(`.emoji-picker__section.filtered img.emoji[data-emoji="${emoji}"]`).click();
+    await expect(picker).toHaveCount(0);
+  }
+
+  test("inserts the picked emoji in the rich editor", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("Gone fishing");
+    await expect(button(page, "emoji")).toHaveAttribute("title", "Emoji :)");
+    await button(page, "emoji").click();
+    await pick(page, "fishing_pole");
+    await expect(rich(page).locator("img.emoji")).toHaveAttribute("alt", ":fishing_pole:");
+    await expect(rich(page)).toBeFocused();
+    await page.keyboard.type("today");
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("Gone fishing :fishing_pole: today");
+  });
+
+  test("inserts the picked emoji in the markdown editor", async ({ page, context }) => {
+    await openComposer(page, context, 0);
+    await textarea(page).fill("Gone fishing");
+    await button(page, "emoji").click();
+    await pick(page, "fishing_pole");
+    await expect(textarea(page)).toHaveValue("Gone fishing :fishing_pole:");
+  });
+
+  test("the upload button opens the file picker in the rich editor", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    const chooser = page.waitForEvent("filechooser");
+    await button(page, "upload").click();
+    expect((await chooser).isMultiple()).toBe(true);
+  });
+});

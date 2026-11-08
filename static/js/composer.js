@@ -1079,8 +1079,40 @@
       upload: function () {
         fileInput.click();
       },
+      emoji: function () {
+        showEmojiPicker(control, textManipulation());
+      },
     },
   });
+
+  // enable-emoji.js' button: the emoji picker (emoji-picker.js, loaded the
+  // first time) by the button, the emoji picked going in at the selection
+  // (emojiSelected).
+  function showEmojiPicker(host, tm) {
+    var trigger = host.querySelector(".toolbar__button.emoji");
+    if (!trigger) {
+      return;
+    }
+    var open = function () {
+      Discourse.emojiPicker.open(trigger, {
+        context: "topic",
+        onSelect: function (code) {
+          tm.emojiSelected(code);
+        },
+      });
+    };
+    if (Discourse.emojiPicker) {
+      open();
+      return;
+    }
+    var script = document.createElement("script");
+    script.src = trigger.dataset.src;
+    script.onload = open;
+    script.onerror = function () {
+      showError("Could not load the emoji picker.");
+    };
+    document.head.appendChild(script);
+  }
 
   // The preview: the markdown crate as WebAssembly, loaded the first time
   // the composer opens with the preview shown. Its exports are in

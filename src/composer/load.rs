@@ -218,6 +218,25 @@ pub(crate) async fn load(
                     .collect()
             })
             .unwrap_or_default();
+    let emoji_picker = if settings.get("enable_emoji")?.truthy() {
+        let t = |key: &str| {
+            state
+                .i18n
+                .t(&format!("js.{key}"))
+                .unwrap_or(key)
+                .to_string()
+        };
+        Some(super::view::EmojiPickerUi {
+            src: crate::assets::url(base_path, "emoji-picker.js"),
+            template: crate::plugins::chat::actions_view::picker_template(
+                &t,
+                base_path,
+                settings.emojis(),
+            ),
+        })
+    } else {
+        None
+    };
     let rich_editor_context =
         super::rich_editor::context(&state.i18n, settings, guardian.is_staff(), &hashtag_order)?;
     let html = super::view::render(
@@ -261,6 +280,7 @@ pub(crate) async fn load(
             actions,
             poll_builder,
             rich_editor_context: rich_editor_context.to_string(),
+            emoji_picker,
         },
     );
     Ok(Loaded { html, categories })

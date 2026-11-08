@@ -398,14 +398,23 @@ fn toolbar_button(list: &ListContext, class: &str, icon_name: &str, title: &str)
     )
 }
 
-/// The composer's and the About me's bar (lib/composer/toolbar.ts and the
-/// composer's extraButtons): fontStyles (bold, italic, the heading menu),
-/// insertions (link, blockquote, code, upload) and extras (the list menu,
-/// the options menu), run by static/js/editor-toolbar.js.
+/// The emoji picker the toolbar's emoji button opens (enable-emoji.js):
+/// static/js/emoji-picker.js, loaded the first time, and its template.
+pub struct EmojiPickerUi {
+    pub src: String,
+    pub template: String,
+}
+
+/// The composer's and the About me's bar (lib/composer/toolbar.ts, the
+/// composer's extraButtons and enable-emoji.js' button): fontStyles (bold,
+/// italic, the heading menu), insertions (link, blockquote, code, upload)
+/// and extras (the list menu, emoji, the options menu), run by
+/// static/js/editor-toolbar.js.
 pub(crate) fn editor_toolbar(
     list: &ListContext,
     upload: Option<&UploadUi>,
     options: Option<(&[PopupOption], &[&str])>,
+    emoji: Option<&EmojiPickerUi>,
 ) -> String {
     let mut out = String::new();
     out.push_str(&toolbar_button(list, "bold", "bold", "composer.bold_title"));
@@ -438,7 +447,15 @@ pub(crate) fn editor_toolbar(
         "list-ul",
         "composer.list_title",
     ));
-    // The extras group: the options menu (emoji is not ported).
+    if let Some(emoji) = emoji {
+        out.push_str(&format!(
+            "<button class=\"btn no-text btn-icon toolbar__button emoji insert-composer-emoji\" data-action=\"emoji\" data-src=\"{}\" tabindex=\"-1\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>{}",
+            escape(&emoji.src),
+            escape(&t(list, "composer.emoji")),
+            icon("far-face-smile", None),
+            emoji.template
+        ));
+    }
     if let Some((options, unported)) = options {
         out.push_str(&options_trigger(list, options, unported));
     }
@@ -560,6 +577,8 @@ pub struct RouteData {
     pub poll_builder: Option<PollBuilderUi>,
     /// The rich editor's getContext data (rich_editor::context), as JSON.
     pub rich_editor_context: String,
+    /// The emoji button's picker, where enable_emoji is on.
+    pub emoji_picker: Option<EmojiPickerUi>,
 }
 
 /// What static/js/poll-builder.js (PollUiBuilderModal) is drawn with.
@@ -1134,7 +1153,7 @@ pub fn render(
             "xmark",
             "composer.save_and_close"
         ),
-        editor_toolbar(list, upload, options),
+        editor_toolbar(list, upload, options, route.emoji_picker.as_ref()),
         title = escape(&t(list, "composer.title_or_link_placeholder")),
         body = escape(&t(list, "composer.reply_placeholder")),
         save_or_cancel = save_or_cancel,
