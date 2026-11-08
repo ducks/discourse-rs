@@ -334,9 +334,31 @@ test.describe("rich editor links", () => {
     await expect(toolbar.locator(".composer-link-toolbar__copy")).toBeVisible();
     await expect(toolbar.locator(".composer-link-toolbar__unlink")).toHaveCount(0);
     await expect(toolbar.locator("a.composer-link-toolbar__visit")).toHaveAttribute("href", "https://example.com");
-    // Edit waits for UpsertHyperlink (196r3); load preview for onebox.
-    await expect(toolbar.locator(".composer-link-toolbar__edit")).toHaveCount(0);
+    await expect(toolbar.locator(".composer-link-toolbar__edit")).toBeVisible();
+    // No Load preview: a top-level url inline gets no onebox.
     await expect(toolbar.locator(".composer-link-toolbar__show-preview")).toHaveCount(0);
+  });
+
+  // The link toolbar's Edit: UpsertHyperlink through the modal service,
+  // its addText replacing the link.
+  test("the link toolbar's Edit opens UpsertHyperlink and replaces the link", async ({ page }) => {
+    await openEditorPage(page);
+    await setupRichEditor(page, "a [text](https://example.com) b");
+    await page.locator("#rich-spec-host").scrollIntoViewIfNeeded();
+    const editor = page.locator("#rich-spec-host .ProseMirror");
+    await editor.locator("a").click();
+    const toolbar = page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing)');
+    await toolbar.locator(".composer-link-toolbar__edit").click();
+    const model = await page.evaluate(() => {
+      const { name, opts } = window.richSpec.activeModal;
+      return { name, editing: opts.model.editing, linkText: opts.model.linkText, linkUrl: opts.model.linkUrl };
+    });
+    expect(model).toEqual({ name: "upsert-hyperlink", editing: true, linkText: "text", linkUrl: "https://example.com" });
+    await page.evaluate(() =>
+      window.richSpec.activeModal.opts.model.toolbarEvent.addText("[new text](https://example.org)"),
+    );
+    await expect(editor.locator("a")).toHaveAttribute("href", "https://example.org");
+    expect(await editorValue(page)).toBe("a [new text](https://example.org) b");
   });
 
   test("the link toolbar unlinks a markdown link and closes off it", async ({ page }) => {
@@ -642,20 +664,24 @@ test.describe("rich editor code blocks", () => {
     assert.strictEqual(view.state.doc.firstChild.textContent, "one\ntwo\nthree", "each selected line is outdented as far as possible");
   });
 
-  // Tab nesting list items is d-editor's keymap (sinkListItem), which the
-  // composer's toolbar brings (ROADMAP 196r3); the reference's "Tab still
-  // nests list items" checks the code block's Tab leaves it to that.
-  qtest("Tab outside a code block is left to the other keys", async function (assert, { helpers, pmState }) {
+  // Outside a code block Tab is d-editor's keymap (indentSelection's
+  // sinkListItem), which the helper's editor has as the composer's does.
+  qtest("Tab still nests list items", async function (assert, { helpers, pmState }) {
     const { setupRichEditor, triggerKeyEvent } = helpers;
     const { TextSelection } = pmState;
     const [editor] = await setupRichEditor(assert, "* first\n* second");
     const { view } = editor;
 
     view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 12)));
-    const before = view.state.doc;
     await triggerKeyEvent(".ProseMirror", "keydown", "Tab");
 
-    assert.true(view.state.doc.eq(before), "the code block's Tab does nothing in a list");
+    assert.dom(".ProseMirror > ul > li > ul > li").hasText("second", "the second item is nested under the first");
+
+    await triggerKeyEvent(".ProseMirror", "keydown", "Tab", {
+      shiftKey: true,
+    });
+
+    assert.dom(".ProseMirror > ul > li").exists({ count: 2 }, "Shift-Tab lifts the nested item");
   });
 });
 

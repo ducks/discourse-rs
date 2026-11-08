@@ -10,6 +10,11 @@
 //   Discourse.oneboxes.applyCached(container)
 //       What the preview's markdown rules take from the client's caches:
 //       loaded oneboxes in place of their links, inline titles.
+//   Discourse.oneboxes.html(url, opts) -> Promise of the onebox's HTML or
+//       null, Discourse.oneboxes.inlineTitles(urls, opts) -> Promise of
+//       { url: title }: the rich editor's onebox extension, through the
+//       same queue, batches and caches (pretty-text's load with
+//       onResolve, applyInlineOneboxes over stand-in elements).
 //
 // Rendered previews come back with plain links each time, so the cached
 // results are applied before loading the rest.
@@ -178,7 +183,7 @@
     for (var i = 0; i < urls.length; i += 10) {
       batches.push(urls.slice(i, i + 10));
     }
-    batches.reduce(function (done, batch, index) {
+    return batches.reduce(function (done, batch, index) {
       return done.then(function (stop) {
         if (stop) {
           return true;
@@ -271,5 +276,66 @@
     return Object.keys(oneboxes).length + Object.keys(inline).length;
   }
 
-  Discourse.oneboxes = { load: loadOneboxes, applyCached: applyCached };
+  // A stand-in for the link a onebox replaces.
+  function standIn(url, resolve) {
+    var classes = {};
+    return {
+      href: url,
+      dataset: {},
+      innerText: "",
+      replaceWith: function (node) {
+        resolve(node.outerHTML);
+      },
+      classList: {
+        add: function (name) {
+          classes[name] = true;
+        },
+        remove: function (name) {
+          delete classes[name];
+          // Done without a onebox: the request failed.
+          if (name === LOADING) {
+            resolve(null);
+          }
+        },
+        contains: function (name) {
+          return !!classes[name];
+        },
+      },
+    };
+  }
+
+  function html(url, opts) {
+    opts = opts || {};
+    var key = normalize(url);
+    if (!opts.refresh && localCache[key]) {
+      return Promise.resolve(localCache[key].outerHTML);
+    }
+    if (!opts.refresh && failedCache[key]) {
+      return Promise.resolve(null);
+    }
+    return new Promise(function (resolve) {
+      load(standIn(url, resolve), opts);
+    });
+  }
+
+  function inlineTitles(urls, opts) {
+    opts = opts || {};
+    var titles = {};
+    var inline = {};
+    urls.forEach(function (url) {
+      if (inlineCache[url] && inlineCache[url].title) {
+        titles[url] = inlineCache[url].title;
+      } else {
+        inline[url] = [standIn(url, function () {})];
+      }
+    });
+    return Promise.resolve(applyInline(inline, opts)).then(function () {
+      Object.keys(inline).forEach(function (url) {
+        titles[url] = inline[url][0].innerText;
+      });
+      return titles;
+    });
+  }
+
+  Discourse.oneboxes = { load: loadOneboxes, applyCached: applyCached, html: html, inlineTitles: inlineTitles };
 })();

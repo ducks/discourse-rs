@@ -7,6 +7,10 @@
 //       replaces each cooked div.graphviz under root by its diagram, drawn
 //       by viz.js: posts (as a cooked decorator, so what htmx swaps in
 //       too) and the composer's preview.
+//   Discourse.graphvizDiagram(src, engine) -> element
+//   Discourse.graphvizFullscreen(src, engine)
+//       GraphvizDiagram and GraphvizFullscreen, for the rich editor's
+//       preview block (rich-editor/plugins/graphviz.js).
 //
 // viz.js is the plugin's own copy, served where Rails serves it
 // (/plugins/discourse-graphviz/javascripts/viz-3.0.1.js), loaded the
@@ -161,6 +165,11 @@
     wrapper.appendChild(diagram(src, engine, false));
     element.replaceWith(wrapper);
   }
+
+  Discourse.graphvizDiagram = function (src, engine) {
+    return diagram(src, engine, false);
+  };
+  Discourse.graphvizFullscreen = fullscreen;
 
   Discourse.renderGraphviz = function (root) {
     root.querySelectorAll("div.graphviz").forEach(applyGraphviz);

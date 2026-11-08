@@ -387,12 +387,11 @@
     if (window.FloatingUIDOM && window.Discourse && Discourse.float && Discourse.float.position) {
       // MENU's options: its placement, FLOAT_UI_PLACEMENTS (float.js's
       // default) as the fallbacks, the menu offset.
-      Discourse.float.position(trigger, content, {
+      return Discourse.float.position(trigger, content, {
         placement: placements[0],
         offset: MENU_OFFSET,
         strategy: strategy,
       });
-      return;
     }
     content.dataset.strategy = strategy;
     var t = trigger.getBoundingClientRect();
@@ -415,6 +414,7 @@
     content.style.left = spot.x + (scrolled ? window.scrollX : 0) + "px";
     content.style.top = spot.y + (scrolled ? window.scrollY : 0) + "px";
     content.style.visibility = "visible";
+    return Promise.resolve();
   }
 
   function menuElement(classes, identifier, maxWidth) {
@@ -499,10 +499,14 @@
       diversityMenu: null,
     };
     current = state;
-    place(trigger, content, PLACEMENTS);
     var input = content.querySelector(".filter-input");
     input.value = options.term || "";
-    input.focus({ preventScroll: true });
+    // A hidden input takes no focus: once the picker is placed, shown.
+    Promise.resolve(place(trigger, content, PLACEMENTS)).then(function () {
+      if (current === state) {
+        input.focus({ preventScroll: true });
+      }
+    });
     loadList(cfg).then(function () {
       if (current !== state) {
         return;

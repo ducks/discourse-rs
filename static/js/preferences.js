@@ -370,11 +370,6 @@
       toggleBioRich();
       return;
     }
-    var tool = event.target.closest(".pref-bio .toolbar__button");
-    if (tool) {
-      bioAction(tool.dataset.action);
-      return;
-    }
     var del = event.target.closest(".file-uploader .file-uploader__delete");
     if (del) {
       setUpload(del.closest(".file-uploader"), null);
@@ -1359,7 +1354,7 @@
     });
   }
 
-  // The bio: the composer's markdown around the selection, and its
+  // The bio: the composer's toolbar (editor-toolbar.js) and its
   // preview from the composer's renderer.
   function bioArea() {
     return document.querySelector(".pref-bio textarea.d-editor-input");
@@ -1374,6 +1369,9 @@
   var bioRich = null;
   var bioOpening = null;
   var bioMode = false;
+  // Its toolbar (editor-toolbar.js through the composer), over the open
+  // editor.
+  var bioBar = null;
 
   function drawBioMode() {
     var group = document.querySelector(".pref-bio");
@@ -1392,7 +1390,7 @@
     if (bioRich || bioOpening) {
       return;
     }
-    var opening = api.create(document.querySelector(".pref-bio"), bioArea(), toggleBioRich).then(function (handle) {
+    var opening = api.create(document.querySelector(".pref-bio"), bioArea(), toggleBioRich, bioBar).then(function (handle) {
       // Superseded: switched back, or another page.
       if (bioOpening !== opening) {
         handle.destroy();
@@ -1442,30 +1440,6 @@
     Discourse.composerRichEditor.saveMode(bioMode);
   }
 
-  // The markdown a toolbar button wrote, into the editor.
-  function syncBioRich() {
-    if (!bioRich) {
-      return;
-    }
-    var refused = null;
-    try {
-      if (!bioRich.editor.setValue(bioArea().value)) {
-        refused = { name: "UnsupportedTokenError" };
-      }
-    } catch (e) {
-      refused = e;
-    }
-    if (refused) {
-      closeBioRich();
-      bioMode = false;
-      Discourse.composerRichEditor.saveMode(false);
-      drawBioMode();
-      Discourse.composerRichEditor.failed(refused);
-    } else {
-      bioRich.editor.focus();
-    }
-  }
-
   function bioSetup() {
     if (!document.querySelector(".pref-bio .composer-toggle-switch")) {
       return null;
@@ -1475,6 +1449,11 @@
       if (!Discourse.composerRichEditor) {
         return;
       }
+      var textarea = bioArea();
+      bioBar = Discourse.composerRichEditor.toolbar(document.querySelector(".pref-bio"), textarea, function () {
+        return bioRich && bioRich.editor;
+      });
+      textarea.addEventListener("keydown", bioBar.keydown);
       bioMode = Discourse.composerRichEditor.rich();
       drawBioMode();
       if (bioMode) {
@@ -1488,69 +1467,6 @@
       start();
     }
     return closeBioRich;
-  }
-
-  function surround(before, after, example) {
-    var textarea = bioArea();
-    var start = textarea.selectionStart;
-    var end = textarea.selectionEnd;
-    var selected = textarea.value.slice(start, end) || example;
-    textarea.setRangeText(before + selected + after, start, end, "end");
-    textarea.selectionStart = start + before.length;
-    textarea.selectionEnd = start + before.length + selected.length;
-    textarea.focus();
-  }
-
-  function prefixLines(prefix, example) {
-    var textarea = bioArea();
-    var start = textarea.selectionStart;
-    var end = textarea.selectionEnd;
-    var lineStart = textarea.value.lastIndexOf("\n", start - 1) + 1;
-    var selected = textarea.value.slice(lineStart, end) || example;
-    var replaced = selected
-      .split("\n")
-      .map(function (line) {
-        return prefix + line;
-      })
-      .join("\n");
-    textarea.setRangeText(replaced, lineStart, Math.max(end, lineStart), "end");
-    textarea.focus();
-  }
-
-  function bioAction(action) {
-    var textarea = bioArea();
-    var data = (document.getElementById("reply-control") || {}).dataset || {};
-    var actions = {
-      bold: function () {
-        surround("**", "**", data.textBold || "strong text");
-      },
-      italic: function () {
-        surround("*", "*", data.textItalic || "emphasized text");
-      },
-      link: function () {
-        surround("[", "](https://)", data.textLink || "link");
-      },
-      blockquote: function () {
-        prefixLines("> ", data.textBlockquote || "Blockquote");
-      },
-      code: function () {
-        var selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-        if (selected.indexOf("\n") >= 0 || selected === "") {
-          surround("```\n", "\n```", data.textCode || "code");
-        } else {
-          surround("`", "`", "");
-        }
-      },
-      list: function () {
-        prefixLines("- ", data.textList || "List item");
-      },
-    };
-    if (actions[action]) {
-      actions[action]();
-      textarea.dataset.dirty = "true";
-      bioPreview();
-      syncBioRich();
-    }
   }
 
   var previewTimer = null;

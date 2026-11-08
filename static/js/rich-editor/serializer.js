@@ -5,10 +5,14 @@
 // serializeMark. serializeNode may carry an afterSerialize run on the
 // state once the document is written (footnotes append their notes so).
 import { defaultMarkdownSerializer, MarkdownSerializerState } from "prosemirror-markdown";
-import { Node } from "prosemirror-model";
+import { Fragment, Node } from "prosemirror-model";
 import { Transform } from "prosemirror-transform";
 
 var FLANKING_SENSITIVE_MARKS = ["strong", "em", "strikethrough"];
+
+// What may follow a bare link unescaped (the link serializer records where
+// it ended, state.linkifyEnd): escaping it would end the link's text.
+var LINKIFY_BOUNDARY = /^[*[\]]/;
 
 // markdown-it's isPunctChar (P or S).
 var PUNCTUATION = /[\p{P}\p{S}]/u;
@@ -88,7 +92,13 @@ export default function Serializer(extensions, pluginParams, includeDefault) {
     state.write(state.inTable ? "<br>" : "\n");
   };
   this.nodes.text = function (state, node) {
-    state.text(node.text, !state.inAutolink);
+    if (state.out.length !== state.linkifyEnd || !LINKIFY_BOUNDARY.test(node.text)) {
+      state.text(node.text, !state.inAutolink);
+      return;
+    }
+
+    state.text(node.text[0], false);
+    state.text(node.text.slice(1));
   };
 
   this.marks = includeDefault ? Object.assign({}, defaultMarkdownSerializer.marks) : {};
@@ -114,9 +124,19 @@ export default function Serializer(extensions, pluginParams, includeDefault) {
   });
 }
 
+// A document, a slice or a fragment (a selection's content): inline
+// content is rendered as a paragraph's, so its marks are written.
 Serializer.prototype.convert = function (doc) {
   var state = new MarkdownSerializerState(this.nodes, this.marks, {});
-  state.renderContent(expelBoundaryPunctuation(doc).content);
+  var normalized = expelBoundaryPunctuation(doc);
+  var content = normalized instanceof Fragment ? normalized : normalized.content;
+  if (content.firstChild && content.firstChild.isInline) {
+    var parent =
+      normalized instanceof Node ? normalized : content.firstChild.type.schema.nodes.paragraph.create(null, content);
+    state.renderInline(parent);
+  } else {
+    state.renderContent(content);
+  }
 
   if (this.afterSerializers) {
     this.afterSerializers.forEach(function (afterSerializer) {

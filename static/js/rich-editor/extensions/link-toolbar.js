@@ -5,12 +5,12 @@
 // (Discourse.float.menu), else it takes the composer toolbar's place
 // (getContext().replaceToolbar).
 //
-// Not ported: Edit opens UpsertHyperlink, the composer's link modal, which
-// comes with the toolbar (ROADMAP 196r3); the button is drawn when the
-// host gives getContext().upsertHyperlink. Load preview needs the onebox
-// extension (196r3), so it is never offered.
+// Edit opens UpsertHyperlink, the composer's link modal, through the
+// context's modal service ("upsert-hyperlink"); Load preview has the onebox
+// extension load the link's preview at once.
 import { NodeSelection, TextSelection } from "prosemirror-state";
-import { rovingButtonBar, toastSuccess, ToolbarBase, renderToolbarButtons } from "discourse/rich-editor/toolbar";
+import { isPastOneboxLimit, isTopLevel, oneboxPluginKey, oneboxTypeAtPos } from "discourse/rich-editor/extensions/onebox";
+import { rovingButtonBar, toast, toastSuccess, ToolbarBase, renderToolbarButtons } from "discourse/rich-editor/toolbar";
 
 var AUTO_LINKS = ["autolink", "linkify"];
 var MENU_OFFSET = 12;
@@ -25,7 +25,6 @@ function buildLinkToolbar(opts, i18n) {
     icon: "pen",
     title: "composer.link_toolbar.edit",
     className: "composer-link-toolbar__edit",
-    condition: opts.canEdit,
     action: opts.editLink,
   });
 
@@ -129,7 +128,7 @@ LinkToolbarPluginView.prototype.update = function (view) {
 
 LinkToolbarPluginView.prototype.destroy = function () {
   if (this.menuInstance) {
-    this.menuInstance.destroy();
+    this.menuInstance.destroy({ focusTrigger: false });
   }
   this.menuInstance = null;
   this.linkToolbar = null;
@@ -137,7 +136,7 @@ LinkToolbarPluginView.prototype.destroy = function () {
 
 LinkToolbarPluginView.prototype.resetToolbar = function () {
   if (this.menuInstance) {
-    this.menuInstance.destroy();
+    this.menuInstance.destroy({ focusTrigger: false });
   }
   this.menuInstance = null;
 
@@ -160,9 +159,6 @@ LinkToolbarPluginView.prototype.updateLinkState = function (markRange) {
 
     this.linkToolbar = buildLinkToolbar(
       {
-        canEdit: function () {
-          return typeof self.getContext().upsertHyperlink === "function";
-        },
         editLink: function () {
           self.openLinkEditor();
         },
@@ -172,7 +168,9 @@ LinkToolbarPluginView.prototype.updateLinkState = function (markRange) {
         unlinkText: function () {
           self.unlinkText();
         },
-        showPreview: function () {},
+        showPreview: function () {
+          self.showPreview();
+        },
         canVisit: function () {
           return self.canVisit();
         },
@@ -183,7 +181,7 @@ LinkToolbarPluginView.prototype.updateLinkState = function (markRange) {
           return self.canUnlink();
         },
         canShowPreview: function () {
-          return false;
+          return self.canShowPreview();
         },
       },
       context.i18n
@@ -227,15 +225,17 @@ LinkToolbarPluginView.prototype.openLinkEditor = function () {
     schema.topNodeType.create(null, schema.nodes.paragraph.create(null, tempTr.doc.slice(range.from, range.to).content))
   );
 
-  this.getContext().upsertHyperlink({
-    editing: true,
-    linkText: currentLinkText,
-    linkUrl: this.linkState.href,
-    toolbarEvent: {
-      addText: function (text) {
-        self.replaceText(text);
+  this.getContext().modal.show("upsert-hyperlink", {
+    model: {
+      editing: true,
+      linkText: currentLinkText,
+      linkUrl: this.linkState.href,
+      toolbarEvent: {
+        addText: function (text) {
+          self.replaceText(text);
+        },
+        selected: { value: this.linkState.href },
       },
-      selected: { value: this.linkState.href },
     },
   });
 };
@@ -277,6 +277,49 @@ LinkToolbarPluginView.prototype.canVisit = function () {
   return !!this.utils.getLinkify().matchAtStart(this.linkState.href);
 };
 
+LinkToolbarPluginView.prototype.canShowPreview = function () {
+  if (AUTO_LINKS.indexOf(this.linkState.markup) === -1 || !this.utils.getLinkify().matchAtStart(this.linkState.href)) {
+    return false;
+  }
+
+  // A top-level URL (google.com) can only be a full onebox, not an inline
+  // one: no preview for one inline.
+  var range = this.linkState.range;
+  if (range && isTopLevel(this.linkState.href) && oneboxTypeAtPos(this.view.state.doc, range.from) === "inline") {
+    return false;
+  }
+
+  return true;
+};
+
+LinkToolbarPluginView.prototype.showPreview = function () {
+  var range = this.linkState.range;
+  if (!range) {
+    return;
+  }
+
+  var context = this.getContext();
+  var max = parseInt((context.siteSettings || {}).max_oneboxes_per_post, 10);
+  if (isPastOneboxLimit(this.view.state.doc, range.from, isNaN(max) ? 50 : max)) {
+    toast(context.i18n("composer.link_toolbar.preview_limit_reached"));
+    return;
+  }
+
+  this.resetToolbar();
+
+  var state = this.view.state;
+  var tr = state.tr;
+
+  // linkify markup, which the onebox plugin takes
+  tr.addMark(range.from, range.to, state.schema.marks.link.create({ href: this.linkState.href, markup: "linkify" }));
+
+  // The onebox plugin takes this url now, whatever the selection
+  tr.setMeta(oneboxPluginKey, { forceOneboxUrl: this.linkState.href });
+
+  this.view.dispatch(tr);
+  this.view.focus();
+};
+
 LinkToolbarPluginView.prototype.canUnlink = function () {
   return AUTO_LINKS.indexOf(this.linkState.markup) === -1;
 };
@@ -298,13 +341,13 @@ LinkToolbarPluginView.prototype.showFloatingToolbar = function () {
   }
 
   if (this.menuInstance) {
-    this.menuInstance.destroy();
+    this.menuInstance.destroy({ focusTrigger: false });
   }
   this.content = document.createElement("div");
   // ToolbarButtons draws its buttons straight into the menu.
   this.content.style.display = "contents";
   renderToolbarButtons(this.content, this.linkToolbar);
-  this.menuInstance = window.Discourse.float.menu(trigger, {
+  var instance = (this.menuInstance = window.Discourse.float.menu(trigger, {
     identifier: IDENTIFIER,
     content: this.content,
     placement: "bottom",
@@ -314,12 +357,14 @@ LinkToolbarPluginView.prototype.showFloatingToolbar = function () {
     fallbackPlacements: ["bottom-end", "bottom-start", "top", "top-end", "top-start"],
     closeOnClickOutside: false,
     trapTab: false,
+    // Only the open toolbar gives the focus back: one replaced while it
+    // animates out would take it from the toolbar that replaced it.
     onClose: function () {
-      if (self.view && !self.view.isDestroyed) {
+      if (self.menuInstance === instance && self.view && !self.view.isDestroyed) {
         self.view.focus();
       }
     },
-  });
+  }));
 };
 
 LinkToolbarPluginView.prototype.getTriggerClientRect = function () {
@@ -358,7 +403,8 @@ export default {
             return false;
           }
 
-          var activeMenu = document.querySelector('[data-identifier="' + IDENTIFIER + '"]');
+          // The open one, not one still animating closed.
+          var activeMenu = document.querySelector('[data-identifier="' + IDENTIFIER + '"]:not(.-closing)');
           if (!activeMenu) {
             return false;
           }

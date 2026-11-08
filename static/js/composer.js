@@ -2,7 +2,8 @@
 // reply to a topic or a post, create a topic or edit a post, and posts
 // through /posts as Ember's composer does. Its height, sizing, minimizing
 // and fullscreen follow services/composer.js and composer-container; the
-// toolbar applies its markdown as d-editor's buttons do.
+// toolbar (editor-toolbar.js, shipped in front of this file) acts through
+// the open editor as d-editor's buttons do.
 (function () {
   "use strict";
 
@@ -1021,65 +1022,86 @@
   }
   refreshSeparator();
 
-  // The toolbar: markdown around the selection, or its example text.
-  function surround(before, after, example) {
-    var start = textarea.selectionStart;
-    var end = textarea.selectionEnd;
-    var selected = textarea.value.slice(start, end) || example;
-    textarea.setRangeText(before + selected + after, start, end, "end");
-    textarea.selectionStart = start + before.length;
-    textarea.selectionEnd = start + before.length + selected.length;
-    syncRichEditor();
-    focusEditor();
+  // The toolbar (editor-toolbar.js) over the open editor's
+  // TextManipulation: the rich editor's, else the textarea's.
+  var textareaManipulation = null;
+  function textManipulation() {
+    if (richEditor) {
+      return richEditor.textManipulation;
+    }
+    if (!textareaManipulation) {
+      textareaManipulation = Discourse.editorToolbar.textarea(textarea, {
+        i18n: richI18n,
+        siteSettings: richContextSettings(),
+      });
+    }
+    return textareaManipulation;
+  }
+  // d-editor's showLinkModal: UpsertHyperlink (upsert-hyperlink.js) over
+  // the toolbar event, the focus back in `host`'s editor once it closes.
+  function showLinkModal(toolbarEvent, host) {
+    var sel = toolbarEvent.selected;
+    showUpsertHyperlink({ hasSelection: !!sel && sel.start !== sel.end, toolbarEvent: toolbarEvent }, host);
   }
 
-  function prefixLines(prefix, example) {
-    var start = textarea.selectionStart;
-    var end = textarea.selectionEnd;
-    var lineStart = textarea.value.lastIndexOf("\n", start - 1) + 1;
-    var selected = textarea.value.slice(lineStart, end) || example;
-    var replaced = selected
-      .split("\n")
-      .map(function (line) {
-        return prefix + line;
-      })
-      .join("\n");
-    textarea.setRangeText(replaced, lineStart, Math.max(end, lineStart), "end");
-    syncRichEditor();
-    focusEditor();
+  function showUpsertHyperlink(model, host) {
+    Discourse.upsertHyperlink.show(model, {
+      i18n: richI18n,
+      basePath: base,
+      onClose: function () {
+        var input = host.querySelector(".d-editor-input:not([hidden])");
+        if (input) {
+          input.focus();
+        }
+      },
+    });
   }
 
-  var actions = {
-    bold: function () {
-      surround("**", "**", data.textBold);
+  var composerBar = Discourse.editorToolbar.bind(control, {
+    textManipulation: textManipulation,
+    i18n: richI18n,
+    listOptions: Discourse.editorToolbar.pluginListOptions(richContext().plugins || []),
+    actions: {
+      link: function (e) {
+        showLinkModal(e, control);
+      },
+      upload: function () {
+        fileInput.click();
+      },
+      emoji: function () {
+        showEmojiPicker(control, textManipulation());
+      },
     },
-    italic: function () {
-      surround("*", "*", data.textItalic);
-    },
-    link: function () {
-      surround("[", "](https://)", data.textLink);
-    },
-    blockquote: function () {
-      prefixLines("> ", data.textBlockquote);
-    },
-    code: function () {
-      var selected = textarea.value.slice(
-        textarea.selectionStart,
-        textarea.selectionEnd
-      );
-      if (selected.indexOf("\n") >= 0 || selected === "") {
-        surround("```\n", "\n```", data.textCode);
-      } else {
-        surround("`", "`", "");
-      }
-    },
-    upload: function () {
-      fileInput.click();
-    },
-    list: function () {
-      prefixLines("- ", data.textList);
-    },
-  };
+  });
+
+  // enable-emoji.js' button: the emoji picker (emoji-picker.js, loaded the
+  // first time) by the button, the emoji picked going in at the selection
+  // (emojiSelected).
+  function showEmojiPicker(host, tm) {
+    var trigger = host.querySelector(".toolbar__button.emoji");
+    if (!trigger) {
+      return;
+    }
+    var open = function () {
+      Discourse.emojiPicker.open(trigger, {
+        context: "topic",
+        onSelect: function (code) {
+          tm.emojiSelected(code);
+        },
+      });
+    };
+    if (Discourse.emojiPicker) {
+      open();
+      return;
+    }
+    var script = document.createElement("script");
+    script.src = trigger.dataset.src;
+    script.onload = open;
+    script.onerror = function () {
+      showError("Could not load the emoji picker.");
+    };
+    document.head.appendChild(script);
+  }
 
   // The preview: the markdown crate as WebAssembly, loaded the first time
   // the composer opens with the preview shown. Its exports are in
@@ -1333,31 +1355,50 @@
   // (src/composer/rich_editor.rs), and the composer's own state, or for
   // another d-editor (`slot`, not the composer's) no topic.
   var richContextData = null;
-  function richEditorContext(editorModule, slot) {
-    slot = slot || composerToolbar;
+  function richContext() {
     if (!richContextData) {
       richContextData = JSON.parse(data.richEditorContext || "{}");
     }
-    var labels = richContextData.labels || {};
+    return richContextData;
+  }
+
+  function richContextSettings() {
+    return richContext().siteSettings || {};
+  }
+
+  // The context's strings, a plural key's form picked by count.
+  function richI18n(key, params) {
+    var labels = richContext().labels || {};
+    if (params && params.count !== undefined) {
+      var count = Number(params.count);
+      var form = count === 0 && key + ".zero" in labels ? "zero" : count === 1 ? "one" : "other";
+      if (key + "." + form in labels) {
+        key = key + "." + form;
+      }
+    }
+    var text = key in labels ? labels[key] : key;
+    Object.keys(params || {}).forEach(function (name) {
+      text = text.split("%{" + name + "}").join(String(params[name]));
+    });
+    return text;
+  }
+
+  function richEditorContext(editorModule, slot) {
+    slot = slot || composerToolbar;
     var context = {
-      siteSettings: richContextData.siteSettings || {},
-      site: richContextData.site || {},
-      currentUser: richContextData.currentUser || null,
-      i18n: function (key, params) {
-        if (params && params.count !== undefined) {
-          var count = Number(params.count);
-          var form = count === 0 && key + ".zero" in labels ? "zero" : count === 1 ? "one" : "other";
-          if (key + "." + form in labels) {
-            key = key + "." + form;
-          }
-        }
-        var text = key in labels ? labels[key] : key;
-        Object.keys(params || {}).forEach(function (name) {
-          text = text.split("%{" + name + "}").join(String(params[name]));
-        });
-        return text;
-      },
+      siteSettings: richContextSettings(),
+      site: richContext().site || {},
+      currentUser: richContext().currentUser || null,
+      i18n: richI18n,
       topicId: state && slot === composerToolbar ? state.topicId || null : null,
+      // The category a new topic is in, for the oneboxes the editor loads.
+      get categoryId() {
+        if (!state || slot !== composerToolbar || state.mode !== "create-topic") {
+          return null;
+        }
+        var value = chooser.querySelector("summary").dataset.value;
+        return value ? parseInt(value, 10) : null;
+      },
       appEvents: richEvents,
       capabilities: {
         viewport: { sm: window.matchMedia("(min-width: 40rem)").matches },
@@ -1371,7 +1412,9 @@
       modal: {
         show: function (name, opts) {
           var model = (opts && opts.model) || {};
-          if (name === "wrap-attributes") {
+          if (name === "upsert-hyperlink") {
+            showUpsertHyperlink(model, slot.host);
+          } else if (name === "wrap-attributes") {
             editorModule.showWrapAttributesModal(model, context.i18n);
           } else if (name === "poll-ui-builder") {
             showPollBuilder(model);
@@ -1391,10 +1434,7 @@
   // The plugins' extensions (rich-editor/plugins.js), and what their nodes
   // draw with before the editor opens: local dates' moment.
   function richEditorPlugins(editorModule) {
-    if (!richContextData) {
-      richContextData = JSON.parse(data.richEditorContext || "{}");
-    }
-    var plugins = richContextData.plugins || [];
+    var plugins = richContext().plugins || [];
     editorModule.registerPluginExtensions(plugins);
     if (plugins.indexOf("local-dates") !== -1 && Discourse.localDates) {
       // Without it the dates show as written.
@@ -1494,6 +1534,7 @@
       richEditor.destroy();
       richEditor = null;
     }
+    composerBar.refresh({});
     if (composerToolbar.replaced) {
       replaceToolbar(composerToolbar, null, null);
     }
@@ -1549,17 +1590,32 @@
           context: richEditorContext(loaded[0]),
           placeholder: textarea.placeholder,
           className: "d-editor-input",
-          keymap: {
+          keymap: Object.assign({}, composerBar.keymap, popupKeymap(), {
             "ctrl+m": function () {
               toggleRichEditor();
             },
-          },
+          }),
           onChange: function (markdown) {
             textarea.value = markdown;
             textarea.dispatchEvent(new Event("input", { bubbles: true }));
           },
+          onStateChange: function (toolbarState) {
+            if (richEditor === editor) {
+              composerBar.refresh(toolbarState);
+            }
+          },
+          // On opening, the refusal below; later, what a toolbar button
+          // inserted.
           onUnsupported: function (e) {
-            refused = e;
+            if (richEditor === editor) {
+              setTimeout(function () {
+                if (richEditor === editor) {
+                  richEditorFailed(e);
+                }
+              }, 0);
+            } else {
+              refused = e;
+            }
           },
           focusIn: function () {
             wrapper.classList.add("in-focus");
@@ -1574,6 +1630,7 @@
           richEditorFailed(refused);
           return;
         }
+        composerBar.refresh(editor.textManipulation.state);
         // Ctrl or Cmd + Enter submits here too.
         editor.view.dom.addEventListener("keydown", function (event) {
           if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
@@ -1673,7 +1730,8 @@
     },
     // createEditor over `textarea` in `host`'s textarea wrapper: resolves
     // to { editor, destroy }, or rejects with what refused the markdown.
-    create: function (host, textarea, toggle) {
+    // `bar` is the host's toolbar (toolbar(), below): its keys and state.
+    create: function (host, textarea, toggle, bar) {
       var slot = toolbarSlot(host);
       var hostWrapper = host.querySelector(".d-editor-textarea-wrapper");
       return Promise.all([Discourse.richEditor.load(), loadRenderer()]).then(function (loaded) {
@@ -1686,10 +1744,15 @@
             context: richEditorContext(loaded[0], slot),
             placeholder: textarea.placeholder,
             className: "d-editor-input",
-            keymap: { "ctrl+m": toggle },
+            keymap: Object.assign({}, bar ? bar.keymap : {}, { "ctrl+m": toggle }),
             onChange: function (markdown) {
               textarea.value = markdown;
               textarea.dispatchEvent(new Event("input", { bubbles: true }));
+            },
+            onStateChange: function (toolbarState) {
+              if (bar) {
+                bar.refresh(toolbarState);
+              }
             },
             onUnsupported: function (e) {
               refused = e;
@@ -1706,6 +1769,9 @@
             if (slot.replaced) {
               replaceToolbar(slot, null, null);
             }
+            if (bar) {
+              bar.refresh({});
+            }
           };
           if (refused) {
             destroy();
@@ -1716,6 +1782,24 @@
       });
     },
     failed: alertRichFailure,
+    // The host's toolbar (editor-toolbar.js) over `textarea`, or the editor
+    // `rich()` gives while it is open, with the composer's strings.
+    toolbar: function (host, textarea, rich) {
+      var plain = Discourse.editorToolbar.textarea(textarea, { i18n: richI18n, siteSettings: richContextSettings() });
+      return Discourse.editorToolbar.bind(host, {
+        textManipulation: function () {
+          var editor = rich();
+          return editor ? editor.textManipulation : plain;
+        },
+        i18n: richI18n,
+        listOptions: Discourse.editorToolbar.pluginListOptions(richContext().plugins || []),
+        actions: {
+          link: function (e) {
+            showLinkModal(e, host);
+          },
+        },
+      });
+    },
   };
 
   // The new-topic and new-message routes (routes/new-topic.js,
@@ -3940,11 +4024,24 @@
     return true;
   }
 
+  // The options whose active() reads the editor's state: spoiler-alert's
+  // and toggle-wrap's.
+  var POPUP_ACTIVE = {
+    spoiler: function (s) {
+      return s.inSpoiler;
+    },
+    "toggle-wrap": function (s) {
+      return s.inWrap;
+    },
+  };
+
   function popupMenuContent(items) {
+    var toolbarState = textManipulation().state || {};
     var html = '<ul class="dropdown-menu">';
     items.forEach(function (item) {
+      var active = POPUP_ACTIVE[item.name] && POPUP_ACTIVE[item.name](toolbarState);
       html +=
-        '<li class="dropdown-menu__item"><button class="btn no-text btn-icon" title="' + escapeHtml(item.label) + '"' +
+        '<li class="dropdown-menu__item"><button class="btn no-text btn-icon' + (active ? " --active" : "") + '" title="' + escapeHtml(item.label) + '"' +
         (item.named ? ' data-name="' + escapeHtml(item.name) + '"' : "") + ' type="button">' + svg(item.icon) +
         '<span class="d-button-label"><span class="d-button-label__text">' + escapeHtml(item.label) + "</span>" +
         (item.shortcut ? shortcutKbd(item.shortcut, item.alwaysShowShortcut) : "") +
@@ -3954,24 +4051,6 @@
     return html + "</ul>";
   }
 
-  // applySurround as the plugins call it: the selection (or the example
-  // text) wrapped, on lines of its own in block mode when the selection
-  // spans lines.
-  function applySurround(head, tail, example, blockMode) {
-    var selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    if (blockMode && selected.indexOf("\n") !== -1) {
-      surround(head + "\n", "\n" + tail, example);
-    } else {
-      surround(head, tail, example);
-    }
-  }
-
-  function addText(text) {
-    insertText(text);
-    focusEditor();
-    updatePreview();
-    scheduleDraft();
-  }
 
   // The post a JSON request answers, or why not.
   function fetchJson(path) {
@@ -3989,7 +4068,7 @@
   // Composer#importQuote: the whole post replied to (the topic's first
   // post when replying to the topic; when editing, the post the edited
   // one replies to, else that post) quoted at the cursor.
-  function importQuote() {
+  function importQuote(_, e) {
     if (!state || !state.topicId || !Discourse.buildQuote) {
       return;
     }
@@ -4012,11 +4091,7 @@
         if (state !== s) {
           return;
         }
-        insertText(Discourse.buildQuote(p, p.raw, { full: true }));
-        textarea.blur();
-        textarea.focus({ preventScroll: true });
-        updatePreview();
-        scheduleDraft();
+        e.addText(Discourse.buildQuote(p, p.raw, { full: true }));
       })
       .catch(function (e) {
         showError(String(e.message || e));
@@ -4026,53 +4101,93 @@
       });
   }
 
+  // Each option's action over the toolbar event (d-editor's
+  // newToolbarEvent, editor-toolbar.js) of the open editor, as the
+  // composer's and the plugins' popup menu options take it.
   var popupActions = {
     quote: importQuote,
-    details: function () {
-      applySurround(
-        '\n[details="' + data.textDetailsTitle + '"]\n',
+    "format-code": function (_, e) {
+      e.formatCode();
+    },
+    details: function (_, e) {
+      e.applySurround(
+        '\n[details="' + richI18n("composer.details_title") + '"]\n',
         "\n[/details]\n",
-        data.textDetails,
-        false
+        "details_text",
+        { multiline: false }
       );
     },
-    footnote: function () {
-      addText("^[" + data.textFootnote + "]");
+    footnote: function (_, e) {
+      e.addText("^[" + richI18n("footnote.title") + "]");
     },
-    spoiler: function () {
-      applySurround("[spoiler]", "[/spoiler]", data.textSpoiler, true);
+    spoiler: function (_, e) {
+      if (e.commands && e.commands.toggleSpoiler) {
+        e.commands.toggleSpoiler();
+      } else {
+        e.applySurround("[spoiler]", "[/spoiler]", "spoiler_text", { multiline: false, useBlockMode: true });
+      }
     },
-    "local-dates": function () {
+    "local-dates": function (_, e) {
       if (Discourse.localDatesCreate) {
-        Discourse.localDatesCreate.show(addText);
+        Discourse.localDatesCreate.show(e.addText);
       }
     },
     // discourse-graphviz's sample graph (static/js/graphviz.js).
-    graphviz: function () {
+    graphviz: function (_, e) {
       if (Discourse.graphvizComposer) {
-        Discourse.graphvizComposer(applySurround);
+        Discourse.graphvizComposer(function (head, tail) {
+          e.applySurround(head, tail, "graphviz_sample", { multiline: false });
+        });
       }
     },
     // discourse-math's Insert Math (static/js/discourse-math.js), in
     // block mode when the cursor is at a line's start.
-    "insert-math": function () {
+    "insert-math": function (_, e) {
       if (Discourse.mathInsert) {
-        Discourse.mathInsert.show(textarea.value.slice(0, textarea.selectionStart), addText);
+        Discourse.mathInsert.show(e.selected.pre, e.addText);
       }
     },
     // discourse-poll's builder (static/js/poll-builder.js), loaded the
     // first time, once the menu has closed (and given the focus back to
     // its trigger).
-    poll: function (closing) {
+    poll: function (closing, e) {
       (closing || Promise.resolve()).then(function () {
-        showPollBuilder();
+        showPollBuilder(undefined, e);
       });
     },
     // discourse-policy's builder (static/js/policy.js).
-    policy: function () {
+    policy: function (_, e) {
       if (Discourse.policyBuilder) {
-        Discourse.policyBuilder.show(addText);
+        Discourse.policyBuilder.show(e.addText);
       }
+    },
+    // ComposerService#toggleWrap: WrapAttributesModal over the wrap the
+    // selection is in, else a new one.
+    "toggle-wrap": function (_, e) {
+      var state = e.state || {};
+      Discourse.richEditor.load().then(function (editorModule) {
+        editorModule.showWrapAttributesModal(
+          {
+            initialAttributes: state.inWrap ? state.wrapAttributes || "" : "",
+            onApply: function (attributesString) {
+              if (state.inWrap) {
+                e.commands.updateWrap(attributesString);
+              } else if (e.commands && e.commands.insertWrap) {
+                e.commands.insertWrap(editorModule.parseAttributesString(attributesString));
+              } else {
+                var wrapTag = attributesString.trim() ? "[wrap" + attributesString + "]" : "[wrap]";
+                e.applySurround(wrapTag + "\n", "\n[/wrap]", "wrap_text");
+              }
+            },
+            onRemove: state.inWrap
+              ? function () {
+                  e.commands.removeWrap();
+                }
+              : undefined,
+          },
+          richI18n
+        );
+      });
     },
     // discourse-templates' insert template (static/js/templates.js).
     "discourse-templates": function () {
@@ -4082,8 +4197,9 @@
     },
   };
 
-  // edit: the rich editor's Edit poll ({ poll, onSave }).
-  function showPollBuilder(edit) {
+  // edit: the rich editor's Edit poll ({ poll, onSave }); e: the toolbar
+  // event the options menu gave.
+  function showPollBuilder(edit, e) {
     var config = {};
     try {
       config = JSON.parse(data.pollBuilder || "{}");
@@ -4095,7 +4211,9 @@
           getText: function () {
             return textarea.value;
           },
-          addText: addText,
+          addText: function (text) {
+            (e || composerBar.event()).addText(text);
+          },
         },
         edit
       );
@@ -4116,11 +4234,11 @@
   // The options' shortcuts in the editor (mod+Shift+D, mod+Shift+.):
   // the option's shortcutAction, else its action.
   var popupShortcuts = {
-    "local-dates": function () {
+    "local-dates": function (_, e) {
       if (Discourse.localDatesCreate) {
         Discourse.localDatesCreate.currentDateMarkup().then(function (markup) {
           if (markup) {
-            addText(markup);
+            e.addText(markup);
           }
         });
       }
@@ -4130,7 +4248,7 @@
   function runPopupAction(item, viaShortcut, closing) {
     var action = (viaShortcut && popupShortcuts[item.name]) || popupActions[item.name];
     if (item.ported && action) {
-      action(closing);
+      action(closing, composerBar.event());
     } else {
       showError(data.labelUnported + " " + item.label);
     }
@@ -4170,14 +4288,36 @@
               button
             );
             var item = shown[index];
-            var closing = menu.close();
+            // ToolbarPopupMenuOptions' onSelect: the menu closed (and the
+            // focus back on its trigger) before the option acts, so the
+            // editor it focuses keeps the focus.
+            var closing = Promise.resolve(menu.close());
             if (item) {
-              runPopupAction(item, false, closing);
+              closing.then(function () {
+                runPopupAction(item, false, closing);
+              });
             }
           });
         }
       });
     });
+  }
+
+  // The same shortcuts in the rich editor's keymap (d-editor's).
+  function popupKeymap() {
+    var keys = {};
+    popup.items.forEach(function (item) {
+      if (!item.shortcut || popup.unported.length) {
+        return;
+      }
+      keys[((apple ? "meta+" : "ctrl+") + item.shortcut).toLowerCase()] = function () {
+        if (popupItemShown(item)) {
+          runPopupAction(item, true);
+        }
+        return false;
+      };
+    });
+    return keys;
   }
 
   textarea.addEventListener("keydown", function (event) {
@@ -4250,11 +4390,6 @@
   control.addEventListener("click", function (event) {
     if (event.target.closest(".composer-toggle-switch")) {
       toggleRichEditor();
-      return;
-    }
-    var tool = event.target.closest(".toolbar__button");
-    if (tool && actions[tool.dataset.action]) {
-      actions[tool.dataset.action]();
       return;
     }
     if (event.target.closest(".toggle-preview")) {
@@ -4356,6 +4491,11 @@
   textarea.addEventListener("input", scheduleDraft);
   title.addEventListener("input", scheduleDraft);
 
+  // The toolbar's shortcuts, Tab and Shift+Tab.
+  textarea.addEventListener("keydown", function (event) {
+    composerBar.keydown(event);
+  });
+
   textarea.addEventListener("keydown", function (event) {
     // Ctrl or Cmd + Enter submits, as in Ember.
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
@@ -4365,10 +4505,15 @@
   });
 
   // insertBlock (TextareaTextManipulation#_addBlock): the text on lines
-  // of its own in place of the selection, the cursor after it.
+  // of its own in place of the selection, the cursor after it; in the
+  // rich editor its blocks in the selection's place.
   function insertBlock(text) {
     text = (text || "").trim();
     if (!text) {
+      return;
+    }
+    if (richEditor) {
+      richEditor.textManipulation.insertBlock(text);
       return;
     }
     var value = textarea.value;

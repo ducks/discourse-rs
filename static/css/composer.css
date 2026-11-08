@@ -1440,6 +1440,165 @@ body.has-sidebar-page #reply-control:not(.fullscreen).hide-preview {
   display: none;
 }
 
+/* toolbar-popup-menu-options.scss: the toolbar's heading, list and
+   options menus (the scroll fades left out) */
+
+/* toolbar-popup-menu-options.scss:3 */
+.fk-d-menu[class*=toolbar-menu] {
+  z-index: 700;
+}
+@media (min-width: 40rem) {
+  .fk-d-menu[class*=toolbar-menu].fk-d-menu {
+    max-height: 30vh;
+  }
+}
+.fk-d-menu[class*=toolbar-menu] .fk-d-menu__inner-content {
+  flex-direction: column;
+}
+.fullscreen-composer .fk-d-menu[class*=toolbar-menu] {
+  z-index: 1001;
+}
+
+/* toolbar-popup-menu-options.scss:63 */
+.toolbar-menu__options-content .dropdown-menu .btn.no-text .d-icon,
+.toolbar-menu__heading-content .dropdown-menu .btn.no-text .d-icon,
+.toolbar-menu__list-content .dropdown-menu .btn.no-text .d-icon {
+  margin-right: 0.45em;
+}
+.toolbar-menu__options-content .dropdown-menu .btn.--active .d-button-label__active-icon,
+.toolbar-menu__heading-content .dropdown-menu .btn.--active .d-button-label__active-icon,
+.toolbar-menu__list-content .dropdown-menu .btn.--active .d-button-label__active-icon {
+  visibility: visible;
+}
+.toolbar-menu__options-content .dropdown-menu .btn.--active:not(:hover, :focus, :focus-visible) .shortcut,
+.toolbar-menu__heading-content .dropdown-menu .btn.--active:not(:hover, :focus, :focus-visible) .shortcut,
+.toolbar-menu__list-content .dropdown-menu .btn.--active:not(:hover, :focus, :focus-visible) .shortcut {
+  visibility: hidden;
+}
+.toolbar-menu__options-content .dropdown-menu .btn:hover .shortcut,
+.toolbar-menu__options-content .dropdown-menu .btn:focus .shortcut,
+.toolbar-menu__options-content .dropdown-menu .btn:focus-visible .shortcut,
+.toolbar-menu__heading-content .dropdown-menu .btn:hover .shortcut,
+.toolbar-menu__heading-content .dropdown-menu .btn:focus .shortcut,
+.toolbar-menu__heading-content .dropdown-menu .btn:focus-visible .shortcut,
+.toolbar-menu__list-content .dropdown-menu .btn:hover .shortcut,
+.toolbar-menu__list-content .dropdown-menu .btn:focus .shortcut,
+.toolbar-menu__list-content .dropdown-menu .btn:focus-visible .shortcut {
+  visibility: visible;
+}
+.toolbar-menu__options-content .dropdown-menu .btn:hover .d-button-label__active-icon,
+.toolbar-menu__options-content .dropdown-menu .btn:focus .d-button-label__active-icon,
+.toolbar-menu__options-content .dropdown-menu .btn:focus-visible .d-button-label__active-icon,
+.toolbar-menu__heading-content .dropdown-menu .btn:hover .d-button-label__active-icon,
+.toolbar-menu__heading-content .dropdown-menu .btn:focus .d-button-label__active-icon,
+.toolbar-menu__heading-content .dropdown-menu .btn:focus-visible .d-button-label__active-icon,
+.toolbar-menu__list-content .dropdown-menu .btn:hover .d-button-label__active-icon,
+.toolbar-menu__list-content .dropdown-menu .btn:focus .d-button-label__active-icon,
+.toolbar-menu__list-content .dropdown-menu .btn:focus-visible .d-button-label__active-icon {
+  visibility: hidden;
+}
+.toolbar-menu__options-content .dropdown-menu .d-button-label,
+.toolbar-menu__heading-content .dropdown-menu .d-button-label,
+.toolbar-menu__list-content .dropdown-menu .d-button-label {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-4);
+  min-width: 0;
+}
+.toolbar-menu__options-content .dropdown-menu .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .d-button-label__text,
+.toolbar-menu__list-content .dropdown-menu .d-button-label__text {
+  text-align: start;
+}
+.toolbar-menu__options-content .dropdown-menu .d-button-label__active-icon,
+.toolbar-menu__options-content .dropdown-menu .d-button-label .shortcut,
+.toolbar-menu__heading-content .dropdown-menu .d-button-label__active-icon,
+.toolbar-menu__heading-content .dropdown-menu .d-button-label .shortcut,
+.toolbar-menu__list-content .dropdown-menu .d-button-label__active-icon,
+.toolbar-menu__list-content .dropdown-menu .d-button-label .shortcut {
+  grid-area: 1/2;
+  justify-self: end;
+  visibility: hidden;
+}
+.toolbar-menu__options-content .dropdown-menu .d-button-label .shortcut.--always-visible,
+.toolbar-menu__heading-content .dropdown-menu .d-button-label .shortcut.--always-visible,
+.toolbar-menu__list-content .dropdown-menu .d-button-label .shortcut.--always-visible {
+  visibility: visible;
+}
+
+/* toolbar-popup-menu-options.scss:135 */
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-1] .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-1] .d-icon[class*=d-icon-discourse] {
+  font-size: var(--font-up-2-rem);
+  font-weight: bold;
+}
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-2] .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-2] .d-icon {
+  font-size: var(--font-up-1-rem);
+  font-weight: bold;
+}
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-3] .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-3] .d-icon {
+  font-size: var(--font-0);
+  font-weight: bold;
+}
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-4] .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-4] .d-icon {
+  font-weight: bold;
+  font-size: var(--font-down-1-rem);
+}
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-paragraph] .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-paragraph] .d-icon {
+  font-size: var(--font-down-1-rem);
+}
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-small] .d-button-label__text,
+.toolbar-menu__heading-content .dropdown-menu .btn[data-name=heading-small] .d-icon {
+  font-size: var(--font-down-2-rem);
+}
+
+/* modal/modal-overrides.scss: UpsertHyperlink */
+
+/* modal-overrides.scss:3 */
+.d-modal.upsert-hyperlink-modal .insert-link {
+  overflow-y: visible;
+}
+.d-modal.upsert-hyperlink-modal .insert-link input {
+  min-width: 300px;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs {
+  position: relative;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .spinner {
+  position: absolute;
+  right: 8px;
+  top: -15px;
+  width: 10px;
+  height: 10px;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results {
+  position: absolute;
+  top: 4rem;
+  padding: 5px 10px;
+  box-shadow: var(--shadow-card);
+  z-index: 5;
+  background-color: var(--secondary);
+  max-height: 10rem;
+  width: 90%;
+  overflow-y: auto;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results > .search-link {
+  padding: 6px;
+  border-bottom: 1px solid var(--content-border-color);
+  cursor: pointer;
+  display: block;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results > .search-link:hover,
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results > .search-link:focus {
+  background-color: var(--highlight-bg);
+}
+
 /* Where Ember leaves things out of the DOM (the reply composer's title
    and category) or floats them (the select-kit body, placed by
    floating-ui), here they are hidden or placed under their header. */

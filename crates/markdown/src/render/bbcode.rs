@@ -21,7 +21,7 @@ use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
 
 use super::context::Context;
-use super::element::{BlockText, Element, Holder, JsBare, JsToken, JsWrap, RawHtml};
+use super::element::{BlockText, Element, Holder, JsBare, JsToken, JsTree, JsWrap, RawHtml};
 use super::linkify::Linkified;
 use super::{RenderSettings, poll, quotes, untrimmed};
 
@@ -443,7 +443,15 @@ impl BlockRule for BlockBbcode {
                 "<div class=\"graphviz is-loading\" data-engine=\"{engine}\">\n{}\n</div>\n",
                 markdown_it::common::utils::escape_html(&content)
             );
-            return Some((Node::new(RawHtml(html)), lines));
+            // The token the rule pushes, for the editor's tree.
+            let mut node = Node::new(RawHtml(html));
+            node.ext.insert(JsTree(vec![serde_json::json!({
+                "type": "graphviz",
+                "tag": "div",
+                "attrs": [["data-engine", engine]],
+                "content": content,
+            })]));
+            return Some((node, lines));
         }
 
         // chat-transcript.js's `replace`: the source between the tags,

@@ -15,6 +15,8 @@
 //     onUnsupported,  // (error) the markdown has what no extension parses;
 //                     // the reference alerts composer.unsupported_token
 //                     // and toggles back to markdown
+//     onStateChange,  // (state) the toolbar's state (textManipulation's)
+//                     // after each transaction
 //     extensions,     // default: getExtensions()
 //     includeDefault, placeholder, disabled, className,
 //     keymap,         // the host's { "ctrl+m": fn } keys, as d-editor's
@@ -29,8 +31,9 @@
 //   })
 //
 // returns { view, schema, parser, serializer, setValue, getValue,
-// convertFromMarkdown, convertToMarkdown, commands, customState, focus,
-// setPlaceholder, destroy }.
+// convertFromMarkdown, tryConvertFromMarkdown, convertToMarkdown, commands,
+// customState, textManipulation (text-manipulation.js, what the toolbar
+// acts through), focus, setPlaceholder, destroy }.
 import * as ProsemirrorCommands from "prosemirror-commands";
 import { baseKeymap } from "prosemirror-commands";
 import { dropCursor } from "prosemirror-dropcursor";
@@ -54,12 +57,14 @@ import Parser, { UnsupportedTokenError } from "discourse/rich-editor/parser";
 import * as utils from "discourse/rich-editor/plugin-utils";
 import { createSchema } from "discourse/rich-editor/schema";
 import Serializer from "discourse/rich-editor/serializer";
+import TextManipulation from "discourse/rich-editor/text-manipulation";
 
 export { UnsupportedTokenError };
 export { wasmEngine } from "discourse/rich-editor/engine";
 export { registerPluginExtensions } from "discourse/rich-editor/plugins";
 export { renderToolbarButtons } from "discourse/rich-editor/toolbar";
 export { showWrapAttributesModal } from "discourse/rich-editor/wrap-modal";
+export { parseAttributesString } from "discourse/rich-editor/wrap-utils";
 
 var AUTOCOMPLETE_KEY_DOWN_SUPPRESS = ["Enter", "Tab", "ArrowDown", "ArrowUp"];
 
@@ -221,6 +226,7 @@ export function createEditor(options) {
   var context = { placeholder: options.placeholder };
   var lastSerialized;
   var view;
+  var textManipulation;
   var parser;
   var serializer;
 
@@ -230,6 +236,42 @@ export function createEditor(options) {
 
   function convertToMarkdown(doc) {
     return serializer.convert(doc);
+  }
+
+  // Parses markdown, null instead of a refusal.
+  function tryConvertFromMarkdown(markdown) {
+    try {
+      return parser.convert(schema, markdown);
+    } catch (e) {
+      if (e instanceof UnsupportedTokenError) {
+        return null;
+      }
+      throw e;
+    }
+  }
+
+  // What the toolbar inserts: a refusal is the host's (the reference's
+  // alert and back to markdown), the markdown kept as HTML blocks
+  // meanwhile.
+  function convertFromMarkdownOrRefuse(markdown) {
+    var doc = tryConvertFromMarkdown(markdown);
+    if (doc) {
+      return doc;
+    }
+    if (options.onUnsupported) {
+      options.onUnsupported(new UnsupportedTokenError(markdown));
+    }
+    return schema.nodes.paragraph.create(
+      null,
+      markdown
+        // our html_block avoids double newlines
+        // because markdown-it closes the html block parsing at double newlines
+        .split("\n\n")
+        .filter(Boolean)
+        .map(function (line) {
+          return schema.nodes.html_block.create(null, schema.text(line));
+        })
+    );
   }
 
   var params = {
@@ -305,6 +347,11 @@ export function createEditor(options) {
           options.onChange(value);
         }
       }
+
+      textManipulation.updateState();
+      if (options.onStateChange) {
+        options.onStateChange(textManipulation.state);
+      }
     },
     handleDOMEvents: {
       focus: function () {
@@ -353,6 +400,23 @@ export function createEditor(options) {
     },
   });
 
+  var commands = buildCommands(extensions, params, view);
+  var customState = buildCustomState(extensions, params);
+  textManipulation = new TextManipulation({
+    schema: schema,
+    view: view,
+    convertFromMarkdown: convertFromMarkdownOrRefuse,
+    tryConvertFromMarkdown: tryConvertFromMarkdown,
+    convertToMarkdown: convertToMarkdown,
+    splitNonEmptyLines: splitNonEmptyLines,
+    buildListNode: buildListNode,
+    commands: commands,
+    customState: customState,
+    i18n: function (key, i18nParams) {
+      return params.getContext().i18n(key, i18nParams);
+    },
+  });
+
   // convertFromValue: the markdown it was given, unless it is what the
   // editor just wrote. Not an edit to undo.
   function setValue(value) {
@@ -387,6 +451,8 @@ export function createEditor(options) {
     throw e;
   }
 
+  textManipulation.updateState();
+
   return {
     view: view,
     schema: schema,
@@ -394,9 +460,11 @@ export function createEditor(options) {
     serializer: serializer,
     params: params,
     opened: opened,
-    commands: buildCommands(extensions, params, view),
-    customState: buildCustomState(extensions, params),
+    commands: commands,
+    customState: customState,
+    textManipulation: textManipulation,
     convertFromMarkdown: convertFromMarkdown,
+    tryConvertFromMarkdown: tryConvertFromMarkdown,
     convertToMarkdown: convertToMarkdown,
     setValue: setValue,
     getValue: function () {

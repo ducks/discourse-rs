@@ -28,6 +28,7 @@ const SITE_SETTINGS = {
   authorized_extensions: "jpg|jpeg|png|gif|heic|heif|webp|avif|svg",
   authorized_extensions_for_staff: "",
   avatar_sizes: "24|48|72|96|144|288",
+  max_oneboxes_per_post: 50,
 };
 
 // The English strings of the keys the extensions look up (client.en.yml).
@@ -90,6 +91,11 @@ const LABELS = {
   "composer.link_toolbar.visit": "Open link in external tab",
   "composer.link_toolbar.link_copied": "Link copied!",
   "composer.link_toolbar.load_preview": "Load preview",
+  "composer.link_toolbar.preview_failed": "Could not load preview",
+  "composer.onebox_toolbar.copy": "Copy link",
+  "composer.onebox_toolbar.remove_preview": "Remove preview",
+  "composer.onebox_toolbar.visit": "Open link",
+  "composer.onebox_toolbar.link_copied": "Link copied!",
   "composer.image_alt_text.aria_label": "Alt text for image",
   "composer.image_alt_text.title": "Add image description",
   "composer.image_toolbar.alt_text": "Add image description",
@@ -149,11 +155,27 @@ const LABELS = {
   "poll.public.title": "Votes are <strong>public</strong>.",
   "poll.ui_builder.edit": "Edit poll",
   "poll.ui_builder.poll_title.placeholder": "Poll title",
+  // the toolbar's example texts
+  "composer.bold_text": "strong text",
+  "composer.italic_text": "emphasized text",
+  "composer.blockquote_text": "Blockquote",
+  "composer.heading_text": "Heading",
+  "composer.code_title": "Preformatted text",
+  "composer.code_text": "indent preformatted text by 4 spaces",
+  "composer.paste_code_text": "type or paste code here",
+  "composer.list_item": "List item",
 };
 
 // In the page: the engine, the context and richSpec.
 function harness() {
   const handlers = {};
+  // The page's requests in flight, for settledRequests.
+  let pending = 0;
+  const pageFetch = window.fetch;
+  window.fetch = function () {
+    pending++;
+    return pageFetch.apply(this, arguments).finally(() => pending--);
+  };
   window.richSpec = {
     engine: null,
     editor: null,
@@ -189,8 +211,23 @@ function harness() {
     qunitHelpers() {
       const spec = this;
       const settled = () => new Promise((resolve) => setTimeout(resolve, 100));
+      // @ember/test-helpers' settled where a test waits on the server
+      // (oneboxes.js' queue starts a request 150ms after it is asked): no
+      // request in flight across two looks 200ms apart.
+      const settledRequests = async () => {
+        let quiet = 0;
+        for (let i = 0; i < 25 && quiet < 2; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          quiet = pending === 0 ? quiet + 1 : 0;
+        }
+      };
+      // opts.onSetup gets the editor's TextManipulation, as
+      // ProsemirrorEditor's @onSetup does.
       const setupRichEditor = async (assert, markdown, opts) => {
         const result = await spec.setup(markdown, opts);
+        if (opts && opts.onSetup) {
+          opts.onSetup(spec.editor.textManipulation);
+        }
         const editor = {
           get view() {
             return spec.editor.view;
@@ -238,7 +275,7 @@ function harness() {
         );
         await settled();
       };
-      return { settled, setupRichEditor, testMarkdown, find, click, triggerKeyEvent };
+      return { settled, settledRequests, setupRichEditor, testMarkdown, find, click, triggerKeyEvent };
     },
 
     // What the reference's QUnit bodies import (inPage).
@@ -257,8 +294,54 @@ function harness() {
         extensions: await import("discourse/rich-editor/extensions"),
         pmState: await import("prosemirror-state"),
         pmModel: await import("prosemirror-model"),
+        pmHistory: await import("prosemirror-history"),
+        tm: await this.tmHelpers(),
         v: tada ? tada.url.split("?v=")[1] : "",
         helpers: this.qunitHelpers(),
+      };
+    },
+
+    // text-manipulation-test.gjs' helpers: setupEditor (a ProsemirrorEditor
+    // over "", its TextManipulation as state.textManipulation), setContent,
+    // selectAll, placeCursor, countNodes and getMarkdown.
+    async tmHelpers() {
+      const spec = this;
+      const { TextSelection } = await import("prosemirror-state");
+      return {
+        async setupEditor() {
+          const editor = await spec.create("", {});
+          return { textManipulation: editor.textManipulation, value: "" };
+        },
+        setContent(state, markdown) {
+          const { view, convertFromMarkdown } = state.textManipulation;
+          const doc = convertFromMarkdown(markdown);
+          view.dispatch(view.state.tr.replaceWith(0, view.state.doc.content.size, doc.content));
+        },
+        selectAll(state) {
+          const { view } = state.textManipulation;
+          const { doc } = view.state;
+          const from = TextSelection.atStart(doc).from;
+          const to = TextSelection.atEnd(doc).to;
+          view.dispatch(view.state.tr.setSelection(TextSelection.create(doc, from, to)));
+        },
+        placeCursor(state) {
+          const { view } = state.textManipulation;
+          const pos = TextSelection.atStart(view.state.doc).from;
+          view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, pos)));
+        },
+        countNodes(state, typeName) {
+          let count = 0;
+          state.textManipulation.view.state.doc.descendants((node) => {
+            if (node.type.name === typeName) {
+              count++;
+            }
+          });
+          return count;
+        },
+        getMarkdown(state) {
+          const { view, convertToMarkdown } = state.textManipulation;
+          return convertToMarkdown(view.state.doc);
+        },
       };
     },
 
@@ -303,6 +386,11 @@ function harness() {
         extensions: opts.defaultsOnly ? [] : extensionsModule.getExtensions(),
         className: "d-editor-input",
         disabled: opts.disabled,
+        // d-editor's keymap: Tab and Shift+Tab indent (nest list items).
+        keymap: {
+          tab: () => !this.editor.textManipulation.indentSelection("right"),
+          "shift+tab": () => !this.editor.textManipulation.indentSelection("left"),
+        },
         context: Object.assign(
           {
             siteSettings: Object.assign({}, window.richSpecSiteSettings, opts.siteSettings),
