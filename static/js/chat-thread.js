@@ -1172,8 +1172,12 @@
   }
 
   // The loaded pages again, in place of the items (the list's sort and
-  // filter as the server applies them now).
+  // filter as the server applies them now). A tracking change heard
+  // while they load may be newer than they are (a read elsewhere
+  // committed after they were drawn): they load again instead of
+  // drawing over it.
   function reloadThreads(more, only) {
+    var heard = more.chatTrackingHeard || 0;
     var loaded = Math.max(Number(more.dataset.offset || 0), 10);
     var pages = [];
     for (var offset = 0; offset < loaded; offset += 10) {
@@ -1184,6 +1188,9 @@
         return !r;
       })) {
         return;
+      }
+      if ((more.chatTrackingHeard || 0) !== heard) {
+        return reloadThreads(more, only);
       }
       var template = document.createElement("template");
       template.innerHTML = results
@@ -1242,6 +1249,11 @@
       (count > 99 ? "99+" : String(count)) +
       "</span></span>"
     );
+  }
+
+  // A tracking change heard by the list, for reloadThreads.
+  function heardTracking(more) {
+    more.chatTrackingHeard = (more.chatTrackingHeard || 0) + 1;
   }
 
   // The item drawn again from its tracking: ChatThreadListItem's classes
@@ -1413,6 +1425,7 @@
         }, 250);
       };
       var followTracking = function (data, apply) {
+        heardTracking(channelMore);
         var node = channelMore.parentNode.querySelector(
           ":scope > .chat-thread-list-item[data-thread-id='" + Number(data.thread_id) + "']"
         );
@@ -1479,11 +1492,13 @@
         if (/^\/chat\/\d+\/new-messages$/.test(message.channel)) {
           node = data.type === "thread" && data.thread_id && userNode(data.thread_id);
           if (node) {
+            heardTracking(userMore);
             onNewThreadMessage(node, data, userViewer);
           }
         } else if (message.channel === "/chat/user-tracking-state/" + userViewer.id) {
           node = data.thread_id && data.thread_tracking && userNode(data.thread_id);
           if (node) {
+            heardTracking(userMore);
             onThreadTracking(node, data);
           }
         } else if (data.type === "update_thread_original_message" && data.thread_id) {
