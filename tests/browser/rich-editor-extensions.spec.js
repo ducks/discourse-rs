@@ -642,20 +642,24 @@ test.describe("rich editor code blocks", () => {
     assert.strictEqual(view.state.doc.firstChild.textContent, "one\ntwo\nthree", "each selected line is outdented as far as possible");
   });
 
-  // Tab nesting list items is d-editor's keymap (sinkListItem), which the
-  // composer's toolbar brings (ROADMAP 196r3); the reference's "Tab still
-  // nests list items" checks the code block's Tab leaves it to that.
-  qtest("Tab outside a code block is left to the other keys", async function (assert, { helpers, pmState }) {
+  // Outside a code block Tab is d-editor's keymap (indentSelection's
+  // sinkListItem), which the helper's editor has as the composer's does.
+  qtest("Tab still nests list items", async function (assert, { helpers, pmState }) {
     const { setupRichEditor, triggerKeyEvent } = helpers;
     const { TextSelection } = pmState;
     const [editor] = await setupRichEditor(assert, "* first\n* second");
     const { view } = editor;
 
     view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 12)));
-    const before = view.state.doc;
     await triggerKeyEvent(".ProseMirror", "keydown", "Tab");
 
-    assert.true(view.state.doc.eq(before), "the code block's Tab does nothing in a list");
+    assert.dom(".ProseMirror > ul > li > ul > li").hasText("second", "the second item is nested under the first");
+
+    await triggerKeyEvent(".ProseMirror", "keydown", "Tab", {
+      shiftKey: true,
+    });
+
+    assert.dom(".ProseMirror > ul > li").exists({ count: 2 }, "Shift-Tab lifts the nested item");
   });
 });
 

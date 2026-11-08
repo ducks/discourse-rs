@@ -61,6 +61,7 @@
     "serializer",
     "to-markdown",
     "engine",
+    "text-manipulation",
     "toolbar",
     "extensions/emoji",
     "extensions/mention",

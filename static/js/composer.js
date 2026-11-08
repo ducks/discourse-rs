@@ -2,7 +2,8 @@
 // reply to a topic or a post, create a topic or edit a post, and posts
 // through /posts as Ember's composer does. Its height, sizing, minimizing
 // and fullscreen follow services/composer.js and composer-container; the
-// toolbar applies its markdown as d-editor's buttons do.
+// toolbar (editor-toolbar.js, shipped in front of this file) acts through
+// the open editor as d-editor's buttons do.
 (function () {
   "use strict";
 
@@ -1021,7 +1022,7 @@
   }
   refreshSeparator();
 
-  // The toolbar: markdown around the selection, or its example text.
+  // Markdown around the selection, or its example text.
   function surround(before, after, example) {
     var start = textarea.selectionStart;
     var end = textarea.selectionEnd;
@@ -1033,53 +1034,33 @@
     focusEditor();
   }
 
-  function prefixLines(prefix, example) {
-    var start = textarea.selectionStart;
-    var end = textarea.selectionEnd;
-    var lineStart = textarea.value.lastIndexOf("\n", start - 1) + 1;
-    var selected = textarea.value.slice(lineStart, end) || example;
-    var replaced = selected
-      .split("\n")
-      .map(function (line) {
-        return prefix + line;
-      })
-      .join("\n");
-    textarea.setRangeText(replaced, lineStart, Math.max(end, lineStart), "end");
-    syncRichEditor();
-    focusEditor();
+  // The toolbar (editor-toolbar.js) over the open editor's
+  // TextManipulation: the rich editor's, else the textarea's.
+  var textareaManipulation = null;
+  function textManipulation() {
+    if (richEditor) {
+      return richEditor.textManipulation;
+    }
+    if (!textareaManipulation) {
+      textareaManipulation = Discourse.editorToolbar.textarea(textarea, {
+        i18n: richI18n,
+        siteSettings: richContextSettings(),
+      });
+    }
+    return textareaManipulation;
   }
-
-  var actions = {
-    bold: function () {
-      surround("**", "**", data.textBold);
+  var composerBar = Discourse.editorToolbar.bind(control, {
+    textManipulation: textManipulation,
+    i18n: richI18n,
+    actions: {
+      link: function (e) {
+        e.applySurround("[", "](https://)", "link_description");
+      },
+      upload: function () {
+        fileInput.click();
+      },
     },
-    italic: function () {
-      surround("*", "*", data.textItalic);
-    },
-    link: function () {
-      surround("[", "](https://)", data.textLink);
-    },
-    blockquote: function () {
-      prefixLines("> ", data.textBlockquote);
-    },
-    code: function () {
-      var selected = textarea.value.slice(
-        textarea.selectionStart,
-        textarea.selectionEnd
-      );
-      if (selected.indexOf("\n") >= 0 || selected === "") {
-        surround("```\n", "\n```", data.textCode);
-      } else {
-        surround("`", "`", "");
-      }
-    },
-    upload: function () {
-      fileInput.click();
-    },
-    list: function () {
-      prefixLines("- ", data.textList);
-    },
-  };
+  });
 
   // The preview: the markdown crate as WebAssembly, loaded the first time
   // the composer opens with the preview shown. Its exports are in
@@ -1333,30 +1314,41 @@
   // (src/composer/rich_editor.rs), and the composer's own state, or for
   // another d-editor (`slot`, not the composer's) no topic.
   var richContextData = null;
-  function richEditorContext(editorModule, slot) {
-    slot = slot || composerToolbar;
+  function richContext() {
     if (!richContextData) {
       richContextData = JSON.parse(data.richEditorContext || "{}");
     }
-    var labels = richContextData.labels || {};
+    return richContextData;
+  }
+
+  function richContextSettings() {
+    return richContext().siteSettings || {};
+  }
+
+  // The context's strings, a plural key's form picked by count.
+  function richI18n(key, params) {
+    var labels = richContext().labels || {};
+    if (params && params.count !== undefined) {
+      var count = Number(params.count);
+      var form = count === 0 && key + ".zero" in labels ? "zero" : count === 1 ? "one" : "other";
+      if (key + "." + form in labels) {
+        key = key + "." + form;
+      }
+    }
+    var text = key in labels ? labels[key] : key;
+    Object.keys(params || {}).forEach(function (name) {
+      text = text.split("%{" + name + "}").join(String(params[name]));
+    });
+    return text;
+  }
+
+  function richEditorContext(editorModule, slot) {
+    slot = slot || composerToolbar;
     var context = {
-      siteSettings: richContextData.siteSettings || {},
-      site: richContextData.site || {},
-      currentUser: richContextData.currentUser || null,
-      i18n: function (key, params) {
-        if (params && params.count !== undefined) {
-          var count = Number(params.count);
-          var form = count === 0 && key + ".zero" in labels ? "zero" : count === 1 ? "one" : "other";
-          if (key + "." + form in labels) {
-            key = key + "." + form;
-          }
-        }
-        var text = key in labels ? labels[key] : key;
-        Object.keys(params || {}).forEach(function (name) {
-          text = text.split("%{" + name + "}").join(String(params[name]));
-        });
-        return text;
-      },
+      siteSettings: richContextSettings(),
+      site: richContext().site || {},
+      currentUser: richContext().currentUser || null,
+      i18n: richI18n,
       topicId: state && slot === composerToolbar ? state.topicId || null : null,
       appEvents: richEvents,
       capabilities: {
@@ -1391,10 +1383,7 @@
   // The plugins' extensions (rich-editor/plugins.js), and what their nodes
   // draw with before the editor opens: local dates' moment.
   function richEditorPlugins(editorModule) {
-    if (!richContextData) {
-      richContextData = JSON.parse(data.richEditorContext || "{}");
-    }
-    var plugins = richContextData.plugins || [];
+    var plugins = richContext().plugins || [];
     editorModule.registerPluginExtensions(plugins);
     if (plugins.indexOf("local-dates") !== -1 && Discourse.localDates) {
       // Without it the dates show as written.
@@ -1494,6 +1483,7 @@
       richEditor.destroy();
       richEditor = null;
     }
+    composerBar.refresh({});
     if (composerToolbar.replaced) {
       replaceToolbar(composerToolbar, null, null);
     }
@@ -1549,17 +1539,32 @@
           context: richEditorContext(loaded[0]),
           placeholder: textarea.placeholder,
           className: "d-editor-input",
-          keymap: {
+          keymap: Object.assign({}, composerBar.keymap, {
             "ctrl+m": function () {
               toggleRichEditor();
             },
-          },
+          }),
           onChange: function (markdown) {
             textarea.value = markdown;
             textarea.dispatchEvent(new Event("input", { bubbles: true }));
           },
+          onStateChange: function (toolbarState) {
+            if (richEditor === editor) {
+              composerBar.refresh(toolbarState);
+            }
+          },
+          // On opening, the refusal below; later, what a toolbar button
+          // inserted.
           onUnsupported: function (e) {
-            refused = e;
+            if (richEditor === editor) {
+              setTimeout(function () {
+                if (richEditor === editor) {
+                  richEditorFailed(e);
+                }
+              }, 0);
+            } else {
+              refused = e;
+            }
           },
           focusIn: function () {
             wrapper.classList.add("in-focus");
@@ -1574,6 +1579,7 @@
           richEditorFailed(refused);
           return;
         }
+        composerBar.refresh(editor.textManipulation.state);
         // Ctrl or Cmd + Enter submits here too.
         editor.view.dom.addEventListener("keydown", function (event) {
           if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
@@ -1673,7 +1679,8 @@
     },
     // createEditor over `textarea` in `host`'s textarea wrapper: resolves
     // to { editor, destroy }, or rejects with what refused the markdown.
-    create: function (host, textarea, toggle) {
+    // `bar` is the host's toolbar (toolbar(), below): its keys and state.
+    create: function (host, textarea, toggle, bar) {
       var slot = toolbarSlot(host);
       var hostWrapper = host.querySelector(".d-editor-textarea-wrapper");
       return Promise.all([Discourse.richEditor.load(), loadRenderer()]).then(function (loaded) {
@@ -1686,10 +1693,15 @@
             context: richEditorContext(loaded[0], slot),
             placeholder: textarea.placeholder,
             className: "d-editor-input",
-            keymap: { "ctrl+m": toggle },
+            keymap: Object.assign({}, bar ? bar.keymap : {}, { "ctrl+m": toggle }),
             onChange: function (markdown) {
               textarea.value = markdown;
               textarea.dispatchEvent(new Event("input", { bubbles: true }));
+            },
+            onStateChange: function (toolbarState) {
+              if (bar) {
+                bar.refresh(toolbarState);
+              }
             },
             onUnsupported: function (e) {
               refused = e;
@@ -1706,6 +1718,9 @@
             if (slot.replaced) {
               replaceToolbar(slot, null, null);
             }
+            if (bar) {
+              bar.refresh({});
+            }
           };
           if (refused) {
             destroy();
@@ -1716,6 +1731,23 @@
       });
     },
     failed: alertRichFailure,
+    // The host's toolbar (editor-toolbar.js) over `textarea`, or the editor
+    // `rich()` gives while it is open, with the composer's strings.
+    toolbar: function (host, textarea, rich) {
+      var plain = Discourse.editorToolbar.textarea(textarea, { i18n: richI18n, siteSettings: richContextSettings() });
+      return Discourse.editorToolbar.bind(host, {
+        textManipulation: function () {
+          var editor = rich();
+          return editor ? editor.textManipulation : plain;
+        },
+        i18n: richI18n,
+        actions: {
+          link: function (e) {
+            e.applySurround("[", "](https://)", "link_description");
+          },
+        },
+      });
+    },
   };
 
   // The new-topic and new-message routes (routes/new-topic.js,
@@ -4252,11 +4284,6 @@
       toggleRichEditor();
       return;
     }
-    var tool = event.target.closest(".toolbar__button");
-    if (tool && actions[tool.dataset.action]) {
-      actions[tool.dataset.action]();
-      return;
-    }
     if (event.target.closest(".toggle-preview")) {
       togglePreview();
     } else if (event.target.closest(".toggle-fullscreen")) {
@@ -4355,6 +4382,11 @@
 
   textarea.addEventListener("input", scheduleDraft);
   title.addEventListener("input", scheduleDraft);
+
+  // The toolbar's shortcuts, Tab and Shift+Tab.
+  textarea.addEventListener("keydown", function (event) {
+    composerBar.keydown(event);
+  });
 
   textarea.addEventListener("keydown", function (event) {
     // Ctrl or Cmd + Enter submits, as in Ember.

@@ -204,7 +204,7 @@ pub fn render(p: &Prefs, pr: &Profile) -> Result<(String, Map<String, Value>), A
                     "--markdown-editor-enabled"
                 },
                 crate::composer::view::toggle_switch(cx, pr.rich),
-                crate::composer::view::toolbar(cx, None, None),
+                crate::composer::view::editor_toolbar(cx, None, None),
                 escape(u["bio_raw"].as_str().unwrap_or_default()),
                 u["bio_cooked"].as_str().unwrap_or_default(),
             ));

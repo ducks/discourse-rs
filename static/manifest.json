@@ -1067,6 +1067,7 @@
       "name": "composer.js",
       "content_type": "js",
       "files": [
+        "js/editor-toolbar.js",
         "js/composer.js"
       ]
     },
@@ -1327,6 +1328,13 @@
       "content_type": "js",
       "files": [
         "js/rich-editor/engine.js"
+      ]
+    },
+    {
+      "name": "rich-editor/text-manipulation.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/text-manipulation.js"
       ]
     },
     {

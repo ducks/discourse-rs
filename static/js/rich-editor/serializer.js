@@ -5,7 +5,7 @@
 // serializeMark. serializeNode may carry an afterSerialize run on the
 // state once the document is written (footnotes append their notes so).
 import { defaultMarkdownSerializer, MarkdownSerializerState } from "prosemirror-markdown";
-import { Node } from "prosemirror-model";
+import { Fragment, Node } from "prosemirror-model";
 import { Transform } from "prosemirror-transform";
 
 var FLANKING_SENSITIVE_MARKS = ["strong", "em", "strikethrough"];
@@ -114,9 +114,19 @@ export default function Serializer(extensions, pluginParams, includeDefault) {
   });
 }
 
+// A document, a slice or a fragment (a selection's content): inline
+// content is rendered as a paragraph's, so its marks are written.
 Serializer.prototype.convert = function (doc) {
   var state = new MarkdownSerializerState(this.nodes, this.marks, {});
-  state.renderContent(expelBoundaryPunctuation(doc).content);
+  var normalized = expelBoundaryPunctuation(doc);
+  var content = normalized instanceof Fragment ? normalized : normalized.content;
+  if (content.firstChild && content.firstChild.isInline) {
+    var parent =
+      normalized instanceof Node ? normalized : content.firstChild.type.schema.nodes.paragraph.create(null, content);
+    state.renderInline(parent);
+  } else {
+    state.renderContent(content);
+  }
 
   if (this.afterSerializers) {
     this.afterSerializers.forEach(function (afterSerializer) {

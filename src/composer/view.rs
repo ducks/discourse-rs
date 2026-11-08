@@ -380,6 +380,73 @@ fn options_trigger(list: &ListContext, options: &[PopupOption], unported: &[&str
     )
 }
 
+/// A popup menu's trigger (ToolbarPopupMenuOptions' DMenu): its options
+/// are drawn by static/js/editor-toolbar.js when it opens.
+fn menu_trigger(list: &ListContext, id: &str, icon_name: &str, title: &str) -> String {
+    format!(
+        "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger toolbar-menu__{id}-trigger toolbar__button {id} toolbar-popup-menu-options\" data-action=\"{id}\" tabindex=\"-1\" title=\"{}\" data-identifier=\"toolbar-menu__{id}\" data-trigger=\"\" type=\"button\">{}</button>",
+        escape(&t(list, title)),
+        icon(icon_name, None)
+    )
+}
+
+fn toolbar_button(list: &ListContext, class: &str, icon_name: &str, title: &str) -> String {
+    format!(
+        "<button class=\"btn no-text btn-icon toolbar__button {class}\" data-action=\"{class}\" tabindex=\"-1\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+        escape(&t(list, title)),
+        icon(icon_name, None)
+    )
+}
+
+/// The composer's and the About me's bar (lib/composer/toolbar.ts and the
+/// composer's extraButtons): fontStyles (bold, italic, the heading menu),
+/// insertions (link, blockquote, code, upload) and extras (the list menu,
+/// the options menu), run by static/js/editor-toolbar.js.
+pub(crate) fn editor_toolbar(
+    list: &ListContext,
+    upload: Option<&UploadUi>,
+    options: Option<(&[PopupOption], &[&str])>,
+) -> String {
+    let mut out = String::new();
+    out.push_str(&toolbar_button(list, "bold", "bold", "composer.bold_title"));
+    out.push_str(&toolbar_button(
+        list,
+        "italic",
+        "italic",
+        "composer.italic_title",
+    ));
+    out.push_str(&menu_trigger(
+        list,
+        "heading",
+        "discourse-text",
+        "composer.text_size_title",
+    ));
+    out.push_str(&toolbar_button(list, "link", "link", "composer.link_title"));
+    out.push_str(&toolbar_button(
+        list,
+        "blockquote",
+        "quote-right",
+        "composer.blockquote_title",
+    ));
+    out.push_str(&toolbar_button(list, "code", "code", "composer.code_title"));
+    if let Some(upload) = upload {
+        out.push_str(&toolbar_button(list, "upload", upload.icon, "upload"));
+    }
+    out.push_str(&menu_trigger(
+        list,
+        "list",
+        "list-ul",
+        "composer.list_title",
+    ));
+    // The extras group: the options menu (emoji is not ported).
+    if let Some((options, unported)) = options {
+        out.push_str(&options_trigger(list, options, unported));
+    }
+    out
+}
+
+/// The markdown bar of the d-editors whose scripts run it themselves
+/// (review's edit, the admin's About page).
 pub(crate) fn toolbar(
     list: &ListContext,
     upload: Option<&UploadUi>,
@@ -1067,7 +1134,7 @@ pub fn render(
             "xmark",
             "composer.save_and_close"
         ),
-        toolbar(list, upload, options),
+        editor_toolbar(list, upload, options),
         title = escape(&t(list, "composer.title_or_link_placeholder")),
         body = escape(&t(list, "composer.reply_placeholder")),
         save_or_cancel = save_or_cancel,
