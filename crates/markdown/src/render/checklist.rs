@@ -18,7 +18,7 @@ use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
 
 use super::RenderSettings;
-use super::element::{BlockText, Element};
+use super::element::{BlockText, Element, JsToken};
 use crate::sanitizer::AllowList;
 
 static MARKER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\[[ xX]?\]").unwrap());
@@ -203,6 +203,7 @@ pub fn run(root: &mut Node, settings: &RenderSettings) {
                 attrs,
                 block: false,
             });
+            JsToken::on(child, "check", "");
         }
     }
     visit(root, &source_lines, &mut counts, false);

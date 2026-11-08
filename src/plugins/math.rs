@@ -70,8 +70,11 @@ pub async fn serve(Path(path): Path<String>) -> Response {
         .into_response()
 }
 
-/// The client strings the insert modal shows, by their js.* key.
+/// The client strings the insert and edit modals show, by their js.* key.
 const STRINGS: &[&str] = &[
+    "discourse_math.edit_modal.title",
+    "discourse_math.edit_modal.label",
+    "discourse_math.edit_modal.apply",
     "discourse_math.insert_modal.title_inline",
     "discourse_math.insert_modal.title_block",
     "discourse_math.insert_modal.label",

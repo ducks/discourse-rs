@@ -8,7 +8,11 @@
 //       typesets what is under root: posts (as a cooked decorator, so
 //       pages and posts htmx swaps in too), the composer's preview (after
 //       200ms of quiet, as Rails delays a `.d-editor-preview`) and chat
-//       messages.
+//       messages; with { force: true } it typesets again what it had
+//       (the rich editor's math node, edited).
+//
+//   Discourse.mathEdit.show({ initialText, onApply })
+//       the rich editor's Edit math modal (modal/math-edit.gjs).
 //
 // The renderers are the discourse_math_bundle gem's, served under the
 // script tag's data-bundle-url (lib/math-bundle-paths.js: the site's
@@ -254,7 +258,28 @@
 
   // scheduleMathJaxTypeset: a preview's wrappers gather until it is quiet.
   var pending = new WeakMap();
-  function renderMathJax(elem) {
+
+  // resetMathJax and cancelPendingMathJaxTypeset: a forced render (the rich
+  // editor's math node, its text changed) starts over.
+  function resetMathJax(elem) {
+    var entry = pending.get(elem);
+    if (entry) {
+      clearTimeout(entry.timer);
+      pending.delete(elem);
+    }
+    elem.querySelectorAll(selector()).forEach(function (mathElem) {
+      mathElem.classList.remove(CSS_CLASSES.APPLIED_MATHJAX, CSS_CLASSES.HIDDEN);
+      mathElem.removeAttribute("hidden");
+    });
+    elem.querySelectorAll(".math-container.mathjax-math").forEach(function (wrapper) {
+      wrapper.remove();
+    });
+  }
+
+  function renderMathJax(elem, force) {
+    if (force) {
+      resetMathJax(elem);
+    }
     var wrappers = collectMathWrappers(elem);
     if (wrappers.length === 0) {
       return;
@@ -353,10 +378,24 @@
     }
   }
 
-  function renderKatex(elem) {
+  function resetKatex(elem) {
+    elem.querySelectorAll(".math").forEach(function (mathElem) {
+      var originalText = mathElem.getAttribute(ORIGINAL_TEXT_ATTR);
+      if (originalText && mathElem.querySelector(".katex")) {
+        mathElem.textContent = originalText;
+      }
+      mathElem.removeAttribute(ORIGINAL_TEXT_ATTR);
+      mathElem.classList.remove(CSS_CLASSES.APPLIED_KATEX, "math-container", "inline-math", "block-math", "katex-math");
+    });
+  }
+
+  function renderKatex(elem, force) {
     var mathElems = elem.querySelectorAll(".math");
     if (mathElems.length === 0) {
       return;
+    }
+    if (force) {
+      resetKatex(elem);
     }
     ensureKaTeX().then(
       function () {
@@ -368,15 +407,16 @@
     );
   }
 
-  // renderMathInElement
-  Discourse.renderMath = function (elem) {
+  // renderMathInElement; renderOptions.force typesets again what was.
+  Discourse.renderMath = function (elem, renderOptions) {
     if (!elem) {
       return;
     }
+    var force = !!(renderOptions && renderOptions.force);
     if (opts.provider === "mathjax") {
-      renderMathJax(elem);
+      renderMathJax(elem, force);
     } else if (opts.provider === "katex") {
-      renderKatex(elem);
+      renderKatex(elem, force);
     }
   };
 
@@ -492,6 +532,60 @@
         submit();
       });
       textarea.focus();
+    },
+  };
+
+  // ---- The rich editor's Edit math (modal/math-edit.gjs) ----
+
+  Discourse.mathEdit = {
+    // model: { initialText, onApply(text) }
+    show: function (model) {
+      if (!Discourse.modal) {
+        return null;
+      }
+      var root = document.createElement("form");
+      root.className = "form-kit";
+      root.noValidate = true;
+      root.innerHTML =
+        '<div class="form-kit__container form-kit__field form-kit__field-textarea --full" data-name="text">' +
+        '<label class="form-kit__container-title" for="math-edit-modal-text"><span>' +
+        escapeHtml(t("discourse_math.edit_modal.label")) +
+        "</span></label>" +
+        '<div class="form-kit__container-content"><textarea id="math-edit-modal-text" name="text" class="form-kit__control-textarea math-edit-modal__textarea"></textarea></div>' +
+        "</div>";
+      var textarea = root.querySelector("textarea");
+      textarea.value = model.initialText || "";
+      var close;
+      function submit() {
+        model.onApply(textarea.value || "");
+        close();
+      }
+      close = Discourse.modal.show({
+        className: "math-edit-modal",
+        title: t("discourse_math.edit_modal.title"),
+        body: function (el) {
+          el.appendChild(root);
+        },
+        footer: function (el) {
+          el.innerHTML =
+            '<button class="btn btn-text btn-primary math-edit-modal__apply" type="button"><span class="d-button-label">' +
+            escapeHtml(t("discourse_math.edit_modal.apply")) +
+            "</span></button>" +
+            '<button class="btn btn-text btn-default" type="button"><span class="d-button-label">' +
+            escapeHtml(t("cancel")) +
+            "</span></button>";
+          el.querySelector(".math-edit-modal__apply").addEventListener("click", submit);
+          el.querySelector(".btn-default").addEventListener("click", function () {
+            close();
+          });
+        },
+      });
+      root.addEventListener("submit", function (event) {
+        event.preventDefault();
+        submit();
+      });
+      textarea.focus();
+      return close;
     },
   };
 })();

@@ -1559,6 +1559,104 @@
       "files": [
         "js/rich-editor/node-views/image-alt-text-input.js"
       ]
+    },
+    {
+      "name": "rich-editor/extensions/wrap.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/extensions/wrap.js"
+      ]
+    },
+    {
+      "name": "rich-editor/node-views/wrap.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/node-views/wrap.js"
+      ]
+    },
+    {
+      "name": "rich-editor/wrap-utils.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/wrap-utils.js"
+      ]
+    },
+    {
+      "name": "rich-editor/wrap-modal.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/wrap-modal.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/checklist.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/checklist.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/details.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/details.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/footnote.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/footnote.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/local-dates.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/local-dates.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/math.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/math.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/policy.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/policy.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/poll.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/poll.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/poll-node-view.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/poll-node-view.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/spoiler.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/spoiler.js"
+      ]
     }
   ]
 }

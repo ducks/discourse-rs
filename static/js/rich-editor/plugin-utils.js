@@ -2,8 +2,9 @@
 // static/prosemirror/lib/plugin-utils.js. isWhiteSpace and isBoundary are
 // markdown-it's own (common/utils.mjs: isWhiteSpace, isPunctChar as P or S),
 // written out here since the editor loads no markdown-it; getLinkify is the
-// engine's (engine.js). buildBBCodeAttrs (the bbcode block extensions',
-// 196r4) arrives with the extensions that use it.
+// engine's (engine.js). buildBBCodeAttrs and serializeBBCodeAttr are
+// lib/text.js's, parseBBCodeTag bbcode-block.js's, which lib/wrap-utils.js
+// and the plugins' extensions import.
 import { InputRule } from "prosemirror-inputrules";
 import { StepMap } from "prosemirror-transform";
 
@@ -333,4 +334,151 @@ export function isNodeActive(state, nodeType, attrs) {
   }, 0);
 
   return range >= selectionRange;
+}
+
+// bbcode-block.js's QUOTATION_MARKS and the patterns parseBBCodeTag uses.
+export var QUOTATION_MARKS = ['""', "''", "«»", "“”", "””", "‘’", "„“", "‚’", "‹›"];
+
+var QUOTATION_MARKS_NO_MATCH = QUOTATION_MARKS.map(function (pair) {
+  return pair[0] + "[^" + pair[1] + "]+" + pair[1];
+}).join("|");
+
+var QUOTATION_MARKS_WITH_MATCH = QUOTATION_MARKS.map(function (pair) {
+  return pair[0] + "([^" + pair[1] + "]+)" + pair[1];
+}).join("|");
+
+var BBCODE_CLOSING_TAG_REGEXP = /^\[\/([-\w]+)\]/i;
+
+var BBCODE_QUOTE_OR_DETAILS_TAG_REGEXP = new RegExp(
+  "^\\[(quote|details)=(\\s*[^" + QUOTATION_MARKS.join("") + "].+?)\\]",
+  "i"
+);
+
+// Without the closing "]", which is checked by hand: the regexp would
+// backtrack too much with it.
+var BBCODE_TAG_REGEXP = new RegExp(
+  "\\[(?:(?:[-\\w]+(?:=(?:" + QUOTATION_MARKS_NO_MATCH + "|[^\\s\\]]+))?)+\\s*)+",
+  "i"
+);
+
+var BBCODE_ATTR_REGEXP = new RegExp("([-\\w]+)(?:=(?:" + QUOTATION_MARKS_WITH_MATCH + "|([^\\s\\]]+)))?", "gi");
+
+function trailingSpaceOnly(src, start, max) {
+  for (var i = start; i < max; i++) {
+    var code = src.charCodeAt(i);
+    if (code === 0x0a) {
+      return true;
+    }
+    if (!isWhiteSpaceCode(code)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function parseBBCodeTag(src, start, max, multiline) {
+  var m;
+  var text = src.slice(start, max);
+
+  m = BBCODE_CLOSING_TAG_REGEXP.exec(text);
+  if (m && m[0] && m[1]) {
+    if (multiline && !trailingSpaceOnly(src, start + m[0].length, max)) {
+      return null;
+    }
+    return { tag: m[1].toLowerCase(), closing: true, length: m[0].length };
+  }
+
+  m = BBCODE_QUOTE_OR_DETAILS_TAG_REGEXP.exec(text);
+  if (m && m[0] && m[1] && m[2]) {
+    if (multiline && !trailingSpaceOnly(src, start + m[0].length, max)) {
+      return null;
+    }
+    return { tag: m[1], length: m[0].length, attrs: { _default: m[2] } };
+  }
+
+  m = BBCODE_TAG_REGEXP.exec(text);
+  var bbcode = m ? m[0] : null;
+  if (!bbcode) {
+    return null;
+  }
+  if (text.length <= bbcode.length || text[bbcode.length] !== "]") {
+    return null;
+  }
+
+  var r = {};
+  BBCODE_ATTR_REGEXP.lastIndex = 0;
+  while ((m = BBCODE_ATTR_REGEXP.exec(bbcode))) {
+    var key = m[1];
+    var value = m.slice(2).find(Boolean);
+
+    if (!key) {
+      return null;
+    }
+
+    if (!r.tag) {
+      r.tag = key.toLowerCase();
+      r.length = bbcode.length + 1;
+      if (m.index === 1) {
+        r.attrs = {};
+        if (value) {
+          r.attrs._default = value.trim();
+        }
+      } else {
+        return null;
+      }
+    } else if (r.attrs) {
+      r.attrs[key] = (value && value.trim()) || "";
+    } else {
+      return null;
+    }
+  }
+
+  if (r.tag) {
+    if (multiline && !trailingSpaceOnly(src, start + bbcode.length + 1, max)) {
+      return null;
+    }
+    return r;
+  }
+  return null;
+}
+
+var BBCODE_REQUIRES_QUOTES_PATTERN = /[\s\]]/;
+
+// lib/text.js: ` name=value`, quoted with the first quotation marks the
+// value does not contain where it has a space or "]".
+export function serializeBBCodeAttr(value, name) {
+  if (!value) {
+    return "";
+  }
+
+  var stringValue = String(value);
+  if (!BBCODE_REQUIRES_QUOTES_PATTERN.test(stringValue)) {
+    return " " + name + "=" + stringValue;
+  }
+
+  for (var i = 0; i < QUOTATION_MARKS.length; i++) {
+    var open = QUOTATION_MARKS[i][0];
+    var close = QUOTATION_MARKS[i][1];
+    if (stringValue.indexOf(open) === -1 && stringValue.indexOf(close) === -1) {
+      return " " + name + "=" + open + stringValue + close;
+    }
+  }
+
+  return " " + name + '="' + stringValue.split('"').join("") + '"';
+}
+
+// lib/text.js: `name=value foo="bar baz"`, skipping null and undefined.
+export function buildBBCodeAttrs(attrs, opts) {
+  opts = opts || {};
+  var skipAttrs = opts.skipAttrs || [];
+
+  return Object.keys(attrs)
+    .map(function (key) {
+      if (attrs[key] === null || attrs[key] === undefined || skipAttrs.indexOf(key) !== -1) {
+        return null;
+      }
+      return serializeBBCodeAttr(attrs[key], key).trim();
+    })
+    .filter(Boolean)
+    .join(" ");
 }

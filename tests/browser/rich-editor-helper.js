@@ -105,6 +105,50 @@ const LABELS = {
   play_video: "Play video",
   cannot_render_video: "This video cannot be rendered because your browser does not support the codec.",
   invalid_video_url: "This video cannot be played because the URL is invalid or unavailable.",
+  "composer.wrap_text": "Wrap content",
+  "composer.wrap_modal.title": "Edit Wrap",
+  "composer.wrap_modal.name_label": "Wrap name",
+  "composer.wrap_modal.attributes_label": "Attributes",
+  "composer.wrap_modal.add_attribute": "Add attribute",
+  "composer.wrap_modal.attribute_key": "Key",
+  "composer.wrap_modal.attribute_value": "Value",
+  "composer.wrap_modal.remove_attribute": "Remove attribute",
+  "composer.wrap_modal.apply": "Apply",
+  "composer.wrap_modal.unwrap": "Unwrap",
+  "composer.wrap_modal.no_attributes": "No attributes added yet.",
+  "form_kit.errors.required": "Required",
+  "composer.spoiler_text": "This text will be blurred",
+  "discourse_math.edit_math": "Edit math",
+  "discourse_local_dates.edit_date": "Edit %{date}",
+  "discourse_policy.title": "Policy",
+  "discourse_policy.builder.edit": "Edit policy settings",
+  "discourse_policy.builder.groups.label": "Groups",
+  "discourse_policy.builder.version.label": "Version",
+  "discourse_policy.builder.renew.label": "Renew",
+  "discourse_policy.builder.renew-start.label": "Renew Start",
+  "discourse_policy.builder.reminder.label": "Reminder",
+  "discourse_policy.builder.accept.label": "Accept",
+  "discourse_policy.builder.revoke.label": "Revoke",
+  "discourse_policy.builder.add-users-to-group.label": "Add users to group",
+  "discourse_policy.builder.private.label": "Private?",
+  "poll.voters.one": "voter",
+  "poll.voters.other": "voters",
+  "poll.dynamic.enabled_hint": "Options can be added or removed.",
+  "poll.multiple.help.x_options.one": "Choose <strong>%{count} option</strong>.",
+  "poll.multiple.help.x_options.other": "Choose <strong>%{count} options</strong>.",
+  "poll.multiple.help.between_min_and_max_options": "Choose between <strong>%{min} and %{max} options</strong>.",
+  "poll.multiple.help.at_least_min_options.one": "Choose at least <strong>%{count} option</strong>.",
+  "poll.multiple.help.at_least_min_options.other": "Choose at least <strong>%{count} options</strong>.",
+  "poll.multiple.help.up_to_max_options.one": "Choose up to <strong>%{count} option</strong>.",
+  "poll.multiple.help.up_to_max_options.other": "Choose up to <strong>%{count} options</strong>.",
+  "poll.automatic_close.closes_in": "Closes in <strong>%{timeLeft}</strong>.",
+  "poll.automatic_close.age": "Closed <strong>%{age}</strong>",
+  "poll.results.vote.title": "Results will be shown on <strong>vote</strong>.",
+  "poll.results.closed.title": "Results will be shown once <strong>closed</strong>.",
+  "poll.results.staff.title": "Results are only shown to <strong>staff</strong> members.",
+  "poll.public.title": "Votes are <strong>public</strong>.",
+  "poll.ui_builder.edit": "Edit poll",
+  "poll.ui_builder.poll_title.placeholder": "Poll title",
 };
 
 // In the page: the engine, the context and richSpec.
@@ -167,6 +211,8 @@ function harness() {
         assert.strictEqual(editor.value, expectedMarkdown, `Markdown should match for "${markdown}"`);
       };
       const find = (selector) => document.querySelector(selector);
+      // @ember/test-helpers fireEvent's simulated coordinates: just inside
+      // the element's top left corner.
       const click = async (selector) => {
         const el = typeof selector === "string" ? find(selector) : selector;
         const rect = el.getBoundingClientRect();
@@ -175,8 +221,10 @@ function harness() {
           cancelable: true,
           view: window,
           button: 0,
-          clientX: rect.left + rect.width / 2,
-          clientY: rect.top + rect.height / 2,
+          clientX: rect.left + 1,
+          clientY: rect.top + 1,
+          screenX: rect.left + 6,
+          screenY: rect.top + 96,
         };
         el.dispatchEvent(new MouseEvent("mousedown", init));
         el.dispatchEvent(new MouseEvent("mouseup", init));
@@ -228,6 +276,12 @@ function harness() {
     async create(markdown, opts) {
       const editorModule = await window.Discourse.richEditor.load();
       const extensionsModule = await import("discourse/rich-editor/extensions");
+      const plugins = opts.plugins || window.richSpecPlugins || [];
+      editorModule.registerPluginExtensions(plugins);
+      // composer.js's richEditorPlugins
+      if (plugins.includes("local-dates") && window.Discourse.localDates) {
+        await window.Discourse.localDates.loadMoment();
+      }
       this.destroy();
       const host = document.createElement("div");
       host.id = "rich-spec-host";
@@ -273,6 +327,17 @@ function harness() {
             site: { hashtag_configurations: { "topic-composer": ["category", "tag"] } },
             capabilities: { viewport: { sm: true } },
             appEvents: this.appEvents,
+            // The modal service, as the reference's tests read it: the
+            // last modal shown (activeModal.opts.model); opts.realModals
+            // shows core's own, as composer.js does.
+            modal: {
+              show: (name, modalOpts) => {
+                this.activeModal = { name, opts: modalOpts };
+                if (opts.realModals && name === "wrap-attributes") {
+                  editorModule.showWrapAttributesModal(modalOpts.model, this.editor.params.getContext().i18n);
+                }
+              },
+            },
           },
           opts.context
         ),
@@ -313,19 +378,25 @@ function harness() {
 // host is appended to the body, and on a topic list scrolling to it
 // brings the list's load-more sentinel near the window, so the next page's
 // rows push the editor (and a floating toolbar's reference) away.
-async function openEditorPage(page) {
+// opts.plugins: the plugins whose extensions the editor registers
+// (rich-editor/plugins.js names), as the composer's context lists them;
+// opts.render: the site's render settings changed for the engine (a
+// plugin the test site has off, say { math: true }).
+async function openEditorPage(page, opts = {}) {
   await page.goto("/faq");
   await page.addScriptTag({ content: asset("js/rich-editor.js") });
   await page.addScriptTag({ content: `(${harness.toString()})()` });
   await page.evaluate(
-    async ({ siteSettings, labels }) => {
+    async ({ siteSettings, labels, plugins, render }) => {
       window.richSpecSiteSettings = siteSettings;
       window.richSpecLabels = labels;
+      window.richSpecPlugins = plugins;
       const editorModule = await window.Discourse.richEditor.load();
       const [wasm, settings] = await Promise.all([
         WebAssembly.instantiateStreaming(fetch("/assets/markdown.wasm"), {}),
         fetch("/assets/markdown-settings.json").then((r) => r.text()),
       ]);
+      const configured = JSON.stringify(Object.assign(JSON.parse(settings), render));
       const exports = wasm.instance.exports;
       const call = (fn, text) => {
         const bytes = new TextEncoder().encode(text);
@@ -341,10 +412,10 @@ async function openEditorPage(page) {
         }
         return out;
       };
-      call(exports.configure, settings);
+      call(exports.configure, configured);
       window.richSpec.engine = editorModule.wasmEngine(exports, call);
     },
-    { siteSettings: SITE_SETTINGS, labels: LABELS }
+    { siteSettings: SITE_SETTINGS, labels: LABELS, plugins: opts.plugins || [], render: opts.render || {} }
   );
 }
 
@@ -486,7 +557,7 @@ function qunitTest(test, name, body, opts = {}) {
     if (opts.before) {
       await opts.before(page);
     }
-    await openEditorPage(page);
+    await openEditorPage(page, opts);
     expect(await inPage(page, body, opts.args)).toEqual([]);
   });
 }

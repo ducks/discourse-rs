@@ -1339,6 +1339,35 @@ async fn the_builder_inserts_and_edits_policies() {
         html.contains("<span class=\"d-button-label\">Save changes</span>"),
         "{html}"
     );
+
+    // The rich editor's policy node: its values as policyToFormData gives
+    // them, saved by the editor rather than to a post.
+    let html = admin
+        .page("/live/policy-builder?edit=1&groups=team&version=2&renewStart=2030-01-01&addUsersToGroup=target&private=true")
+        .await;
+    assert!(html.contains("data-insert=\"false\""), "{html}");
+    assert!(html.contains("data-raw-url=\"\""), "{html}");
+    assert!(
+        html.contains("<option value=\"team\" selected>team</option>"),
+        "{html}"
+    );
+    assert!(
+        html.contains("name=\"version\" type=\"number\" value=\"2\""),
+        "{html}"
+    );
+    assert!(
+        html.contains("name=\"renewStart\" type=\"date\" value=\"2030-01-01\""),
+        "{html}"
+    );
+    // no button label filled in for the editor's
+    assert!(
+        html.contains("name=\"accept\" type=\"text\" value=\"\""),
+        "{html}"
+    );
+    assert!(
+        html.contains("<input checked=\"\" class=\"form-kit__control-checkbox\""),
+        "{html}"
+    );
 }
 
 #[tokio::test]

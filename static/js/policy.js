@@ -202,6 +202,34 @@
     return value !== null && value !== undefined && String(value).trim() !== "";
   }
 
+  // modal/policy-builder.gjs policyToFormData: the first present of each
+  // field's names.
+  function policyToFormData(policy) {
+    var value = function () {
+      for (var i = 0; i < arguments.length; i++) {
+        var v = policy ? policy[arguments[i]] : undefined;
+        if (isPresent(v)) {
+          return v;
+        }
+      }
+      return undefined;
+    };
+    var or = function (v, fallback) {
+      return v === undefined || v === null ? fallback : v;
+    };
+    return {
+      groups: or(value("groups", "group"), ""),
+      version: or(value("version"), 1),
+      renew: or(value("renew"), ""),
+      renewStart: or(value("renewStart", "renew-start"), ""),
+      reminder: or(value("reminder"), null),
+      accept: or(value("accept"), ""),
+      revoke: or(value("revoke"), ""),
+      addUsersToGroup: or(value("addUsersToGroup", "add-users-to-group"), ""),
+      private: !!policy && (policy.private === true || policy.private === "true"),
+    };
+  }
+
   function formData(form) {
     var data = {};
     MARKDOWN_FIELDS.forEach(function (pair) {
@@ -295,9 +323,20 @@
 
   // modal/policy-builder.gjs: drawn by the server (GET
   // /live/policy-builder), to insert a policy at the composer's cursor
-  // (addText) or edit the post's.
-  function openBuilder(postId, addText) {
+  // (addText), edit the post's, or edit the rich editor's policy node
+  // (edit: its form values, and onApply taking the form's).
+  function openBuilder(postId, addText, edit) {
     var url = basePath() + "/live/policy-builder" + (postId ? "?post_id=" + postId : "");
+    if (edit) {
+      var query = new URLSearchParams({ edit: "1" });
+      Object.keys(edit.values).forEach(function (key) {
+        var value = edit.values[key];
+        if (value !== null && value !== undefined) {
+          query.set(key, String(value));
+        }
+      });
+      url = basePath() + "/live/policy-builder?" + query.toString();
+    }
     fetch(url, { credentials: "same-origin" })
       .then(function (response) {
         if (!response.ok) {
@@ -327,6 +366,11 @@
           button.addEventListener("click", function () {
             var data = formData(form);
             if (!validate(root, form, data)) {
+              return;
+            }
+            if (edit) {
+              edit.onApply(data);
+              close();
               return;
             }
             if (root.dataset.insert === "true") {
@@ -377,6 +421,11 @@
   Discourse.policyBuilder = {
     show: function (addText) {
       openBuilder(null, addText);
+    },
+    // The rich editor's Edit policy: model { policy, onApply }, the
+    // policy's values by policyToFormData.
+    edit: function (model) {
+      openBuilder(null, null, { values: policyToFormData(model.policy), onApply: model.onApply });
     },
   };
 })();

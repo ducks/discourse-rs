@@ -19,7 +19,7 @@ use markdown_it::parser::inline::Text;
 use super::RenderSettings;
 use super::bbcode::{data_attributes, parse_tag};
 use super::context::Context;
-use super::element::Element;
+use super::element::{Element, JsToken};
 use crate::sanitizer::AllowList;
 
 const INVALID: &str = "Invalid date";
@@ -618,6 +618,7 @@ fn local_date(
     };
     attrs.push(("emailPreview".to_string(), preview));
     let mut span = Element::inline("span", &[("class", "discourse-local-date")]);
+    JsToken::on(&mut span, "span", "");
     if let Some(element) = span.cast_mut::<Element>() {
         element.attrs.extend(data_attributes(&attrs, Some("date")));
     }

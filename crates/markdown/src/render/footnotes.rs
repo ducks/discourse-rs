@@ -16,7 +16,7 @@ use markdown_it::plugins::html::html_inline::HtmlInline;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 
 use super::RenderSettings;
-use super::element::{Holder, RawHtml};
+use super::element::Holder;
 use crate::sanitizer::AllowList;
 
 /// `env.footnotes`: the labels defined, and the notes in the order they
@@ -48,10 +48,11 @@ impl NodeValue for Definition {}
 /// A reference. An inline note carries its content as children until
 /// `tail` moves it to the list.
 #[derive(Debug)]
-struct Reference {
-    id: usize,
-    sub_id: usize,
-    inline: bool,
+pub(super) struct Reference {
+    pub id: usize,
+    pub sub_id: usize,
+    pub inline: bool,
+    pub label: Option<String>,
 }
 
 impl NodeValue for Reference {
@@ -214,6 +215,7 @@ impl InlineRule for InlineNoteScanner {
             id,
             sub_id: 0,
             inline: true,
+            label: None,
         });
         let outer = std::mem::replace(&mut state.node, reference);
         let (old_pos, old_max) = (state.pos, state.pos_max);
@@ -226,7 +228,10 @@ impl InlineRule for InlineNoteScanner {
 
         let node = if after_open_link {
             let mut both = Node::new(Holder);
-            both.children.push(Node::new(RawHtml("</a>".into())));
+            // markdown-it's html_inline token
+            both.children.push(Node::new(HtmlInline {
+                content: "</a>".into(),
+            }));
             both.children.push(reference);
             both
         } else {
@@ -275,6 +280,7 @@ impl InlineRule for ReferenceScannerRule {
                 id,
                 sub_id,
                 inline: false,
+                label: footnotes.list[id].label.clone(),
             }),
             2 + end + 1,
         ))
@@ -283,7 +289,7 @@ impl InlineRule for ReferenceScannerRule {
 
 /// The list of notes after the document.
 #[derive(Debug)]
-struct NoteList;
+pub(super) struct NoteList;
 impl NodeValue for NoteList {
     fn render(&self, node: &Node, fmt: &mut dyn Renderer) {
         fmt.cr();
@@ -294,8 +300,11 @@ impl NodeValue for NoteList {
 }
 
 #[derive(Debug)]
-struct NoteItem {
-    id: usize,
+pub(super) struct NoteItem {
+    pub id: usize,
+    pub label: Option<String>,
+    /// How many anchors back to its references follow it.
+    pub count: usize,
     /// The back-links, written at the end of the note's last paragraph.
     anchors: String,
 }
@@ -389,7 +398,12 @@ pub fn tail(root: &mut Node) {
                 )
             })
             .collect();
-        let mut item = Node::new(NoteItem { id, anchors });
+        let mut item = Node::new(NoteItem {
+            id,
+            anchors,
+            label: note.label.clone(),
+            count: note.count.max(1),
+        });
         match &note.label {
             Some(label) => item.children = definitions.remove(label).unwrap_or_default(),
             None => {

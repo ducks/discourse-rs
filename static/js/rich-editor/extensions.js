@@ -7,8 +7,8 @@
 // plugin params (editor.js pluginParams).
 //
 // register-default.ts's list, the larger ones in extensions/, less what
-// later steps bring (ROADMAP 196r3: onebox and its toolbar, preview source
-// and toolbar) and [wrap], which is not ported: its token is refused.
+// a later step brings (ROADMAP 196r3: onebox and its toolbar, preview source
+// and toolbar). The bundled plugins' are plugins.js's.
 import { schema } from "prosemirror-markdown";
 import codemark from "prosemirror-codemark";
 import codeBlock from "discourse/rich-editor/extensions/code-block";
@@ -28,6 +28,7 @@ import table from "discourse/rich-editor/extensions/table";
 import trailingInlineSpace from "discourse/rich-editor/extensions/trailing-inline-space";
 import uploadPlaceholder from "discourse/rich-editor/extensions/upload-placeholder";
 import wordPaste from "discourse/rich-editor/extensions/word-paste";
+import wrap from "discourse/rich-editor/extensions/wrap";
 
 var registered = [];
 
@@ -332,6 +333,7 @@ export var defaultExtensions = [
   wordPaste,
   orderedList,
   bulletList,
+  wrap,
   trailingInlineSpace,
   overrideDragGhost,
   hardBreak,

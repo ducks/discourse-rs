@@ -2,8 +2,9 @@
 //! (static/js/rich-editor/editor.js), as #reply-control's
 //! data-rich-editor-context: the client site settings they look at, the
 //! strings they show (with a plural key's forms under `key.one` and so on,
-//! picked by count in composer.js), the current user's staff flag and the
-//! site's hashtag order for the composer.
+//! picked by count in composer.js), the current user's staff flag, the
+//! site's hashtag order for the composer and the bundled plugins on, whose
+//! extensions the editor registers (static/js/rich-editor/plugins.js).
 
 use serde_json::{Map, Value, json};
 
@@ -106,6 +107,61 @@ const LABELS: &[&str] = &[
     "composer.table.columns_added",
     "composer.table.rows_removed",
     "composer.table.columns_removed",
+    "composer.wrap_text",
+    "composer.wrap_modal.title",
+    "composer.wrap_modal.name_label",
+    "composer.wrap_modal.attributes_label",
+    "composer.wrap_modal.add_attribute",
+    "composer.wrap_modal.attribute_key",
+    "composer.wrap_modal.attribute_value",
+    "composer.wrap_modal.remove_attribute",
+    "composer.wrap_modal.apply",
+    "composer.wrap_modal.unwrap",
+    "composer.wrap_modal.no_attributes",
+    "form_kit.errors.required",
+    // the plugins' extensions
+    "composer.spoiler_text",
+    "discourse_math.edit_math",
+    "discourse_local_dates.edit_date",
+    "discourse_policy.title",
+    "discourse_policy.builder.edit",
+    "discourse_policy.builder.groups.label",
+    "discourse_policy.builder.version.label",
+    "discourse_policy.builder.renew.label",
+    "discourse_policy.builder.renew-start.label",
+    "discourse_policy.builder.reminder.label",
+    "discourse_policy.builder.accept.label",
+    "discourse_policy.builder.revoke.label",
+    "discourse_policy.builder.add-users-to-group.label",
+    "discourse_policy.builder.private.label",
+    "poll.voters",
+    "poll.dynamic.enabled_hint",
+    "poll.multiple.help.x_options",
+    "poll.multiple.help.between_min_and_max_options",
+    "poll.multiple.help.at_least_min_options",
+    "poll.multiple.help.up_to_max_options",
+    "poll.automatic_close.closes_in",
+    "poll.automatic_close.age",
+    "poll.results.vote.title",
+    "poll.results.closed.title",
+    "poll.results.staff.title",
+    "poll.public.title",
+    "poll.ui_builder.edit",
+    "poll.ui_builder.poll_title.placeholder",
+];
+
+/// The bundled plugins with a rich editor extension, in their load order,
+/// by the setting each is enabled by (`enabled_site_setting`; checklist's
+/// initializer checks its own).
+const PLUGINS: &[(&str, &str)] = &[
+    ("checklist", "checklist_enabled"),
+    ("details", "details_enabled"),
+    ("local-dates", "discourse_local_dates_enabled"),
+    ("math", "discourse_math_enabled"),
+    ("policy", "policy_enabled"),
+    ("footnote", "enable_markdown_footnotes"),
+    ("poll", "poll_enabled"),
+    ("spoiler", "spoiler_enabled"),
 ];
 
 const PLURAL_FORMS: &[&str] = &["zero", "one", "two", "few", "many", "other"];
@@ -137,10 +193,17 @@ pub fn context(
     for name in SITE_SETTINGS {
         site_settings.insert((*name).to_string(), json!(settings.get(name)?));
     }
+    let mut plugins = Vec::new();
+    for (name, setting) in PLUGINS {
+        if settings.get(setting)?.truthy() {
+            plugins.push(*name);
+        }
+    }
     Ok(json!({
         "siteSettings": site_settings,
         "labels": labels(i18n),
         "currentUser": { "staff": staff },
         "site": { "hashtag_configurations": { "topic-composer": hashtag_order } },
+        "plugins": plugins,
     }))
 }

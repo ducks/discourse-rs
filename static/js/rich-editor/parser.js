@@ -129,6 +129,17 @@ function fill(token, node, level, block) {
   token.meta = node.meta === undefined ? null : node.meta;
   token.block = block;
   token.hidden = node.hidden === true;
+  // A rule's own properties (the poll's poll_attrs).
+  if (node.fields !== undefined && node.fields !== null) {
+    if (typeof node.fields !== "object" || Array.isArray(node.fields)) {
+      throw new NodeTreeError(node.type + ".fields is not an object");
+    }
+    Object.keys(node.fields).forEach(function (name) {
+      if (!(name in token)) {
+        token[name] = node.fields[name];
+      }
+    });
+  }
   return token;
 }
 
@@ -156,10 +167,11 @@ function flatten(nodes, level, out, block) {
     }
 
     if (Array.isArray(node.children) && node.nesting !== 0) {
-      var open = fill(new Token(node.type + "_open", tag, 1), node, level, block);
+      var bare = node.bare === true;
+      var open = fill(new Token(bare ? node.type : node.type + "_open", tag, 1), node, level, block);
       out.push(open);
       flatten(node.children, level + 1, out, block);
-      var close = new Token(node.type + "_close", tag, -1);
+      var close = new Token(bare ? node.type : node.type + "_close", tag, -1);
       close.level = level;
       close.markup = open.markup;
       close.block = block;

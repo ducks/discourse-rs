@@ -9,6 +9,10 @@
 //       a cooked decorator, which also sets data-title), the composer's
 //       preview and chat messages.
 //
+//   Discourse.localDates.formatLocalDate(date, time, timezone, options)
+//       lib/format-local-date.js's { formatted, pastEvent }, which the rich
+//       editor's date nodes show, once loadMoment() has resolved.
+//
 // A click on a date opens its tooltip (identifier "local-date") with the
 // date in the viewer's, the post's and the listed timezones, and for a
 // date to come "Add to calendar". moment and moment-timezone are
@@ -1375,7 +1379,26 @@
   }
 
   // What the insert date modal (local-dates-create.js) shares.
-  Discourse.localDates = { config: config, i18n: i18n, loadMoment: loadMoment };
+  // lib/format-local-date.js, for the rich editor's date nodes: moment
+  // has to be loaded (loadMoment).
+  function formatLocalDate(date, time, timezone, options) {
+    var localTimezone = moment.tz.guess();
+    var builderOptions = Object.assign({}, options, {
+      date: date,
+      time: time,
+      timezone: timezone || localTimezone,
+      calendar: !(options && options.format),
+    });
+    var built = new LocalDateBuilder(builderOptions, localTimezone).build();
+    return { formatted: built.formatted, pastEvent: built.pastEvent };
+  }
+
+  Discourse.localDates = {
+    config: config,
+    i18n: i18n,
+    loadMoment: loadMoment,
+    formatLocalDate: formatLocalDate,
+  };
 
   if (Discourse.once && !Discourse.once("local-dates")) {
     return;

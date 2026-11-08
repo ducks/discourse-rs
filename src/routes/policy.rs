@@ -337,6 +337,20 @@ pub async fn footer(
 pub struct BuilderParams {
     /// The post whose policy the settings button edits; none to insert.
     post_id: Option<String>,
+    /// The rich editor's policy node, edited in place: `edit=1` and its
+    /// values as policyToFormData gives them.
+    edit: Option<String>,
+    groups: Option<String>,
+    version: Option<String>,
+    renew: Option<String>,
+    #[serde(rename = "renewStart")]
+    renew_start: Option<String>,
+    reminder: Option<String>,
+    accept: Option<String>,
+    revoke: Option<String>,
+    #[serde(rename = "addUsersToGroup")]
+    add_users_to_group: Option<String>,
+    private: Option<String>,
 }
 
 /// GET /live/policy-builder: the PolicyBuilder modal's content for
@@ -419,6 +433,26 @@ pub async fn builder(
             Some(values) => (values, Some(raw_url)),
             None => return Ok(StatusCode::NOT_FOUND.into_response()),
         },
+        None if params.edit.as_deref() == Some("1") => {
+            let value = |v: &Option<String>| v.clone().unwrap_or_default();
+            let values = policy::view::BuilderValues {
+                groups: value(&params.groups),
+                version: params
+                    .version
+                    .clone()
+                    .filter(|v| !v.trim().is_empty())
+                    .unwrap_or_else(|| "1".to_string()),
+                renew: value(&params.renew),
+                renew_start: value(&params.renew_start),
+                reminder: value(&params.reminder),
+                accept: value(&params.accept),
+                revoke: value(&params.revoke),
+                add_users_to_group: value(&params.add_users_to_group),
+                private: params.private.as_deref() == Some("true"),
+            };
+            // Saved by the editor, not to a post: an edit without a raw url.
+            (values, Some(String::new()))
+        }
         None => (policy::view::BuilderValues::new_policy(), None),
     };
     let html = policy::view::builder(&list, &groups, &values, raw_url.as_deref());

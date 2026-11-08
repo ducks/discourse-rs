@@ -908,8 +908,8 @@ test.describe("rich editor paste", () => {
 
 test.describe("rich editor extension registry", () => {
   // prosemirror-editor-test.gjs's registry cases. "supports registered
-  // nodeSpec/parser/serializer" parses [wrap], whose extension is not
-  // ported: its token is refused, so the case cannot run here.
+  // nodeSpec/parser/serializer" parses [wrap]: it is with wrap's own cases
+  // (rich-editor-plugins.spec.js).
   qtest("supports registered markSpec/parser/serializer", async function (assert, { helpers, extensions }) {
     const { testMarkdown } = helpers;
     extensions.registerRichEditorExtension({

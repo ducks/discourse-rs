@@ -9,7 +9,10 @@
 // static/js/composer.js the first time it is asked for, with the strings
 // and settings the composer's data-poll-builder carries.
 //
-//   Discourse.pollBuilder.show(config, { getText, addText })
+//   Discourse.pollBuilder.show(config, { getText, addText }, edit)
+//
+// edit is the rich editor's Edit poll ({ poll, onSave }): its settings,
+// saved as the poll's attrs.
 (function () {
   "use strict";
 
@@ -724,7 +727,17 @@
     return el;
   }
 
-  function show(config, composer) {
+  // moment(close): a date alone is local midnight.
+  function parseClose(close) {
+    var date = /^(\d{4})-(\d{2})-(\d{2})$/.exec(close);
+    var parsed = date ? new Date(+date[1], +date[2] - 1, +date[3]) : new Date(close);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  // edit: the rich editor's Edit poll, { poll: its node's attrs and
+  // optionCount, onSave(attrs) }. The options and title are edited in the
+  // document, so the builder shows its settings alone, all of them.
+  function show(config, composer, edit) {
     var strings = config.strings || {};
     var t = function (key, vars) {
       var s = strings[key] || key;
@@ -751,6 +764,8 @@
       options: [""],
     };
     var focusIndex = 0;
+    var poll = edit ? edit.poll : null;
+    var isEditing = !!poll;
 
     var isNumber = function () {
       return m.type === NUMBER;
@@ -762,13 +777,34 @@
       return isMultiple() || isNumber();
     };
     var optionsCount = function () {
+      if (isEditing) {
+        return poll.optionCount;
+      }
       return m.options.filter(function (o) {
         return o.trim();
       }).length;
     };
+    var given = function (value, fallback) {
+      return value === null || value === undefined ? fallback : value;
+    };
 
+    if (poll) {
+      m.type = poll.type || REGULAR;
+      m.chartType = poll.chartType || "bar";
+      m.dynamic = poll.dynamic === "true";
+      m.autoClose = poll.close ? parseClose(poll.close) : null;
+      m.groups = poll.groups ? poll.groups.split(",") : [];
+      m.min = Number(given(poll.min, 1));
+      m.max = Number(given(poll.max, isNumber() ? maxOptions : poll.optionCount));
+      m.step = Number(given(poll.step, 1));
+      m.result = poll.results || ALWAYS;
+      m.publicPoll = poll.public === "true";
+      m.advanced = true;
+    }
+
+    // Option counts are edited in the document, not here.
     function minNumOfOptionsValidation() {
-      if (!isNumber()) {
+      if (!isNumber() && !isEditing) {
         if (optionsCount() < 1) {
           return { failed: true, reason: t("poll.ui_builder.help.options_min_count") };
         }
@@ -838,10 +874,20 @@
       return m.autoClose && !isNaN(m.autoClose.getTime()) ? m.autoClose.toISOString() : null;
     }
 
-    // pollAttrsFromSettings, for a new poll.
+    // lib/poll-settings.js pollAttrsFromSettings: an edited poll keeps its
+    // name, status, order and its close as written while it is the same
+    // moment, and gains no default it did not carry.
     function pollAttrs() {
-      return {
-        name: null,
+      var close = closeIso();
+      var originalClose = poll ? poll.close : null;
+      if (close && originalClose) {
+        var original = parseClose(originalClose);
+        if (original && original.getTime() === m.autoClose.getTime()) {
+          close = originalClose;
+        }
+      }
+      var attrs = {
+        name: poll ? given(poll.name, null) : null,
         type: m.type || null,
         results: m.result || null,
         min: hasRange() ? rangeAttr(m.min) : null,
@@ -851,10 +897,29 @@
         chartType: !isNumber() && m.chartType ? m.chartType : null,
         dynamic: m.dynamic ? "true" : null,
         groups: m.groups.length ? m.groups.join(",") : null,
-        close: closeIso(),
-        status: null,
-        order: null,
+        close: close,
+        status: poll ? given(poll.status, null) : null,
+        order: poll ? given(poll.order, null) : null,
       };
+      if (poll) {
+        var implied = {
+          type: REGULAR,
+          results: ALWAYS,
+          public: "false",
+          chartType: "bar",
+          min: "1",
+          max: String(isNumber() ? maxOptions : poll.optionCount),
+          step: "1",
+        };
+        // Omitted defaults stay omitted, so the bounds still follow the
+        // options as they change.
+        Object.keys(implied).forEach(function (name) {
+          if (attrs[name] === implied[name] && !poll[name]) {
+            attrs[name] = null;
+          }
+        });
+      }
+      return attrs;
     }
 
     // #pollOutput: named after the polls the text has already.
@@ -914,13 +979,15 @@
         html += typePill(RANKED, "ranked_choice");
       }
       html += "</ul>";
-      if (m.advanced) {
+      // showTitle
+      if (m.advanced && !isEditing) {
         html +=
           '<div class="input-group poll-title"><label class="input-group-label">' +
           escapeHtml(t("poll.ui_builder.poll_title.label")) + '</label><input type="text" value="' +
           escapeHtml(m.title) + '"></div>';
       }
-      if (!isNumber()) {
+      // showOptions
+      if (!isNumber() && !isEditing) {
         html += '<div class="poll-options">';
         var count = minNumOfOptionsValidation();
         if (m.advanced) {
@@ -1064,9 +1131,11 @@
       body.innerHTML = bodyHtml();
       mountWidgets();
       insertButton.disabled = disableInsert();
-      advancedButton.querySelector(".d-button-label").textContent = t(
-        m.advanced ? "advanced_mode_toggle.simple_mode" : "advanced_mode_toggle.advanced_mode"
-      );
+      if (advancedButton) {
+        advancedButton.querySelector(".d-button-label").textContent = t(
+          m.advanced ? "advanced_mode_toggle.simple_mode" : "advanced_mode_toggle.advanced_mode"
+        );
+      }
       var input = body.querySelector('.poll-option-value input[data-index="' + focusIndex + '"]');
       if (input) {
         input.focus();
@@ -1123,28 +1192,37 @@
 
     var close = Discourse.modal.show({
       className: "poll-ui-builder",
-      title: t("poll.ui_builder.title"),
+      title: t(isEditing ? "poll.ui_builder.edit" : "poll.ui_builder.title"),
       body: function (el) {
         body = el;
       },
       footer: function (el, closeModal) {
         el.innerHTML =
           '<button class="btn btn-icon-text btn-primary insert-poll" type="button">' + svg("chart-bar") +
-          '<span class="d-button-label">' + escapeHtml(t("poll.ui_builder.insert")) + "</span></button>" +
+          '<span class="d-button-label">' + escapeHtml(t(isEditing ? "save" : "poll.ui_builder.insert")) + "</span></button>" +
           '<button class="btn btn-text btn-flat" type="button"><span class="d-button-label">' + escapeHtml(t("cancel")) +
           "</span></button>" +
-          '<button class="btn btn-icon-text btn-default advanced-mode-btn" type="button">' + svg("gear") +
-          '<span class="d-button-label"></span></button>';
+          (isEditing
+            ? ""
+            : '<button class="btn btn-icon-text btn-default advanced-mode-btn" type="button">' + svg("gear") +
+              '<span class="d-button-label"></span></button>');
         insertButton = el.querySelector(".insert-poll");
         advancedButton = el.querySelector(".advanced-mode-btn");
         insertButton.addEventListener("click", function () {
           if (disableInsert()) {
             return;
           }
-          composer.addText(pollOutput());
+          if (edit && edit.onSave) {
+            edit.onSave(pollAttrs());
+          } else {
+            composer.addText(pollOutput());
+          }
           closeModal();
         });
         el.querySelector(".btn-flat").addEventListener("click", closeModal);
+        if (!advancedButton) {
+          return;
+        }
         advancedButton.addEventListener("click", function () {
           m.advanced = !m.advanced;
           if (m.advanced) {

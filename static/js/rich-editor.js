@@ -94,6 +94,20 @@
     "node-views/grid",
     "node-views/upload-placeholder",
     "node-views/image-alt-text-input",
+    "extensions/wrap",
+    "node-views/wrap",
+    "wrap-utils",
+    "wrap-modal",
+    "plugins",
+    "plugins/checklist",
+    "plugins/details",
+    "plugins/footnote",
+    "plugins/local-dates",
+    "plugins/math",
+    "plugins/policy",
+    "plugins/poll",
+    "plugins/poll-node-view",
+    "plugins/spoiler",
   ];
 
   function url(name) {
