@@ -5,10 +5,9 @@
 // (Discourse.float.menu), else it takes the composer toolbar's place
 // (getContext().replaceToolbar).
 //
-// Not ported: Edit opens UpsertHyperlink, the composer's link modal, which
-// comes with the toolbar (ROADMAP 196r3); the button is drawn when the
-// host gives getContext().upsertHyperlink. Load preview needs the onebox
-// extension (196r3), so it is never offered.
+// Edit opens UpsertHyperlink, the composer's link modal, through the
+// context's modal service ("upsert-hyperlink"). Not ported: Load preview
+// needs the onebox extension (196r3), so it is never offered.
 import { NodeSelection, TextSelection } from "prosemirror-state";
 import { rovingButtonBar, toastSuccess, ToolbarBase, renderToolbarButtons } from "discourse/rich-editor/toolbar";
 
@@ -25,7 +24,6 @@ function buildLinkToolbar(opts, i18n) {
     icon: "pen",
     title: "composer.link_toolbar.edit",
     className: "composer-link-toolbar__edit",
-    condition: opts.canEdit,
     action: opts.editLink,
   });
 
@@ -129,7 +127,7 @@ LinkToolbarPluginView.prototype.update = function (view) {
 
 LinkToolbarPluginView.prototype.destroy = function () {
   if (this.menuInstance) {
-    this.menuInstance.destroy();
+    this.menuInstance.destroy({ focusTrigger: false });
   }
   this.menuInstance = null;
   this.linkToolbar = null;
@@ -137,7 +135,7 @@ LinkToolbarPluginView.prototype.destroy = function () {
 
 LinkToolbarPluginView.prototype.resetToolbar = function () {
   if (this.menuInstance) {
-    this.menuInstance.destroy();
+    this.menuInstance.destroy({ focusTrigger: false });
   }
   this.menuInstance = null;
 
@@ -160,9 +158,6 @@ LinkToolbarPluginView.prototype.updateLinkState = function (markRange) {
 
     this.linkToolbar = buildLinkToolbar(
       {
-        canEdit: function () {
-          return typeof self.getContext().upsertHyperlink === "function";
-        },
         editLink: function () {
           self.openLinkEditor();
         },
@@ -227,15 +222,17 @@ LinkToolbarPluginView.prototype.openLinkEditor = function () {
     schema.topNodeType.create(null, schema.nodes.paragraph.create(null, tempTr.doc.slice(range.from, range.to).content))
   );
 
-  this.getContext().upsertHyperlink({
-    editing: true,
-    linkText: currentLinkText,
-    linkUrl: this.linkState.href,
-    toolbarEvent: {
-      addText: function (text) {
-        self.replaceText(text);
+  this.getContext().modal.show("upsert-hyperlink", {
+    model: {
+      editing: true,
+      linkText: currentLinkText,
+      linkUrl: this.linkState.href,
+      toolbarEvent: {
+        addText: function (text) {
+          self.replaceText(text);
+        },
+        selected: { value: this.linkState.href },
       },
-      selected: { value: this.linkState.href },
     },
   });
 };
@@ -298,13 +295,13 @@ LinkToolbarPluginView.prototype.showFloatingToolbar = function () {
   }
 
   if (this.menuInstance) {
-    this.menuInstance.destroy();
+    this.menuInstance.destroy({ focusTrigger: false });
   }
   this.content = document.createElement("div");
   // ToolbarButtons draws its buttons straight into the menu.
   this.content.style.display = "contents";
   renderToolbarButtons(this.content, this.linkToolbar);
-  this.menuInstance = window.Discourse.float.menu(trigger, {
+  var instance = (this.menuInstance = window.Discourse.float.menu(trigger, {
     identifier: IDENTIFIER,
     content: this.content,
     placement: "bottom",
@@ -314,12 +311,14 @@ LinkToolbarPluginView.prototype.showFloatingToolbar = function () {
     fallbackPlacements: ["bottom-end", "bottom-start", "top", "top-end", "top-start"],
     closeOnClickOutside: false,
     trapTab: false,
+    // Only the open toolbar gives the focus back: one replaced while it
+    // animates out would take it from the toolbar that replaced it.
     onClose: function () {
-      if (self.view && !self.view.isDestroyed) {
+      if (self.menuInstance === instance && self.view && !self.view.isDestroyed) {
         self.view.focus();
       }
     },
-  });
+  }));
 };
 
 LinkToolbarPluginView.prototype.getTriggerClientRect = function () {
@@ -358,7 +357,8 @@ export default {
             return false;
           }
 
-          var activeMenu = document.querySelector('[data-identifier="' + IDENTIFIER + '"]');
+          // The open one, not one still animating closed.
+          var activeMenu = document.querySelector('[data-identifier="' + IDENTIFIER + '"]:not(.-closing)');
           if (!activeMenu) {
             return false;
           }

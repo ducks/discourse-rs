@@ -228,6 +228,11 @@ export function renderToolbarButtons(container, toolbar, opts) {
     });
   });
 
+  // A redraw keeps the focused button focused, as Glimmer keeps its
+  // element.
+  var focused = container.contains(document.activeElement)
+    ? Array.prototype.indexOf.call(container.children, document.activeElement)
+    : -1;
   container.replaceChildren();
   toolbar.groups.forEach(function (group) {
     group.buttons.forEach(function (button) {
@@ -244,6 +249,9 @@ export function renderToolbarButtons(container, toolbar, opts) {
       container.appendChild(buttonElement(button, tabindex, i18n, roving));
     });
   });
+  if (focused >= 0 && container.children[focused]) {
+    container.children[focused].focus();
+  }
   return container;
 }
 

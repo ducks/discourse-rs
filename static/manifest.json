@@ -1068,6 +1068,7 @@
       "content_type": "js",
       "files": [
         "js/editor-toolbar.js",
+        "js/upsert-hyperlink.js",
         "js/composer.js"
       ]
     },

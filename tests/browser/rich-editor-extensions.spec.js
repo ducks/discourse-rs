@@ -334,9 +334,31 @@ test.describe("rich editor links", () => {
     await expect(toolbar.locator(".composer-link-toolbar__copy")).toBeVisible();
     await expect(toolbar.locator(".composer-link-toolbar__unlink")).toHaveCount(0);
     await expect(toolbar.locator("a.composer-link-toolbar__visit")).toHaveAttribute("href", "https://example.com");
-    // Edit waits for UpsertHyperlink (196r3); load preview for onebox.
-    await expect(toolbar.locator(".composer-link-toolbar__edit")).toHaveCount(0);
+    await expect(toolbar.locator(".composer-link-toolbar__edit")).toBeVisible();
+    // Load preview waits for the onebox extension (196r3).
     await expect(toolbar.locator(".composer-link-toolbar__show-preview")).toHaveCount(0);
+  });
+
+  // The link toolbar's Edit: UpsertHyperlink through the modal service,
+  // its addText replacing the link.
+  test("the link toolbar's Edit opens UpsertHyperlink and replaces the link", async ({ page }) => {
+    await openEditorPage(page);
+    await setupRichEditor(page, "a [text](https://example.com) b");
+    await page.locator("#rich-spec-host").scrollIntoViewIfNeeded();
+    const editor = page.locator("#rich-spec-host .ProseMirror");
+    await editor.locator("a").click();
+    const toolbar = page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing)');
+    await toolbar.locator(".composer-link-toolbar__edit").click();
+    const model = await page.evaluate(() => {
+      const { name, opts } = window.richSpec.activeModal;
+      return { name, editing: opts.model.editing, linkText: opts.model.linkText, linkUrl: opts.model.linkUrl };
+    });
+    expect(model).toEqual({ name: "upsert-hyperlink", editing: true, linkText: "text", linkUrl: "https://example.com" });
+    await page.evaluate(() =>
+      window.richSpec.activeModal.opts.model.toolbarEvent.addText("[new text](https://example.org)"),
+    );
+    await expect(editor.locator("a")).toHaveAttribute("href", "https://example.org");
+    expect(await editorValue(page)).toBe("a [new text](https://example.org) b");
   });
 
   test("the link toolbar unlinks a markdown link and closes off it", async ({ page }) => {

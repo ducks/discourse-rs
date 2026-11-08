@@ -1049,12 +1049,32 @@
     }
     return textareaManipulation;
   }
+  // d-editor's showLinkModal: UpsertHyperlink (upsert-hyperlink.js) over
+  // the toolbar event, the focus back in `host`'s editor once it closes.
+  function showLinkModal(toolbarEvent, host) {
+    var sel = toolbarEvent.selected;
+    showUpsertHyperlink({ hasSelection: !!sel && sel.start !== sel.end, toolbarEvent: toolbarEvent }, host);
+  }
+
+  function showUpsertHyperlink(model, host) {
+    Discourse.upsertHyperlink.show(model, {
+      i18n: richI18n,
+      basePath: base,
+      onClose: function () {
+        var input = host.querySelector(".d-editor-input:not([hidden])");
+        if (input) {
+          input.focus();
+        }
+      },
+    });
+  }
+
   var composerBar = Discourse.editorToolbar.bind(control, {
     textManipulation: textManipulation,
     i18n: richI18n,
     actions: {
       link: function (e) {
-        e.applySurround("[", "](https://)", "link_description");
+        showLinkModal(e, control);
       },
       upload: function () {
         fileInput.click();
@@ -1363,7 +1383,9 @@
       modal: {
         show: function (name, opts) {
           var model = (opts && opts.model) || {};
-          if (name === "wrap-attributes") {
+          if (name === "upsert-hyperlink") {
+            showUpsertHyperlink(model, slot.host);
+          } else if (name === "wrap-attributes") {
             editorModule.showWrapAttributesModal(model, context.i18n);
           } else if (name === "poll-ui-builder") {
             showPollBuilder(model);
@@ -1743,7 +1765,7 @@
         i18n: richI18n,
         actions: {
           link: function (e) {
-            e.applySurround("[", "](https://)", "link_description");
+            showLinkModal(e, host);
           },
         },
       });

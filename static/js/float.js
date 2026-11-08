@@ -679,8 +679,9 @@
     });
   };
 
-  Instance.prototype.destroy = function () {
-    var closing = this.close();
+  // options as close()'s.
+  Instance.prototype.destroy = function (options) {
+    var closing = this.close(options);
     this.listeners.forEach(function (fn) {
       fn();
     });

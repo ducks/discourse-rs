@@ -968,3 +968,161 @@ test.describe("the composer's toolbar in the rich editor", () => {
     await expect(page.locator("#reply-control .d-editor-preview strong")).toHaveText("strong");
   });
 });
+
+// UpsertHyperlink: composer-hyperlink-test.js on the markdown editor, and
+// prosemirror_links_spec.rb's and prosemirror_keymap_spec.rb's link cases
+// in the rich editor.
+test.describe("the toolbar's link modal", () => {
+  const modal = (page) => page.locator(".d-modal.upsert-hyperlink-modal");
+  const linkButton = (page) => page.locator("#reply-control .d-editor-button-bar .toolbar__button.link");
+  const rich = (page) => page.locator("#reply-control .ProseMirror.d-editor-input");
+  const textarea = (page) => page.locator("#reply-control textarea.d-editor-input");
+  const mod = process.platform === "darwin" ? "Meta" : "Control";
+
+  async function openComposer(page, context, mode) {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = :'p1' WHERE user_id = :'p2'", mode, writer.id);
+    await login(context, writer.name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(page.locator("#reply-control.open")).toBeVisible();
+    if (mode === 1) {
+      await expect(rich(page)).toBeVisible();
+      await rich(page).click();
+      await expect(rich(page)).toBeFocused();
+    }
+  }
+
+  test("adds a hyperlink to a reply in the markdown editor", async ({ page, context }) => {
+    await openComposer(page, context, 0);
+    await textarea(page).fill("This is a link to ");
+    await expect(page.locator(".insert-link.d-modal__body")).toHaveCount(0);
+
+    await linkButton(page).click();
+    await expect(page.locator(".insert-link.d-modal__body")).toBeVisible();
+    await expect(modal(page).locator(".d-modal__title-text")).toContainText("Insert link");
+    await modal(page).locator(".link-url").fill("google.com");
+    await modal(page).locator(".link-text").fill("Google");
+    await modal(page).locator(".d-modal__footer .btn-primary").click();
+    await expect(textarea(page)).toHaveValue("This is a link to [Google](https://google.com)");
+    await expect(modal(page)).toHaveCount(0);
+
+    await textarea(page).fill("Reset textarea contents.");
+    await linkButton(page).click();
+    await modal(page).locator(".link-url").fill("google.com");
+    await modal(page).locator(".link-text").fill("Google");
+    await modal(page).locator(".d-modal__footer .btn-transparent").click();
+    await expect(modal(page)).toHaveCount(0);
+    await expect(textarea(page)).toHaveValue("Reset textarea contents.");
+
+    await textarea(page).evaluate((el) => el.setSelectionRange(0, 5));
+    await linkButton(page).click();
+    await expect(modal(page).locator(".link-text")).toHaveCount(0);
+    await modal(page).locator(".link-url").fill("somelink.com");
+    await modal(page).locator(".d-modal__footer .btn-primary").click();
+    await expect(textarea(page)).toHaveValue("[Reset](https://somelink.com) textarea contents.");
+  });
+
+  test("searches topics from the url field and picks one with the keys", async ({ page, context }) => {
+    await page.route(/\/search\/query\.json\?/, (route) => {
+      const term = new URL(route.request().url()).searchParams.get("term");
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          topics: [{ id: 280, slug: "internationalization-localization", title: `About ${term}`, fancy_title: `About ${term}` }],
+        }),
+      });
+    });
+    await openComposer(page, context, 0);
+    await textarea(page).fill("");
+    await linkButton(page).click();
+    const url = modal(page).locator(".link-url");
+    await expect(url).toBeFocused();
+    await url.fill("http://google.com");
+    await expect(modal(page).locator(".internal-link-results")).toBeHidden();
+
+    await url.fill("local");
+    await expect(modal(page).locator(".internal-link-results .search-link")).toHaveText("About local");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(modal(page).locator(".internal-link-results")).toBeHidden();
+    await expect(url).toHaveValue(/http.*\/t\/internationalization-localization\/280$/);
+    await expect(modal(page).locator(".link-text")).toHaveValue("About local");
+
+    await page.keyboard.press("Escape");
+    await expect(modal(page)).toHaveCount(0);
+    await expect(textarea(page)).toBeFocused();
+    await expect(textarea(page)).toHaveValue("");
+  });
+
+  test("keeps percent-encoded characters and encodes loose ones", async ({ page, context }) => {
+    await openComposer(page, context, 0);
+    await linkButton(page).click();
+    await modal(page).locator(".link-url").fill("https://example.com/?q=%3D+test");
+    await modal(page).locator(".link-text").fill("Link");
+    await modal(page).locator(".d-modal__footer .btn-primary").click();
+    await expect(textarea(page)).toHaveValue("[Link](https://example.com/?q=%3D+test)");
+  });
+
+  test("Ctrl+K opens it in the rich editor and inserts the link", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.press(`${mod}+k`);
+    await expect(modal(page)).toBeVisible();
+    await expect(modal(page).locator(".link-url")).toBeFocused();
+    await page.keyboard.type("https://www.example.com");
+    await page.keyboard.press("Tab");
+    await page.keyboard.type("This is a link");
+    await page.keyboard.press("Enter");
+    await expect(modal(page)).toHaveCount(0);
+    await expect(rich(page).locator("a")).toHaveText("This is a link");
+    await expect(rich(page).locator("a")).toHaveAttribute("href", "https://www.example.com");
+    await expect(rich(page)).toBeFocused();
+  });
+
+  test("the link toolbar's Edit updates the link, its url escaped", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("[Example](https://example.com)");
+    await expect(rich(page).locator("a")).toHaveText("Example");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    const toolbar = page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing)');
+    await expect(toolbar).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(toolbar.locator(".composer-link-toolbar__edit")).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(modal(page)).toBeVisible();
+    await expect(modal(page).locator(".d-modal__title-text")).toContainText("Edit link");
+    await expect(modal(page).locator(".link-text")).toHaveValue("Example");
+    await expect(modal(page).locator(".link-url")).toHaveValue("https://example.com");
+    await modal(page).locator(".link-text").fill("Updated Example");
+    await modal(page).locator(".link-url").fill("https://updated-example.com?query=with space");
+    await modal(page).locator(".link-text").press("Enter");
+    await expect(rich(page).locator("a[href='https://updated-example.com/?query=with%20space']")).toHaveText(
+      "Updated Example",
+    );
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("[Updated Example](https://updated-example.com/?query=with%20space)");
+  });
+
+  test("inserts a link with a malformed url in the rich editor, edited without decoding", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await linkButton(page).click();
+    await modal(page).locator(".link-text").fill("Encoded URL");
+    await modal(page).locator(".link-url").fill("https://example.com/100%/working 1");
+    await modal(page).locator(".d-modal__footer .btn-primary").click();
+    await expect(rich(page).locator("a[href='https://example.com/100%25/working%201']")).toHaveText("Encoded URL");
+
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing) .composer-link-toolbar__edit').click();
+    await expect(modal(page).locator(".link-text")).toHaveValue("Encoded URL");
+    await expect(modal(page).locator(".link-url")).toHaveValue("https://example.com/100%25/working%201");
+    await modal(page).locator(".d-modal__footer .btn-transparent").click();
+    await expect(modal(page)).toHaveCount(0);
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("[Encoded URL](https://example.com/100%25/working%201)");
+  });
+});

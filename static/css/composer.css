@@ -1558,6 +1558,47 @@ body.has-sidebar-page #reply-control:not(.fullscreen).hide-preview {
   font-size: var(--font-down-2-rem);
 }
 
+/* modal/modal-overrides.scss: UpsertHyperlink */
+
+/* modal-overrides.scss:3 */
+.d-modal.upsert-hyperlink-modal .insert-link {
+  overflow-y: visible;
+}
+.d-modal.upsert-hyperlink-modal .insert-link input {
+  min-width: 300px;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs {
+  position: relative;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .spinner {
+  position: absolute;
+  right: 8px;
+  top: -15px;
+  width: 10px;
+  height: 10px;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results {
+  position: absolute;
+  top: 4rem;
+  padding: 5px 10px;
+  box-shadow: var(--shadow-card);
+  z-index: 5;
+  background-color: var(--secondary);
+  max-height: 10rem;
+  width: 90%;
+  overflow-y: auto;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results > .search-link {
+  padding: 6px;
+  border-bottom: 1px solid var(--content-border-color);
+  cursor: pointer;
+  display: block;
+}
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results > .search-link:hover,
+.d-modal.upsert-hyperlink-modal .insert-link .inputs .internal-link-results > .search-link:focus {
+  background-color: var(--highlight-bg);
+}
+
 /* Where Ember leaves things out of the DOM (the reply composer's title
    and category) or floats them (the select-kit body, placed by
    floating-ui), here they are hidden or placed under their header. */
