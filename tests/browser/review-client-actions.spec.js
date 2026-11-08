@@ -6,12 +6,19 @@
 // a queued topic's title, category and raw, and its tags (the
 // composer's MiniTagChooser), in place (PUT /review/:id);
 // a queued post's raw email (RawEmailModal). Each test penalizes or
-// posts as a member of its own (helpers.js member()).
+// posts and flags as members of its own (helpers.js member()).
 const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
-// A reply by a member of the test's own, flagged inappropriate by user0.
+// A reply by a member of the test's own, flagged inappropriate by
+// another. A flagger's agreed flags add to their next flag's score
+// (ReviewableScore.user_accuracy_bonus), so a shared flagger's flag
+// comes to hide the post on its own, and a hidden post's agree menu has
+// no Edit post. `queue` is the review queue for the reply's topic: the
+// whole queue shows ten at a time by score, ahead of which the other
+// specs' reviewables pile up.
 async function flaggedReply(session) {
   const author = member();
+  const flagger = member();
   const user1 = await session("user1");
   const authorContext = await session(author.name);
   const marker = label("A reply to act on");
@@ -19,9 +26,12 @@ async function flaggedReply(session) {
     { context: authorContext, raw: marker },
   ]);
   const postId = t.posts[1];
-  const user0 = await session("user0");
-  await api(user0, "POST", "/post_actions.json", { id: String(postId), post_action_type_id: "4", flag_topic: "false" });
-  return { author, marker, postId };
+  await api(await session(flagger.name), "POST", "/post_actions.json", {
+    id: String(postId),
+    post_action_type_id: "4",
+    flag_topic: "false",
+  });
+  return { author, marker, postId, queue: `/review?topic_id=${t.id}` };
 }
 
 // A new topic by a member of the test's own, held by a watched word.
@@ -63,9 +73,9 @@ async function penalize(page, type, reason) {
 }
 
 test("silencing a flagged post's author from the agree menu", async ({ page, context, session }) => {
-  const { author, marker, postId } = await flaggedReply(session);
+  const { author, marker, postId, queue } = await flaggedReply(session);
   await login(context, "admin");
-  await page.goto("/review");
+  await page.goto(queue);
   const item = page.locator(".review-item.reviewable-flagged-post", { hasText: marker });
   await expect(item).toBeVisible();
   await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
@@ -107,9 +117,9 @@ test("suspending a queued post's author from the reject menu", async ({ page, co
 });
 
 test("cancelling the penalty modal performs nothing", async ({ page, context, session }) => {
-  const { author, marker, postId } = await flaggedReply(session);
+  const { author, marker, postId, queue } = await flaggedReply(session);
   await login(context, "admin");
-  await page.goto("/review");
+  await page.goto(queue);
   const item = page.locator(".review-item.reviewable-flagged-post", { hasText: marker });
   await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
   await page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Suspend user/ }).click();
@@ -124,9 +134,9 @@ test("cancelling the penalty modal performs nothing", async ({ page, context, se
 });
 
 test("agreeing with a flag by editing the post in the composer", async ({ page, context, session }) => {
-  const { marker, postId } = await flaggedReply(session);
+  const { marker, postId, queue } = await flaggedReply(session);
   await login(context, "admin");
-  await page.goto("/review");
+  await page.goto(queue);
   const item = page.locator(".review-item.reviewable-flagged-post", { hasText: marker });
   await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
   await page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Edit post/ }).click();

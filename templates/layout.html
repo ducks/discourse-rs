@@ -90,6 +90,14 @@
     {%- if !chrome.color_head.header_item.is_empty() || !chrome.color_head.footer_button.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "interface-color.js") }}" defer data-light="{{ chrome.t("sidebar.footer.interface_color_selector.light") }}" data-dark="{{ chrome.t("sidebar.footer.interface_color_selector.dark") }}" data-auto="{{ chrome.t("sidebar.footer.interface_color_selector.auto") }}" data-aria-label="{{ chrome.t("sidebar.footer.interface_color_selector.aria_label") }}"></script>
     {%- endif %}
+    {%- if viewer.is_none() %}
+    {#- The login and signup routes' script, ahead of the header's buttons
+        that swap them in, as Ember's bundle has their components: their
+        forms are live as they land, not once the page's own copy loads
+        (until then the login form posts natively to /login). Before
+        htmx, which runs the swaps. -#}
+    <script src="{{ crate::assets::url(base_path, "login.js") }}" defer></script>
+    {%- endif %}
     {#- An external login's outcome (the authentication_data cookie). -#}
     <script src="{{ crate::assets::url(base_path, "auth-complete.js") }}" data-admin-not-allowed="{{ chrome.t("login.admin_not_allowed_from_ip_address") }}" data-awaiting-activation="{{ chrome.t("login.awaiting_activation") }}" data-awaiting-approval="{{ chrome.t("login.awaiting_approval") }}" data-not-allowed="{{ chrome.t("login.not_allowed_from_ip_address") }}" data-requires-invite="{{ chrome.t("login.requires_invite") }}" data-disallow-totp="{{ chrome.t("login.omniauth_disallow_totp") }}"></script>
     {#- The mobile view's nav menu; loaded in both views, so a redraw in the

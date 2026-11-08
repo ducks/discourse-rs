@@ -6,7 +6,7 @@
 // and mobile emoji, the mobile arrow's new messages count, and a hidden
 // tab neither reading nor following new messages. Specs that scroll get a
 // channel of their own (in General's category), filled with sql().
-const { test, expect, login, api, sql, label } = require("./helpers");
+const { test, expect, login, api, sql, label, member } = require("./helpers");
 
 const GENERAL = 2; // the seed's General channel
 const SCROLLER = ".chat-messages-scroller";
@@ -63,18 +63,19 @@ async function openChannel(page, url) {
 
 const message = (page, id) => page.locator(`.chat-message-container[data-id="${id}"]`);
 
+// A member of the test's own, never seen: a member's first request
+// auto-joins them to General (Chat::AutoJoinChannels on user_seen), as
+// it would user2 once any spec signs in as them.
 test("a mention of a member who can't see it brings a notice whose invite notifies them", async ({ page, context }) => {
+  const invitee = member();
   await login(context, "user1");
   await openChannel(page, `/chat/c/general/${GENERAL}`);
   const composer = page.locator(".chat-composer__input");
-  const before = sql(
-    "SELECT count(*) FROM notifications WHERE user_id = (SELECT id FROM users WHERE username = 'user2') AND data LIKE '%chat.invitation_notification%'",
-  )[0][0];
 
-  await composer.fill(`@user2 ${label("mention")}`);
+  await composer.fill(`@${invitee.name} ${label("mention")}`);
   await composer.press("Enter");
   const notice = page.locator(".chat-notices .chat-notices__notice");
-  await expect(notice.locator(".mention-without-membership-notice__body__text")).toContainText("user2", {
+  await expect(notice.locator(".mention-without-membership-notice__body__text")).toContainText(invitee.name, {
     timeout: 20_000,
   });
   await notice.locator(".mention-without-membership-notice__body__link").click();
@@ -83,21 +84,23 @@ test("a mention of a member who can't see it brings a notice whose invite notifi
   await expect
     .poll(() =>
       sql(
-        "SELECT count(*) FROM notifications WHERE user_id = (SELECT id FROM users WHERE username = 'user2') AND data LIKE '%chat.invitation_notification%'",
+        "SELECT count(*) FROM notifications WHERE user_id = :'p1' AND data LIKE '%chat.invitation_notification%'",
+        invitee.id,
       )[0][0],
     )
-    .toBe(String(Number(before) + 1));
+    .toBe("1");
   // The notice's data.messageId is undefined in Ember (the payload says
   // message_id): the invitation names no message.
   const data = sql(
-    "SELECT data FROM notifications WHERE user_id = (SELECT id FROM users WHERE username = 'user2') AND data LIKE '%chat.invitation_notification%' ORDER BY id DESC LIMIT 1",
+    "SELECT data FROM notifications WHERE user_id = :'p1' AND data LIKE '%chat.invitation_notification%' ORDER BY id DESC LIMIT 1",
+    invitee.id,
   )[0][0];
   expect(JSON.parse(data).chat_message_id).toBeUndefined();
   // Three seconds later the notices go.
   await expect(notice).toHaveCount(0, { timeout: 6000 });
 
   // Another one, cleared with its button.
-  await composer.fill(`@user2 ${label("mention")}`);
+  await composer.fill(`@${invitee.name} ${label("mention")}`);
   await composer.press("Enter");
   await expect(notice).toHaveCount(1, { timeout: 20_000 });
   await notice.locator(".chat-notices__notice__clear").click();

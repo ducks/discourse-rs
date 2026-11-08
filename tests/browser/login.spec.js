@@ -32,3 +32,17 @@ test("a wrong password is refused with the flash, and the form stays", async ({ 
   await expect(page.locator("#login-account-name")).toHaveValue("user1");
   await expect(page.locator("#current-user")).toHaveCount(0);
 });
+
+test("the login form the header swaps in is live before the page's own script loads", async ({ page }) => {
+  await page.goto("/latest");
+  // The login route's copy of login.js never arrives: the head's has the
+  // form, as Ember's bundle has LoginPage before the route renders.
+  await page.route(/\/assets\/login\.js/, (route) => route.abort());
+  await page.locator(".d-header .login-button").first().click();
+  await expect(page.locator("#login-account-name")).toBeFocused();
+  await page.locator("#login-account-name").fill("user1");
+  await page.locator("#login-account-password").fill("not the password");
+  await page.locator("#login-button").click();
+  await expect(page.locator(".alert.alert-error")).toHaveText(/Incorrect username, email or password/);
+  await expect(page).toHaveURL(/\/login$/);
+});

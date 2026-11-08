@@ -1,12 +1,13 @@
 // 223c's drawer routes on a running server (chat-drawer.js over GET
 // /live/chat/drawer): a channel's settings and members (from the channel
 // title, the info nav and a browse card), its pins, its threads list and
-// a thread (chat-thread.js in the drawer), the member's threads (the
-// footer's item) and search (chat-search.js), each opened from the
-// drawer's own UI, with the drawer's back button, and the browser's back
-// to a thread's URL opening it in the drawer; 160b1: one ChatHistory with
-// full-page chat, each way. Each test works in a channel of its own with
-// threading, so the other specs' General stays as it is.
+// a thread (chat-thread.js in the drawer), the browse list's next page
+// as the drawer scrolls, the member's threads (the footer's item) and
+// search (chat-search.js), each opened from the drawer's own UI, with
+// the drawer's back button, and the browser's back to a thread's URL
+// opening it in the drawer; 160b1: one ChatHistory with full-page chat,
+// each way. Each test works in a channel of its own with threading, so
+// the other specs' General stays as it is.
 const { test, expect, login, api, sql, label } = require("./helpers");
 
 const prefer = (page, mode) =>
@@ -123,6 +124,9 @@ test("a browse card's members link opens the channel's members in the drawer", a
   await drawer.locator(".chat-channel-list-options-button").first().click();
   await page.locator("[data-menu-option-id='browseChannels']").click();
   await expect(drawer.locator(".c-drawer-routes.--browse")).toBeVisible();
+  // The list shows ten at a time by name, and the channels earlier tests
+  // left sort ahead of this one: found by its name.
+  await drawer.locator(".chat-browse-view .d-filter-controls__input").fill(channel.name);
   const card = drawer.locator(".chat-channel-card", { hasText: channel.name });
   await expect(card).toBeVisible();
   await card.locator(".chat-channel-card__members").click();
@@ -132,6 +136,27 @@ test("a browse card's members link opens the channel's members in the drawer", a
   await members.locator(".c-navbar__back-button").click();
   await expect(drawer.locator(".c-drawer-routes.--channel .chat-composer__input")).toBeVisible();
   await expect(drawer.locator(".c-navbar__channel-title")).toContainText(channel.name);
+});
+
+test("the browse list loads its next page as the drawer scrolls to its end", async ({ page, context }) => {
+  // More open channels than a page, whatever the other specs made.
+  for (let i = 0; i < 11; i++) {
+    const name = label("Drawer browse");
+    sql(
+      "INSERT INTO chat_channels (chatable_type, chatable_id, type, status, user_count, name, slug, created_at, updated_at) VALUES ('Category', 4, 'CategoryChannel', 0, 0, :'p1', :'p2', now(), now())",
+      name,
+      name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    );
+  }
+  await login(context, "user1");
+  const drawer = await openDrawer(page);
+  await drawer.locator(".chat-channel-list-options-button").first().click();
+  await page.locator("[data-menu-option-id='browseChannels']").click();
+  const cards = drawer.locator(".chat-browse-view .chat-channel-card");
+  await expect(cards).toHaveCount(10);
+  // The drawer's content scrolls, not the window.
+  await drawer.locator(".chat-drawer-content").evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  await expect(cards.nth(10)).toBeAttached();
 });
 
 test("the pinned messages button opens the channel's pins, read once shown", async ({ page, context, session }) => {
