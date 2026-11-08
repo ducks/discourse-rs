@@ -44,10 +44,11 @@ async function menuButton(page, id, name) {
 }
 
 async function postAction(page, id, name) {
+  // Each action draws the post again (redrawPost): the article marked
+  // here is gone once the redraw lands.
+  await article(page, id).evaluate((el) => (el.dataset.stale = "1"));
   await menuButton(page, id, name);
-  // Each action draws the post again (redrawPost), collapsed: show-more,
-  // which expanding removed, is back once the redraw lands.
-  await expect(article(page, id).locator(".post-action-menu__show-more")).toBeVisible();
+  await expect(page.locator(`article[data-post-id="${id}"][data-stale]`)).toHaveCount(0);
 }
 
 function postRow(id, columns) {

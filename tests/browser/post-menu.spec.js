@@ -53,6 +53,28 @@ test("show more, copy link and bookmark", async ({ page, context, session }) => 
   ).toEqual([["0"]]);
 });
 
+test("a redrawn post keeps the menu shown more", async ({ page, context, session }) => {
+  const { t, answer } = await setup(session, context);
+  await page.goto(t.url);
+  const post = page.locator(`article[data-post-id="${answer}"]`);
+  const nav = post.locator("nav.post-controls");
+  await post.locator(".post-action-menu__show-more").click();
+  await expect(nav).toHaveClass(/expanded/);
+
+  // The post drawn again as an action or the live stream draws it (GET
+  // /live/post/:id, swapped out of band); Ember's PostMenu keeps its
+  // collapsed state across the re-render.
+  await post.evaluate((el) => (el.dataset.stale = "1"));
+  await page.evaluate((id) => window.htmx.ajax("GET", `/live/post/${id}`, { swap: "none" }), answer);
+  await expect(page.locator(`article[data-post-id="${answer}"][data-stale]`)).toHaveCount(0);
+  await expect(post).toHaveCount(1);
+  await expect(nav).toHaveClass(/expanded/);
+  await expect(post.locator(".post-action-menu__show-more")).toHaveCount(0);
+  for (const button of ["flag", "bookmark", "admin"]) {
+    await expect(post.locator(`.post-action-menu__${button}`)).toBeVisible();
+  }
+});
+
 test("discourse-reactions: like, then another reaction from the picker", async ({ page, context, session }) => {
   const { t, answer } = await setup(session, context);
   await page.goto(t.url);
