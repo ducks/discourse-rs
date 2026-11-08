@@ -1022,18 +1022,6 @@
   }
   refreshSeparator();
 
-  // Markdown around the selection, or its example text.
-  function surround(before, after, example) {
-    var start = textarea.selectionStart;
-    var end = textarea.selectionEnd;
-    var selected = textarea.value.slice(start, end) || example;
-    textarea.setRangeText(before + selected + after, start, end, "end");
-    textarea.selectionStart = start + before.length;
-    textarea.selectionEnd = start + before.length + selected.length;
-    syncRichEditor();
-    focusEditor();
-  }
-
   // The toolbar (editor-toolbar.js) over the open editor's
   // TextManipulation: the rich editor's, else the textarea's.
   var textareaManipulation = null;
@@ -1072,6 +1060,7 @@
   var composerBar = Discourse.editorToolbar.bind(control, {
     textManipulation: textManipulation,
     i18n: richI18n,
+    listOptions: Discourse.editorToolbar.pluginListOptions(richContext().plugins || []),
     actions: {
       link: function (e) {
         showLinkModal(e, control);
@@ -1593,7 +1582,7 @@
           context: richEditorContext(loaded[0]),
           placeholder: textarea.placeholder,
           className: "d-editor-input",
-          keymap: Object.assign({}, composerBar.keymap, {
+          keymap: Object.assign({}, composerBar.keymap, popupKeymap(), {
             "ctrl+m": function () {
               toggleRichEditor();
             },
@@ -1795,6 +1784,7 @@
           return editor ? editor.textManipulation : plain;
         },
         i18n: richI18n,
+        listOptions: Discourse.editorToolbar.pluginListOptions(richContext().plugins || []),
         actions: {
           link: function (e) {
             showLinkModal(e, host);
@@ -4026,11 +4016,24 @@
     return true;
   }
 
+  // The options whose active() reads the editor's state: spoiler-alert's
+  // and toggle-wrap's.
+  var POPUP_ACTIVE = {
+    spoiler: function (s) {
+      return s.inSpoiler;
+    },
+    "toggle-wrap": function (s) {
+      return s.inWrap;
+    },
+  };
+
   function popupMenuContent(items) {
+    var toolbarState = textManipulation().state || {};
     var html = '<ul class="dropdown-menu">';
     items.forEach(function (item) {
+      var active = POPUP_ACTIVE[item.name] && POPUP_ACTIVE[item.name](toolbarState);
       html +=
-        '<li class="dropdown-menu__item"><button class="btn no-text btn-icon" title="' + escapeHtml(item.label) + '"' +
+        '<li class="dropdown-menu__item"><button class="btn no-text btn-icon' + (active ? " --active" : "") + '" title="' + escapeHtml(item.label) + '"' +
         (item.named ? ' data-name="' + escapeHtml(item.name) + '"' : "") + ' type="button">' + svg(item.icon) +
         '<span class="d-button-label"><span class="d-button-label__text">' + escapeHtml(item.label) + "</span>" +
         (item.shortcut ? shortcutKbd(item.shortcut, item.alwaysShowShortcut) : "") +
@@ -4040,24 +4043,6 @@
     return html + "</ul>";
   }
 
-  // applySurround as the plugins call it: the selection (or the example
-  // text) wrapped, on lines of its own in block mode when the selection
-  // spans lines.
-  function applySurround(head, tail, example, blockMode) {
-    var selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    if (blockMode && selected.indexOf("\n") !== -1) {
-      surround(head + "\n", "\n" + tail, example);
-    } else {
-      surround(head, tail, example);
-    }
-  }
-
-  function addText(text) {
-    insertText(text);
-    focusEditor();
-    updatePreview();
-    scheduleDraft();
-  }
 
   // The post a JSON request answers, or why not.
   function fetchJson(path) {
@@ -4075,7 +4060,7 @@
   // Composer#importQuote: the whole post replied to (the topic's first
   // post when replying to the topic; when editing, the post the edited
   // one replies to, else that post) quoted at the cursor.
-  function importQuote() {
+  function importQuote(_, e) {
     if (!state || !state.topicId || !Discourse.buildQuote) {
       return;
     }
@@ -4098,11 +4083,7 @@
         if (state !== s) {
           return;
         }
-        insertText(Discourse.buildQuote(p, p.raw, { full: true }));
-        textarea.blur();
-        textarea.focus({ preventScroll: true });
-        updatePreview();
-        scheduleDraft();
+        e.addText(Discourse.buildQuote(p, p.raw, { full: true }));
       })
       .catch(function (e) {
         showError(String(e.message || e));
@@ -4112,53 +4093,93 @@
       });
   }
 
+  // Each option's action over the toolbar event (d-editor's
+  // newToolbarEvent, editor-toolbar.js) of the open editor, as the
+  // composer's and the plugins' popup menu options take it.
   var popupActions = {
     quote: importQuote,
-    details: function () {
-      applySurround(
-        '\n[details="' + data.textDetailsTitle + '"]\n',
+    "format-code": function (_, e) {
+      e.formatCode();
+    },
+    details: function (_, e) {
+      e.applySurround(
+        '\n[details="' + richI18n("composer.details_title") + '"]\n',
         "\n[/details]\n",
-        data.textDetails,
-        false
+        "details_text",
+        { multiline: false }
       );
     },
-    footnote: function () {
-      addText("^[" + data.textFootnote + "]");
+    footnote: function (_, e) {
+      e.addText("^[" + richI18n("footnote.title") + "]");
     },
-    spoiler: function () {
-      applySurround("[spoiler]", "[/spoiler]", data.textSpoiler, true);
+    spoiler: function (_, e) {
+      if (e.commands && e.commands.toggleSpoiler) {
+        e.commands.toggleSpoiler();
+      } else {
+        e.applySurround("[spoiler]", "[/spoiler]", "spoiler_text", { multiline: false, useBlockMode: true });
+      }
     },
-    "local-dates": function () {
+    "local-dates": function (_, e) {
       if (Discourse.localDatesCreate) {
-        Discourse.localDatesCreate.show(addText);
+        Discourse.localDatesCreate.show(e.addText);
       }
     },
     // discourse-graphviz's sample graph (static/js/graphviz.js).
-    graphviz: function () {
+    graphviz: function (_, e) {
       if (Discourse.graphvizComposer) {
-        Discourse.graphvizComposer(applySurround);
+        Discourse.graphvizComposer(function (head, tail) {
+          e.applySurround(head, tail, "graphviz_sample", { multiline: false });
+        });
       }
     },
     // discourse-math's Insert Math (static/js/discourse-math.js), in
     // block mode when the cursor is at a line's start.
-    "insert-math": function () {
+    "insert-math": function (_, e) {
       if (Discourse.mathInsert) {
-        Discourse.mathInsert.show(textarea.value.slice(0, textarea.selectionStart), addText);
+        Discourse.mathInsert.show(e.selected.pre, e.addText);
       }
     },
     // discourse-poll's builder (static/js/poll-builder.js), loaded the
     // first time, once the menu has closed (and given the focus back to
     // its trigger).
-    poll: function (closing) {
+    poll: function (closing, e) {
       (closing || Promise.resolve()).then(function () {
-        showPollBuilder();
+        showPollBuilder(undefined, e);
       });
     },
     // discourse-policy's builder (static/js/policy.js).
-    policy: function () {
+    policy: function (_, e) {
       if (Discourse.policyBuilder) {
-        Discourse.policyBuilder.show(addText);
+        Discourse.policyBuilder.show(e.addText);
       }
+    },
+    // ComposerService#toggleWrap: WrapAttributesModal over the wrap the
+    // selection is in, else a new one.
+    "toggle-wrap": function (_, e) {
+      var state = e.state || {};
+      Discourse.richEditor.load().then(function (editorModule) {
+        editorModule.showWrapAttributesModal(
+          {
+            initialAttributes: state.inWrap ? state.wrapAttributes || "" : "",
+            onApply: function (attributesString) {
+              if (state.inWrap) {
+                e.commands.updateWrap(attributesString);
+              } else if (e.commands && e.commands.insertWrap) {
+                e.commands.insertWrap(editorModule.parseAttributesString(attributesString));
+              } else {
+                var wrapTag = attributesString.trim() ? "[wrap" + attributesString + "]" : "[wrap]";
+                e.applySurround(wrapTag + "\n", "\n[/wrap]", "wrap_text");
+              }
+            },
+            onRemove: state.inWrap
+              ? function () {
+                  e.commands.removeWrap();
+                }
+              : undefined,
+          },
+          richI18n
+        );
+      });
     },
     // discourse-templates' insert template (static/js/templates.js).
     "discourse-templates": function () {
@@ -4168,8 +4189,9 @@
     },
   };
 
-  // edit: the rich editor's Edit poll ({ poll, onSave }).
-  function showPollBuilder(edit) {
+  // edit: the rich editor's Edit poll ({ poll, onSave }); e: the toolbar
+  // event the options menu gave.
+  function showPollBuilder(edit, e) {
     var config = {};
     try {
       config = JSON.parse(data.pollBuilder || "{}");
@@ -4181,7 +4203,9 @@
           getText: function () {
             return textarea.value;
           },
-          addText: addText,
+          addText: function (text) {
+            (e || composerBar.event()).addText(text);
+          },
         },
         edit
       );
@@ -4202,11 +4226,11 @@
   // The options' shortcuts in the editor (mod+Shift+D, mod+Shift+.):
   // the option's shortcutAction, else its action.
   var popupShortcuts = {
-    "local-dates": function () {
+    "local-dates": function (_, e) {
       if (Discourse.localDatesCreate) {
         Discourse.localDatesCreate.currentDateMarkup().then(function (markup) {
           if (markup) {
-            addText(markup);
+            e.addText(markup);
           }
         });
       }
@@ -4216,7 +4240,7 @@
   function runPopupAction(item, viaShortcut, closing) {
     var action = (viaShortcut && popupShortcuts[item.name]) || popupActions[item.name];
     if (item.ported && action) {
-      action(closing);
+      action(closing, composerBar.event());
     } else {
       showError(data.labelUnported + " " + item.label);
     }
@@ -4256,14 +4280,36 @@
               button
             );
             var item = shown[index];
-            var closing = menu.close();
+            // ToolbarPopupMenuOptions' onSelect: the menu closed (and the
+            // focus back on its trigger) before the option acts, so the
+            // editor it focuses keeps the focus.
+            var closing = Promise.resolve(menu.close());
             if (item) {
-              runPopupAction(item, false, closing);
+              closing.then(function () {
+                runPopupAction(item, false, closing);
+              });
             }
           });
         }
       });
     });
+  }
+
+  // The same shortcuts in the rich editor's keymap (d-editor's).
+  function popupKeymap() {
+    var keys = {};
+    popup.items.forEach(function (item) {
+      if (!item.shortcut || popup.unported.length) {
+        return;
+      }
+      keys[((apple ? "meta+" : "ctrl+") + item.shortcut).toLowerCase()] = function () {
+        if (popupItemShown(item)) {
+          runPopupAction(item, true);
+        }
+        return false;
+      };
+    });
+    return keys;
   }
 
   textarea.addEventListener("keydown", function (event) {
@@ -4451,10 +4497,15 @@
   });
 
   // insertBlock (TextareaTextManipulation#_addBlock): the text on lines
-  // of its own in place of the selection, the cursor after it.
+  // of its own in place of the selection, the cursor after it; in the
+  // rich editor its blocks in the selection's place.
   function insertBlock(text) {
     text = (text || "").trim();
     if (!text) {
+      return;
+    }
+    if (richEditor) {
+      richEditor.textManipulation.insertBlock(text);
       return;
     }
     var value = textarea.value;

@@ -64,6 +64,7 @@ export { wasmEngine } from "discourse/rich-editor/engine";
 export { registerPluginExtensions } from "discourse/rich-editor/plugins";
 export { renderToolbarButtons } from "discourse/rich-editor/toolbar";
 export { showWrapAttributesModal } from "discourse/rich-editor/wrap-modal";
+export { parseAttributesString } from "discourse/rich-editor/wrap-utils";
 
 var AUTOCOMPLETE_KEY_DOWN_SUPPRESS = ["Enter", "Tab", "ArrowDown", "ArrowUp"];
 

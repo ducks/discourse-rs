@@ -243,6 +243,7 @@ pub fn popup_options(
         },
         PopupOption {
             when: Some("touch"),
+            ported: true,
             ..option("format-code", "code", "composer.code_title")
         },
         option("toggle-spreadsheet", "table", "composer.insert_table"),
@@ -332,6 +333,7 @@ pub fn popup_options(
     }
     out.push(PopupOption {
         show_active_icon: true,
+        ported: true,
         ..option(
             "toggle-wrap",
             "right-to-bracket",
@@ -1058,20 +1060,15 @@ pub fn render(
             "<div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div>"
         )
     };
-    // The options menu's example texts (applySurround's exampleKey,
-    // footnote's title) and what an unported item says.
+    // What an unported options menu item says (the items' example texts
+    // are the rich editor context's strings).
     let popup_data = if options.is_some() {
-        format!(
-            " data-text-details-title=\"{}\" data-text-details=\"{}\" data-text-footnote=\"{}\" data-text-spoiler=\"{}\" data-label-unported=\"Not supported yet:\"",
-            escape(&t(list, "composer.details_title")),
-            escape(&t(list, "composer.details_text")),
-            escape(&t(list, "footnote.title")),
-            escape(&t(list, "composer.spoiler_text")),
-        ) + &route
-            .poll_builder
-            .as_ref()
-            .map(|b| poll_builder_data(list, b))
-            .unwrap_or_default()
+        " data-label-unported=\"Not supported yet:\"".to_string()
+            + &route
+                .poll_builder
+                .as_ref()
+                .map(|b| poll_builder_data(list, b))
+                .unwrap_or_default()
     } else {
         String::new()
     };

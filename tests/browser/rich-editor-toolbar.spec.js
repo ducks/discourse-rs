@@ -1184,3 +1184,132 @@ test.describe("the toolbar's emoji and upload buttons", () => {
     expect((await chooser).isMultiple()).toBe(true);
   });
 });
+
+// The options menu over the open editor's toolbar event: the plugins'
+// items (composer_spoiler_spec.rb's toolbar cases, details, footnote),
+// toggle-wrap (prosemirror_wrap_spec.rb's toolbar case), and checklist's
+// list menu item.
+test.describe("the toolbar's options menu", () => {
+  const rich = (page) => page.locator("#reply-control .ProseMirror.d-editor-input");
+  const textarea = (page) => page.locator("#reply-control textarea.d-editor-input");
+  const mod = process.platform === "darwin" ? "Meta" : "Control";
+
+  async function openComposer(page, context, mode) {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = :'p1' WHERE user_id = :'p2'", mode, writer.id);
+    await login(context, writer.name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(page.locator("#reply-control.open")).toBeVisible();
+    if (mode === 1) {
+      await expect(rich(page)).toBeVisible();
+      await rich(page).click();
+      await expect(rich(page)).toBeFocused();
+    }
+  }
+
+  const options = (page) => page.locator(".toolbar-menu__options-content:not(.-closing)");
+
+  async function option(page, title) {
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    await expect(options(page)).toBeVisible();
+    await options(page).locator(`button[title='${title}']`).click();
+    await expect(options(page)).toHaveCount(0);
+    await expect(page.locator("#reply-control .d-editor-input:not([hidden])")).toBeFocused();
+  }
+
+  test("spoiler wraps the cursor's place inline or as a block, and removes it", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("This is a test ");
+    await option(page, "Blur spoiler");
+    await expect(rich(page).locator("span.spoiled")).toHaveText("This text will be blurred");
+    await page.keyboard.type("spoiler");
+    await expect(rich(page).locator("span.spoiled")).toHaveText("spoiler");
+
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    await expect(options(page).locator("button[title='Blur spoiler']")).toHaveClass(/--active/);
+    await options(page).locator("button[title='Blur spoiler']").click();
+    await expect(rich(page).locator("span.spoiled")).toHaveCount(0);
+    await expect(rich(page)).toContainText("This is a test spoiler");
+    await expect(rich(page)).toBeFocused();
+
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await option(page, "Blur spoiler");
+    await expect(rich(page).locator("div.spoiled")).toHaveText("This text will be blurred");
+    await page.keyboard.type("secret");
+    await expect(rich(page).locator("div.spoiled")).toHaveText("secret");
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue(/^This is a test spoiler\s*\n\[spoiler\]\nsecret\n\n\[\/spoiler\]\n\n$/);
+  });
+
+  test("spoiler wraps paragraphs in a block spoiler", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("First paragraph");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("Second paragraph");
+    await page.keyboard.press(`${mod}+a`);
+    await option(page, "Blur spoiler");
+    await expect(rich(page).locator("div.spoiled p")).toHaveText(["First paragraph", "Second paragraph"]);
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("[spoiler]\nFirst paragraph\n\nSecond paragraph\n\n[/spoiler]\n\n");
+  });
+
+  test("details and a footnote go in through the rich editor", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("Some text");
+    await option(page, "Add footnote");
+    await expect(rich(page).locator(".footnote")).toHaveCount(1);
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await option(page, "Hide details");
+    await expect(rich(page).locator("details summary")).toHaveText("Summary");
+    await expect(rich(page).locator("details p")).toHaveText("This text will be hidden");
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue(
+      'Some text^[Footnotes]\n\n[details="Summary"]\nThis text will be hidden\n\n[/details]\n\n',
+    );
+  });
+
+  test("details goes in around the textarea's selection", async ({ page, context }) => {
+    await openComposer(page, context, 0);
+    await textarea(page).fill("hidden words");
+    await textarea(page).press(`${mod}+a`);
+    await option(page, "Hide details");
+    await expect(textarea(page)).toHaveValue('\n[details="Summary"]\nhidden words\n[/details]\n');
+  });
+
+  test("toggle-wrap edits the wrap the cursor is in", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("[wrap=example class=test]");
+    await expect(rich(page).locator(".composer-wrap-node")).toHaveCount(1);
+    await rich(page).locator(".composer-wrap-node").click();
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    await expect(options(page).locator("[data-name='toggle-wrap']")).toHaveClass(/--active/);
+    await options(page).locator("[data-name='toggle-wrap']").click();
+    const modal = page.locator(".wrap-attributes-modal");
+    await expect(modal).toBeVisible();
+    await expect(modal.getByRole("textbox", { name: "Wrap name" })).toHaveValue("example");
+    await expect(modal.getByRole("textbox", { name: "Key" })).toHaveValue("class");
+    await expect(modal.getByRole("textbox", { name: "Value" })).toHaveValue("test");
+    await modal.getByRole("textbox", { name: "Wrap name" }).fill("updated");
+    await modal.getByRole("textbox", { name: "Value" }).fill("highlight");
+    await modal.getByRole("button", { name: "Apply" }).click();
+    await expect(modal).toHaveCount(0);
+    await expect(rich(page).locator(".composer-wrap-node")).toHaveCount(1);
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("[wrap=updated class=highlight]\n\n[/wrap]\n\n");
+  });
+
+  test("the list menu's checklist item makes a checklist", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("An item");
+    await page.locator("#reply-control .toolbar__button.list").click();
+    const menu = page.locator(".toolbar-menu__list-content:not(.-closing)");
+    await menu.locator("[data-name='list-checklist']").click();
+    await expect(rich(page).locator("li .chcklst-box")).toHaveCount(1);
+    await expect(page.locator("#reply-control .toolbar__button.list .d-icon-list-check")).toHaveCount(1);
+    await page.locator("#reply-control .composer-toggle-switch").click();
+    await expect(textarea(page)).toHaveValue("* [ ] An item");
+  });
+});

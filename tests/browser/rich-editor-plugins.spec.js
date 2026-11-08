@@ -94,7 +94,8 @@ test.describe("rich editor spoiler", () => {
     ],
   });
 
-  // composer_spoiler_spec.rb's typing, without the toolbar (196r3)
+  // composer_spoiler_spec.rb's typing; its toolbar cases are
+  // rich-editor-toolbar.spec.js's
   test("typing [spoiler] makes a spoiler, unblurred while the cursor is in it", async ({ page }) => {
     await openEditorPage(page, { plugins: ALL });
     await setupRichEditor(page, "");
@@ -295,8 +296,8 @@ test.describe("rich editor checklist", () => {
     ],
   });
 
-  // checklist's rich_editor_extension_spec.rb, without the toolbar's list
-  // menu (196r3): typed boxes instead.
+  // checklist's rich_editor_extension_spec.rb with typed boxes (the
+  // list menu's checklist item is rich-editor-toolbar.spec.js').
   test("toggles checked state when clicking checkbox", async ({ page }) => {
     await openEditorPage(page, { plugins: ALL });
     await setupRichEditor(page, "");

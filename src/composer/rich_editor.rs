@@ -138,6 +138,12 @@ const LABELS: &[&str] = &[
     "composer.heading_level_small_title",
     "composer.ulist_title",
     "composer.olist_title",
+    // the options menu's and the list menu's plugin items
+    "composer.details_title",
+    "composer.details_text",
+    "composer.graphviz_sample",
+    "footnote.title",
+    "checklist.composer.checklist",
     // UpsertHyperlink
     "composer.link_dialog_title",
     "composer.link_edit_title",

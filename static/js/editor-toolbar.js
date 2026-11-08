@@ -12,8 +12,10 @@
 //   Discourse.editorToolbar.bind(host, {
 //     textManipulation,  // () -> the open editor's TextManipulation
 //     i18n,              // (key, params) -> string
-//     actions,           // { link, upload, ... }: a button's sendAction,
-//                        // given the toolbar event
+//     actions,           // { link, upload, emoji }: a button's
+//                        // sendAction, given the toolbar event
+//     listOptions,       // the plugins' list menu options
+//                        // (pluginListOptions)
 //   }) -> { refresh(state), keymap, keydown(event), event(trimLeading) }
 //       draws the bar's active states and the heading icon (refresh, after
 //       each of the editor's transactions), opens the menus, and runs a
@@ -64,7 +66,6 @@
     this.siteSettings = opts.siteSettings || {};
     this.allowPreview = true;
     this.state = {};
-    this.commands = {};
   }
 
   var T = TextareaTextManipulation.prototype;
@@ -558,6 +559,32 @@
     };
   }
 
+  // The plugins' list menu options (addComposerToolbarPopupMenuOption with
+  // menu "list"), by the plugins on: checklist's.
+  function pluginListOptions(plugins) {
+    if (plugins.indexOf("checklist") === -1) {
+      return [];
+    }
+    return [
+      {
+        name: "list-checklist",
+        icon: "list-check",
+        label: "checklist.composer.checklist",
+        showActiveIcon: true,
+        active: function (state) {
+          return state.inCheckList;
+        },
+        action: function (e) {
+          if (e.commands && e.commands.toggleChecklist) {
+            e.commands.toggleChecklist();
+          } else {
+            e.applyList("- [ ] ", "list_item");
+          }
+        },
+      },
+    ];
+  }
+
   // Toolbar#getListPopupMenuOptions
   var LIST_OPTIONS = [
     {
@@ -570,7 +597,7 @@
         return state.inBulletList;
       },
       action: function (e) {
-        if (!e.commands.toggleBulletList || !e.commands.toggleBulletList()) {
+        if (!e.commands || !e.commands.toggleBulletList || !e.commands.toggleBulletList()) {
           e.applyList("* ", "list_item");
         }
       },
@@ -585,7 +612,7 @@
         return state.inOrderedList;
       },
       action: function (e) {
-        if (!e.commands.toggleOrderedList || !e.commands.toggleOrderedList()) {
+        if (!e.commands || !e.commands.toggleOrderedList || !e.commands.toggleOrderedList()) {
           e.applyList(function (i) {
             return !i ? "1. " : parseInt(i, 10) + 1 + ". ";
           }, "list_item");
@@ -638,7 +665,7 @@
         return state.inSmall;
       },
       action: function (e) {
-        if (e.commands.toggleSmall) {
+        if (e.commands && e.commands.toggleSmall) {
           e.commands.toggleSmall();
         } else {
           e.applySurround("<small>", "</small>", "heading_level_small_text", { multiline: true, wholeLine: true });
@@ -650,8 +677,9 @@
 
   // The Toolbar's buttons, by id (the bar's data-action). `actions` are
   // the host's sendActions.
-  function buttons(actions) {
+  function buttons(actions, listOptions) {
     var heading = headingOptions();
+    var list = LIST_OPTIONS.concat(listOptions || []);
     return {
       bold: {
         shortcut: "B",
@@ -719,17 +747,17 @@
       emoji: { sendAction: actions.emoji },
       list: {
         active: function (state) {
-          return LIST_OPTIONS.some(function (option) {
+          return list.some(function (option) {
             return option.active(state);
           });
         },
         icon: function (state) {
-          var active = LIST_OPTIONS.find(function (option) {
+          var active = list.find(function (option) {
             return option.active(state);
           });
           return active ? active.icon : "list-ul";
         },
-        popupMenu: LIST_OPTIONS,
+        popupMenu: list,
       },
     };
   }
@@ -815,7 +843,7 @@
   }
 
   function bind(host, opts) {
-    var defs = buttons(opts.actions || {});
+    var defs = buttons(opts.actions || {}, opts.listOptions);
     var bar = host.querySelector(".d-editor-button-bar");
     var i18n = opts.i18n;
 
@@ -980,5 +1008,6 @@
     },
     bind: bind,
     newToolbarEvent: newToolbarEvent,
+    pluginListOptions: pluginListOptions,
   };
 })();
