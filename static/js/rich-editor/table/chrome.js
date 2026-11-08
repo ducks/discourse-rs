@@ -65,7 +65,17 @@ export function tableChrome(pluginParams) {
           }
           syncGripAccessibility(view, pluginParams);
         },
-        destroy: stopGestures,
+        // Adding a plugin (code-block's highlighter resolves after the
+        // editor opens) replaces every plugin view, and a reorder under way
+        // must outlive that; only the editor itself going away ends it,
+        // which it has by the time the destroy returns.
+        destroy: function () {
+          queueMicrotask(function () {
+            if (view.isDestroyed) {
+              stopGestures();
+            }
+          });
+        },
       };
     },
   });

@@ -1250,6 +1250,42 @@ test.describe("rich editor tables", () => {
     expect(result).toEqual({ text: "Xa1", avatar: false });
   });
 
+  // code-block's highlighter is a plugin that resolves after the editor
+  // opens, and adding a plugin replaces every plugin view.
+  test("a plugin resolving mid-drag keeps the reorder", async ({ page }) => {
+    await setupRichEditor(page, TABLE);
+    const result = await inPage(page, async (s, m) => {
+      const cell = s.findAll(".composer-table td")[0];
+      const during = await s.dragGrip(s.findAll(".composer-table__grip.--row")[1], s.findAll(".composer-table tr")[2], async () => {
+        s.view.updateState(s.view.state.reconfigure({ plugins: s.view.state.plugins.concat(new m.state.Plugin({})) }));
+        await s.wait();
+        return {
+          moving: cell.classList.contains("is-moving"),
+          avatar: !!document.querySelector(".composer-table__drag-avatar"),
+        };
+      });
+      return { during, value: s.value, avatar: !!document.querySelector(".composer-table__drag-avatar") };
+    });
+    expect(result).toEqual({
+      during: { moving: true, avatar: true },
+      value: `| h1 | h2 | h3 |\n|----|----|----|\n| b1 | b2 | b3 |\n| a1 | a2 | a3 |\n\n`,
+      avatar: false,
+    });
+  });
+
+  test("destroying the editor mid-drag drops the drag", async ({ page }) => {
+    await setupRichEditor(page, TABLE);
+    const result = await inPage(page, async (s) => {
+      const view = s.view;
+      return await s.dragGrip(s.findAll(".composer-table__grip.--row")[1], s.findAll(".composer-table tr")[2], async () => {
+        view.destroy();
+        await s.wait();
+        return { avatar: !!document.querySelector(".composer-table__drag-avatar") };
+      });
+    });
+    expect(result).toEqual({ avatar: false });
+  });
+
   test("typing across cells is one safe undoable edit", async ({ page }) => {
     await setupRichEditor(page, TABLE);
     const result = await inPage(page, async (s, m) => {
