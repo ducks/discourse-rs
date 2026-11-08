@@ -288,6 +288,20 @@
 
   // Back and forward: the page is asked for again (historyCacheSize 0)
   // and swapped in the same way; one that fails to load loads in full.
+  //
+  // htmx sends each restore on its own and swaps in whichever answers
+  // last, so back or forward again before the page asked for is in
+  // drops that request, as a new transition supersedes the router's
+  // active one: a slow answer for the entry left would otherwise land
+  // over the page the address bar shows. Also when the new entry isn't
+  // asked for (the chat drawer takes it).
+  var restoring = null;
+  document.addEventListener("htmx:historyCacheMiss", function (event) {
+    if (restoring) {
+      restoring.abort();
+    }
+    restoring = event.detail.xhr;
+  });
   document.addEventListener("htmx:historyCacheMissLoad", function (event) {
     leaving(parse(event.detail.response));
   });
