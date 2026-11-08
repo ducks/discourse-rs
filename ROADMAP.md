@@ -388,9 +388,9 @@ Visible if clicked, avoid them in a scripted demo:
   Not a demo blocker: the reject reason modal (194e2), which only a
   user reviewable opens, and the queue lists none yet.
 - [ ] The composer's rich editor and its toolbar buttons (196r1 to 196r3;
-  196r1, the core and the composer's toggle, and 196r2, the everyday
-  extensions, are done); the profile's About me editor follows it
-  (196r5).
+  196r1, the core and the composer's toggle, 196r2, the everyday
+  extensions, and 196r4, the plugins' extensions, are done); the
+  profile's About me editor follows it (196r5).
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -3991,8 +3991,8 @@ route table has been made, so this list may be short.
     rich-editor-media (28), rich-editor-to-markdown (41) and
     rich-editor-word-paste (23), the reference's QUnit bodies run as
     written where they are not table-driven; tree.rs and editor.rs;
-    tests/composer_mentions.rs. Still refused: 196r4's constructs and
-    [wrap]. Left to 196r3: Edit link (UpsertHyperlink), Load preview
+    tests/composer_mentions.rs. Still refused then: 196r4's constructs
+    and [wrap]. Left to 196r3: Edit link (UpsertHyperlink), Load preview
     (onebox), Tab nesting list items (text-manipulation). Not ported here:
     ComposerMessages (the mention warnings are triggered, nothing shows
     them), A11y's live regions (table and video announcements are
@@ -4002,10 +4002,42 @@ route table has been made, so this list may be short.
     lists, headings, emoji, upload, the options menu, Tab nesting list
     items), UpsertHyperlink for the link toolbar's Edit, onebox and its
     toolbar (with the link toolbar's Load preview), the preview toolbar
-    196r4. `feat/rich-editor-plugins` L: the plugins' extensions: poll's
-    node view (PollNodeView and the builder's Edit poll mode), checklist,
-    details, spoiler, footnotes, math, local dates, policy, events, and
-    [wrap] (its extension and the wrap node view)
+    196r4. ~~`feat/rich-editor-plugins`~~ (done) L: the plugins'
+    extensions, each from its plugin's lib/rich-editor-extension.js as
+    plain ES modules (static/js/rich-editor/plugins/), registered by
+    plugins.js for the plugins the composer's context lists as on
+    (src/composer/rich_editor.rs `plugins`): checklist (its click, Enter,
+    Backspace and list commands), details, spoiler (blurred until the
+    selection is in it), footnotes (the note in an editor of its own),
+    math (typeset by discourse-math.js, now with a forced render, and its
+    Edit math modal, Discourse.mathEdit), local dates (chips drawn by
+    local-dates.js's formatLocalDate, moment loaded before the editor, the
+    insert date modal editing a date with initialValues), policy (its node
+    view, the builder over a node's values: GET
+    /live/policy-builder?edit=1) and poll (PollNodeView with PollInfo, the
+    builder's Edit poll mode: show(config, composer, { poll, onSave }) with
+    pollAttrsFromSettings' originalAttrs); and core's [wrap], its extension
+    with insertWrap, updateWrap and removeWrap, the wrap node view and
+    WrapAttributesModal (wrap-modal.js), in register-default.ts's order.
+    The node tree writes the plugins' JS tokens (details' bbcode,
+    wrap_bbcode with `bare` for spoiler, policy and excerpt, wrap, check,
+    footnote_ref and footnote_tail's tokens with their meta, math with its
+    mathType, local dates' span, the poll's tokens with `fields`
+    poll_attrs; element::JsTree, JsWrap, JsFields, JsBare), the cooked HTML
+    unchanged; plugin-utils.js has buildBBCodeAttrs, serializeBBCodeAttr
+    and parseBBCodeTag. The composer's context gives the editor a modal
+    service for the node views' modals, and the editor leaves nothing behind
+    when the crate refuses the markdown. Tests: browser
+    rich-editor-plugins (93: the plugins' rich-editor-extension tests, the
+    [wrap] registry case and the system specs' typing), composer-actions'
+    builder editing cases and composer.spec.js's plugins in the composer;
+    tree.rs; tests/policy.rs. Still refused: discourse-events' [event] and
+    the calendar's blocks (the crate refuses them, the plugins unported,
+    202), [graphviz] (a preview node, 196r3's preview-source) and chat's
+    [chat] transcripts (chat's extension, not ported), both raw HTML in the
+    tree; [excerpt] as in the reference (no extension). Not ported here:
+    the checklist's and footnote's text-manipulation tests and the
+    system specs' toolbar cases (196r3)
     196r5. `feat/rich-editor-default` S: once 196r2 and 196r4 land, turn
     composer::OPEN_IN_STORED_MODE (src/composer/load.rs) on and remove it,
     so the composer opens in the stored composition_mode as Ember does;

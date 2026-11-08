@@ -21,8 +21,11 @@ pass; the rich editor is reachable through the member's `composition_mode`
 | `static/js/rich-editor.js` | `lib/load-rich-editor.js`: the import map and `Discourse.richEditor.load()` |
 | `rich-editor/editor.js` | `components/prosemirror-editor.gts`, `core/plugin.js`, `core/commands.js` |
 | `rich-editor/extensions.js` | `lib/composer/rich-editor-extensions.ts`, `extensions/register-default.ts` and the small core extensions: code (codemark), heading, strikethrough, strong, underline, trailing paragraph, ordered and bullet lists, hard break, placeholder |
-| `rich-editor/extensions/*.js` | `extensions/`: emoji, mention, hashtag, link, link-toolbar, quote, code-block, html-inline, html-block, trailing-inline-space, markdown-paste, word-paste, table, image, upload-placeholder, grid, override-drag-ghost |
-| `rich-editor/node-views/*.js` | `components/`: image (with media and video dispatch), video, grid, upload placeholder and image alt text input, as plain DOM node views |
+| `rich-editor/extensions/*.js` | `extensions/`: emoji, mention, hashtag, link, link-toolbar, quote, code-block, html-inline, html-block, trailing-inline-space, markdown-paste, word-paste, table, image, upload-placeholder, grid, override-drag-ghost, wrap |
+| `rich-editor/plugins.js` | each bundled plugin's `api.registerRichEditorExtension`: the extensions of the plugins the composer's context lists, registered once, after the defaults, in the plugins' load order |
+| `rich-editor/plugins/*.js` | the plugins' `lib/rich-editor-extension.js`: checklist, discourse-details (details), discourse-local-dates (local-dates, with `local-date-node-view.js`), discourse-math (math), discourse-policy (policy, from its initializer), footnote, poll (with `components/poll-node-view.gjs` and `poll-info.gjs` in `poll-node-view.js`), spoiler-alert (spoiler) |
+| `rich-editor/wrap-utils.js`, `rich-editor/wrap-modal.js` | `lib/wrap-utils.js`, `components/wrap-attributes-modal.gjs` |
+| `rich-editor/node-views/*.js` | `components/`: image (with media and video dispatch), video, grid, upload placeholder, image alt text input and wrap, as plain DOM node views |
 | `rich-editor/table/*.js` | `lib/table/` |
 | `rich-editor/engine.js` | `lib/markdown-it.js`: the markdown engine the extensions ask (below) |
 | `rich-editor/toolbar.js` | `lib/composer/toolbar.ts` ToolbarBase, `components/composer/toolbar-buttons.gjs`, `lib/roving-button-bar.js`, iconHTML and a success toast, for the extensions' floating toolbars |
@@ -31,7 +34,7 @@ pass; the rich editor is reachable through the member's `composition_mode`
 | `rich-editor/serializer.js` | `core/serializer.js`, `lib/expel-boundary-punctuation.ts` |
 | `rich-editor/keymap.js` | `core/keymap.js` |
 | `rich-editor/inputrules.js` | `core/inputrules.js` |
-| `rich-editor/plugin-utils.js` | `lib/plugin-utils.js` (less buildBBCodeAttrs, which arrives with 196r4's bbcode block extensions) |
+| `rich-editor/plugin-utils.js` | `lib/plugin-utils.js`, with lib/text.js's buildBBCodeAttrs and serializeBBCodeAttr and bbcode-block.js's parseBBCodeTag |
 | `rich-editor/to-markdown.js` | `to-markdown.js` |
 | `rich-editor/markdown-it-stub.js` | none: what `markdown-it` resolves to |
 | `static/css/rich-editor.css` | `common/rich-editor/rich-editor.scss` (core rules and the everyday extensions'), `common/components/composer-toggle-switch.scss` |
@@ -43,8 +46,8 @@ pass; the rich editor is reachable through the member's `composition_mode`
 Extensions keep the reference's shape (nodeSpec, markSpec, parse,
 serializeNode, serializeMark, inputRules, keymap, plugins, nodeViews,
 commands, state, transformParsedHTML, each a value or a function of the
-plugin params), so 196r4's extensions port one by one without changing the
-core.
+plugin params), so the plugins' extensions (196r4) ported one by one without
+changing the core.
 Node views are classes (extractNodeViews builds them with `new`) or
 functions returning one; the Glimmer component descriptors have no
 counterpart, so the components are plain DOM node views.
@@ -115,13 +118,15 @@ A node is an object:
 | `content` | string | `token.content` |
 | `hidden` | boolean | `token.hidden`; true on a tight list item's paragraph |
 | `meta` | any JSON | `token.meta`, where a rule sets it (footnote ids, math type) |
+| `fields` | object | properties a rule sets on its token besides markdown-it's own, copied onto the open token (the poll's `poll_attrs`) |
+| `bare` | boolean | true on a container whose open and close tokens are both `type`, nesting 1 and -1 (bbcode-block's `wrap_bbcode`) |
 | `map` | `[startLine, endLine]` | `token.map`, optional |
 | `children` | array of nodes | see below |
 | `nesting` | `0` | only on a leaf that has `children` |
 
 - A node with `children` and no `nesting` is a container: it flattens to
-  `type_open`, its children, `type_close`. The close token copies the open
-  token's tag, markup, hidden and block.
+  `type_open`, its children, `type_close` (with `bare`, `type` twice). The
+  close token copies the open token's tag, markup, hidden and block.
 - `{"type": "inline", "content": <source>, "children": [...]}` is
   markdown-it's `inline` token: a block's inline content, wherever
   markdown-it has one (paragraphs, headings, table cells), its children the
@@ -187,13 +192,44 @@ the tree does not port. The engine's options have no topic, so a quote
 of another topic names its user rather than linking to the topic, as the
 reference's buildEngine does.
 
-The rest (the other bbcode blocks: details, wrap, spoiler, policy;
-checklists, footnotes, math, local dates, events, polls) is written as
-`unported:<name>` (the Element's tag, or the crate node's name) until its
-extension records its JS token (196r4). No parse spec handles it, so it
-refuses the post as unsupported. Text may be split or merged differently
-from markdown-it's (the parser merges adjacent text), so the test is the
-document a tree gives, not equality with markdown-it's tokens.
+### The plugins' types and [wrap] (196r4)
+
+| type | tag | attrs | from |
+|---|---|---|---|
+| `bbcode` | `details`, then `summary` | `open` (empty) where `[details open]` | discourse-details' rule; the summary's text is a `text` token among the block tokens |
+| `wrap_bbcode` (`bare`) | `div` | `class` `spoiler` | spoiler-alert's block rule (bbcode-block's `wrap: "div.spoiler"`) |
+| `bbcode_spoiler` | `span` | `class` `spoiler` | spoiler-alert's inline rule, `markup` `[spoiler]` |
+| `wrap_bbcode` (`bare`) | `div` | `class` `policy`, each attribute as `data-<key>`, sorted, `version` 1 unless given | discourse-policy's `wrap` |
+| `wrap_bbcode` (`bare`) | `div` | `class` `excerpt` | core's `[excerpt]`, which no extension takes in the reference either |
+| `wrap` | `div` or `span` | `class` `d-wrap`, applyDataAttributes' `data-*` | d-wrap.js; the inline one holds its content as one `text` token |
+| `check` | `span` | `class` `chcklst-box ...`, `data-chk-src` | checklist's core rule, with no children |
+| `footnote_ref` | | | `meta` `{id}` for `^[...]`, `{id, subId, label}` for `[^label]` |
+| `footnote_block`, `footnote` | | | footnote_tail: the notes after the document, each `footnote` with `meta` `{id, label}`, its blocks, and a `footnote_anchor` (`meta` `{id, subId, label}`) per reference before its last paragraph's close |
+| `math_inline`, `math_block` | | | discourse-math; `content` the math, `meta` `{mathType}` (`tex` or `asciimath`) on the inline one |
+| `span` | `span` | `class` `discourse-local-date`, its `data-*` | discourse-local-dates; its child the date's text, and a range's spans either side of a `→` text |
+| `poll` | `div` | `class` `poll`, `data-poll-*` | the poll rule, `fields` `{poll_attrs}`: `{name: "poll", status: "open", ...}` and every attribute written |
+| `poll_container`, `poll_title` | `div` | `class` `poll-container`, `poll-title` | the title's `inline` in `poll_title`; each option's `list_item` with its `data-poll-option-id` |
+| `bullet_list` (a number poll's) | `ul` | | addNumberListItems: each item a hidden `paragraph` around a `text` token |
+| `poll_info`, `poll_info_counts`, `poll_info_counts_count`, `poll_info_number`, `poll_info_label` | `div`, `span` | their classes | addPollInfo, the label poll_voters_label |
+
+Where a rule writes raw HTML, its node says the tokens the HTML stands
+for (`element::JsTree` on a RawHtml node, `JsWrap` on a Holder whose first
+and last children are the rule's own tags, `JsFields` for a token's own
+properties, `JsBare` for a `wrap_bbcode` Element); the cook's HTML is
+unchanged.
+
+What no extension takes yet is still refused: HTML naming an upload
+(above), and what the crate writes as `html_raw` with no parse spec:
+discourse-graphviz's `[graphviz]` (its extension is a preview node,
+`preview-source.js`, 196r3's) and chat's `[chat]` transcripts (chat's
+extension is not ported). discourse-events' `[event]` and the calendar's
+blocks are refused by the crate itself, the plugins not being ported
+(ROADMAP 202), which the composer answers as an unsupported token. An
+`[excerpt]` is refused where both spoiler-alert and discourse-policy are
+on, as in the reference: with one of them its handler declining drops the
+token, as the reference's parser does. Text may be split or merged
+differently from markdown-it's (the parser merges adjacent text), so the
+test is the document a tree gives, not equality with markdown-it's tokens.
 
 tests/browser/rich-editor.spec.js writes the trees for each of the
 reference's cases (its `doc(...)` builders): those are the expected shape.
@@ -252,11 +288,15 @@ plugin-utils.js.
 `tests/helpers/rich-editor-helper.gjs`: a page with the loader, the editor's
 modules and the engine, `testMarkdown` and `setupRichEditor` (the editor's
 HTML less ProseMirror's artifacts, and the markdown an edit serializes,
-with every default extension), and `qunitTest`, which runs a reference
-QUnit body as written in the page with a QUnit-like `assert` (and
-`assert.dom`) and the @ember/test-helpers it calls (click,
-triggerKeyEvent, settled). The reference's pretender routes are Playwright
-routes.
+with every default extension, and the plugins' a page or test names), and
+`qunitTest`, which runs a reference QUnit body as written in the page with
+a QUnit-like `assert` (and `assert.dom`) and the @ember/test-helpers it
+calls (click, at fireEvent's point just inside an element's top left
+corner, triggerKeyEvent, settled). The context's `modal` records the last
+modal shown as `richSpec.activeModal`, where the reference's tests read the
+modal service's. A page may change the engine's render settings (math and
+policy are off on the test site). The reference's pretender routes are
+Playwright routes.
 
 - `rich-editor.spec.js` ports `prosemirror-markdown-test.js` (the editor
   with prosemirror-markdown's defaults alone), `strikethrough-test.js` and
@@ -276,11 +316,20 @@ routes.
 - `rich-editor-to-markdown.spec.js` and `rich-editor-word-paste.spec.js` run
   `to-markdown-test.js` (less its table and image cases) and
   `word-paste-test.js` as written.
+- `rich-editor-plugins.spec.js` ports the plugins' rich-editor-extension
+  tests (checklist, discourse-details, spoiler-alert, poll with its unit
+  cases, discourse-math, discourse-local-dates, discourse-policy),
+  prosemirror-editor-test.gjs's [wrap] registry case, and from their system
+  specs what the QUnit tests leave out: footnote's, checklist's and
+  spoiler's typing, prosemirror_wrap_spec.rb (less its toolbar case), and
+  the refusals. composer-actions.spec.js runs poll-ui-builder-test's
+  editing cases on the builder, and composer.spec.js the plugins in the
+  composer: details and a poll opened, Edit poll and Edit Wrap.
 
-Cases the port cannot run say why where they would be: prosemirror-editor-
-test's [wrap] registry case (wrap is 196r4's, so its token is refused) and
-code-block-test's "Tab still nests list items" (the list Tab is
-text-manipulation's, 196r3). The site's highlight.js bundle has languages
+Cases the port cannot run say why where they would be: code-block-test's
+"Tab still nests list items" and the checklist's and footnote's
+text-manipulation tests (text-manipulation's, 196r3), and the toolbar's
+cases of the system specs (196r3). The site's highlight.js bundle has languages
 the reference's test bundle lacks, so the code block cases list the
 bundle's and the HTML block cases set its highlighting aside.
 
@@ -329,14 +378,24 @@ GET /composer/mentions.
   `#reply-control`: the client site settings the extensions read
   (default_code_lang, here_mention, max_image_width and so on), the strings
   they show (each plural key's forms as `key.one`, `key.other`), the
-  current user's staff flag and `site.hashtag_configurations`'
-  `topic-composer` order. composer.js's `richEditorContext` hands the editor
+  current user's staff flag, `site.hashtag_configurations`'
+  `topic-composer` order and `plugins`, the bundled plugins on that have
+  an extension (by their `enabled_site_setting`). composer.js registers
+  those (`registerPluginExtensions`), loading local dates' moment first
+  when it is one, and its `richEditorContext` hands the editor
   that as getContext's `siteSettings`, `site`, `currentUser` and `i18n(key,
   params)`, with the composer's `topicId`, an `appEvents` emitter the upload
   code and the extensions share, `capabilities.viewport.sm` and
   d-editor's `replaceToolbar` (an extension's toolbar in the button bar's
-  place, with a back button). The editor's engine is `wasmEngine` over the
-  preview's markdown.wasm, built once.
+  place, with a back button) and `modal.show(name, { model })` for the node
+  views' modals: Edit Wrap (`wrap-modal.js`), the poll builder in its Edit
+  poll mode (poll-builder.js `show(config, composer, { poll, onSave })`),
+  Edit math (discourse-math.js `Discourse.mathEdit`), the policy builder
+  over a node's values (policy.js `Discourse.policyBuilder.edit`, GET
+  /live/policy-builder?edit=1 drawing it) and the insert date modal over a
+  date's (local-dates-create.js `show(insert, initialValues)`). The
+  editor's engine is `wasmEngine` over the preview's markdown.wasm, built
+  once.
 - In rich mode an upload goes in as the upload placeholder node (or an
   image node with `placeholder`), as text-manipulation's placeholder
   handler does: its progress, then the upload's markdown in its place, or
@@ -367,9 +426,9 @@ What the composer and the editor do not do yet, as the reference does:
 A temporary deviation: Ember opens the composer in the member's stored
 mode (d-editor's setupEditorMode), but Discourse ships
 `default_composition_mode` 1, so the seed's members, an imported site's and
-new signups would all open in a rich editor that refuses a post with any
-construct whose extension is 196r4's (a poll, details, a checklist,
-footnotes, math, local dates, a policy, an event, [wrap]). Until then
+new signups would all open in the rich editor before the round-trip tests
+pass and it is made the default (196r5); it still refuses an event, a
+graphviz graph and a chat transcript (above). Until then
 `composer::OPEN_IN_STORED_MODE` (`src/composer/load.rs`) is off: the
 composer always opens in markdown (`data-composition-mode="0"`, the
 preview allowed) whatever is stored. The toggle and Ctrl+M still switch
