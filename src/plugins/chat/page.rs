@@ -2821,7 +2821,8 @@ impl Context<'_> {
     }
 
     /// A page of the browse list: its cards (or the empty state for the
-    /// first), and the container that loads the next page when shown.
+    /// first), and after them the element that loads the next page when
+    /// shown.
     pub async fn browse_cards(
         &mut self,
         tab: &str,
@@ -2858,16 +2859,23 @@ impl Context<'_> {
             out.push_str(&channel_card(c, &emojis, self.base_path, &t));
         }
         if offset == 0 {
-            out.push_str("</div><div><br></div>");
+            out.push_str("</div>");
         }
+        // List's loadMore: the <div><br></div> after the cards, watched by
+        // an IntersectionObserver, which sees the drawer's own scrolling
+        // (htmx's revealed hears only the window's). A full page's swaps
+        // itself for the next page.
         if channels.len() as i64 == BROWSE_LIMIT {
             out.push_str(&format!(
-                "<div class=\"loading-container\" hx-get=\"{}/chat/browse/{tab}/page?filter={}&offset={}\" hx-trigger=\"revealed\" hx-swap=\"outerHTML\"></div>",
+                "<div hx-get=\"{}/chat/browse/{tab}/page?filter={}&offset={}\" hx-trigger=\"intersect once\" hx-swap=\"outerHTML\"><br></div>",
                 self.base_path,
                 crate::ruby::cgi_escape(filter),
                 offset + BROWSE_LIMIT
             ));
-        } else if offset == 0 {
+        } else {
+            out.push_str("<div><br></div>");
+        }
+        if offset == 0 {
             out.push_str("<div class=\"loading-container\"></div>");
         }
         Ok(out)
