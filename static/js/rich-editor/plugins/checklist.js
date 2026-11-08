@@ -202,6 +202,18 @@ export default {
       return exitChecklist(tr, ctx);
     }
 
+    // The caret as the DOM has it. The view reads a native caret move (Home,
+    // say) on its selectionchange, which comes after the next key's keydown
+    // when the two keys come back to back: the state still has the caret
+    // from before the move then.
+    function caretFromDOM(view) {
+      var domSel = view.root.getSelection();
+      if (!domSel || !domSel.isCollapsed || !domSel.focusNode || !view.dom.contains(domSel.focusNode)) {
+        return null;
+      }
+      return view.state.doc.resolve(view.posAtDOM(domSel.focusNode, domSel.focusOffset));
+    }
+
     function adjustCursorPosition(tr) {
       var doc = tr.doc;
       var selection = tr.selection;
@@ -246,15 +258,15 @@ export default {
             var state = view.state;
             var dispatch = view.dispatch;
             var selection = state.selection;
-            var $from = selection.$from;
+            if (!selection.empty) {
+              return false;
+            }
+            var $from = caretFromDOM(view) || selection.$from;
 
-            // Right after a checklist item's check and space only.
-            if (
-              !selection.empty ||
-              $from.parentOffset !== 2 ||
-              !startsWithCheck($from.parent) ||
-              !inBulletListItem(state.doc, $from.pos)
-            ) {
+            // At a checklist item's start only: before its check, between
+            // it and its space or after the space, where adjustCursorPosition
+            // keeps a caret the view has read.
+            if ($from.parentOffset > 2 || !startsWithCheck($from.parent) || !inBulletListItem(state.doc, $from.pos)) {
               return false;
             }
 
@@ -262,7 +274,7 @@ export default {
               var ctx = findBulletListContext($from);
 
               var checkStart = $from.start();
-              var tr = state.tr.delete(checkStart, checkStart + 2);
+              var tr = state.tr.setSelection(selection.constructor.near($from)).delete(checkStart, checkStart + 2);
 
               if (ctx) {
                 var listItemPos = tr.mapping.map($from.before(ctx.listItemDepth));
