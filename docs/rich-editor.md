@@ -9,10 +9,13 @@ import map with no bundler or build step, and parsing markdown with the
 port's own markdown crate (`crates/markdown`) so the editor and cooked posts
 share one parser.
 
-Markdown stays the default composition mode until the round-trip tests
-pass; the rich editor is reachable through the member's `composition_mode`
-(user_options, 1 is rich) and the composer's toggle. Making rich the default
-(Discourse's `default_composition_mode` of 1) is a separate step (196r5).
+The rich editor is the default composition mode, as Discourse ships it
+(`default_composition_mode` 1, new members' `composition_mode`): the
+composer and the profile's About me open in the member's
+`composition_mode` (user_options, 1 is rich), and the toggle and Ctrl+M
+switch and save it. It became the default once the round-trip tests
+passed (196r5, below); what it still refuses opens in markdown with the
+reference's alert.
 
 ## Files
 
@@ -170,7 +173,8 @@ Discourse's other tokens are written the same way where the crate already
 knows the token: html_block, html_inline, html_raw, emoji (with
 getEmojiTokenByName's attrs), tables (`table`, `thead`, `tbody`, `tr`, `th`,
 `td` with their `text-align` style), `[code]` as `code_inline`, `[url]` and
-`[email]` as `link`.
+`[email]` as `link`, `[img]` as `image` (src the content, an empty alt,
+no children, as bbcode-inline pushes it).
 
 ### The everyday extensions' types (196r2)
 
@@ -304,6 +308,8 @@ Playwright routes.
   expected HTML, so the schema, view and serializer), `maps` (from the
   case's node tree, so `tokensFromTree` and the parse specs) and
   `round-trips` (markdown through markdown.wasm's `rich_editor_tree`), with
+  bbcode-inline's [b], [i], [code], [url], [email] and [img] round-tripped
+  too,
   the import map's urls, typing, undo and the refusals.
 - `rich-editor-extensions.spec.js` ports the emoji, mention, hashtag, link,
   quote, code-block, html-inline and html-block tests and
@@ -350,7 +356,7 @@ GET /composer/mentions.
 - `src/composer/view.rs` draws ComposerToggleSwitch first in
   `.d-editor-button-bar` (d-editor's showEditorModeToggle: no editor mode is
   forced in the composer), in the mode it opens in (the member's
-  `composition_mode`, while `OPEN_IN_STORED_MODE` is on; see below): `--rte` and `aria-checked="true"` for 1,
+  `composition_mode`, setupEditorMode): `--rte` and `aria-checked="true"` for 1,
   `--markdown` otherwise, `--active` on the fab-markdown or `a` icon,
   labelled with formatShortcut("ctrl+m") for a keyboard outside Apple's
   platforms. `#reply-control` carries `data-composition-mode`,
@@ -402,6 +408,18 @@ GET /composer/mentions.
   nothing when it is cancelled from the node, the cancel link or by
   deleting it. Pasted files and the editor's own `data:` images upload
   through the same code.
+- The profile's About me (preferences/profile.gjs' DEditor, no mode
+  forced) is the same: `src/preferences_view/profile.rs` draws the toggle
+  first in its button bar and the container in the viewer's
+  `composition_mode`, and `static/js/preferences.js` opens the editor
+  there through `Discourse.composerRichEditor` (composer.js: the
+  composer's engine, extensions and context with no topic, a toolbar slot
+  of its own for replaceToolbar, the toggle's drawing, the mode's save and
+  the refusal's alert). Its textarea stays, hidden, as the composer's
+  does, and Save Changes sends it; the toggle, Ctrl+M and a refusal save
+  `composition_mode`, and a closed composer follows the switch, as Ember's
+  opens anew in the saved mode. Its toolbar buttons write the textarea
+  and the editor follows, as the composer's do until 196r3.
 - GET /composer/mentions (`src/routes/composer_mentions.rs`) answers the
   mention extension: an @name that is no user or visible group, nor
   @here, goes back to text, and the reasons are triggered as
@@ -423,16 +441,22 @@ What the composer and the editor do not do yet, as the reference does:
 - The strings' plural forms are picked by English's rule (one for 1, zero
   where the locale has it, other otherwise).
 
-A temporary deviation: Ember opens the composer in the member's stored
-mode (d-editor's setupEditorMode), but Discourse ships
-`default_composition_mode` 1, so the seed's members, an imported site's and
-new signups would all open in the rich editor before the round-trip tests
-pass and it is made the default (196r5); it still refuses an event, a
-graphviz graph and a chat transcript (above). Until then
-`composer::OPEN_IN_STORED_MODE` (`src/composer/load.rs`) is off: the
-composer always opens in markdown (`data-composition-mode="0"`, the
-preview allowed) whatever is stored. The toggle and Ctrl+M still switch
-and still save `composition_mode`, and no stored value is rewritten.
-196r5 turns the switch on and removes it. The browser suite's members are
-on markdown too (`tests/browser/setup.sql`); composer.spec.js gives its own
-the mode each case needs.
+The default (196r5): Ember opens the composer in the member's stored mode
+(d-editor's setupEditorMode), and Discourse ships `default_composition_mode`
+1, so the seed's members, an imported site's and new signups open in the
+rich editor. Until the round-trip tests passed the port held that back
+(`composer::OPEN_IN_STORED_MODE`, off: always markdown); 196r5 removed the
+switch once they did. The round-trip tests are each case that goes from
+markdown through markdown.wasm's `rich_editor_tree` and the editor to the
+markdown an edit serializes: rich-editor.spec.js' `round-trips` cases
+(prosemirror-markdown-test, strikethrough, underline, and bbcode-inline's
+[b], [i], [code], [url], [email] and [img], which the reference's tests leave
+out), and every `testMarkdown` and `setupRichEditor` case of
+rich-editor-extensions, -plugins, -table and -media.spec.js
+(rich-editor-helper.js opens the editor over markdown through the
+engine). What the editor refuses, it refuses whatever the mode: the
+composer, an edit and the About me open in markdown with the reference's
+alert and save `composition_mode` 0, as the alert's toggleRichEditor does
+(composer.spec.js). The browser suite's members stay on markdown
+(`tests/browser/setup.sql`), as the specs type into and read the
+textarea; composer.spec.js gives its own the mode each case needs.
