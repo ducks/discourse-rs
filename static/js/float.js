@@ -329,6 +329,24 @@
     return scrollParent(node.parentNode) || window;
   }
 
+  // A menu by a trigger in a fixed container (the composer, a modal, the
+  // chat drawer) is fixed to the viewport too, as emoji-picker.js's
+  // strategyFor does. Absolute, it moves with the page that scrolls under
+  // the container until autoUpdate's scroll listener puts it back, so a
+  // press aimed at an item in between lands where the item was. A menu
+  // that asks for a strategy keeps it.
+  function menuStrategy(trigger, options) {
+    if (options.strategy) {
+      return options.strategy;
+    }
+    for (var node = trigger; node instanceof Element && node !== document.documentElement; node = node.parentElement) {
+      if (getComputedStyle(node).position === "fixed") {
+        return "fixed";
+      }
+    }
+    return "absolute";
+  }
+
   // The portal outlets Ember's application renders in #main after the app.
   function portal(id) {
     var node = document.getElementById(id);
@@ -553,7 +571,8 @@
     }
     var content = (this.content = this.render());
     portal(this.kind === "menu" ? "d-menu-portals" : "d-tooltip-portals").appendChild(content);
-    this.cleanups.push(attach(this.trigger, content, o));
+    var placement = this.kind === "menu" ? Object.assign({}, o, { strategy: menuStrategy(this.trigger, o) }) : o;
+    this.cleanups.push(attach(this.trigger, content, placement));
 
     // trapInteractionPropagation: a press in the content is not a click
     // outside it.
