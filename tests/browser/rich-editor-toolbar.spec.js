@@ -1106,6 +1106,59 @@ test.describe("the toolbar's link modal", () => {
     await expect(textarea(page)).toHaveValue("[Updated Example](https://updated-example.com/?query=with%20space)");
   });
 
+  // code-block's highlighter is added once highlight.js has loaded, and
+  // adding a plugin recreates every plugin view: highlight.js held back
+  // until the caret is in a link (or not), then let through.
+  async function holdHighlightJs(page) {
+    let release;
+    const held = new Promise((resolve) => (release = resolve));
+    let requested;
+    const seen = new Promise((resolve) => (requested = resolve));
+    await page.route("**/assets/highlightjs-core.min.js*", async (route) => {
+      requested();
+      await held;
+      await route.continue();
+    });
+    return async () => {
+      await seen;
+      release();
+      await page.evaluate(async () => {
+        await window.Discourse.highlightSyntax.ensureHighlightJs();
+        // code-block's plugin resolving, then the editor adding it
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+    };
+  }
+
+  test("the link toolbar stays open while highlight.js finishes loading", async ({ page, context }) => {
+    const letHighlightJsThrough = await holdHighlightJs(page);
+    await openComposer(page, context, 1);
+    await page.keyboard.type("[Example](https://example.com)");
+    await expect(rich(page).locator("a")).toHaveText("Example");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    const toolbar = page.locator('[data-identifier="composer-link-toolbar"]:not(.-closing)');
+    await expect(toolbar).toBeVisible();
+
+    await letHighlightJsThrough();
+    await expect(toolbar).toBeVisible();
+    await expect(toolbar).toHaveCount(1);
+    await expect(rich(page)).toBeFocused();
+  });
+
+  test("no link toolbar opens when highlight.js finishes loading outside a link", async ({ page, context }) => {
+    const letHighlightJsThrough = await holdHighlightJs(page);
+    await openComposer(page, context, 1);
+    await page.keyboard.type("[Example](https://example.com) after");
+    await expect(rich(page).locator("a")).toHaveText("Example");
+    const toolbar = page.locator('[data-identifier="composer-link-toolbar"]');
+
+    await letHighlightJsThrough();
+    await expect(toolbar).toHaveCount(0);
+    await expect(rich(page)).toBeFocused();
+  });
+
   test("inserts a link with a malformed url in the rich editor, edited without decoding", async ({ page, context }) => {
     await openComposer(page, context, 1);
     await linkButton(page).click();

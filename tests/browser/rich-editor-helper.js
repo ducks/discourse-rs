@@ -438,7 +438,8 @@ function harness() {
       });
       // code-block's highlight plugin resolves once highlight.js has loaded,
       // and adding it reconfigures the state, which destroys and recreates
-      // every plugin view (a floating toolbar already open goes with it).
+      // every plugin view (a floating toolbar already open closes and opens
+      // again).
       // The reference's ensureHighlightJs registers its load with
       // waitForPromise, so render's settled waits for it; this waits the
       // same, then a task for the plugin's .then to have reconfigured.
