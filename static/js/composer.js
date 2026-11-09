@@ -1043,10 +1043,21 @@
     if (richEditor) {
       return richEditor.textManipulation;
     }
+    return textareaTextManipulation();
+  }
+
+  // The textarea's, which cooks with the preview's engine to tell its
+  // autocompletes the caret is in code.
+  function textareaTextManipulation() {
     if (!textareaManipulation) {
       textareaManipulation = Discourse.editorToolbar.textarea(textarea, {
         i18n: richI18n,
         siteSettings: richContextSettings(),
+        cook: function (raw) {
+          return loadRenderer().then(function (render) {
+            return render(raw);
+          });
+        },
       });
     }
     return textareaManipulation;
@@ -1096,25 +1107,281 @@
     if (!trigger) {
       return;
     }
-    var open = function () {
-      Discourse.emojiPicker.open(trigger, {
-        context: "topic",
-        onSelect: function (code) {
-          tm.emojiSelected(code);
-        },
-      });
-    };
+    loadEmojiPicker().then(
+      function () {
+        Discourse.emojiPicker.open(trigger, {
+          context: "topic",
+          onSelect: function (code) {
+            tm.emojiSelected(code);
+          },
+        });
+      },
+      function () {
+        showError("Could not load the emoji picker.");
+      }
+    );
+  }
+
+  // emoji-picker.js, from the emoji button's script, once.
+  var emojiPickerLoading = null;
+  function loadEmojiPicker() {
     if (Discourse.emojiPicker) {
-      open();
+      return Promise.resolve();
+    }
+    var button = control.querySelector(".toolbar__button.emoji[data-src]");
+    if (!button) {
+      return Promise.reject(new Error("no emoji picker"));
+    }
+    if (!emojiPickerLoading) {
+      emojiPickerLoading = new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = button.dataset.src;
+        script.onload = resolve;
+        script.onerror = function () {
+          emojiPickerLoading = null;
+          reject(new Error("Could not load the emoji picker."));
+        };
+        document.head.appendChild(script);
+      });
+    }
+    return emojiPickerLoading;
+  }
+
+  // d-editor's setupEditor: the emoji, hashtag and mention autocompletes
+  // (_applyEmojiAutocomplete, _applyHashtagAutocomplete,
+  // _applyMentionAutocomplete) on an editor's TextManipulation, the
+  // textarea's once and the rich editor's each time it opens.
+  var DEFAULT_EMOJIS = ["slight_smile", "smile", "wink", "sunny", "blush"];
+
+  function applyAutocompletes(tm) {
+    if (!Discourse.autocomplete) {
       return;
     }
-    var script = document.createElement("script");
-    script.src = trigger.dataset.src;
-    script.onload = open;
-    script.onerror = function () {
-      showError("Could not load the emoji picker.");
+    applyEmojiAutocomplete(tm);
+    applyHashtagAutocomplete(tm);
+    applyMentionAutocomplete(tm);
+  }
+
+  // afterComplete: schedule("afterRender", tm, tm.blurAndFocus)
+  function refocusAfterComplete(tm) {
+    return function () {
+      setTimeout(function () {
+        tm.blurAndFocus();
+      }, 0);
     };
-    document.head.appendChild(script);
+  }
+
+  function notInCode(_, context) {
+    return Promise.resolve(context.inCodeBlock()).then(function (inCode) {
+      return !inCode;
+    });
+  }
+
+  function applyHashtagAutocomplete(tm) {
+    var site = richContext().site || {};
+    var order = (site.hashtag_configurations || {})["topic-composer"] || [];
+    var options = Discourse.autocomplete.hashtagOptions(order, { afterComplete: refocusAfterComplete(tm) });
+    var search = options.dataSource;
+    // The results' :emoji: are drawn with the picker's data.
+    options.dataSource = function (term) {
+      var always = function () {
+        return search(term);
+      };
+      return loadEmojiPicker().then(always, always);
+    };
+    tm.autocomplete(options);
+  }
+
+  function applyEmojiAutocomplete(tm) {
+    var settings = richContextSettings();
+    if (!settings.enable_emoji) {
+      return;
+    }
+    var SKIP = Discourse.autocomplete.SKIP;
+    var trigger = new RegExp(
+      "(?:^|" + Discourse.autocomplete.EMOJI_ALLOWED_PRECEDING.source + ")(:(?!:).?[\\w-]*:?(?!:)(?:t\\d?)?:?)$",
+      "gi"
+    );
+    tm.autocomplete({
+      key: ":",
+      render: Discourse.autocomplete.renderEmojis,
+      afterComplete: refocusAfterComplete(tm),
+      onKeyUp: function (text, cp) {
+        trigger.lastIndex = 0;
+        var matches = trigger.exec(text.substring(0, cp));
+        if (matches && matches[1]) {
+          return [matches[1]];
+        }
+      },
+      transformComplete: function (v) {
+        if (v.code) {
+          Discourse.emojiStore.track(v.code, "topic");
+          return v.code + ":";
+        }
+        showEmojiPickerAtCaret(tm, v.term);
+        return "";
+      },
+      dataSource: function (term) {
+        var full = ":" + term;
+        term = term.toLowerCase();
+        var denied = (richContext().site || {}).denied_emojis || [];
+        return loadEmojiPicker()
+          .then(function () {
+            if (term.length < Number(settings.emoji_autocomplete_min_chars || 0)) {
+              return SKIP;
+            }
+            if (term === "") {
+              var favorites = Discourse.emojiStore.favorites("topic");
+              if (favorites.length) {
+                return favorites
+                  .filter(function (f) {
+                    return denied.indexOf(f) === -1;
+                  })
+                  .slice(0, 5);
+              }
+              return DEFAULT_EMOJIS;
+            }
+            // note this will only work for emojis starting with :
+            // eg: :-)
+            return Discourse.emojiPicker.translations().then(function (translations) {
+              if (translations[full]) {
+                return [translations[full]];
+              }
+              var match = term.match(/^:?(.*?):t([2-6])?$/);
+              var tonable = match ? Discourse.emojiPicker.isSkinTonable(match[1]) : Promise.resolve(false);
+              return tonable.then(function (yes) {
+                if (yes && denied.indexOf(match[1]) === -1) {
+                  return match[2]
+                    ? [match[1] + ":t" + match[2]]
+                    : [2, 3, 4, 5, 6].map(function (x) {
+                        return match[1] + ":t" + x;
+                      });
+                }
+                return Discourse.emojiPicker.search(term, {
+                  maxResults: 5,
+                  diversity: Discourse.emojiStore.diversity(),
+                  exclude: denied,
+                });
+              });
+            });
+          })
+          .then(function (list) {
+            if (list === SKIP) {
+              return [];
+            }
+            return list.map(function (code) {
+              return { code: code, src: Discourse.emojiPicker.url(code) };
+            });
+          })
+          .then(function (list) {
+            if (list.length) {
+              list.push({ label: richI18n("composer.more_emoji"), term: term });
+            }
+            return list;
+          });
+      },
+      triggerRule: notInCode,
+    });
+  }
+
+  // The "more" item's picker (EmojiPickerDetached), by the caret: 18px
+  // right of and 10px below where the term is, its pick put in the term's
+  // place (emojiSelected).
+  var caretAnchor = null;
+  function showEmojiPickerAtCaret(tm, term) {
+    var handler = tm.autocompleteHandler;
+    var coords = handler.getCaretCoords(handler.getCaretPosition());
+    var rect = (tm.textarea || tm.view.dom).getBoundingClientRect();
+    if (caretAnchor) {
+      caretAnchor.remove();
+    }
+    caretAnchor = document.createElement("span");
+    caretAnchor.className = "d-editor-caret-anchor";
+    caretAnchor.style.cssText =
+      "position: fixed; width: 0; height: 0; left: " +
+      (rect.left + coords.left + 18) +
+      "px; top: " +
+      (rect.top + coords.top + 10) +
+      "px;";
+    control.appendChild(caretAnchor);
+    Discourse.emojiPicker.open(caretAnchor, {
+      context: "topic",
+      term: term,
+      onSelect: function (code) {
+        tm.emojiSelected(code);
+      },
+    });
+  }
+
+  // The composer's topic, category and the user replied to (d-editor's
+  // topicId, categoryId and replyingToUserId), once its topic and post
+  // have loaded.
+  function mentionContext() {
+    var s = state;
+    if (!s) {
+      return Promise.resolve({});
+    }
+    return Promise.all([s.actionContext, s.editPostLoad])
+      .catch(function () {})
+      .then(function () {
+        var topic = s.actionTopic || s.topic || null;
+        var categoryId = null;
+        if (s.mode === "create-topic") {
+          var value = chooser.querySelector("summary").dataset.value;
+          categoryId = value ? parseInt(value, 10) : null;
+        } else if (topic) {
+          categoryId = topic.categoryId || null;
+        }
+        // composer.replyingToUserId: an edit's post's reply_to_user, the
+        // post replied to's author, else the topic's.
+        var prioritized = null;
+        if (s.mode === "edit" && s.editPost && s.editPost.reply_to_user) {
+          prioritized = s.editPost.reply_to_user.id;
+        } else if (s.mode === "reply" && s.actionPost && s.actionPost.userId) {
+          prioritized = s.actionPost.userId;
+        } else if (topic && topic.userId) {
+          prioritized = topic.userId;
+        }
+        return {
+          topicId: s.mode === "create-topic" || s.mode === "private-message" ? null : s.topicId || null,
+          categoryId: categoryId,
+          prioritizedUserId: prioritized,
+        };
+      });
+  }
+
+  function applyMentionAutocomplete(tm) {
+    if (!richContextSettings().enable_mentions) {
+      return;
+    }
+    var ac = Discourse.autocomplete;
+    tm.autocomplete({
+      key: "@",
+      render: ac.renderUsers,
+      dataSource: function (term) {
+        return mentionContext()
+          .then(function (context) {
+            return ac.userSearch({
+              term: term,
+              searchContext: "mention",
+              topicId: context.topicId,
+              categoryId: context.categoryId,
+              includeGroups: true,
+              prioritizedUserId: context.prioritizedUserId,
+            });
+          })
+          .then(ac.indexUserStatuses);
+      },
+      transformComplete: function (v) {
+        ac.validateSearchResult(v, {
+          usernameMissing: richI18n("composer.autocomplete.username_missing"),
+          nameMissing: richI18n("composer.autocomplete.name_missing"),
+        });
+        return v.username || v.name;
+      },
+      afterComplete: refocusAfterComplete(tm),
+      triggerRule: notInCode,
+    });
   }
 
   // The preview: the markdown crate as WebAssembly, loaded the first time
@@ -1545,6 +1812,7 @@
   // Back to the textarea, holding the markdown the editor last wrote.
   function closeRichEditor() {
     if (richEditor) {
+      richEditor.textManipulation.autocomplete("destroy");
       richEditor.destroy();
       richEditor = null;
     }
@@ -1644,6 +1912,7 @@
           richEditorFailed(refused);
           return;
         }
+        applyAutocompletes(editor.textManipulation);
         composerBar.refresh(editor.textManipulation.state);
         // Ctrl or Cmd + Enter submits here too.
         editor.view.dom.addEventListener("keydown", function (event) {
@@ -1721,6 +1990,7 @@
     }
   });
   drawModeToggle();
+  applyAutocompletes(textareaTextManipulation());
 
   // Another d-editor with no forced mode (the profile's About me,
   // preferences.js) opens in and saves the same composition mode
@@ -3149,6 +3419,7 @@
           id: t.id,
           title: t.title,
           url: base + "/t/" + (t.slug || "topic") + "/" + t.id,
+          userId: t.user_id,
           categoryId: t.category_id,
           privateMessage: t.archetype === "private_message",
           postVoting: !!t.is_post_voting,
@@ -3174,6 +3445,7 @@
         return {
           id: p.id,
           postNumber: p.post_number,
+          userId: p.user_id,
           username: p.username,
           name: p.name,
           postType: p.post_type,

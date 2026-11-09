@@ -3,8 +3,10 @@
 //! data-rich-editor-context: the client site settings they look at, the
 //! strings they show (with a plural key's forms under `key.one` and so on,
 //! picked by count in composer.js), the current user's staff flag, the
-//! site's hashtag order for the composer and the bundled plugins on, whose
-//! extensions the editor registers (static/js/rich-editor/plugins.js).
+//! site's hashtag order for the composer and its denied emojis, and the
+//! bundled plugins on, whose extensions the editor registers
+//! (static/js/rich-editor/plugins.js). d-editor's autocompletes, in either
+//! mode, read it too.
 
 use serde_json::{Map, Value, json};
 
@@ -24,6 +26,10 @@ const SITE_SETTINGS: &[&str] = &[
     "authorized_extensions_for_staff",
     "avatar_sizes",
     "max_oneboxes_per_post",
+    // d-editor's autocompletes
+    "enable_mentions",
+    "enable_emoji",
+    "emoji_autocomplete_min_chars",
 ];
 
 /// The client strings the extensions show (client.en.yml, less `js.`).
@@ -200,6 +206,10 @@ const LABELS: &[&str] = &[
     "chat.quote.transcript_label",
     "chat.quote.default_thread_title",
     "dates.long_no_year",
+    // d-editor's autocompletes
+    "composer.more_emoji",
+    "composer.autocomplete.username_missing",
+    "composer.autocomplete.name_missing",
 ];
 
 /// The English of the strings above the reference added after the
@@ -271,7 +281,10 @@ pub fn context(
         "siteSettings": site_settings,
         "labels": labels(i18n),
         "currentUser": { "staff": staff },
-        "site": { "hashtag_configurations": { "topic-composer": hashtag_order } },
+        "site": {
+            "hashtag_configurations": { "topic-composer": hashtag_order },
+            "denied_emojis": settings.emojis().denied,
+        },
         "plugins": plugins,
     }))
 }
