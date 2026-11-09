@@ -436,6 +436,16 @@ function harness() {
           this.unsupported = e;
         },
       });
+      // code-block's highlight plugin resolves once highlight.js has loaded,
+      // and adding it reconfigures the state, which destroys and recreates
+      // every plugin view (a floating toolbar already open goes with it).
+      // The reference's ensureHighlightJs registers its load with
+      // waitForPromise, so render's settled waits for it; this waits the
+      // same, then a task for the plugin's .then to have reconfigured.
+      if (!opts.defaultsOnly && window.Discourse.highlightSyntax) {
+        await window.Discourse.highlightSyntax.ensureHighlightJs();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
       return this.editor;
     },
 
@@ -455,7 +465,7 @@ function harness() {
       tr.insert(tr.doc.content.size, view.state.schema.node("paragraph", null, view.state.schema.text("X")));
       tr.delete(tr.doc.content.size - 3, tr.doc.content.size);
       view.dispatch(tr);
-      // The extensions' async work (hljs, lookups) settles first.
+      // The extensions' other async work (lookups) settles first.
       await new Promise((resolve) => setTimeout(resolve, opts.settle === undefined ? 50 : opts.settle));
       return { html: this.html(), value: this.value };
     },
