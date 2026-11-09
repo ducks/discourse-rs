@@ -401,6 +401,13 @@ export function createEditor(options) {
       },
     },
     handleKeyDown: function (_, event) {
+      // ProseMirror learns of a native caret move (End, Home, arrows) from
+      // selectionchange, a task the browser queues after the key; on a busy
+      // page the next key's input can run first and act on the selection
+      // from before the move (End then Enter splitting where End started).
+      // The DOM's selection, read now, is the one the key was pressed at.
+      // The reference has the same gap; deliberately closed here.
+      view.domObserver.flush();
       // The autocomplete's keys while it is open.
       return AUTOCOMPLETE_KEY_DOWN_SUPPRESS.indexOf(event.key) >= 0 && !!document.querySelector(".autocomplete");
     },

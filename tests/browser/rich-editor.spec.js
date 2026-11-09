@@ -530,6 +530,52 @@ test.describe("rich editor", () => {
     await expect(editor).not.toContainText("two");
   });
 
+  // The browser reports End's caret move in a selectionchange task, which
+  // Enter's input can overtake on a busy page; the two sent back to back
+  // reach the page that way every time.
+  test("a key acts where the key before it left the caret", async ({ page, context }) => {
+    await openEditorPage(page);
+    await page.evaluate(async () => {
+      const { createEditor } = await window.Discourse.richEditor.load();
+      const host = document.createElement("div");
+      host.id = "rich-editor-keys";
+      document.body.appendChild(host);
+      window.richEditorTyped = [];
+      createEditor({
+        container: host,
+        engine: window.richSpec.engine,
+        value: "",
+        className: "d-editor-input",
+        onChange: (markdown) => window.richEditorTyped.push(markdown),
+      });
+    });
+    const editor = page.locator("#rich-editor-keys .ProseMirror.d-editor-input");
+    await editor.click();
+    await page.keyboard.type("one two");
+    await page.keyboard.press("Home");
+    const cdp = await context.newCDPSession(page);
+    const key = (type, key, keyCode, text) =>
+      cdp.send("Input.dispatchKeyEvent", {
+        type,
+        key,
+        code: key,
+        windowsVirtualKeyCode: keyCode,
+        nativeVirtualKeyCode: keyCode,
+        ...(text ? { text, unmodifiedText: text } : {}),
+      });
+    await Promise.all([
+      key("rawKeyDown", "End", 35),
+      key("keyUp", "End", 35),
+      key("rawKeyDown", "Enter", 13),
+      key("char", "Enter", 13, "\r"),
+      key("keyUp", "Enter", 13),
+    ]);
+    await page.keyboard.type("three");
+    await expect(editor.locator("p")).toHaveText(["one two", "three"]);
+    const typed = await page.evaluate(() => window.richEditorTyped[window.richEditorTyped.length - 1]);
+    expect(typed).toBe("one two\n\nthree");
+  });
+
   test("refuses markdown it cannot parse yet, and without the export anything but empty", async ({ page }) => {
     await openEditorPage(page);
     const result = await page.evaluate(async () => {
