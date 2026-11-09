@@ -361,10 +361,10 @@ async fn serialize(
     let suppress = !staff && (previous_side_hidden || current_hidden);
 
     let field = |r: &Flat, k: &str| r.fields.get(k).cloned().unwrap_or(Value::Null);
-    for k in ["user_id", "reply_to_post_number", "locale"] {
+    for k in ["user_id", "locale"] {
         if !suppress && field(previous, k) != field(current, k) {
             return Err(Unsupported(
-                "revisions changing more than the body, title, edit reason, wiki and post type",
+                "revisions changing more than the body, title, edit reason, wiki, post type and reply target",
             )
             .into());
         }
@@ -460,6 +460,22 @@ async fn serialize(
             }
         }
     }
+    // reply_to_post_number_changes: each side's post (reply_to_info),
+    // null for none or one the viewer can't see.
+    let (prev_reply_to, cur_reply_to) = (
+        field(previous, "reply_to_post_number"),
+        field(current, "reply_to_post_number"),
+    );
+    if !suppress && prev_reply_to != cur_reply_to {
+        let mut sides = Vec::new();
+        for v in [&prev_reply_to, &cur_reply_to] {
+            sides.push(reply_to_info(&mut *conn, ctx, guardian, access.topic_id, v).await?);
+        }
+        out.insert(
+            "reply_to_post_number_changes".into(),
+            json!({"previous": sides[0], "current": sides[1]}),
+        );
+    }
     out.insert("can_edit".into(), json!(access.can_edit(ctx, guardian)?));
     if diff_error {
         out.insert("diff_error".into(), json!(true));
@@ -533,4 +549,63 @@ async fn serialize(
         }
     }
     Ok(RevisionResult::Found(Value::Object(out)))
+}
+
+/// PostRevisionSerializer#reply_to_info: the post replied to on one side
+/// of a revision, deleted or not, with its author, when the viewer can see
+/// it.
+async fn reply_to_info(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    topic_id: i32,
+    post_number: &Value,
+) -> Result<Value, AppError> {
+    let Some(post_number) = post_number.as_i64() else {
+        return Ok(Value::Null);
+    };
+    let target: Option<(i32, i32)> = sqlx::query_as(
+        "SELECT id, post_number FROM posts WHERE topic_id = $1 AND post_number = $2 ORDER BY id LIMIT 1",
+    )
+    .bind(topic_id)
+    .bind(post_number as i32)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((id, number)) = target else {
+        return Ok(Value::Null);
+    };
+    let seen = find_post_with_deleted(&mut *conn, ctx, guardian, id)
+        .await?
+        .is_some_and(|access| access.can_see_post);
+    if !seen {
+        return Ok(Value::Null);
+    }
+    let mut info = Map::new();
+    info.insert("post_number".into(), json!(number));
+    let user: Option<(i32, String, String, Option<i32>)> = sqlx::query_as(
+        "SELECT u.id, u.username, u.username_lower, u.uploaded_avatar_id \
+         FROM posts p JOIN users u ON u.id = p.user_id WHERE p.id = $1",
+    )
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some((user_id, username, username_lower, uploaded_avatar_id)) = user {
+        let urls = Urls {
+            config: ctx.config,
+            settings: ctx.settings,
+        };
+        info.insert("username".into(), json!(username_lower));
+        info.insert("display_username".into(), json!(username));
+        info.insert(
+            "avatar_template".into(),
+            json!(avatar::avatar_template(
+                &urls,
+                user_id,
+                &username,
+                uploaded_avatar_id,
+                None
+            )?),
+        );
+    }
+    Ok(Value::Object(info))
 }
