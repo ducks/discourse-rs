@@ -13,6 +13,7 @@ mod cakeday;
 mod captcha;
 mod change_owner;
 mod composer_mentions;
+mod composer_messages;
 mod deleted_posts;
 mod directory;
 mod directory_columns;
@@ -274,6 +275,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/inline-onebox", get(onebox::inline))
         .route("/composer/mentions", get(composer_mentions::mentions))
         .route("/composer/mentions.json", get(composer_mentions::mentions))
+        .route("/composer_messages", get(composer_messages::index))
+        .route("/composer_messages.json", get(composer_messages::index))
+        .route(
+            "/composer_messages/user_not_seen_in_a_while",
+            get(composer_messages::user_not_seen_in_a_while),
+        )
+        .route(
+            "/composer_messages/user_not_seen_in_a_while.json",
+            get(composer_messages::user_not_seen_in_a_while),
+        )
         .route("/hashtags", get(hashtags::lookup))
         .route("/hashtags.json", get(hashtags::lookup))
         .route("/hashtags/by-ids", get(hashtags::by_ids))

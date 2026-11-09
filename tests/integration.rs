@@ -42,6 +42,7 @@ mod chat_uploads;
 mod color_modes;
 mod composer_actions;
 mod composer_mentions;
+mod composer_messages;
 mod crawler;
 mod demo_smoke;
 mod direct_uploads;

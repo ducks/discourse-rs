@@ -262,6 +262,17 @@ pub async fn topic_trashed(
     Ok(())
 }
 
+/// ComposerMessagesFinder's checks the plugins add (`add_to_class(
+/// :composer_messages_finder, :check_*)`), after core's and in the order
+/// the plugins load; each checks its own enabled setting, as Rails runs
+/// every `check_` method. discourse-solved's check_topic_is_solved.
+pub async fn composer_messages(
+    conn: &mut sqlx::PgConnection,
+    finder: &crate::composer::messages::Finder<'_>,
+) -> Result<Option<serde_json::Value>, crate::AppError> {
+    solved::composer_message::check_topic_is_solved(conn, finder).await
+}
+
 /// UserWarning's after_commit on create (the plugins' model callbacks):
 /// discourse-user-notes' note of the warning. Nothing in the port creates
 /// official warnings yet (src/flags.rs refuses them); this is where that

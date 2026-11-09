@@ -6,6 +6,7 @@
 
 pub mod answers;
 pub mod by_user;
+pub mod composer_message;
 pub mod dashboard;
 pub mod dashboard_view;
 pub mod report_view;
