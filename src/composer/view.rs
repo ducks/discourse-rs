@@ -252,6 +252,7 @@ pub fn popup_options(
         },
         PopupOption {
             when: Some("edit-reply"),
+            ported: true,
             ..option(
                 "change-reply-to",
                 "share",
@@ -730,6 +731,15 @@ const ACTIONS_STRINGS: &[&str] = &[
     "composer.unlist",
     "post.continue_discussion",
     "post.post_number",
+    // ChangeReplyTo
+    "composer.change_reply_to.title",
+    "composer.change_reply_to.hint",
+    "composer.change_reply_to.current_selection",
+    "composer.change_reply_to.invalid_target",
+    "composer.change_reply_to.submit",
+    "composer.change_reply_to.open",
+    "composer.change_reply_to.remove",
+    "cancel",
 ];
 
 /// discourse-post-voting's composer strings.
@@ -1064,14 +1074,17 @@ pub fn render(
         )
     };
     // What an unported options menu item says (the items' example texts
-    // are the rich editor context's strings).
+    // are the rich editor context's strings), and topic.js for
+    // ChangeReplyTo's timeline off a topic page.
     let popup_data = if options.is_some() {
-        " data-label-unported=\"Not supported yet:\"".to_string()
-            + &route
-                .poll_builder
-                .as_ref()
-                .map(|b| poll_builder_data(list, b))
-                .unwrap_or_default()
+        format!(
+            " data-label-unported=\"Not supported yet:\" data-timeline-script=\"{}\"",
+            escape(&crate::assets::url(list.base_path, "topic.js"))
+        ) + &route
+            .poll_builder
+            .as_ref()
+            .map(|b| poll_builder_data(list, b))
+            .unwrap_or_default()
     } else {
         String::new()
     };

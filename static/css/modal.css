@@ -528,3 +528,52 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   position: absolute;
   width: 95%;
 }
+
+/* modal/change-reply-to.scss: the composer's reply target picker, the
+   fullscreen timeline re-flowed inline in the modal's body */
+.change-reply-to-modal .d-modal__container {
+  max-width: 720px;
+  width: 100%;
+}
+
+.change-reply-to-modal .d-modal__body {
+  padding-bottom: 0;
+}
+
+.change-reply-to-modal .change-reply-to-modal__hint,
+.change-reply-to-modal .change-reply-to-modal__selection {
+  margin: 0 0 var(--space-2) 0;
+  color: var(--primary-medium);
+}
+
+.change-reply-to-modal .timeline-container.timeline-fullscreen {
+  position: static;
+  max-height: none;
+  padding: var(--space-2) 0 0 0;
+  margin: 0;
+  box-shadow: none;
+  border-top: none;
+  background-color: transparent;
+  z-index: auto;
+}
+
+.change-reply-to-modal .timeline-container.timeline-fullscreen.show {
+  max-height: none;
+}
+
+.change-reply-to-modal .timeline-container.timeline-fullscreen .topic-timeline {
+  display: block;
+  width: auto;
+  table-layout: auto;
+}
+
+/* The timeline footer has "jump to post" and notification controls that
+   are irrelevant inside this picker; hide them. Through .topic-timeline,
+   to outrank the shown fullscreen timeline's flex in topic.css. */
+.change-reply-to-modal .timeline-container.timeline-fullscreen .topic-timeline .timeline-footer-controls {
+  display: none;
+}
+
+.change-reply-to-modal .timeline-container.timeline-fullscreen .post-excerpt {
+  margin-bottom: var(--space-2);
+}

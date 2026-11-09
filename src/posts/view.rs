@@ -3358,6 +3358,17 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
 /// (`fullscreen`) the mobile view's, which the progress bar expands into,
 /// with the topic's title, tags, category and the post's excerpt above it
 /// and the jump to post button below.
+/// The fullscreen timeline (TopicTimeline @fullscreen) on its own, as
+/// ChangeReplyTo draws it in its modal.
+pub fn timeline_fullscreen(cx: &PostContext, view: &Value) -> String {
+    let url = format!("{}/t/{}/{}", cx.list.base_path, cx.topic.slug, cx.topic.id);
+    let stream: Vec<i64> = view["post_stream"]["stream"]
+        .as_array()
+        .map(|s| s.iter().filter_map(Value::as_i64).collect())
+        .unwrap_or_default();
+    timeline_container(cx, view, &url, &stream, true)
+}
+
 fn timeline_container(
     cx: &PostContext,
     view: &Value,
