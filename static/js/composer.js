@@ -4117,6 +4117,20 @@
         { multiline: false }
       );
     },
+    // ComposerService#insertTable: a four-column table with its default
+    // headings and an empty row, as a block (composer:insert-block).
+    "toggle-spreadsheet": function () {
+      var headings = [1, 2, 3, 4].map(function (number) {
+        return richI18n("composer.table.default_heading", { number: number });
+      });
+      insertBlock(
+        [
+          "| " + headings.join(" | ") + " |",
+          "|" + " --- |".repeat(headings.length),
+          "|" + "  |".repeat(headings.length),
+        ].join("\n")
+      );
+    },
     footnote: function (_, e) {
       e.addText("^[" + richI18n("footnote.title") + "]");
     },

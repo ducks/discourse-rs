@@ -198,6 +198,17 @@ const LABELS: &[&str] = &[
     "poll.ui_builder.poll_title.placeholder",
 ];
 
+/// The English of the strings above the reference added after the
+/// vendored commit (vendor/discourse/DISCOURSE_REF), for when the vendored
+/// files lack them; a re-vendor brings them and these stop being read.
+const NEWER_STRINGS: &[(&str, &str)] = &[
+    ("composer.table.default_heading", "Column %{number}"),
+    (
+        "composer.link_toolbar.preview_limit_reached",
+        "This post has reached the maximum number of previews",
+    ),
+];
+
 /// The bundled plugins with a rich editor extension, in their load order,
 /// by the setting each is enabled by (`enabled_site_setting`; checklist's
 /// initializer checks its own).
@@ -219,6 +230,8 @@ fn labels(i18n: &I18n) -> Map<String, Value> {
     let mut out = Map::new();
     for key in LABELS {
         if let Some(text) = i18n.t(&format!("js.{key}")) {
+            out.insert((*key).to_string(), json!(text));
+        } else if let Some((_, text)) = NEWER_STRINGS.iter().find(|(k, _)| k == key) {
             out.insert((*key).to_string(), json!(text));
         }
         for form in PLURAL_FORMS {

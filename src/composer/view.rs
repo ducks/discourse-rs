@@ -246,7 +246,10 @@ pub fn popup_options(
             ported: true,
             ..option("format-code", "code", "composer.code_title")
         },
-        option("toggle-spreadsheet", "table", "composer.insert_table"),
+        PopupOption {
+            ported: true,
+            ..option("toggle-spreadsheet", "table", "composer.insert_table")
+        },
         PopupOption {
             when: Some("edit-reply"),
             ..option(
