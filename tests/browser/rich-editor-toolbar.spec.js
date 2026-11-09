@@ -1354,6 +1354,29 @@ test.describe("the toolbar's options menu", () => {
     await expect(textarea(page)).toHaveValue("[wrap=updated class=highlight]\n\n[/wrap]\n\n");
   });
 
+  // The page scrolling under the fixed composer leaves its menu in place.
+  // Absolute, the menu went with the page until autoUpdate put it back,
+  // so a press aimed at an item in between (a retried Playwright click
+  // scrolls the item to the top first) landed on the page under it.
+  test("the menu stays by the composer as the page scrolls under it", async ({ page, context }) => {
+    await openComposer(page, context, 1);
+    await page.keyboard.type("This is a test ");
+    await page.locator("#reply-control .toolbar-menu__options-trigger").click();
+    const item = options(page).locator("button[title='Blur spoiler']");
+    await expect(item).toBeVisible();
+    const moved = await item.evaluate((button) => {
+      document.body.style.minHeight = "3000px";
+      const before = button.getBoundingClientRect().y;
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      return { scrolled: window.scrollY, by: button.getBoundingClientRect().y - before };
+    });
+    expect(moved.scrolled).toBeGreaterThan(0);
+    expect(moved.by).toBe(0);
+    await item.click();
+    await expect(options(page)).toHaveCount(0);
+    await expect(rich(page).locator("span.spoiled")).toHaveText("This text will be blurred");
+  });
+
   test("the list menu's checklist item makes a checklist", async ({ page, context }) => {
     await openComposer(page, context, 1);
     await page.keyboard.type("An item");
