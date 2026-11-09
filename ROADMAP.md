@@ -387,12 +387,12 @@ Visible if clicked, avoid them in a scripted demo:
   194e1); the revise modal was done before (feat/review-queued-posts).
   Not a demo blocker: the reject reason modal (194e2), which only a
   user reviewable opens, and the queue lists none yet.
-- [x] The composer's rich editor and its toolbar buttons (196r1 to 196r5,
+- [x] The composer's rich editor and its toolbar buttons (196r1 to 196r6,
   done: the core and the composer's toggle, the everyday extensions, the
   toolbar and its menus with UpsertHyperlink, oneboxes and the preview
-  toolbar, the plugins' extensions, and rich as the default with the
-  profile's About me editor). Not ported from the options menu: Insert
-  table and Change reply to.
+  toolbar, the plugins' extensions, rich as the default with the
+  profile's About me editor, and the options menu's Insert table and
+  Change reply to with chat's transcripts).
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
@@ -3896,7 +3896,7 @@ route table has been made, so this list may be short.
     bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the
     badge feed exists (85b)
 196. `feat/client-rest` L: the client's leftovers named under done
-    items: the rich editor (ProseMirror, split into 196r1 to 196r5 below)
+    items: the rich editor (ProseMirror, split into 196r1 to 196r6 below)
     and its toggle, the composer's
     actions menu (196a) and toolbar menus (196r3), the insert-date
     modal (49, 96), the desktop header's search menu (94; the advanced
@@ -3919,7 +3919,7 @@ route table has been made, so this list may be short.
     polls. Tests: composer_actions.rs and browser/composer-actions.spec.js.
     Rich text and the remaining client work stay in 196; the poll
     builder's follow-ups were 229.
-    The rich editor (docs/rich-editor.md), in five steps. The owner's
+    The rich editor (docs/rich-editor.md), in six steps. The owner's
     decisions: markdown stays the default composition mode until the
     round-trip tests pass, and the rich editor is reached through the
     member's composition_mode and the composer's toggle; the editor parses
@@ -4026,7 +4026,7 @@ route table has been made, so this list may be short.
     onebox, spoiler and wrap cases, composer-hyperlink-test), the
     extensions' "Tab still nests list items" and Edit; tree.rs. Not
     ported: Insert table and Change reply to in the options menu (still
-    "not supported yet"), the About me's emoji button (its page has no
+    "not supported yet"; 196r6, since done), the About me's emoji button (its page has no
     picker template), spoiler's composer:apply-surround app event (no app
     events service)
     196r4. ~~`feat/rich-editor-plugins`~~ (done) L: the plugins'
@@ -4061,8 +4061,8 @@ route table has been made, so this list may be short.
     tree.rs; tests/policy.rs. Still refused: discourse-events' [event] and
     the calendar's blocks (the crate refuses them, the plugins unported,
     202), [graphviz] (a preview node, 196r3's preview-source, since
-    done) and chat's [chat] transcripts (chat's extension, not ported), both raw HTML in the
-    tree; [excerpt] as in the reference (no extension). Not ported here:
+    done) and chat's [chat] transcripts (chat's extension; 196r6, since
+    done), both raw HTML in the tree; [excerpt] as in the reference (no extension). Not ported here:
     the checklist's and footnote's text-manipulation tests and the
     system specs' toolbar cases (196r3)
     196r5. ~~`feat/rich-editor-default`~~ (done) S: once 196r2 and 196r4
@@ -4093,8 +4093,8 @@ route table has been made, so this list may be short.
     behind it for Save Changes. What it refuses falls back to markdown
     with the alert in the composer, an edit and the About me, saving mode
     0 as toggleRichEditor does. Still refused: [event] (202), [graphviz]
-    (196r3, since done), [chat] transcripts (chat's extension), [excerpt]
-    as in the reference. The browser suite's members stay on markdown
+    (196r3, since done), [chat] transcripts (chat's extension; 196r6, since
+    done, less an archive's reactions), [excerpt] as in the reference. The browser suite's members stay on markdown
     (setup.sql), as its specs drive the textarea; demo-rehearsal switches
     a rich composer to markdown before typing. Tests: load.rs,
     preferences_pages (the bio's mode), sessions (the composer in mode 1),
@@ -4104,6 +4104,53 @@ route table has been made, so this list may be short.
     an edit falling back, the About me's mode, save, Ctrl+M and fallback),
     rich-editor.spec.js (the bbcode round trips), rich-editor-plugins
     ([chat] refused)
+    196r6. ~~`feat/rich-editor-leftovers`~~ (done) M: what 196r3 to 196r5
+    left. Insert table (`toggle-spreadsheet`) is ComposerService#insertTable
+    as the reference has it now (the spreadsheet editor and jspreadsheet
+    are gone there): a four-column table with composer.table.default_heading
+    and an empty row put in as a block, markdown in the textarea and a
+    table with its editing controls in the rich editor. Change reply to
+    (`change-reply-to`) is ChangeReplyTo: the edit composer loads the post
+    (can_edit, reply_to_post_number, reply_to_user), ComposerActionTitle's
+    reply indicator is a button on the desktop for one who may edit it, and
+    the options menu offers "Reply to another post" past the first post;
+    the modal (static/js/change-reply-to.js) shows the topic's fullscreen
+    timeline (GET /live/timeline/:topic_id, topic.js'
+    Discourse.topicTimeline) and picks the post the scrubber lands on, an
+    earlier one settable, a current target removable; the draft keeps a
+    change and the edit sends it only when changed. posts#update takes
+    `reply_to_post_number` and PostRevisor resolves it (an earlier post of
+    the topic the editor can see, else "Reply to post number ..."), sets
+    reply_to_user_id, records it in the revision and drops the old
+    target's PostReply and reply count unless the post still quotes it;
+    PostRevisionSerializer shows reply_to_post_number_changes (each side's
+    post and author, null for none or one the viewer can't see). chat's
+    rich editor extension (rich-editor/plugins/chat.js) is the chat node
+    over chat-transcript.js' tokens, which the crate writes into the node
+    tree one by one with their nesting (a thread's open and close across
+    one another; parser.js takes a childless node's `nesting`), headed by
+    group-chat-transcripts.js' buildTranscriptHeader; the rule now writes
+    a transcript's `source` and `sourceType` as the reference's does. A
+    post with a transcript opens rich and round-trips byte for byte.
+    Strings the vendored locale predates (composer.table.default_heading,
+    chat.quote.transcript_label, composer.link_toolbar.preview_limit_reached)
+    are rich_editor.rs' NEWER_STRINGS until a re-vendor. Still refused: an
+    archive's transcript with reactions (its bare tokens, as the reference
+    refuses them), [event] (202), [excerpt] as in the reference. Not
+    ported here: the nested view's reply stats a reparent moves (145),
+    posts#revert and the history modal's reply target rows (neither is
+    ported), group-chat-transcripts.js on cooked posts (chat.css predates
+    the grouped transcript). Tests: browser composer-insert-table
+    (composer-insert-table-test.js and composer_insert_table_spec.rb),
+    composer-reply-to (composer-reply-to-test.js and the picker's effect
+    on the reply), rich-editor-chat (the plugin's
+    rich-editor-extension-test.gjs as written and
+    rich_editor_extension_transcript_spec.rb), 100 of 100 with
+    --repeat-each=5; rich-editor-plugins' and composer.spec.js' refusals
+    now a transcript with reactions; tests/post_reply_to.rs
+    (post_revisor_spec.rb's "revising reply_to_post_number" less its
+    nested stats cases, posts_controller_spec.rb's and
+    post_revision_serializer_spec.rb's reply target cases); tree.rs
 197. `feat/filter-route` M: /filter (ListController#filter, not routed)
     with topic voting's votes filters and discourse-solved's
     status:solved and status:unsolved; the topic_ids and state list
