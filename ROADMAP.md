@@ -2050,13 +2050,38 @@ have handlers now.
     130c. `feat/user-status-rest` M: chat's live status tracking
     (user.statusManager.trackStatus: a /user-status change redraws chat's
     statuses in the page; until then they show as of the page's render
-    and each message as of its live redraw), DTimeShortcutPicker's custom
-    date and time tile (DatePickerFuture, the time input,
-    DRelativeTimePicker and the last custom tile; refused in the modal),
-    and the core composer's mention autocomplete, whose statuses come
-    with it (the composer has no @ autocomplete yet).
-    MessageBus.last_id("/user-status") stays 0 with item 100's
+    and each message as of its live redraw) and DTimeShortcutPicker's
+    custom date and time tile (DatePickerFuture, the time input,
+    DRelativeTimePicker and the last custom tile; refused in the modal).
+    The core composer's mention autocomplete, with its statuses, is done
+    in 130c1. MessageBus.last_id("/user-status") stays 0 with item 100's
     placeholders.
+    130c1. ~~`feat/composer-autocomplete`~~ (done) M: d-editor's
+    autocompletes in the core composer, in both modes (docs/rich-editor.md,
+    In the composer). static/js/autocomplete.js is the DAutocompleteModifier
+    over an AutocompleteHandler (the textarea's, with caret-position's
+    placement at the term; ProsemirrorAutocompleteHandler in
+    rich-editor/text-manipulation.js, completing a term as its markdown
+    parses into a mention, hashtag or emoji node), triggerRule's
+    inCodeBlock and inLink, onRender, destroy, and the shared
+    lib/user-search (eager completion in a topic or category, the cache
+    per url and parameters, the rate limit wait, emails, exclude,
+    organizeResults' order), lib/hashtag-autocomplete (the client's
+    hashtag types only) and the results' components, which chat now uses
+    too. composer.js applies _applyMentionAutocomplete (search_context
+    mention, the topic, its category and replyingToUserId, statuses),
+    _applyHashtagAutocomplete (topic-composer's order) and
+    _applyEmojiAutocomplete (emoji_autocomplete_min_chars, favorites or
+    the defaults, emoticon translations, skin tones, denied emojis, "more"
+    opening the picker by the caret) to the textarea once and the rich
+    editor each time it opens; none triggers in code (the preview's engine
+    for the textarea). The rich editor context carries the settings,
+    denied emojis and strings. Tests: browser composer-autocomplete (31),
+    rich-editor-autocomplete (13) and autocomplete (13: user-search-test.js
+    and user-autocomplete-results-test.gjs as written); the endpoints'
+    request specs are parity/writes/user_search and parity/writes/hashtags.
+    Not here: the other d-editors' autocompletes (About me, review edits,
+    admin texts) and ComposerMessages, which the mention warnings feed.
 131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
     (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar

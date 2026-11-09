@@ -27,6 +27,7 @@ reference's alert.
 | `rich-editor/extensions/*.js` | `extensions/`: emoji, mention, hashtag, link, link-toolbar, quote, code-block, html-inline, html-block, trailing-inline-space, markdown-paste, word-paste, table, image, upload-placeholder, grid, override-drag-ghost, wrap, onebox, onebox-toolbar, preview-source, preview-toolbar |
 | `rich-editor/text-manipulation.js` | `lib/text-manipulation.ts`: the TextManipulation the composer's toolbar acts through (below) |
 | `static/js/editor-toolbar.js` | `lib/composer/toolbar.ts`'s Toolbar, d-editor's newToolbarEvent and keymap, and the toolbar half of `lib/textarea-text-manipulation.ts`, shipped in front of composer.js |
+| `static/js/autocomplete.js` | `ui-kit/modifiers/d-autocomplete.js` over an AutocompleteHandler (TextareaAutocompleteHandler here, the rich editor's in text-manipulation.js), `lib/caret-position.js`, `lib/user-search.js`, `lib/hashtag-autocomplete.js` and the results' components (UserAutocompleteResults, EmojiAutocompleteResults, RichHashtagAutocompleteResults); the composer's and chat's |
 | `static/js/upsert-hyperlink.js` | `components/modal/upsert-hyperlink.gjs`, shipped in front of composer.js |
 | `static/js/change-reply-to.js` | `components/modal/change-reply-to.gjs`, shipped in front of composer.js, over topic.js' timeline |
 | `rich-editor/plugins.js` | each bundled plugin's `api.registerRichEditorExtension`: the extensions of the plugins the composer's context lists, registered once, after the defaults, in the plugins' load order |
@@ -390,6 +391,18 @@ the editor page, as the test site has graphviz off. The site's highlight.js bund
 the reference's test bundle lacks, so the code block cases list the
 bundle's and the HTML block cases set its highlighting aside.
 
+- `composer-autocomplete.spec.js` runs `composer-editor-mentions-test.js`,
+  `emoji-test.js` and `hashtag-autocomplete-test.js` on the markdown editor
+  (pretender's answers as routes), composer_spec.rb's mention priorities,
+  hashtag_autocomplete_spec.rb's composer cases and emoji_deny_list_spec.rb's
+  autocomplete case; `rich-editor-autocomplete.spec.js`
+  prosemirror_autocomplete_spec.rb's autocomplete and mention cases;
+  `autocomplete.spec.js` `user-search-test.js` and
+  `user-autocomplete-results-test.gjs` in the page. The client draws
+  category, tag and channel hashtags, so the unknown-type case uses a type
+  of no plugin. The server's /u/search/users and /hashtags/search are
+  covered by parity/writes/user_search and parity/writes/hashtags.
+
 Run them with `scripts/browser-test rich-editor`. The Rust tests in tree.rs
 check the trees (the core cases after the editor's text merging, the
 extensions' tokens, the upload placeholders and what the overrides leave
@@ -520,6 +533,30 @@ GET /composer/mentions.
   @here, goes back to text, and the reasons are triggered as
   `composer-messages:create`, which nothing shows yet: the composer's
   messages (ComposerMessages) are not ported.
+- The autocompletes (d-editor's setupEditor: `_applyEmojiAutocomplete`,
+  `_applyHashtagAutocomplete`, `_applyMentionAutocomplete` in composer.js'
+  `applyAutocompletes`) go on the textarea's TextManipulation once and on
+  the rich editor's each time it opens (`textManipulation.autocomplete`,
+  destroyed as it closes). `@` searches users and groups
+  (`Discourse.autocomplete.userSearch`, search_context `mention`) with the
+  composer's topic, its category and the user replied to
+  (composer.replyingToUserId: an edit's reply_to_user, the post replied
+  to's author, else the topic's), so `@` alone in a topic lists its
+  participants, that one first; statuses show with user-status.js. `#`
+  searches the context's `topic-composer` hashtag types. `:` follows
+  emoji_autocomplete_min_chars, offers the favorites (or the five
+  defaults) for a bare `:`, the emoticon translations (`:)`), skin tones
+  and emojiSearch less the denied emojis, and "more" opens the emoji picker
+  by the caret, its pick in the term's place (`emojiSelected`). None
+  triggers in code: the textarea asks the preview's engine
+  (`inCodeBlock`), the rich editor its code block and code mark. In the
+  rich editor ProsemirrorAutocompleteHandler reads the text around the
+  caret and completes a term as its markdown parses, so a pick becomes a
+  mention, hashtag or emoji node; the editor's handleKeyDown leaves Enter,
+  Tab and the arrows to the open menu. The context carries
+  enable_mentions, enable_emoji, emoji_autocomplete_min_chars,
+  `site.denied_emojis` and the "more" and missing-name strings. Other
+  d-editors (the About me, review edits) have none yet.
 
 What the composer and the editor do not do yet, as the reference does:
 
