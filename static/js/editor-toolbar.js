@@ -7,8 +7,9 @@
 // editor's TextManipulation is rich-editor/text-manipulation.js; the bar
 // acts through whichever editor is open.
 //
-//   Discourse.editorToolbar.textarea(textarea, { i18n, siteSettings })
-//       the textarea's TextManipulation
+//   Discourse.editorToolbar.textarea(textarea, { i18n, siteSettings, cook })
+//       the textarea's TextManipulation; `cook` (markdown -> Promise of
+//       its HTML) tells its autocompletes the caret is in code
 //   Discourse.editorToolbar.bind(host, {
 //     textManipulation,  // () -> the open editor's TextManipulation
 //     i18n,              // (key, params) -> string
@@ -59,16 +60,60 @@
     }
   }
 
-  // TextareaTextManipulation, what the toolbar uses of it.
+  // TextareaTextManipulation, what the toolbar and d-editor's
+  // autocompletes use of it.
   function TextareaTextManipulation(textarea, opts) {
     this.textarea = textarea;
     this.i18n = opts.i18n;
     this.siteSettings = opts.siteSettings || {};
+    this.cook = opts.cook || null;
     this.allowPreview = true;
     this.state = {};
+    this.autocompletes = [];
+    this._autocompleteHandler = null;
   }
 
   var T = TextareaTextManipulation.prototype;
+
+  // TextareaAutocompleteHandler (autocomplete.js, loaded after this file).
+  Object.defineProperty(T, "autocompleteHandler", {
+    get: function () {
+      if (!this._autocompleteHandler) {
+        var self = this;
+        this._autocompleteHandler = Discourse.autocomplete.textareaHandler(this.textarea, {
+          inCodeBlock: function () {
+            if (!self.cook) {
+              return false;
+            }
+            return Discourse.autocomplete.inCodeBlock(self.textarea.value, self.textarea.selectionStart, self.cook);
+          },
+        });
+      }
+      return this._autocompleteHandler;
+    },
+  });
+
+  // autocomplete(options): DAutocompleteModifier on the textarea;
+  // autocomplete("destroy") removes them all.
+  T.autocomplete = function (options) {
+    if (options === "destroy") {
+      this.autocompletes.forEach(function (ac) {
+        ac.destroy();
+      });
+      this.autocompletes = [];
+      return;
+    }
+    var ac = Discourse.autocomplete.setup(
+      this.textarea,
+      Object.assign({}, options, { handler: this.autocompleteHandler })
+    );
+    this.autocompletes.push(ac);
+    return ac;
+  };
+
+  T.inCodeBlock = function () {
+    return this.autocompleteHandler.inCodeBlock();
+  };
 
   Object.defineProperty(T, "value", {
     get: function () {

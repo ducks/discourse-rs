@@ -11,9 +11,11 @@
 // markdown is parsed in the selection's place and what was selected
 // selected again.
 //
-// Not ported here: the autocomplete handler (the composer's autocompletes
-// are not in the rich editor) and the placeholder handler, which the
-// composer's own upload code is (docs/rich-editor.md).
+// The autocomplete handler (ProsemirrorAutocompleteHandler) is what
+// d-editor's autocompletes (autocomplete.js, autocomplete()) read and
+// complete through: a term completes as its markdown parses, into a
+// mention, hashtag or emoji node. Not ported here: the placeholder
+// handler, which the composer's own upload code is (docs/rich-editor.md).
 import { lift, setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { Fragment, Slice } from "prosemirror-model";
 import { liftListItem, sinkListItem, wrapInList, wrapRangeInList } from "prosemirror-schema-list";
@@ -88,6 +90,89 @@ function firstBlockOf(doc) {
   return doc.content.firstChild;
 }
 
+class ProsemirrorAutocompleteHandler {
+  constructor(opts) {
+    this.schema = opts.schema;
+    this.view = opts.view;
+    this.convertFromMarkdown = opts.convertFromMarkdown;
+  }
+
+  // The textual value of the selected text block
+  getValue() {
+    var $head = this.view.state.selection.$head;
+    return (
+      ($head.nodeBefore ? $head.nodeBefore.textContent : "") + ($head.nodeAfter ? $head.nodeAfter.textContent : "") ||
+      " "
+    );
+  }
+
+  // Replaces the term between start-end in the currently selected text block
+  replaceTerm(start, end, term) {
+    var node = this.view.state.selection.$head.nodeBefore;
+    if (!node) {
+      throw new Error("Autocomplete replaces a term before the caret");
+    }
+    var from = this.view.state.selection.from - node.nodeSize + start;
+    var to = this.view.state.selection.from - node.nodeSize + end + 1;
+
+    var tr = this.view.state.tr.replaceWith(from, to, firstBlockOf(this.convertFromMarkdown(term)).content);
+    tr.insertText(" ", tr.selection.from);
+
+    this.view.dispatch(tr);
+  }
+
+  // Gets the textual caret position within the selected text block
+  getCaretPosition() {
+    var node = this.view.state.selection.$head.nodeBefore;
+
+    if (!node || !node.isText) {
+      return 0;
+    }
+
+    return node.nodeSize;
+  }
+
+  getCaretCoords(start) {
+    var node = this.view.state.selection.$head.nodeBefore;
+    if (!node) {
+      throw new Error("Autocomplete measures a term before the caret");
+    }
+    var pos = this.view.state.selection.from - node.nodeSize + start;
+    var coords = this.view.coordsAtPos(pos);
+
+    var rootRect = this.view.dom.getBoundingClientRect();
+
+    return {
+      left: coords.left - rootRect.left,
+      top: coords.top - rootRect.top,
+    };
+  }
+
+  inCodeBlock() {
+    var schema = this.schema;
+    var $from = this.view.state.selection.$from;
+
+    var isInCodeBlock = $from.parent.type === schema.nodes.code_block;
+
+    var hasCodeMark = $from.marks().some(function (mark) {
+      return mark.type === schema.marks.code;
+    });
+
+    return Promise.resolve(isInCodeBlock || hasCodeMark);
+  }
+
+  inLink() {
+    var schema = this.schema;
+    var $from = this.view.state.selection.$from;
+
+    return Promise.resolve(
+      $from.marks().some(function (mark) {
+        return mark.type === schema.marks.link;
+      })
+    );
+  }
+}
+
 export default class ProsemirrorTextManipulation {
   // opts: schema, view, convertFromMarkdown, tryConvertFromMarkdown,
   // convertToMarkdown, splitNonEmptyLines, buildListNode, commands,
@@ -105,6 +190,31 @@ export default class ProsemirrorTextManipulation {
     this.customState = opts.customState;
     this.i18n = opts.i18n;
     this.state = {};
+    this.autocompletes = [];
+    this.autocompleteHandler = new ProsemirrorAutocompleteHandler({
+      schema: this.schema,
+      view: this.view,
+      convertFromMarkdown: this.convertFromMarkdown,
+    });
+  }
+
+  // DAutocompleteModifier (autocomplete.js) on the editor's element;
+  // autocomplete("destroy") removes them all.
+  autocomplete(options) {
+    if (options === "destroy") {
+      this.autocompletes.forEach(function (ac) {
+        ac.destroy();
+      });
+      this.autocompletes = [];
+      return;
+    }
+
+    var ac = window.Discourse.autocomplete.setup(
+      this.view.dom,
+      Object.assign({}, options, { handler: this.autocompleteHandler })
+    );
+    this.autocompletes.push(ac);
+    return ac;
   }
 
   getSelected(trimLeading) {
@@ -277,20 +387,11 @@ export default class ProsemirrorTextManipulation {
     return this.commands.formatCode(this.view.state, this.view.dispatch);
   }
 
-  // autocompleteHandler.getValue(): the selected text block's text.
-  _autocompleteValue() {
-    var $head = this.view.state.selection.$head;
-    return (
-      ($head.nodeBefore ? $head.nodeBefore.textContent : "") + ($head.nodeAfter ? $head.nodeAfter.textContent : "") ||
-      " "
-    );
-  }
-
   emojiSelected(code) {
     var self = this;
     var index = 0;
 
-    var value = this._autocompleteValue();
+    var value = this.autocompleteHandler.getValue();
     var match = /\B:([\p{L}\p{N}_]*)$/u.exec(value);
     if (match) {
       index = value.length - match.index;
@@ -322,13 +423,7 @@ export default class ProsemirrorTextManipulation {
   }
 
   inCodeBlock() {
-    var schema = this.schema;
-    var $from = this.view.state.selection.$from;
-    var isInCodeBlock = $from.parent.type === schema.nodes.code_block;
-    var hasCodeMark = $from.marks().some(function (mark) {
-      return mark.type === schema.marks.code;
-    });
-    return Promise.resolve(isInCodeBlock || hasCodeMark);
+    return this.autocompleteHandler.inCodeBlock();
   }
 
   indentSelection(direction) {
