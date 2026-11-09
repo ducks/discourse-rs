@@ -310,6 +310,12 @@ export function createEditor(options) {
       return;
     }
     view.updateState(view.state.reconfigure({ plugins: view.state.plugins.concat(plugin) }));
+    // A new plugin set destroys every plugin view and creates new ones,
+    // which see no state until the next transaction: the link toolbar the
+    // caret is in, say, closes and stays closed. The same state again has
+    // the new views update from it, drawing what the old ones showed. The
+    // reference has the same gap; deliberately closed here.
+    view.updateState(view.state);
   }
 
   var plugins = [
