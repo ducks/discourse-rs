@@ -1069,6 +1069,7 @@
       "files": [
         "js/editor-toolbar.js",
         "js/upsert-hyperlink.js",
+        "js/change-reply-to.js",
         "js/composer.js"
       ]
     },
@@ -1637,6 +1638,13 @@
       "content_type": "js",
       "files": [
         "js/rich-editor/plugins.js"
+      ]
+    },
+    {
+      "name": "rich-editor/plugins/chat.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/chat.js"
       ]
     },
     {

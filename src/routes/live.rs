@@ -1265,6 +1265,77 @@ pub async fn post(
     }
 }
 
+/// GET /live/timeline/:topic_id: the topic's fullscreen timeline, for the
+/// composer's ChangeReplyTo modal (static/js/change-reply-to.js), which
+/// Ember draws from the topic model the composer holds.
+pub async fn timeline(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(topic_id): axum::extract::Path<String>,
+) -> Result<Response, AppError> {
+    let Ok(topic_id) = topic_id.parse::<i32>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let mut view = crate::topic_view::TopicView {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        options: crate::topic_view::Options::default(),
+        post_types: Vec::new(),
+        logo_small_url: None,
+    };
+    let rendered = match view.render(topic_id).await {
+        Ok(rendered) => rendered,
+        Err(
+            crate::topic_view::TopicViewError::NotFound
+            | crate::topic_view::TopicViewError::InvalidAccess
+            | crate::topic_view::TopicViewError::NotLoggedIn,
+        ) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Err(e) => return Err(e.into()),
+    };
+    drop(view);
+    let json = &rendered.json;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: state.config.globals.relative_url_root(),
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let post_settings = crate::post_view::PostSettings::load(&settings)?;
+    let topic = crate::post_view::TopicInfo::from_view(json);
+    let cx = crate::post_view::PostContext {
+        list: &list,
+        settings: &post_settings,
+        topic: &topic,
+        viewer: guardian.user().map(|u| u.username.as_str()),
+        staff: guardian.is_staff(),
+        can_send_pms: false,
+        ignored_users: &[],
+    };
+    Ok((
+        [
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CACHE_CONTROL, "no-cache, no-store"),
+        ],
+        crate::post_view::timeline_fullscreen(&cx, json),
+    )
+        .into_response())
+}
+
 #[derive(Deserialize)]
 pub struct GapParams {
     /// The gap's post ids, comma separated.

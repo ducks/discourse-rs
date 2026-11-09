@@ -328,9 +328,10 @@ pub async fn update(
                 | "locale"
                 | "category_id"
                 | "bypass_bump"
+                | "reply_to_post_number"
         ) {
             return Err(Unsupported(
-                "posts#update fields beyond raw, edit_reason, locale and category_id",
+                "posts#update fields beyond raw, edit_reason, locale, category_id and reply_to_post_number",
             )
             .into());
         }
@@ -499,12 +500,28 @@ pub async fn update(
         }
         _ => false,
     };
+    // changes[:reply_to_post_number] when the key is sent: blank for none
+    // (the revisor's `presence`), else its to_i.
+    let reply_to_post_number = match post_params.get("reply_to_post_number") {
+        None => None,
+        Some(Value::Null) => Some(None),
+        Some(v) => {
+            let v =
+                params::scalar(v).ok_or(Unsupported("reply_to_post_number of another shape"))?;
+            Some(if v.trim().is_empty() {
+                None
+            } else {
+                Some(crate::ruby::to_i(&v) as i32)
+            })
+        }
+    };
     drop(conn);
     let changes = Changes {
         raw,
         edit_reason: post_params.get("edit_reason").and_then(params::scalar),
         topic,
         bypass_bump,
+        reply_to_post_number,
         // Staff edits to small action posts aren't validated.
         skip_validations: post_type == crate::posting::post_types::SMALL_ACTION
             && guardian.is_staff(),

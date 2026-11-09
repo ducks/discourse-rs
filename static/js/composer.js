@@ -166,6 +166,12 @@
       d.recipients = recipientsValue().join(",");
     } else if (s.mode === "edit") {
       d.postId = parseInt(s.postId, 10);
+      // _draft_serializer's reply target: one changed and not yet saved
+      // survives the draft.
+      if (s.editReplyTo !== undefined) {
+        d.reply_to_post_number = s.editReplyTo;
+        d.reply_to_user = s.editReplyToUser || null;
+      }
       // A first post's draft keeps the topic fields being edited and what
       // they were.
       if (s.topic) {
@@ -427,12 +433,19 @@
       s.mode = "edit";
       s.postId = draft.postId;
       setMode("edit");
+      loadEditPost(s);
     }
     // originalText: what the composer started from, as a draft keeps it
     // (original_text); an edit's is the post's raw, a new reply's none.
     s.originalText = draft && "original_text" in draft ? draft.original_text : null;
     if (s.mode === "edit") {
       if (editDraft && String(draft.postId) === String(s.postId)) {
+        // A null in the draft is no target, kept over the post's.
+        if ("reply_to_post_number" in draft) {
+          s.editReplyTo = draft.reply_to_post_number;
+          s.editReplyToUser = draft.reply_to_user || null;
+          renderEditReplyTo(s);
+        }
         if (s.topic && typeof draft.title === "string") {
           title.value = draft.title;
           if (draft.categoryId) {
@@ -577,6 +590,7 @@
     announce();
     loadActionContext(s);
     loadEditTopic(s);
+    loadEditPost(s);
     // A new topic's key is new: there is no draft to look up. A composer
     // switched from another (the actions menu) carries its text, and
     // takes only the key's sequence.
@@ -2815,6 +2829,12 @@
       if (!s.editConflict && s.originalText !== null && s.originalText !== undefined) {
         pairs.push(["post[original_text]", s.originalText]);
       }
+      // The reply target only when changed: a stale one would clobber
+      // another editor's change.
+      var stored = s.editPost && (s.editPost.reply_to_post_number == null ? null : s.editPost.reply_to_post_number);
+      if (s.editPost && s.editReplyTo !== undefined && s.editReplyTo !== stored) {
+        pairs.push(["post[reply_to_post_number]", s.editReplyTo === null ? "" : String(s.editReplyTo)]);
+      }
       return fetch(base + "/posts/" + s.postId, {
         method: "PUT",
         headers: csrfHeaders(),
@@ -3236,11 +3256,115 @@
     });
   }
 
+  // The post edited, as the composer's model holds it (store.find("post")
+  // in Composer#open): whether it may be edited, and the post it replies
+  // to with that post's author, which ChangeReplyTo changes
+  // (Composer#setReplyTo). A draft's reply target stays over the post's.
+  function loadEditPost(s) {
+    if (s.mode !== "edit" || !s.postId) {
+      return;
+    }
+    s.editPostLoad = fetchJson("/posts/" + s.postId + ".json")
+      .then(function (post) {
+        if (state !== s) {
+          return;
+        }
+        s.editPost = post;
+        if (s.editReplyTo === undefined) {
+          var u = post.reply_to_user;
+          s.editReplyTo = post.reply_to_post_number == null ? null : post.reply_to_post_number;
+          s.editReplyToUser = u
+            ? { id: u.id, username: u.username, name: u.name, avatar_template: u.avatar_template }
+            : null;
+        }
+        renderEditReplyTo(s);
+      })
+      .catch(function () {});
+  }
+
+  // canOpenReplyToModal: an edit of a post past the first, by one who may
+  // edit it (ComposerActionTitle's canEditReplyTo without the first's).
+  function canEditReplyTo(s) {
+    return !!s && s.mode === "edit" && !!s.editPost && !!s.editPost.can_edit;
+  }
+
+  // ComposerActionTitle's replyTargetSegment in an edit on the desktop:
+  // the author of the post replied to, a button opening ChangeReplyTo for
+  // one who may edit the post.
+  function renderEditReplyTo(s) {
+    var title = control.querySelector(".composer-action-title .action-title");
+    title.querySelectorAll("[data-reply-target-segment]").forEach(function (el) {
+      el.remove();
+    });
+    if (!s || state !== s || s.mode !== "edit" || mobileView()) {
+      return;
+    }
+    var user = s.editReplyToUser;
+    if (!user || !user.username || !user.avatar_template) {
+      return;
+    }
+    var segment =
+      svg("share", "reply-to-glyph") +
+      '<img loading="lazy" alt="" width="24" height="24" src="' +
+      escapeHtml(String(user.avatar_template).replace("{size}", "24")) +
+      '" class="avatar"><span class="original-username">' + escapeHtml(user.username) + "</span>";
+    var holder = document.createElement("template");
+    if (canEditReplyTo(s)) {
+      holder.innerHTML =
+        '<button class="btn btn-text composer-edit-reply-to btn-default" type="button"><span class="d-button-label">' +
+        segment + "</span></button>";
+      var button = holder.content.firstChild;
+      button.title = at("composer.change_reply_to.open");
+      button.addEventListener("click", openChangeReplyTo);
+    } else {
+      holder.innerHTML = segment;
+    }
+    Array.prototype.slice.call(holder.content.childNodes).forEach(function (node) {
+      if (node.nodeType === 1) {
+        node.setAttribute("data-reply-target-segment", "");
+      }
+    });
+    title.appendChild(holder.content);
+  }
+
+  // ComposerService#openChangeReplyToModal
+  function openChangeReplyTo() {
+    var s = state;
+    if (!s || !Discourse.changeReplyTo) {
+      return;
+    }
+    Discourse.changeReplyTo.show({
+      topicId: s.topicId,
+      editingPostNumber: (s.editPost && s.editPost.post_number) || parseInt(s.postNumber, 10),
+      currentPostNumber: s.editReplyTo,
+      timelineScript: data.timelineScript,
+      t: at,
+      onSelect: function (post) {
+        if (state !== s) {
+          return;
+        }
+        if (!post) {
+          s.editReplyTo = null;
+          s.editReplyToUser = null;
+        } else {
+          s.editReplyTo = post.post_number;
+          s.editReplyToUser = {
+            id: post.user_id,
+            username: post.username,
+            name: post.name,
+            avatar_template: post.avatar_template,
+          };
+        }
+        renderEditReplyTo(s);
+      },
+    });
+  }
+
   // What the options menu's conditions read, loaded as the composer opens:
   // the topic replied in or edited (in Ember the composer's topic model is
-  // there before the toolbar draws).
+  // there before the toolbar draws), and the post edited.
   function menuContext(s) {
-    return Promise.all([s.actionContext, s.topicLoad, s.editTopicLoad]).catch(function () {});
+    return Promise.all([s.actionContext, s.topicLoad, s.editTopicLoad, s.editPostLoad]).catch(function () {});
   }
 
   function postVotingOnly(s) {
@@ -3624,6 +3748,7 @@
     }
     if (!s) {
       renderReplyTarget(null);
+      renderEditReplyTo(null);
       renderWhisperIndicator(null);
       syncIndicators(null);
       watchReplyTarget(null);
@@ -3647,6 +3772,7 @@
     }
     watchReplyTarget(s);
     renderReplyTarget(s);
+    renderEditReplyTo(s);
     renderWhisperIndicator(s);
     syncIndicators(s);
     syncSubmit();
@@ -4013,7 +4139,7 @@
       return document.documentElement.classList.contains("discourse-touch");
     }
     if (item.when === "edit-reply") {
-      return !!state && state.mode === "edit" && parseInt(state.postNumber, 10) > 1;
+      return canEditReplyTo(state) && (state.editPost.post_number || parseInt(state.postNumber, 10)) > 1;
     }
     // composer.model.topic?.pm_with_non_human_user: the topic replied in
     // or edited.
@@ -4117,6 +4243,20 @@
         { multiline: false }
       );
     },
+    // ComposerService#insertTable: a four-column table with its default
+    // headings and an empty row, as a block (composer:insert-block).
+    "toggle-spreadsheet": function () {
+      var headings = [1, 2, 3, 4].map(function (number) {
+        return richI18n("composer.table.default_heading", { number: number });
+      });
+      insertBlock(
+        [
+          "| " + headings.join(" | ") + " |",
+          "|" + " --- |".repeat(headings.length),
+          "|" + "  |".repeat(headings.length),
+        ].join("\n")
+      );
+    },
     footnote: function (_, e) {
       e.addText("^[" + richI18n("footnote.title") + "]");
     },
@@ -4188,6 +4328,10 @@
           richI18n
         );
       });
+    },
+    // ComposerService#openChangeReplyToModal, once the menu has closed.
+    "change-reply-to": function (closing) {
+      (closing || Promise.resolve()).then(openChangeReplyTo);
     },
     // discourse-templates' insert template (static/js/templates.js).
     "discourse-templates": function () {

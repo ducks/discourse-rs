@@ -1,8 +1,9 @@
 //! `PostRevisor#revise!` for the fields posts#update sends: the raw and
 //! the edit reason, and on a first post the title and category, which go
 //! through revise_topic's `update_topic` in the same revision (or on their
-//! own when the post itself stays the same). Owner and wiki changes are
-//! not ported.
+//! own when the post itself stays the same), and the post replied to.
+//! Owner changes are not ported, nor the nested view's reply stats a
+//! reparent moves (HasNestedReplyStats, which posting skips throughout).
 //!
 //! Within the editing grace period an edit by the last editor goes into
 //! the current version: Rails keeps the post's original raw and cooked in
@@ -59,6 +60,9 @@ pub struct Changes {
     pub wiki: Option<bool>,
     /// `post_type:` from posts#post_type, already validated.
     pub post_type: Option<i32>,
+    /// `reply_to_post_number:`, when posts#update has the key: the post
+    /// replied to, None for none.
+    pub reply_to_post_number: Option<Option<i32>>,
 }
 
 #[derive(Debug)]
@@ -222,6 +226,45 @@ pub async fn revise(
         .raw
         .map(|r| normalize_whitespaces(&r).trim_end().to_string());
     let edit_reason = changes.edit_reason.filter(|r| !r.trim().is_empty());
+    // resolve_reply_to_change: a new target is an earlier post of the
+    // topic the editor can see, else the post's error; the old one is
+    // found deleted too, for its PostReply.
+    let mut new_reply_to = post.reply_to_post_number;
+    let mut new_reply_to_user_id = None;
+    if let Some(target) = changes.reply_to_post_number
+        && target != post.reply_to_post_number
+    {
+        if let Some(number) = target {
+            let parent: Option<(i32, i32, Option<i32>)> = sqlx::query_as(
+                "SELECT id, post_number, user_id FROM posts \
+                 WHERE topic_id = $1 AND post_number = $2 AND deleted_at IS NULL ORDER BY id LIMIT 1",
+            )
+            .bind(post.topic_id)
+            .bind(number)
+            .fetch_optional(&mut *conn)
+            .await?;
+            // valid_reply_to_parent?
+            let valid = match parent {
+                Some((id, parent_number, _))
+                    if id != post.id && parent_number < post.post_number =>
+                {
+                    super::revisions::find_post(&mut conn, ctx, editor, id)
+                        .await?
+                        .is_some_and(|access| access.can_see_post)
+                }
+                _ => false,
+            };
+            if !valid {
+                return Ok(Outcome::Invalid(vec![format!(
+                    "Reply to post number {}",
+                    ctx.t("post.errors.invalid_reply_to")
+                )]));
+            }
+            new_reply_to_user_id = parent.and_then(|(_, _, user_id)| user_id);
+        }
+        new_reply_to = target;
+    }
+    let reply_to_changed = new_reply_to != post.reply_to_post_number;
 
     // posts#update always hands over the raw key (nil without one); the
     // wiki and post type endpoints hand over their field alone.
@@ -233,7 +276,8 @@ pub async fn revise(
             .as_ref()
             .is_some_and(|r| Some(r) != post.edit_reason.as_ref())
         || changes.wiki.is_some()
-        || new_post_type != post.post_type;
+        || new_post_type != post.post_type
+        || reply_to_changed;
     let topic_changed = !changes.topic.is_empty();
     if topic_changed && post.post_number != 1 {
         return Err(Unsupported("topic fields revised on a reply").into());
@@ -564,7 +608,8 @@ pub async fn revise(
                 updated_at = clock_timestamp(), \
                 baked_at = CASE WHEN $11 THEN clock_timestamp() ELSE baked_at END, \
                 baked_version = CASE WHEN $11 THEN $12 ELSE baked_version END, quote_count = $13, \
-                wiki = $14, post_type = $15 \
+                wiki = $14, post_type = $15, reply_to_post_number = $16, \
+                reply_to_user_id = CASE WHEN $17 THEN $18 ELSE reply_to_user_id END \
          WHERE id = $1 RETURNING updated_at",
     )
     .bind(post.id)
@@ -582,6 +627,9 @@ pub async fn revise(
     .bind(quoted.len() as i32)
     .bind(new_wiki)
     .bind(new_post_type)
+    .bind(new_reply_to)
+    .bind(reply_to_changed)
+    .bind(new_reply_to_user_id)
     .fetch_one(&mut *tx)
     .await?;
     let _ = updated_at;
@@ -602,12 +650,48 @@ pub async fn revise(
             id: post.id,
             topic_id: post.topic_id,
             post_type: new_post_type,
-            reply_to_post_number: post.reply_to_post_number,
+            reply_to_post_number: new_reply_to,
             deleted: false,
         },
         &quoted,
     )
     .await?;
+    // cleanup_previous_reply_to_relationship: the old target's PostReply
+    // goes unless the post still quotes it, and with it a reply of theirs.
+    if reply_to_changed && let Some(old_number) = post.reply_to_post_number {
+        let old_parent: Option<i32> = sqlx::query_scalar(
+            "SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2 ORDER BY id LIMIT 1",
+        )
+        .bind(post.topic_id)
+        .bind(old_number)
+        .fetch_optional(&mut *tx)
+        .await?;
+        if let Some(old_parent) = old_parent
+            && !quoted.contains(&Some(old_number))
+        {
+            let deleted =
+                sqlx::query("DELETE FROM post_replies WHERE post_id = $1 AND reply_post_id = $2")
+                    .bind(old_parent)
+                    .bind(post.id)
+                    .execute(&mut *tx)
+                    .await?
+                    .rows_affected();
+            let visible = [
+                super::post_types::REGULAR,
+                super::post_types::MODERATOR_ACTION,
+                super::post_types::SMALL_ACTION,
+            ]
+            .contains(&new_post_type);
+            if deleted > 0 && visible {
+                sqlx::query(
+                    "UPDATE posts SET reply_count = GREATEST(reply_count - 1, 0) WHERE id = $1",
+                )
+                .bind(old_parent)
+                .execute(&mut *tx)
+                .await?;
+            }
+        }
+    }
     if editor_user.id != -1 {
         sqlx::query(
             "UPDATE user_stats SET post_edits_count = COALESCE(post_edits_count, 0) + 1 WHERE user_id = $1",
@@ -671,6 +755,12 @@ pub async fn revise(
     }
     if type_changed {
         fields.push(("post_type", [json!(post.post_type), json!(new_post_type)]));
+    }
+    if reply_to_changed {
+        fields.push((
+            "reply_to_post_number",
+            [json!(post.reply_to_post_number), json!(new_reply_to)],
+        ));
     }
     fields.extend(topic_diff.iter().cloned());
     if use_cached_original {
@@ -852,8 +942,11 @@ pub async fn revise(
     // bump_topic, after the transaction as Rails does. should_bump?: a new
     // version that changed the post's fields (a wiki param that changes
     // nothing changes none) of a wiki first post, unless bypass_bump.
-    let post_fields_changed =
-        raw_changed || new_edit_reason != post.edit_reason || wiki_changed || type_changed;
+    let post_fields_changed = raw_changed
+        || new_edit_reason != post.edit_reason
+        || wiki_changed
+        || type_changed
+        || reply_to_changed;
     if new_version
         && post.post_number == 1
         && new_wiki
@@ -906,7 +999,7 @@ pub async fn revise(
         post.id,
         post.topic_id,
         post.post_number,
-        post.reply_to_post_number,
+        new_reply_to,
         post.reply_quoted,
         &cooked,
     )

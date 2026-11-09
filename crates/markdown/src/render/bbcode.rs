@@ -463,8 +463,11 @@ impl BlockRule for BlockBbcode {
             } else {
                 state.get_lines(start_line + 1, next_line, 0, false).0
             };
-            let html = super::chat_transcript::build(&info, &content, settings, ctx)?;
-            return Some((Node::new(RawHtml(html)), lines));
+            let (html, tokens) = super::chat_transcript::build(&info, &content, settings, ctx)?;
+            // The tokens the rule pushes, for the editor's tree.
+            let mut node = Node::new(RawHtml(html));
+            node.ext.insert(JsTree(tokens));
+            return Some((node, lines));
         }
 
         // The content: the lines between the tags as blocks, or what sits

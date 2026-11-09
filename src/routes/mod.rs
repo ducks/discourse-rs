@@ -180,6 +180,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/user-card/{username}", get(user_card::show))
         .route("/live/post/{id}", get(live::post))
         .route("/live/gap/{topic_id}", get(live::gap))
+        .route("/live/timeline/{topic_id}", get(live::timeline))
         .route("/live/posts/{topic_id}", get(live::posts))
         .route("/live/chat/drawer", get(chat_pages::drawer))
         .route("/live/chat/search", get(chat_pages::live_search))

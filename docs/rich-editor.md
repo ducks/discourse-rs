@@ -28,8 +28,9 @@ reference's alert.
 | `rich-editor/text-manipulation.js` | `lib/text-manipulation.ts`: the TextManipulation the composer's toolbar acts through (below) |
 | `static/js/editor-toolbar.js` | `lib/composer/toolbar.ts`'s Toolbar, d-editor's newToolbarEvent and keymap, and the toolbar half of `lib/textarea-text-manipulation.ts`, shipped in front of composer.js |
 | `static/js/upsert-hyperlink.js` | `components/modal/upsert-hyperlink.gjs`, shipped in front of composer.js |
+| `static/js/change-reply-to.js` | `components/modal/change-reply-to.gjs`, shipped in front of composer.js, over topic.js' timeline |
 | `rich-editor/plugins.js` | each bundled plugin's `api.registerRichEditorExtension`: the extensions of the plugins the composer's context lists, registered once, after the defaults, in the plugins' load order |
-| `rich-editor/plugins/*.js` | the plugins' `lib/rich-editor-extension.js`: checklist, discourse-details (details), discourse-graphviz (graphviz, a preview block), discourse-local-dates (local-dates, with `local-date-node-view.js`), discourse-math (math), discourse-policy (policy, from its initializer), footnote, poll (with `components/poll-node-view.gjs` and `poll-info.gjs` in `poll-node-view.js`), spoiler-alert (spoiler) |
+| `rich-editor/plugins/*.js` | the plugins' `lib/rich-editor-extension.js`: chat (with group-chat-transcripts.js' buildTranscriptHeader and transcript-source-types.js), checklist, discourse-details (details), discourse-graphviz (graphviz, a preview block), discourse-local-dates (local-dates, with `local-date-node-view.js`), discourse-math (math), discourse-policy (policy, from its initializer), footnote, poll (with `components/poll-node-view.gjs` and `poll-info.gjs` in `poll-node-view.js`), spoiler-alert (spoiler) |
 | `rich-editor/wrap-utils.js`, `rich-editor/wrap-modal.js` | `lib/wrap-utils.js`, `components/wrap-attributes-modal.gjs` |
 | `rich-editor/node-views/*.js` | `components/`: image (with media and video dispatch), video, grid, upload placeholder, image alt text input and wrap, and `components/composer/preview-node-view.gjs` with `lib/composer/preview-block.js` (preview), as plain DOM node views |
 | `rich-editor/table/*.js` | `lib/table/` |
@@ -46,7 +47,7 @@ reference's alert.
 | `static/css/rich-editor.css` | `common/rich-editor/rich-editor.scss` (core rules and the everyday extensions'), `common/components/composer-toggle-switch.scss` |
 | `static/css/rich-editor-table.css` | `common/rich-editor/composer-table.scss` |
 | `static/css/rich-editor-media.css` | `rich-editor.scss`'s image, upload placeholder, video and grid rules, `composer-image-gallery.scss` |
-| `src/composer/rich_editor.rs` | what getContext gives the extensions: site settings, strings, the hashtag order |
+| `src/composer/rich_editor.rs` | what getContext gives the extensions: site settings, strings (with NEWER_STRINGS' English for those the vendored locale predates), the hashtag order |
 | `src/routes/composer_mentions.rs` | `ComposerController#mentions` (GET /composer/mentions), which the mention extension asks |
 
 Extensions keep the reference's shape (nodeSpec, markSpec, parse,
@@ -128,7 +129,7 @@ A node is an object:
 | `bare` | boolean | true on a container whose open and close tokens are both `type`, nesting 1 and -1 (bbcode-block's `wrap_bbcode`) |
 | `map` | `[startLine, endLine]` | `token.map`, optional |
 | `children` | array of nodes | see below |
-| `nesting` | `0` | only on a leaf that has `children` |
+| `nesting` | `0`, `1` or `-1` | `0` only on a leaf that has `children`; `1` or `-1` on a childless node, a token a rule pushes on its own open or close |
 
 - A node with `children` and no `nesting` is a container: it flattens to
   `type_open`, its children, `type_close` (with `bare`, `type` twice). The
@@ -140,6 +141,9 @@ A node is an object:
   never text directly.
 - A node without `children`, or with `"nesting": 0`, is a single token; with
   `nesting: 0` its children are the token's `children` (an image's alt).
+  A childless node with `nesting` 1 or -1 is one token of that nesting,
+  its type as written (`_open` or `_close` included): what a rule pushes
+  in an order that does not nest (chat's transcript, below).
 - `block` and `level` are not written: nodes outside an `inline` are block
   tokens, inside it inline ones, and levels follow the nesting.
 
@@ -229,9 +233,22 @@ discourse-graphviz's `[graphviz]` (196r3) is its rule's `graphviz` token:
 `div`, `data-engine` (an engine it knows, else `dot`) and the source
 between the tags as `content`, a JsTree on the raw HTML it cooks to.
 
+chat's `[chat]` transcript (196r6) is chat-transcript.js' token stream,
+one node per token with its nesting, as a JsTree on the raw HTML: the
+`div_chat_transcript_wrap_open` with the transcript's `data-*` attributes
+and the source between the tags as `content`, the user's, datetime's and
+channel link's tokens (`link_open`, `span_open`, `html_inline`), the
+messages as `html_raw` opened with their cooked HTML and closed, and the
+closes. A thread's `details_chat_transcript_wrap`, `summary_chat_transcript`
+and `div_thread` open before the user and close among the messages, so
+the stream does not nest; chat's extension reads the wrapper and the
+`html_raw` and ignores the rest.
+
 What no extension takes yet is still refused: HTML naming an upload
-(above), and what the crate writes as `html_raw` with no parse spec:
-chat's `[chat]` transcripts (chat's extension is not ported). discourse-events' `[event]` and the calendar's
+(above), and what the crate writes with no parse spec: an archive's
+transcript with reactions, whose `div_chat_transcript_reactions` tokens
+have one type for open and close, which chat's ignore spec does not take
+(the reference refuses it too). discourse-events' `[event]` and the calendar's
 blocks are refused by the crate itself, the plugins not being ported
 (ROADMAP 202), which the composer answers as an unsupported token. An
 `[excerpt]` is refused where both spoiler-alert and discourse-policy are
@@ -336,6 +353,17 @@ Playwright routes.
   the refusals. composer-actions.spec.js runs poll-ui-builder-test's
   editing cases on the builder, and composer.spec.js the plugins in the
   composer: details and a poll opened, Edit poll and Edit Wrap.
+
+- `rich-editor-chat.spec.js` (196r6) runs chat's
+  `rich-editor-extension-test.gjs` as written (`assert.dom` with a root
+  element and `hasHtml`) and `rich_editor_extension_transcript_spec.rb`'s
+  transcripts pasted into the composer, the markdown from the port's
+  TranscriptService (POST /chat/:id/quote).
+  `composer-insert-table.spec.js` and `composer-reply-to.spec.js` run
+  `composer-insert-table-test.js` with `composer_insert_table_spec.rb`,
+  and `composer-reply-to-test.js` with the picker's effect on the reply;
+  tests/post_reply_to.rs covers posts#update's reply target and its
+  revisions.
 
 - `rich-editor-toolbar.spec.js` (196r3) runs `text-manipulation-test.gjs`,
   the checklist's and footnote's text-manipulation tests,
@@ -468,7 +496,13 @@ GET /composer/mentions.
   dates, math, the poll and policy builders, toggle-wrap's
   WrapAttributesModal over insertWrap, updateWrap and removeWrap, the
   touch view's format-code); checklist adds its item to the list menu.
-  Insert table and Change reply to are not ported. What a button inserts
+  Insert table (196r6) puts in ComposerService#insertTable's four-column
+  table as a block. Change reply to (196r6), on an edit past the first
+  post by one who may edit it and from the action title's reply
+  indicator, opens ChangeReplyTo (`static/js/change-reply-to.js`): the
+  topic's fullscreen timeline from GET /live/timeline/:topic_id, driven by
+  topic.js' `Discourse.topicTimeline`, picks the target the edit then
+  sends as `post[reply_to_post_number]` when it changed. What a button inserts
   that the editor refuses alerts and goes back to markdown, as an opening
   does.
 - Oneboxes (196r3): the onebox extension turns a linkified link the

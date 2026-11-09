@@ -1137,7 +1137,17 @@
     };
   });
 
-  function setupTimeline(container, fullscreen) {
+  // A timeline drawn away from the topic's posts (ChangeReplyTo's modal,
+  // Discourse.topicTimeline.setup): opts.enteredIndex where it starts,
+  // and its jumpToIndex and jumpEnd in place of going to the post; it
+  // follows no scrolling and docks nowhere.
+  Discourse.topicTimeline = {
+    setup: function (container, opts) {
+      return setupTimeline(container, true, opts);
+    },
+  };
+
+  function setupTimeline(container, fullscreen, standalone) {
     var stream = JSON.parse(container.dataset.stream);
     var lookup = JSON.parse(container.dataset.lookup);
     var total = Math.max(stream.length, 1);
@@ -1286,9 +1296,9 @@
       }
       var scrollPosition = clamp(Math.floor(total * percentage), 0, total) + 1;
       if (current === scrollPosition) {
-        jumpToIndex(current);
+        (standalone ? standalone.jumpToIndex : jumpToIndex)(current);
       } else {
-        jumpEnd();
+        (standalone ? standalone.jumpEnd : jumpEnd)();
       }
     }
 
@@ -1406,6 +1416,9 @@
     // _percentFor the entered post's progress index (enteredIndex), the
     // post nearest the URL's post number, else the first.
     function enteredPercent() {
+      if (standalone) {
+        return percentFor(standalone.enteredIndex || 0);
+      }
       var m = location.pathname.match(/\/t\/[^/]+\/\d+\/(\d+)/);
       var near = m ? parseInt(m[1], 10) : 1;
       var closest = null;
@@ -1421,8 +1434,11 @@
       if (!closest) {
         return null;
       }
-      var index = stream.indexOf(parseInt(closest.dataset.postId, 10)) + 1;
-      // The switch _percentFor has, on the one-based index it is given.
+      return percentFor(stream.indexOf(parseInt(closest.dataset.postId, 10)) + 1);
+    }
+
+    // The switch _percentFor has, on the one-based index it is given.
+    function percentFor(index) {
       if (index === 0) {
         return 0;
       }
@@ -1432,6 +1448,10 @@
       return clamp(index / total, 0, 1);
     }
 
+    if (standalone) {
+      render(enteredPercent());
+      return function () {};
+    }
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", resize);
     resize();

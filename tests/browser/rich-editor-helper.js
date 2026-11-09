@@ -164,6 +164,10 @@ const LABELS = {
   "composer.code_text": "indent preformatted text by 4 spaces",
   "composer.paste_code_text": "type or paste code here",
   "composer.list_item": "List item",
+  // chat's transcript extension
+  "chat.quote.transcript_label": "Transcript",
+  "chat.quote.default_thread_title": "Thread",
+  "dates.long_no_year": "MMM D, h:mm a",
 };
 
 // In the page: the engine, the context and richSpec.
@@ -584,10 +588,15 @@ async function inPage(page, body, args) {
       notOk: (value, message) => check(!value, message, "got " + show(value)),
     };
     const normalize = (text) => (text || "").replace(/\\s+/g, " ").trim();
-    // qunit-dom's assert.dom, as far as the bodies use it
-    assert.dom = (selector) => {
-      const all = () => Array.from(document.querySelectorAll(selector));
-      const el = () => document.querySelector(selector);
+    // qunit-dom's collapseWhitespace, for hasHtml
+    const collapse = (html) =>
+      (html || "").replace(/[\\t\\r\\n]/g, " ").replace(/ +/g, " ").replace(/^ /, "").replace(/ $/, "");
+    // qunit-dom's assert.dom, as far as the bodies use it: the selector in
+    // the document, or in the root element given
+    assert.dom = (selector, root) => {
+      const scope = root || document;
+      const all = () => (root === null ? [] : Array.from(scope.querySelectorAll(selector)));
+      const el = () => (root === null ? null : scope.querySelector(selector));
       const one = (name, message, fn) => {
         const found = el();
         check(!!found, message, selector + " not found for " + name);
@@ -637,6 +646,12 @@ async function inPage(page, body, args) {
         hasText: (text, message) => {
           one("hasText", message, (e) =>
             check(normalize(e.textContent) === normalize(text), message, selector + " text " + show(normalize(e.textContent)))
+          );
+          return chain;
+        },
+        hasHtml: (html, message) => {
+          one("hasHtml", message, (e) =>
+            check(collapse(e.innerHTML) === collapse(html), message, selector + " html " + show(collapse(e.innerHTML)))
           );
           return chain;
         },

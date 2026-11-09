@@ -105,6 +105,7 @@
     "wrap-utils",
     "wrap-modal",
     "plugins",
+    "plugins/chat",
     "plugins/checklist",
     "plugins/details",
     "plugins/graphviz",

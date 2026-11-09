@@ -1034,10 +1034,16 @@ test.describe("rich editor refusals", () => {
   // discourse-graphviz's preview block is rich-editor-toolbar.spec.js'
   // (the preview toolbar's).
 
-  // chat's transcript is raw HTML: chat's extension is not ported.
-  test("a [chat] transcript is refused until chat's extension is ported", async ({ page }) => {
-    await openEditorPage(page, { plugins: ALL, render: { chat_transcript: true } });
-    await setupRichEditor(page, '[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2"]\nhi\n[/chat]');
+  // chat's extension is rich-editor-chat.spec.js'. An archive's
+  // reactions are pushed as tokens of one type for open and close, which
+  // its parse spec's ignore does not take (it names their _open and
+  // _close), so the reference refuses them too.
+  test("a [chat] transcript with reactions is refused as the reference refuses it", async ({ page }) => {
+    await openEditorPage(page, { plugins: ALL.concat("chat"), render: { chat_transcript: true } });
+    await setupRichEditor(
+      page,
+      '[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2" reactions="+1:user1"]\nhi\n[/chat]'
+    );
     expect(await page.evaluate(() => window.richSpec.unsupported && window.richSpec.unsupported.name)).toBe(
       "UnsupportedTokenError"
     );

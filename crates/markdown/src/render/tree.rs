@@ -1295,16 +1295,100 @@ mod tests {
     }
 
     #[test]
-    fn what_no_extension_takes_is_raw_html() {
+    fn chat_transcripts_are_their_tokens() {
+        // chat-transcript.js pushes its tokens one by one: the wrapper's
+        // open with the transcript's attributes and source as content, the
+        // user's, the messages as html_raw (open with the cooked HTML,
+        // then closed), and the closes; chat's extension takes the
+        // wrapper and the html_raw and leaves the rest.
         let mut settings = settings();
-        // chat's transcript (chat's extension is not ported).
         settings.chat_transcript = true;
         let tree = rich_editor_tree(
-            "[chat quote=\"user2;1;2026-10-01T00:00:00Z\" channel=\"General\" channelId=\"2\"]\nhi\n[/chat]",
+            "[chat quote=\"hunter;29856;2025-03-20T07:13:04Z\" channel=\"design\" channelId=95 source=\"Weekly\" sourceType=meeting]\nhaha **ok**\n[/chat]",
             &settings,
         )
         .unwrap();
-        assert_eq!(tree["children"][0]["type"], "html_raw");
+        let tokens = tree["children"].as_array().unwrap();
+        let types: Vec<(&str, i64)> = tokens
+            .iter()
+            .map(|t| {
+                (
+                    t["type"].as_str().unwrap(),
+                    t["nesting"].as_i64().unwrap_or(0),
+                )
+            })
+            .collect();
+        assert_eq!(
+            types,
+            vec![
+                ("div_chat_transcript_wrap_open", 1),
+                ("div_chat_transcript_user_open", 1),
+                ("div_chat_transcript_user_avatar_open", 1),
+                ("div_chat_transcript_user_avatar_close", -1),
+                ("div_chat_transcript_username_open", 1),
+                ("html_inline", 0),
+                ("div_chat_transcript_username_close", -1),
+                ("div_chat_transcript_datetime_open", 1),
+                ("link_open", 1),
+                ("link_close", -1),
+                ("div_chat_transcript_datetime_close", -1),
+                ("link_open", 1),
+                ("html_inline", 0),
+                ("link_close", -1),
+                ("div_chat_transcript_user_close", -1),
+                ("div_chat_transcript_messages_open", 1),
+                ("html_raw", 1),
+                ("html_raw", -1),
+                ("div_chat_transcript_messages_close", -1),
+                ("div_chat_transcript_wrap_close", -1),
+            ]
+        );
+        assert_eq!(
+            tokens[0],
+            json!({"type": "div_chat_transcript_wrap_open", "tag": "div", "nesting": 1,
+                   "content": "haha **ok**",
+                   "attrs": [["class", "chat-transcript"], ["data-message-id", "29856"],
+                             ["data-username", "hunter"], ["data-datetime", "2025-03-20T07:13:04Z"],
+                             ["data-channel-name", "design"], ["data-channel-id", "95"],
+                             ["data-source", "Weekly"], ["data-source-type", "meeting"]]})
+        );
+        assert_eq!(tokens[5]["content"], "hunter");
+        assert_eq!(
+            tokens[16],
+            json!({"type": "html_raw", "nesting": 1, "content": "<p>haha <strong>ok</strong></p>"})
+        );
+
+        // A thread's details and summary open before the user and close
+        // among the messages, around the thread's own cooked replies.
+        let tree = rich_editor_tree(
+            "[chat quote=\"martin;1;2025-03-20T07:12:57Z\" channel=\"design\" channelId=95 multiQuote=true threadId=124 threadTitle=\"Title\"]\nop\n\n[chat quote=\"martin;2;2025-03-24T07:08:01Z\"]\nother\n[/chat]\n\n[/chat]",
+            &settings,
+        )
+        .unwrap();
+        let types: Vec<&str> = tree["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| t["type"].as_str().unwrap())
+            .collect();
+        let at = |kind: &str| types.iter().position(|t| *t == kind).unwrap();
+        assert!(at("details_chat_transcript_wrap_open") < at("div_chat_transcript_user_open"));
+        assert!(at("div_chat_transcript_messages_open") < at("div_thread_close"));
+        assert!(at("summary_chat_transcript_close") < at("details_chat_transcript_wrap_close"));
+        assert_eq!(types.iter().filter(|t| **t == "html_raw").count(), 4);
+        let raws: Vec<&Value> = tree["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|t| t["type"] == "html_raw" && t["nesting"] == 1)
+            .collect();
+        assert_eq!(raws[0]["content"], "<p>op</p>");
+        assert!(
+            raws[1]["content"]
+                .as_str()
+                .unwrap()
+                .contains("data-message-id=\"2\"")
+        );
     }
 
     #[test]

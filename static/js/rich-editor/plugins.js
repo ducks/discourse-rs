@@ -4,6 +4,7 @@
 // Discourse loads only an enabled plugin's JavaScript, so only those are
 // registered, after the defaults and in the plugins' load order.
 import { getExtensions, registerRichEditorExtension } from "discourse/rich-editor/extensions";
+import chat from "discourse/rich-editor/plugins/chat";
 import checklist from "discourse/rich-editor/plugins/checklist";
 import details from "discourse/rich-editor/plugins/details";
 import graphviz from "discourse/rich-editor/plugins/graphviz";
@@ -15,6 +16,7 @@ import poll from "discourse/rich-editor/plugins/poll";
 import spoiler from "discourse/rich-editor/plugins/spoiler";
 
 export var PLUGIN_EXTENSIONS = {
+  chat: chat,
   checklist: checklist,
   details: details,
   graphviz: graphviz,

@@ -89,6 +89,7 @@ mod plugin_wasm;
 mod plugin_wasm_api;
 mod plugin_wasm_htmx;
 mod policy;
+mod post_reply_to;
 mod post_voting;
 mod preferences_pages;
 mod presence;
