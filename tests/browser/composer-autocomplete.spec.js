@@ -27,6 +27,12 @@ async function simulateKeys(page, text) {
   }
 }
 
+// settled for the emoji search: the menu shows the term's own results
+// (an earlier term's, a bare colon's defaults, may still be up).
+async function settledEmoji(page, first) {
+  await expect(page.locator(".autocomplete.ac-emoji .emoji-shortname").first()).toHaveText(first);
+}
+
 // A member of the test's own on the topic list, a new topic's composer
 // open and the editor focused (click("#create-topic")).
 async function createTopic(page, context) {
@@ -295,7 +301,7 @@ test.describe("Emoji", () => {
     await replyToTopic(page, context, session);
 
     await simulateKeys(page, "Hello world,:smi");
-    await expect(page.locator(".autocomplete.ac-emoji")).toBeVisible();
+    await settledEmoji(page, "smiley");
 
     await simulateKeys(page, "\t");
 
@@ -319,7 +325,7 @@ test.describe("Emoji", () => {
       await replyToTopic(page, context, session);
 
       await simulateKeys(page, `Hello world${ellipsis}:smi`);
-      await expect(page.locator(".autocomplete.ac-emoji")).toBeVisible();
+      await settledEmoji(page, "smiley");
 
       await simulateKeys(page, "\t");
 
@@ -331,7 +337,7 @@ test.describe("Emoji", () => {
     await replyToTopic(page, context, session);
 
     await simulateKeys(page, "Hello world...:smi");
-    await expect(page.locator(".autocomplete.ac-emoji")).toBeVisible();
+    await settledEmoji(page, "smiley");
 
     await editor(page).fill("Hello world…:smi");
     await simulateKeys(page, "\t");
@@ -343,7 +349,7 @@ test.describe("Emoji", () => {
     await replyToTopic(page, context, session);
 
     await simulateKeys(page, "Hello world...:smi");
-    await expect(page.locator(".autocomplete.ac-emoji")).toBeVisible();
+    await settledEmoji(page, "smiley");
 
     await editor(page).fill("Hello world");
     await editor(page).evaluate((el) => el.setSelectionRange(6, 6));

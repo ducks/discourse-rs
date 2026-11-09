@@ -438,6 +438,12 @@
       if (results && typeof results.then === "function") {
         return results.then(
           function (resolved) {
+            // A newer term's search went out meanwhile: its results, not
+            // these, are the menu's (a source's answers may come out of
+            // order).
+            if (state.previousTerm !== term) {
+              return;
+            }
             updateResults(resolved || []);
           },
           function (e) {

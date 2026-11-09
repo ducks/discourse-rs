@@ -120,7 +120,12 @@ test.describe("Composer - ProseMirror - Autocomplete", () => {
     test("validates manually typed mentions", async ({ page, context }) => {
       const currentUser = await openComposer(page, context);
 
+      // The mention's lookup answered first: the extension skips the
+      // mentions typed while one is in flight (as the reference's does),
+      // so the next one would wait for an update that may not come.
+      const looked = page.waitForResponse((r) => r.url().includes("/composer/mentions"));
       await typeContent(page, `Hey @${currentUser.name} `);
+      await looked;
 
       await expect(rich(page).locator("a.mention", { hasText: mentionText(currentUser.name) })).toBeVisible();
 
@@ -139,7 +144,9 @@ test.describe("Composer - ProseMirror - Autocomplete", () => {
       sql("UPDATE users SET username = :'p1', username_lower = lower(:'p1') WHERE id = :'p2'", username, mixed.id);
       await openComposer(page, context);
 
+      const looked = page.waitForResponse((r) => r.url().includes("/composer/mentions"));
       await typeContent(page, `Hey @${username.toLowerCase()} and @${username.toUpperCase()} `);
+      await looked;
 
       await expect(rich(page).locator("a.mention", { hasText: mentionText(username.toLowerCase()) })).toBeVisible();
       await expect(rich(page).locator("a.mention", { hasText: mentionText(username.toUpperCase()) })).toBeVisible();
