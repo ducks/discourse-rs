@@ -180,7 +180,10 @@ function flatten(nodes, level, out, block) {
       return;
     }
 
-    var token = fill(new Token(node.type, tag, 0), node, level, block);
+    // A token a rule pushes on its own, open (1) or close (-1), where its
+    // tokens do not nest (chat's transcript): as given, type and all.
+    var nesting = !Array.isArray(node.children) && (node.nesting === 1 || node.nesting === -1) ? node.nesting : 0;
+    var token = fill(new Token(node.type, tag, nesting), node, level, block);
     token.content = str(node, "content");
     if (Array.isArray(node.children)) {
       token.children = [];

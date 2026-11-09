@@ -196,6 +196,10 @@ const LABELS: &[&str] = &[
     "poll.public.title",
     "poll.ui_builder.edit",
     "poll.ui_builder.poll_title.placeholder",
+    // chat's transcript extension
+    "chat.quote.transcript_label",
+    "chat.quote.default_thread_title",
+    "dates.long_no_year",
 ];
 
 /// The English of the strings above the reference added after the
@@ -203,6 +207,7 @@ const LABELS: &[&str] = &[
 /// files lack them; a re-vendor brings them and these stop being read.
 const NEWER_STRINGS: &[(&str, &str)] = &[
     ("composer.table.default_heading", "Column %{number}"),
+    ("chat.quote.transcript_label", "Transcript"),
     (
         "composer.link_toolbar.preview_limit_reached",
         "This post has reached the maximum number of previews",
@@ -213,6 +218,7 @@ const NEWER_STRINGS: &[(&str, &str)] = &[
 /// by the setting each is enabled by (`enabled_site_setting`; checklist's
 /// initializer checks its own).
 const PLUGINS: &[(&str, &str)] = &[
+    ("chat", "chat_enabled"),
     ("checklist", "checklist_enabled"),
     ("details", "details_enabled"),
     ("graphviz", "discourse_graphviz_enabled"),

@@ -360,10 +360,10 @@ test.describe("the rich editor", () => {
     await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
   });
 
-  // What the editor still refuses (a chat transcript, which chat's
-  // extension would take; docs/rich-editor.md) opens in markdown for a
-  // stored mode 1: the alert, the raw kept, and the mode saved as 0, as
-  // the alert's toggleRichEditor does.
+  // What the editor still refuses (a chat transcript with an archive's
+  // reactions, as the reference refuses it; docs/rich-editor.md) opens in
+  // markdown for a stored mode 1: the alert, the raw kept, and the mode
+  // saved as 0, as the alert's toggleRichEditor does.
   test("an edit of what the editor refuses falls back to markdown for a stored mode 1", async ({
     page,
     context,
@@ -373,7 +373,7 @@ test.describe("the rich editor", () => {
     await login(context, writer.name);
     const raw =
       label("A transcript the rich editor refuses") +
-      '\n\n[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2"]\nhi\n[/chat]';
+      '\n\n[chat quote="user2;1;2026-10-01T00:00:00Z" channel="General" channelId="2" reactions="+1:user1"]\nhi\n[/chat]';
     const t = await topic(context, label("Rich editor refusal topic"), raw);
     await page.goto(t.url);
     const post = page.locator(`article[data-post-id="${t.posts[0]}"]`);

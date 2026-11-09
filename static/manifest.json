@@ -1640,6 +1640,13 @@
       ]
     },
     {
+      "name": "rich-editor/plugins/chat.js",
+      "content_type": "js",
+      "files": [
+        "js/rich-editor/plugins/chat.js"
+      ]
+    },
+    {
       "name": "rich-editor/plugins/checklist.js",
       "content_type": "js",
       "files": [
