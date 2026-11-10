@@ -159,15 +159,15 @@ pub fn refuse_unported_author(guardian: &Guardian) -> Result<(), AppError> {
     Ok(())
 }
 
-/// `User#posted_too_much_in_topic?(post.topic_id)` for the acting user: a
-/// trust level 0 user's posts in someone else's topic since the last
-/// reply, mention or quote of theirs there, against
-/// newuser_max_replies_per_topic.
-async fn posted_too_much_in_topic(
+/// `User#posted_too_much_in_topic?(topic_id)`: a trust level 0 user's
+/// posts in someone else's topic since the last reply, mention or quote
+/// of theirs there, against newuser_max_replies_per_topic. The finder of
+/// composer messages asks it too (src/composer/messages.rs).
+pub(crate) async fn posted_too_much_in_topic(
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
     acting: &Guardian,
-    post: &PostInput<'_>,
+    topic_id: Option<i32>,
 ) -> Result<bool, AppError> {
     let Some(user) = acting.user() else {
         return Ok(false);
@@ -175,11 +175,7 @@ async fn posted_too_much_in_topic(
     if acting.is_staff() || user.trust_level != 0 {
         return Ok(false);
     }
-    // A new topic's first post, saved: the topic is the user's own.
-    if post.first_post && post.topic_id.is_none() {
-        return Ok(false);
-    }
-    if let Some(topic_id) = post.topic_id {
+    if let Some(topic_id) = topic_id {
         let topic: Option<(String, Option<i32>)> = sqlx::query_as(
             "SELECT archetype, user_id FROM topics WHERE id = $1 AND deleted_at IS NULL",
         )
@@ -199,7 +195,7 @@ async fn posted_too_much_in_topic(
          ORDER BY created_at DESC LIMIT 1",
     )
     .bind(user.id)
-    .bind(post.topic_id)
+    .bind(topic_id)
     .fetch_optional(&mut *conn)
     .await?;
     let since_reply: i64 = sqlx::query_scalar(
@@ -208,7 +204,7 @@ async fn posted_too_much_in_topic(
            AND ($3::int IS NULL OR id > $3)",
     )
     .bind(user.id)
-    .bind(post.topic_id)
+    .bind(topic_id)
     .bind(last_action.flatten())
     .fetch_one(&mut *conn)
     .await?;
@@ -850,7 +846,11 @@ pub async fn body_errors(
     }
 
     // max_posts_validator
-    if post.new_record && posted_too_much_in_topic(&mut *conn, s, acting, post).await? {
+    // A new topic's first post, saved: the topic is the user's own.
+    if post.new_record
+        && !(post.first_post && post.topic_id.is_none())
+        && posted_too_much_in_topic(&mut *conn, s, acting, post.topic_id).await?
+    {
         let max = s.get("newuser_max_replies_per_topic")?.to_i();
         errors.push(BodyError::Base(ctx.t_count("too_many_replies", max)));
     }

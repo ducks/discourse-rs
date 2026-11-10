@@ -1,8 +1,9 @@
 // The composer's autocompletes in the rich editor (ProseMirror's
 // autocompleteHandler in rich-editor/text-manipulation.js under
 // autocomplete.js): the reference's system spec
-// composer/prosemirror_autocomplete_spec.rb, its autocomplete cases, and
-// the completions as the nodes they parse into.
+// composer/prosemirror_autocomplete_spec.rb, its autocomplete cases and
+// composer messages popup, and the completions as the nodes they parse
+// into.
 const { test, expect, login, api, sql, label, member } = require("./helpers");
 
 const rich = (page) => page.locator("#reply-control .ProseMirror.d-editor-input");
@@ -112,6 +113,17 @@ test.describe("Composer - ProseMirror - Autocomplete", () => {
     await toggleRichEditor(page);
 
     await expect(textarea(page)).toHaveValue("Why :repeat_single_button: ");
+  });
+
+  // "with composer messages": the mention extension's warning, through
+  // ComposerMessages (static/js/composer-messages.js).
+  test.describe("with composer messages", () => {
+    test("shows a popup", async ({ page, context }) => {
+      await openComposer(page, context);
+      await typeContent(page, "Maybe @staff can help?");
+
+      await expect(page.locator("#reply-control .composer-popup")).toContainText("You cannot mention group @staff.");
+    });
   });
 
   // prosemirror_autocomplete_spec.rb's "mentions": mentions typed with

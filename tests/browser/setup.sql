@@ -19,7 +19,12 @@ VALUES
   ('post_voting_enabled', 5, 't', now(), now()),
   -- User status: the user menu's item, the modal, the emoji by names
   -- (user-status.spec.js sets statuses only on members of its own).
-  ('enable_user_status', 5, 't', now(), now())
+  ('enable_user_status', 5, 't', now(), now()),
+  -- No education message as a member's first posts are composed
+  -- (spec/rails_helper.rb's SiteSetting.educate_until_posts = 0): it
+  -- would sit over the composer the specs type in. The specs of
+  -- composer-messages.spec.js answer /composer_messages themselves.
+  ('educate_until_posts', 3, '0', now(), now())
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
 -- The seed has everyone on the rich editor (Discourse's
