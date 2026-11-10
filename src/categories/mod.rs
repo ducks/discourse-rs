@@ -165,7 +165,7 @@ impl Categories<'_> {
         // form_template_ids and required_tag_groups, fetched for every
         // category at once.
         let form_templates: Vec<(i32, i32)> = sqlx::query_as(
-            "SELECT category_id, form_template_id FROM category_form_templates \
+            "SELECT category_id::int, form_template_id::int FROM category_form_templates \
              WHERE category_id = ANY($1) ORDER BY category_id, form_template_id",
         )
         .bind(&visible_ids)
