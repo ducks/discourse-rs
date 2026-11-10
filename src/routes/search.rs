@@ -929,6 +929,7 @@ pub(crate) async fn advanced_panel(
             topic_count,
             description_text: None,
             minimum_required_tags: 0,
+            form_template_ids: Vec::new(),
         };
         let parent = category.parent_id.and_then(|id| all.get(&id));
         // categoryBadgeHTML with its ancestors and hideParent.

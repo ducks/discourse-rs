@@ -16,6 +16,8 @@ use crate::site_settings::{SettingError, SiteSettings};
 
 /// The client site settings the extensions read.
 const SITE_SETTINGS: &[&str] = &[
+    // ComposerMessages' similar topics
+    "min_title_similar_length",
     "default_code_lang",
     "here_mention",
     "unicode_usernames",
@@ -93,6 +95,7 @@ const LABELS: &[&str] = &[
     "composer.yourself_confirm.body",
     "composer.user_not_seen_in_a_while.single",
     "composer.user_not_seen_in_a_while.multiple",
+    "composer.similar_topics",
     "dates.medium.date_year",
     "footer_nav.share",
     "user.private_message",

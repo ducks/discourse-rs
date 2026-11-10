@@ -73,7 +73,10 @@
 
   // The composer model as ComposerMessages reads it: its action, the topic
   // and post (replied to, or edited), the whisper toggle and
-  // isWhispering, and a message's recipients (targetRecipientsArray).
+  // isWhispering, a message's recipients (targetRecipientsArray), and
+  // what _findSimilar reads of a new topic: its title, its text and
+  // whether its category has form templates (form_template_ids, the
+  // chooser row's data-form-template-ids).
   function messagesModel() {
     var s = state;
     if (!s) {
@@ -87,6 +90,9 @@
       post = { postNumber: s.actionPost.postNumber, createdAt: s.actionPost.createdAt };
     }
     var message = s.mode === "private-message";
+    var creatingTopic = s.mode === "create-topic";
+    var categoryId = creatingTopic ? chooser.querySelector("summary").dataset.value : null;
+    var categoryRow = categoryId ? chooser.querySelector('.category-row[data-value="' + categoryId + '"]') : null;
     return {
       action: EMBER_ACTIONS[s.mode],
       topicId: s.mode === "reply" || s.mode === "edit" ? s.topicId || null : null,
@@ -99,6 +105,10 @@
       recipients: message && recipients && recipients.types ? recipients.types() : [],
       targetRecipients: message ? recipientsValue().join(",") : null,
       draftKey: s.draftKey,
+      creatingTopic: creatingTopic,
+      title: title.value,
+      reply: textarea.value,
+      categoryHasFormTemplates: !!(categoryRow && categoryRow.dataset.formTemplateIds),
     };
   }
 
@@ -769,6 +779,8 @@
     }
     // ComposerMessages goes with the composer.
     composerMessages.reset();
+    clearTimeout(lastKeyTimeout);
+    lastKeyTimeout = null;
     cancelUploads();
     clearTimeout(draftTimer);
     draftTimer = null;
@@ -875,11 +887,20 @@
     }, 100);
   });
 
-  // composer-body's keyUp: the composer messages waiting for typing.
+  // composer-body's keyUp: the composer messages waiting for typing, and
+  // one second after the last key's release (the member paused typing),
+  // composer:find-similar.
+  var lastKeyTimeout = null;
   control.addEventListener("keyup", function () {
-    if (state) {
-      composerMessages.typedReply();
+    if (!state) {
+      return;
     }
+    composerMessages.typedReply();
+    clearTimeout(lastKeyTimeout);
+    lastKeyTimeout = setTimeout(function () {
+      lastKeyTimeout = null;
+      composerMessages.findSimilar();
+    }, 1000);
   });
 
   // The composer's height (model.composerHeight): the default it opened

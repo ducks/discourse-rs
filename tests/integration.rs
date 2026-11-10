@@ -106,6 +106,7 @@ mod schema;
 mod search;
 mod sessions;
 mod sidebar;
+mod similar_topics;
 mod site_basic_info;
 mod site_icons;
 mod site_json;
