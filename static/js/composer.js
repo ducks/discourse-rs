@@ -122,12 +122,11 @@
     );
   }
 
-  // The dominating topic's Share: ShareTopic is not ported; the topic
-  // footer's share does what it does here.
+  // The dominating topic's Share: ShareTopic (share-topic.js, a topic
+  // page's) for the page's topic.
   function shareTopic() {
-    var share = document.querySelector("#topic-footer-buttons .share-and-invite");
-    if (share) {
-      share.click();
+    if (Discourse.shareTopic) {
+      Discourse.shareTopic.show();
     }
   }
 

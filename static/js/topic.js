@@ -915,10 +915,13 @@
       });
       return;
     }
-    // A post's copy link, and the footer's share: the URL, absolute.
-    var copy = event.target.closest(
-      ".post-action-menu__copy-link, .share-and-invite"
-    );
+    // The footer's share: ShareTopic (share-topic.js).
+    if (event.target.closest(".share-and-invite")) {
+      Discourse.shareTopic.show();
+      return;
+    }
+    // A post's copy link: the URL, absolute.
+    var copy = event.target.closest(".post-action-menu__copy-link");
     if (copy) {
       navigator.clipboard.writeText(
         new URL(copy.dataset.shareUrl, location.href).href

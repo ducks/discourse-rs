@@ -5533,8 +5533,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     duplicate link and group mentioned notices,
     dont_feed_the_trolls_popup_spec.rb, and Esc) and
     rich-editor-autocomplete's "with composer messages". Left: the
-    similar topics popup (286), and the dominating topic's Share opens
-    the topic footer's share (ShareTopic is not ported)
+    similar topics popup (286). The dominating topic's Share and the
+    topic footer's share open ShareTopic (static/js/share-topic.js: the
+    link, its copy button and the share_links sources; browser
+    share-topic, 5, and composer-messages' dominating topic Share); what
+    the modal leaves is 287
 286. `feat/similar-topics` M: GET /similar_topics (SimilarTopicsController,
     Topic.similar_to over the search data, min_title_similar_length) is
     not routed, so ComposerMessages' similar topics popup
@@ -5542,6 +5545,20 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     composer-messages/similar-topics.gjs and its search-menu topic
     results) is not drawn; composer-messages-test.js' similar topics test
     waits for it
+287. `feat/share-topic-rest` M: what ShareTopic
+    (components/modal/share-topic.gjs, static/js/share-topic.js) leaves:
+    the invite button (allowInvites; CreateInvite with inviteToTopic,
+    components/modal/create-invite.gjs and lib/invite-modal.js, has no
+    client port), the new topic button (replyAsNewTopic for
+    can_reply_as_new_topic, a message's as a new message), the
+    restricted category's warning (GET /c/:id/visible_groups,
+    CategoriesController#visible_groups, is not routed), the modal for a
+    post (post.share.title with the post's date as subtitle, from the
+    post date link, post/meta-data/date.gjs, and the post menu's share
+    when the platform has no native one, post.gjs), the
+    share-topic-sources plugin outlet, and the composer's Share for a
+    topic other than the page's; share-topic-test.js' invite, post date
+    link and restricted category cases wait for them
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
