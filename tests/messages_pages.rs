@@ -229,7 +229,7 @@ async fn a_message_draws_its_own_topic_chrome() {
     assert!(html.contains("<script type=\"application/json\" id=\"dialog-strings\">"));
     // The footer: share and bookmark without labels, then Archive.
     assert!(html.contains(
-        "<button class=\"btn no-text btn-icon btn-default topic-footer-button share-and-invite\" data-share-url=\"/t/parity-fixture-pm-user1-to-user0/42\" id=\"topic-footer-button-share-and-invite\" title=\"share a link to this topic\" type=\"button\">"
+        "<button class=\"btn no-text btn-icon btn-default topic-footer-button share-and-invite\" data-share-url=\"/t/parity-fixture-pm-user1-to-user0/42?u&#x3D;user1\" id=\"topic-footer-button-share-and-invite\" title=\"share a link to this topic\" type=\"button\">"
     ), "{html}");
     assert!(html.contains(
         "<button class=\"btn no-text btn-icon fk-d-menu__trigger topic-bookmarks-menu-trigger bookmark widget-button bookmark-menu__trigger btn-icon no-text btn-default topic-footer-button bookmarked --post-bookmarked-only\" title=\"You&#x27;ve bookmarked this. Parity fixture: pinned, in a PM\" aria-expanded=\"false\" data-identifier=\"topic-bookmarks-menu\" data-trigger=\"\" type=\"button\">"

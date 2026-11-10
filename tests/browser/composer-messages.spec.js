@@ -211,6 +211,36 @@ test.describe("Composer - Messages - Education", () => {
   });
 });
 
+// Not in the reference's tests: composer-messages/dominating-topic.gjs's
+// Share opens ShareTopic (share-topic.js) for the topic.
+test.describe("Composer - Messages - Dominating topic", () => {
+  test("Share opens the share modal", async ({ page, context, session }) => {
+    await respond(page, "**/composer_messages?**", {
+      composer_messages: [
+        {
+          id: "dominating_topic",
+          templateName: "dominating-topic",
+          wait_for_typing: true,
+          extraClass: "education-message dominating-topic-message",
+          body: "<p>Dominating topic message</p>",
+        },
+      ],
+    });
+
+    const { t, writer } = await replyToTopic(page, context, session);
+
+    await keyup(page);
+    await expect(popup(page)).toContainText("Dominating topic message");
+    await popup(page).locator(".btn-primary[data-action='share']").click();
+
+    const modal = page.locator(".d-modal.share-topic-modal");
+    await expect(modal).toBeVisible();
+    await expect(modal.locator("input.invite-link")).toHaveValue(
+      new URL(`${t.url}?u=${writer.name}`, page.url()).href
+    );
+  });
+});
+
 test.describe("Composer - Messages - Private Messages", () => {
   // The member is the one logged in; the search answers them and sam.
   async function newMessage(page, context) {

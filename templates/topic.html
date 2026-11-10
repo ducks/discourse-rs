@@ -52,6 +52,7 @@
 {% if topic_menus.contains("flag-modal-config") %}<script src="{{ crate::assets::url(base_path, "flag-modal.js") }}"></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "header-topic-info.js") }}"></script>
 <script type="application/json" id="quote-button-config">{{ quote_config|safe }}</script>
+<script src="{{ crate::assets::url(base_path, "share-topic.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "quote-button.js") }}"></script>
 {% if title_html.contains("title-voting") %}<script src="{{ crate::assets::url(base_path, "topic-voting.js") }}"></script>{% endif %}
 {{ reactions_emoji_picker|safe }}

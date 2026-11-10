@@ -5517,8 +5517,10 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     waiting for typing shown on a key's release, the education message
     once until a post is saved, hide_if_whisper, the message to oneself
     and recipients not seen in a while, get a room's switch to a message,
-    dismissing by the close button or Esc (hitEsc), hidden while the
-    composer is minimized, none in the mobile view; composer-editor's
+    dismissing by the close button or Esc (hitEsc; with none left Esc
+    minimizes the open composer and leaves fullscreen, composer-body's
+    keyDown), hidden while the composer is minimized, none in the mobile
+    view; composer-editor's
     preview half (lib/link-mentions: the preview's mentions linked from
     /composer/mentions, then the group mentioned, cannot see and @here
     warnings) and the composer service's duplicate link check
@@ -5534,8 +5536,10 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     dont_feed_the_trolls_popup_spec.rb, and Esc), composer's "Esc in the
     composer" (5) and the rich editor's Esc, and
     rich-editor-autocomplete's "with composer messages". Left: the
-    dominating topic's Share opens the topic footer's share (ShareTopic
-    is not ported)
+    rest of the ShareTopic modal (287). The dominating topic's Share and
+    the topic footer's share open ShareTopic (static/js/share-topic.js:
+    the link, its copy button and the share_links sources; browser
+    share-topic, 5, and composer-messages' dominating topic Share)
 286. ~~`feat/similar-topics`~~ (done) M: GET /similar_topics was not routed, so
     ComposerMessages' similar topics popup was never drawn. Now GET
     /topics/similar_to and /similar_topics (routes/similar_topics.rs:
@@ -5565,6 +5569,20 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     composer-messages "Similar topics" (6). Refused: Chinese and Japanese
     segmentation of the title. Not ported: the
     similar_topic_candidate_ids modifier (discourse-ai's embeddings)
+287. `feat/share-topic-rest` M: what ShareTopic
+    (components/modal/share-topic.gjs, static/js/share-topic.js) leaves:
+    the invite button (allowInvites; CreateInvite with inviteToTopic,
+    components/modal/create-invite.gjs and lib/invite-modal.js, has no
+    client port), the new topic button (replyAsNewTopic for
+    can_reply_as_new_topic, a message's as a new message), the
+    restricted category's warning (GET /c/:id/visible_groups,
+    CategoriesController#visible_groups, is not routed), the modal for a
+    post (post.share.title with the post's date as subtitle, from the
+    post date link, post/meta-data/date.gjs, and the post menu's share
+    when the platform has no native one, post.gjs), the
+    share-topic-sources plugin outlet, and the composer's Share for a
+    topic other than the page's; share-topic-test.js' invite, post date
+    link and restricted category cases wait for them
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script

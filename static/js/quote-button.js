@@ -615,56 +615,10 @@
     return supports;
   }
 
-  // Sharing.activeSources over the sharing-sources initializer's sources.
-  var SOURCES = {
-    twitter: {
-      icon: "fab-x-twitter",
-      title: "share.twitter",
-      popupHeight: 265,
-      popup: true,
-      url: function (link, title, quote) {
-        var text = quote ? '"' + quote + '" -- ' : title;
-        return "http://x.com/intent/tweet?url=" + encodeURIComponent(link) + "&text=" + encodeURIComponent(text);
-      },
-    },
-    facebook: {
-      icon: "fab-facebook",
-      title: "share.facebook",
-      popup: true,
-      url: function (link, title, quote) {
-        var app = setting("facebook_app_id");
-        var base = app
-          ? "https://www.facebook.com/dialog/share?app_id=" + app + "&quote=" + encodeURIComponent(quote || "") + "&href="
-          : "https://www.facebook.com/sharer.php?u=";
-        return base + encodeURIComponent(link);
-      },
-    },
-    email: {
-      icon: "envelope",
-      title: "share.email",
-      privateContext: true,
-      url: function (link, title, quote) {
-        var body = quote ? quote + " \n\n " + link : link;
-        return (
-          "mailto:?to=&subject=" +
-          encodeURIComponent("[" + setting("title") + "] " + title) +
-          "&body=" +
-          encodeURIComponent(body)
-        );
-      },
-    },
-  };
-
+  // Sharing.activeSources (share-topic.js) for share_quote_buttons.
   function shareSources() {
     var privateContext = setting("login_required") || config.topic.privateMessage;
-    return String(setting("share_quote_buttons") || "")
-      .split("|")
-      .map(function (id) {
-        return SOURCES[id] ? Object.assign({ id: id }, SOURCES[id]) : null;
-      })
-      .filter(function (s) {
-        return s && (!privateContext || s.privateContext);
-      });
+    return Discourse.sharing.activeSources(setting("share_quote_buttons"), privateContext);
   }
 
   function mobileView() {
@@ -940,18 +894,12 @@
     var number = wrapper ? parseInt(wrapper.dataset.postNumber, 10) : 1;
     var topic = config.topic;
     var url = location.protocol + "//" + location.host + basePath() + "/t/" + (topic.slug ? topic.slug + "/" : "") + topic.id + (number > 1 ? "/" + number : "");
-    var link = source.url(url, topic.title, window.getSelection().toString());
-    if (source.popup) {
-      window.open(
-        link,
-        "",
-        "menubar=no,toolbar=no,resizable=yes,scrollbars=yes,width=600,height=" + (source.popupHeight || 315)
-      );
-    } else if (source.id === "email") {
-      window.location.href = link;
-    } else {
-      window.open(link, "_blank");
-    }
+    Discourse.sharing.shareSource(source, {
+      url: url,
+      title: topic.title,
+      quote: window.getSelection().toString(),
+      setting: setting,
+    });
   }
 
   // toggleFastEdit: the fast edit modal for a simple selection, else the

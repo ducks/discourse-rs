@@ -577,3 +577,68 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .change-reply-to-modal .timeline-container.timeline-fullscreen .post-excerpt {
   margin-bottom: var(--space-2);
 }
+
+/* ShareTopic (share-topic.js): common/base/share_link.scss and the
+   modal's rules from modal-overrides.scss. */
+/* share_link.scss:2 */
+.link-share-container,
+.notify-user-input {
+  display: flex;
+  gap: 0.5em;
+}
+/* share_link.scss:7 */
+.link-share-container input,
+.link-share-container .select-kit,
+.notify-user-input input,
+.notify-user-input .select-kit {
+  cursor: auto;
+  width: 100%;
+  margin-bottom: 0;
+}
+/* share_link.scss:16 */
+.link-share-container .invite-link {
+  flex: 1 0;
+}
+/* share_link.scss:21 */
+.link-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+/* share_link.scss:26 */
+.link-share-actions button {
+  margin-top: 0.5em;
+  margin-right: 0.5em;
+}
+/* share_link.scss:31 */
+.link-share-actions .sources {
+  display: flex;
+  flex-wrap: wrap;
+}
+/* share_link.scss:36 */
+.link-share-actions .new-topic {
+  margin-right: 0;
+}
+/* share_link.scss:42 */
+.share-twitter .d-icon {
+  color: var(--twitter);
+}
+/* share_link.scss:48 */
+.share-facebook .d-icon {
+  color: var(--facebook);
+}
+/* modal-overrides.scss:291 */
+.d-modal.share-topic-modal .d-modal__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* modal-overrides.scss:298 */
+.d-modal.share-topic-modal .d-modal__subtitle-text {
+  color: var(--primary-med-or-secondary-med);
+}
+/* modal-overrides.scss:303 */
+.d-modal.share-topic-modal form {
+  margin-bottom: 0;
+}
