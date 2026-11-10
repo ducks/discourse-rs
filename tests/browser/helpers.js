@@ -153,7 +153,11 @@ function member() {
   );
   copy("user_passwords", "'id', nextval('user_passwords_id_seq'), 'user_id', :'p2'::int");
   copy("user_options", "'user_id', :'p2'::int");
-  copy("user_stats", "'user_id', :'p2'::int");
+  // No flag history: a flagger's agreed flags weigh their next flag.
+  copy(
+    "user_stats",
+    "'user_id', :'p2'::int, 'flags_agreed', 0, 'flags_disagreed', 0, 'flags_ignored', 0",
+  );
   copy("user_profiles", "'user_id', :'p2'::int");
   copy("group_users", "'id', nextval('group_users_id_seq'), 'user_id', :'p2'::int");
   return { name, id };

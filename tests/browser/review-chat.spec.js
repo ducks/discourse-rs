@@ -3,8 +3,12 @@
 // beside a post flag, drawn as chat's reviewable/chat-message.gjs, and
 // agrees with it (the message gone for members), and disagrees with or
 // ignores others (review.js, each item redrawn by id). Each test makes its
-// own channel, so the other specs' General is left alone.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+// own channel, so the other specs' General is left alone, and writes and
+// flags as members of its own (helpers.js member()): a shared flagger's
+// agreed flags raise their next flag's score, a flagged author may be
+// silenced, and the whole queue shows ten at a time by score, so each
+// reads the queue filtered to its own flagger.
+const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 // A category channel (Site Feedback) the given members follow.
 async function channelFor(session, members) {
@@ -30,7 +34,7 @@ async function send(channel, author, text) {
   return id;
 }
 
-// user1 flags the message as inappropriate from its actions menu.
+// The flagger flags the message as inappropriate from its actions menu.
 async function flagFromChat(page, channel, text) {
   await page.goto(`/chat/c/${channel.slug}/${channel.id}`);
   const message = page.locator(".chat-message-container", { hasText: text });
@@ -53,39 +57,37 @@ function reviewableOf(messageId) {
   );
 }
 
-// The author's auto silence a flag may bring, lifted for the other specs.
-function unsilence() {
-  sql("UPDATE users SET silenced_till = NULL WHERE username = 'user3'");
-}
-
 test("a chat flag lists beside a post flag; agreeing deletes the message for members", async ({
   page,
   context,
   session,
 }) => {
-  const channel = await channelFor(session, ["user3", "user1", "user2"]);
+  const author = member().name;
+  const flaggerName = member().name;
+  const channel = await channelFor(session, [author, flaggerName, "user2"]);
   const text = label("chat message to flag");
-  const messageId = await send(channel, "user3", text);
+  const messageId = await send(channel, author, text);
 
-  const flagger = await channel.contexts.user1.newPage();
+  const flagger = await channel.contexts[flaggerName].newPage();
   await flagFromChat(flagger, channel, text);
   await expect.poll(() => reviewableOf(messageId)).toEqual([["ReviewableChatMessage", "0"]]);
-  unsilence();
 
-  // A post flag, so the queue holds both kinds.
+  // A post flag, so the queue holds both kinds: a reply by another member,
+  // as the chat flag may have silenced the message's author.
   const user0 = await session("user0");
+  const replier = await session(member().name);
   const marker = label("A reply flagged beside the chat flag");
   const t = await topic(user0, label("Chat review topic"), label("A topic for the chat review spec"), [
-    { context: user0, raw: marker },
+    { context: replier, raw: marker },
   ]);
-  await api(channel.contexts.user1, "POST", "/post_actions.json", {
+  await api(channel.contexts[flaggerName], "POST", "/post_actions.json", {
     id: String(t.posts[1]),
     post_action_type_id: "4",
     flag_topic: "false",
   });
 
   await login(context, "admin");
-  await page.goto("/review");
+  await page.goto(`/review?flagged_by=${flaggerName}`);
   const postItem = page.locator(".review-item.reviewable-flagged-post", { hasText: marker });
   const item = page.locator(".review-item.reviewable-chat-message", { hasText: text });
   await expect(postItem).toBeVisible();
@@ -95,7 +97,7 @@ test("a chat flag lists beside a post flag; agreeing deletes the message for mem
     "href",
     `/chat/c/${channel.slug}/${channel.id}/${messageId}`,
   );
-  await expect(item.locator(".review-item__meta-flagged-user")).toContainText("user3");
+  await expect(item.locator(".review-item__meta-flagged-user")).toContainText(author);
 
   // Yes > Delete Message.
   await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
@@ -108,26 +110,27 @@ test("a chat flag lists beside a post flag; agreeing deletes the message for mem
   await expect(postItem.locator(".review-item__status.--pending")).toBeVisible();
 
   // Gone for another member.
-  const member = await channel.contexts.user2.newPage();
-  await member.goto(`/chat/c/${channel.slug}/${channel.id}`);
-  await expect(member.locator(".chat-composer__input")).toBeVisible();
-  await expect(member.locator(".chat-message-container", { hasText: text })).toHaveCount(0);
+  const other = await channel.contexts.user2.newPage();
+  await other.goto(`/chat/c/${channel.slug}/${channel.id}`);
+  await expect(other.locator(".chat-composer__input")).toBeVisible();
+  await expect(other.locator(".chat-message-container", { hasText: text })).toHaveCount(0);
 });
 
 test("disagreeing with one chat flag and ignoring another", async ({ page, context, session }) => {
-  const channel = await channelFor(session, ["user3", "user1"]);
+  const author = member().name;
+  const flaggerName = member().name;
+  const channel = await channelFor(session, [author, flaggerName]);
   const kept = label("chat message kept");
   const ignored = label("chat message ignored");
-  const keptId = await send(channel, "user3", kept);
-  const ignoredId = await send(channel, "user3", ignored);
-  const flagger = await channel.contexts.user1.newPage();
+  const keptId = await send(channel, author, kept);
+  const ignoredId = await send(channel, author, ignored);
+  const flagger = await channel.contexts[flaggerName].newPage();
   await flagFromChat(flagger, channel, kept);
   await flagFromChat(flagger, channel, ignored);
   await expect.poll(() => reviewableOf(ignoredId)).toEqual([["ReviewableChatMessage", "0"]]);
-  unsilence();
 
   await login(context, "admin");
-  await page.goto("/review?type=Chat%3A%3AReviewableMessage");
+  await page.goto(`/review?type=Chat%3A%3AReviewableMessage&flagged_by=${flaggerName}`);
   const keptItem = page.locator(".review-item.reviewable-chat-message", { hasText: kept });
   const ignoredItem = page.locator(".review-item.reviewable-chat-message", { hasText: ignored });
   await expect(keptItem).toBeVisible();
