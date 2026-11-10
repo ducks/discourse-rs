@@ -163,7 +163,10 @@ async fn a_flagged_post_in_the_queue() {
         .find("Flagged as <span><span class=\"review-item__flag-reason\">Inappropriate </span></span> by <span>")
         .expect("flag event");
     assert!(created < flagged);
-    assert!(html.contains("<div class=\"reviewable-note-form\">"));
+    // hx-boost off: review.js submits the note, not a boosted page load.
+    assert!(html.contains(
+        "<div class=\"reviewable-note-form\"><form class=\"form-kit reviewable-note-form__form\" novalidate=\"\" hx-boost=\"false\">"
+    ));
     // The context question and the Yes and No bundles.
     assert!(
         html.contains("<h3 class=\"review-item__aside-title\">Is this post inappropriate?</h3>")
