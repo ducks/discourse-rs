@@ -2,19 +2,24 @@
 // (flag-modal.js); the staff's review count; /review's actions
 // (review.js): a note on the item, agreeing with the flag from its
 // action menu, and approving a post a watched word held for approval.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+// Each test posts and flags as members of its own (helpers.js member()):
+// a shared flagger's agreed flags add to their next flag's score until
+// it hides the post on its own, and the whole queue shows ten at a time
+// by score, so each reads the queue filtered to its own topic or author.
+const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 test("a flag from the post menu, then a note and agreeing with it in /review", async ({ page, context, session }) => {
   const user1 = await session("user1");
+  const author = await session(member().name);
   const marker = label("A reply to flag");
   const t = await topic(user1, label("Review queue topic"), label("A topic for the review spec"), [
-    { context: user1, raw: marker },
+    { context: author, raw: marker },
   ]);
   const flagged = t.posts[1];
 
-  // user0 flags the reply as inappropriate.
-  const user0 = await session("user0");
-  const flagger = await user0.newPage();
+  // A member flags the reply as inappropriate.
+  const flaggerContext = await session(member().name);
+  const flagger = await flaggerContext.newPage();
   await flagger.goto(t.url);
   const post = flagger.locator(`article[data-post-id="${flagged}"]`);
   await post.locator(".post-action-menu__show-more").click();
@@ -39,6 +44,9 @@ test("a flag from the post menu, then a note and agreeing with it in /review", a
   await expect(reviewLink.locator(".sidebar-section-link-content-badge")).toBeVisible();
   await reviewLink.click();
   await expect(page).toHaveURL(/\/review/);
+  // The queue for the topic: the whole queue's first ten by score may be
+  // other specs'.
+  await page.goto(`/review?topic_id=${t.id}`);
   const item = page.locator(".review-item.reviewable-flagged-post", { hasText: marker });
   await expect(item).toBeVisible();
 
@@ -66,16 +74,16 @@ test("a post a watched word held is approved from /review", async ({ page, conte
   const word = label("rhword").replace(" ", "");
   await api(context, "POST", "/admin/customize/watched_words.json", { "words[]": word, action_key: "require_approval" });
 
-  const user0 = await session("user0");
+  const author = member();
   const title = label("Held topic for the review spec");
-  const held = await api(user0, "POST", "/posts.json", {
+  const held = await api(await session(author.name), "POST", "/posts.json", {
     title,
     raw: `This post mentions ${word}, which needs approval.`,
     category: "4",
   });
   expect(held.action).toBe("enqueued");
 
-  await page.goto("/review");
+  await page.goto(`/review?username=${author.name}`);
   const item = page.locator(".review-item.reviewable-queued-post", { hasText: word });
   await expect(item).toBeVisible();
   await item.locator("button.approve-post").click();
