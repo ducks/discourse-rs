@@ -23,6 +23,8 @@ pub struct ChooserCategory {
     /// `Category#minimumRequiredTags`: the minimum, or the required tag
     /// groups' counts when they come to more (0 for none).
     pub minimum_required_tags: i64,
+    /// `form_template_ids`, for ComposerMessages' similar topics.
+    pub form_template_ids: Vec<i64>,
 }
 
 /// The categories the member may create topics in, ordered as
@@ -107,7 +109,7 @@ pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCatego
         })
         .unwrap_or_default();
     format!(
-        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\"{} role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
+        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\"{}{} role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
         c.id,
         if c.minimum_required_tags > 0 {
             format!(
@@ -116,6 +118,18 @@ pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCatego
             )
         } else {
             String::new()
+        },
+        if c.form_template_ids.is_empty() {
+            String::new()
+        } else {
+            format!(
+                " data-form-template-ids=\"{}\"",
+                c.form_template_ids
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
         },
         badge_span(list, category, &count),
         n = escape(&category.name)
@@ -1226,18 +1240,21 @@ mod tests {
                 topic_count: 1,
                 description_text: None,
                 minimum_required_tags: 0,
+                form_template_ids: Vec::new(),
             },
             ChooserCategory {
                 id: 3,
                 topic_count: 9,
                 description_text: None,
                 minimum_required_tags: 0,
+                form_template_ids: Vec::new(),
             },
             ChooserCategory {
                 id: 1,
                 topic_count: 3,
                 description_text: None,
                 minimum_required_tags: 0,
+                form_template_ids: Vec::new(),
             },
         ];
         assert_eq!(chooser_order(&cats, &allowed), [1, 3, 2]);

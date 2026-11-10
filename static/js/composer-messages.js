@@ -11,7 +11,9 @@
 // saved. Also here, composer-editor's preview half: the preview's mentions
 // linked once /composer/mentions answers (lib/link-mentions), with their
 // warnings, and the composer service's duplicate link check
-// (afterRefresh, lib/link-lookup).
+// (afterRefresh, lib/link-lookup). A pause while a new topic is typed asks
+// GET /composer/similar-topics for the topics like it (_findSimilar), whose
+// rows the server draws.
 //
 //   Discourse.composerMessages.attach(container, hooks)
 //       container  the .composer-popup-container
@@ -19,7 +21,8 @@
 //                  topic: { url, postsCount, privateMessage }, post:
 //                  { postNumber, createdAt }, whisper, whispering,
 //                  privateMessage, recipients: [{ name, type }],
-//                  targetRecipients, draftKey }, or null when closed
+//                  targetRecipients, draftKey, creatingTopic, title,
+//                  reply, categoryHasFormTemplates }, or null when closed
 //       hooks.ready()  a promise for the topic and post loading
 //       hooks.t(key, params)  the composer's strings
 //       hooks.siteSettings, hooks.username, hooks.basePath,
@@ -254,6 +257,8 @@
     // composer-editor's, for the composer it belongs to.
     var warnedCannotSeeMentions = [];
     var warnedGroupMentions = [];
+    var lastSimilaritySearch = null;
+    var similarTopicsMessage = null;
     var generation = 0;
 
     function closeButton() {
@@ -287,6 +292,13 @@
           break;
         case "group-mentioned":
           content = "<p>" + body + "</p>";
+          break;
+        case "similar-topics":
+          // composer-messages/similar-topics.gjs: the rows are the
+          // server's (the search menu's topic results).
+          content =
+            "<h3>" + escapeHtml(t("composer.similar_topics")) + '</h3><ul class="topics">' +
+            (message.similarTopics || "") + "</ul>";
           break;
         default:
           // eslint-disable-next-line no-console
@@ -331,6 +343,12 @@
         messagesByTemplate[message.templateName] = message;
         render();
       }
+    }
+
+    function hideMessage(message) {
+      removeMessage(message);
+      // kind of hacky but the visibility depends on this
+      messagesByTemplate[message.templateName] = undefined;
     }
 
     // reset: the messages and what was checked, for a new composer.
@@ -505,6 +523,64 @@
         );
       }
     }, INPUT_DELAY);
+
+    // _findSimilar, on composer:find-similar.
+    function findSimilar() {
+      var model = hooks.model();
+      if (!active() || !model) {
+        return;
+      }
+      // We don't care about similar topics unless creating a topic
+      if (!model.creatingTopic) {
+        return;
+      }
+      // We don't care about similar topics when creating with a form template
+      if (model.categoryHasFormTemplates) {
+        return;
+      }
+      var raw = (model.reply || "").slice(0, 200);
+      var title = model.title || "";
+      // Ensure we have at least a title
+      if (title.length < hooks.siteSettings.min_title_similar_length) {
+        return;
+      }
+      // Don't search over and over
+      var concat = title + raw;
+      if (concat === lastSimilaritySearch) {
+        return;
+      }
+      lastSimilaritySearch = concat;
+      similarTopicsMessage = similarTopicsMessage || {
+        id: "similar_topics",
+        templateName: "similar-topics",
+        extraClass: "similar-topics",
+      };
+      var message = similarTopicsMessage;
+      var mine = generation;
+      getJson(basePath + "/composer/similar-topics?" + query({ title: title, raw: raw })).then(
+        function (response) {
+          if (mine !== generation) {
+            return;
+          }
+          if (response.count > 0) {
+            message.similarTopics = response.html;
+            if (messages.indexOf(message) !== -1) {
+              // Already up: its rows are the new search's.
+              render();
+            } else {
+              popup(message);
+            }
+          } else {
+            message.similarTopics = "";
+            hideMessage(message);
+          }
+        },
+        function (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
+        }
+      );
+    }
 
     // _create: a message in place of the others.
     function create(info) {
@@ -710,9 +786,12 @@
         warnedCannotSeeMentions = [];
         warnedGroupMentions = [];
         linkLookup = null;
+        lastSimilaritySearch = null;
+        similarTopicsMessage = null;
         reset();
       },
       opened: opened,
+      findSimilar: findSimilar,
       typedReply: function () {
         if (active()) {
           typedReply();

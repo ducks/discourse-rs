@@ -24,7 +24,10 @@ VALUES
   -- (spec/rails_helper.rb's SiteSetting.educate_until_posts = 0): it
   -- would sit over the composer the specs type in. The specs of
   -- composer-messages.spec.js answer /composer_messages themselves.
-  ('educate_until_posts', 3, '0', now(), now())
+  ('educate_until_posts', 3, '0', now(), now()),
+  -- Similar topics are looked for on a site of any size (the default
+  -- waits for 50 topics): composer-messages.spec.js's popup.
+  ('minimum_topics_similar', 3, '0', now(), now())
 ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value;
 
 -- The seed has everyone on the rich editor (Discourse's

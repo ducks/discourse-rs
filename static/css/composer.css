@@ -1432,6 +1432,36 @@ html.composer-open:not(.has-full-page-chat) #main-outlet {
 .custom-body p {
   max-width: 98%;
 }
+/* compose.scss:1010 */
+.similar-topics .similar-topic:not(:last-child) {
+  margin-bottom: 0.5em;
+}
+/* compose.scss:1016 */
+.similar-topics .topic {
+  display: flex;
+  flex-wrap: wrap;
+}
+/* compose.scss:1020 */
+.similar-topics .topic .first-line {
+  width: 100%;
+  line-height: var(--line-height-medium);
+}
+/* compose.scss:1025 */
+.similar-topics .topic .second-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+/* compose.scss:1032 */
+.similar-topics .topic-title {
+  margin-bottom: 0.5em;
+  flex: 0 1 auto;
+  margin-right: 0.5em;
+}
+/* compose.scss:1037 */
+.similar-topics .topic-title .d-icon {
+  color: var(--primary-high);
+}
 /* compose.scss:1043 */
 .fullscreen-composer {
   overflow: hidden;

@@ -5517,10 +5517,8 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     waiting for typing shown on a key's release, the education message
     once until a post is saved, hide_if_whisper, the message to oneself
     and recipients not seen in a while, get a room's switch to a message,
-    dismissing by the close button or Esc (hitEsc; with none left Esc
-    minimizes the open composer and leaves fullscreen, composer-body's
-    keyDown), hidden while the composer is minimized, none in the mobile
-    view; composer-editor's
+    dismissing by the close button or Esc (hitEsc), hidden while the
+    composer is minimized, none in the mobile view; composer-editor's
     preview half (lib/link-mentions: the preview's mentions linked from
     /composer/mentions, then the group mentioned, cannot see and @here
     warnings) and the composer service's duplicate link check
@@ -5536,15 +5534,37 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     dont_feed_the_trolls_popup_spec.rb, and Esc), composer's "Esc in the
     composer" (5) and the rich editor's Esc, and
     rich-editor-autocomplete's "with composer messages". Left: the
-    similar topics popup (286), and the dominating topic's Share opens
-    the topic footer's share (ShareTopic is not ported)
-286. `feat/similar-topics` M: GET /similar_topics (SimilarTopicsController,
-    Topic.similar_to over the search data, min_title_similar_length) is
-    not routed, so ComposerMessages' similar topics popup
-    (composer:find-similar after a pause in typing a new topic's title,
-    composer-messages/similar-topics.gjs and its search-menu topic
-    results) is not drawn; composer-messages-test.js' similar topics test
-    waits for it
+    dominating topic's Share opens the topic footer's share (ShareTopic
+    is not ported)
+286. ~~`feat/similar-topics`~~ (done) M: GET /similar_topics was not routed, so
+    ComposerMessages' similar topics popup was never drawn. Now GET
+    /topics/similar_to and /similar_topics (routes/similar_topics.rs:
+    SimilarTopicsController, title required, nothing under
+    min_title_similar_length or until the site has more than
+    minimum_topics_similar topics) answer with Topic.similar_to
+    (topics/similar.rs: the title weighted A and the cooked, scrubbed
+    start of the body weighted B as one OR tsquery over topic_search_data,
+    unaccented under search_ignore_accents; visible listable topics the
+    viewer may see, without category definitions, categories search
+    ignores and the member's muted categories; the ten best by ts_rank,
+    then the three most alike by trigram similarity over 0.2) as
+    SimilarTopicSerializer does: the blurb of the first post, the url,
+    and each topic side-loaded as a TopicListItemSerializer without the
+    viewer's topic data (topic_list Mode::Bare) with its posters' users
+    and groups. The popup: one second after the last key released in a
+    new topic's composer (composer-body keyUp, composer:find-similar)
+    static/js/composer-messages.js asks GET /composer/similar-topics for
+    the rows drawn as the search menu's topic results with their links
+    (search/menu_view.rs similar_topic), not for a category with form
+    templates (the chooser row's data-form-template-ids), not twice for
+    the same title and text, hidden again when nothing is alike. Measured
+    against Rails (parity/writes/similar_topics: a visitor, a member with
+    tags, staff with a restricted and a muted category, a site under the
+    minimum). Tests: tests/similar_topics.rs (17: topic_spec's
+    .similar_to and similar_topics_controller_spec), browser
+    composer-messages "Similar topics" (6). Refused: Chinese and Japanese
+    segmentation of the title. Not ported: the
+    similar_topic_candidate_ids modifier (discourse-ai's embeddings)
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
