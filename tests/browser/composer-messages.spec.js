@@ -191,8 +191,9 @@ test.describe("Composer - Messages - Education", () => {
     await expect(popup(page), "composer warning does not show again").toHaveCount(0);
   });
 
-  // Not in the reference's tests: hitEsc closes the message first.
-  test("Esc dismisses the message", async ({ page, context, session }) => {
+  // Not in the reference's tests: hitEsc closes the message first, the
+  // composer only once none is left.
+  test("Esc dismisses the message, then minimizes the composer", async ({ page, context, session }) => {
     await respond(page, "**/composer_messages?**", {
       composer_messages: [{ id: "education", templateName: "education", body: "<p>Education message</p>" }],
     });
@@ -204,6 +205,9 @@ test.describe("Composer - Messages - Education", () => {
     await editor(page).press("Escape");
     await expect(popup(page)).toHaveCount(0);
     await expect(page.locator("#reply-control.open")).toBeVisible();
+
+    await editor(page).press("Escape");
+    await expect(page.locator("#reply-control.draft")).toBeVisible();
   });
 });
 
