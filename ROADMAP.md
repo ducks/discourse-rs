@@ -2081,7 +2081,8 @@ have handlers now.
     and user-autocomplete-results-test.gjs as written); the endpoints'
     request specs are parity/writes/user_search and parity/writes/hashtags.
     Not here: the other d-editors' autocompletes (About me, review edits,
-    admin texts) and ComposerMessages, which the mention warnings feed.
+    admin texts). ComposerMessages, which the mention warnings feed, is
+    213's.
 131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
     (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar
@@ -4021,9 +4022,9 @@ route table has been made, so this list may be short.
     tests/composer_mentions.rs. Still refused then: 196r4's constructs
     and [wrap]. Left to 196r3: Edit link (UpsertHyperlink), Load preview
     (onebox), Tab nesting list items (text-manipulation). Not ported here:
-    ComposerMessages (the mention warnings are triggered, nothing shows
-    them), A11y's live regions (table and video announcements are
-    skipped), quote avatars in the composer (as its preview)
+    A11y's live regions (table and video announcements are skipped),
+    quote avatars in the composer (as its preview). The mention warnings
+    show through ComposerMessages since 213
     196r3. ~~`feat/rich-editor-toolbar`~~ (done) M: the toolbar and its
     menus wired to the rich editor. rich-editor/text-manipulation.js is
     text-manipulation.ts (createEditor's textManipulation, its state after
@@ -5494,10 +5495,53 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     discourse_solved_solution_set and topic voting's
     discourse_topic_voting_vote_set, each with its scope, output schema
     and availability. Split core from the tools when started
-213. `feat/composer-messages` M: GET /composer_messages
-    (ComposerMessagesFinder), not routed, with discourse-solved's
+213. ~~`feat/composer-messages`~~ (done) M: GET /composer_messages
+    (ComposerMessagesFinder) was not routed, with discourse-solved's
     check_topic_is_solved education message and
-    disable_solved_education_message
+    disable_solved_education_message. Now ComposerMessagesController
+    answers it and /composer_messages/user_not_seen_in_a_while
+    (routes/composer_messages.rs). The finder (composer/messages.rs) runs
+    the education message, new user many replies, dominating topic, get a
+    room and don't feed the trolls checks in their definition order, then
+    the plugins' (plugins::composer_messages: solved's
+    check_topic_is_solved, plugins/solved/composer_message.rs), nothing
+    while editing; dominating topic and get a room log
+    notified_about_dominating_topic and notified_about_get_a_room in
+    user_histories and show once a topic. The index carries
+    TopicLink.duplicate_lookup for a topic the member can see, internal
+    links to what they cannot see left out. The client is
+    static/js/composer-messages.js (composer-messages.gjs,
+    composer-message.gjs and its templates, ComposerTipCloseButton) in
+    #reply-control's .composer-popup-container: the messages asked for
+    as the composer opens (cached per action, topic and post), those
+    waiting for typing shown on a key's release, the education message
+    once until a post is saved, hide_if_whisper, the message to oneself
+    and recipients not seen in a while, get a room's switch to a message,
+    dismissing by the close button or Esc (hitEsc), hidden while the
+    composer is minimized, none in the mobile view; composer-editor's
+    preview half (lib/link-mentions: the preview's mentions linked from
+    /composer/mentions, then the group mentioned, cannot see and @here
+    warnings) and the composer service's duplicate link check
+    (lib/link-lookup, afterRefresh); the rich editor's mention warnings
+    reach it through composer-messages:create. The popups' rules are in
+    composer.css (compose.scss:881-995), and the browser suite turns
+    education off as rails_helper does (setup.sql). Tests:
+    tests/composer_messages.rs (23: composer_messages_finder_spec,
+    composer_messages_controller_spec and the solved plugin's finder spec
+    as written, stubbed counts as the user's stats), browser
+    composer-messages (11: composer-messages-test.js, composer-test.js'
+    duplicate link and group mentioned notices,
+    dont_feed_the_trolls_popup_spec.rb, and Esc) and
+    rich-editor-autocomplete's "with composer messages". Left: the
+    similar topics popup (286), and the dominating topic's Share opens
+    the topic footer's share (ShareTopic is not ported)
+286. `feat/similar-topics` M: GET /similar_topics (SimilarTopicsController,
+    Topic.similar_to over the search data, min_title_similar_length) is
+    not routed, so ComposerMessages' similar topics popup
+    (composer:find-similar after a pause in typing a new topic's title,
+    composer-messages/similar-topics.gjs and its search-menu topic
+    results) is not drawn; composer-messages-test.js' similar topics test
+    waits for it
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
