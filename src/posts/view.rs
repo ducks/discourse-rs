@@ -3584,7 +3584,8 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             icon("reply", None)
         );
     };
-    let url = format!("{}/t/{}/{}", l.base_path, cx.topic.slug, cx.topic.id);
+    // topic.shareUrl
+    let url = share_url(cx, 1);
     let private_message = view["archetype"] == "private_message";
     let mobile = crate::mobile::mobile_view();
     // TopicAdminMenu first.

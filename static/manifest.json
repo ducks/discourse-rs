@@ -378,6 +378,13 @@
       ]
     },
     {
+      "name": "share-topic.js",
+      "content_type": "js",
+      "files": [
+        "js/share-topic.js"
+      ]
+    },
+    {
       "name": "sidebar.js",
       "content_type": "js",
       "files": [
