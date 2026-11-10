@@ -1702,17 +1702,33 @@
   richEvents.on("composer-messages:create", composerMessages.create);
   richEvents.on("composer-messages:close", composerMessages.closeTop);
 
-  // hitEsc: Esc closes the top composer message first, the emoji
-  // picker's own aside.
+  // composer-body's keyDown and the composer service's hitEsc: Esc closes
+  // the top composer message first, the emoji picker's own aside; with
+  // none, an open composer is minimized (shrink) whatever is written in
+  // it, a fullscreen one goes back to open with the focus in its editor,
+  // and a minimized one stays. The key is theirs who stop it in the
+  // reference: a select-kit, and here whoever prevented its default, the
+  // rich editor's keymap apart (its Escape, selectParentNode, lets the
+  // key through to composer-body).
   control.addEventListener("keydown", function (event) {
-    if (event.key !== "Escape" || event.defaultPrevented || composerMessages.count() === 0) {
+    if (event.key !== "Escape" || !state || event.target.closest(".select-kit")) {
+      return;
+    }
+    if (event.defaultPrevented && !event.target.classList.contains("ProseMirror")) {
       return;
     }
     if (document.querySelectorAll(".emoji-picker-modal.fadeIn").length === 1) {
       return;
     }
     event.preventDefault();
-    composerMessages.closeTop();
+    if (composerMessages.count() > 0) {
+      composerMessages.closeTop();
+    } else if (control.classList.contains("open")) {
+      minimize();
+    } else if (control.classList.contains("fullscreen")) {
+      toggleFullscreen();
+      focusEditor();
+    }
   });
 
   // d-editor's replaceToolbar: an extension's toolbar (the link toolbar
