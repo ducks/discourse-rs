@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/topics/similar_to.json?title=Parity+fixture%3A+replies+and+many+posters"}
+  ]
+}

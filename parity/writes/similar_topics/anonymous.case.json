@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "settings": {"minimum_topics_similar": 0},
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/topics/similar_to.json?title=Parity+fixture%3A+replies+and+many+posters&raw=First+post+of+a+topic+with+several+repliers%2C+long+enough+to+be+a+body"
+    },
+    {"method": "GET", "path": "/similar_topics.json?title=Parity+fixture%3A+pinned+and+then+closed"},
+    {"method": "GET", "path": "/topics/similar_to.json?title=Zyxwvut+qponmlk+jihgfed+cbazyx&raw=nothing"},
+    {"method": "GET", "path": "/topics/similar_to.json?title=short"},
+    {"method": "GET", "path": "/topics/similar_to.json?raw=a+body+without+a+title"},
+    {"method": "GET", "path": "/topics/similar_to.json?title="}
+  ]
+}

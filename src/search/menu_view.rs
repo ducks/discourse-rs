@@ -827,6 +827,37 @@ impl Menu<'_> {
         out
     }
 
+    /// The topic type as ComposerMessages' similar topics draw it
+    /// (composer-messages/similar-topics.gjs: `@withTopicUrl`, so the title
+    /// and the category link).
+    pub fn similar_topic(&self, item: &Value, topic: &Value) -> String {
+        let title = emoji_unescape(
+            topic["fancy_title"].as_str().unwrap_or_default(),
+            &self.cx.settings.emojis,
+            self.cx.base_path,
+        );
+        let mut out = format!(
+            "<div class=\"similar-topic\">\n<span class=\"topic\">\n<span class=\"first-line\">\n<span class=\"topic-statuses\">{}</span>\n<span class=\"topic-title\" data-topic-id=\"{}\">\n<a href=\"{}\"><span>\n{title}\n</span></a>\n</span>\n</span>\n<span class=\"second-line\">\n",
+            topic_statuses_with(self.cx, topic, true),
+            topic["id"],
+            escape(item["url"].as_str().unwrap_or_default())
+        );
+        if let Some(category) = topic["category_id"]
+            .as_i64()
+            .and_then(|id| self.cx.categories.get(&id))
+        {
+            out.push_str(&category_badge_html(self.cx, category, true, false));
+        }
+        out.push('\n');
+        if self.tagging {
+            out.push_str(&self.tags(topic));
+        }
+        out.push_str("\n</span>\n</span>\n");
+        out.push_str(&self.blurb(item));
+        out.push_str("\n</div>");
+        out
+    }
+
     /// `renderTags` with `tagName: "span"`.
     fn tags(&self, topic: &Value) -> String {
         let tags: Vec<String> = topic["tags"]

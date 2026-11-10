@@ -1,0 +1,12 @@
+{
+  "user": "user0",
+  "settings": {"minimum_topics_similar": 0, "tagging_enabled": true},
+  "requests": [
+    {"method": "GET", "path": "/topics/similar_to.json?title=Parity+fixture%3A+tagged+in+one+subcategory"},
+    {
+      "method": "GET",
+      "path": "/similar_topics.json?title=Parity+fixture%3A+liked+and+then+archived&raw=A+topic+that+was+liked+and+archived"
+    },
+    {"method": "GET", "path": "/topics/similar_to.json?title=Parity+fixture%3A+an+unlisted+topic"}
+  ]
+}
