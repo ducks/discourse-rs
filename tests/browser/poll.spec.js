@@ -138,7 +138,15 @@ test("the breakdown modal shows each group's pie by the field chosen", async ({ 
         .locator(".poll-breakdown-chart-container", { has: page.locator(".poll-breakdown-chart-label", { hasText: group }) })
         .locator("canvas.poll-breakdown-chart-chart");
     const chartOf = (group, fn) => pie(group).evaluate(fn);
-    await expect.poll(() => chartOf("New York", (c) => !!window.Chart.getChart(c))).toBe(true);
+    // The canvases are in the modal before Chart.js, loaded on demand,
+    // has arrived and drawn on them.
+    await expect
+      .poll(() =>
+        charts
+          .locator("canvas.poll-breakdown-chart-chart")
+          .evaluateAll((all) => (window.Chart ? all.filter((c) => window.Chart.getChart(c)).length : 0))
+      )
+      .toBe(3);
     expect(
       await chartOf("New York", (c) => {
         const chart = window.Chart.getChart(c);
