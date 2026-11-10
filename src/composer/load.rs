@@ -44,25 +44,30 @@ pub(crate) async fn load(
     }
     // Category#minimumRequiredTags: with required tag groups, the
     // larger of their counts' sum and the minimum; else the minimum.
-    let rows: Vec<(i32, i32, Option<String>, i64)> = sqlx::query_as(
+    // id, topic_count, description, minimum required tags, form template ids
+    type Row = (i32, i32, Option<String>, i64, Vec<i64>);
+    let rows: Vec<Row> = sqlx::query_as(
         "SELECT c.id, c.topic_count, c.description, \
            CASE WHEN EXISTS (SELECT 1 FROM category_required_tag_groups r WHERE r.category_id = c.id) \
              THEN GREATEST((SELECT COALESCE(SUM(r.min_count), 0) FROM category_required_tag_groups r \
                             WHERE r.category_id = c.id), COALESCE(c.minimum_required_tags, 0)) \
-             ELSE GREATEST(COALESCE(c.minimum_required_tags, 0), 0) END::bigint \
+             ELSE GREATEST(COALESCE(c.minimum_required_tags, 0), 0) END::bigint, \
+           ARRAY(SELECT f.form_template_id FROM category_form_templates f \
+                 WHERE f.category_id = c.id ORDER BY f.form_template_id) \
          FROM categories c WHERE c.id = ANY($1)",
     )
     .bind(&allowed)
     .fetch_all(&mut *conn)
     .await?;
     let mut chooser = Vec::with_capacity(rows.len());
-    for (id, topic_count, description, minimum_required_tags) in rows {
+    for (id, topic_count, description, minimum_required_tags, form_template_ids) in rows {
         chooser.push(super::view::ChooserCategory {
             id: i64::from(id),
             topic_count: i64::from(topic_count),
             // Category#description_text
             description_text: crate::categories::description_plain_text(description.as_deref())?,
             minimum_required_tags,
+            form_template_ids,
         });
     }
     // composer.canEditTags for a new topic: site.can_tag_topics.

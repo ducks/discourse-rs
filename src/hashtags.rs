@@ -831,7 +831,7 @@ fn append_types_to_conflicts(
 }
 
 /// `CategoryUser.muted_category_ids_query(user, include_direct: true)`
-fn muted_category_ids_query(user_id: i32, default_level: i64, nesting3: bool) -> String {
+pub(crate) fn muted_category_ids_query(user_id: i32, default_level: i64, nesting3: bool) -> String {
     let mut sql = format!(
         "SELECT mc.id FROM categories mc \
          LEFT JOIN categories mc2 ON mc2.id = mc.parent_category_id \

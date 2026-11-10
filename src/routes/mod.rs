@@ -53,6 +53,7 @@ mod review_claims;
 mod robots;
 pub(crate) mod search;
 mod search_menu;
+mod similar_topics;
 mod styleguide;
 pub(crate) mod uploads;
 pub(crate) use search::{invalid_access, invalid_access_at};
@@ -275,6 +276,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/inline-onebox", get(onebox::inline))
         .route("/composer/mentions", get(composer_mentions::mentions))
         .route("/composer/mentions.json", get(composer_mentions::mentions))
+        .route("/topics/similar_to", get(similar_topics::index))
+        .route("/topics/similar_to.json", get(similar_topics::index))
+        .route("/similar_topics", get(similar_topics::index))
+        .route("/similar_topics.json", get(similar_topics::index))
+        .route("/composer/similar-topics", get(similar_topics::popup))
         .route("/composer_messages", get(composer_messages::index))
         .route("/composer_messages.json", get(composer_messages::index))
         .route(

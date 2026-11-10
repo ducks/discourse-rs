@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {"minimum_topics_similar": 0},
+  "setup": [
+    "UPDATE topics SET category_id = 3 WHERE id = 41",
+    "INSERT INTO category_users (category_id, user_id, notification_level, last_seen_at) VALUES (2, 1, 0, now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/topics/similar_to.json?title=Parity+fixture%3A+liked+and+then+archived"},
+    {"method": "GET", "path": "/topics/similar_to.json?title=Parity+fixture%3A+pinned+and+then+closed"}
+  ]
+}

@@ -7,6 +7,7 @@ pub mod guardian;
 pub mod list;
 pub mod list_view;
 pub mod query;
+pub mod similar;
 pub mod status;
 pub mod timer;
 pub mod timestamp;

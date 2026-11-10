@@ -3,8 +3,8 @@
 // duplicate link and group mentioned notices, with pretender's responses
 // as routes, and the system spec dont_feed_the_trolls_popup_spec.rb
 // against the server. The rich editor's popup is in
-// rich-editor-autocomplete.spec.js. Not ported: the similar topics test
-// (GET /similar_topics is not routed).
+// rich-editor-autocomplete.spec.js. The similar topics popup is asked of
+// the server too (GET /composer/similar-topics, over the seed's topics).
 const { test, expect, login, api, topic, label, member } = require("./helpers");
 
 const editor = (page) => page.locator("#reply-control.open textarea.d-editor-input");
@@ -316,6 +316,140 @@ test.describe("Composer - Messages - Private Messages", () => {
       popup(page),
       "do not show it when the current user is just one of the target recipients"
     ).toHaveCount(0);
+  });
+});
+
+// _findSimilar against the server: setup.sql has minimum_topics_similar at
+// 0, and the seed its "Parity fixture: ..." topics.
+test.describe("Composer - Messages - Similar topics", () => {
+  const similarTopics = (page) => page.locator("#reply-control .composer-popup.similar-topics");
+  const isSimilarTopics = (r) => new URL(r.url()).pathname === "/composer/similar-topics";
+
+  // A member of the test's own with a new topic's composer open.
+  async function newTopic(page, context) {
+    const writer = member();
+    await login(context, writer.name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(editor(page)).toBeEnabled();
+    return writer;
+  }
+
+  // The title typed, then the pause after a key's release; the server's
+  // answer.
+  async function typeTitle(page, title) {
+    const answered = page.waitForResponse(isSimilarTopics);
+    await page.locator("#reply-title").fill(title);
+    await keyup(page);
+    const response = await answered;
+    return { url: new URL(response.url()), json: await response.json() };
+  }
+
+  test("shows the topics similar to a new topic's title once typing pauses", async ({ page, context }) => {
+    await newTopic(page, context);
+    await expect(popup(page), "no popup before a title is typed").toHaveCount(0);
+
+    const title = "Parity fixture: replies and many posters";
+    await editor(page).fill("The start of a topic much like one the site has.");
+    const { url, json } = await typeTitle(page, title);
+    expect(url.searchParams.get("title")).toBe(title);
+    expect(url.searchParams.get("raw")).toBe("The start of a topic much like one the site has.");
+    expect(json.count, "the server finds similar topics").toBeGreaterThan(0);
+
+    await expect(similarTopics(page), "shows the similar topics popup").toBeVisible();
+    await expect(similarTopics(page).locator(".composer-popup__content h3")).toHaveText("Your topic is similar to…");
+    const rows = similarTopics(page).locator("ul.topics .similar-topic");
+    await expect(rows.first()).toBeVisible();
+    expect(await rows.count()).toBe(json.count);
+    await expect(rows.first().locator("a[href*='/t/']").first(), "a row links to its topic").toBeVisible();
+    await expect(rows.first().locator(".topic-title")).toContainText("Parity fixture");
+  });
+
+  test("the close button dismisses the similar topics", async ({ page, context }) => {
+    await newTopic(page, context);
+    await typeTitle(page, "Parity fixture: replies and many posters");
+    await expect(similarTopics(page)).toBeVisible();
+
+    await similarTopics(page).locator(".btn.close").click();
+    await expect(popup(page), "the popup is closed").toHaveCount(0);
+    await expect(page.locator("#reply-control.open"), "the composer stays open").toBeVisible();
+
+    // The same title and text are not searched again.
+    let asked = 0;
+    page.on("request", (r) => {
+      if (isSimilarTopics(r)) {
+        asked += 1;
+      }
+    });
+    await keyup(page);
+    await page.waitForTimeout(1500);
+    expect(asked, "does not search over and over").toBe(0);
+    await expect(popup(page), "the popup does not show again").toHaveCount(0);
+  });
+
+  test("shows no popup for a title with nothing similar", async ({ page, context }) => {
+    await newTopic(page, context);
+    const { json } = await typeTitle(page, "Zyxwvut qponmlk jihgfed cbazyx");
+    expect(json.count).toBe(0);
+    await expect(popup(page), "no popup without similar topics").toHaveCount(0);
+  });
+
+  test("hides the similar topics once the title has nothing similar", async ({ page, context }) => {
+    await newTopic(page, context);
+    await typeTitle(page, "Parity fixture: replies and many posters");
+    await expect(similarTopics(page)).toBeVisible();
+
+    const { json } = await typeTitle(page, "Zyxwvut qponmlk jihgfed cbazyx");
+    expect(json.count).toBe(0);
+    await expect(popup(page), "the popup is hidden").toHaveCount(0);
+
+    // hideMessage: unlike a closed one, it shows again.
+    await typeTitle(page, "Parity fixture: pinned and then closed");
+    await expect(similarTopics(page), "shows again for a similar title").toBeVisible();
+  });
+
+  test("does not look for similar topics while replying", async ({ page, context, session }) => {
+    let asked = 0;
+    page.on("request", (r) => {
+      if (isSimilarTopics(r)) {
+        asked += 1;
+      }
+    });
+    await replyToTopic(page, context, session);
+
+    await editor(page).fill("Parity fixture: replies and many posters");
+    await keyup(page);
+    // past composer-body's one second pause
+    await page.waitForTimeout(1500);
+
+    expect(asked, "no similar topics request for a reply").toBe(0);
+    await expect(popup(page)).toHaveCount(0);
+  });
+
+  // composer-messages-test.js
+  test("a key release survives a category that carries no form template ids", async ({ page, context }) => {
+    await newTopic(page, context);
+    await expect(
+      page.locator("#reply-control.composer-action-create-topic.open"),
+      "a topic is being created"
+    ).toBeVisible();
+
+    await page.locator("#reply-control details.category-chooser summary").click();
+    const row = page.locator('#reply-control .category-row[data-value="4"]');
+    expect(await row.getAttribute("data-form-template-ids"), "whose row carries no form template ids").toBeNull();
+    await row.click();
+    await expect(
+      page.locator("#reply-control .category-chooser summary"),
+      "the composer has a category"
+    ).toHaveAttribute("data-value", "4");
+
+    // Only a real key release schedules the lookup, so `fill` cannot
+    // stand in here.
+    await editor(page).dispatchEvent("keyup", { key: "A", code: "KeyA" });
+    // past composer-body's one second pause
+    await page.waitForTimeout(1500);
+
+    await expect(page.locator("#reply-control"), "the scheduled lookup runs without throwing").toBeVisible();
   });
 });
 

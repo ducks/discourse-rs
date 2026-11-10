@@ -254,6 +254,7 @@ async fn page(
                     topic_count: i64::from(topic_count),
                     description_text: None,
                     minimum_required_tags: 0,
+                    form_template_ids: Vec::new(),
                 })
                 .collect();
             let base = &shell.site.base_path;

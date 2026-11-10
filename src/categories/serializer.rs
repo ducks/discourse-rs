@@ -571,7 +571,7 @@ pub async fn serialize(
     }
     out.insert("read_only_banner".into(), json!(row.read_only_banner));
     let form_templates: Vec<i32> = sqlx::query_scalar(
-        "SELECT form_template_id FROM category_form_templates WHERE category_id = $1 \
+        "SELECT form_template_id::int FROM category_form_templates WHERE category_id = $1 \
          ORDER BY form_template_id",
     )
     .bind(id)

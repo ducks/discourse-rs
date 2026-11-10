@@ -25,6 +25,9 @@ use crate::url::{UrlError, Urls};
 pub enum Mode {
     /// TopicListItemSerializer
     ListItem,
+    /// TopicListItemSerializer for a topic no TopicList loaded
+    /// (SimilarTopicSerializer's): no `user_data` and never dismissed.
+    Bare,
     /// SuggestedTopicSerializer (ListableTopicSerializer + tags, posters with users)
     Suggested,
     /// ListableTopicSerializer with an embedded last_poster (featured topics
@@ -416,7 +419,7 @@ impl TopicListSerializer<'_> {
         let replaces_solved = replaced.iter().any(|p| p == "discourse-solved");
         // discourse-post-voting's `is_post_voting`, TopicListItemSerializer's
         // and only when true.
-        if mode == Mode::ListItem
+        if matches!(mode, Mode::ListItem | Mode::Bare)
             && crate::plugins::post_voting::is_post_voting(
                 &mut *self.conn,
                 self.settings,
@@ -434,7 +437,9 @@ impl TopicListSerializer<'_> {
             self.solved_keys(t, out).await?;
         }
         // topic-voting's keys are TopicListItemSerializer's only.
-        if mode == Mode::ListItem && crate::plugins::topic_voting::enabled(self.settings)? {
+        if matches!(mode, Mode::ListItem | Mode::Bare)
+            && crate::plugins::topic_voting::enabled(self.settings)?
+        {
             let loaded;
             let data = match &self.prefetched.plugins.topic_voting {
                 Some(data) if self.prefetched.topic_ids.contains(&t.id) => data,
@@ -466,7 +471,7 @@ impl TopicListSerializer<'_> {
     ) -> Result<(), TopicListError> {
         use crate::plugins::assign::keys::{Cx, ListData, ListShape};
         let shape = match mode {
-            Mode::ListItem => ListShape::ListItem,
+            Mode::ListItem | Mode::Bare => ListShape::ListItem,
             Mode::Suggested => ListShape::Suggested,
             Mode::SearchItem { .. } => ListShape::Search,
             Mode::Listable | Mode::Reviewable => return Ok(()),
@@ -621,7 +626,7 @@ impl TopicListSerializer<'_> {
         mode: Mode,
     ) -> Result<Value, TopicListError> {
         let user_data = match mode {
-            Mode::SearchItem { user_data: false } | Mode::Reviewable => None,
+            Mode::SearchItem { user_data: false } | Mode::Reviewable | Mode::Bare => None,
             _ => self.user_data(t.id).await?,
         };
         // PinnedCheck: a pin the user cleared after it was set is unpinned.
@@ -671,7 +676,7 @@ impl TopicListSerializer<'_> {
         out.insert("archetype".into(), json!(t.archetype));
         out.insert(
             "unseen".into(),
-            json!(!self.seen(t, user_data.as_ref()).await?),
+            json!(!self.seen(t, user_data.as_ref(), mode).await?),
         );
         if let Some(u) = &user_data {
             out.insert(
@@ -1141,6 +1146,7 @@ impl TopicListSerializer<'_> {
         &mut self,
         t: &TopicRow,
         user_data: Option<&TopicUserRow>,
+        mode: Mode,
     ) -> Result<bool, TopicListError> {
         let Some(uid) = self.guardian.user_id() else {
             return Ok(true);
@@ -1148,7 +1154,9 @@ impl TopicListSerializer<'_> {
         if user_data.is_some_and(|u| u.last_read_post_number.is_some()) {
             return Ok(true);
         }
-        let dismissed = if self.prefetched_for(t.id) {
+        let dismissed = if mode == Mode::Bare {
+            false
+        } else if self.prefetched_for(t.id) {
             self.prefetched.dismissed.contains(&t.id)
         } else {
             sqlx::query_scalar(

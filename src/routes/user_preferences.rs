@@ -848,6 +848,7 @@ pub async fn page(
                     topic_count: i64::from(topic_count),
                     description_text: None,
                     minimum_required_tags: 0,
+                    form_template_ids: Vec::new(),
                 })
                 .collect();
             view::tracking::render(

@@ -294,7 +294,7 @@ static URL_TOKEN: LazyLock<Regex> =
 
 /// `Search.prepare_data(data, :index)` for a non-CJK site: the term
 /// cleaned and squished, URLs without their query.
-fn prepare_data(data: &str) -> String {
+pub(crate) fn prepare_data(data: &str) -> String {
     let squished = squish(&clean_term(data));
     squished
         .split(' ')
@@ -471,7 +471,7 @@ static URI_REGEXP: LazyLock<Regex> =
 /// `clean_post_raw_data!`: each link to a video or audio file
 /// (`Oneboxer::VIDEO_REGEX`, `AUDIO_REGEX` on its extension) indexed as
 /// the word for its kind of media.
-fn clean_post_raw_data(raw: &str) -> Result<String, AppError> {
+pub(crate) fn clean_post_raw_data(raw: &str) -> Result<String, AppError> {
     const VIDEO: [&str; 8] = ["mov", "mp4", "webm", "m4v", "3gp", "ogv", "avi", "mpeg"];
     const AUDIO: [&str; 11] = [
         "mp3", "oga", "ogg", "opus", "wav", "m4a", "m4b", "m4p", "m4r", "aac", "flac",

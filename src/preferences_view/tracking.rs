@@ -62,6 +62,7 @@ pub fn category_rows(cx: &ListContext, site: &SiteCategories) -> String {
                 topic_count: c.topic_count,
                 description_text: None,
                 minimum_required_tags: 0,
+                form_template_ids: Vec::new(),
             };
             Some(crate::composer::view::row(cx, &without_desc, category))
         })
