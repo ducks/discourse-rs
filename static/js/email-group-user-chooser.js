@@ -473,6 +473,13 @@
       values: function () {
         return values.slice();
       },
+      // The composer's targetRecipientsArray: each value a group, an
+      // email or a user.
+      types: function () {
+        return values.map(function (v) {
+          return { name: v, type: groups[v] ? "group" : emailValid(v) ? "email" : "user" };
+        });
+      },
       // The groups among the values (hasGroups).
       hasGroups: function () {
         return values.some(function (v) {

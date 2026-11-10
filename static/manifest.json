@@ -1070,6 +1070,7 @@
         "js/editor-toolbar.js",
         "js/upsert-hyperlink.js",
         "js/change-reply-to.js",
+        "js/composer-messages.js",
         "js/composer.js"
       ]
     },

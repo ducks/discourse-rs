@@ -6,7 +6,8 @@
 //! site's hashtag order for the composer and its denied emojis, and the
 //! bundled plugins on, whose extensions the editor registers
 //! (static/js/rich-editor/plugins.js). d-editor's autocompletes, in either
-//! mode, read it too.
+//! mode, read it too, and ComposerMessages its strings and whether the
+//! member may invite to the forum (the dominating topic's Share).
 
 use serde_json::{Map, Value, json};
 
@@ -30,6 +31,8 @@ const SITE_SETTINGS: &[&str] = &[
     "enable_mentions",
     "enable_emoji",
     "emoji_autocomplete_min_chars",
+    // the preview's mentions (lib/link-mentions)
+    "min_username_length",
 ];
 
 /// The client strings the extensions show (client.en.yml, less `js.`).
@@ -80,6 +83,19 @@ const LABELS: &[&str] = &[
     "composer.cannot_see_group_mention.not_mentionable",
     "composer.cannot_see_group_mention.some_not_allowed",
     "composer.cannot_see_group_mention.not_allowed",
+    // ComposerMessages (static/js/composer-messages.js): the popups, the
+    // duplicate link and message recipient warnings and their buttons
+    "composer.esc",
+    "composer.esc_label",
+    "composer.duplicate_link",
+    "composer.duplicate_link_same_user",
+    "composer.yourself_confirm.title",
+    "composer.yourself_confirm.body",
+    "composer.user_not_seen_in_a_while.single",
+    "composer.user_not_seen_in_a_while.multiple",
+    "dates.medium.date_year",
+    "footer_nav.share",
+    "user.private_message",
     "composer.table.add_row",
     "composer.table.add_column",
     "composer.table.insert_row_above",
@@ -265,6 +281,7 @@ pub fn context(
     i18n: &I18n,
     settings: &SiteSettings,
     staff: bool,
+    can_invite_to_forum: bool,
     hashtag_order: &[String],
 ) -> Result<Value, SettingError> {
     let mut site_settings = Map::new();
@@ -280,7 +297,7 @@ pub fn context(
     Ok(json!({
         "siteSettings": site_settings,
         "labels": labels(i18n),
-        "currentUser": { "staff": staff },
+        "currentUser": { "staff": staff, "can_invite_to_forum": can_invite_to_forum },
         "site": {
             "hashtag_configurations": { "topic-composer": hashtag_order },
             "denied_emojis": settings.emojis().denied,

@@ -33,6 +33,104 @@
   var titlePlaceholder = title.placeholder;
   var recipients = null;
 
+  // ComposerMessages (composer-messages.js, shipped in front of this
+  // file): the popups above the composer, from its state.
+  var composerMessages = Discourse.composerMessages.attach(control.querySelector(".composer-popup-container"), {
+    model: messagesModel,
+    ready: function () {
+      var s = state;
+      return Promise.all(
+        s
+          ? [s.actionContext, s.editPostLoad, s.editTopicLoad].map(function (p) {
+              return p && p.catch(function () {});
+            })
+          : []
+      );
+    },
+    t: function (key, params) {
+      return richI18n(key, params);
+    },
+    get siteSettings() {
+      return richContextSettings();
+    },
+    username: data.username,
+    basePath: base,
+    get canInviteToForum() {
+      return !!(richContext().currentUser || {}).can_invite_to_forum;
+    },
+    switchPM: switchPM,
+    share: shareTopic,
+    mobileView: mobileView,
+  });
+
+  // The composer's action as Ember names it (Composer.REPLY, ...).
+  var EMBER_ACTIONS = {
+    reply: "reply",
+    "create-topic": "createTopic",
+    "private-message": "privateMessage",
+    edit: "edit",
+  };
+
+  // The composer model as ComposerMessages reads it: its action, the topic
+  // and post (replied to, or edited), the whisper toggle and
+  // isWhispering, and a message's recipients (targetRecipientsArray).
+  function messagesModel() {
+    var s = state;
+    if (!s) {
+      return null;
+    }
+    var topic = s.actionTopic || s.editTopic || null;
+    var post = null;
+    if (s.mode === "edit" && s.editPost) {
+      post = { postNumber: s.editPost.post_number, createdAt: s.editPost.created_at };
+    } else if (s.mode !== "edit" && s.actionPost) {
+      post = { postNumber: s.actionPost.postNumber, createdAt: s.actionPost.createdAt };
+    }
+    var message = s.mode === "private-message";
+    return {
+      action: EMBER_ACTIONS[s.mode],
+      topicId: s.mode === "reply" || s.mode === "edit" ? s.topicId || null : null,
+      postId: s.mode === "edit" ? s.postId || null : s.actionPost ? s.actionPost.id : null,
+      topic: topic ? { url: topic.url, postsCount: topic.postsCount, privateMessage: topic.privateMessage } : null,
+      post: post,
+      whisper: !!s.whisper,
+      whispering: isWhispering(s),
+      privateMessage: message,
+      recipients: message && recipients && recipients.types ? recipients.types() : [],
+      targetRecipients: message ? recipientsValue().join(",") : null,
+      draftKey: s.draftKey,
+    };
+  }
+
+  // ComposerMessages' switchPM: get a room's reply goes to its user as a
+  // message, with what was written.
+  function switchPM(username) {
+    var s = state;
+    if (!s) {
+      return;
+    }
+    switchComposer(
+      {
+        mode: "private-message",
+        carry: true,
+        draftKey: s.draftKey,
+        draftSequence: s.draftSequence,
+        reply: textarea.value,
+        recipients: username ? [username] : [],
+      },
+      s
+    );
+  }
+
+  // The dominating topic's Share: ShareTopic is not ported; the topic
+  // footer's share does what it does here.
+  function shareTopic() {
+    var share = document.querySelector("#topic-footer-buttons .share-and-invite");
+    if (share) {
+      share.click();
+    }
+  }
+
   function csrfHeaders() {
     var headers = {};
     try {
@@ -591,6 +689,8 @@
     loadActionContext(s);
     loadEditTopic(s);
     loadEditPost(s);
+    // composer:opened
+    composerMessages.opened();
     // A new topic's key is new: there is no draft to look up. A composer
     // switched from another (the actions menu) carries its text, and
     // takes only the key's sequence.
@@ -667,6 +767,8 @@
     if (recipients) {
       recipients.close();
     }
+    // ComposerMessages goes with the composer.
+    composerMessages.reset();
     cancelUploads();
     clearTimeout(draftTimer);
     draftTimer = null;
@@ -719,6 +821,7 @@
     control.classList.add("open");
     root.style.setProperty("--composer-height", composerHeight);
     composeStateChanged();
+    composerMessages.opened();
   }
 
   // Fullscreen is a compose state of its own: #reply-control.fullscreen
@@ -772,6 +875,13 @@
     }, 100);
   });
 
+  // composer-body's keyUp: the composer messages waiting for typing.
+  control.addEventListener("keyup", function () {
+    if (state) {
+      composerMessages.typedReply();
+    }
+  });
+
   // The composer's height (model.composerHeight): the default it opened
   // with, then what the grippie set; a minimized composer opens again at it.
   var composerHeight = null;
@@ -785,6 +895,9 @@
     root.classList.toggle("fullscreen-composer", control.classList.contains("fullscreen"));
     syncPreviewClass();
     applyFullscreen();
+    // ComposerMessages hidden while the composer is neither open nor
+    // fullscreen (viewOpenOrFullscreen).
+    composerMessages.setHidden(!control.classList.contains("open") && !control.classList.contains("fullscreen"));
   }
 
   // composer-container's htmlClass: html.composer-has-preview while the
@@ -1486,6 +1599,9 @@
           if (window.Discourse && Discourse.renderMath) {
             Discourse.renderMath(preview);
           }
+          // previewUpdated: the mentions linked and warned of, and the
+          // composer service's afterRefresh (composer-messages.js).
+          composerMessages.previewUpdated(preview);
         } catch (e) {
           preview.textContent = e.message;
         }
@@ -1581,6 +1697,23 @@
       },
     };
   })();
+
+  // The rich editor's mention warnings (extensions/mention.js).
+  richEvents.on("composer-messages:create", composerMessages.create);
+  richEvents.on("composer-messages:close", composerMessages.closeTop);
+
+  // hitEsc: Esc closes the top composer message first, the emoji
+  // picker's own aside.
+  control.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape" || event.defaultPrevented || composerMessages.count() === 0) {
+      return;
+    }
+    if (document.querySelectorAll(".emoji-picker-modal.fadeIn").length === 1) {
+      return;
+    }
+    event.preventDefault();
+    composerMessages.closeTop();
+  });
 
   // d-editor's replaceToolbar: an extension's toolbar (the link toolbar
   // without room to float) in the button bar's place, with a back button,
@@ -3242,6 +3375,8 @@
           );
           return;
         }
+        // composer:saved
+        composerMessages.saved();
         var json = res.json || {};
         // Sent for review: PostEnqueued's modal, the draft gone, and no
         // post to go to.
@@ -3425,6 +3560,7 @@
           postVoting: !!t.is_post_voting,
           pmWithNonHumanUser: !!t.pm_with_non_human_user,
           slowMode: (t.slow_mode_seconds || 0) > 0,
+          postsCount: t.posts_count,
           allowedUsers: (details.allowed_users || []).map(function (u) {
             return u.username;
           }),
@@ -3449,6 +3585,7 @@
           username: p.username,
           name: p.name,
           postType: p.post_type,
+          createdAt: p.created_at,
         };
       })
       .catch(function () {
@@ -3511,14 +3648,12 @@
     });
   }
 
-  // The topic of a reply being edited, for the options menu item shown
-  // only in a PM with a non-human user (add-poll-ui-builder's
-  // composer.model.topic); a first post's comes with loadTopic.
+  // The topic of a reply being edited (composer.model.topic), for the
+  // options menu item shown only in a PM with a non-human user
+  // (add-poll-ui-builder) and the duplicate link warning
+  // (composer-messages.js); a first post's comes with loadTopic.
   function loadEditTopic(s) {
-    var wanted = ((popup && popup.items) || []).some(function (item) {
-      return item.when === "pm-with-non-human-user";
-    });
-    if (!wanted || s.mode !== "edit" || s.firstPost || !s.topicId) {
+    if (s.mode !== "edit" || s.firstPost || !s.topicId) {
       return;
     }
     s.editTopicLoad = loadActionTopic(s.topicId).then(function (topic) {

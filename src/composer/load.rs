@@ -237,8 +237,13 @@ pub(crate) async fn load(
     } else {
         None
     };
-    let rich_editor_context =
-        super::rich_editor::context(&state.i18n, settings, guardian.is_staff(), &hashtag_order)?;
+    let rich_editor_context = super::rich_editor::context(
+        &state.i18n,
+        settings,
+        guardian.is_staff(),
+        guardian.can_invite_to_forum(settings)?,
+        &hashtag_order,
+    )?;
     let html = super::view::render(
         &list,
         &chooser,
