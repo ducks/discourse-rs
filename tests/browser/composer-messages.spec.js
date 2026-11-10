@@ -349,9 +349,13 @@ test.describe("Composer don't feed the trolls popup", () => {
       { context: await session(troll.name), raw: label("A reply from a troll") },
     ]);
     const reply = t.posts[1];
+    // Inappropriate where the reference fabricates a spam flag: a spam
+    // flag marks the reviewable potential spam, which /review refuses
+    // (review/list.rs), and the specs share one queue. The finder counts
+    // both alike (flag_types_without_additional_message).
     await api(userContext, "POST", "/post_actions.json", {
       id: String(reply),
-      post_action_type_id: "8",
+      post_action_type_id: "4",
       flag_topic: "false",
     });
 
