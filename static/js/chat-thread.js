@@ -1200,11 +1200,22 @@
         .join("");
       var box = itemsBox(more);
       if (only) {
-        // UserThreads: the thread's preview, where it is.
+        // UserThreads: the thread's preview, where it is. Its tracking
+        // stays the bus's (UserThreads#onMessage sets thread.preview
+        // alone): the server's counts now are not the ones the page
+        // counted on from, as after the viewer's own reply.
         var next = template.content.querySelector(".c-user-thread[data-id='" + only + "']");
         var shown = box.querySelector(".c-user-thread[data-id='" + only + "']");
         if (next && shown) {
+          var kept = trackingOf(shown);
+          var drawn = trackingOf(next);
           shown.replaceWith(next);
+          if (kept) {
+            if (drawn) {
+              kept.last_reply_created_at = drawn.last_reply_created_at;
+            }
+            setTracking(next, kept);
+          }
         }
         return;
       }
