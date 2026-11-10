@@ -23,6 +23,7 @@ const test = base.test.extend({
   ],
   context: async ({ context, pageErrors }, use) => {
     watch(context, pageErrors);
+    await emojiImages(context);
     await use(context);
   },
   // Another browser session (its own cookies and storage), logged in as
@@ -35,6 +36,7 @@ const test = base.test.extend({
       const context = await browser.newContext({ baseURL, viewport, colorScheme });
       opened.push(context);
       watch(context, pageErrors);
+      await emojiImages(context);
       if (username) {
         await login(context, username);
       }
@@ -56,6 +58,22 @@ function watch(context, errors) {
   };
   context.pages().forEach(onPage);
   context.on("page", onPage);
+}
+
+// The emoji images, as a checkout with the discourse-emojis gem serves
+// them. Without the gem (CI) /images/emoji/* is a 404, and a broken
+// <img class="emoji"> lays out as its alt text instead of the 24px box
+// the stylesheets give it: each 404 that lands reflows the emoji around it,
+// so a click aimed at one emoji in the picker can land on its neighbour.
+const EMOJI_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64"
+);
+
+async function emojiImages(context) {
+  await context.route("**/images/emoji/**", (route) =>
+    route.fulfill({ status: 200, contentType: "image/png", body: EMOJI_PNG })
+  );
 }
 
 // Logs the context in as the page's scripts do (login.js's POST
@@ -153,7 +171,11 @@ function member() {
   );
   copy("user_passwords", "'id', nextval('user_passwords_id_seq'), 'user_id', :'p2'::int");
   copy("user_options", "'user_id', :'p2'::int");
-  copy("user_stats", "'user_id', :'p2'::int");
+  // No flag history: a flagger's agreed flags weigh their next flag.
+  copy(
+    "user_stats",
+    "'user_id', :'p2'::int, 'flags_agreed', 0, 'flags_disagreed', 0, 'flags_ignored', 0",
+  );
   copy("user_profiles", "'user_id', :'p2'::int");
   copy("group_users", "'id', nextval('group_users_id_seq'), 'user_id', :'p2'::int");
   return { name, id };

@@ -118,6 +118,132 @@ test("discarding a written draft asks first, and keeps it when declined", async 
   await expect(page.locator("#reply-title")).toHaveValue("");
 });
 
+// composer-body's keyDown and the composer service's hitEsc. Not in the
+// reference's tests but for select-kit-accessibility-test.js' "Escape
+// does not dismiss composer"; the message closed first is in
+// composer-messages.spec.js.
+test.describe("Esc in the composer", () => {
+  const control = (page) => page.locator("#reply-control");
+  const editor = (page) => page.locator("#reply-control textarea.d-editor-input");
+
+  async function replyTo(page, context, session) {
+    const writer = member();
+    sql("UPDATE user_options SET composition_mode = 0 WHERE user_id = :'p1'", writer.id);
+    const user0 = await session("user0");
+    const t = await topic(user0, label("Composer Esc topic"), label("A topic replied to, then Esc"));
+    await login(context, writer.name);
+    await page.goto(t.url);
+    await page.locator("#topic-footer-buttons .create").click();
+    await expect(editor(page)).toBeFocused();
+    return { writer, t };
+  }
+
+  const drafts = (writer, t) =>
+    sql(
+      "SELECT count(*) FROM drafts WHERE user_id = :'p1' AND draft_key = :'p2'",
+      writer.id,
+      `topic_${t.id}`,
+    );
+
+  test("minimizes the open composer, saving what was written", async ({ page, context, session }) => {
+    const { writer, t } = await replyTo(page, context, session);
+    const questions = [];
+    page.on("dialog", (d) => {
+      questions.push(d.message());
+      d.dismiss();
+    });
+    await editor(page).fill("Some words kept while the composer is minimized.");
+
+    await editor(page).press("Escape");
+    await expect(control(page)).toHaveClass(/\bdraft\b/);
+    await expect(control(page)).not.toHaveClass(/\bopen\b/);
+    await expect(page.locator("html")).not.toHaveClass(/composer-open/);
+    expect(
+      await page.evaluate(() => document.documentElement.style.getPropertyValue("--composer-height")),
+    ).toBe("40px");
+    await expect.poll(() => drafts(writer, t)).toEqual([["1"]]);
+
+    // Minimized, Esc does nothing more.
+    await control(page).dispatchEvent("keydown", { key: "Escape" });
+    await expect(control(page)).toHaveClass(/\bdraft\b/);
+
+    await // Any click on the minimized bar opens it again.
+    await control(page).click({ position: { x: 30, y: 10 } });
+    await expect(control(page)).toHaveClass(/\bopen\b/);
+    await expect(editor(page)).toHaveValue("Some words kept while the composer is minimized.");
+    expect(questions, "nothing is asked: Esc is not a discard").toEqual([]);
+  });
+
+  test("minimizes an empty composer too, discarding nothing", async ({ page, context }) => {
+    await login(context, member().name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(page.locator("#reply-title")).toBeFocused();
+
+    await page.locator("#reply-title").press("Escape");
+    await expect(control(page)).toHaveClass(/\bdraft\b/);
+    await expect(control(page)).not.toHaveClass(/\bclosed\b/);
+
+    await // Any click on the minimized bar opens it again.
+    await control(page).click({ position: { x: 30, y: 10 } });
+    await expect(control(page)).toHaveClass(/\bopen\b/);
+    await expect(page.locator("#reply-title")).toBeVisible();
+  });
+
+  test("leaves fullscreen for the open composer, its editor focused", async ({ page, context, session }) => {
+    await replyTo(page, context, session);
+    await editor(page).fill("Written in fullscreen.");
+    await control(page).locator(".toggle-fullscreen").click();
+    await expect(control(page)).toHaveClass(/\bfullscreen\b/);
+    await expect(page.locator("html")).toHaveClass(/fullscreen-composer/);
+
+    // From anywhere within the composer: here its fullscreen toggle.
+    await control(page).locator(".toggle-fullscreen").press("Escape");
+    await expect(control(page)).toHaveClass(/\bopen\b/);
+    await expect(control(page)).not.toHaveClass(/\bfullscreen\b/);
+    await expect(page.locator("html")).not.toHaveClass(/fullscreen-composer/);
+    await expect(editor(page)).toBeFocused();
+    await expect(editor(page)).toHaveValue("Written in fullscreen.");
+
+    await page.keyboard.press("Escape");
+    await expect(control(page)).toHaveClass(/\bdraft\b/);
+  });
+
+  test("closes an open autocomplete first", async ({ page, context, session }) => {
+    await replyTo(page, context, session);
+    const menu = page.locator(".fk-d-menu[data-identifier='d-autocomplete'] .autocomplete");
+    await editor(page).pressSequentially("Hello @use");
+    await expect(menu).toBeVisible();
+
+    await editor(page).press("Escape");
+    await expect(menu).toHaveCount(0);
+    await expect(control(page)).toHaveClass(/\bopen\b/);
+
+    await editor(page).press("Escape");
+    await expect(control(page)).toHaveClass(/\bdraft\b/);
+  });
+
+  // select-kit-accessibility-test.js: "Hitting Escape dismisses the tag
+  // chooser", "Escape does not dismiss composer".
+  test("is the tag chooser's and the category chooser's own", async ({ page, context }) => {
+    await login(context, member().name);
+    await page.goto("/latest");
+    await page.locator("#create-topic").click();
+    await expect(page.locator("#reply-title")).toBeFocused();
+
+    const tags = control(page).locator("details.mini-tag-chooser");
+    await tags.locator("summary").click();
+    await expect(tags.locator(".filter-input")).toBeVisible();
+    await tags.locator(".filter-input").press("Escape");
+    await expect(tags.locator(".filter-input")).toBeHidden();
+    await expect(control(page).locator(".composer-fields")).toBeVisible();
+    await expect(control(page)).toHaveClass(/\bopen\b/);
+
+    await control(page).locator("details.category-chooser summary").press("Escape");
+    await expect(control(page)).toHaveClass(/\bopen\b/);
+  });
+});
+
 // The composer's tag chooser (composer.js miniTagChooser): a new topic
 // in a category with a minimum tag count is refused without a tag, with
 // the minimum in the chooser and the validation's tip, and posts with
@@ -277,6 +403,22 @@ test.describe("the rich editor", () => {
     await expect(page.locator("#reply-control.open")).toBeVisible();
     return { writer, t };
   }
+
+  // composer-body hears the Escape the editor's keymap took for
+  // selectParentNode: the first one minimizes the composer.
+  test("Esc in the rich editor minimizes the composer", async ({ page, context, session }) => {
+    await replyTo(page, context, session, 1);
+    await expect(rich(page)).toBeFocused();
+    await rich(page).pressSequentially("Kept in the minimized composer");
+
+    await rich(page).press("Escape");
+    await expect(page.locator("#reply-control")).toHaveClass(/\bdraft\b/);
+
+    await // Any click on the minimized bar opens it again.
+    await page.locator("#reply-control").click({ position: { x: 30, y: 10 } });
+    await expect(page.locator("#reply-control")).toHaveClass(/\bopen\b/);
+    await expect(rich(page)).toHaveText("Kept in the minimized composer");
+  });
 
   test("switches to rich and back, the markdown being what was typed", async ({ page, context, session }) => {
     const { writer } = await replyTo(page, context, session, 0);

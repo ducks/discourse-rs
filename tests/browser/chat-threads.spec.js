@@ -455,30 +455,40 @@ test("the threads lists and the sidebar follow the tracking state", async ({ pag
 });
 
 test("the member's threads follow the tracking state", async ({ page, context, session }) => {
-  const channel = await threadedChannel(session, ["user0", "user1"]);
-  const thread = await makeThread(channel, "user0", "user1", label("my tracked thread"));
-  setMembership("user0", thread.threadId, 2, thread.messageId);
-  await login(context, "user0");
+  // A member of the test's own: this thread is their only one, so it
+  // stays on the list's first page read or unread (user0's is pushed off
+  // it, once read, by the unread threads the other tests leave them).
+  const me = member();
+  const channel = await threadedChannel(session, [me.name, "user1"]);
+  const thread = await makeThread(channel, me.name, "user1", label("my tracked thread"));
+  setMembership(me.name, thread.threadId, 2, thread.messageId);
+  await login(context, me.name);
   await page.goto("/chat/threads");
   const item = page.locator(`.c-user-thread[data-id='${thread.threadId}']`);
   const count = item.locator(".chat__thread-title-container .chat-thread-list-item-unread-indicator__number");
+  // Each reply's preview drawn again from the channel's bus first: the
+  // counts are the ones left after it.
+  const excerpt = item.locator(".chat-message-thread-indicator__last-reply-excerpt");
   await expect(count).toHaveText("1");
-  await send(channel.contexts.user1, channel.id, { message: label("more for me"), thread_id: String(thread.threadId) });
-  await expect(count).toHaveText("2", { timeout: 20_000 });
+  const more = label("more for me");
+  await send(channel.contexts.user1, channel.id, { message: more, thread_id: String(thread.threadId) });
+  await expect(excerpt).toContainText(more, { timeout: 20_000 });
+  await expect(count).toHaveText("2");
   // The viewer's own reply moves the membership's last read and leaves
   // the counts (its tracking state names the channel's last read, not
   // the thread); the next reply by another counts on from there.
   const own = label("my own");
-  await send(channel.contexts.user0, channel.id, { message: own, thread_id: String(thread.threadId) });
+  await send(channel.contexts[me.name], channel.id, { message: own, thread_id: String(thread.threadId) });
   const [[ownId]] = sql("SELECT id FROM chat_messages WHERE message = :'p1'", own);
-  await expect(item).toHaveAttribute("data-tracking", new RegExp(`"last_read_message_id":${ownId}\\}`), {
-    timeout: 20_000,
-  });
+  await expect(excerpt).toContainText(own, { timeout: 20_000 });
+  await expect(item).toHaveAttribute("data-tracking", new RegExp(`"last_read_message_id":${ownId}\\}`));
   await expect(count).toHaveText("2");
-  await send(channel.contexts.user1, channel.id, { message: label("after mine"), thread_id: String(thread.threadId) });
-  await expect(count).toHaveText("3", { timeout: 20_000 });
+  const after = label("after mine");
+  await send(channel.contexts.user1, channel.id, { message: after, thread_id: String(thread.threadId) });
+  await expect(excerpt).toContainText(after, { timeout: 20_000 });
+  await expect(count).toHaveText("3");
   // Read elsewhere: none.
-  await api(channel.contexts.user0, "PUT", `/chat/api/channels/${channel.id}/threads/${thread.threadId}/read.json`, {
+  await api(channel.contexts[me.name], "PUT", `/chat/api/channels/${channel.id}/threads/${thread.threadId}/read.json`, {
     message_id: String(lastMessageOf(thread.threadId)),
   });
   await expect(item.locator(".chat-thread-list-item-unread-indicator")).toHaveCount(0, { timeout: 20_000 });

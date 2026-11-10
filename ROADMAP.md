@@ -5517,8 +5517,10 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     waiting for typing shown on a key's release, the education message
     once until a post is saved, hide_if_whisper, the message to oneself
     and recipients not seen in a while, get a room's switch to a message,
-    dismissing by the close button or Esc (hitEsc), hidden while the
-    composer is minimized, none in the mobile view; composer-editor's
+    dismissing by the close button or Esc (hitEsc; with none left Esc
+    minimizes the open composer and leaves fullscreen, composer-body's
+    keyDown), hidden while the composer is minimized, none in the mobile
+    view; composer-editor's
     preview half (lib/link-mentions: the preview's mentions linked from
     /composer/mentions, then the group mentioned, cannot see and @here
     warnings) and the composer service's duplicate link check
@@ -5531,7 +5533,8 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     as written, stubbed counts as the user's stats), browser
     composer-messages (11: composer-messages-test.js, composer-test.js'
     duplicate link and group mentioned notices,
-    dont_feed_the_trolls_popup_spec.rb, and Esc) and
+    dont_feed_the_trolls_popup_spec.rb, and Esc), composer's "Esc in the
+    composer" (5) and the rich editor's Esc, and
     rich-editor-autocomplete's "with composer messages". Left: the
     similar topics popup (286). The dominating topic's Share and the
     topic footer's share open ShareTopic (static/js/share-topic.js: the
