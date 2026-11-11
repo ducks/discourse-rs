@@ -13,6 +13,10 @@ const { test, expect, login, api, sql, label } = require("./helpers");
 const prefer = (page, mode) =>
   page.evaluate((mode) => localStorage.setItem("discourse_chat_preferred_mode", JSON.stringify(mode)), mode);
 
+// A query's one value. helpers' sql drops blank lines, and a row whose only
+// column is NULL or empty is one: no row at all, and so "" here.
+const cell = (rows) => rows[0]?.[0] ?? "";
+
 // A category channel of the test's own, with threading, which user0 and
 // user1 follow: user0's message and user1's reply in its thread (both
 // through the API, so the search index has them).
@@ -41,7 +45,7 @@ async function channelWithThread(session, replier = "user1") {
     in_reply_to_id: originalId,
     staged_id: label("staged"),
   });
-  await expect.poll(() => sql("SELECT thread_id FROM chat_messages WHERE message = :'p1'", reply)[0][0]).not.toBe("");
+  await expect.poll(() => cell(sql("SELECT thread_id FROM chat_messages WHERE message = :'p1'", reply))).not.toBe("");
   const [[threadId]] = sql("SELECT thread_id FROM chat_messages WHERE message = :'p1'", reply);
   // The lists show a thread once Jobs::Chat::UpdateThreadReplyCount counts
   // its reply.
@@ -339,11 +343,13 @@ test("back to a thread's URL opens the thread in the drawer, forward restores th
 // 223e: the drawer's pins list follows the channel's bus itself (no
 // channel beside it to draw the page again), and its own unpin.
 const lastViewedPins = (channel, username) =>
-  sql(
-    "SELECT COALESCE(extract(epoch FROM last_viewed_pins_at)::text, '') FROM user_chat_channel_memberships m JOIN users u ON u.id = m.user_id WHERE u.username = :'p2' AND m.chat_channel_id = :'p1'",
-    channel.id,
-    username,
-  )[0][0];
+  cell(
+    sql(
+      "SELECT extract(epoch FROM last_viewed_pins_at) FROM user_chat_channel_memberships m JOIN users u ON u.id = m.user_id WHERE u.username = :'p2' AND m.chat_channel_id = :'p1'",
+      channel.id,
+      username,
+    ),
+  );
 
 test("the drawer's pins follow pins and unpins live, and are read when the route goes", async ({ page, context, session }) => {
   const channel = await channelWithThread(session);
