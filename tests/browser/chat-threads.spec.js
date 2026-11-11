@@ -638,3 +638,59 @@ test("the member's threads hear the channels of the pages loaded later", async (
     timeout: 20_000,
   });
 });
+
+// 160b2: ChatNavbarThreadsListButton's has-unreads and count beside a
+// channel, ChatThreadHeader's back link and count in a thread, over
+// threadsManager.unreadThreadCount as ChatSubscriptionsManager keeps it.
+test("the navbar's thread indicators follow the tracking state", async ({ page, context, session }) => {
+  const channel = await threadedChannel(session, ["user0", "user1"]);
+  const older = await makeThread(channel, "user0", "user1", label("older thread"));
+  const newer = await makeThread(channel, "user0", "user1", label("newer thread"));
+  setMembership("user0", older.threadId, 2, lastMessageOf(older.threadId));
+  setMembership("user0", newer.threadId, 2, lastMessageOf(newer.threadId));
+  const read = (thread) =>
+    api(channel.contexts.user0, "PUT", `/chat/api/channels/${channel.id}/threads/${thread.threadId}/read.json`, {
+      message_id: String(lastMessageOf(thread.threadId)),
+    });
+  const reply = (thread, text) =>
+    send(channel.contexts.user1, channel.id, { message: label(text), thread_id: String(thread.threadId) });
+  await login(context, "user0");
+  const channelUrl = `/chat/c/${channel.slug}/${channel.id}`;
+  await page.goto(channelUrl);
+  const button = page.locator(".c-navbar__threads-list-button");
+  const count = button.locator(".chat-thread-header-unread-indicator");
+  await expect(button).toBeVisible();
+  await expect(button).not.toHaveClass(/has-unreads/);
+  await expect(count).toHaveCount(0);
+
+  // A reply by another member in a thread of theirs: unread, counted.
+  await reply(older, "a reply to count");
+  await expect(button).toHaveClass(/has-unreads/, { timeout: 20_000 });
+  await expect(count.locator(".chat-thread-header-unread-indicator__number")).toHaveText("1");
+  await expect(count).toHaveAttribute("title", "You have 1 unread discussion");
+  await reply(newer, "a reply in the other");
+  await expect(count.locator(".chat-thread-header-unread-indicator__number")).toHaveText("2", { timeout: 20_000 });
+  await expect(count).toHaveAttribute("title", "You have 2 unread discussions");
+  // Another reply in a thread already unread counts nothing more.
+  await reply(newer, "one more there");
+  // Read elsewhere: one left, then none.
+  await read(older);
+  await expect(count.locator(".chat-thread-header-unread-indicator__number")).toHaveText("1", { timeout: 20_000 });
+  await read(newer);
+  await expect(button).not.toHaveClass(/has-unreads/, { timeout: 20_000 });
+  await expect(count).toHaveCount(0);
+
+  // In a thread, loaded as the first page (no route before it): the back
+  // link goes to the channel while nothing is unread, to the threads
+  // with their count once one is.
+  await page.goto(threadUrl(channel, older.threadId));
+  const back = page.locator(".c-routes.--channel-thread .c-navbar__back-button");
+  await expect(back).toHaveAttribute("href", channelUrl);
+  await expect(back.locator(".chat-thread-header-unread-indicator")).toHaveCount(0);
+  await reply(newer, "a reply while in the other thread");
+  await expect(back).toHaveAttribute("href", `${channelUrl}/t`, { timeout: 20_000 });
+  await expect(back.locator(".chat-thread-header-unread-indicator__number")).toHaveText("1");
+  await read(newer);
+  await expect(back).toHaveAttribute("href", channelUrl, { timeout: 20_000 });
+  await expect(back.locator(".chat-thread-header-unread-indicator")).toHaveCount(0);
+});

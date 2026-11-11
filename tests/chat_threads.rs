@@ -416,7 +416,7 @@ async fn a_threaded_channel_page_shows_the_thread_indicator() {
     assert!(!page.contains("thread reply two</p>"));
     // The threads list button, with the unread thread.
     assert!(page.contains(
-        "<a class=\"c-navbar__threads-list-button btn no-text btn-transparent has-unreads\" title=\"Threads\" href=\"/chat/c/general/2/t\">"
+        "<a class=\"c-navbar__threads-list-button btn no-text btn-transparent has-unreads\" title=\"Threads\" href=\"/chat/c/general/2/t\" data-channel-id=\"2\" data-unread-threads=\"["
     ));
     assert!(page.contains("chat-thread-header-unread-indicator__number\">1</div>"));
 }

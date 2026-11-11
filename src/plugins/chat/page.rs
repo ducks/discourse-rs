@@ -227,7 +227,8 @@ impl Context<'_> {
                 Some(id) => crate::notification_create::do_not_disturb(&mut *self.conn, id).await?,
                 None => false,
             };
-            Some((self.unread_thread_count(channel).await?, dnd))
+            let (unread, tracking) = self.unread_threads_tracking(channel, dnd).await?;
+            Some((unread, dnd, tracking))
         };
         out.push_str(&self.navbar(
             &channel_json,
@@ -861,7 +862,7 @@ impl Context<'_> {
         following: bool,
         online: &[i64],
         drawer: Option<&super::drawer::Nav<'_>>,
-        threads_button: Option<(usize, bool)>,
+        threads_button: Option<(usize, bool, String)>,
     ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -947,11 +948,11 @@ impl Context<'_> {
         }
         // ChatNavbarThreadsListButton, with ThreadHeaderUnreadIndicator:
         // not on the threads or a thread route (`threads_button` None).
-        if let Some((unread, dnd)) =
+        if let Some((unread, dnd, tracking)) =
             threads_button.filter(|_| c["threading_enabled"] == true && !collapsed)
         {
             out.push_str(&format!(
-                "<a class=\"c-navbar__threads-list-button btn no-text btn-transparent{}\" title=\"{}\" href=\"{}/chat/c/{}/{id}/t\">{}{}</a>",
+                "<a class=\"c-navbar__threads-list-button btn no-text btn-transparent{}\" title=\"{}\" href=\"{}/chat/c/{}/{id}/t\"{tracking}>{}{}</a>",
                 if unread > 0 { " has-unreads" } else { "" },
                 escape(&t("chat.threads.list")),
                 self.base_path,
