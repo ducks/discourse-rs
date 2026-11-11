@@ -5129,7 +5129,8 @@
   // TopicController#selectText from quote-button.js: into the open
   // composer at its cursor, after a minimized one's text, else a reply
   // (to the post unless it is the first) opened with the quote. Without
-  // the right to reply Ember starts a new topic with it instead.
+  // the right to reply a new topic starts with it instead
+  // (replyAsNewTopic).
   document.addEventListener("composer:quote", function (event) {
     var d = event.detail || {};
     if (!control.isConnected || !d.quote) {
@@ -5148,7 +5149,9 @@
       return;
     }
     if (!d.canCreatePost) {
-      unported("replying as a new topic");
+      if (d.newTopic) {
+        replyAsNewTopic(Object.assign({ quote: d.quote }, d.newTopic));
+      }
       return;
     }
     var first = parseInt(d.postNumber, 10) === 1;
@@ -5896,7 +5899,9 @@
   // The topic controller's replyAsNewTopic, from ShareTopic's new topic
   // button (share-topic.js): a new topic in the topic's category, or a
   // message to the message's recipients, continuing from the post at
-  // o.url. Under the topic's draft key, as the controller opens it.
+  // o.url, with o.quote (the quote toolbar's, when the viewer may not
+  // reply) after it. Under the topic's draft key, as the controller
+  // opens it.
   function replyAsNewTopic(o) {
     var link =
       "[" + escapeExpression(o.title) + "](" + location.protocol + "//" + location.host + o.url + ")";
@@ -5904,7 +5909,7 @@
       mode: o.privateMessage ? "private-message" : "create-topic",
       carry: true,
       draftKey: o.draftKey,
-      reply: at("post.continue_discussion", { postLink: link }) + "\n\n",
+      reply: at("post.continue_discussion", { postLink: link }) + "\n\n" + (o.quote || ""),
     };
     if (o.privateMessage) {
       opts.recipients = o.recipients;
