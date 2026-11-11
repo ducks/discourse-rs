@@ -20,7 +20,7 @@
 //
 // The strings, the member's timezone and the scripts it loads on demand
 // (moment for the shortcuts, the emoji picker) come with the script tag.
-// The custom date and time tile is refused, not ported.
+// The tiles are DTimeShortcutPicker's (static/js/bookmark-modal.js).
 (function () {
   "use strict";
 
@@ -67,15 +67,6 @@
       error.textContent = message || "Something went wrong.";
       error.hidden = false;
     }
-  }
-
-  function unported(what) {
-    var message = "Not ported yet: " + what + ".";
-    if (Discourse.dialog && Discourse.dialog.alert) {
-      Discourse.dialog.alert(escapeHtml(message));
-      return;
-    }
-    showError(message);
   }
 
   // ajax as jQuery sends a form: nested keys as status[emoji].
@@ -384,27 +375,6 @@
     return ready;
   }
 
-  // timeShortcuts(timezone): oneHour, twoHours and tomorrow (8am), then
-  // specialShortcutOptions' custom and none ("Never"), last custom hidden.
-  function shortcuts() {
-    var tz = s.timezone || window.moment.tz.guess();
-    var now = function () {
-      return window.moment.tz(tz);
-    };
-    return [
-      { id: "one_hour", label: s.in_one_hour, time: now().add(1, "hours"), format: s.time },
-      { id: "two_hours", label: s.in_two_hours, time: now().add(2, "hours"), format: s.time },
-      {
-        id: "tomorrow",
-        label: s.tomorrow,
-        time: now().add(1, "day").hour(8).startOf("hour"),
-        format: s.time_short_day,
-      },
-      { id: "custom", label: s.custom, time: null },
-      { id: "none", label: s.never, time: null },
-    ];
-  }
-
   // ---- UserStatusModal
 
   function open(model) {
@@ -430,12 +400,7 @@
       status.ends_at = model.status.ends_at;
     }
     var endsAt;
-    var selected = null;
-    // parsePrefilledDatetime: an end already set is the custom tile.
-    if (status.ends_at) {
-      selected = "custom";
-    }
-    var options = shortcuts();
+    var timePicker = null;
     var footerEl = null;
 
     function pickerHtml() {
@@ -452,32 +417,6 @@
       );
     }
 
-    function tilesHtml() {
-      return (
-        '<div class="tap-tile-grid">' +
-        options
-          .map(function (o) {
-            return (
-              '<div id="tap_tile_' +
-              o.id +
-              '" class="tap-tile' +
-              (selected === o.id ? " active" : "") +
-              '" role="button" aria-pressed="' +
-              (selected === o.id ? "true" : "false") +
-              '" tabindex="0" data-tile="' +
-              o.id +
-              '"><div class="tap-tile-title">' +
-              escapeHtml(o.label) +
-              '</div><div class="tap-tile-date">' +
-              (o.time ? escapeHtml(o.time.format(o.format)) : "") +
-              "</div></div>"
-            );
-          })
-          .join("") +
-        "</div>"
-      );
-    }
-
     function refreshSave() {
       if (!footerEl) {
         return;
@@ -485,22 +424,14 @@
       footerEl.querySelector(".btn-primary").disabled = !status.emoji || !status.description;
     }
 
-    function selectTile(body, id) {
-      if (id === "custom") {
-        unported("the custom date and time of a status's end");
-        return;
-      }
-      var option = options.filter(function (o) {
-        return o.id === id;
-      })[0];
-      selected = id;
-      endsAt = option && option.time ? option.time.toDate() : null;
-      body.querySelector(".control-group-remove-status .tap-tile-grid").outerHTML = tilesHtml();
-    }
-
     var close = Discourse.modal.show({
       className: "user-status",
       title: s.title,
+      onClose: function () {
+        if (timePicker) {
+          timePicker.destroy();
+        }
+      },
       body: function (body) {
         body.innerHTML =
           '<div class="control-group">' +
@@ -515,9 +446,22 @@
               "</label></div>") +
           '<div class="control-group control-group-remove-status"><label class="control-label">' +
           escapeHtml(s.remove_status) +
-          "</label>" +
-          tilesHtml() +
-          "</div>";
+          '</label><div class="user-status-time-shortcuts"></div></div>';
+        // DTimeShortcutPicker (bookmark-modal.js): in an hour, in two,
+        // tomorrow, the custom date and time, and never; no last custom
+        // tile. onTimeSelected: the end is the time picked.
+        timePicker = Discourse.timeShortcutPicker.mount(body.querySelector(".user-status-time-shortcuts"), {
+          timezone: s.timezone || window.moment.tz.guess(),
+          prefilledDatetime: status.ends_at || null,
+          hiddenOptions: ["last_custom"],
+          customLabels: { none: "time_shortcut.never" },
+          timeShortcuts: function (shortcuts) {
+            return [shortcuts.oneHour(), shortcuts.twoHours(), shortcuts.tomorrow()];
+          },
+          onTimeSelected: function (type, time) {
+            endsAt = time;
+          },
+        });
         var input = body.querySelector(".user-status-description");
         input.value = status.description || "";
         var picker = body.querySelector(".user-status-picker");
@@ -550,19 +494,6 @@
               refreshSave();
             },
           });
-        });
-        body.addEventListener("click", function (event) {
-          var tile = event.target.closest(".tap-tile");
-          if (tile) {
-            selectTile(body, tile.dataset.tile);
-          }
-        });
-        body.addEventListener("keydown", function (event) {
-          var tile = event.target.closest && event.target.closest(".tap-tile");
-          if (tile && event.key === "Enter") {
-            event.stopPropagation();
-            selectTile(body, tile.dataset.tile);
-          }
         });
       },
       footer: function (footer, closeModal) {

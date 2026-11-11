@@ -74,15 +74,32 @@ test("the user menu sets a status in the modal and deletes it", async ({ page, c
   await expect(page.locator("#toggle-current-user .user-status-background")).toHaveCount(0);
 });
 
-test("the custom date tile is refused by name", async ({ page, context }) => {
+test("the custom tile ends the status at a date and time", async ({ page, context }) => {
   const m = member();
+  sql("UPDATE user_options SET timezone = 'UTC' WHERE user_id = :'p1'", m.id);
   await login(context, m.name);
   await page.goto("/latest");
   await page.locator("#toggle-current-user").click();
   await page.locator("#user-menu-button-profile").click();
   await page.locator(".set-user-status button").click();
-  await page.locator(".d-modal.user-status #tap_tile_custom").click();
-  await expect(page.getByText("Not ported yet: the custom date and time of a status's end.")).toBeVisible();
+  const modal = page.locator(".d-modal.user-status");
+  await modal.locator(".user-status-description").fill("Away for a while");
+  // No last custom tile here, and never in the none tile's place.
+  await expect(modal.locator("#tap_tile_last_custom")).toHaveCount(0);
+  await expect(modal.locator("#tap_tile_none .tap-tile-title")).toHaveText("Never");
+  await modal.locator("#tap_tile_custom").click();
+  await expect(modal.locator("#tap_tile_custom")).toHaveClass(/active/);
+  const [[date]] = sql("SELECT to_char(now() AT TIME ZONE 'UTC' + interval '3 days', 'YYYY-MM-DD')");
+  await modal.locator("#custom-date").evaluate((input, value) => {
+    input.value = value;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, date);
+  await modal.locator("#custom-time").fill("14:45");
+  await modal.locator(".d-modal__footer .btn-primary").click();
+  await expect(modal).toHaveCount(0);
+  await expect
+    .poll(() => sql("SELECT to_char(ends_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI') FROM user_statuses WHERE user_id = :'p1'", m.id))
+    .toEqual([[`${date} 14:45`]]);
 });
 
 test("a status shows by the poster's name, on mentions and on the user card, and live", async ({
