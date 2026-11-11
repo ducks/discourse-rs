@@ -2833,6 +2833,14 @@ async fn quote_button_config(
         "topic.share.invite_users",
         "post.share.title",
         "post.share.instructions",
+        "topic.share.restricted_groups.one",
+        "topic.share.restricted_groups.other",
+        "topic.create",
+        "post.reply_as_new_topic",
+        "user.new_private_message",
+        "post.reply_as_new_private_message",
+        "dates.long_date_with_year",
+        "dates.long_date_without_year",
         "composer.save_edit",
         "modal.close",
     ]
@@ -2842,6 +2850,12 @@ async fn quote_button_config(
         ((*key).to_string(), Value::String(text.to_string()))
     })
     .collect();
+    // A message's recipients, for ShareTopic's new message.
+    let names = |list: &Value, key: &str| -> Vec<Value> {
+        list.as_array()
+            .map(|a| a.iter().map(|x| x[key].clone()).collect())
+            .unwrap_or_default()
+    };
     let config = serde_json::json!({
         "topic": {
             "id": view["id"],
@@ -2853,6 +2867,8 @@ async fn quote_button_config(
             "invisible": view["visible"] == false,
             "readRestricted": read_restricted,
             "canInviteTo": view["details"]["can_invite_to"] == true,
+            "allowedUsers": names(&view["details"]["allowed_users"], "username"),
+            "allowedGroups": names(&view["details"]["allowed_groups"], "name"),
             "archived": view["archived"] == true,
             "closed": view["closed"] == true,
             "deleted": !view["deleted_at"].is_null(),

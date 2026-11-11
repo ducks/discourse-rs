@@ -5893,5 +5893,30 @@
     routeArrived();
   }
 
-  window.composer = { open: open, composePrivateMessage: composePrivateMessage };
+  // The topic controller's replyAsNewTopic, from ShareTopic's new topic
+  // button (share-topic.js): a new topic in the topic's category, or a
+  // message to the message's recipients, continuing from the post at
+  // o.url. Under the topic's draft key, as the controller opens it.
+  function replyAsNewTopic(o) {
+    var link =
+      "[" + escapeExpression(o.title) + "](" + location.protocol + "//" + location.host + o.url + ")";
+    var opts = {
+      mode: o.privateMessage ? "private-message" : "create-topic",
+      carry: true,
+      draftKey: o.draftKey,
+      reply: at("post.continue_discussion", { postLink: link }) + "\n\n",
+    };
+    if (o.privateMessage) {
+      opts.recipients = o.recipients;
+    } else {
+      opts.category = o.category;
+    }
+    open(opts);
+  }
+
+  window.composer = {
+    open: open,
+    composePrivateMessage: composePrivateMessage,
+    replyAsNewTopic: replyAsNewTopic,
+  };
 })();
