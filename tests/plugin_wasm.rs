@@ -60,8 +60,15 @@ fn solved_wasm() -> &'static [u8] {
     WASM.get_or_init(|| build_guest("discourse-solved-wasm"))
 }
 
+/// plugins/discourse-solved's manifest, but for its time budget: that is
+/// wall clock with the host calls' queries in it, and a phase that outruns
+/// it on a busy machine is skipped, which these tests would read as the
+/// guest answering differently. (An endless loop meets the budget below.)
 fn solved_manifest() -> String {
-    std::fs::read_to_string(root().join("plugins/discourse-solved/plugin.toml")).unwrap()
+    let manifest =
+        std::fs::read_to_string(root().join("plugins/discourse-solved/plugin.toml")).unwrap();
+    assert!(manifest.contains("\ntime_ms = 50\n"));
+    manifest.replace("\ntime_ms = 50\n", "\ntime_ms = 10000\n")
 }
 
 fn runtime() -> &'static Runtime {
