@@ -59,10 +59,15 @@ test("a post's row: its submenu jumps to the post and deletes its bookmark", asy
   const submenu = page.locator(".topic-bookmark-post-submenu");
   await expect(submenu).toBeVisible();
   await expect(submenu.locator(".--jump .bookmark-menu__row-label")).toHaveText("Jump to #2");
-  await row(page, "jump").click();
-  await expect(page).toHaveURL(new RegExp(`/t/[^/]+/${t.id}/2$`));
-  await expect(menu).toHaveCount(0);
+  // The submenu is still being placed beside its row when it shows: a
+  // click whose press and release straddle a move focuses the row
+  // without clicking it, so click until the menus have closed.
+  await expect(async () => {
+    await row(page, "jump").click({ timeout: 2000 });
+    await expect(menu).toHaveCount(0, { timeout: 2000 });
+  }).toPass();
   await expect(submenu).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`/t/[^/]+/${t.id}/2$`));
 
   await trigger.click();
   await row(page, "post-2").click();
