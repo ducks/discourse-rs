@@ -6,18 +6,27 @@ with 1 vCPU and 2 GiB RAM. Nix supplies the tested runtime dependencies
 and PostgreSQL 16 with pgvector; systemd manages the services. Caddy and
 image/video tools are installed through Ubuntu packages.
 
-The deployed release is `1318ea47`, binary and frontend package alike.
-Since the previous release (`9d0871e3`) it adds the site banner drawn
-atop pages (dismissed and kept live) and the post admin menu's actions
-(staff color, notice, unhide, lock, wiki, rebake). The binary's SHA-256
-is `bf653246fffc3c70cb57b24252abfc54207a8b22f8542449d3eeef1ec8be97cd`
+The deployed release is `cb850410`, binary and frontend package alike.
+Since the previous release (`1318ea47`) it adds the rich editor
+(ProseMirror, with its extensions, plugins and toolbar) as the
+composer's default, composer autocomplete for mentions, hashtags and
+emoji, the composer messages with the similar topics popup, Esc to
+minimize the composer, and the ShareTopic modal. It also fixes member
+pages failing with a 500 for a category with a form template. The
+binary's SHA-256 is
+`48d6b2b755690bc5b1232b1ce90875678927cb9906b7cce2bdd9cd05dc82e97c`
 and the package's manifest's is
-`f6e18627962ed8531649ad113633ca019b693d01411eb31ce3cf934bdda3820e`.
-The November 6 local optimized build took 21 minutes, 38 seconds,
-sharing the machine with a debug build. Thirty-five focused browser
-tests passed against that binary before the upload, and the CI gate on
-`1318ea47` passed before activation. The previous `9d0871e3` binary and
-its `frontend-9d0871e3` package are retained for rollback.
+`7edc78ad704c0183ad74188b212bff460bcb04ceea1aeb4a59150d7b8b6f7117`.
+The November 10 local optimized build took 13 minutes, 7 seconds. The
+CI gate was not green on `cb850410` at activation: one browser test
+(chat-pane-rest's navbar filter) failed in its run. `cb850410` differs
+from `2408987c`, whose gate passed, by one browser spec file only.
+After activation the loopback health check passed, and a browser check
+over HTTPS passed login as `jake`, the topic list, a topic, the share
+modal, the composer opening in the rich editor and minimizing on Esc,
+chat and admin, with no page errors and no 5xx responses. The previous
+`1318ea47` binary and its `frontend-1318ea47` package are retained for
+rollback.
 
 ## Access
 
@@ -50,7 +59,7 @@ systemctl restart discourse-rs
 ```
 
 All three services are enabled at boot. The binary is
-`/opt/discourse-rs/discourse-rs-1318ea47`, selected by
+`/opt/discourse-rs/discourse-rs-cb850410`, selected by
 `/usr/local/bin/discourse-rs`; its frontend package is the one
 `/opt/discourse-rs/frontend-current` points at (`DISCOURSE_FRONTEND_DIR`
 in the env file). Nix GC roots under `/opt/discourse-rs/`
