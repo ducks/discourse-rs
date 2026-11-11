@@ -71,10 +71,9 @@ rehearsal steps with no failures or skips. Runtime source is at 1819a61f;
 the local release report is
 `tmp/rehearsal/release-20261101-focus/report/index.html`.
 
-Remaining chat follow-ups include the navbar's live thread indicators
-(160b1), GIFs (224b), the status modal's custom date tile (130c) and
-further reviewable cases (148b). Thread tracking (160b) and the drawer's
-routes (223e) are done. The demo checklist's one open blocker is the rich
+Remaining chat follow-ups include GIFs (224b) and further reviewable
+cases (148b). Thread tracking (160b), the navbar's live thread indicators
+(160b2), live user status (130c2) and the drawer's routes (223e) are done. The demo checklist's one open blocker is the rich
 editor (196).
 Performance item 285 is low priority. Full parity remains the long-term
 goal; the older counts below are a dated snapshot, not current totals.
@@ -372,7 +371,7 @@ Visible if clicked, avoid them in a scripted demo:
   its player; the composer doesn't make a video's thumbnail yet (139).
 - [x] Checklists can't be checked (242): feat/checklist-toggle, done,
   boxes toggle with their batching, retries and optimistic drawing. User
-  status can't be set (130): done in 130a, 130b and 130c2; what's left is 130c.
+  status can't be set (130): done in 130a, 130b, 130c and 130c2.
 - [x] The review queue's claims and notes are refused (194), and the topic
   admin wrench isn't drawn (194, 262a): the wrench and the post admin
   menu, feat/topic-admin-menus (194a), and claims and notes,
@@ -1984,7 +1983,7 @@ have handlers now.
     category_list.rs:349), default tag preferences at signup
     (signup.rs:971), staff groups' category and tag notification
     defaults (roles.rs:163)
-130. ~~`feat/user-status`~~ (done in 130a, 130b and 130c2; left: 130c) M: user status (UserStatus, the /user-status
+130. ~~`feat/user-status`~~ (done in 130a, 130b, 130c and 130c2) M: user status (UserStatus, the /user-status
     routes, the status modal) wherever a user is serialized (users.rs:540;
     current_user.rs:304; about.rs:253; bus.rs:476; directory.rs:650;
     topic_view.rs:1766; routes/groups.rs:867; routes/admin_api_keys.rs:74;
@@ -2048,13 +2047,18 @@ have handlers now.
     tests/chat_threads.rs (the bus, the page),
     tests/plugin_gamification.rs, tests/browser/user-status.spec.js.
     Left, as 130c.
-    130c. `feat/user-status-picker` M: DTimeShortcutPicker's
-    custom date and time tile (DatePickerFuture, the time input,
-    DRelativeTimePicker and the last custom tile; refused in the modal).
-    The core composer's mention autocomplete, with its statuses, is done
-    in 130c1, chat's live status tracking in 130c2.
-    MessageBus.last_id("/user-status") stays 0 with item 100's
-    placeholders.
+    130c. ~~`feat/user-status-picker`~~ (done) M: the status modal's
+    custom date and time tile was refused by name. Its tiles are now
+    DTimeShortcutPicker's (289's Discourse.timeShortcutPicker, as
+    UserStatusModal mounts it): in one hour, in two, tomorrow, the
+    custom tile with DatePickerFuture, the time input and
+    DRelativeTimePicker, and never (the none tile's label), no last
+    custom tile; the end is the time picked (onTimeSelected). The
+    modal's own tile code and its strings went. The core composer's
+    mention autocomplete, with its statuses, is done in 130c1, chat's
+    live status tracking in 130c2. MessageBus.last_id("/user-status")
+    stays 0 with item 100's placeholders. Tests: browser user-status
+    "the custom tile ends the status at a date and time"
     130c1. ~~`feat/composer-autocomplete`~~ (done) M: d-editor's
     autocompletes in the core composer, in both modes (docs/rich-editor.md,
     In the composer). static/js/autocomplete.js is the DAutocompleteModifier
@@ -5652,8 +5656,8 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     "editing a bookmark opens BookmarkModal". An existing reminder is
     kept when only the name is saved. Left: creating a bookmark through
     the modal (BookmarkMenu on a post's and the topic's buttons, which
-    toggle), the bookmark-modal-after-name plugin outlet, and the user
-    status modal's custom tile on this picker (130c)
+    toggle) and the bookmark-modal-after-name plugin outlet; the user
+    status modal's tiles are this picker's since 130c
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script

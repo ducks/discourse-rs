@@ -202,6 +202,22 @@
   function timeShortcuts(timezone) {
     var day = now(timezone).day();
     return {
+      oneHour: function () {
+        return {
+          id: "one_hour",
+          label: "time_shortcut.in_one_hour",
+          time: now(timezone).add(1, "hours"),
+          format: "dates.time",
+        };
+      },
+      twoHours: function () {
+        return {
+          id: "two_hours",
+          label: "time_shortcut.in_two_hours",
+          time: now(timezone).add(2, "hours"),
+          format: "dates.time",
+        };
+      },
       laterToday: function () {
         return { id: "later_today", label: "time_shortcut.later_today", time: laterToday(timezone), format: "dates.time" };
       },
