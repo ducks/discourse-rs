@@ -2055,6 +2055,32 @@ async fn members_get_their_own_sidebar() {
     ));
 }
 
+/// PostMenuShareButton, where post_menu lists it.
+#[tokio::test]
+async fn the_post_menu_draws_share_where_the_setting_lists_it() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user0", "password").await;
+    let path = "/t/parity-fixture-replies-and-posters/35";
+    assert!(
+        !client
+            .get(path)
+            .await
+            .body
+            .contains("post-action-menu__share")
+    );
+
+    set_setting(&db.pool, "post_menu", 8, "read|like|share|copyLink|reply").await;
+    let page = client.get(path).await.body;
+    assert!(
+        page.contains(
+            r#"<button aria-label="share a link to this post" class="btn no-text btn-icon post-action-menu__share share btn-flat" title="share a link to this post" type="button"><svg class="fa d-icon d-icon-d-post-share svg-icon"#
+        ),
+        "{page}"
+    );
+}
+
 /// A member's topic: the post menu collapses its hidden items behind show
 /// more, the footer has flag, defer and the notification level with its
 /// reason, and the browse-more line counts what is left to read.

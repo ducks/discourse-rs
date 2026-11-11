@@ -920,6 +920,16 @@
       Discourse.shareTopic.show();
       return;
     }
+    // The post menu's share (PostMenuShareButton): the platform's share
+    // or ShareTopic for the post.
+    var shared = event.target.closest(".post-action-menu__share");
+    if (shared) {
+      var sharedPost = postToShare(shared);
+      if (sharedPost) {
+        Discourse.shareTopic.sharePost(sharedPost);
+      }
+      return;
+    }
     // A post's copy link: the URL, absolute.
     var copy = event.target.closest(".post-action-menu__copy-link");
     if (copy) {
@@ -940,6 +950,39 @@
       location.href = login.dataset.loginUrl;
     }
   });
+
+  // What ShareTopic (share-topic.js) shares of the post around el: its
+  // number, its shareUrl and its shown date, all its date link's.
+  function postToShare(el) {
+    var post = el.closest("[data-post-number]");
+    var link = post && post.querySelector(".post-info.post-date a.post-date");
+    var at = link && link.querySelector(".relative-date[data-time]");
+    if (!link || !Discourse.shareTopic) {
+      return null;
+    }
+    return {
+      number: post.getAttribute("data-post-number"),
+      url: link.getAttribute("href"),
+      date: at ? parseInt(at.dataset.time, 10) : Date.now(),
+    };
+  }
+
+  // A post's date (post/meta-data/date.gjs) opens ShareTopic for the post
+  // and goes nowhere: taken on the way down, ahead of the link's boosted
+  // navigation.
+  document.addEventListener(
+    "click",
+    function (event) {
+      var dated = event.target.closest && event.target.closest(".post-info.post-date a.post-date");
+      var post = dated && postToShare(dated);
+      if (post) {
+        event.preventDefault();
+        event.stopPropagation();
+        Discourse.shareTopic.show({ post: post });
+      }
+    },
+    true
+  );
 
   // A post created while the page was read can arrive once more: keep the
   // first copy of each.

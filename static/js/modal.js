@@ -3,7 +3,7 @@
 //
 //   Discourse.modal.show({ className, title, body: fn(bodyEl, close),
 //                          footer: fn(footerEl, close), onClose,
-//                          hideHeader, ariaLabel, attributes,
+//                          hideHeader, ariaLabel, attributes, subtitle,
 //                          headerPrimaryAction: fn(el, close),
 //                          headerBelowTitle: fn() -> element })
 //       renders the modal into .modal-container (ModalContainer, the
@@ -96,6 +96,13 @@
     var closeButton = modal.querySelector(".modal-close");
     if (closeButton) {
       modal.querySelector(".d-modal__title-text").textContent = opts.title || "";
+      // @subtitle, under the title.
+      if (opts.subtitle) {
+        var subtitle = document.createElement("p");
+        subtitle.className = "d-modal__subtitle-text";
+        subtitle.textContent = opts.subtitle;
+        modal.querySelector(".d-modal__title").appendChild(subtitle);
+      }
       closeButton.title = t("modal.close");
     }
     var header = modal.querySelector(".d-modal__header");

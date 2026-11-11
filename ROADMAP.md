@@ -5536,7 +5536,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     dont_feed_the_trolls_popup_spec.rb, and Esc), composer's "Esc in the
     composer" (5) and the rich editor's Esc, and
     rich-editor-autocomplete's "with composer messages". Left: the
-    rest of the ShareTopic modal (287). The dominating topic's Share and
+    rest of the ShareTopic modal (287, 288). The dominating topic's Share and
     the topic footer's share open ShareTopic (static/js/share-topic.js:
     the link, its copy button and the share_links sources; browser
     share-topic, 5, and composer-messages' dominating topic Share)
@@ -5569,20 +5569,36 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     composer-messages "Similar topics" (6). Refused: Chinese and Japanese
     segmentation of the title. Not ported: the
     similar_topic_candidate_ids modifier (discourse-ai's embeddings)
-287. `feat/share-topic-rest` M: what ShareTopic
-    (components/modal/share-topic.gjs, static/js/share-topic.js) leaves:
-    the invite button (allowInvites; CreateInvite with inviteToTopic,
-    components/modal/create-invite.gjs and lib/invite-modal.js, has no
-    client port), the new topic button (replyAsNewTopic for
-    can_reply_as_new_topic, a message's as a new message), the
-    restricted category's warning (GET /c/:id/visible_groups,
-    CategoriesController#visible_groups, is not routed), the modal for a
-    post (post.share.title with the post's date as subtitle, from the
-    post date link, post/meta-data/date.gjs, and the post menu's share
-    when the platform has no native one, post.gjs), the
-    share-topic-sources plugin outlet, and the composer's Share for a
-    topic other than the page's; share-topic-test.js' invite, post date
-    link and restricted category cases wait for them
+287. ~~`feat/share-topic-rest`~~ (done) M: ShareTopic
+    (components/modal/share-topic.gjs, static/js/share-topic.js) drew
+    only the topic's link and sources. Now the new topic button
+    (replyAsNewTopic for can_reply_as_new_topic: composer.js'
+    replyAsNewTopic opens a new topic in the topic's category, or a
+    message to the message's recipients, under the topic's draft key
+    with post.continue_discussion linking the post or the topic's
+    first), the restricted category's warning (DModal's @flash,
+    #modal-alert, from GET /c/:id/visible_groups, which was routed
+    already: topic.share.restricted_groups with the groups' names), and
+    the modal for a post (post.share.title and instructions, the post's
+    shareUrl, longDateNoYear of its shown date as Discourse.modal's new
+    subtitle): from the post date link (post/meta-data/date.gjs;
+    topic.js takes the click in the capture phase, ahead of the link's
+    boosted navigation) and the post menu's share (PostMenuShareButton,
+    drawn where post_menu lists it, posts/view.rs; the platform's share
+    where pwa-utils' canNativeShare has one, the modal otherwise or
+    should it fail). Tests: browser share-topic (10: share-topic-test.js'
+    new topic, post date link and restricted category cases, a
+    message's new message, the post menu's share), tests/sessions.rs'
+    the_post_menu_draws_share_where_the_setting_lists_it. Left: 288
+288. `feat/share-topic-invite` S: what 287 left of ShareTopic: the
+    invite button (allowInvites: can_invite_to_forum, canInviteTo and
+    not inviteDisabled; CreateInvite with inviteToTopic,
+    components/modal/create-invite.gjs and lib/invite-modal.js, waits
+    for the invite modals 192d left), share-topic-test.js' invite case,
+    the composer's Share for a topic other than the page's
+    (composer-messages.gjs' shareModalData is the composer's topic; the
+    modal reads the page's #quote-button-config, which only a topic
+    page carries), and the share-topic-sources plugin outlet
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script

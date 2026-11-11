@@ -1486,6 +1486,14 @@ fn menu(cx: &PostContext, p: &Value) -> String {
                 "link",
                 &format!(" data-share-url=\"{}\"", escape(&share_url(cx, number(p)))),
             )),
+            // PostMenuShareButton: ShareTopic for the post (topic.js).
+            "share" => Some(button(
+                "btn no-text btn-icon post-action-menu__share share btn-flat",
+                &t(cx.list, "post.controls.share"),
+                &t(cx.list, "post.controls.share"),
+                "d-post-share",
+                "",
+            )),
             // PostMenuFlagButton.shouldRender: the post's reviewable, or a
             // flag the viewer may make on a post that isn't hidden.
             "flag" => (reviewable_id(p).is_some()

@@ -10,15 +10,23 @@
 //       Sharing.shareSource: the source's URL in a popup, a new tab or,
 //       for email, this one. setting(name) reads the site settings the
 //       sources look at (facebook_app_id, title).
-//   Discourse.shareTopic.show()
+//   Discourse.shareTopic.show({ post })
 //       the modal for the page's topic: its link (topic.shareUrl, the
 //       footer share button's data-share-url) in a read-only input,
 //       selected on desktop, with a copy button, and the share_links
-//       sources. The settings, strings and topic are the page's
-//       #quote-button-config.
+//       sources. For a post ({ number, url, date }: its number, its
+//       shareUrl and its shown date in ms) the link, title and label are
+//       the post's and the date is the subtitle. The new topic button
+//       (replyAsNewTopic, composer.js) where the viewer may reply as a
+//       new topic, and the warning naming the groups a restricted
+//       category is visible to (GET /c/:id/visible_groups). The
+//       settings, strings and topic are the page's #quote-button-config.
+//   Discourse.shareTopic.sharePost(post)
+//       the post menu's share (post.gjs): the platform's own share where
+//       it has one, else the modal.
 //
-// Not ported yet: the invite, new topic and plugin outlet buttons, the
-// restricted category's warning and the modal for a post.
+// Not ported yet: the invite button (CreateInvite has no port) and the
+// share-topic-sources plugin outlet.
 (function () {
   "use strict";
 
@@ -158,9 +166,46 @@
     );
   }
 
-  function show() {
+  // formatter's longDateNoYear: the year only when it isn't this one.
+  function longDateNoYear(ms, t) {
+    var sameYear = new Date().getFullYear() === new Date(ms).getFullYear();
+    var pattern = t(sameYear ? "dates.long_date_without_year" : "dates.long_date_with_year");
+    return Discourse.dates ? Discourse.dates.format(ms, pattern) : "";
+  }
+
+  // _showRestrictedGroupWarning: DModal's @flash, above the body.
+  function restrictedGroupWarning(modal, categoryId, t) {
+    var base = (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+    fetch(base + "/c/" + categoryId + "/visible_groups.json", {
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin",
+    })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (result) {
+        var groups = (result && result.groups) || [];
+        var body = modal.isConnected && modal.querySelector(".d-modal__body");
+        if (!groups.length || !body) {
+          return;
+        }
+        var alert = document.createElement("div");
+        alert.id = "modal-alert";
+        alert.setAttribute("role", "alert");
+        alert.className = "alert alert-warning";
+        alert.textContent = t("topic.share.restricted_groups." + (groups.length === 1 ? "one" : "other"), {
+          count: groups.length,
+          groupNames: groups.join(", "),
+        });
+        body.parentNode.insertBefore(alert, body);
+      })
+      .catch(function () {});
+  }
+
+  function show(opts) {
     var config = readConfig();
-    var url = shareUrl();
+    var post = (opts && opts.post) || null;
+    var url = post ? new URL(post.url, location.href).href : shareUrl();
     if (!config || !url) {
       return;
     }
@@ -170,20 +215,36 @@
     function setting(name) {
       return settings[name];
     }
-    function t(key) {
-      return strings[key] === undefined ? key : strings[key];
+    function t(key, args) {
+      var text = strings[key] === undefined ? key : strings[key];
+      Object.keys(args || {}).forEach(function (name) {
+        text = text.split("%{" + name + "}").join(args[name]);
+      });
+      return text;
+    }
+    // can_reply_as_new_topic: a message's as a new message.
+    var newTopic = "";
+    if (topic.canReplyAsNewTopic && window.composer && window.composer.replyAsNewTopic) {
+      var about = t(topic.privateMessage ? "post.reply_as_new_private_message" : "post.reply_as_new_topic");
+      newTopic =
+        '<button class="btn btn-icon-text btn-default new-topic" aria-label="' + escapeHtml(about) +
+        '" title="' + escapeHtml(about) + '" type="button">' + icon("plus") +
+        '<span class="d-button-label">' +
+        escapeHtml(t(topic.privateMessage ? "user.new_private_message" : "topic.create")) +
+        "</span></button>";
     }
     var privateContext =
       !!settings.login_required || topic.privateMessage || topic.invisible || topic.readRestricted;
     var sources = activeSources(settings.share_links, privateContext);
 
-    Discourse.modal.show({
+    var close = Discourse.modal.show({
       className: "share-topic-modal",
-      title: t("topic.share.title"),
+      title: post ? t("post.share.title", { post_number: post.number }) : t("topic.share.title"),
+      subtitle: post ? longDateNoYear(post.date, t) : "",
       body: function (body) {
         body.innerHTML =
           '<form><div class="input-group invite-link"><label for="invite-link">' +
-          escapeHtml(t("topic.share.instructions")) +
+          escapeHtml(post ? t("post.share.instructions", { post_number: post.number }) : t("topic.share.instructions")) +
           '</label><div class="link-share-container">' +
           '<input class="ember-text-field invite-link" id="invite-link" name="invite-link" readonly size="200" type="text">' +
           '<button class="btn no-text btn-icon copy-button btn-primary" aria-label="' +
@@ -200,6 +261,7 @@
               );
             })
             .join("") +
+          newTopic +
           "</div></div></form>";
         var form = body.querySelector("form");
         var input = form.querySelector("input.invite-link");
@@ -217,6 +279,20 @@
             copy(button, input);
             return;
           }
+          // replyAsNewTopic: continuing from the post, or the topic's
+          // first.
+          if (button.classList.contains("new-topic")) {
+            window.composer.replyAsNewTopic({
+              title: topic.title,
+              url: new URL(url).pathname,
+              privateMessage: topic.privateMessage,
+              recipients: (topic.allowedUsers || []).concat(topic.allowedGroups || []),
+              category: topic.categoryId,
+              draftKey: topic.draftKey,
+            });
+            close();
+            return;
+          }
           var index = Array.prototype.indexOf.call(form.querySelectorAll(".sources > button"), button);
           if (sources[index]) {
             shareSource(sources[index], { url: url, title: topic.title, setting: setting });
@@ -224,6 +300,11 @@
         });
       },
     });
+
+    var modal = document.querySelector(".d-modal.share-topic-modal");
+    if (modal && topic.categoryId && !topic.privateMessage) {
+      restrictedGroupWarning(modal, topic.categoryId, t);
+    }
 
     // _selectUrl: if the input is auto-focused on mobile, iOS requires two
     // taps of the copy button.
@@ -234,5 +315,29 @@
     }
   }
 
-  Discourse.shareTopic = { show: show };
+  // pwa-utils' canNativeShare.
+  function canNativeShare() {
+    var html = document.documentElement;
+    return (
+      (html.classList.contains("ios-device") || /Android|Windows Phone/.test(navigator.userAgent)) &&
+      location.protocol === "https:" &&
+      typeof navigator.share !== "undefined"
+    );
+  }
+
+  // post.gjs' share: closing the platform's panel does nothing, and
+  // without one (or should it fail) the modal.
+  function sharePost(post) {
+    if (!canNativeShare()) {
+      show({ post: post });
+      return;
+    }
+    navigator.share({ url: new URL(post.url, location.href).href }).catch(function (e) {
+      if (!e || e.name !== "AbortError") {
+        show({ post: post });
+      }
+    });
+  }
+
+  Discourse.shareTopic = { show: show, sharePost: sharePost };
 })();
