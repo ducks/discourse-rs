@@ -95,6 +95,9 @@ test("a tile sets the reminder and saves at once", async ({ page, context, sessi
 
 test("the custom date and time and the relative time wait for Save", async ({ page, context, session }) => {
   const { id } = await bookmarked(page, context, session);
+  // The date is typed here, so the date picker is kept from loading: the
+  // field takes a typed date with or without it.
+  await page.route(/\/assets\/pikaday[^/]*\.js/, (route) => route.abort());
   await edit(page);
   await modal(page).locator("#tap_tile_custom").click();
   // The custom tile fills in an hour from now and does not save.

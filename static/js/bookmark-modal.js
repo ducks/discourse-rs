@@ -700,11 +700,16 @@
         customTime = timeInput.value;
         changed();
       });
-      if (mobileView()) {
-        dateInput.addEventListener("change", function () {
+      // A date typed in (the phone's date input, or the field before or
+      // without Pikaday): taken when it is one.
+      dateInput.addEventListener("change", function () {
+        var typed = m(dateInput.value, "YYYY-MM-DD", true);
+        if (typed.isValid() && dateInput.value !== customDate) {
           customDate = dateInput.value;
           changed();
-        });
+        }
+      });
+      if (mobileView()) {
         return;
       }
       // DatePickerFuture: Pikaday from today on.
@@ -734,7 +739,9 @@
             changed();
           },
         });
-      });
+      })
+      // Without the picker the field still takes a typed date.
+      .catch(function () {});
     }
 
     // selectShortcut. `keep` leaves the tiles as they are (the custom
