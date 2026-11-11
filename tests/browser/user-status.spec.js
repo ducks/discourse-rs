@@ -176,18 +176,62 @@ test("chat draws a status by the author, on mentions, in the DM's title, the sid
   await expect(mention.locator(".user-status-message img.emoji")).toHaveAttribute("alt", "tooth");
   // ChatChannelName's status for a DM with one other user, and the
   // sidebar link's (ChatSidebarIndicators).
-  await expect(
-    page.locator(".chat-channel-title .chat-channel-name__label .chat-channel__user-status-message img.emoji"),
-  ).toHaveAttribute("alt", "tooth");
-  await expect(
-    page.locator(`.sidebar-section[data-section-name="chat-dms"] .channel-${id} .user-status-message img.emoji`),
-  ).toHaveAttribute("alt", "tooth");
+  const title = page.locator(".chat-channel-title .chat-channel-name__label .chat-channel__user-status-message");
+  const sidebar = page.locator(`.sidebar-section[data-section-name="chat-dms"] .channel-${id} .user-status-message`);
+  await expect(title.locator("img.emoji")).toHaveAttribute("alt", "tooth");
+  await expect(sidebar.locator("img.emoji")).toHaveAttribute("alt", "tooth");
+
+  // trackStatus: a new status redraws each of them in the page.
+  await api(them, "PUT", "/user-status.json", { description: "Back at work", emoji: "computer" });
+  await expect(info.locator("img.emoji")).toHaveAttribute("alt", "computer");
+  await expect(page.locator(".chat-message-info__status")).toHaveCount(1);
+  await expect(mention.locator(".user-status-message img.emoji")).toHaveAttribute("alt", "computer");
+  await expect(mention.locator(".user-status-message")).toHaveCount(1);
+  await expect(title.locator("img.emoji")).toHaveAttribute("alt", "computer");
+  await expect(title).toHaveCount(1);
+  await expect(sidebar.locator("img.emoji")).toHaveAttribute("alt", "computer");
+  await info.hover();
+  await expect(tooltip.locator(".user-status-tooltip-description")).toHaveText("Back at work");
+  // A cleared one goes.
+  await api(them, "DELETE", "/user-status.json");
+  await expect(page.locator(".chat-message-info__status")).toHaveCount(0);
+  await expect(mention.locator(".user-status-message")).toHaveCount(0);
+  await expect(title).toHaveCount(0);
+  await expect(sidebar).toHaveCount(0);
+  // And one set where there was none is drawn.
+  await api(them, "PUT", "/user-status.json", { description: "At the dentist", emoji: "tooth" });
+  await expect(info.locator("img.emoji")).toHaveAttribute("alt", "tooth");
+  await expect(mention.locator(".user-status-message img.emoji")).toHaveAttribute("alt", "tooth");
+  await expect(title.locator("img.emoji")).toHaveAttribute("alt", "tooth");
+  await expect(sidebar.locator("img.emoji")).toHaveAttribute("alt", "tooth");
 
   // ChatUserInfo in the members list, with its description.
   await page.goto(`/chat/c/-/${id}/info/members`);
-  await expect(
-    page.locator(".c-channel-members__list-item .user-status .user-status-message-description"),
-  ).toHaveText("At the dentist");
+  const listed = page.locator(`.c-channel-members__list-item[data-user-id="${m.id}"] .user-status`);
+  await expect(listed.locator(".user-status-message-description")).toHaveText("At the dentist");
+  await api(them, "PUT", "/user-status.json", { description: "Back at work", emoji: "computer" });
+  await expect(listed.locator(".user-status-message-description")).toHaveText("Back at work");
+  await expect(listed.locator("img.emoji")).toHaveAttribute("alt", "computer");
+  await api(them, "DELETE", "/user-status.json");
+  await expect(listed.locator(".user-status-message")).toHaveCount(0);
+});
+
+test("the message creator's user rows follow a status live", async ({ page, context, session }) => {
+  const m = member();
+  const them = await session(m.name);
+  await api(them, "PUT", "/user-status.json", { description: "At the dentist", emoji: "tooth" });
+  // A member without direct messages: the sidebar offers to start one.
+  await login(context, member().name);
+  await page.goto("/latest");
+  await page.locator('.sidebar-section a[href="/chat/new-message"]').click();
+  const creator = page.locator(".chat-modal-new-message");
+  await creator.locator(".chat-message-creator__search-input__input").fill(m.name);
+  const row = creator.locator(`.chat-message-creator__chatable.-user[data-status-user-id="${m.id}"] .user-status`);
+  await expect(row.locator(".user-status-message-description")).toHaveText("At the dentist");
+  await api(them, "PUT", "/user-status.json", { description: "Back at work", emoji: "computer" });
+  await expect(row.locator(".user-status-message-description")).toHaveText("Back at work");
+  await api(them, "DELETE", "/user-status.json");
+  await expect(row.locator(".user-status-message")).toHaveCount(0);
 });
 
 test("the chat composer's mention autocomplete shows a status", async ({ page, context }) => {

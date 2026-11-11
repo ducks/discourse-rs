@@ -609,6 +609,77 @@
     return close;
   }
 
+  // UserStatusManager's tracked users in chat: a `user-status` event on
+  // the page's stream (routes/live.rs) carries each user whose status
+  // changed, and what chat shows of them is drawn again: by a message's
+  // author (ChatMessageInfo), on mentions in messages
+  // (updateUserStatusOnMention), after a one on one DM's title
+  // (ChatChannelName), and in the members' (ChatUserInfo) and the message
+  // creator's rows, those two with the description.
+  function redrawChat(user) {
+    var status = user.status;
+    var name = String(user.username);
+    document.querySelectorAll(".chat-message-info__username__name[data-user-card]").forEach(function (button) {
+      if (button.getAttribute("data-user-card") !== name) {
+        return;
+      }
+      var old = button.parentNode.querySelector(".chat-message-info__status");
+      if (old) {
+        old.remove();
+      }
+      if (status) {
+        button.insertAdjacentHTML(
+          "afterend",
+          '<span class="chat-message-info__status">' + messageHtml(status, false) + "</span>"
+        );
+      }
+    });
+    var href = "/u/" + name.toLowerCase();
+    document.querySelectorAll(".chat-message-text a.mention").forEach(function (mention) {
+      var path = mention.getAttribute("href") || "";
+      if (path.slice(-href.length) !== href) {
+        return;
+      }
+      mention.querySelectorAll(".user-status-message").forEach(function (old) {
+        old.remove();
+      });
+      if (status) {
+        mention.insertAdjacentHTML("beforeend", plainHtml(status, false));
+      }
+    });
+    document.querySelectorAll('.chat-channel-name__label[data-status-user-id="' + user.id + '"]').forEach(function (label) {
+      label.querySelectorAll(".user-status-message").forEach(function (old) {
+        old.remove();
+      });
+      if (status) {
+        label.insertAdjacentHTML("beforeend", messageHtml(status, false, "chat-channel__user-status-message"));
+      }
+    });
+    document
+      .querySelectorAll(
+        '.c-channel-members__list-item[data-user-id="' + user.id + '"] .user-status, ' +
+          '.chat-message-creator__chatable[data-status-user-id="' + user.id + '"] .user-status'
+      )
+      .forEach(function (slot) {
+        slot.innerHTML = status ? messageHtml(status, true) : "";
+      });
+  }
+
+  document.addEventListener("htmx:sseBeforeMessage", function (event) {
+    var message = event.detail;
+    if (!message || message.type !== "user-status") {
+      return;
+    }
+    event.preventDefault();
+    var users = [];
+    try {
+      users = JSON.parse(message.data) || [];
+    } catch (e) {
+      return;
+    }
+    users.forEach(redrawChat);
+  });
+
   Discourse.userStatus = {
     open: open,
     set: set,

@@ -20,6 +20,10 @@
 //!   current user's subscriptions): the member's own status redraws the
 //!   avatar's bubble, and on a topic page the posts it shows by or
 //!   mentioning a user whose status changed are drawn again with it.
+//!   Chat's statuses are the page's own to redraw: a `user-status` event
+//!   carries each changed user's id, username and status (null once
+//!   cleared) as JSON for static/js/user-status.js, and the sidebar's
+//!   chat sections are drawn again for a DM's link.
 //! - `banner`, for everyone: `/site/banner`'s banner (null once removed),
 //!   which static/js/site-banner.js draws.
 //!
@@ -425,6 +429,8 @@ async fn handle_batch(
             push_badge(live, Some(id))?;
         } else if live.user_status && message.channel == "/user-status" {
             user_status_changed(live, &message, id).await?;
+            // ChatSidebarIndicators' userStatus, on a DM's link.
+            chat = chat || live.chat.is_some();
         } else if alert.as_ref() == Some(&message.channel) {
             let base = live.state.config.globals.relative_url_root();
             live.pending.push_back(
@@ -546,6 +552,34 @@ async fn user_status_changed(
             String::new()
         };
         push_badge(live, Some(id.clone()))?;
+    }
+    // UserStatusManager's tracked users in chat (the messages' authors
+    // and mentions, a DM's title, the members' and the message creator's
+    // rows): the page's script redraws those it shows.
+    let names: Vec<(i32, String)> = {
+        let mut conn = live.state.pool.acquire().await?;
+        sqlx::query_as("SELECT id, username FROM users WHERE id = ANY($1) ORDER BY id")
+            .bind(&users)
+            .fetch_all(&mut *conn)
+            .await?
+    };
+    let statuses: Vec<Value> = names
+        .iter()
+        .map(|(user_id, username)| {
+            serde_json::json!({
+                "id": user_id,
+                "username": username,
+                "status": changed.get(&user_id.to_string()).filter(|s| s.is_object()),
+            })
+        })
+        .collect();
+    if !statuses.is_empty() {
+        live.pending.push_back(
+            Event::default()
+                .event("user-status")
+                .id(id.clone())
+                .data(Value::Array(statuses).to_string()),
+        );
     }
     let (Some(topic_id), Some((first, last))) = (
         live.topic_channel

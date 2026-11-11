@@ -1127,7 +1127,7 @@ async fn the_direct_messages_page_lists_a_members_dms() {
     assert!(html.contains("<div class=\"chat-channel-divider direct-message-channels-section\"><span class=\"channel-title\">DMs</span><div class=\"chat-channel-divider__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\""));
     assert!(html.contains("<a class=\"chat-channel-row can-leave has-unread\" tabindex=\"0\" data-chat-channel-id=\"3\" href=\"/chat/c/user2/3\"><div class=\"chat-channel-row__content is-dm\"><div class=\"chat-channel-icon --avatar\"><div class=\"chat-user-avatar\" data-username=\"user2\">"));
     // A DM's unread message is urgent.
-    assert!(html.contains("<div class=\"chat-channel-name__label\">user2</div><div class=\"chat-channel-unread-indicator -urgent\"><div class=\"chat-channel-unread-indicator__number\">1</div></div>"));
+    assert!(html.contains("<div class=\"chat-channel-name__label\" data-status-user-id=\"4\">user2</div><div class=\"chat-channel-unread-indicator -urgent\"><div class=\"chat-channel-unread-indicator__number\">1</div></div>"));
     assert!(html.contains("<button class=\"btn no-text btn-icon toggle-channel-membership-button -leave btn-flat chat-channel-leave-btn\" title=\"Close channel\" type=\"button\">"));
     assert!(!html.contains("chat-channel__last-message"));
     assert!(!html.contains("c-footer"));

@@ -1445,7 +1445,8 @@ pub(crate) fn channel_title(
     let icon = channel_icon(c, emojis, base_path, online);
     if c["chatable_type"] == "DirectMessage" {
         return format!(
-            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}{}</div></div></div>",
+            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\"{}>{}{}</div></div></div>",
+            dm_status_user(c),
             escape(c["unicode_title"].as_str().unwrap_or(s(&c["title"]))),
             dm_user_status(c, emojis, base_path)
         );
@@ -1459,6 +1460,17 @@ pub(crate) fn channel_title(
 /// ChatChannelName#showUserStatus: a DM with one other user shows their
 /// status after its title. Its @showDescription reads `this.site`, which
 /// ChatChannelName does not inject, so the description never shows.
+/// The attribute on a one on one DM's title naming the user whose status
+/// follows it, for static/js/user-status.js' live redraw (trackStatus).
+pub(crate) fn dm_status_user(c: &Value) -> String {
+    match c["chatable"]["users"].as_array().map(Vec::as_slice) {
+        Some([user]) if c["chatable_type"] == "DirectMessage" => {
+            format!(" data-status-user-id=\"{}\"", user["id"])
+        }
+        _ => String::new(),
+    }
+}
+
 pub(crate) fn dm_user_status(c: &Value, emojis: &crate::emojis::Emojis, base_path: &str) -> String {
     let users = c["chatable"]["users"].as_array();
     match users.map(Vec::as_slice) {
