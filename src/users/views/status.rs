@@ -163,13 +163,6 @@ pub fn script_attrs(
             "remove_status": t("user_status.remove_status"),
             "save": t("user_status.save"),
             "cancel": t("cancel"),
-            "in_one_hour": t("time_shortcut.in_one_hour"),
-            "in_two_hours": t("time_shortcut.in_two_hours"),
-            "tomorrow": t("time_shortcut.tomorrow"),
-            "custom": t("time_shortcut.custom"),
-            "never": t("time_shortcut.never"),
-            "time": t("dates.time"),
-            "time_short_day": t("dates.time_short_day"),
             "timezone": timezone,
             "icons": {
                 "trash-can": crate::topic_list_view::icon("trash-can", None),
