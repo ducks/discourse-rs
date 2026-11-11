@@ -63,6 +63,28 @@ async function openChannel(page, url) {
 
 const message = (page, id) => page.locator(`.chat-message-container[data-id="${id}"]`);
 
+// A jump highlights its message for two seconds only (ChatMessage#highlight),
+// and typing a filter may search more than once, so the class can be gone
+// again before an assertion looks. This records every message that gets it.
+async function watchHighlights(page) {
+  await page.evaluate(() => {
+    window.__highlighted = [];
+    new MutationObserver((records) => {
+      for (const r of records) {
+        if (r.target.classList.contains("-highlighted") && r.target.dataset.id) {
+          window.__highlighted.push(r.target.dataset.id);
+        }
+      }
+    }).observe(document.body, { attributes: true, attributeFilter: ["class"], subtree: true });
+  });
+}
+
+// The message highlighted last, since the watch began or the last call.
+const highlighted = (page, id) =>
+  expect
+    .poll(() => page.evaluate(() => window.__highlighted[window.__highlighted.length - 1]))
+    .toBe(String(id));
+
 // A member of the test's own, never seen: a member's first request
 // auto-joins them to General (Chat::AutoJoinChannels on user_seen), as
 // it would user2 once any spec signs in as them.
@@ -132,17 +154,18 @@ test("the navbar's filter searches the channel and jumps through the results", a
   await expect(input).toHaveAttribute("placeholder", "Search chat");
 
   // Latest first: the newest is the first result, highlighted in place.
+  await watchHighlights(page);
   await input.pressSequentially(word, { delay: 5 });
   await expect(bar.locator(".chat-channel__filter-position")).toHaveText("1/3");
-  await expect(message(page, rows[2])).toHaveClass(/-highlighted/);
+  await highlighted(page, rows[2]);
   // Up is older, wrapping round; down is newer.
   await bar.locator(".chat-channel__prev-result").click();
   await expect(bar.locator(".chat-channel__filter-position-index")).toHaveText("2");
-  await expect(message(page, rows[1])).toHaveClass(/-highlighted/);
+  await highlighted(page, rows[1]);
   await bar.locator(".chat-channel__next-result").click();
   await bar.locator(".chat-channel__next-result").click();
   await expect(bar.locator(".chat-channel__filter-position-index")).toHaveText("3");
-  await expect(message(page, rows[0])).toHaveClass(/-highlighted/);
+  await highlighted(page, rows[0]);
 
   // Nothing found; a blank filter clears it.
   await input.fill(label("nothing").replace(/\W/g, ""));
