@@ -49,6 +49,13 @@ async function edit(page) {
 
 test("a tile sets the reminder and saves at once", async ({ page, context, session }) => {
   const { t, id } = await bookmarked(page, context, session);
+  // The page asked for again after a save (the footer and the menu drawn
+  // again) answers late here: the menu opened before it lands must hold
+  // what was saved already.
+  await page.route(new RegExp(`${t.url}$`), async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
   await edit(page);
   await expect(modal(page)).toHaveAttribute("data-bookmark-id", String(id));
   await expect(modal(page).locator("#discourse-modal-title")).toHaveText("Edit bookmark");
