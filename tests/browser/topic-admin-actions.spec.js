@@ -25,6 +25,24 @@ async function openMenu(page) {
   await expect(page.locator(MENU)).toBeVisible();
 }
 
+// After a reload the browser restores the scroll and the suggested
+// topics arrive, both after the load event. A menu opened before that
+// moves under the pointer, and the click on its item lands nowhere.
+async function settled(page) {
+  let last;
+  await expect
+    .poll(
+      async () => {
+        const now = await page.evaluate(() => window.scrollY + ":" + document.documentElement.scrollHeight);
+        const same = now === last;
+        last = now;
+        return same;
+      },
+      { intervals: [250] },
+    )
+    .toBe(true);
+}
+
 async function menuItem(page, name) {
   await openMenu(page);
   await page.locator(`${MENU} .${name} .btn`).click();
@@ -72,6 +90,7 @@ test("FeatureTopic pins until a date, then unpins", async ({ page, context, sess
 
   // Pinned: the until date and Un-Pin Topic.
   await reloaded;
+  await settled(page);
   await menuItem(page, "topic-admin-pin");
   await expect(modal.locator(".feature-section__description").first()).toContainText("or wait until");
   await modal.locator(".btn-primary", { hasText: "Un-Pin Topic" }).click();
@@ -102,6 +121,7 @@ test("FeatureTopic pins globally and makes and removes the banner", async ({ pag
   await expect.poll(() => topicRow(t, "pinned_at IS NOT NULL, pinned_globally")).toEqual(["t", "t"]);
 
   await reloaded;
+  await settled(page);
   await menuItem(page, "topic-admin-pin");
   await expect(modal.locator(".feature-section__description").first()).toContainText(
     "Remove this topic from the top of all topic lists",
@@ -114,6 +134,7 @@ test("FeatureTopic pins globally and makes and removes the banner", async ({ pag
   ).toEqual([["pinned_globally.enabled"], ["banner.enabled"]]);
 
   await reloaded;
+  await settled(page);
   await menuItem(page, "topic-admin-pin");
   await expect(modal).toContainText("Remove the banner that appears at the top of all pages.");
   await modal.locator(".btn-primary", { hasText: "Remove Banner Topic" }).click();
@@ -142,6 +163,7 @@ test("Recover PUTs /t/:id/recover", async ({ page, context, session }) => {
   expect(sql("SELECT deleted_at IS NULL FROM posts WHERE id = :'p1'", t.posts[0])).toEqual([["t"]]);
   expect(sql("SELECT COUNT(*) FROM user_histories WHERE action = 55 AND topic_id = :'p1'", t.id)).toEqual([["1"]]);
   await reloaded;
+  await settled(page);
   await openMenu(page);
   await expect(page.locator(`${MENU} .topic-admin-delete`)).toHaveCount(1);
 });
@@ -203,6 +225,7 @@ test("reset bump date and slow mode", async ({ page, context, session }) => {
   await expect.poll(() => topicRow(t, "slow_mode_seconds")).toEqual(["600"]);
 
   await reloaded;
+  await settled(page);
   await menuItem(page, "topic-admin-slow-mode");
   await expect(modal.locator(".slow-mode-type summary")).toHaveAttribute("data-value", "600");
   await expect(modal.locator(".d-modal__footer .btn-primary")).toHaveText("Update");
