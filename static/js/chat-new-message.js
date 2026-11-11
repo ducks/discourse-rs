@@ -494,7 +494,13 @@
       isDirectMessage(channel) && dmUsers.length === 1 && dmUsers[0].status && Discourse.userStatus
         ? Discourse.userStatus.messageHtml(dmUsers[0].status, false, "chat-channel__user-status-message")
         : "";
-    return '<div class="chat-channel-name"><div class="chat-channel-name__label">' + escapeHtml(title) + status + "</div></div>";
+    // Whose status it is, for user-status.js' live redraw.
+    var statusUser =
+      isDirectMessage(channel) && dmUsers.length === 1 ? ' data-status-user-id="' + dmUsers[0].id + '"' : "";
+    return (
+      '<div class="chat-channel-name"><div class="chat-channel-name__label"' + statusUser + ">" +
+      escapeHtml(title) + status + "</div></div>"
+    );
   }
 
   // ChatChannelTitle
@@ -530,7 +536,9 @@
       var userUrgent = t.unreadCount > 0 || t.mentionCount > 0 || t.watchedThreadsUnreadCount > 0;
       var userUnread = item.unreadThreadCount > 0;
       return (
-        '<div class="chat-message-creator__chatable -user"' +
+        '<div class="chat-message-creator__chatable -user" data-status-user-id="' +
+        item.model.id +
+        '"' +
         disabledAttr(!item.enabled) +
         ">" +
         avatar(item.model) +

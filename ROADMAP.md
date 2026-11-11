@@ -72,9 +72,10 @@ the local release report is
 `tmp/rehearsal/release-20261101-focus/report/index.html`.
 
 Remaining chat follow-ups include the navbar's live thread indicators
-(160b1), GIFs (224b), live user status (130c) and further reviewable
-cases (148b). Thread tracking (160b) and the drawer's routes (223e) are
-done. The demo checklist's one open blocker is the rich editor (196).
+(160b1), GIFs (224b), the status modal's custom date tile (130c) and
+further reviewable cases (148b). Thread tracking (160b) and the drawer's
+routes (223e) are done. The demo checklist's one open blocker is the rich
+editor (196).
 Performance item 285 is low priority. Full parity remains the long-term
 goal; the older counts below are a dated snapshot, not current totals.
 
@@ -371,7 +372,7 @@ Visible if clicked, avoid them in a scripted demo:
   its player; the composer doesn't make a video's thumbnail yet (139).
 - [x] Checklists can't be checked (242): feat/checklist-toggle, done,
   boxes toggle with their batching, retries and optimistic drawing. User
-  status can't be set (130): done in 130a and 130b; what's left is 130c.
+  status can't be set (130): done in 130a, 130b and 130c2; what's left is 130c.
 - [x] The review queue's claims and notes are refused (194), and the topic
   admin wrench isn't drawn (194, 262a): the wrench and the post admin
   menu, feat/topic-admin-menus (194a), and claims and notes,
@@ -1983,7 +1984,7 @@ have handlers now.
     category_list.rs:349), default tag preferences at signup
     (signup.rs:971), staff groups' category and tag notification
     defaults (roles.rs:163)
-130. ~~`feat/user-status`~~ (done in 130a and 130b; left: 130c) M: user status (UserStatus, the /user-status
+130. ~~`feat/user-status`~~ (done in 130a, 130b and 130c2; left: 130c) M: user status (UserStatus, the /user-status
     routes, the status modal) wherever a user is serialized (users.rs:540;
     current_user.rs:304; about.rs:253; bus.rs:476; directory.rs:650;
     topic_view.rs:1766; routes/groups.rs:867; routes/admin_api_keys.rs:74;
@@ -2047,14 +2048,12 @@ have handlers now.
     tests/chat_threads.rs (the bus, the page),
     tests/plugin_gamification.rs, tests/browser/user-status.spec.js.
     Left, as 130c.
-    130c. `feat/user-status-rest` M: chat's live status tracking
-    (user.statusManager.trackStatus: a /user-status change redraws chat's
-    statuses in the page; until then they show as of the page's render
-    and each message as of its live redraw) and DTimeShortcutPicker's
+    130c. `feat/user-status-picker` M: DTimeShortcutPicker's
     custom date and time tile (DatePickerFuture, the time input,
     DRelativeTimePicker and the last custom tile; refused in the modal).
     The core composer's mention autocomplete, with its statuses, is done
-    in 130c1. MessageBus.last_id("/user-status") stays 0 with item 100's
+    in 130c1, chat's live status tracking in 130c2.
+    MessageBus.last_id("/user-status") stays 0 with item 100's
     placeholders.
     130c1. ~~`feat/composer-autocomplete`~~ (done) M: d-editor's
     autocompletes in the core composer, in both modes (docs/rich-editor.md,
@@ -2083,6 +2082,22 @@ have handlers now.
     Not here: the other d-editors' autocompletes (About me, review edits,
     admin texts). ComposerMessages, which the mention warnings feed, is
     213's.
+    130c2. ~~`feat/user-status-rest`~~ (done) M: chat's statuses showed
+    as of the page's render (each message as of its live redraw). Now a
+    /user-status change redraws them in the page
+    (user.statusManager.trackStatus): the page's stream (routes/live.rs)
+    sends a `user-status` event with each changed user's id, username
+    and status (null once cleared) to whoever /user-status' audience
+    lets hear it, and static/js/user-status.js draws them again by a
+    message's author (ChatMessageInfo), on mentions in messages
+    (updateUserStatusOnMention), after a one on one DM's title
+    (ChatChannelName, in titles, rows and the new message list; the
+    label names its user in data-status-user-id) and in the members'
+    (ChatUserInfo) and the message creator's rows with the description;
+    the sidebar's chat sections are drawn again by the server for a
+    DM's link (ChatSidebarIndicators). Tests: browser user-status (the
+    chat test follows a changed, cleared and new status in each place;
+    the message creator's rows)
 131. ~~`feat/avatars`~~ (done, 131a-c) M: generated letter avatars
     (avatar.rs:134, LetterAvatar), default_avatars and restrict_letter_avatar_colors
     (:113,122), avatar uploads and picking (uploads.rs:339), gravatar
