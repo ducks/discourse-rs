@@ -2787,22 +2787,28 @@ have handlers now.
     messages as ChatSubscriptionsManager hears them (the first page's
     channels only before). Tests in tests/browser/chat-threads.spec.js
     and tests/browser/chat-drawer-routes.spec.js. Left, as 160b2.
-    160b2. `feat/chat-threads-navbar-indicators` S: the navbar's thread
-    indicators following the tracking state (ChatThreadsListButton's
-    has-unreads and ThreadHeaderUnreadIndicator over
-    threadsManager.unreadThreadCount, and ChatThreadHeader#backLink's
-    pick by it, drawn once by the server now). Needs the server to draw
-    on .c-navbar__threads-list-button and the thread's
-    .c-navbar__back-button (plugins/chat/page.rs, thread_view.rs): the
-    channel id, its unread_thread_overview (thread ids to last reply
-    times, threadsManager.unreadThreadOverview), the viewer's id and
-    ignored users (currentUser.ignored_users, which _onNewChannelMessage
-    and _onNewThreadMessage skip) and js.chat.unread_threads_count's one
-    and other forms (the indicator's title, set when it is drawn; the
-    page has no strings for it). Then chat-thread.js keeps the overview
-    from /chat/:id/new-messages (followed) and
-    /chat/user-tracking-state/:id, the threads' memberships through
-    threadsManager.find (GET /chat/api/channels/:id/threads/:id).
+    160b2. ~~`feat/chat-threads-navbar-indicators`~~ (done) S: the
+    navbar's thread indicators were drawn once by the server. Now they
+    follow the tracking state (ChatThreadsListButton's has-unreads and
+    ThreadHeaderUnreadIndicator over threadsManager.unreadThreadCount,
+    and ChatThreadHeader#backLink's pick by it): the server draws on
+    .c-navbar__threads-list-button and the thread's
+    .c-navbar__back-button (thread_view.rs' unread_threads_tracking) the
+    channel id, its unread threads' ids (unreadThreadOverview's keys),
+    the viewer's id, ignored users and followed channels, do not
+    disturb, and js.chat.unread_threads_count's one and other forms
+    (the indicator's title). chat-thread.js' setupNavbarTracking keeps
+    the ids from /chat/user-tracking-state/:id (the channel's
+    unread_thread_overview, _updateChannelTrackingData) and
+    /chat/:id/new-messages while followed (a reply in a thread the
+    viewer is a member of, threadsManager.find through GET
+    /chat/api/channels/:id/threads/:id, marks it unread unless it is
+    their own or an ignored user's; a thread type's past the last read
+    and not quiet, their own reads it), and draws the button's class and
+    count, or the back link (the threads with their count while some
+    are unread, else the channel, without a previous chat route). Tests:
+    browser chat-threads "the navbar's thread indicators follow the
+    tracking state"; tests/chat_threads.rs (the button's attributes)
 161. `feat/chat-uploads` M: ~~chat message uploads~~ (done,
     feat/chat-uploads: Chat::CreateMessage and Chat::UpdateMessage take
     upload_ids, the sender's own uploads (user_uploads) while

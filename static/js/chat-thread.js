@@ -879,11 +879,23 @@
       target = "my-threads";
     }
     if (!target) {
-      return;
+      // The server's pick, kept as the unread threads change
+      // (setupNavbarTracking).
+      target = back.dataset.unreadIndicator ? "threads" : "channel";
     }
-    var href = target === "threads" ? back.dataset.threadsHref : back.dataset.myThreadsHref;
+    var href =
+      target === "threads"
+        ? back.dataset.threadsHref
+        : target === "channel"
+          ? back.dataset.channelHref
+          : back.dataset.myThreadsHref;
     back.setAttribute("href", href);
-    back.title = target === "threads" ? back.dataset.labelThreads : back.dataset.labelMyThreads;
+    back.title =
+      target === "threads"
+        ? back.dataset.labelThreads
+        : target === "channel"
+          ? back.dataset.labelChannel
+          : back.dataset.labelMyThreads;
     var indicator = back.querySelector(".chat-thread-header-unread-indicator");
     if (indicator) {
       indicator.remove();
@@ -891,6 +903,135 @@
     if (target === "threads" && back.dataset.unreadIndicator) {
       back.insertAdjacentHTML("afterbegin", back.dataset.unreadIndicator);
     }
+  }
+
+  // ThreadHeaderUnreadIndicator, as page.rs' thread_header_unread_indicator
+  // draws it: the count capped at 99, titled with
+  // chat.unread_threads_count.
+  function unreadIndicatorHtml(el, count) {
+    if (!count || el.hasAttribute("data-do-not-disturb")) {
+      return "";
+    }
+    var capped = count > 99 ? "99+" : String(count);
+    var indicator = document.createElement("div");
+    indicator.className = "chat-thread-header-unread-indicator";
+    indicator.title = ((count === 1 ? el.dataset.titleOne : el.dataset.titleOther) || "").split("%{count}").join(capped);
+    var number = document.createElement("div");
+    number.className = "chat-thread-header-unread-indicator__number";
+    number.textContent = capped;
+    indicator.appendChild(number);
+    return indicator.outerHTML;
+  }
+
+  // The navbar's thread indicators over threadsManager.unreadThreadCount:
+  // ChatNavbarThreadsListButton's has-unreads and count beside a channel,
+  // ChatThreadHeader's back link and its count in a thread. The server
+  // draws them with the channel's unread threads, and they follow
+  // ChatSubscriptionsManager from there: the viewer's tracking state
+  // brings the channel's overview (a thread read here or elsewhere),
+  // and a reply in a thread of a followed channel marks it unread when
+  // the viewer is its member (threadsManager.find), unless it is their
+  // own or an ignored user's.
+  function setupNavbarTracking() {
+    var el = document.querySelector(
+      ".c-navbar__threads-list-button[data-unread-threads], .c-routes.--channel-thread .c-navbar__back-button[data-unread-threads]"
+    );
+    if (!el) {
+      return function () {};
+    }
+    var channelId = el.dataset.channelId;
+    var viewer = viewerOf(el);
+    var unread = {};
+    try {
+      JSON.parse(el.dataset.unreadThreads || "[]").forEach(function (id) {
+        unread[String(id)] = true;
+      });
+    } catch (e) {
+      unread = {};
+    }
+    var draw = function () {
+      var count = Object.keys(unread).length;
+      var html = unreadIndicatorHtml(el, count);
+      if (el.classList.contains("c-navbar__back-button")) {
+        el.dataset.unreadIndicator = html;
+        drawBackLink();
+        return;
+      }
+      el.classList.toggle("has-unreads", count > 0);
+      var shown = el.querySelector(".chat-thread-header-unread-indicator");
+      if (shown) {
+        shown.remove();
+      }
+      el.insertAdjacentHTML("beforeend", html);
+    };
+    var channels = [];
+    if (viewer.followed.indexOf(channelId) !== -1) {
+      channels.push("/chat/" + channelId + "/new-messages");
+    }
+    if (viewer.id) {
+      channels.push("/chat/user-tracking-state/" + viewer.id);
+    }
+    if (!channels.length) {
+      return function () {};
+    }
+    var source = subscribe(
+      channels,
+      function (message) {
+        var data = message.data || {};
+        if (message.channel !== "/chat/" + channelId + "/new-messages") {
+          // _updateChannelTrackingData
+          if (String(data.channel_id) === channelId && data.unread_thread_overview) {
+            unread = {};
+            Object.keys(data.unread_thread_overview).forEach(function (id) {
+              unread[id] = true;
+            });
+            draw();
+          }
+          return;
+        }
+        var reply = data.message;
+        if (!data.thread_id || !reply || !reply.user) {
+          return;
+        }
+        var id = String(data.thread_id);
+        if (reply.user.id === viewer.id) {
+          // _onNewThreadMessage: the viewer's own reply reads the thread.
+          if (data.type === "thread" && unread[id]) {
+            delete unread[id];
+            draw();
+          }
+          return;
+        }
+        if (viewer.ignored.indexOf(reply.user.username) !== -1) {
+          return;
+        }
+        return fetch(basePath() + "/chat/api/channels/" + channelId + "/threads/" + id, {
+          credentials: "same-origin",
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+        })
+          .then(function (r) {
+            return r.ok ? r.json() : null;
+          })
+          .then(function (found) {
+            var membership = found && found.thread && found.thread.current_user_membership;
+            if (!membership) {
+              return;
+            }
+            // _onNewThreadMessage: past the last read, and not quiet.
+            if (data.type === "thread" && (!(reply.id > (membership.last_read_message_id || 0)) || quiet(membership))) {
+              return;
+            }
+            unread[id] = true;
+            draw();
+          });
+      },
+      function () {}
+    );
+    return function () {
+      if (source) {
+        source.close();
+      }
+    };
   }
 
   // ChatModalThreadSettings: the title saved (PUT .../threads/:id), the
@@ -1640,7 +1781,7 @@
     if (pane) {
       drawBackLink();
     }
-    var parts = [setupPanel(), setupLists()];
+    var parts = [setupPanel(), setupLists(), setupNavbarTracking()];
     if (pane) {
       parts.push(mountPane(pane, focus));
     }

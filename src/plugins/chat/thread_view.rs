@@ -33,19 +33,48 @@ pub enum ThreadBack {
 }
 
 impl Context<'_> {
-    /// The channel's unread threads (threadsManager.unreadThreadCount).
-    pub(crate) async fn unread_thread_count(
+    /// The channel's unread threads with what chat-thread.js keeps the
+    /// navbar's thread indicators current from, as attributes: the
+    /// channel, its unread threads' ids (threadsManager.unreadThreadOverview's
+    /// keys), the viewer with their ignored users and followed channels,
+    /// whether the indicator hides (do not disturb), and
+    /// chat.unread_threads_count's forms for its title.
+    pub(crate) async fn unread_threads_tracking(
         &mut self,
         channel: &ChannelRow,
-    ) -> Result<usize, AppError> {
+        do_not_disturb: bool,
+    ) -> Result<(usize, String), AppError> {
         if !channel.threading_enabled || !self.guardian.is_authenticated() {
-            return Ok(0);
+            return Ok((0, String::new()));
         }
         let overview = self.unread_thread_overview(&[channel.id]).await?;
-        Ok(overview
+        let mut ids: Vec<i64> = overview
             .get(&channel.id.to_string())
             .and_then(Value::as_object)
-            .map_or(0, |o| o.len()))
+            .map(|o| o.keys().filter_map(|k| k.parse().ok()).collect())
+            .unwrap_or_default();
+        ids.sort_unstable();
+        let title = |form: &str| {
+            escape(
+                self.i18n
+                    .t(&format!("js.chat.unread_threads_count.{form}"))
+                    .unwrap_or_default(),
+            )
+        };
+        let attrs = format!(
+            " data-channel-id=\"{}\" data-unread-threads=\"{}\" data-title-one=\"{}\" data-title-other=\"{}\"{}{}",
+            channel.id,
+            escape(&Value::from(ids.clone()).to_string()),
+            title("one"),
+            title("other"),
+            if do_not_disturb {
+                " data-do-not-disturb"
+            } else {
+                ""
+            },
+            self.list_viewer_attrs().await?,
+        );
+        Ok((ids.len(), attrs))
     }
 
     /// A thread of the channel that shows (ChatChannelThread's model and
@@ -155,11 +184,13 @@ impl Context<'_> {
                 .bind(thread.original_message_id)
                 .fetch_one(&mut *self.conn)
                 .await?;
-        let unread = self.unread_thread_count(channel).await?;
         let do_not_disturb = match self.guardian.user_id() {
             Some(id) => crate::notification_create::do_not_disturb(&mut *self.conn, id).await?,
             None => false,
         };
+        let (unread, tracking) = self
+            .unread_threads_tracking(channel, do_not_disturb)
+            .await?;
         // ChatThreadTitlePrompt#canShowToast: on a phone, for the original
         // message's author or an admin, an untitled thread with five
         // replies or more whose prompt the member hasn't seen, while they
@@ -226,7 +257,7 @@ impl Context<'_> {
                 thread_membership.as_ref().map(|m| m.notification_level),
                 original_user,
                 // The unread threads, none counted in do not disturb.
-                (!do_not_disturb).then_some(unread),
+                ((!do_not_disturb).then_some(unread), &tracking),
             ));
         }
         // The latest message, which scrollToLatestMessage loads around.
@@ -485,7 +516,7 @@ impl Context<'_> {
     /// (the thread's, else "Thread"; clickable for admins and the original
     /// message's author), the tracking dropdown and settings button for
     /// members, and the close button on desktop. `unread` is None in do
-    /// not disturb.
+    /// not disturb; `tracking` is unread_threads_tracking's attributes.
     fn thread_header(
         &self,
         c: &Value,
@@ -493,7 +524,7 @@ impl Context<'_> {
         thread: &ThreadRow,
         level: Option<i32>,
         original_user: Option<i64>,
-        unread: Option<usize>,
+        (unread, tracking): (Option<usize>, &str),
     ) -> String {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
@@ -528,7 +559,7 @@ impl Context<'_> {
             // What chat-thread.js picks the back link from with the
             // previous chat route (ChatHistory).
             out.push_str(&format!(
-                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{href}\" data-channel-href=\"{channel_url}\" data-threads-href=\"{channel_url}/t\" data-my-threads-href=\"{}/chat/threads\" data-label-channel=\"{}\" data-label-threads=\"{}\" data-label-my-threads=\"{}\" data-unread-indicator=\"{}\">{indicator}{}</a>",
+                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{href}\"{tracking} data-channel-href=\"{channel_url}\" data-threads-href=\"{channel_url}/t\" data-my-threads-href=\"{}/chat/threads\" data-label-channel=\"{}\" data-label-threads=\"{}\" data-label-my-threads=\"{}\" data-unread-indicator=\"{}\">{indicator}{}</a>",
                 escape(&title),
                 self.base_path,
                 escape(&t("chat.return_to_channel")),
