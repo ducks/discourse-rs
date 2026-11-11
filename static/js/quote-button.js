@@ -812,7 +812,8 @@
   // TopicController#selectText: the composer takes the quote (at the
   // cursor when open, after the draft otherwise, replying to the post
   // unless it is the first). Without the right to reply, Ember starts a
-  // new topic with it instead, which composer.js does not do yet.
+  // new topic with it instead (replyAsNewTopic): what that needs of the
+  // topic goes along.
   function insertQuote(state) {
     hideToolbar();
     quotePost(state)
@@ -826,6 +827,19 @@
               postNumber: post.post_number,
               username: post.username,
               canCreatePost: config.topic.canCreatePost,
+              newTopic: {
+                title: config.topic.title,
+                url:
+                  basePath() +
+                  "/t/" +
+                  (config.topic.slug ? config.topic.slug + "/" : "") +
+                  config.topic.id +
+                  (post.post_number > 1 ? "/" + post.post_number : ""),
+                privateMessage: config.topic.privateMessage,
+                recipients: (config.topic.allowedUsers || []).concat(config.topic.allowedGroups || []),
+                category: config.topic.categoryId,
+                draftKey: config.topic.draftKey,
+              },
             },
           })
         );

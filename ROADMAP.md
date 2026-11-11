@@ -5589,7 +5589,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     should it fail). Tests: browser share-topic (10: share-topic-test.js'
     new topic, post date link and restricted category cases, a
     message's new message, the post menu's share), tests/sessions.rs'
-    the_post_menu_draws_share_where_the_setting_lists_it. Left: 288
+    the_post_menu_draws_share_where_the_setting_lists_it. The quote
+    toolbar's Quote where the viewer may not reply (a closed topic) was
+    refused by name; it starts the new topic the same way with the
+    quote after the link (TopicController#selectText; browser
+    quote-button, 2, the toolbar's first). Left: 288
 288. `feat/share-topic-invite` S: what 287 left of ShareTopic: the
     invite button (allowInvites: can_invite_to_forum, canInviteTo and
     not inviteDisabled; CreateInvite with inviteToTopic,
