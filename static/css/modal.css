@@ -642,3 +642,129 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .d-modal.share-topic-modal form {
   margin-bottom: 0;
 }
+
+/* BookmarkModal (static/js/bookmark-modal.js), as Rails compiles
+   common/components/bookmark-modal.scss, time-shortcut-picker.scss and
+   relative-time-picker.scss. */
+
+/* bookmark-modal.scss:4 */
+.bookmark-reminder-modal .d-modal__body {
+  box-sizing: border-box;
+}
+
+/* bookmark-modal.scss:7 */
+.bookmark-reminder-modal .d-modal__body .control-label {
+  font-weight: 700;
+}
+
+/* bookmark-modal.scss:11 */
+.bookmark-reminder-modal .d-modal__body .ember-text-field.bookmark-name {
+  width: 100%;
+  margin-bottom: 0.5em;
+}
+
+/* bookmark-modal.scss:18 */
+.bookmark-reminder-modal .d-modal__footer .delete-bookmark {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* bookmark-modal.scss:25 */
+.bookmark-reminder-modal .existing-reminder-at-alert {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* bookmark-modal.scss:30 */
+.bookmark-reminder-modal .existing-reminder-at-alert .d-icon {
+  margin-right: 1em;
+}
+
+/* bookmark-modal.scss:35 */
+.bookmark-reminder-modal .bookmark-options-panel {
+  margin-bottom: 18px;
+}
+
+/* bookmark-modal.scss:38 */
+.bookmark-reminder-modal .bookmark-options-panel .select-kit {
+  width: 100%;
+}
+
+/* relative-time-picker.scss:1 */
+.relative-time-picker {
+  display: flex;
+}
+
+/* relative-time-picker.scss:4 */
+.relative-time-picker input[type="text"] {
+  flex: 1;
+}
+
+/* relative-time-picker.scss:8 */
+.relative-time-picker .relative-time-duration {
+  margin-bottom: 0;
+}
+
+/* relative-time-picker.scss:12 */
+.relative-time-picker .select-kit {
+  flex: 1;
+  width: auto;
+  margin-left: 5px;
+}
+
+/* relative-time-picker.scss:18 */
+.relative-time-picker:last-child {
+  margin-right: auto;
+}
+
+/* time-shortcut-picker.scss:1 */
+.custom-date-time-wrap {
+  padding: 1em 1em 0.5em;
+  border: 1px solid var(--content-border-color);
+  border-top: none;
+  background: var(--primary-very-low);
+}
+
+/* time-shortcut-picker.scss:7 */
+.custom-date-time-wrap .d-icon {
+  padding: 0 0.75em 0 0;
+  color: var(--primary-high);
+  margin-top: -0.5em;
+}
+
+/* time-shortcut-picker.scss:13 */
+.custom-date-time-wrap .angle-icon {
+  margin-top: 0;
+  padding: 0 0 0 5px;
+}
+
+/* time-shortcut-picker.scss:18 */
+.custom-date-time-wrap .tap-tile-date-input,
+.custom-date-time-wrap .tap-tile-time-input {
+  display: flex;
+  align-items: center;
+}
+
+/* time-shortcut-picker.scss:24 */
+.custom-date-time-wrap .date-picker,
+.custom-date-time-wrap .time-input {
+  text-align: left;
+}
+
+/* time-shortcut-picker.scss:29 */
+.custom-date-time-wrap .time-input,
+.custom-date-time-wrap .date-picker-wrapper {
+  flex: 1 1 auto;
+}
+
+/* time-shortcut-picker.scss:34 */
+.custom-date-time-wrap.custom-input-wrap {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+/* time-shortcut-picker.scss:39 */
+.custom-date-time-wrap.custom-relative-wrap .relative-time-picker {
+  display: flex;
+}

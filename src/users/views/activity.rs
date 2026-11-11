@@ -748,10 +748,21 @@ fn bookmark_row(cx: &ListContext, b: &Value, zone: Option<chrono_tz::Tz>, mobile
         "<td class=\"topic-list-data\">{}</td>",
         actions_dropdown(cx, b)
     ));
+    // BookmarkFormData's fields, for BookmarkModal
+    // (static/js/bookmark-modal.js).
+    let form = serde_json::json!({
+        "id": b["id"],
+        "name": b["name"],
+        "reminder_at": b["reminder_at"],
+        "auto_delete_preference": b["auto_delete_preference"],
+        "bookmarkable_id": b["bookmarkable_id"],
+        "bookmarkable_type": b["bookmarkable_type"],
+    });
     format!(
-        "<tr class=\"{classes}\" data-bookmark-id=\"{}\" data-has-reminder=\"{}\">{cells}</tr>",
+        "<tr class=\"{classes}\" data-bookmark-id=\"{}\" data-has-reminder=\"{}\" data-bookmark=\"{}\">{cells}</tr>",
         b["id"],
-        reminder.is_some()
+        reminder.is_some(),
+        escape(&form.to_string())
     )
 }
 

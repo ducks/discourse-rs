@@ -255,6 +255,9 @@ pub struct Chrome {
     /// The emoji picker's template for UserStatusModal's picker, for a
     /// member with enable_user_status.
     pub user_status_picker: String,
+    /// static/js/bookmark-modal.js's script attributes
+    /// (crate::bookmarks::modal_script_attrs), for a member.
+    pub bookmark_modal_attrs: String,
     /// A member's topic tracking state, for the nav pills' counts.
     pub tracking: Option<crate::topic_tracking_report::Tracking>,
     /// What the page's live updates keep counted besides the stream's own
@@ -1319,6 +1322,18 @@ impl Site {
                 crate::header_badge::Badge::load(&mut *conn, settings, guardian)
                     .await?
                     .html(&state.i18n);
+            let timezone: Option<String> =
+                sqlx::query_scalar("SELECT timezone FROM user_options WHERE user_id = $1")
+                    .bind(user_id)
+                    .fetch_optional(&mut *conn)
+                    .await?
+                    .flatten();
+            self.chrome.bookmark_modal_attrs = crate::bookmarks::modal_script_attrs(
+                &state.i18n,
+                &self.base_path,
+                timezone.as_deref().unwrap_or_default(),
+                settings.get("suggest_weekends_in_date_pickers")?.truthy(),
+            );
             if settings.get("enable_user_status")?.truthy() {
                 let emojis = settings.emojis();
                 if let Some(status) =

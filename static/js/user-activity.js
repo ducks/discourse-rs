@@ -704,7 +704,16 @@
         didConfirm: destroy,
       });
     } else if (value === "edit") {
-      unported("editing a bookmark (BookmarkModal, 196)");
+      // BookmarkModal (bookmark-modal.js), the list drawn again after.
+      var form = null;
+      try {
+        form = JSON.parse(tr.dataset.bookmark);
+      } catch (e) {
+        form = null;
+      }
+      if (form && Discourse.bookmarkModal) {
+        Discourse.bookmarkModal.open({ bookmark: form, afterSave: refresh, afterDelete: refresh });
+      }
     } else if (value === "clear_reminder") {
       request("PUT", "/bookmarks/" + encodeURIComponent(id), "reminder_at=")
         .then(refresh)

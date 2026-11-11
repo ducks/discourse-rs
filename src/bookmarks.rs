@@ -889,3 +889,99 @@ impl Bookmarks<'_> {
         }
     }
 }
+
+/// What static/js/bookmark-modal.js (BookmarkModal and
+/// DTimeShortcutPicker) reads from its script tag, as `data-config`: the
+/// strings, the member's timezone, suggest_weekends_in_date_pickers, the
+/// icons it draws and the scripts it loads on demand. Nothing of the view:
+/// both layouts load the same head.
+pub fn modal_script_attrs(
+    i18n: &crate::i18n::I18n,
+    base_path: &str,
+    timezone: &str,
+    suggest_weekends: bool,
+) -> String {
+    const KEYS: &[&str] = &[
+        "bookmarks.edit",
+        "bookmarks.save",
+        "bookmarks.confirm_delete",
+        "bookmarks.invalid_custom_datetime",
+        "bookmarks.no_timezone",
+        "bookmarks.remove_reminder_keep_bookmark",
+        "bookmarks.auto_delete_preference.label",
+        "bookmarks.auto_delete_preference.never",
+        "bookmarks.auto_delete_preference.when_reminder_sent",
+        "bookmarks.auto_delete_preference.on_owner_reply",
+        "bookmarks.auto_delete_preference.clear_reminder",
+        "bookmarks.reminders.existing_reminder",
+        "bookmarks.reminders.today_with_time",
+        "bookmarks.reminders.tomorrow_with_time",
+        "bookmarks.reminders.at_time",
+        "post.bookmarks.name_input_label",
+        "post.bookmarks.name_placeholder",
+        "post.bookmarks.set_reminder",
+        "post.bookmarks.actions.delete_bookmark.name",
+        "time_shortcut.later_today",
+        "time_shortcut.tomorrow",
+        "time_shortcut.later_this_week",
+        "time_shortcut.this_weekend",
+        "time_shortcut.start_of_next_business_week",
+        "time_shortcut.start_of_next_business_week_alt",
+        "time_shortcut.next_month",
+        "time_shortcut.custom",
+        "time_shortcut.last_custom",
+        "time_shortcut.none",
+        "time_shortcut.post_local_date",
+        "relative_time_picker.relative",
+        "relative_time_picker.minutes.one",
+        "relative_time_picker.minutes.other",
+        "relative_time_picker.hours.one",
+        "relative_time_picker.hours.other",
+        "relative_time_picker.days.one",
+        "relative_time_picker.days.other",
+        "relative_time_picker.months.one",
+        "relative_time_picker.months.other",
+        "relative_time_picker.years.one",
+        "relative_time_picker.years.other",
+        "dates.time",
+        "dates.time_short_day",
+        "dates.long_no_year",
+        "dates.long_with_year",
+        "dates.placeholder",
+        "dates.previous_month",
+        "dates.next_month",
+        "select_kit.filter_by",
+        "select_kit.select_to_filter",
+        "modal.close",
+        "cancel",
+        "generic_error",
+    ];
+    let strings: serde_json::Map<String, serde_json::Value> = KEYS
+        .iter()
+        .map(|key| {
+            let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
+            ((*key).to_string(), serde_json::Value::from(text))
+        })
+        .collect();
+    let icon = |name: &str| crate::topic_list_view::icon(name, None);
+    let angle = |name: &str| icon(name).replacen("svg-icon", "svg-icon angle-icon", 1);
+    let config = serde_json::json!({
+        "strings": strings,
+        "timezone": timezone,
+        "suggest_weekends": suggest_weekends,
+        "icons": {
+            "calendar-days": icon("calendar-days"),
+            "far-clock": icon("far-clock"),
+            "trash-can": icon("trash-can"),
+            "angle-down": angle("angle-down"),
+            "angle-up": angle("angle-up"),
+        },
+        "moment": crate::assets::url(base_path, "moment.min.js"),
+        "moment_timezone": crate::assets::url(base_path, "moment-timezone-with-data-10-year-range.min.js"),
+        "pikaday": crate::assets::url(base_path, "pikaday.js"),
+    });
+    format!(
+        " data-config=\"{}\"",
+        crate::topic_list_view::escape(&config.to_string())
+    )
+}

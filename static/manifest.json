@@ -777,6 +777,13 @@
       ]
     },
     {
+      "name": "bookmark-modal.js",
+      "content_type": "js",
+      "files": [
+        "js/bookmark-modal.js"
+      ]
+    },
+    {
       "name": "cakeday.js",
       "content_type": "js",
       "files": [

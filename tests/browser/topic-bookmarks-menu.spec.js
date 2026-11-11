@@ -1,7 +1,7 @@
 // The topic footer's grouped bookmarks menu (topic-bookmarks-menu.js,
 // TopicBookmarksMenu): its post rows and their submenu (jump, delete),
 // deleting the topic's bookmark, bookmarking the topic, clearing them all
-// after asking, and editing refused (BookmarkModal). Each change is
+// after asking, and editing through BookmarkModal. Each change is
 // checked in the database and on the footer's button, drawn again.
 const { test, expect, login, api, topic, sql, label } = require("./helpers");
 
@@ -122,20 +122,31 @@ test("the topic's bookmark: bookmarked, deleted, then all cleared", async ({ pag
   expect(sql("SELECT bookmarked FROM topic_users WHERE user_id = 1 AND topic_id = :'p1'", t.id)).toEqual([["f"]]);
 });
 
-test("editing a bookmark is refused", async ({ page, context, session }) => {
+test("editing a bookmark opens BookmarkModal", async ({ page, context, session }) => {
   const t = await setup(session, context, { topicBookmark: true });
   await page.goto(t.url);
+  const modal = page.locator("#bookmark-reminder-modal");
   await page.locator(TRIGGER).click();
   await row(page, "edit-topic-bookmark").click();
   await expect(page.locator(MENU)).toHaveCount(0);
-  await expect(page.locator("#page-error")).toHaveText("Not ported yet: editing a bookmark (BookmarkModal, 196).");
+  await expect(modal.locator("#discourse-modal-title")).toHaveText("Edit bookmark");
+  await modal.locator("#bookmark-name").fill("The whole topic");
+  await modal.locator("#save-bookmark").click();
+  await expect(modal).toHaveCount(0);
+  await expect.poll(() => adminBookmarks(t)).toEqual([["Post", "Read later"], ["Topic", "The whole topic"]]);
 
   await page.locator(TRIGGER).click();
   await row(page, "post-2").click();
-  await row(page, "edit").click();
+  await expect(async () => {
+    await row(page, "edit").click({ timeout: 2000 });
+    await expect(page.locator(MENU)).toHaveCount(0, { timeout: 2000 });
+  }).toPass();
   await expect(page.locator(".topic-bookmark-post-submenu")).toHaveCount(0);
-  await expect(page.locator(MENU)).toHaveCount(0);
-  expect(adminBookmarks(t)).toEqual([["Post", "Read later"], ["Topic", ""]]);
+  await expect(modal.locator("#bookmark-name")).toHaveValue("Read later");
+  await modal.locator("#bookmark-name").fill("Read sooner");
+  await modal.locator("#bookmark-name").press("Enter");
+  await expect(modal).toHaveCount(0);
+  await expect.poll(() => adminBookmarks(t)).toEqual([["Post", "Read sooner"], ["Topic", "The whole topic"]]);
 });
 
 test("on a phone the menu and the submenu are bottom sheets", async ({ page, context, session }) => {

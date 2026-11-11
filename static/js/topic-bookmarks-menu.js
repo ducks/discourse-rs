@@ -18,8 +18,9 @@
 // bookmarks. A failed delete is popped up and Ember goes on as if it was
 // done (bookmarkApi.delete catches it); a failed create is popped up.
 //
-// Editing a bookmark (the topic's or a post's) opens BookmarkModal, which
-// is not ported (196): refused, named.
+// Editing a bookmark (the topic's or a post's) opens BookmarkModal
+// (bookmark-modal.js); once it saved or deleted, the footer and the post
+// are drawn again.
 (function () {
   "use strict";
 
@@ -65,14 +66,6 @@
           window.alert(text);
         }
       });
-  }
-
-  function unported(what) {
-    var notice = document.getElementById("page-error");
-    if (notice) {
-      notice.textContent = "Not ported yet: " + what + ".";
-      notice.hidden = false;
-    }
   }
 
   function icon(name) {
@@ -132,6 +125,17 @@
 
   // The footer's bookmark button and this menu's template as the server
   // now draws them, and the given posts again (their bookmark buttons).
+  // BookmarkModal for one of the topic's bookmarks.
+  function editBookmark(bookmark) {
+    if (!bookmark || !Discourse.bookmarkModal) {
+      return;
+    }
+    var again = function () {
+      redraw(bookmark.bookmarkable_type === "Post" ? [bookmark.bookmarkable_id] : []);
+    };
+    Discourse.bookmarkModal.open({ bookmark: bookmark, afterSave: again, afterDelete: again });
+  }
+
   function redraw(postIds) {
     (postIds || []).forEach(function (id) {
       if (window.htmx && id) {
@@ -277,7 +281,7 @@
         case "edit":
           close();
           closeMenu().then(function () {
-            unported("editing a bookmark (BookmarkModal, 196)");
+            editBookmark(bookmark);
           });
           break;
         case "delete":
@@ -324,7 +328,7 @@
       switch (id) {
         case "edit-topic-bookmark":
           closeMenu().then(function () {
-            unported("editing a bookmark (BookmarkModal, 196)");
+            editBookmark(topic.topicBookmark);
           });
           break;
         case "delete-topic-bookmark":
