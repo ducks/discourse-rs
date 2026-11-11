@@ -13,7 +13,8 @@
 //       once it is gone. A modal shown while one is open replaces it.
 //       beforeClose, when given, runs as the modal is asked to close (the
 //       close button, Escape, the backdrop, the returned function) and
-//       keeps it open by answering false. headerPrimaryAction fills the
+//       keeps it open by answering false. It is told "click-outside" for
+//       the backdrop (CLOSE_INITIATED_BY_CLICK_OUTSIDE). headerPrimaryAction fills the
 //       header's .d-modal__primary-action (<:headerPrimaryAction>), which
 //       DModal draws only in the mobile view, its cancel button then in
 //       the close button's stead. headerBelowTitle's element goes after
@@ -160,13 +161,13 @@
     }
 
     // #animatePopOff, then @closeModal.
-    function close() {
+    function close(initiatedBy) {
       if (closing || removed) {
         return;
       }
       // A @closeModal that may keep the modal open (PenalizeUser's
       // warnBeforeClosing).
-      if (opts.beforeClose && opts.beforeClose() === false) {
+      if (opts.beforeClose && opts.beforeClose(initiatedBy === "click-outside" ? initiatedBy : undefined) === false) {
         return;
       }
       closing = true;
@@ -226,7 +227,7 @@
     }
     backdrop.addEventListener("click", function (event) {
       if (event.button === 0) {
-        close();
+        close("click-outside");
       }
     });
     // Keeps the hamburger menu open under a backdrop click.

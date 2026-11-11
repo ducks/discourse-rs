@@ -2461,6 +2461,10 @@ pub fn topic_bookmarks_menu(cx: &PostContext, view: &Value) -> String {
             "bookmarkable_id": b["bookmarkable_id"],
             "bookmarkable_type": b["bookmarkable_type"],
             "post_number": b["post_number"],
+            // BookmarkModal's (static/js/bookmark-modal.js).
+            "name": b["name"],
+            "reminder_at": b["reminder_at"],
+            "auto_delete_preference": b["auto_delete_preference"],
         })
     };
     let data = serde_json::json!({

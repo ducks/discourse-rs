@@ -3158,6 +3158,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/quote-controls.js", get(asset))
         .route("/assets/quote-button.js", get(asset))
         .route("/assets/share-topic.js", get(asset))
+        .route("/assets/bookmark-modal.js", get(asset))
         .route("/assets/ace-editor-bundle.js", get(asset))
         .route("/assets/floating-ui.core.umd.min.js", get(asset))
         .route("/assets/floating-ui.dom.umd.min.js", get(asset))

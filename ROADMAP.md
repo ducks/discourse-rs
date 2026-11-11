@@ -397,7 +397,7 @@ Visible if clicked, avoid them in a scripted demo:
 - [x] The add participant modal on a message (262a): feat/add-pm-participants
   (262b), done.
 - [x] The grouped bookmarks menu (274a): fix/profile-polish-rest, done;
-  editing a bookmark from it waits on BookmarkModal (196).
+  editing a bookmark from it opens BookmarkModal (289).
 
 Polish, from the second screenshot sweep:
 
@@ -3946,8 +3946,8 @@ route table has been made, so this list may be short.
     the topic map's menus, the footer's flag, mark unread and pinned
     buttons, the sidebar's header actions and Customize (milestone 4.5),
     the login, signup and logout dialogs (79c), the Edit Directory
-    Columns modal (74), BookmarkModal (editing a bookmark from the
-    bookmarks tab, 193c), the ForgotPassword modal a password
+    Columns modal (74), ~~BookmarkModal (editing a bookmark from the
+    bookmarks tab, 193c)~~ (done, 289), the ForgotPassword modal a password
     reset code opens (from the security tab, 193e), discourse-poll's
     rich editor node view (PollNodeView and the builder's Edit poll mode
     over it, from 229). Split when started
@@ -5614,6 +5614,36 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     (composer-messages.gjs' shareModalData is the composer's topic; the
     modal reads the page's #quote-button-config, which only a topic
     page carries), and the share-topic-sources plugin outlet
+289. ~~`feat/bookmark-modal`~~ (done) M: editing a bookmark was refused
+    by name in the topic footer's bookmarks menu (the topic's and a
+    post's) and the bookmarks tab. Now BookmarkModal
+    (components/modal/bookmark.gjs, static/js/bookmark-modal.js) opens
+    there for the bookmark: its name, what happens after the reminder
+    (auto_delete_preference's ComboBox), the reminder there is
+    (formattedReminderTime), and DTimeShortcutPicker
+    (ui-kit/d-time-shortcut-picker.gjs with lib/time-shortcut.js and
+    lib/time-utils.js, as Discourse.timeShortcutPicker for the pickers
+    still to come): defaultTimeShortcuts in the member's timezone with
+    hideDynamicTimeShortcuts (suggest_weekends_in_date_pickers), the
+    bookmarked post's local date, the last custom time
+    (keyValueStore), none hidden without a reminder and labelled
+    remove_reminder_keep_bookmark with one, and the custom tile's
+    DatePickerFuture (Pikaday), time input and DRelativeTimePicker. A
+    tile saves and closes, the custom and relative times wait for Save,
+    a click outside saves (Discourse.modal's beforeClose is told
+    "click-outside"), Cancel and the close button do not, the trash
+    deletes after asking when there is a reminder; ItsATrap's sequences
+    (enter, d d, l t, n d, n b w, n m, c r, n r). PUT and DELETE
+    /bookmarks/:id, then the footer and the post, or the tab's list,
+    drawn again. The modal's config is the script tag's
+    (bookmarks::modal_script_attrs) for every member's page; the tab's
+    rows and the menu's bookmarks carry BookmarkFormData's fields.
+    Tests: browser bookmark-modal (4) and topic-bookmarks-menu's
+    "editing a bookmark opens BookmarkModal". An existing reminder is
+    kept when only the name is saved. Left: creating a bookmark through
+    the modal (BookmarkMenu on a post's and the topic's buttons, which
+    toggle), the bookmark-modal-after-name plugin outlet, and the user
+    status modal's custom tile on this picker (130c)
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
