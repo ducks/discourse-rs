@@ -574,6 +574,13 @@
       ]
     },
     {
+      "name": "create-invite-modal.js",
+      "content_type": "js",
+      "files": [
+        "js/create-invite-modal.js"
+      ]
+    },
+    {
       "name": "date-range-picker.js",
       "content_type": "js",
       "files": [

@@ -1024,6 +1024,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             post(change_owner::change_owner),
         )
         // InvitesController
+        .route("/new-invite", get(invites::new_invite))
         .route("/invites", post(invites::create).delete(invites::destroy))
         .route(
             "/invites.json",
@@ -3159,6 +3160,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/quote-button.js", get(asset))
         .route("/assets/share-topic.js", get(asset))
         .route("/assets/bookmark-modal.js", get(asset))
+        .route("/assets/create-invite-modal.js", get(asset))
         .route("/assets/ace-editor-bundle.js", get(asset))
         .route("/assets/floating-ui.core.umd.min.js", get(asset))
         .route("/assets/floating-ui.dom.umd.min.js", get(asset))

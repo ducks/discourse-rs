@@ -258,6 +258,10 @@ pub struct Chrome {
     /// static/js/bookmark-modal.js's script attributes
     /// (crate::bookmarks::modal_script_attrs), for a member.
     pub bookmark_modal_attrs: String,
+    /// static/js/create-invite-modal.js's script attributes
+    /// (crate::invites::modal::script_attrs), for a member who can invite
+    /// to the forum.
+    pub create_invite_attrs: String,
     /// A member's topic tracking state, for the nav pills' counts.
     pub tracking: Option<crate::topic_tracking_report::Tracking>,
     /// What the page's live updates keep counted besides the stream's own
@@ -1334,6 +1338,15 @@ impl Site {
                 timezone.as_deref().unwrap_or_default(),
                 settings.get("suggest_weekends_in_date_pickers")?.truthy(),
             );
+            if guardian.can_invite_to_forum(settings)? {
+                self.chrome.create_invite_attrs = crate::invites::modal::script_attrs(
+                    &mut *conn,
+                    &state.i18n,
+                    settings,
+                    guardian,
+                )
+                .await?;
+            }
             if settings.get("enable_user_status")?.truthy() {
                 let emojis = settings.emojis();
                 if let Some(status) =

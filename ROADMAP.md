@@ -3571,7 +3571,7 @@ route table has been made, so this list may be short.
     copying, removing the expired, resending all, search) in Ember's
     markup with common.css's rules (static/css/invites.css),
     static/js/invite.js and user-invited.js; a staff member redeeming
-    refreshes the staff groups. Left: the invite modals (create, edit,
+    refreshes the staff groups. Left: the invite modals (create is 291; edit,
     bulk) and the avatar picker while signing up, which say they are
     not ported; invites past the first page (DLoadMore)
     192e. ~~`feat/invites-bulk`~~ (done) S: POST /invites/upload_csv
@@ -5619,15 +5619,12 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     refused by name; it starts the new topic the same way with the
     quote after the link (TopicController#selectText; browser
     quote-button, 2, the toolbar's first). Left: 288
-288. `feat/share-topic-invite` S: what 287 left of ShareTopic: the
-    invite button (allowInvites: can_invite_to_forum, canInviteTo and
-    not inviteDisabled; CreateInvite with inviteToTopic,
-    components/modal/create-invite.gjs and lib/invite-modal.js, waits
-    for the invite modals 192d left), share-topic-test.js' invite case,
-    the composer's Share for a topic other than the page's
-    (composer-messages.gjs' shareModalData is the composer's topic; the
-    modal reads the page's #quote-button-config, which only a topic
-    page carries), and the share-topic-sources plugin outlet
+288. `feat/share-topic-invite` S: what 287 left of ShareTopic: ~~the
+    invite button~~ (done, 291), the composer's Share for a topic other
+    than the page's (composer-messages.gjs' shareModalData is the
+    composer's topic; the modal reads the page's #quote-button-config,
+    which only a topic page carries), and the share-topic-sources plugin
+    outlet
 289. ~~`feat/bookmark-modal`~~ (done) M: editing a bookmark was refused
     by name in the topic footer's bookmarks menu (the topic's and a
     post's) and the bookmarks tab. Now BookmarkModal
@@ -5673,6 +5670,36 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     button's htmx toggle, which is what is left without the scripts.
     Tests: browser bookmark-modal's two BookmarkMenu tests, post-menu and
     topic-bookmarks-menu through the menu
+291. ~~`feat/create-invite-modal`~~ (done) M: the sidebar's Invite
+    link went to /new-invite, which was not routed; the invites tab's
+    Invite button was refused by name; ShareTopic had no invite button.
+    Now CreateInvite (components/modal/create-invite.gjs,
+    static/js/create-invite-modal.js) for a new invite: the simple
+    mode's Create link (createLink: the default redemptions and
+    invite_expiry_days) with the link to copy or share, the footer gone,
+    under link_validity_MF's line (rendered for the defaults,
+    message_format.rs); Edit link options turns to the form (FormKit's
+    fields): description (at most 100), the email or domain it is
+    restricted to (emailValid, hostnameValid), the redemptions allowed
+    (not for an email, capped at one), expires after (1, 7, 30, 90 days,
+    invite_expiry_days, never), the groups joined (GroupChooser, for
+    staff and group owners) and, for an email with allow_email_invites,
+    the custom message and Create link and send email. POST /invites,
+    then PUT /invites/:id for the invite made (Invite#save);
+    InviteModalAlert under the header carries the result and the link.
+    A link to /new-invite followed in the page opens it where the member
+    is, a page load lands on the homepage with it (routes/new-invite.js;
+    a visitor on the login); the invites tab's button draws the list
+    again once it closes; ShareTopic's invite button (allowInvites) from
+    the footer's share. The config is the script tag's
+    (invites::modal::script_attrs) for who can invite. Fixed with it:
+    chat's channel filter toggle also took the invites tab's empty state
+    button (the same empty-channels-list identifier), saving a chat
+    preference and loading the page again. Tests: browser
+    create-invite-modal (5). Left: editing an invite (expires_at through
+    DFutureDateInput, the alert while editing), the topic a staff
+    member's invite arrives at (TopicChooser), cannot_invite_to_forum's
+    dialog for who may not, CreateInviteWithRoles, bulk invites
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script

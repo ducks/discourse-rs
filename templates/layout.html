@@ -135,6 +135,9 @@
     {%- if !chrome.templates_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "templates.js") }}"{{ chrome.templates_attrs|safe }} defer></script>
     {%- endif %}
+    {%- if !chrome.create_invite_attrs.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "create-invite-modal.js") }}"{{ chrome.create_invite_attrs|safe }} defer></script>
+    {%- endif %}
     {%- if !chrome.bookmark_modal_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "bookmark-modal.js") }}"{{ chrome.bookmark_modal_attrs|safe }} defer></script>
     {%- endif %}

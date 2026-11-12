@@ -1,7 +1,8 @@
 // The profile's Invites tab (controllers/user-invited/show.js): removing
 // an invite, copying its link, removing the expired ones, sending the
-// pending ones again, and the search. The invite modals (creating,
-// editing, bulk) are not ported.
+// pending ones again, and the search. Invite opens CreateInvite
+// (create-invite-modal.js); editing an invite and bulk invites are not
+// ported.
 (function () {
   "use strict";
 
@@ -101,8 +102,24 @@
         return;
       }
       var row = target.closest("tr[data-invite-id]");
-      if (target.matches(".invite-button, .edit-invite")) {
-        unsupported("the invite modal");
+      if (target.matches(".invite-button")) {
+        // CreateInvite (create-invite-modal.js); the list is drawn again
+        // once the modal that saved one has closed.
+        if (Discourse.createInviteModal) {
+          var made = false;
+          Discourse.createInviteModal.open({
+            onSaved: function () {
+              made = true;
+            },
+            onClose: function () {
+              if (made) {
+                location.reload();
+              }
+            },
+          });
+        }
+      } else if (target.matches(".edit-invite")) {
+        unsupported("editing an invite");
       } else if (target.matches(".bulk-invite-button")) {
         unsupported("bulk invites from a CSV file");
       } else if (target.matches(".invites-menu-trigger")) {

@@ -917,7 +917,7 @@
     }
     // The footer's share: ShareTopic (share-topic.js).
     if (event.target.closest(".share-and-invite")) {
-      Discourse.shareTopic.show();
+      Discourse.shareTopic.show({ allowInvites: true });
       return;
     }
     // The post menu's share (PostMenuShareButton): the platform's share

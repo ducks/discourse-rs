@@ -25,8 +25,10 @@
 //       the post menu's share (post.gjs): the platform's own share where
 //       it has one, else the modal.
 //
-// Not ported yet: the invite button (CreateInvite has no port) and the
-// share-topic-sources plugin outlet.
+//       With { allowInvites } (the footer's share) the invite button,
+//       which opens CreateInvite (create-invite-modal.js).
+//
+// Not ported yet: the share-topic-sources plugin outlet.
 (function () {
   "use strict";
 
@@ -222,6 +224,26 @@
       });
       return text;
     }
+    // allowInvites (the footer's share alone): can_invite_to_forum, which
+    // the invite modal's script stands for, the topic's can_invite_to and
+    // not inviteDisabled.
+    var invite = "";
+    if (
+      opts &&
+      opts.allowInvites &&
+      Discourse.createInviteModal &&
+      topic.canInviteTo &&
+      !topic.archived &&
+      !topic.closed &&
+      !topic.deleted
+    ) {
+      invite =
+        '<button class="btn btn-icon-text btn-default invite" type="button">' +
+        icon("user-plus") +
+        '<span class="d-button-label">' +
+        escapeHtml(t("topic.share.invite_users")) +
+        "</span></button>";
+    }
     // can_reply_as_new_topic: a message's as a new message.
     var newTopic = "";
     if (topic.canReplyAsNewTopic && window.composer && window.composer.replyAsNewTopic) {
@@ -261,6 +283,7 @@
               );
             })
             .join("") +
+          invite +
           newTopic +
           "</div></div></form>";
         var form = body.querySelector("form");
@@ -277,6 +300,11 @@
           }
           if (button.classList.contains("copy-button")) {
             copy(button, input);
+            return;
+          }
+          // inviteUsers: CreateInvite over the modal (showCreateInviteModal).
+          if (button.classList.contains("invite")) {
+            Discourse.createInviteModal.open({});
             return;
           }
           // replyAsNewTopic: continuing from the post, or the topic's
