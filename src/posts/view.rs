@@ -2238,6 +2238,15 @@ pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
         "can_pin_unpin_topic": d["can_pin_unpin_topic"] == true,
         "can_banner_topic": d["can_banner_topic"] == true,
         "canManageTopic": m.can_manage_topic,
+        // EditTopicTimer's.
+        "can_delete": can_delete,
+        "private_message": private_message,
+        "category_read_restricted": view["category_id"]
+            .as_i64()
+            .and_then(|id| l.categories.get(&id))
+            .is_some_and(|c| c.read_restricted),
+        "last_posted_at": view["last_posted_at"],
+        "topic_timer": view["topic_timer"],
         "strings": topic_admin_strings(l),
     });
     if let Some(views) = m.delete_confirm_views {
@@ -2257,8 +2266,8 @@ pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
 }
 
 /// The strings the topic admin menu's modals draw (FeatureTopic,
-/// ChangeTimestamp, EditSlowMode, ConvertToPublicTopic), by their `js.`
-/// key; a count key as its `one` and `other` forms.
+/// ChangeTimestamp, EditSlowMode, ConvertToPublicTopic, EditTopicTimer),
+/// by their `js.` key; a count key as its `one` and `other` forms.
 fn topic_admin_strings(l: &ListContext) -> Value {
     const KEYS: &[&str] = &[
         "topic.feature_topic.title",
@@ -2319,12 +2328,44 @@ fn topic_admin_strings(l: &ListContext) -> Value {
         "cancel",
         "generic_error_with_reason",
         "multiple_errors",
+        "none_placeholder",
+        "select_placeholder",
+        "topic.topic_status_update.title",
+        "topic.topic_status_update.save",
+        "topic.topic_status_update.remove",
+        "topic.topic_status_update.publish_to",
+        "topic.topic_status_update.when",
+        "topic.topic_status_update.time_frame_required",
+        "topic.topic_status_update.category_required",
+        "topic.topic_status_update.min_duration",
+        "topic.topic_status_update.max_duration",
+        "topic.topic_status_update.duration",
+        "topic.publish_to_category.title",
+        "topic.temp_open.title",
+        "topic.auto_reopen.title",
+        "topic.temp_close.title",
+        "topic.auto_close.title",
+        "topic.auto_close_after_last_post.title",
+        "topic.auto_delete.title",
+        "topic.auto_delete_after_last_post.title",
+        "topic.auto_bump.title",
+        "topic.auto_delete_replies.title",
+        "topic.status_update_notice.auto_open",
+        "topic.status_update_notice.auto_close",
+        "topic.status_update_notice.auto_publish_to_category",
+        "topic.status_update_notice.auto_close_after_last_post",
+        "topic.status_update_notice.auto_delete_after_last_post",
+        "topic.status_update_notice.auto_delete",
+        "topic.status_update_notice.auto_bump",
+        "topic.status_update_notice.auto_delete_replies",
     ];
     const COUNT_KEYS: &[&str] = &[
         "topic.feature_topic.already_pinned",
         "topic.feature_topic.confirm_pin_globally",
         "topic.feature_topic.already_pinned_globally",
         "form_kit.errors_summary_title",
+        "topic.auto_close_immediate",
+        "topic.auto_delete_immediate",
     ];
     let mut strings = serde_json::Map::new();
     for key in KEYS {

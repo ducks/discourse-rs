@@ -280,6 +280,10 @@ fn parse_utc(text: &str) -> Result<Option<NaiveDateTime>, Unsupported> {
     if let Ok(t) = chrono::DateTime::parse_from_rfc3339(s) {
         return Ok(Some(t.naive_utc()));
     }
+    // EditTopicTimer's FORMAT: "2027-01-01 10:00+02:00"
+    if let Ok(t) = chrono::DateTime::parse_from_str(s, "%Y-%m-%d %H:%M%:z") {
+        return Ok(Some(t.naive_utc()));
+    }
     // Time#to_s: "2026-10-15 22:13:43 UTC"
     let s = s.strip_suffix(" UTC").unwrap_or(s);
     for format in [
@@ -720,6 +724,14 @@ mod tests {
         assert_eq!(
             at("2027-01-01T10:00:00+02:00").as_deref(),
             Some("2027-01-01 08:00:00")
+        );
+        assert_eq!(
+            at("2027-01-01 10:00+02:00").as_deref(),
+            Some("2027-01-01 08:00:00")
+        );
+        assert_eq!(
+            at("2027-01-01 10:00-05:30").as_deref(),
+            Some("2027-01-01 15:30:00")
         );
         assert_eq!(
             at("2027-01-01 10:00").as_deref(),

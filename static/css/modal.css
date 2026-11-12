@@ -803,3 +803,29 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .create-invite-modal .select-kit.topic-chooser .select-kit-filter .filter-input {
   width: 100%;
 }
+
+/* EditTopicTimer (static/js/topic-admin-modals.js), as Rails compiles
+   common/base/edit-topic-timer-modal.scss. */
+.edit-topic-timer-modal .select-kit.combo-box {
+  width: 100%;
+}
+.edit-topic-timer-modal .warning {
+  color: var(--danger);
+}
+.edit-topic-timer-modal label {
+  display: inline-flex;
+  padding-right: 5px;
+  align-items: center;
+}
+.edit-topic-timer-modal label input {
+  margin-top: 0;
+}
+.edit-topic-timer-modal .pika-single {
+  position: absolute !important;
+}
+.edit-topic-timer-modal .modal-topic-timer-info {
+  margin-top: 1rem;
+}
+.edit-topic-timer-modal .modal-topic-timer-info .topic-timer-info {
+  border-top: 0;
+}

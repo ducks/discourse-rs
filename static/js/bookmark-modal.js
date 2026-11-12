@@ -24,6 +24,11 @@
 //       options, defaultTimeShortcuts without), onTimeSelected(type,
 //       moment or null), keys (bind its key sequences, a function taking
 //       { sequence: fn }) }.
+//   Discourse.timeShortcutPicker.relativeTimePicker({ id,
+//       durationMinutes, onChange(minutes) }) -> element
+//       DRelativeTimePicker.
+//   Discourse.timeShortcutPicker.timezone()
+//       the member's timezone, else the browser's (once loaded).
 //
 // The strings, the member's timezone, suggest_weekends_in_date_pickers,
 // the icons and the scripts loaded on demand (moment, Pikaday) are the
@@ -269,6 +274,22 @@
               : "time_shortcut.start_of_next_business_week",
           time: startOfDay(now(timezone).add(7, "days")).day(MONDAY),
           format: "dates.long_no_year",
+        };
+      },
+      twoWeeks: function () {
+        return {
+          id: "two_weeks",
+          label: "time_shortcut.two_weeks",
+          time: startOfDay(now(timezone).add(2, "weeks").day(MONDAY)),
+          format: "dates.long_no_year",
+        };
+      },
+      sixMonths: function () {
+        return {
+          id: "six_months",
+          label: "time_shortcut.six_months",
+          time: startOfDay(now(timezone).add(6, "months").startOf("month")),
+          format: "dates.long_with_year",
         };
       },
       nextMonth: function () {
@@ -529,7 +550,9 @@
     root.className = "relative-time-picker";
     root.innerHTML = '<input class="relative-time-duration" type="number">';
     var input = root.querySelector("input");
-    input.id = opts.id;
+    if (opts.id) {
+      input.id = opts.id;
+    }
 
     function intervals() {
       var count = duration ? parseFloat(duration) : 0;
@@ -1376,7 +1399,11 @@
       return mountPicker(root, opts);
     },
     futureDateInput: futureDateInput,
+    relativeTimePicker: relativeTimePicker,
     load: load,
+    timezone: function () {
+      return s.timezone || window.moment.tz.guess();
+    },
     // timeShortcuts in the member's timezone, else the browser's (once
     // loaded).
     shortcuts: function () {

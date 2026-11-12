@@ -109,8 +109,10 @@ pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCatego
         })
         .unwrap_or_default();
     format!(
-        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\"{}{} role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
+        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\" data-url=\"{}\"{}{} role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
         c.id,
+        // Category#url, for EditTopicTimer's notice (topic-admin-modals.js).
+        escape(&crate::topic_list_view::category_url(list, category)),
         if c.minimum_required_tags > 0 {
             format!(
                 " data-minimum-required-tags=\"{}\"",

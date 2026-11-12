@@ -1869,6 +1869,21 @@ async fn staff_get_the_topic_and_post_admin_menus() {
     ));
     assert!(html.contains("&quot;topic.feature_topic.title&quot;:&quot;Feature this topic&quot;"));
     assert!(html.contains("id=\"penalize-user-config\""));
+    // EditTopicTimer's: what its types go by, no timer yet, its strings
+    // and the chooser rows' urls for its notice.
+    for state in [
+        "&quot;can_delete&quot;:true",
+        "&quot;private_message&quot;:false",
+        "&quot;category_read_restricted&quot;:false",
+        "&quot;topic_timer&quot;:null",
+        "&quot;last_posted_at&quot;:&quot;",
+        "&quot;topic.topic_status_update.title&quot;:&quot;Topic Timer&quot;",
+    ] {
+        assert!(html.contains(state), "{state}");
+    }
+    assert!(html.contains(
+        r#"class="category-row select-kit-row" data-name="General" data-title="General" data-value="4" data-url="/c/general/4""#
+    ));
     // Post 2: the wrench among the collapsed buttons, before show more
     // (Ember draws them once it is pressed), its menu after the buttons.
     let post = &html[html.find("id=\"post_2\"").unwrap()..];
