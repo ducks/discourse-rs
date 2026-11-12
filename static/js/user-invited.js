@@ -1,7 +1,8 @@
 // The profile's Invites tab (controllers/user-invited/show.js): removing
 // an invite, copying its link, removing the expired ones, sending the
 // pending ones again, and the search. Invite and an invite's Edit open
-// CreateInvite (create-invite-modal.js); bulk invites are not ported.
+// CreateInvite (create-invite-modal.js), Bulk Invite opens CreateInviteBulk
+// (components/modal/create-invite-bulk.gjs, here).
 (function () {
   "use strict";
 
@@ -64,12 +65,133 @@
     }
   }
 
-  function unsupported(what) {
-    var error = document.getElementById("page-error");
-    if (error) {
-      error.textContent = "Not ported yet: " + what + ".";
-      error.hidden = false;
+  // CreateInviteBulk over CreateInviteUploader: a CSV file chosen and
+  // sent to POST /invites/upload_csv (the button counting the progress),
+  // then the word that a message follows.
+  function bulkInviteModal(S) {
+    if (!Discourse.modal) {
+      return;
     }
+    var bodyEl = null;
+    var footerEl = null;
+    var file = null;
+    var uploading = false;
+    var uploaded = false;
+    var progress = 0;
+
+    function draw() {
+      if (uploaded) {
+        bodyEl.textContent = S.bulk_success;
+      } else {
+        var input = bodyEl.querySelector("#csv-file");
+        if (input) {
+          input.disabled = uploading;
+        }
+      }
+      var label = uploading ? S.bulk_progress.split("%{progress}").join(progress) : S.bulk_text;
+      footerEl.innerHTML =
+        (uploaded
+          ? ""
+          : '<button class="btn btn-icon-text btn-primary bulk-invite-upload"' +
+            (!file || uploading ? ' disabled=""' : "") +
+            ' type="button">' +
+            S.link_icon +
+            '<span class="d-button-label"></span></button>') +
+        '<button class="btn btn-text btn-primary bulk-invite-close" type="button"><span class="d-button-label"></span></button>';
+      var upload = footerEl.querySelector(".bulk-invite-upload .d-button-label");
+      if (upload) {
+        upload.textContent = label;
+      }
+      footerEl.querySelector(".bulk-invite-close .d-button-label").textContent = S.close;
+    }
+
+    // startUpload: the file as uppy's XHR upload sends it.
+    function start() {
+      if (!file || uploading) {
+        return;
+      }
+      uploading = true;
+      progress = 0;
+      draw();
+      var form = new FormData();
+      form.append("type", "csv");
+      form.append("name", file.name);
+      form.append("file", file, file.name);
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", base() + "/invites/upload_csv.json");
+      xhr.setRequestHeader("Accept", "application/json");
+      xhr.setRequestHeader("X-CSRF-Token", csrf());
+      xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+      xhr.upload.addEventListener("progress", function (event) {
+        if (event.lengthComputable && event.total > 0) {
+          progress = Math.round((event.loaded / event.total) * 100);
+          draw();
+        }
+      });
+      var failed = function () {
+        uploading = false;
+        var message = xhr.statusText;
+        try {
+          var json = JSON.parse(xhr.responseText);
+          message = (json.errors && json.errors[0]) || json.error || json.message || message;
+        } catch (e) {
+          // The status text stands.
+        }
+        draw();
+        popupAjaxError(new Error(message));
+      };
+      xhr.addEventListener("load", function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // uploadDone
+          uploading = false;
+          uploaded = true;
+          draw();
+        } else {
+          failed();
+        }
+      });
+      xhr.addEventListener("error", failed);
+      xhr.send(form);
+    }
+
+    var close = Discourse.modal.show({
+      className: "create-invite-bulk-modal --large",
+      title: S.bulk_text,
+      body: function (body) {
+        bodyEl = body;
+      },
+      footer: function (footer) {
+        footerEl = footer;
+      },
+    });
+    if (!bodyEl || !footerEl) {
+      return;
+    }
+    // The locale's own markup (trustHTML).
+    bodyEl.innerHTML = S.bulk_instructions + '<input accept=".csv" id="csv-file" type="file">';
+    bodyEl.querySelector("#csv-file").addEventListener("change", function (event) {
+      var chosen = event.target.files && event.target.files[0];
+      // validateUploadedFile's csvOnly.
+      if (chosen && !/\.csv$/i.test(chosen.name)) {
+        event.target.value = "";
+        chosen = null;
+        Discourse.dialog.alert(S.bulk_error);
+      }
+      file = chosen || null;
+      draw();
+    });
+    footerEl.addEventListener("click", function (event) {
+      var button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+      if (button.classList.contains("bulk-invite-upload")) {
+        start();
+      } else if (button.classList.contains("bulk-invite-close")) {
+        close();
+      }
+    });
+    draw();
   }
 
   function closeMenus(except) {
@@ -142,7 +264,8 @@
           });
         }
       } else if (target.matches(".bulk-invite-button")) {
-        unsupported("bulk invites from a CSV file");
+        // createInviteCsv
+        bulkInviteModal(S);
       } else if (target.matches(".invites-menu-trigger")) {
         var menu = target.parentNode.querySelector(".invites-menu-content");
         closeMenus(menu);
