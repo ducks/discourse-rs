@@ -3,7 +3,8 @@
 // bookmarks menu and from the member's bookmarks tab: the name, what
 // happens after the reminder, the reminder's tiles, its custom date and
 // time, its relative time, removing it, saving on a click outside, and
-// deleting. Each is checked in the database.
+// deleting; then BookmarkMenu on a post's bookmark button and the footer's.
+// Each is checked in the database.
 const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
 
 const modal = (page) => page.locator("#bookmark-reminder-modal");
@@ -180,4 +181,109 @@ test("the bookmarks tab edits a bookmark, and deleting one with a reminder asks 
   await expect(modal(page)).toHaveCount(0);
   await expect.poll(() => sql("SELECT count(*) FROM bookmarks WHERE id = :'p1'", id)).toEqual([["0"]]);
   await expect(item).toHaveCount(0);
+});
+
+// BookmarkMenu (components/bookmark-menu.gjs) on a post's bookmark button.
+const menu = (page) => page.locator(".bookmark-menu-content");
+const options = (page) =>
+  menu(page)
+    .locator(".bookmark-menu__row")
+    .evaluateAll((rows) => rows.map((r) => r.dataset.menuOptionId));
+
+// A member in UTC reading a topic with a reply they have not bookmarked.
+async function reading(page, context, session) {
+  const user1 = await session("user1");
+  const t = await topic(user1, label("Bookmark menu"), label("A topic for the bookmark menu"), [
+    { context: await session("user0"), raw: label("The reply the member bookmarks from its menu") },
+  ]);
+  const m = member();
+  sql("UPDATE user_options SET timezone = 'UTC' WHERE user_id = :'p1'", m.id);
+  await login(context, m.name);
+  await page.goto(t.url);
+  // A member's bookmark button is behind show more.
+  await page.locator(`article[data-post-id="${t.posts[1]}"] .post-action-menu__show-more`).click();
+  const button = page.locator(`article[data-post-id="${t.posts[1]}"] .post-action-menu__bookmark`);
+  const row = () =>
+    sql(
+      "SELECT id, COALESCE(round(extract(epoch FROM reminder_at - now()) / 60)::text, 'none') FROM bookmarks \
+       WHERE user_id = :'p1' AND bookmarkable_type = 'Post' AND bookmarkable_id = :'p2'",
+      m.id,
+      t.posts[1],
+    );
+  return { t, m, button, row };
+}
+
+test("a post's bookmark button bookmarks at once and offers a reminder", async ({ page, context, session }) => {
+  const { button, row } = await reading(page, context, session);
+  await button.click();
+  await expect(menu(page).locator(".bookmark-menu__title")).toHaveText("Bookmarked!");
+  await expect(menu(page).locator(".bookmark-menu__row-title")).toHaveText("Also set a reminder?");
+  expect(await options(page)).toEqual(["two_hours", "tomorrow", "three_days", "custom"]);
+  await expect(menu(page).locator('[data-menu-option-id="custom"] .d-button-label')).toHaveText("More options…");
+  await expect.poll(() => row().map((r) => r[1])).toEqual(["none"]);
+  await expect(button).toHaveClass(/bookmarked/);
+
+  // In three days: saved, the menu closed, the button drawn with the clock.
+  await menu(page).locator('[data-menu-option-id="three_days"] button').click();
+  await expect(menu(page)).toHaveCount(0);
+  await expect(button).toHaveClass(/with-reminder/);
+  const minutes = Number(row()[0][1]);
+  expect(minutes).toBeGreaterThan(2 * 24 * 60);
+  expect(minutes).toBeLessThan(4 * 24 * 60);
+
+  // On a bookmark: Edit, Clear reminder, Delete.
+  await button.click();
+  expect(await options(page)).toEqual(["edit", "clear-reminder", "delete"]);
+  await menu(page).locator('[data-menu-option-id="clear-reminder"] button').click();
+  await expect(menu(page)).toHaveCount(0);
+  await expect(button).not.toHaveClass(/with-reminder/);
+  expect(row()[0][1]).toBe("none");
+
+  // Edit opens BookmarkModal for it.
+  await button.click();
+  expect(await options(page)).toEqual(["edit", "delete"]);
+  await menu(page).locator('[data-menu-option-id="edit"] button').click();
+  await expect(menu(page)).toHaveCount(0);
+  await expect(modal(page)).toHaveAttribute("data-bookmark-id", row()[0][0]);
+  await modal(page).locator("#bookmark-name").fill("Named from the menu");
+  await modal(page).locator("#save-bookmark").click();
+  await expect(modal(page)).toHaveCount(0);
+  await expect.poll(() => sql("SELECT name FROM bookmarks WHERE id = :'p1'", row()[0][0])).toEqual([["Named from the menu"]]);
+
+  await button.click();
+  await menu(page).locator('[data-menu-option-id="delete"] button').click();
+  await expect(page.locator(".fk-d-toast", { hasText: "Bookmark deleted!" })).toBeVisible();
+  await expect(button).not.toHaveClass(/bookmarked/);
+  expect(row()).toEqual([]);
+});
+
+test("more options opens the modal for the bookmark just made, and the footer's button has the menu too", async ({
+  page,
+  context,
+  session,
+}) => {
+  const { t, m, button, row } = await reading(page, context, session);
+  await button.click();
+  await menu(page).locator('[data-menu-option-id="custom"] button').click();
+  await expect(menu(page)).toHaveCount(0);
+  await expect(modal(page)).toBeVisible();
+  await expect(modal(page)).toHaveAttribute("data-bookmark-id", row()[0][0]);
+  await modal(page).locator(".d-modal-cancel").click();
+  await expect(button).toHaveClass(/bookmarked/);
+
+  // The footer's button while nothing else is bookmarked: the same menu,
+  // for the topic.
+  sql("DELETE FROM bookmarks WHERE user_id = :'p1'", m.id);
+  await page.reload();
+  const footer = page.locator("#topic-footer-buttons .bookmark-menu-trigger");
+  await footer.click();
+  await expect(menu(page).locator(".bookmark-menu__title")).toHaveText("Bookmarked!");
+  await expect
+    .poll(() =>
+      sql("SELECT bookmarkable_type, bookmarkable_id FROM bookmarks WHERE user_id = :'p1'", m.id),
+    )
+    .toEqual([["Topic", String(t.id)]]);
+  await menu(page).locator('[data-menu-option-id="tomorrow"] button').click();
+  await expect(menu(page)).toHaveCount(0);
+  await expect(footer).toHaveClass(/with-reminder/);
 });

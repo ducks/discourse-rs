@@ -2730,7 +2730,22 @@ fn bookmark_button(cx: &PostContext, p: &Value) -> String {
             } else {
                 " bookmarked"
             },
-            format!(" hx-delete=\"{base}/bookmarks/{b}\""),
+            // The bookmark as BookmarkMenu and BookmarkModal edit it
+            // (static/js/topic-bookmarks-menu.js).
+            format!(
+                " hx-delete=\"{base}/bookmarks/{b}\" data-bookmark=\"{}\"",
+                escape(
+                    &serde_json::json!({
+                        "id": b,
+                        "name": p["bookmark_name"],
+                        "reminder_at": p["bookmark_reminder_at"],
+                        "auto_delete_preference": p["bookmark_auto_delete_preference"],
+                        "bookmarkable_id": id,
+                        "bookmarkable_type": "Post",
+                    })
+                    .to_string()
+                )
+            ),
         ),
         None => (
             "far-bookmark",
@@ -3679,8 +3694,19 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
                 },
                 "bookmark-menu",
                 format!(
-                    " hx-delete=\"{base}/bookmarks/{}\" hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\"",
-                    b["id"]
+                    " hx-delete=\"{base}/bookmarks/{}\" hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\" data-bookmark=\"{}\"",
+                    b["id"],
+                    escape(
+                        &serde_json::json!({
+                            "id": b["id"],
+                            "name": b["name"],
+                            "reminder_at": b["reminder_at"],
+                            "auto_delete_preference": b["auto_delete_preference"],
+                            "bookmarkable_id": b["bookmarkable_id"],
+                            "bookmarkable_type": b["bookmarkable_type"],
+                        })
+                        .to_string()
+                    )
                 ),
             ),
             None => (

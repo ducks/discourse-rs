@@ -11,6 +11,10 @@
 //       the close button do not. Delete asks first when there is a
 //       reminder. PUT and DELETE /bookmarks/:id, as the bookmarkApi
 //       service; afterSave(saveData) and afterDelete(id) then.
+//   Discourse.bookmarkModal.t(key, args)
+//       its strings, which BookmarkMenu (topic-bookmarks-menu.js) reads.
+//   Discourse.timeShortcutPicker.load() -> Promise, .shortcuts()
+//       moment loaded, then lib/time-shortcut's timeShortcuts by name.
 //   Discourse.timeShortcutPicker.mount(root, opts) -> { destroy }
 //       DTimeShortcutPicker in root. opts: { timezone, prefilledDatetime,
 //       hiddenOptions, customLabels, timeShortcuts(shortcuts) (the
@@ -216,6 +220,14 @@
           label: "time_shortcut.in_two_hours",
           time: now(timezone).add(2, "hours"),
           format: "dates.time",
+        };
+      },
+      threeDays: function () {
+        return {
+          id: "three_days",
+          label: "time_shortcut.three_days",
+          time: startOfDay(now(timezone).add(3, "days")),
+          format: "dates.time_short_day",
         };
       },
       laterToday: function () {
@@ -1244,11 +1256,16 @@
     }
   }
 
-  Discourse.bookmarkModal = { open: open };
+  Discourse.bookmarkModal = { open: open, t: t };
   Discourse.timeShortcutPicker = {
     mount: function (root, opts) {
       return mountPicker(root, opts);
     },
     load: load,
+    // timeShortcuts in the member's timezone, else the browser's (once
+    // loaded).
+    shortcuts: function () {
+      return timeShortcuts(s.timezone || window.moment.tz.guess());
+    },
   };
 })();

@@ -904,6 +904,17 @@ pub fn modal_script_attrs(
     const KEYS: &[&str] = &[
         "bookmarks.edit",
         "bookmarks.save",
+        // BookmarkMenu (static/js/topic-bookmarks-menu.js)
+        "bookmarks.bookmarked_success",
+        "bookmarks.also_set_reminder",
+        "bookmarks.clear_reminder",
+        "bookmarks.reminder_clear_success",
+        "bookmarks.reminder_set_success",
+        "bookmarks.deleted_bookmark_success",
+        "edit",
+        "delete",
+        "time_shortcut.three_days",
+        "time_shortcut.more_options",
         "bookmarks.confirm_delete",
         "bookmarks.invalid_custom_datetime",
         "bookmarks.no_timezone",

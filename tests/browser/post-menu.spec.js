@@ -37,16 +37,24 @@ test("show more, copy link and bookmark", async ({ page, context, session }) => 
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toBe(new URL(`${t.url}/2?u=admin`, page.url()).href);
 
+  // BookmarkMenu: bookmarked as its menu shows, the post drawn again as
+  // bookmarked once it closes; then Delete from the menu.
+  const bookmarkMenu = page.locator(".bookmark-menu-content");
   await post.locator(".post-action-menu__bookmark").click();
-  // Saved, and the post drawn again (refreshPost) as bookmarked.
-  await expect(post.locator(".post-action-menu__bookmark.bookmarked")).toBeVisible();
-  expect(
-    sql(
-      "SELECT count(*) FROM bookmarks WHERE bookmarkable_type = 'Post' AND bookmarkable_id = :'p1' AND user_id = 1",
-      answer,
-    ),
-  ).toEqual([["1"]]);
-  await post.locator(".post-action-menu__bookmark.bookmarked").click();
+  await expect(bookmarkMenu.locator(".bookmark-menu__title")).toHaveText("Bookmarked!");
+  await expect
+    .poll(() =>
+      sql(
+        "SELECT count(*) FROM bookmarks WHERE bookmarkable_type = 'Post' AND bookmarkable_id = :'p1' AND user_id = 1",
+        answer,
+      ),
+    )
+    .toEqual([["1"]]);
+  await page.keyboard.press("Escape");
+  await expect(bookmarkMenu).toHaveCount(0);
+  await expect(post.locator(".post-action-menu__bookmark.bookmarked[data-bookmark]")).toBeVisible();
+  await post.locator(".post-action-menu__bookmark.bookmarked[data-bookmark]").click();
+  await bookmarkMenu.locator('.bookmark-menu__row[data-menu-option-id="delete"] button').click();
   await expect(post.locator(".post-action-menu__bookmark:not(.bookmarked)")).toBeAttached();
   expect(
     sql("SELECT count(*) FROM bookmarks WHERE bookmarkable_type = 'Post' AND bookmarkable_id = :'p1'", answer),
