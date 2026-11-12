@@ -5654,10 +5654,25 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     rows and the menu's bookmarks carry BookmarkFormData's fields.
     Tests: browser bookmark-modal (4) and topic-bookmarks-menu's
     "editing a bookmark opens BookmarkModal". An existing reminder is
-    kept when only the name is saved. Left: creating a bookmark through
-    the modal (BookmarkMenu on a post's and the topic's buttons, which
-    toggle) and the bookmark-modal-after-name plugin outlet; the user
-    status modal's tiles are this picker's since 130c
+    kept when only the name is saved. Left: the
+    bookmark-modal-after-name plugin outlet; the user status modal's
+    tiles are this picker's since 130c, and BookmarkMenu is 290
+290. ~~`feat/bookmark-menu`~~ (done) M: a post's bookmark button, and
+    the footer's while the topic's is the only bookmark, toggled the
+    bookmark. Now BookmarkMenu (components/bookmark-menu.gjs, in
+    static/js/topic-bookmarks-menu.js) opens on them, a DMenu without an
+    arrow: showing it on what is not bookmarked bookmarks it at once
+    (onBookmark, POST /bookmarks with the button's saveData) and offers
+    a reminder under "Bookmarked!": in two hours, tomorrow, in three
+    days (PUT /bookmarks/:id with the time) or more options
+    (BookmarkModal for the bookmark just made); on a bookmark it offers
+    Edit (the modal), Clear reminder when there is one, and Delete, with
+    their toasts. The post and the footer are drawn again as it closes.
+    The buttons carry the bookmark's BookmarkFormData fields
+    (data-bookmark, posts/view.rs); the click is taken ahead of the
+    button's htmx toggle, which is what is left without the scripts.
+    Tests: browser bookmark-modal's two BookmarkMenu tests, post-menu and
+    topic-bookmarks-menu through the menu
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script

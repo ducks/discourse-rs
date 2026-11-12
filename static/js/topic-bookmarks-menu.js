@@ -68,6 +68,14 @@
       });
   }
 
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function icon(name) {
     return (
       '<svg class="fa d-icon d-icon-' +
@@ -373,6 +381,260 @@
       openMenu(trigger);
     }
   });
+
+  // ---- BookmarkMenu (components/bookmark-menu.gjs) on a post's bookmark
+  // button and the footer's while the topic's is the only bookmark: a
+  // DMenu (no arrow). Showing it on what isn't bookmarked bookmarks it
+  // at once (onBookmark) and offers a reminder: in two hours, tomorrow,
+  // in three days, or more options (BookmarkModal). On a bookmark it
+  // offers Edit (the modal), Clear reminder when there is one, and
+  // Delete. The button's own htmx toggle is what is left without the
+  // modal's script.
+
+  function menuRow(id, className, iconName, label, title) {
+    return (
+      '<li class="dropdown-menu__item bookmark-menu__row' +
+      (className ? " " + className : "") +
+      '" data-menu-option-id="' +
+      id +
+      '"><button class="bookmark-menu__row-btn btn btn-icon-text' +
+      (className === "--remove" ? " --danger" : " btn-transparent") +
+      '"' +
+      (title ? ' title="' + escapeHtml(title) + '"' : "") +
+      ' type="button">' +
+      icon(iconName) +
+      '<span class="d-button-label">' +
+      escapeHtml(label) +
+      "</span></button></li>"
+    );
+  }
+
+  var bookmarkMenu = null;
+
+  function openBookmarkMenu(trigger) {
+    if (bookmarkMenu && bookmarkMenu.expanded) {
+      bookmarkMenu.close();
+      return;
+    }
+    var t = Discourse.bookmarkModal.t;
+    var post = trigger.closest("[data-post-id]");
+    var postId = post ? post.getAttribute("data-post-id") : null;
+    var parse = function (value) {
+      try {
+        return value ? JSON.parse(value) : null;
+      } catch (e) {
+        return null;
+      }
+    };
+    var existing = parse(trigger.dataset.bookmark);
+    var quicksaved = false;
+    var creating = null;
+    var changed = false;
+    var instance = null;
+    var content = document.createElement("ul");
+    content.className = "dropdown-menu";
+
+    // The post drawn again, its own or (from the footer) the bookmark's.
+    var again = function () {
+      var bookmarked = existing && existing.bookmarkable_type === "Post" ? existing.bookmarkable_id : null;
+      redraw(postId || bookmarked ? [postId || bookmarked] : []);
+    };
+    var close = function () {
+      return Promise.resolve(instance && instance.close({ focusTrigger: false }));
+    };
+    // saveData, as BookmarkFormData sends it.
+    var saveData = function (reminderAt) {
+      return {
+        reminder_at: reminderAt || "",
+        name: existing.name || "",
+        id: existing.id,
+        auto_delete_preference:
+          existing.auto_delete_preference === null || existing.auto_delete_preference === undefined
+            ? 3
+            : existing.auto_delete_preference,
+        bookmarkable_id: existing.bookmarkable_id,
+        bookmarkable_type: existing.bookmarkable_type,
+      };
+    };
+    var save = function (reminderAt) {
+      return request("PUT", "/bookmarks/" + encodeURIComponent(existing.id) + ".json", saveData(reminderAt)).then(
+        function (r) {
+          if (!r.ok) {
+            return popupError(r).then(function () {
+              return false;
+            });
+          }
+          existing.reminder_at = reminderAt || null;
+          changed = true;
+          return true;
+        }
+      );
+    };
+    var openModal = function () {
+      close().then(function () {
+        Discourse.bookmarkModal.open({ bookmark: existing, afterSave: again, afterDelete: again });
+      });
+    };
+    var mobile = function () {
+      return document.documentElement.classList.contains("mobile-view");
+    };
+
+    var options = [];
+    function draw() {
+      var html = "";
+      if (existing && !quicksaved) {
+        // showEditDeleteMenu
+        html += menuRow("edit", "-edit", "pencil", t("edit"));
+        if (existing.reminder_at) {
+          html += menuRow("clear-reminder", "--clear-reminder", "bell-slash", t("bookmarks.clear_reminder"));
+        }
+        html += menuRow("delete", "--remove", "trash-can", t("delete"));
+      } else {
+        html +=
+          '<li class="dropdown-menu__item bookmark-menu__title">' +
+          icon("circle-check") +
+          "<span>" +
+          escapeHtml(t("bookmarks.bookmarked_success")) +
+          '</span></li><li class="dropdown-menu__item bookmark-menu__row-title">' +
+          icon("bell") +
+          escapeHtml(t("bookmarks.also_set_reminder")) +
+          '</li><li><hr class="dropdown-menu__divider"></li>';
+        options.forEach(function (option) {
+          html += menuRow(
+            option.id,
+            "",
+            option.icon,
+            t(option.label),
+            option.time ? option.time.format(t(option.format)) : ""
+          );
+        });
+      }
+      content.innerHTML = html;
+    }
+
+    // onBookmark: bookmarked at once, the reminder's menu kept (quicksaved).
+    function create() {
+      var vals = parse(trigger.getAttribute("hx-vals")) || {};
+      creating = request("POST", "/bookmarks.json", vals)
+        .then(function (r) {
+          if (!r.ok) {
+            return popupError(r).then(function () {
+              close();
+            });
+          }
+          return r.json().then(function (body) {
+            existing = {
+              id: body.id,
+              name: "",
+              reminder_at: null,
+              auto_delete_preference: Number(vals.auto_delete_preference),
+              bookmarkable_id: vals.bookmarkable_id,
+              bookmarkable_type: vals.bookmarkable_type,
+            };
+            quicksaved = true;
+            changed = true;
+            trigger.classList.add("bookmarked");
+            if (mobile()) {
+              toast(t("bookmarks.bookmarked_success"));
+            }
+          });
+        })
+        .then(function () {
+          creating = null;
+        });
+    }
+
+    content.addEventListener("click", function (event) {
+      var button = event.target.closest(".bookmark-menu__row-btn");
+      var item = button && button.closest(".bookmark-menu__row");
+      if (!item) {
+        return;
+      }
+      var id = item.dataset.menuOptionId;
+      // onChooseReminderOption waits for the bookmark being made.
+      Promise.resolve(creating).then(function () {
+        if (!existing) {
+          return;
+        }
+        if (id === "edit" || id === "custom") {
+          openModal();
+        } else if (id === "clear-reminder") {
+          save(null).then(function (saved) {
+            if (saved) {
+              toast(t("bookmarks.reminder_clear_success"));
+            }
+            close();
+          });
+        } else if (id === "delete") {
+          request("DELETE", "/bookmarks/" + encodeURIComponent(existing.id) + ".json").then(function (r) {
+            if (!r.ok) {
+              return popupError(r).then(close);
+            }
+            changed = true;
+            toast(t("bookmarks.deleted_bookmark_success"), "trash-can");
+            close();
+          });
+        } else {
+          var option = options.filter(function (o) {
+            return o.id === id;
+          })[0];
+          if (!option || !option.time) {
+            return;
+          }
+          save(option.time.toISOString()).then(function (saved) {
+            if (saved && mobile()) {
+              toast(t("bookmarks.reminder_set_success"));
+            }
+            close();
+          });
+        }
+      });
+    });
+
+    Discourse.timeShortcutPicker.load().then(function () {
+      // setReminderShortcuts
+      var shortcuts = Discourse.timeShortcutPicker.shortcuts();
+      options = [shortcuts.twoHours(), shortcuts.tomorrow(), shortcuts.threeDays()];
+      options[0].icon = "far-clock";
+      options[1].icon = "calendar-day";
+      options[2].icon = "calendar-days";
+      options.push({ id: "custom", label: "time_shortcut.more_options", icon: "far-calendar-plus", time: null });
+      draw();
+      instance = Discourse.float.menu(trigger, {
+        identifier: "bookmark-menu",
+        arrow: false,
+        content: content,
+        // onCloseMenu, then what changed drawn again: the post, the footer.
+        onClose: function () {
+          bookmarkMenu = null;
+          if (changed) {
+            again();
+          }
+        },
+      });
+      bookmarkMenu = instance;
+      if (!existing) {
+        create();
+      }
+    });
+  }
+
+  // Taken on the way down, ahead of the button's htmx toggle.
+  document.addEventListener(
+    "click",
+    function (event) {
+      var trigger =
+        event.target.closest &&
+        event.target.closest(".post-action-menu__bookmark.bookmark-menu-trigger, #topic-footer-buttons .bookmark-menu-trigger");
+      if (!trigger || !window.Discourse || !Discourse.float || !Discourse.bookmarkModal || !Discourse.timeShortcutPicker) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      openBookmarkMenu(trigger);
+    },
+    true
+  );
 
   // A post's bookmark saved or removed from its own menu: the footer
   // counts it.

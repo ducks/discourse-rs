@@ -174,8 +174,11 @@ test("a post bookmarked from its menu: the footer counts it", async ({ page, con
   await expect(page.locator(TRIGGER)).toHaveText("Edit bookmark");
   const post = page.locator(`article[data-post-id="${t.posts[0]}"]`);
   await post.locator(".post-action-menu__show-more").click();
+  // BookmarkMenu bookmarks as it shows; the footer follows once it closes.
   await post.locator(".post-action-menu__bookmark").click();
-  await expect(post.locator(".post-action-menu__bookmark.bookmarked")).toBeVisible();
+  await expect(page.locator(".bookmark-menu-content .bookmark-menu__title")).toHaveText("Bookmarked!");
+  await page.keyboard.press("Escape");
+  await expect(post.locator(".post-action-menu__bookmark.bookmarked[data-bookmark]")).toBeVisible();
   await expect(page.locator(TRIGGER)).toHaveText("Edit bookmarks");
   await page.locator(TRIGGER).click();
   const ids = await page
