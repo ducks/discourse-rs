@@ -768,3 +768,15 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .custom-date-time-wrap.custom-relative-wrap .relative-time-picker {
   display: flex;
 }
+
+/* CreateInvite (static/js/create-invite-modal.js). */
+
+/* modal-overrides.scss:984 */
+.create-invite-modal .alert-error label {
+  display: inline-block;
+}
+
+/* modal-overrides.scss:993 */
+.create-invite-modal .edit-link-options {
+  text-align: left;
+}

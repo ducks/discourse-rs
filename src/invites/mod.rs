@@ -2,6 +2,7 @@
 
 pub mod bulk;
 pub mod mailer;
+pub mod modal;
 mod model;
 pub mod view;
 

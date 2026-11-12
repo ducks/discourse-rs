@@ -816,8 +816,10 @@
       event.preventDefault();
       optionsMenu(trigger);
     } else if (
+      // The invites tab's empty state has the same identifier
+      // (user-invited/show.gjs); its button is the invite modal's.
       (trigger = target.closest(
-        ".chat-channel-list-filter-toggle, [data-sidebar-action-id='toggleChannelFilter'], .--empty-channels-list .empty-state__cta button:not([data-href])"
+        ".chat-channel-list-filter-toggle, [data-sidebar-action-id='toggleChannelFilter'], .--empty-channels-list .empty-state__cta button:not([data-href]):not(.invite-button)"
       ))
     ) {
       event.preventDefault();

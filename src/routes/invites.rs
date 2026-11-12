@@ -1289,3 +1289,19 @@ pub async fn upload_csv(
     }
     Ok(success())
 }
+
+/// GET /new-invite as a page load (routes/new-invite.js): Ember replaces
+/// it with the homepage and opens CreateInvite there, so the homepage it
+/// is, with the fragment static/js/create-invite-modal.js opens the modal
+/// for; a visitor is shown the login.
+pub async fn new_invite(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Response {
+    let base = state.config.globals.relative_url_root();
+    if guardian.is_authenticated() {
+        axum::response::Redirect::to(&format!("{base}/#new-invite")).into_response()
+    } else {
+        axum::response::Redirect::to(&format!("{base}/login")).into_response()
+    }
+}
