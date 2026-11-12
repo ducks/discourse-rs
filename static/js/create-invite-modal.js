@@ -29,7 +29,9 @@
 // page load of it is the server's.
 //
 // The strings, limits, groups and the link validity line are the script
-// tag's (crate::invites::modal::script_attrs).
+// tag's (crate::invites::modal::script_attrs). A member who may not
+// invite has the script too, with the refusal alone (refused_attrs):
+// /new-invite shows it in a dialog.
 //
 // Not ported: CreateInviteWithRoles (enable_invite_modal_with_roles), and
 // in TopicChooser's rows the topic's statuses and category.
@@ -531,6 +533,13 @@
   }
 
   function open(model) {
+    if (s.cannotInvite) {
+      // #openInviteModalIfAllowed: who may not invite is told so.
+      if (Discourse.dialog) {
+        Discourse.dialog.alert(t("user.invited.cannot_invite_to_forum"));
+      }
+      return;
+    }
     if (!Discourse.modal) {
       return;
     }
@@ -1112,7 +1121,8 @@
   // fragment (routes/invites.rs): the modal there, the address cleaned.
   if (location.hash === "#new-invite") {
     history.replaceState(history.state, "", location.pathname + location.search);
-    if (document.readyState === "loading") {
+    // Once the scripts after this one (the dialog's) have run.
+    if (document.readyState !== "complete") {
       document.addEventListener("DOMContentLoaded", function () {
         open({});
       });
@@ -1121,5 +1131,9 @@
     }
   }
 
-  Discourse.createInviteModal = { open: open };
+  // What offers the modal elsewhere looks for this: not there for who
+  // may not invite.
+  if (!s.cannotInvite) {
+    Discourse.createInviteModal = { open: open };
+  }
 })();

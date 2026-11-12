@@ -5695,9 +5695,12 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat's channel filter toggle also took the invites tab's empty state
     button (the same empty-channels-list identifier), saving a chat
     preference and loading the page again. Tests: browser
-    create-invite-modal (5). Left: cannot_invite_to_forum's dialog for who
-    may not, CreateInviteWithRoles, bulk invites (the topic arrived at is
-    293)
+    create-invite-modal (5). Left: CreateInviteWithRoles, bulk invites (the
+    topic arrived at is 293). Done after, `feat/cannot-invite-dialog`:
+    a member who may not invite has the script with the refusal alone
+    (invites::modal::refused_attrs) and /new-invite, followed or loaded,
+    tells them so in a dialog (cannot_invite_to_forum) where it did
+    nothing
 292. ~~`feat/edit-invite-modal`~~ (done) S: an invite's Edit on the
     invites tab was refused by name, and the options of a link just made
     still offered the days until it expires under Create link. Now the
