@@ -1,7 +1,8 @@
-// CreateInvite (components/modal/create-invite.gjs) for a new invite, as
-// lib/invite-modal's showCreateInviteModal opens it.
+// CreateInvite (components/modal/create-invite.gjs), as lib/invite-modal's
+// showCreateInviteModal opens it.
 //
-//   Discourse.createInviteModal.open({ groupIds, onSaved(invite), onClose })
+//   Discourse.createInviteModal.open({ groupIds, onSaved(invite), onClose,
+//                                      editing, invite })
 //       The simple mode first: "Create link" makes an invite link with
 //       the default redemptions and expiry (createLink) and shows it to
 //       copy or share, the footer gone. "Edit link options" turns to the
@@ -13,6 +14,13 @@
 //       /invites/:id for the invite made (Invite#save); the alert under
 //       the header then carries the link. onSaved hears each save
 //       (create-invite:saved).
+//       With `editing` and the `invite` (InviteSerializer's JSON) the
+//       form at once, for that invite: its link in the alert under the
+//       header, its values in the fields, "Update" saving them with PUT.
+//       An invite that exists has the moment it expires for a field
+//       (DFutureDateInput without shortcuts, bookmark-modal.js's
+//       Discourse.timeShortcutPicker.futureDateInput) where a new one has
+//       the days until then.
 //
 // A link to /new-invite followed in the page opens the modal where the
 // member is (routes/new-invite.js, a transition from another route); the
@@ -21,9 +29,8 @@
 // The strings, limits, groups and the link validity line are the script
 // tag's (crate::invites::modal::script_attrs).
 //
-// Not ported: editing an invite (its expires_at through DFutureDateInput,
-// InviteModalAlert while editing), the topic a staff member's invite
-// arrives at (TopicChooser), and CreateInviteWithRoles
+// Not ported: the topic a staff member's invite arrives at (TopicChooser;
+// an invite edited keeps the one it has), and CreateInviteWithRoles
 // (enable_invite_modal_with_roles).
 (function () {
   "use strict";
@@ -345,8 +352,9 @@
       return;
     }
     model = model || {};
-    var invite = null;
+    var invite = model.invite ? Object.assign({}, model.invite) : null;
     var advanced = false;
+    var expiresInput = null;
     var saving = false;
     var sendEmail = false;
     var flashText = null;
@@ -355,13 +363,24 @@
     var footerEl = null;
     var close = null;
     // this.data, as the form holds it.
+    var had = invite || {};
     var data = {
-      description: "",
-      restrictTo: "",
-      maxRedemptions: s.defaultRedemptions,
-      inviteToGroups: (model.groupIds || []).map(Number),
-      customMessage: "",
+      description: had.description || "",
+      // emailOrDomain
+      restrictTo: had.email || had.domain || "",
+      maxRedemptions:
+        had.max_redemptions_allowed === undefined || had.max_redemptions_allowed === null
+          ? s.defaultRedemptions
+          : had.max_redemptions_allowed,
+      inviteToGroups: (
+        model.groupIds ||
+        (had.groups || []).map(function (g) {
+          return g.id;
+        })
+      ).map(Number),
+      customMessage: had.custom_message || "",
       expiresAfterDays: s.expiryDays,
+      expiresAt: had.expires_at || null,
     };
 
     function isEmailInvite() {
@@ -377,7 +396,7 @@
     }
 
     function simpleMode() {
-      return !advanced;
+      return !model.editing && !advanced;
     }
 
     // ShareOrCopyInviteLink
@@ -407,7 +426,7 @@
       if (old) {
         old.remove();
       }
-      if (!flashText) {
+      if (!flashText && !model.editing) {
         return;
       }
       var alert = document.createElement("div");
@@ -416,7 +435,7 @@
       alert.setAttribute("role", flashClass === "error" ? "alert" : "status");
       alert.innerHTML =
         '<div class="input-group invite-link"><label for="invite-link">' +
-        escapeHtml(flashText) +
+        escapeHtml(flashText || t("user.invited.invite.copy_link_and_share_it")) +
         "</label>" +
         (created() && flashClass !== "error" ? linkHtml() : "") +
         "</div>";
@@ -471,14 +490,16 @@
           { format: "small", title: t("user.invited.invite.max_redemptions_allowed") },
           input("maxRedemptions", "number", ' max="' + s.maxRedemptionsLimit + '" min="1"')
         ) +
-        field(
-          "expiresAfterDays",
-          "select",
-          { format: "full", title: t("user.invited.invite.expires_after") },
-          '<select class="d-native-select form-kit__control-select" id="control-expiresAfterDays-input" name="expiresAfterDays">' +
-            options +
-            "</select>"
-        ) +
+        (created()
+          ? field("expiresAt", "custom", { format: "full", title: t("user.invited.invite.expires_at") }, "")
+          : field(
+              "expiresAfterDays",
+              "select",
+              { format: "full", title: t("user.invited.invite.expires_after") },
+              '<select class="d-native-select form-kit__control-select" id="control-expiresAfterDays-input" name="expiresAfterDays">' +
+                options +
+                "</select>"
+            )) +
         (s.canInviteToGroup
           ? field("inviteToGroups", "custom", { format: "full", title: t("user.invited.invite.add_to_groups") }, "")
           : "") +
@@ -513,7 +534,32 @@
       drawFooter();
     }
 
+    // The expiresAt field's DFutureDateInput, once moment is there.
+    function mountExpires(form) {
+      var content = form.querySelector('[data-name="expiresAt"] .form-kit__container-content');
+      var picker = Discourse.timeShortcutPicker;
+      if (!content || !picker) {
+        return;
+      }
+      picker.load().then(function () {
+        if (!content.isConnected) {
+          return;
+        }
+        expiresInput = picker.futureDateInput(content, {
+          input: data.expiresAt,
+          onChangeInput: function (value) {
+            data.expiresAt = value;
+            setError(form, "expiresAt", null);
+          },
+        });
+      });
+    }
+
     function drawBody() {
+      if (expiresInput) {
+        expiresInput.destroy();
+        expiresInput = null;
+      }
       if (simpleMode()) {
         bodyEl.innerHTML =
           (created()
@@ -568,6 +614,7 @@
           data.expiresAfterDays = Number(event.target.value);
         }
       });
+      mountExpires(form);
       syncForm();
     }
 
@@ -582,14 +629,20 @@
         '<button class="btn btn-text btn-primary save-invite"' +
         disabled +
         ' type="button"><span class="d-button-label">' +
-        escapeHtml(t("user.invited.invite.create_link")) +
+        escapeHtml(t(!simpleMode() && created() ? "user.invited.invite.update_invite" : "user.invited.invite.create_link")) +
         "</span></button>";
       if (!simpleMode() && canSendEmailInvite()) {
         html +=
           '<button class="btn btn-text btn-primary save-invite-and-send-email"' +
           disabled +
           ' type="button"><span class="d-button-label">' +
-          escapeHtml(t("user.invited.invite.create_link_and_send_email")) +
+          escapeHtml(
+            t(
+              created()
+                ? "user.invited.invite.update_invite_and_send_email"
+                : "user.invited.invite.create_link_and_send_email"
+            )
+          ) +
           "</span></button>";
       }
       html +=
@@ -647,6 +700,10 @@
       return sent
         .then(function (saved) {
           invite = Object.assign(invite || {}, saved);
+          if (!wasCreated) {
+            // The form's field from here on is the moment it expires.
+            data.expiresAt = invite.expires_at || null;
+          }
           if (!simpleMode()) {
             flashText = t(
               sendEmail
@@ -710,18 +767,28 @@
         setError(form, "maxRedemptions", t("form_kit.errors.required"));
         valid = false;
       }
+      if (created() && !data.expiresAt) {
+        setError(form, "expiresAt", t("form_kit.errors.required"));
+        valid = false;
+      }
       if (!valid) {
         return;
       }
       sendEmail = withEmail;
-      save({
+      var submit = {
         description: data.description,
         emailOrDomain: data.restrictTo.trim(),
         group_ids: data.inviteToGroups,
         max_redemptions_allowed: Number(data.maxRedemptions),
         custom_message: data.customMessage,
-        expires_at: expiresAt(Number(data.expiresAfterDays)),
-      });
+        expires_at: created() ? data.expiresAt : expiresAt(Number(data.expiresAfterDays)),
+      };
+      // inviteToTopic: the topic the invite has stays with it.
+      var topic = invite && invite.topics && invite.topics[0];
+      if (topic) {
+        submit.topic_id = topic.id;
+      }
+      save(submit);
     }
 
     // DCopyButton: the link to the clipboard, the button saying so a while.
@@ -781,8 +848,12 @@
 
     close = Discourse.modal.show({
       className: "create-invite-modal",
-      title: t("user.invited.invite.new_title"),
+      title: t(model.editing ? "user.invited.invite.edit_title" : "user.invited.invite.new_title"),
       onClose: function () {
+        if (expiresInput) {
+          expiresInput.destroy();
+          expiresInput = null;
+        }
         if (model.onClose) {
           model.onClose();
         }
@@ -800,7 +871,9 @@
     }
     modal.addEventListener("click", onClick);
     draw();
-    var primary = footerEl && footerEl.querySelector(".save-invite");
+    // autofocus: the simple mode's button, or the one that sends the email.
+    var primary =
+      footerEl && footerEl.querySelector(simpleMode() ? ".save-invite" : ".save-invite-and-send-email");
     if (primary) {
       primary.focus();
     }

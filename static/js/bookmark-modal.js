@@ -15,6 +15,9 @@
 //       its strings, which BookmarkMenu (topic-bookmarks-menu.js) reads.
 //   Discourse.timeShortcutPicker.load() -> Promise, .shortcuts()
 //       moment loaded, then lib/time-shortcut's timeShortcuts by name.
+//   Discourse.timeShortcutPicker.futureDateInput(root, { input,
+//       onChangeInput }) -> { destroy }
+//       DFutureDateInput without its shortcuts: a date and a time.
 //   Discourse.timeShortcutPicker.mount(root, opts) -> { destroy }
 //       DTimeShortcutPicker in root. opts: { timezone, prefilledDatetime,
 //       hiddenOptions, customLabels, timeShortcuts(shortcuts) (the
@@ -1256,11 +1259,123 @@
     }
   }
 
+  // DFutureDateInput with @noRelativeOptions (ui-kit/d-future-date-input):
+  // a date (DatePickerFuture) and a time, no shortcuts to choose from.
+  // opts: { input (a time moment reads), onChangeInput(value) } where the
+  // value is "YYYY-MM-DD HH:mmZ" in the browser's zone (FORMAT), or null
+  // without a date. Called once load() has resolved.
+  function futureDateInput(root, opts) {
+    var m = window.moment;
+    var date = null;
+    var time = null;
+    var picker = null;
+    var destroyed = false;
+    if (opts.input) {
+      var at = m(opts.input);
+      if (at.isValid()) {
+        date = at.format("YYYY-MM-DD");
+        time = at.format("HH:mm");
+      }
+    }
+    root.innerHTML =
+      '<div class="future-date-input"><div class="control-group future-date-input-date-picker">' +
+      icon("calendar-days") +
+      '<div class="date-picker-wrapper"><input class="date-picker" autocomplete="off" placeholder="' +
+      escapeHtml(t("dates.placeholder")) +
+      '" type="' +
+      (mobileView() ? "date" : "text") +
+      '"></div></div><div class="control-group future-date-input-time-picker">' +
+      icon("far-clock") +
+      '<input class="time-input" placeholder="--:--" type="time"></div></div>';
+    var dateInput = root.querySelector(".date-picker");
+    var timeInput = root.querySelector(".time-input");
+    dateInput.value = date || "";
+    timeInput.value = time || "";
+    timeInput.disabled = !date;
+
+    // _dateTimeChanged
+    function changed() {
+      var dateTime = m((date || "") + (time ? " " + time : ""));
+      opts.onChangeInput(date && dateTime.isValid() ? dateTime.locale("en").format("YYYY-MM-DD HH:mmZ") : null);
+    }
+    // onChangeDate: no date takes the time with it.
+    function onDate(value) {
+      date = value || null;
+      if (!date) {
+        time = null;
+        timeInput.value = "";
+      }
+      timeInput.disabled = !date;
+      changed();
+    }
+    timeInput.addEventListener("input", function () {
+      // onChangeTime
+      if (date) {
+        time = timeInput.value || null;
+        changed();
+      }
+    });
+    // A date typed in (the phone's date input, or the field before or
+    // without Pikaday), or the field emptied.
+    dateInput.addEventListener("change", function () {
+      var value = dateInput.value.trim();
+      if (!value) {
+        onDate(null);
+      } else if (m(value, "YYYY-MM-DD", true).isValid() && value !== date) {
+        onDate(value);
+      }
+    });
+    if (!mobileView()) {
+      loadPikaday()
+        .then(function () {
+          if (destroyed || !dateInput.isConnected) {
+            return;
+          }
+          picker = new window.Pikaday({
+            field: dateInput,
+            container: null,
+            bound: true,
+            format: "YYYY-MM-DD",
+            firstDay: 1,
+            minDate: m().toDate(),
+            defaultDate: date ? m(date).toDate() : m().add(1, "day").toDate(),
+            setDefaultDate: !!date,
+            i18n: {
+              previousMonth: t("dates.previous_month"),
+              nextMonth: t("dates.next_month"),
+              months: m.months(),
+              weekdays: m.weekdays(),
+              weekdaysShort: m.weekdaysMin(),
+            },
+            onSelect: function (d) {
+              var value = m(d).format("YYYY-MM-DD");
+              dateInput.value = value;
+              if (value !== date) {
+                onDate(value);
+              }
+            },
+          });
+        })
+        // Without the picker the field still takes a typed date.
+        .catch(function () {});
+    }
+    return {
+      destroy: function () {
+        destroyed = true;
+        if (picker) {
+          picker.destroy();
+          picker = null;
+        }
+      },
+    };
+  }
+
   Discourse.bookmarkModal = { open: open, t: t };
   Discourse.timeShortcutPicker = {
     mount: function (root, opts) {
       return mountPicker(root, opts);
     },
+    futureDateInput: futureDateInput,
     load: load,
     // timeShortcuts in the member's timezone, else the browser's (once
     // loaded).

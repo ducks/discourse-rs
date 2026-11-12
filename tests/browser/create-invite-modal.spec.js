@@ -1,8 +1,8 @@
-// CreateInvite (create-invite-modal.js, components/modal/create-invite.gjs)
-// for a new invite: the simple mode's link, the form's options, an email
-// invite, and where it opens from (the sidebar's Invite link, the invites
-// tab, ShareTopic, a page load of /new-invite). Each invite is checked in
-// the database.
+// CreateInvite (create-invite-modal.js, components/modal/create-invite.gjs):
+// the simple mode's link, the form's options, an email invite, where it
+// opens from (the sidebar's Invite link, the invites tab, ShareTopic, a
+// page load of /new-invite), and an invite edited from its row on the
+// invites tab. Each invite is checked in the database.
 const { test, expect, login, topic, sql, label, member } = require("./helpers");
 
 const modal = (page) => page.locator(".d-modal.create-invite-modal");
@@ -58,6 +58,10 @@ test("the sidebar's Invite link makes a link in the simple mode", async ({ page,
 
   // The options then edit the invite made (PUT), not another.
   await modal(page).locator(".edit-link-options").click();
+  // An invite that exists has the moment it expires, not the days until.
+  await expect(modal(page).locator('[data-name="expiresAt"] .date-picker')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
+  await expect(modal(page).locator('[data-name="expiresAfterDays"]')).toHaveCount(0);
+  await expect(modal(page).locator(".d-modal__footer .save-invite")).toHaveText("Update");
   await modal(page).locator("#control-description-input").fill("For the neighbours");
   await modal(page).locator(".d-modal__footer .save-invite").click();
   await expect(modal(page).locator("#modal-alert.alert-success")).toContainText("Invite saved");
@@ -130,6 +134,68 @@ test("the invites tab's button, ShareTopic's and a page load of /new-invite open
   await page.goto("/new-invite");
   await expect(modal(page)).toBeVisible();
   expect(new URL(page.url()).pathname + new URL(page.url()).hash).toBe("/");
+});
+
+test("an invite's Edit on the invites tab changes it", async ({ page, context }) => {
+  const m = await inviter(page, context);
+  await page.goto(`/u/${m.name}/invited`);
+  await page.locator(".invite-button").first().click();
+  await modal(page).locator(".d-modal__footer .save-invite").click();
+  const made = await modal(page).locator(".link-share-container input.invite-link").inputValue();
+  await modal(page).locator(".modal-close").click();
+
+  await page.locator("tr[data-invite-id] .edit-invite").click();
+  await expect(modal(page).locator("#discourse-modal-title")).toHaveText("Edit invite");
+  // InviteModalAlert while editing: the link, to copy.
+  const alert = modal(page).locator("#modal-alert");
+  await expect(alert).toHaveClass(/alert-info/);
+  await expect(alert.locator("label")).toHaveText("Copy the link below and share it to instantly grant access to this site.");
+  await expect(alert.locator("input.invite-link")).toHaveValue(made);
+  const form = modal(page).locator("form.form-kit");
+  const update = modal(page).locator(".d-modal__footer .save-invite");
+  await expect(update).toHaveText("Update");
+  await expect(form.locator("#control-maxRedemptions-input")).toHaveValue(/^\d+$/);
+  const date = form.locator('[data-name="expiresAt"] .date-picker');
+  const time = form.locator('[data-name="expiresAt"] .time-input');
+  await expect(date).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
+  await expect(time).toHaveValue(/^\d{2}:\d{2}$/);
+
+  // Three days from now at 09:30, as the browser's zone has it.
+  const when = await page.evaluate(() => {
+    const at = new Date(Date.now() + 3 * 86400000);
+    const pad = (n) => String(n).padStart(2, "0");
+    const day = `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`;
+    return { day, epoch: new Date(`${day}T09:30:00`).getTime() / 1000 };
+  });
+  await form.locator("#control-description-input").fill("The allotment");
+  await form.locator("#control-maxRedemptions-input").fill("5");
+  await date.fill(when.day);
+  await date.press("Tab");
+  await time.fill("09:30");
+  await update.click();
+  await expect(modal(page).locator("#modal-alert.alert-success")).toContainText("Invite saved");
+  expect(
+    sql(
+      "SELECT description, max_redemptions_allowed, extract(epoch FROM expires_at)::bigint FROM invites WHERE invited_by_id = :'p1'",
+      m.id,
+    ),
+  ).toEqual([["The allotment", "5", String(when.epoch)]]);
+
+  // No date is no time, and nothing to save.
+  await date.fill("");
+  await date.press("Tab");
+  await expect(time).toBeDisabled();
+  await update.click();
+  await expect(form.locator('[data-name="expiresAt"] .form-kit__errors')).toBeVisible();
+
+  // An address in place of the link: its buttons say Update too.
+  await form.locator("#control-restrictTo-input").fill("someone@example.com");
+  await expect(form.locator('[data-name="maxRedemptions"]')).toBeHidden();
+  await expect(modal(page).locator(".save-invite-and-send-email")).toHaveText("Update and send email");
+
+  // The list is drawn again with what was saved.
+  await modal(page).locator(".cancel-button").click();
+  await expect(page.locator("tr[data-invite-id] .invite-description")).toHaveText("The allotment");
 });
 
 test("a visitor's page load of /new-invite is shown the login", async ({ page }) => {

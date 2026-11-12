@@ -1,8 +1,7 @@
 // The profile's Invites tab (controllers/user-invited/show.js): removing
 // an invite, copying its link, removing the expired ones, sending the
-// pending ones again, and the search. Invite opens CreateInvite
-// (create-invite-modal.js); editing an invite and bulk invites are not
-// ported.
+// pending ones again, and the search. Invite and an invite's Edit open
+// CreateInvite (create-invite-modal.js); bulk invites are not ported.
 (function () {
   "use strict";
 
@@ -118,8 +117,30 @@
             },
           });
         }
-      } else if (target.matches(".edit-invite")) {
-        unsupported("editing an invite");
+      } else if (target.matches(".edit-invite") && row) {
+        // editInvite: the modal for the row's invite; the list is drawn
+        // again once one that saved it has closed.
+        var editing = null;
+        try {
+          editing = JSON.parse(row.dataset.invite || "null");
+        } catch (e) {
+          editing = null;
+        }
+        if (Discourse.createInviteModal && editing) {
+          var saved = false;
+          Discourse.createInviteModal.open({
+            editing: true,
+            invite: editing,
+            onSaved: function () {
+              saved = true;
+            },
+            onClose: function () {
+              if (saved) {
+                location.reload();
+              }
+            },
+          });
+        }
       } else if (target.matches(".bulk-invite-button")) {
         unsupported("bulk invites from a CSV file");
       } else if (target.matches(".invites-menu-trigger")) {

@@ -363,8 +363,15 @@ pub fn parse_time_param(value: &str) -> Result<Option<NaiveDateTime>, AppError> 
             return Ok(Some(t));
         }
     }
-    if let Ok(t) = chrono::DateTime::parse_from_str(v, "%Y-%m-%d %H:%M:%S %z") {
-        return Ok(Some(t.naive_utc()));
+    // "%Y-%m-%d %H:%M%:z" is what DFutureDateInput sends (FORMAT).
+    for format in [
+        "%Y-%m-%d %H:%M:%S %z",
+        "%Y-%m-%d %H:%M%:z",
+        "%Y-%m-%d %H:%M%z",
+    ] {
+        if let Ok(t) = chrono::DateTime::parse_from_str(v, format) {
+            return Ok(Some(t.naive_utc()));
+        }
     }
     if let Ok(d) = chrono::NaiveDate::parse_from_str(v, "%Y-%m-%d") {
         return Ok(d.and_hms_opt(0, 0, 0));
@@ -1322,4 +1329,23 @@ pub async fn redeemed_page(
     .bind(pattern)
     .fetch_all(conn)
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_time_param;
+
+    #[test]
+    fn a_time_param_in_the_date_inputs_formats() {
+        let at = |v: &str| parse_time_param(v).unwrap().map(|t| t.to_string());
+        let expected = Some("2026-11-19 11:30:00".to_string());
+        // DFutureDateInput's FORMAT, YYYY-MM-DD HH:mmZ.
+        assert_eq!(at("2026-11-19 12:30+01:00"), expected);
+        assert_eq!(at("2026-11-19 06:30-05:00"), expected);
+        // What the serializer gave, sent back untouched.
+        assert_eq!(at("2026-11-19T11:30:00.000Z"), expected);
+        assert_eq!(at("2026-11-19 11:30:00 +0000"), expected);
+        assert_eq!(at(" "), None);
+        assert!(parse_time_param("next week").is_err());
+    }
 }

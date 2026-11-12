@@ -610,8 +610,14 @@ fn invite_table(cx: &ListContext, invites: &[Value], expired_tab: bool) -> Strin
     );
     for invite in invites {
         let id = invite["id"].as_i64().unwrap_or(0);
+        // The invite itself for the row's Edit (user-invited.js).
+        let json = if invite["can_delete_invite"] == true {
+            format!(" data-invite=\"{}\"", escape(&invite.to_string()))
+        } else {
+            String::new()
+        };
         out.push_str(&format!(
-            "<tr class=\"d-table__row\" data-invite-id=\"{id}\"><td class=\"d-table__cell --overview invite-type\"><div class=\"invite-shortkey\">"
+            "<tr class=\"d-table__row\" data-invite-id=\"{id}\"{json}><td class=\"d-table__cell --overview invite-type\"><div class=\"invite-shortkey\">"
         ));
         if let Some(link) = invite["link"].as_str() {
             out.push_str(&format!(
