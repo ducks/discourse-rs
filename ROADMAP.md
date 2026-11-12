@@ -3571,9 +3571,9 @@ route table has been made, so this list may be short.
     copying, removing the expired, resending all, search) in Ember's
     markup with common.css's rules (static/css/invites.css),
     static/js/invite.js and user-invited.js; a staff member redeeming
-    refreshes the staff groups. Left: the invite modals (create is 291; edit,
-    bulk) and the avatar picker while signing up, which say they are
-    not ported; invites past the first page (DLoadMore)
+    refreshes the staff groups. Left: the bulk invite modal (create is
+    291, edit 292) and the avatar picker while signing up, which say
+    they are not ported; invites past the first page (DLoadMore)
     192e. ~~`feat/invites-bulk`~~ (done) S: POST /invites/upload_csv
     (the header row or the email, groups, topic_id columns,
     max_bulk_invites), Jobs::BulkInvite (groups by name the admin may
@@ -5696,10 +5696,27 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat's channel filter toggle also took the invites tab's empty state
     button (the same empty-channels-list identifier), saving a chat
     preference and loading the page again. Tests: browser
-    create-invite-modal (5). Left: editing an invite (expires_at through
-    DFutureDateInput, the alert while editing), the topic a staff
-    member's invite arrives at (TopicChooser), cannot_invite_to_forum's
-    dialog for who may not, CreateInviteWithRoles, bulk invites
+    create-invite-modal (5). Left: the topic a staff member's invite
+    arrives at (TopicChooser), cannot_invite_to_forum's dialog for who
+    may not, CreateInviteWithRoles, bulk invites
+292. ~~`feat/edit-invite-modal`~~ (done) S: an invite's Edit on the
+    invites tab was refused by name, and the options of a link just made
+    still offered the days until it expires under Create link. Now the
+    row carries the invite (data-invite, for who may remove it) and Edit
+    opens CreateInvite with it (editInvite: `editing`, `invite`): Edit
+    invite for a title, InviteModalAlert with the link to copy from the
+    start, the invite's values in the form, Update and Update and send
+    email, saved with PUT /invites/:id (the topic it has sent along),
+    the list drawn again once it closes. An invite that exists has
+    expiresAt for a field: DFutureDateInput without its shortcuts
+    (@noRelativeOptions), a date (DatePickerFuture, Pikaday) and a time
+    in the browser's zone, as
+    Discourse.timeShortcutPicker.futureDateInput in bookmark-modal.js;
+    no date disables the time and is refused as required.
+    parse_time_param reads what it sends (YYYY-MM-DD HH:mmZ), which was
+    an Unsupported error. Tests: browser create-invite-modal (6), a unit
+    test for the formats. Left: penalize-user.js and
+    topic-admin-modals.js keep their own copies of the date input
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
