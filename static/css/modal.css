@@ -780,3 +780,26 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .create-invite-modal .edit-link-options {
   text-align: left;
 }
+
+/* TopicChooser in the form: the field's width, as FormKit's custom
+   control gives a select-kit (form-kit/_control-custom.scss). */
+.create-invite-modal .form-kit__field .select-kit.topic-chooser {
+  width: 100%;
+}
+
+.create-invite-modal .select-kit.topic-chooser .select-kit-header {
+  width: 100%;
+}
+
+.create-invite-modal .select-kit.topic-chooser .select-kit-header-wrapper {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.create-invite-modal .select-kit.topic-chooser .select-kit-body {
+  width: 100%;
+}
+
+.create-invite-modal .select-kit.topic-chooser .select-kit-filter .filter-input {
+  width: 100%;
+}

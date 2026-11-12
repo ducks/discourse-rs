@@ -76,6 +76,8 @@ test("the form's options: a description, a domain, the redemptions and the expir
   await expect(form.locator("#control-description-input")).toBeFocused();
   await expect(form.locator('[data-name="customMessage"]')).toBeHidden();
   await expect(modal(page).locator(".save-invite-and-send-email")).toHaveCount(0);
+  // canArriveAtTopic: a staff member's.
+  await expect(form.locator('[data-name="inviteToTopic"]')).toHaveCount(0);
 
   // The description is at most 100 characters.
   await form.locator("#control-description-input").fill("d".repeat(101));
@@ -196,6 +198,53 @@ test("an invite's Edit on the invites tab changes it", async ({ page, context })
   // The list is drawn again with what was saved.
   await modal(page).locator(".cancel-button").click();
   await expect(page.locator("tr[data-invite-id] .invite-description")).toHaveText("The allotment");
+});
+
+test("a staff member chooses the topic an invite arrives at, and takes it away", async ({ page, context, session }) => {
+  const title = label("Arrive here first");
+  const t = await topic(await session("user1"), title, label("The topic an invite arrives at"));
+  await login(context, "admin");
+  await page.goto("/latest");
+  const [[adminId]] = sql("SELECT id FROM users WHERE username = 'admin'");
+  const description = label("With a topic");
+  const arrives = () =>
+    sql(
+      "SELECT COALESCE((SELECT string_agg(ti.topic_id::text, ',') FROM topic_invites ti WHERE ti.invite_id = i.id), 'none') \
+       FROM invites i WHERE i.invited_by_id = :'p1' AND i.description = :'p2'",
+      adminId,
+      description,
+    );
+
+  await page.locator('.sidebar-section-link[data-link-name="invite"]').click();
+  await modal(page).locator(".edit-link-options").click();
+  const form = modal(page).locator("form.form-kit");
+  await form.locator("#control-description-input").fill(description);
+  const chooser = form.locator('[data-name="inviteToTopic"] .topic-chooser');
+  await expect(chooser.locator(".select-kit-header .name")).toHaveText("Select…");
+  await chooser.locator("summary").click();
+  const filter = chooser.locator(".filter-input");
+  await expect(filter).toBeFocused();
+  await expect(filter).toHaveAttribute("placeholder", "type the topic title, url or id here");
+  // By id (searchForId), then by title.
+  await filter.fill(String(t.id));
+  await expect(chooser.locator(".select-kit-row .topic-title")).toHaveText([title]);
+  await filter.fill(title);
+  await chooser.locator(`.select-kit-row[data-value="${t.id}"]`).click();
+  await expect(chooser.locator(".select-kit-header .name")).toHaveText(title);
+  await expect(chooser.locator(".select-kit-body .select-kit-row")).toHaveCount(0);
+  // The description was not taken for the filter's typing.
+  await expect(form.locator("#control-description-input")).toHaveValue(description);
+  await modal(page).locator(".d-modal__footer .save-invite").click();
+  await expect(modal(page).locator("#modal-alert.alert-success")).toContainText("Invite saved");
+  expect(arrives()).toEqual([[String(t.id)]]);
+
+  // The form drawn again keeps it; cleared, the update takes it away.
+  const again = modal(page).locator('[data-name="inviteToTopic"] .topic-chooser');
+  await expect(again.locator(".select-kit-header .name")).toHaveText(title);
+  await again.locator(".btn-clear").click();
+  await expect(again.locator(".select-kit-header .name")).toHaveText("Select…");
+  await modal(page).locator(".d-modal__footer .save-invite").click();
+  await expect.poll(arrives).toEqual([["none"]]);
 });
 
 test("a visitor's page load of /new-invite is shown the login", async ({ page }) => {

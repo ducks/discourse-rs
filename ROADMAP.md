@@ -5696,9 +5696,9 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat's channel filter toggle also took the invites tab's empty state
     button (the same empty-channels-list identifier), saving a chat
     preference and loading the page again. Tests: browser
-    create-invite-modal (5). Left: the topic a staff member's invite
-    arrives at (TopicChooser), cannot_invite_to_forum's dialog for who
-    may not, CreateInviteWithRoles, bulk invites
+    create-invite-modal (5). Left: cannot_invite_to_forum's dialog for who
+    may not, CreateInviteWithRoles, bulk invites (the topic arrived at is
+    293)
 292. ~~`feat/edit-invite-modal`~~ (done) S: an invite's Edit on the
     invites tab was refused by name, and the options of a link just made
     still offered the days until it expires under Create link. Now the
@@ -5717,6 +5717,16 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     an Unsupported error. Tests: browser create-invite-modal (6), a unit
     test for the formats. Left: penalize-user.js and
     topic-admin-modals.js keep their own copies of the date input
+293. ~~`feat/invite-topic-chooser`~~ (done) S: the form had no field for
+    the topic an invite arrives at. Now, for staff where members need no
+    approval (canArriveAtTopic), Arrive at topic: TopicChooser, a
+    ComboBox over GET /search/query with "status:public" (the public
+    topics for no term; a term searches regular topics by title, url or
+    id), the topic chosen in its header with a button that clears it.
+    The form sends topic_id each time, blank for none as jQuery's param
+    does, so an update takes the topic away; invite_to_topic goes with
+    an email that is sent. Tests: browser create-invite-modal (7). Left:
+    the rows' topic statuses and category
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
