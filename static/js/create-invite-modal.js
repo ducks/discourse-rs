@@ -8,7 +8,9 @@
 //       copy or share, the footer gone. "Edit link options" turns to the
 //       form (FormKit's fields): a description, the email or domain it is
 //       restricted to, the redemptions allowed (not for an email), when
-//       it expires, the groups joined (staff and group owners), and for
+//       it expires, the topic arrived at (TopicChooser, for staff where
+//       members need no approval), the groups joined (staff and group
+//       owners), and for
 //       an email with allow_email_invites a custom message and "Create
 //       link and send email". Saved with POST /invites, then PUT
 //       /invites/:id for the invite made (Invite#save); the alert under
@@ -29,9 +31,8 @@
 // The strings, limits, groups and the link validity line are the script
 // tag's (crate::invites::modal::script_attrs).
 //
-// Not ported: the topic a staff member's invite arrives at (TopicChooser;
-// an invite edited keeps the one it has), and CreateInviteWithRoles
-// (enable_invite_modal_with_roles).
+// Not ported: CreateInviteWithRoles (enable_invite_modal_with_roles), and
+// in TopicChooser's rows the topic's statuses and category.
 (function () {
   "use strict";
 
@@ -347,6 +348,188 @@
     return details;
   }
 
+  // TopicChooser (a select-kit ComboBox over a search of the topics, with
+  // additionalFilters "status:public"): the topic chosen in its header
+  // with a button that clears it, a filter and the topics found in its
+  // body. { content: [{ id, title }], value: id, onChange(id, topic) }
+  function topicChooser(opts) {
+    var FILTERS = "status:public";
+    var details = document.createElement("details");
+    details.className = "select-kit single-select combo-box topic-chooser";
+    details.innerHTML =
+      '<summary tabindex="0" class="select-kit-header single-select-header combo-box-header"><div class="select-kit-header-wrapper"></div></summary><div class="select-kit-body"></div>';
+    var summary = details.querySelector("summary");
+    var wrapper = details.querySelector(".select-kit-header-wrapper");
+    var body = details.querySelector(".select-kit-body");
+    var value = opts.value === undefined || opts.value === null ? null : Number(opts.value);
+    var content = (opts.content || []).slice();
+    var timer = null;
+    var searches = 0;
+
+    function chosen() {
+      return content.find(function (topic) {
+        return topic.id === value;
+      });
+    }
+
+    function drawHeader() {
+      var topic = chosen();
+      var title = topic ? topic.title : value === null ? t("select_kit.default_header_text") : String(value);
+      details.classList.toggle("has-selection", value !== null);
+      summary.dataset.value = value === null ? "" : value;
+      summary.dataset.name = topic ? topic.title : "";
+      wrapper.innerHTML =
+        '<div class="select-kit-selected-name selected-name choice" title="' +
+        escapeHtml(title) +
+        '"><span class="name">' +
+        escapeHtml(title) +
+        "</span></div>" +
+        (value === null
+          ? ""
+          : '<button class="btn no-text btn-icon btn-clear" type="button">' + icon("xmark") + "</button>") +
+        icon(details.open ? "angle-up" : "angle-down");
+    }
+
+    function drawRows(topics) {
+      var list = body.querySelector(".select-kit-collection");
+      if (!list) {
+        return;
+      }
+      list.innerHTML = topics.length
+        ? topics
+            .map(function (topic, index) {
+              return (
+                '<li tabindex="0" title="' +
+                escapeHtml(topic.title) +
+                '" data-value="' +
+                topic.id +
+                '" data-name="' +
+                escapeHtml(topic.fancy_title || topic.title) +
+                '" data-index="' +
+                index +
+                '" role="menuitemradio" aria-checked="' +
+                (topic.id === value) +
+                '" class="select-kit-row topic-row' +
+                (topic.id === value ? " is-selected" : "") +
+                '"><div class="topic-title">' +
+                escapeHtml(topic.title) +
+                "</div></li>"
+              );
+            })
+            .join("")
+        : '<li class="no-content" role="alert">' + escapeHtml(t("select_kit.no_content")) + "</li>";
+    }
+
+    // search(filter): the public topics for no term; with one, the
+    // regular topics by title, url or id.
+    function search(filter) {
+      var params = new URLSearchParams({ term: filter + " " + FILTERS });
+      if (filter) {
+        params.set("type_filter", "topic");
+        params.set("restrict_to_archetype", "regular");
+        params.set("search_for_id", "true");
+      }
+      var mine = ++searches;
+      var headers = memberHeaders();
+      headers.Accept = "application/json";
+      fetch(base() + "/search/query?" + params.toString(), { credentials: "same-origin", headers: headers })
+        .then(function (r) {
+          return r.ok ? r.json() : {};
+        })
+        .catch(function () {
+          return {};
+        })
+        .then(function (results) {
+          if (mine !== searches || !details.open) {
+            return;
+          }
+          // results.posts.map((item) => item.topic)
+          var topics = (results && results.topics) || [];
+          var found = [];
+          ((results && results.posts) || []).forEach(function (post) {
+            var topic = topics.find(function (candidate) {
+              return candidate.id === post.topic_id;
+            });
+            if (topic && found.indexOf(topic) === -1) {
+              found.push(topic);
+            }
+          });
+          details.found = found;
+          drawRows(found);
+        });
+    }
+
+    function change(id, topic) {
+      value = id;
+      if (topic) {
+        // onChangeTopic: the content is the topic chosen.
+        content = [topic];
+      }
+      details.open = false;
+      drawHeader();
+      opts.onChange(id, topic || null);
+    }
+
+    summary.addEventListener("click", function (event) {
+      if (event.target.closest(".btn-clear")) {
+        event.preventDefault();
+        change(null, null);
+      }
+    });
+    details.addEventListener("toggle", function () {
+      details.classList.toggle("is-expanded", details.open);
+      drawHeader();
+      if (!details.open) {
+        clearTimeout(timer);
+        body.innerHTML = "";
+        return;
+      }
+      body.innerHTML =
+        '<div class="select-kit-filter is-expanded"><input class="filter-input" type="search" autocomplete="off" spellcheck="false" placeholder="' +
+        escapeHtml(t("choose_topic.title.placeholder")) +
+        '"></div><ul aria-live="polite" class="select-kit-collection" role="menu"></ul>';
+      var filter = body.querySelector(".filter-input");
+      filter.addEventListener("input", function (event) {
+        // The form's fields are not this one's.
+        event.stopPropagation();
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          search(filter.value.trim());
+        }, 250);
+      });
+      filter.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+        }
+      });
+      filter.focus();
+      search("");
+    });
+    var choose = function (event) {
+      var row = event.target.closest(".select-kit-row");
+      if (!row) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      var id = Number(row.dataset.value);
+      change(
+        id,
+        (details.found || []).find(function (topic) {
+          return topic.id === id;
+        })
+      );
+    };
+    body.addEventListener("click", choose);
+    body.addEventListener("keydown", function (event) {
+      if ((event.key === "Enter" || event.key === " ") && event.target.closest(".select-kit-row")) {
+        choose(event);
+      }
+    });
+    drawHeader();
+    return details;
+  }
+
   function open(model) {
     if (!Discourse.modal) {
       return;
@@ -364,6 +547,7 @@
     var close = null;
     // this.data, as the form holds it.
     var had = invite || {};
+    var topics = (had.topics || []).slice();
     var data = {
       description: had.description || "",
       // emailOrDomain
@@ -372,6 +556,8 @@
         had.max_redemptions_allowed === undefined || had.max_redemptions_allowed === null
           ? s.defaultRedemptions
           : had.max_redemptions_allowed,
+      // topicId
+      inviteToTopic: had.topics && had.topics[0] ? had.topics[0].id : null,
       inviteToGroups: (
         model.groupIds ||
         (had.groups || []).map(function (g) {
@@ -500,6 +686,9 @@
                 options +
                 "</select>"
             )) +
+        (s.canArriveAtTopic
+          ? field("inviteToTopic", "custom", { format: "full", title: t("user.invited.invite.invite_to_topic") }, "")
+          : "") +
         (s.canInviteToGroup
           ? field("inviteToGroups", "custom", { format: "full", title: t("user.invited.invite.add_to_groups") }, "")
           : "") +
@@ -582,6 +771,22 @@
       form.elements.restrictTo.value = data.restrictTo;
       form.elements.maxRedemptions.value = data.maxRedemptions;
       form.elements.customMessage.value = data.customMessage;
+      var arriveAt = form.querySelector('[data-name="inviteToTopic"] .form-kit__container-content');
+      if (arriveAt) {
+        arriveAt.appendChild(
+          topicChooser({
+            content: topics,
+            value: data.inviteToTopic,
+            onChange: function (id, topic) {
+              // onChangeTopic
+              if (topic) {
+                topics = [topic];
+              }
+              data.inviteToTopic = id;
+            },
+          })
+        );
+      }
       var groups = form.querySelector('[data-name="inviteToGroups"] .form-kit__container-content');
       if (groups) {
         groups.appendChild(
@@ -687,6 +892,9 @@
         }
         if (sendEmail) {
           submit.send_email = true;
+          if (submit.topic_id) {
+            submit.invite_to_topic = true;
+          }
         } else {
           submit.skip_email = true;
         }
@@ -783,11 +991,9 @@
         custom_message: data.customMessage,
         expires_at: created() ? data.expiresAt : expiresAt(Number(data.expiresAfterDays)),
       };
-      // inviteToTopic: the topic the invite has stays with it.
-      var topic = invite && invite.topics && invite.topics[0];
-      if (topic) {
-        submit.topic_id = topic.id;
-      }
+      // inviteToTopic, blank for none as jQuery's param sends it: the
+      // server takes the key without a value as the topic taken away.
+      submit.topic_id = data.inviteToTopic === null ? "" : data.inviteToTopic;
       save(submit);
     }
 

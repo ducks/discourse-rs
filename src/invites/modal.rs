@@ -39,8 +39,8 @@ fn expire_after_options(i18n: &I18n, expiry_days: i64) -> Vec<Value> {
 
 /// The script tag's ` data-config="..."`: the strings, what the form
 /// reads of the settings and the viewer (the redemption limits, the
-/// default expiry, whether email invites go out, the groups they may
-/// invite to) and the link validity line (link_validity_MF) for the
+/// default expiry, whether email invites go out, whether they choose
+/// the topic arrived at, the groups they may invite to) and the link validity line (link_validity_MF) for the
 /// defaults.
 pub async fn script_attrs(
     conn: &mut PgConnection,
@@ -65,6 +65,7 @@ pub async fn script_attrs(
         "user.invited.invite.expires_at",
         "user.invited.invite.update_invite",
         "user.invited.invite.update_invite_and_send_email",
+        "user.invited.invite.invite_to_topic",
         "user.invited.invite.add_to_groups",
         "user.invited.invite.custom_message",
         "user.invited.invite.custom_message_help",
@@ -80,6 +81,8 @@ pub async fn script_attrs(
         "form_kit.errors.required",
         "form_kit.errors.too_long",
         "select_kit.default_header_text",
+        "select_kit.no_content",
+        "choose_topic.title.placeholder",
         "modal.close",
         "generic_error",
     ];
@@ -138,6 +141,8 @@ pub async fn script_attrs(
         "expiryDays": expiry_days,
         "expireAfterOptions": expire_after_options(i18n, expiry_days),
         "allowEmailInvites": settings.get("allow_email_invites")?.truthy(),
+        // canArriveAtTopic
+        "canArriveAtTopic": staff && !settings.get("must_approve_users")?.truthy(),
         "canInviteToGroup": staff || owner,
         "groups": groups
             .iter()
@@ -148,6 +153,8 @@ pub async fn script_attrs(
             "check": icon("check"),
             "share": icon("share"),
             "xmark": icon("xmark"),
+            "angle-down": icon("angle-down"),
+            "angle-up": icon("angle-up"),
         },
     });
     Ok(format!(
