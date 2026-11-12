@@ -144,7 +144,10 @@ test("an invite's Edit on the invites tab changes it", async ({ page, context })
   await page.locator(".invite-button").first().click();
   await modal(page).locator(".d-modal__footer .save-invite").click();
   const made = await modal(page).locator(".link-share-container input.invite-link").inputValue();
-  await modal(page).locator(".modal-close").click();
+  // Closing draws the list again with a page load; the row's buttons
+  // answer once that page's script has bound them.
+  await Promise.all([page.waitForEvent("load"), modal(page).locator(".modal-close").click()]);
+  await expect(page.locator('#user-content[data-ready="true"]')).toBeVisible();
 
   await page.locator("tr[data-invite-id] .edit-invite").click();
   await expect(modal(page).locator("#discourse-modal-title")).toHaveText("Edit invite");
