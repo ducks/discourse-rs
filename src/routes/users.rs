@@ -1895,6 +1895,13 @@ async fn invited_page(
         "removed_all": crate::topic_list_view::t(&cx, "user.invited.removed_all"),
         "reinvite_all_confirm": crate::topic_list_view::t(&cx, "user.invited.reinvite_all_confirm"),
         "reinvited_all": crate::topic_list_view::t(&cx, "user.invited.reinvited_all"),
+        "bulk_text": crate::topic_list_view::t(&cx, "user.invited.bulk_invite.text"),
+        "bulk_instructions": crate::topic_list_view::t(&cx, "user.invited.bulk_invite.instructions"),
+        "bulk_progress": crate::topic_list_view::t(&cx, "user.invited.bulk_invite.progress"),
+        "bulk_success": crate::topic_list_view::t(&cx, "user.invited.bulk_invite.success"),
+        "bulk_error": crate::topic_list_view::t(&cx, "user.invited.bulk_invite.error"),
+        "close": crate::topic_list_view::t(&cx, "close"),
+        "link_icon": crate::topic_list_view::icon("link", None),
         "username": user.username,
     })
     .to_string()

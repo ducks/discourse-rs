@@ -3571,9 +3571,8 @@ route table has been made, so this list may be short.
     copying, removing the expired, resending all, search) in Ember's
     markup with common.css's rules (static/css/invites.css),
     static/js/invite.js and user-invited.js; a staff member redeeming
-    refreshes the staff groups. Left: the bulk invite modal (create is
-    291, edit 292) and the avatar picker while signing up, which say
-    they are not ported; invites past the first page (DLoadMore)
+    refreshes the staff groups (the modals are 291, 292 and 294). Left:
+    the avatar picker while signing up, which says it is not ported; invites past the first page (DLoadMore)
     192e. ~~`feat/invites-bulk`~~ (done) S: POST /invites/upload_csv
     (the header row or the email, groups, topic_id columns,
     max_bulk_invites), Jobs::BulkInvite (groups by name the admin may
@@ -5727,6 +5726,16 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     does, so an update takes the topic away; invite_to_topic goes with
     an email that is sent. Tests: browser create-invite-modal (7). Left:
     the rows' topic statuses and category
+294. ~~`feat/bulk-invite-modal`~~ (done) S: an admin's Bulk Invite on
+    the invites tab was refused by name, with POST /invites/upload_csv
+    (192e) already there. Now CreateInviteBulk
+    (components/modal/create-invite-bulk.gjs, in user-invited.js): the
+    locale's instructions, a CSV file input (another kind of file is
+    refused in a dialog, csvOnly), the upload button disabled until a
+    file is chosen and counting the progress while it is sent, then the
+    word that a message follows and only Close. Tests: browser
+    bulk-invite-modal (1, the invite the job makes checked in the
+    database)
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
