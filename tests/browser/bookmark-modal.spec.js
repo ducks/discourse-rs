@@ -49,6 +49,13 @@ async function edit(page) {
 
 test("a tile sets the reminder and saves at once", async ({ page, context, session }) => {
   const { t, id } = await bookmarked(page, context, session);
+  // The page asked for again after a save (the footer and the menu drawn
+  // again) answers late here: the menu opened before it lands must hold
+  // what was saved already.
+  await page.route(new RegExp(`${t.url}$`), async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
   await edit(page);
   await expect(modal(page)).toHaveAttribute("data-bookmark-id", String(id));
   await expect(modal(page).locator("#discourse-modal-title")).toHaveText("Edit bookmark");
@@ -88,6 +95,9 @@ test("a tile sets the reminder and saves at once", async ({ page, context, sessi
 
 test("the custom date and time and the relative time wait for Save", async ({ page, context, session }) => {
   const { id } = await bookmarked(page, context, session);
+  // The date is typed here, so the date picker is kept from loading: the
+  // field takes a typed date with or without it.
+  await page.route(/\/assets\/pikaday[^/]*\.js/, (route) => route.abort());
   await edit(page);
   await modal(page).locator("#tap_tile_custom").click();
   // The custom tile fills in an hour from now and does not save.

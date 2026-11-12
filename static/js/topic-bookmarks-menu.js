@@ -123,9 +123,9 @@
 
   var TRIGGER = "#topic-footer-buttons .bookmark-menu__trigger";
 
-  // The footer's bookmark button and this menu's template as the server
-  // now draws them, and the given posts again (their bookmark buttons).
-  // BookmarkModal for one of the topic's bookmarks.
+  // BookmarkModal for one of the topic's bookmarks. What it saved goes
+  // into the menu's data at once, as Ember's bookmark model has it, so
+  // the menu opened again before the redraw lands edits what was saved.
   function editBookmark(bookmark) {
     if (!bookmark || !Discourse.bookmarkModal) {
       return;
@@ -133,9 +133,29 @@
     var again = function () {
       redraw(bookmark.bookmarkable_type === "Post" ? [bookmark.bookmarkable_id] : []);
     };
-    Discourse.bookmarkModal.open({ bookmark: bookmark, afterSave: again, afterDelete: again });
+    Discourse.bookmarkModal.open({
+      bookmark: bookmark,
+      afterSave: function (saved) {
+        var t = template();
+        var topic = topicData();
+        if (t && topic) {
+          (topic.posts || []).concat(topic.topicBookmark ? [topic.topicBookmark] : []).forEach(function (held) {
+            if (String(held.id) === String(saved.id)) {
+              held.name = saved.name;
+              held.reminder_at = saved.reminder_at || null;
+              held.auto_delete_preference = saved.auto_delete_preference;
+            }
+          });
+          t.dataset.topic = JSON.stringify(topic);
+        }
+        again();
+      },
+      afterDelete: again,
+    });
   }
 
+  // The footer's bookmark button and this menu's template as the server
+  // now draws them, and the given posts again (their bookmark buttons).
   function redraw(postIds) {
     (postIds || []).forEach(function (id) {
       if (window.htmx && id) {
