@@ -247,6 +247,24 @@ test("a staff member chooses the topic an invite arrives at, and takes it away",
   await expect.poll(arrives).toEqual([["none"]]);
 });
 
+test("a member who may not invite is told so at /new-invite", async ({ page, context }) => {
+  const m = member();
+  // invite_allowed_groups is trust level 2's: out of it and those above.
+  sql(
+    "DELETE FROM group_users WHERE user_id = :'p1' AND group_id IN (SELECT id FROM groups WHERE name IN ('trust_level_2', 'trust_level_3', 'trust_level_4'))",
+    m.id,
+  );
+  sql("UPDATE users SET trust_level = 1 WHERE id = :'p1'", m.id);
+  await login(context, m.name);
+  await page.goto("/new-invite");
+  await expect(page.locator(".dialog-body")).toHaveText(
+    "Sorry, you don't have permission to create invites. Please contact an admin to grant you invite permission.",
+  );
+  expect(new URL(page.url()).pathname + new URL(page.url()).hash).toBe("/");
+  await expect(modal(page)).toHaveCount(0);
+  await expect(page.locator('.sidebar-section-link[data-link-name="invite"]')).toHaveCount(0);
+});
+
 test("a visitor's page load of /new-invite is shown the login", async ({ page }) => {
   await page.goto("/new-invite");
   await expect(page).toHaveURL(/\/login$/);

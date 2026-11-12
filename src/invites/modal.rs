@@ -1,6 +1,7 @@
 //! What static/js/create-invite-modal.js (CreateInvite,
-//! components/modal/create-invite.gjs) reads from its script tag, for a
-//! member who can invite to the forum.
+//! components/modal/create-invite.gjs) reads from its script tag: the
+//! form's config for a member who can invite to the forum, the refusal
+//! for one who cannot.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -161,4 +162,22 @@ pub async fn script_attrs(
         " data-config=\"{}\"",
         crate::topic_list_view::escape(&config.to_string())
     ))
+}
+
+/// The script tag's attribute for a member who may not invite
+/// (currentUser.can_invite_to_forum false): /new-invite tells them so in
+/// a dialog (routes/new-invite.js).
+pub fn refused_attrs(i18n: &I18n) -> String {
+    let config = json!({
+        "cannotInvite": true,
+        "strings": {
+            "user.invited.cannot_invite_to_forum": i18n
+                .t("js.user.invited.cannot_invite_to_forum")
+                .unwrap_or_default(),
+        },
+    });
+    format!(
+        " data-config=\"{}\"",
+        crate::topic_list_view::escape(&config.to_string())
+    )
 }

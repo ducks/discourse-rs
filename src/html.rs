@@ -1346,6 +1346,8 @@ impl Site {
                     guardian,
                 )
                 .await?;
+            } else {
+                self.chrome.create_invite_attrs = crate::invites::modal::refused_attrs(&state.i18n);
             }
             if settings.get("enable_user_status")?.truthy() {
                 let emojis = settings.emojis();
