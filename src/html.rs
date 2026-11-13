@@ -104,6 +104,10 @@ pub struct Viewer {
     pub previous_visit_at: Option<chrono::DateTime<chrono::Utc>>,
     /// The `text_size` cookie (`<size>|<seq>`), one device's text size.
     pub text_size_cookie: Option<String>,
+    /// `currentUser.can_delete_all_posts_and_topics`
+    pub can_delete_all_posts_and_topics: bool,
+    /// `site.can_tag_topics`
+    pub can_tag_topics: bool,
 }
 
 impl Viewer {
@@ -1526,6 +1530,9 @@ pub struct LatestPage {
     /// topic-dismiss.js' strings (dismiss_strings), empty without the
     /// buttons.
     pub dismiss_strings: String,
+    /// topic-list-bulk-select.js' config (bulk_select_config), empty for
+    /// a viewer who cannot bulk select the list.
+    pub bulk_select_config: String,
 }
 
 /// What DiscoveryTopics' footer reads besides the list itself: the list's
@@ -1645,8 +1652,8 @@ fn list_bottom(
 /// the subset is topics; otherwise the classic "Dismiss New". On unread,
 /// "Dismiss…", which opens DismissRead (topic-dismiss.js). The row
 /// carries the list's category for the requests the buttons send.
-/// Selecting topics (BulkSelectHelper) is not ported, so the
-/// `_with_selected` labels are never drawn.
+/// With topics selected (BulkSelectHelper) topic-dismiss.js draws the
+/// `_with_selected` labels.
 pub fn dismiss_buttons(
     i18n: &I18n,
     position: &str,
@@ -1752,8 +1759,8 @@ pub fn new_list_labels(
 /// new list under unified new (showTopicsAndRepliesToggle): All, Topics
 /// and Replies, the list's `subset` pressed. discovery-topic-list.js
 /// goes to the subset clicked, and the page's stream keeps the counts
-/// (the `new_list` live param, routes::live). Ember hides it while bulk
-/// select is on, which the topic lists do not have yet.
+/// (the `new_list` live param, routes::live). While bulk select is on
+/// topic-list-bulk-select.js hides it (renderNewListHeaderControls).
 pub fn new_list_controls(
     i18n: &I18n,
     tracking: Option<&crate::topic_tracking_report::Tracking>,
@@ -1789,22 +1796,159 @@ pub fn new_list_controls(
     out
 }
 
-/// The strings topic-dismiss.js shows (the stop tracking menu item and
-/// DismissRead), by their js.* key.
+/// The strings topic-dismiss.js shows (the stop tracking menu item,
+/// DismissRead and the labels with topics selected), by their js.* key;
+/// a counted one as `<key>.one` and `<key>.other`.
 pub fn dismiss_strings(i18n: &I18n) -> String {
-    let strings: serde_json::Map<String, Value> = [
-        "topics.bulk.dismiss_and_stop_tracking",
-        "topics.bulk.dismiss_read",
-        "topics.bulk.also_dismiss_topics",
-        "topics.bulk.dismiss",
-    ]
-    .iter()
-    .map(|key| {
-        let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
-        ((*key).to_string(), Value::String(text.to_string()))
-    })
-    .collect();
+    let mut strings = serde_json::Map::new();
+    js_strings(
+        i18n,
+        &mut strings,
+        &[
+            "topics.bulk.dismiss_and_stop_tracking",
+            "topics.bulk.dismiss_read",
+            "topics.bulk.also_dismiss_topics",
+            "topics.bulk.dismiss",
+        ],
+        &[
+            "topics.bulk.dismiss_read_with_selected",
+            "topics.bulk.dismiss_button_with_selected",
+            "topics.bulk.dismiss_new_with_selected",
+            "topics.bulk.dismiss_all_with_selected",
+            "topics.bulk.dismiss_new_topics_with_selected",
+            "topics.bulk.dismiss_new_replies_with_selected",
+        ],
+    );
     Value::Object(strings).to_string()
+}
+
+/// js.* strings for a script, by key: `plain` as they are, `counted` as
+/// `<key>.one` and `<key>.other` for the script to pick by its count.
+fn js_strings(
+    i18n: &I18n,
+    out: &mut serde_json::Map<String, Value>,
+    plain: &[&str],
+    counted: &[&str],
+) {
+    for key in plain {
+        let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
+        out.insert((*key).to_string(), Value::String(text.to_string()));
+    }
+    for key in counted {
+        for form in ["one", "other"] {
+            if let Some(text) = i18n.t(&format!("js.{key}.{form}")) {
+                out.insert(format!("{key}.{form}"), Value::String(text.to_string()));
+            }
+        }
+    }
+}
+
+/// What topic-list-bulk-select.js reads (script#topic-bulk-select): who
+/// the viewer is to BulkSelectTopicsDropdown's `visible` rules, the
+/// list's filter (the dismiss items are the new and unread routes'), and
+/// the strings of the header's controls, the dropdown and the
+/// BulkTopicActions modal.
+pub fn bulk_select_config(
+    i18n: &I18n,
+    settings: &SiteSettings,
+    viewer: &Viewer,
+    filter: &str,
+) -> Result<String, SettingError> {
+    let mut strings = serde_json::Map::new();
+    js_strings(
+        i18n,
+        &mut strings,
+        &[
+            "topics.bulk.toggle",
+            "topics.bulk.select_all",
+            "topics.bulk.clear_all",
+            "select_kit.components.bulk_select_topics_dropdown.title",
+            "topic_bulk_actions.dismiss.name",
+            "topic_bulk_actions.update_category.name",
+            "topic_bulk_actions.update_category.description",
+            "topic_bulk_actions.update_notifications.name",
+            "topic_bulk_actions.update_notifications.description",
+            "topic_bulk_actions.reset_bump_dates.name",
+            "topic_bulk_actions.reset_bump_dates.description",
+            "topic_bulk_actions.defer.name",
+            "topic_bulk_actions.close_topics.name",
+            "topic_bulk_actions.close_topics.description",
+            "topic_bulk_actions.close_topics.note",
+            "topic_bulk_actions.close_topics.optional",
+            "topic_bulk_actions.manage_tags.name",
+            "topic_bulk_actions.pin_topics.name",
+            "topic_bulk_actions.unpin_topics.name",
+            "topic_bulk_actions.unpin_topics.description",
+            "topic_bulk_actions.archive_topics.name",
+            "topic_bulk_actions.archive_topics.description",
+            "topic_bulk_actions.convert_to_private_message.name",
+            "topic_bulk_actions.convert_to_private_message.description",
+            "topic_bulk_actions.enable_nested_replies.name",
+            "topic_bulk_actions.unlist_topics.name",
+            "topic_bulk_actions.unlist_topics.description",
+            "topic_bulk_actions.relist_topics.name",
+            "topic_bulk_actions.delete_topics.name",
+            "topic_bulk_actions.delete_topics.description",
+            "topics.bulk.change_category",
+            "topics.bulk.notification_level",
+            "topics.bulk.close_topics",
+            "topics.bulk.archive_topics",
+            "topics.bulk.convert_to_private_message",
+            "topics.bulk.unlist_topics",
+            "topics.bulk.relist_topics",
+            "topics.bulk.delete",
+            "topics.bulk.reset_bump_dates",
+            "topics.bulk.unpin_topics",
+            "topics.bulk.confirm",
+            "topics.bulk.notify",
+            "topics.bulk.performing",
+            "topics.bulk.completed",
+            "topic.notifications.watching.title",
+            "topic.notifications.watching.description",
+            "topic.notifications.tracking.title",
+            "topic.notifications.tracking.description",
+            "topic.notifications.regular.title",
+            "topic.notifications.regular.description",
+            "topic.notifications.muted.title",
+            "topic.notifications.muted.description",
+            "category.choose",
+            "cancel",
+            "close",
+            "generic_error",
+            "generic_error_with_reason",
+        ],
+        &[
+            "topics.bulk.selected_count",
+            "topics.bulk.confirm_update_topics",
+            "topics.bulk.confirm_close_topics",
+            "topics.bulk.confirm_archive_topics",
+            "topics.bulk.confirm_unlist_topics",
+            "topics.bulk.confirm_relist_topics",
+            "topics.bulk.confirm_delete_topics",
+            "topics.bulk.confirm_unpin_topics",
+            "topics.bulk.completed_count",
+            "topics.bulk.not_completed",
+            "topics.bulk.skipped_count",
+            "topics.bulk.error_topic_count",
+        ],
+    );
+    let can_manage = viewer.can_manage_topic();
+    let config = serde_json::json!({
+        "filter": filter,
+        "can_manage_topic": can_manage,
+        "staff": viewer.staff,
+        "can_delete_all_posts_and_topics": viewer.can_delete_all_posts_and_topics,
+        // manage-tags: tagging_enabled, site.can_tag_topics and
+        // canManageTopic.
+        "manage_tags": can_manage && viewer.can_tag_topics,
+        // The nested replies items: staff, with nested_replies_enabled
+        // and without nested_replies_default.
+        "nested_replies": viewer.staff
+            && settings.get("nested_replies_enabled")?.truthy()
+            && !settings.get("nested_replies_default")?.truthy(),
+        "strings": strings,
+    });
+    Ok(config.to_string().replace('<', "\\u003c"))
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -2779,6 +2923,18 @@ pub async fn latest_page(
     } else {
         String::new()
     };
+    // The discovery controller's canBulkSelect: topic managers, or the
+    // new and unread lists while they have topics to dismiss
+    // (showResetNew, showDismissRead).
+    let bulk_select_config = match site.viewer.as_ref() {
+        Some(viewer)
+            if viewer.can_manage_topic()
+                || (matches!(footer.filter, "new" | "unread") && !rows.is_empty()) =>
+        {
+            bulk_select_config(i18n, settings, viewer, footer.filter)?
+        }
+        _ => String::new(),
+    };
     let new_list_controls = new_list_controls(i18n, site.chrome.tracking.as_ref(), footer);
     if !new_list_controls.is_empty() {
         // The scope the stream counts the toggle's labels in.
@@ -2820,6 +2976,7 @@ pub async fn latest_page(
         dismiss_top,
         new_list_controls,
         dismiss_strings,
+        bulk_select_config,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -3954,11 +4111,15 @@ pub fn notification_verb(notification_type: i64) -> &'static str {
 }
 
 impl LatestPage {
-    /// The discovery controller's `canBulkSelect`: topic managers, or the
-    /// new and unread lists while they have topics to dismiss.
+    /// The discovery controller's `canBulkSelect` (latest_page).
     pub fn bulk_select(&self) -> bool {
+        !self.bulk_select_config.is_empty()
+    }
+
+    /// TopicList's `canDoBulkActions`, but for the selection: a topic
+    /// manager, who gets the Bulk Actions menu.
+    pub fn bulk_actions(&self) -> bool {
         self.viewer.as_ref().is_some_and(Viewer::can_manage_topic)
-            || (matches!(self.live_filter.as_str(), "new" | "unread") && !self.rows.is_empty())
     }
 
     /// The category the new topic button starts in, on a category's list.

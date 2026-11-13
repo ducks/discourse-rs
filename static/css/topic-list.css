@@ -552,6 +552,48 @@
   }
 }
 
+/* _topic-list.scss: the bulk select mode (topic-list-bulk-select.js). */
+.sticky-header .topic-list-header {
+  position: sticky;
+  top: var(--header-offset, 60px);
+  background: var(--d-topic-list-header-background-color);
+  z-index: 2;
+}
+
+.bulk-select-topics-dropdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.bulk-select-topics-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.topic-list > .topic-list-body > .topic-list-item.bulk-selecting {
+  user-select: none;
+  cursor: pointer;
+}
+
+.topic-list > .topic-list-body > .topic-list-item.bulk-selected {
+  background: var(--tertiary-low);
+}
+
+@media (width >= 40rem) {
+  .topic-list .topic-list-data.bulk-select label {
+    margin: 0;
+    padding: var(--space-3) var(--space-2);
+    cursor: pointer;
+  }
+}
+
+/* NewListHeaderControls is not rendered while bulk select is on
+   (DiscoveryTopics#renderNewListHeaderControls). */
+.topic-replies-toggle-wrapper[hidden] {
+  display: none;
+}
+
 /*
  * The narrow desktop (40rem to 48rem), and a page with the sidebar under
  * 64rem: the latest poster alone, centered; the narrow desktop has no

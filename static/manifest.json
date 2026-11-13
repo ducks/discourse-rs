@@ -288,6 +288,13 @@
       ]
     },
     {
+      "name": "topic-list-bulk-select.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-list-bulk-select.js"
+      ]
+    },
+    {
       "name": "topic-status.js",
       "content_type": "js",
       "files": [

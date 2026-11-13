@@ -224,6 +224,9 @@ pub(crate) fn viewer_state(
             previous_visit_at: user.previous_visit_at.map(|at| at.and_utc()),
             staff: user.admin || user.moderator,
             can_send_private_messages: guardian.can_send_private_messages(settings)?,
+            can_delete_all_posts_and_topics: guardian
+                .in_setting_groups(settings, "delete_all_posts_and_topics_allowed_groups")?,
+            can_tag_topics: guardian.can_tag_topics(settings)?,
             text_size_cookie: crate::session::current::cookie(headers, "text_size").map(|c| {
                 form_urlencoded::parse(format!("v={c}").as_bytes())
                     .next()
