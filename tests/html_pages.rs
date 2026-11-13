@@ -1731,6 +1731,9 @@ async fn topic_lists_draw_bulk_select_for_who_can_use_it() {
         assert!(html.contains(
             "&#34;topics.bulk.dismiss_all_with_selected.other&#34;:&#34;Dismiss (%{count})&#34;"
         ));
+        // The Bulk Actions' modals are a topic manager's.
+        assert!(!html.contains("penalize-user-config"), "{path}");
+        assert!(!html.contains("/assets/topic-admin-modals.js"), "{path}");
     }
     // Sub General has nothing unread for user1.
     assert!(!drawn(
@@ -1762,7 +1765,33 @@ async fn topic_lists_draw_bulk_select_for_who_can_use_it() {
         );
         // The category chooser's modal, for Update Category.
         assert!(html.contains("/assets/topic-admin-modals.js?v="), "{path}");
+        // ManageTagsForm's and BulkPinOptions' strings, and Pin's date
+        // input and confirmation.
+        assert_eq!(
+            config["strings"]["topics.bulk.confirm_apply_to_topics.one"],
+            "Apply to %{count} topic"
+        );
+        assert_eq!(
+            config["strings"]["topic.bulk_feature_topic.pin_button"],
+            "Pin topics"
+        );
+        assert_eq!(config["tag_style"], "simple");
+        assert!(html.contains("id=\"penalize-user-config\""), "{path}");
+        assert!(html.contains("id=\"dialog-strings\""), "{path}");
+        assert!(html.contains("/assets/penalize-user.js?v="), "{path}");
+        assert!(html.contains("/assets/dialog.js?v="), "{path}");
     }
+    // The category of a row drawn without its badge (categoryLinkHTML):
+    // the list's own where it hides them (hideCategory).
+    let html = admin.page("/c/general/sub-general/34").await;
+    let fallback = &bulk_config(&html)["fallback_category"];
+    assert_eq!(fallback["id"], 34);
+    let link = fallback["link"].as_str().unwrap();
+    assert!(
+        link.starts_with("<a class=\"badge-category__wrapper"),
+        "{link}"
+    );
+    assert!(link.contains("data-category-id=\"34\""), "{link}");
 }
 
 /// The docked header's template (header_topic_view): what

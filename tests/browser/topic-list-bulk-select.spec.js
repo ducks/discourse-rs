@@ -2,9 +2,10 @@
 // topic-dismiss.js for the dismissals): the toggle turns it on and off,
 // rows are selected by their checkbox, by a click on the row and by a
 // shift range, a topic manager's Bulk Actions menu offers what Ember's
-// rules allow and its actions change exactly the selected topics, a
-// member on the new and unread lists dismisses what they selected, and
-// what is not ported says so. Each change is checked in the database.
+// rules allow and its actions change exactly the selected topics
+// (Manage tags' form and Pin's options among them), a member on the new
+// and unread lists dismisses what they selected, and what is not ported
+// says so. Each change is checked in the database.
 // Every test works in a category of its own, on topics found by id.
 const { test, expect, login, api, sql, label, member } = require("./helpers");
 
@@ -90,16 +91,33 @@ async function choose(page, name) {
   await expect(page.locator(MENU)).toHaveCount(0);
 }
 
+// Runs what sends an action, then waits for its refresh to draw the list
+// again (page.js' discourse:redrawn). The toast alone does not say so: an
+// action's toast stays three seconds, long enough to be taken for the
+// next action's while that one's refresh is still on its way, and the
+// mode turned on then is the old list's.
+async function redrawnAfter(page, act) {
+  await page.evaluate(() => {
+    window.bulkSelectRedrawn = new Promise((resolve) =>
+      document.addEventListener("discourse:redrawn", resolve, { once: true }),
+    );
+  });
+  await act();
+  await page.evaluate(() => window.bulkSelectRedrawn);
+}
+
 // The modal's confirm button, then the list drawn again out of the mode
 // under the toast.
 async function confirm(page, text) {
   const button = page.locator(`${MODAL} #bulk-topics-confirm`);
   await expect(button).toHaveText(text);
-  await button.click();
+  await redrawnAfter(page, () => button.click());
   await completed(page);
 }
 
+// After the action's refresh (redrawnAfter): its toast, alone.
 async function completed(page) {
+  await expect(page.locator(".fk-d-default-toast.-success")).toHaveCount(1);
   await expect(page.locator(".fk-d-default-toast.-success .fk-d-default-toast__message")).toHaveText(
     "Bulk operations completed successfully!",
   );
@@ -118,6 +136,64 @@ function column(ids, name) {
 
 function userId(name) {
   return Number(sql("SELECT id FROM users WHERE username = :'p1'", name)[0][0]);
+}
+
+// A tag of this test's own: { id, name }.
+function newTag(what) {
+  const name = label(what).replace(/ /g, "-").slice(0, 20);
+  const [[id]] = sql(
+    "INSERT INTO tags (name, slug, created_at, updated_at) VALUES (:'p1', :'p1', now(), now()) RETURNING id",
+    name,
+  );
+  return { id: Number(id), name };
+}
+
+function tagTopic(topicId, ...tags) {
+  for (const tag of tags) {
+    sql(
+      "INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at) VALUES (:'p1', :'p2', now(), now())",
+      topicId,
+      tag.id,
+    );
+  }
+}
+
+// The topics' tags as [topic id, tag id], sorted.
+function tagsOf(ids) {
+  return sql(
+    `SELECT topic_id, tag_id FROM topic_tags WHERE topic_id IN (${ids.join(",")}) ORDER BY topic_id, tag_id`,
+  ).map((r) => [Number(r[0]), Number(r[1])]);
+}
+
+function pairs(list) {
+  return [...list].sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+}
+
+// A ManageTagsForm field's TagChooser.
+function chooserOf(page, field) {
+  return page.locator(`${MODAL} #control-${field} details.tag-chooser`);
+}
+
+// Picks the tag in the field's chooser; the search it sent.
+async function pickTag(page, field, tag) {
+  const chooser = chooserOf(page, field);
+  await chooser.locator("summary").click();
+  const searched = page.waitForRequest(
+    (r) => r.url().includes("/tags/filter/search") && new URL(r.url()).searchParams.get("q") === tag.name,
+  );
+  await chooser.locator(".filter-input").fill(tag.name);
+  const request = await searched;
+  await chooser.locator(`.select-kit-row.tag-chooser-row[data-name="${tag.name}"]`).click();
+  await expect(chooser.locator("summary .formatted-selection")).toContainText(tag.name);
+  if (await chooser.evaluate((d) => d.open)) {
+    await page.locator(`${MODAL} .d-modal__title-text`).click();
+  }
+  await expect(chooser).not.toHaveAttribute("open", "");
+  return new URL(request.url()).searchParams;
+}
+
+function bulkRequest(page) {
+  return page.waitForRequest((r) => r.url().endsWith("/topics/bulk") && r.method() === "PUT");
 }
 
 test("the toggle turns the mode on and off, and rows select by checkbox, row click and shift range", async ({
@@ -298,7 +374,7 @@ test("an admin closes, archives, unlists and relists exactly the selected topics
   expect(column(ids, "visible")).toEqual(sorted(ids).map((id) => [id, "t"]));
 });
 
-test("an admin deletes the selected topics, and a refusal is listed in the modal", async ({ page, context, session }) => {
+test("an admin deletes the selected topics, their own too, and a failure is listed in the modal", async ({ page, context, session }) => {
   const admin = await session("admin");
   const cat = await category(admin);
   const ids = await topicsIn(await session("user1"), cat, 3);
@@ -315,10 +391,20 @@ test("an admin deletes the selected topics, and a refusal is listed in the modal
     sorted([...ids, own]).map((id) => [id, id === a || id === c ? "t" : "f"]),
   );
 
-  // The port's endpoint refuses deleting one's own topic: the modal
-  // lists the failure (_showErrors), and closing it leaves the mode.
+  // An admin's own topic goes like any other.
   await page.locator(TOGGLE).click();
   await select(page, [own]);
+  await choose(page, "delete-topics");
+  await confirm(page, "Delete 1 topic");
+  expect(column([own, b], "deleted_at IS NOT NULL")).toEqual(
+    sorted([own, b]).map((id) => [id, id === own ? "t" : "f"]),
+  );
+
+  // What the server refuses is listed in the modal (_showErrors), and
+  // closing it leaves the mode: a failure made here, for the one left.
+  await page.route("**/topics/bulk", (route) => route.fulfill({ status: 500, body: "" }));
+  await page.locator(TOGGLE).click();
+  await select(page, [b]);
   await choose(page, "delete-topics");
   await page.locator(`${MODAL} #bulk-topics-confirm`).click();
   const errors = page.locator(`${MODAL} .topic-bulk-actions-modal__errors`);
@@ -327,7 +413,8 @@ test("an admin deletes the selected topics, and a refusal is listed in the modal
   await page.locator(`${MODAL} #bulk-topics-close`).click();
   await expect(page.locator(MODAL)).toHaveCount(0);
   await expect(page.locator("#list-area input.bulk-select")).toHaveCount(0);
-  expect(column([own, b], "deleted_at IS NOT NULL")).toEqual(sorted([own, b]).map((id) => [id, "f"]));
+  await page.unroute("**/topics/bulk");
+  expect(column([b], "deleted_at IS NOT NULL")).toEqual([[b, "f"]]);
 });
 
 test("an admin moves the selected topics to a category and sets their notification level", async ({
@@ -401,7 +488,7 @@ test("an admin marks the selected topics unread and resets their bump dates", as
   // Mark Unread (defer) asks nothing.
   await enter(page, cat.path, ids);
   await select(page, [a]);
-  await choose(page, "defer");
+  await redrawnAfter(page, () => choose(page, "defer"));
   await completed(page);
   expect(timings()).toEqual([b]);
 
@@ -416,7 +503,397 @@ test("an admin marks the selected topics unread and resets their bump dates", as
   expect(column(ids, "bumped_at > now()")).toEqual(sorted(ids).map((id) => [id, id === a ? "t" : "f"]));
 });
 
-test("what is not ported says so by name", async ({ page, context, session }) => {
+test("an admin adds, removes and replaces the selected topics' tags", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const cat = await category(admin);
+  const ids = await topicsIn(await session("user1"), cat, 3);
+  const [a, b, c] = ids;
+  const [kept, removed, added, replacement] = ["kept", "gone", "new", "swap"].map((what) => newTag(what));
+  tagTopic(a, kept, removed);
+  tagTopic(b, kept);
+  tagTopic(c, kept, removed);
+  await login(context, "admin");
+
+  await enter(page, cat.path, ids);
+  await select(page, [a, b]);
+  expect(await items(page)).toContain("manage-tags");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(MENU)).toHaveCount(0);
+  await choose(page, "manage-tags");
+  await expect(page.locator(`${MODAL} .d-modal__title-text`)).toHaveText("Manage tags");
+  await expect(page.locator(`${MODAL} form.manage-tags-form .form-kit__container-title`)).toHaveText([
+    "Remove tags",
+    "Remove all tags",
+    "Add tags",
+    "Replace tags",
+  ]);
+  await expect(page.locator(`${MODAL} label[for="topic-bulk-action-options__notify"]`)).toHaveText(
+    "Notify users of this change",
+  );
+  // Nothing set: Confirm waits (setSubmitDisabled).
+  const confirmButton = page.locator(`${MODAL} #bulk-topics-confirm`);
+  await expect(confirmButton).toHaveText("Apply to 2 topics");
+  await expect(confirmButton).toBeDisabled();
+
+  // Add tags searches the topics' one category, for its input; a tag
+  // that does not exist is not offered (no allowCreate).
+  const add = chooserOf(page, "add_tags");
+  await add.locator("summary").click();
+  await expect(add.locator(".filter-input")).toHaveAttribute("placeholder", "Optional tags…");
+  await add.locator(".filter-input").fill(`${added.name}zz`);
+  await expect(add.locator(".no-content")).toBeVisible();
+  await expect(add.locator(".select-kit-row")).toHaveCount(0);
+  await page.locator(`${MODAL} .d-modal__title-text`).click();
+  let search = await pickTag(page, "add_tags", added);
+  expect([search.get("categoryId"), search.get("filterForInput")]).toEqual([String(cat.id), "true"]);
+  await expect(confirmButton).toBeEnabled();
+
+  // Remove tags searches every tag.
+  search = await pickTag(page, "remove_tags", removed);
+  expect([search.get("categoryId"), search.get("filterForInput")]).toEqual([null, null]);
+
+  // A replacement: one tag each side, the other side's left out.
+  search = await pickTag(page, "replace_rows-0-from", kept);
+  expect([search.get("categoryId"), search.get("filterForInput")]).toEqual([null, null]);
+  const to = chooserOf(page, "replace_rows-0-to");
+  await to.locator("summary").click();
+  await expect(to.locator(".filter-input")).toHaveAttribute("placeholder", "Replacement tag");
+  const blocked = page.waitForResponse(
+    (r) => r.url().includes("/tags/filter/search") && new URL(r.url()).searchParams.get("q") === kept.name,
+  );
+  await to.locator(".filter-input").fill(kept.name);
+  expect(new URL((await blocked).url()).searchParams.getAll("selected_tag_ids[]")).toEqual([String(kept.id)]);
+  await expect(to.locator(`.select-kit-row[data-name="${kept.name}"]`)).toHaveCount(0);
+  await page.locator(`${MODAL} .d-modal__title-text`).click();
+  // A second choice takes the first one's place (maximum 1).
+  await pickTag(page, "replace_rows-0-to", added);
+  search = await pickTag(page, "replace_rows-0-to", replacement);
+  expect(search.get("categoryId")).toBe(String(cat.id));
+  await expect(to.locator("summary")).toHaveAttribute("data-name", replacement.name);
+
+  const sent = bulkRequest(page);
+  await confirm(page, "Apply to 2 topics");
+  const request = await sent;
+  expect(request.headers()["content-type"]).toBe("application/json");
+  expect(request.postDataJSON()).toEqual({
+    topic_ids: [a, b],
+    operation: {
+      type: "manage_tags",
+      add_tag_ids: [added.id],
+      remove_tag_ids: [removed.id],
+      remove_all_tags: false,
+      replace_tags: [{ from_tag_id: kept.id, to_tag_id: replacement.id }],
+      silent: true,
+    },
+  });
+  expect(tagsOf(ids)).toEqual(
+    pairs([
+      [a, added.id],
+      [a, replacement.id],
+      [b, added.id],
+      [b, replacement.id],
+      [c, kept.id],
+      [c, removed.id],
+    ]),
+  );
+});
+
+test("manage tags validates its replacements and removes all tags", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const cat = await category(admin);
+  const ids = await topicsIn(await session("user1"), cat, 2);
+  const [a, b] = ids;
+  const [one, two] = ["one", "two"].map((what) => newTag(what));
+  tagTopic(a, one, two);
+  tagTopic(b, one);
+  await login(context, "admin");
+
+  await enter(page, cat.path, ids);
+  await select(page, [a]);
+  await choose(page, "manage-tags");
+  const form = page.locator(`${MODAL} form.manage-tags-form`);
+  const confirmButton = page.locator(`${MODAL} #bulk-topics-confirm`);
+  await expect(confirmButton).toHaveText("Apply to 1 topic");
+
+  // A replacement without its other tag is refused by the form.
+  await pickTag(page, "replace_rows-0-from", one);
+  await expect(confirmButton).toBeEnabled();
+  let requests = 0;
+  const count = (r) => {
+    if (r.url().endsWith("/topics/bulk")) {
+      requests += 1;
+    }
+  };
+  page.on("request", count);
+  await confirmButton.click();
+  await expect(form.locator(".form-kit__errors-summary-title")).toHaveText("Fix this error to continue");
+  await expect(form.locator(".form-kit__errors-summary-list li")).toHaveText("Replace tags: A replacement tag is required");
+  await expect(form.locator("#control-replace_rows-0-to")).toHaveClass(/(^| )has-error( |$)/);
+  await expect(form.locator("#control-replace_rows-0-to .form-kit__errors")).toHaveText("A replacement tag is required");
+  await expect(form.locator("#control-replace_rows-0-from .form-kit__errors")).toHaveCount(0);
+
+  // The row removed takes its errors along and leaves nothing to apply;
+  // Add replacement brings an empty row.
+  await form.locator(".manage-tags-form__replace-row-remove").click();
+  await expect(form.locator(".form-kit__errors-summary")).toHaveCount(0);
+  await expect(form.locator(".form-kit__collection")).toHaveCount(0);
+  await expect(confirmButton).toBeDisabled();
+  await form.locator(".manage-tags-form__replace-row-add").click();
+  await expect(form.locator(".form-kit__collection .form-kit__row")).toHaveCount(1);
+  await expect(confirmButton).toBeDisabled();
+  page.off("request", count);
+  expect(requests).toBe(0);
+  expect(tagsOf(ids)).toEqual(pairs([[a, one.id], [a, two.id], [b, one.id]]));
+
+  // Remove all tags: the warning in the chooser's place.
+  const toggle = form.locator("#control-remove_all_tags .d-toggle-switch__checkbox");
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await form.locator("#control-remove_all_tags .d-toggle-switch__checkbox-slider").click();
+  await expect(form.locator("#control-remove_all_tags .d-toggle-switch__checkbox")).toHaveAttribute("aria-checked", "true");
+  await expect(form.locator("#control-remove_tags")).toHaveCount(0);
+  await expect(form.locator(".manage-tags-form__warning.alert-error")).toHaveText(
+    "All existing tags will be removed from the selected topics. This cannot be undone.",
+  );
+  await expect(confirmButton).toBeEnabled();
+  const sent = bulkRequest(page);
+  await confirm(page, "Apply to 1 topic");
+  expect((await sent).postDataJSON().operation).toEqual({
+    type: "manage_tags",
+    add_tag_ids: [],
+    remove_tag_ids: [],
+    remove_all_tags: true,
+    replace_tags: [],
+    silent: true,
+  });
+  expect(tagsOf(ids)).toEqual([[b, one.id]]);
+});
+
+test("a tag a category refuses is listed in the modal, for a leader", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const home = await category(admin, "Bulk tags home");
+  const other = await category(admin, "Bulk tags other");
+  const author = await session("user1");
+  const [inHome] = await topicsIn(author, home, 1);
+  const [inOther] = await topicsIn(author, other, 1);
+  const ids = [inHome, inOther];
+  const restricted = newTag("home");
+  // The tag is the home category's alone, and the other category wants
+  // a tag of its topics: the revision left without one is refused there.
+  sql(
+    "INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (:'p1', :'p2', now(), now())",
+    home.id,
+    restricted.id,
+  );
+  sql("UPDATE categories SET minimum_required_tags = 1 WHERE id = :'p1'", other.id);
+  // A topic manager who is not staff (staff skip the required tags).
+  const leader = member();
+  sql("UPDATE users SET trust_level = 4 WHERE id = :'p1'", leader.id);
+  sql(
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) SELECT g, :'p1', now(), now() FROM unnest(ARRAY[13, 14]) g \
+     WHERE NOT EXISTS (SELECT 1 FROM group_users WHERE group_id = g AND user_id = :'p1')",
+    leader.id,
+  );
+  await login(context, leader.name);
+
+  // Latest has both categories' topics: no category scopes the
+  // choosers, and Pin has no category to count.
+  await enter(page, "/latest", ids);
+  await select(page, ids);
+  await choose(page, "pin-topics");
+  const sections = page.locator(`${MODAL} form.feature-section`);
+  await expect(sections).toHaveCount(2);
+  await expect(sections.nth(0).locator(".feature-section__description > p")).toHaveCount(2);
+  await expect(sections.nth(1).locator(".feature-section__description > p").first()).toContainText(/pinned globally/);
+  await page.locator(`${MODAL} .modal-close`).click();
+  await expect(page.locator(MODAL)).toHaveCount(0);
+
+  await choose(page, "manage-tags");
+  const search = await pickTag(page, "add_tags", restricted);
+  expect([search.get("categoryId"), search.get("filterForInput")]).toEqual([null, null]);
+  await page.locator(`${MODAL} #bulk-topics-confirm`).click();
+  const errors = page.locator(`${MODAL} .topic-bulk-actions-modal__errors`);
+  await expect(errors.locator("p")).toHaveText(["1 topic was updated.", "1 topic could not be updated:"]);
+  await expect(errors.locator("li")).toHaveText(`${restricted.name} isn't allowed in the ${other.name} category. (1 topic)`);
+  await expect(errors.locator(`li a.discourse-tag[data-tag-name="${restricted.name}"]`)).toHaveCount(1);
+  await expect(errors.locator(`li a.badge-category__wrapper .badge-category[data-category-id="${other.id}"]`)).toHaveCount(1);
+  await page.locator(`${MODAL} #bulk-topics-close`).click();
+  await expect(page.locator(MODAL)).toHaveCount(0);
+  await expect(page.locator("#list-area input.bulk-select")).toHaveCount(0);
+  expect(tagsOf(ids)).toEqual([[inHome, restricted.id]]);
+});
+
+test("an admin pins the selected topics in their category until a date", async ({ page, context, session }) => {
+  const admin = await session("admin");
+  const cat = await category(admin);
+  const ids = await topicsIn(await session("user1"), cat, 3);
+  const [a, b, c] = ids;
+  await login(context, "admin");
+
+  try {
+    await enter(page, cat.path, ids);
+    await select(page, [a, b]);
+    const counted = page.waitForRequest((r) => r.url().includes("/topics/feature_stats.json"));
+    await choose(page, "pin-topics");
+    expect(new URL((await counted).url()).search).toBe(`?category_id=${cat.id}`);
+    await expect(page.locator(`${MODAL} .d-modal__title-text`)).toHaveText("Feature these topics");
+    // showFooter false: the sections' own buttons pin.
+    await expect(page.locator(`${MODAL} .d-modal__footer button`)).toHaveCount(0);
+    const sections = page.locator(`${MODAL} form.feature-section`);
+    await expect(sections).toHaveCount(2);
+    const inCategory = sections.nth(0);
+    // The category's own pins (its definition topic's), counted.
+    const pinned = () =>
+      Number(
+        sql(
+          "SELECT COUNT(*) FROM topics WHERE category_id = :'p1' AND pinned_at IS NOT NULL AND NOT pinned_globally AND visible AND deleted_at IS NULL",
+          cat.id,
+        )[0][0],
+      );
+    const counts = (n) =>
+      n === 0 ? `There are no topics pinned in ${cat.name}.` : `Topics currently pinned in ${cat.name}: ${n}`;
+    const before = pinned();
+    const stats = inCategory.locator(".feature-section__description > p").first();
+    await expect(stats).toHaveText(counts(before));
+    await expect(stats.locator(`a.badge-category__wrapper .badge-category[data-category-id="${cat.id}"]`)).toHaveCount(1);
+    await expect(inCategory.locator(".feature-section__description > p").nth(1)).toHaveText(
+      "Users can unpin topics individually for themselves.",
+    );
+    await expect(inCategory.locator(".feature-section__pin-message")).toContainText(
+      "Make these topics appear at the top of the topic's category until",
+    );
+    await expect(inCategory.locator(".form-kit__button")).toHaveText("Pin topics");
+    const globally = sections.nth(1);
+    await expect(globally.locator(".feature-section__description > p").first()).toContainText(/pinned globally/);
+    await expect(globally.locator(".feature-section__pin-message")).toContainText(
+      "Make these topics appear at the top of all topic lists until",
+    );
+    await expect(globally.locator(".form-kit__button")).toHaveText("Pin topics globally");
+
+    // The date is required.
+    await inCategory.locator(".form-kit__button").click();
+    await expect(inCategory.locator(".form-kit__errors")).toHaveText("A date is required to pin this topic.");
+    expect(column(ids, "pinned_at IS NULL")).toEqual(sorted(ids).map((id) => [id, "t"]));
+
+    await inCategory.locator(".future-date-input-selector summary").click();
+    await page.locator('.future-date-input-selector-row[data-value="next_month"]').click();
+    await expect(inCategory.locator(".form-kit__errors")).toHaveCount(0);
+    const sent = bulkRequest(page);
+    await redrawnAfter(page, () => inCategory.locator(".form-kit__button").click());
+    const body = decodeURIComponent((await sent).postData());
+    expect(body).toMatch(
+      new RegExp(
+        `^topic_ids\\[\\]=${a}&topic_ids\\[\\]=${b}&operation\\[type\\]=pin&operation\\[pinned_globally\\]=false&operation\\[pinned_until\\]=\\d{4}-\\d\\d-\\d\\d\\+\\d\\d:\\d\\d[+-]\\d\\d:\\d\\d&tracked=$`,
+      ),
+    );
+    await completed(page);
+    expect(
+      sql(
+        `SELECT id, pinned_at IS NOT NULL, pinned_globally, COALESCE(pinned_until > now() + interval '1 day', false) FROM topics WHERE id IN (${ids.join(",")}) ORDER BY id`,
+      ).map((r) => [Number(r[0]), r[1], r[2], r[3]]),
+    ).toEqual(sorted(ids).map((id) => (id === c ? [id, "f", "f", "f"] : [id, "t", "f", "t"])));
+
+    // The category's pins are counted now. Pinning globally sends the
+    // other flag: the request is stopped here, as a global pin would
+    // reorder every other list, and its failure is listed.
+    await page.locator(TOGGLE).click();
+    await select(page, [c]);
+    await choose(page, "pin-topics");
+    expect(pinned()).toBe(before + 2);
+    await expect(sections.nth(0).locator(".feature-section__description > p").first()).toHaveText(counts(before + 2));
+    await sections.nth(1).locator(".future-date-input-selector summary").click();
+    await page.locator('.future-date-input-selector-row[data-value="two_weeks"]').click();
+    let stopped = null;
+    await page.route("**/topics/bulk", (route) => {
+      stopped = decodeURIComponent(route.request().postData());
+      return route.abort();
+    });
+    await sections.nth(1).locator(".form-kit__button").click();
+    const dialog = page.locator("#dialog-holder .dialog-footer .btn-primary");
+    const failure = page.locator(`${MODAL} .topic-bulk-actions-modal__errors`);
+    // Past four global pins a confirmation comes first.
+    await expect(dialog.or(failure)).toBeVisible();
+    if (await dialog.isVisible()) {
+      await dialog.click();
+    }
+    await expect(failure.locator("p")).toHaveText("1 topic could not be updated:");
+    await expect(failure.locator("li")).toHaveText("Sorry, an error has occurred. (1 topic)");
+    expect(stopped).toMatch(
+      new RegExp(`^topic_ids\\[\\]=${c}&operation\\[type\\]=pin&operation\\[pinned_globally\\]=true&operation\\[pinned_until\\]=\\d{4}-`),
+    );
+    await page.unroute("**/topics/bulk");
+    await page.locator(`${MODAL} #bulk-topics-close`).click();
+    await expect(page.locator(MODAL)).toHaveCount(0);
+    expect(column([c], "pinned_at IS NULL")).toEqual([[c, "t"]]);
+  } finally {
+    for (const id of ids) {
+      await api(admin, "PUT", `/t/${id}/status`, { status: "pinned", enabled: "false" });
+    }
+  }
+});
+
+test("the mode turned on while an action's refresh is on its way stays on over the list drawn again", async ({
+  page,
+  context,
+  session,
+}) => {
+  const admin = await session("admin");
+  const cat = await category(admin);
+  const ids = await topicsIn(await session("user1"), cat, 2);
+  const [a, b] = ids;
+  await login(context, "admin");
+  await enter(page, cat.path, ids);
+
+  // The list asked for again is held back until the test lets it go.
+  let release = null;
+  let held = null;
+  const holding = new Promise((resolve) => (held = resolve));
+  const list = (url) => url.pathname === cat.path;
+  await page.route(list, async (route) => {
+    if (route.request().headers()["hx-request"]) {
+      held();
+      await new Promise((resolve) => (release = resolve));
+    }
+    await route.continue();
+  });
+
+  await select(page, [a]);
+  await choose(page, "close-topics");
+  await page.evaluate(() => {
+    window.bulkSelectRedrawn = new Promise((resolve) =>
+      document.addEventListener("discourse:redrawn", resolve, { once: true }),
+    );
+  });
+  await page.locator(`${MODAL} #bulk-topics-confirm`).click();
+  await holding;
+  // The action is done and the mode off, over the list as it was: no
+  // toast yet.
+  await expect(page.locator(MODAL)).toHaveCount(0);
+  await expect(page.locator(TABLE)).toHaveClass("topic-list");
+  await expect(page.locator(".fk-d-default-toast")).toHaveCount(0);
+  await expect(row(page, a)).not.toHaveClass(/(^| )closed( |$)/);
+  await page.locator(TOGGLE).click();
+  await expect(page.locator(TABLE)).toHaveClass("topic-list sticky-header bulk-select-enabled");
+  await select(page, [b]);
+
+  release();
+  await page.evaluate(() => window.bulkSelectRedrawn);
+  // The list drawn again: the closed topic, the toast, and the mode
+  // still on with its checkboxes, nothing selected.
+  await expect(row(page, a)).toHaveClass(/(^| )closed( |$)/);
+  await expect(page.locator(".fk-d-default-toast.-success .fk-d-default-toast__message")).toHaveText(
+    "Bulk operations completed successfully!",
+  );
+  await expect(page.locator(TABLE)).toHaveClass("topic-list sticky-header bulk-select-enabled");
+  await expect(page.locator("#list-area input.bulk-select")).toHaveCount(3);
+  expect(await selected(page)).toEqual([]);
+  await expect(page.locator(TRIGGER)).toHaveCount(0);
+  await select(page, [b]);
+  await expect(page.locator(COUNT)).toHaveText("1 selected");
+  await page.unroute(list);
+  expect(column(ids, "closed")).toEqual(sorted(ids).map((id) => [id, id === a ? "t" : "f"]));
+});
+
+test("the nested replies item, where offered, says it is not ported", async ({ page, context, session }) => {
   const admin = await session("admin");
   const cat = await category(admin);
   const ids = await topicsIn(await session("user1"), cat, 1);
@@ -424,16 +901,16 @@ test("what is not ported says so by name", async ({ page, context, session }) =>
   await enter(page, cat.path, ids);
   await select(page, ids);
   const config = await page.evaluate(() => JSON.parse(document.getElementById("topic-bulk-select").textContent));
-  await choose(page, "pin-topics");
-  await expect(page.locator("#page-error")).toHaveText(
-    "Not ported yet: the bulk actions' Pin (BulkPinOptions, GET /topics/feature_stats).",
-  );
-  await expect(page.locator(MODAL)).toHaveCount(0);
-  if (config.manage_tags) {
-    await choose(page, "manage-tags");
+  const offered = await items(page);
+  await page.keyboard.press("Escape");
+  await expect(page.locator(MENU)).toHaveCount(0);
+  expect(offered.includes("enable-nested-replies")).toBe(config.nested_replies);
+  if (config.nested_replies) {
+    await choose(page, "enable-nested-replies");
     await expect(page.locator("#page-error")).toHaveText(
-      "Not ported yet: the bulk actions' Manage tags (ManageTagsForm and its tag choosers).",
+      "Not ported yet: the bulk actions' Enable nested replies (NestedTopic::Toggle).",
     );
+    await expect(page.locator(MODAL)).toHaveCount(0);
   }
   // Nothing was sent, the mode stays.
   await expect(page.locator(COUNT)).toHaveText("1 selected");

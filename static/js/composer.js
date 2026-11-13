@@ -2707,8 +2707,12 @@
   //                  selected, the search result as returned)
   //   opened()       after it opens and draws its body
   //   failed(error)  when the search fails
+  //   blocked()      the blockedTags ({id, name}), never offered
   // The selection is a list of {id, name, isNew}: a name alone is a tag
-  // without an id.
+  // without an id. With the `chooser: "tag-chooser"` option it is
+  // TagChooser where that differs (TagChooserRow rows, no required tag
+  // group, no noTags class), and `everyTag` searches without
+  // filterForInput (miniTagChooser.copy gives such a chooser its element).
   function miniTagChooser(el, hooks) {
     var selectedTags = [];
     var tagSearchTimer = null;
@@ -2721,6 +2725,7 @@
     try {
       tagOpts = JSON.parse(el.dataset.options || "{}");
     } catch (_) {}
+    var isTagChooser = tagOpts.chooser === "tag-chooser";
 
     function call(name) {
       var args = Array.prototype.slice.call(arguments, 1);
@@ -2766,7 +2771,9 @@
           return t.id || t.name;
         })
         .join(",");
-      el.classList.toggle("no-tags", selectedTags.length === 0);
+      if (!isTagChooser) {
+        el.classList.toggle("no-tags", selectedTags.length === 0);
+      }
       el.classList.toggle("has-selection", selectedTags.length > 0);
     }
 
@@ -2868,11 +2875,11 @@
           html +=
             '<li aria-checked="false" role="menuitemradio" data-index="' + i + '" data-name="' + escapeHtml(r.name) +
             '" data-value="' + escapeHtml(String(r.id)) + '" title="' + escapeHtml(r.title || r.name) + '" tabindex="0"' +
-            (r.disabled ? ' aria-disabled="true"' : "") + ' class="select-kit-row tag-row' + highlighted + disabled + '">  ' +
+            (r.disabled ? ' aria-disabled="true"' : "") + ' class="select-kit-row ' + (isTagChooser ? "tag-chooser-row" : "tag-row") + highlighted + disabled + '">  ' +
             renderTag(r.name, r.count);
           if (r.disabled) {
             html += '<span class="disabled-reason">' + escapeHtml(r.title || "") + "</span>";
-          } else if (r.target_tag) {
+          } else if (r.target_tag && !isTagChooser) {
             html += '<span class="synonym-hint">' + escapeHtml(tagLabel("synonym_hint", { tag_name: r.target_tag.name })) + "</span>";
           }
           html += "</li>";
@@ -2913,7 +2920,10 @@
       if (category) {
         params.append("categoryId", category);
       }
+      // TagChooser#search: the blocked tags go with the selected ones.
+      var blocked = call("blocked") || [];
       selectedTags
+        .concat(blocked)
         .filter(function (t) {
           return t.id;
         })
@@ -2921,7 +2931,9 @@
         .forEach(function (t) {
           params.append("selected_tag_ids[]", t.id);
         });
-      params.append("filterForInput", "true");
+      if (!tagOpts.everyTag) {
+        params.append("filterForInput", "true");
+      }
       var recent = call("prioritizeRecent") && !filter;
       if (recent) {
         params.append("prioritizeRecentTags", "true");
@@ -2938,7 +2950,7 @@
             return;
           }
           tagForbidden = Boolean(json.forbidden);
-          tagRequired = json.required_tag_group || null;
+          tagRequired = isTagChooser ? null : json.required_tag_group || null;
           var results = json.results || [];
           if (!recent && tagOpts.sortAlphabetically) {
             var byName = function (a, b) {
@@ -2957,7 +2969,7 @@
                   .sort(byName)
               );
           }
-          var names = selectedTags.map(function (t) {
+          var names = selectedTags.concat(blocked).map(function (t) {
             return t.name;
           });
           results = results.filter(function (r) {
@@ -2975,7 +2987,9 @@
     function changed(added) {
       tagHeader();
       call("changed", added);
-      searchTags();
+      if (el.open) {
+        searchTags();
+      }
     }
 
     function chooseTagRow(index) {
@@ -2983,14 +2997,22 @@
       if (!row || row.disabled) {
         return;
       }
-      if (tagOpts.maximum && selectedTags.length >= tagOpts.maximum) {
-        return;
-      }
       var added = row.create ? { name: row.name, isNew: true } : row;
-      selectedTags.push(added);
+      if (tagOpts.maximum === 1 && selectedTags.length) {
+        // MultiSelect#select: a single choice is replaced.
+        selectedTags = [added];
+      } else if (tagOpts.maximum && selectedTags.length >= tagOpts.maximum) {
+        return;
+      } else {
+        selectedTags.push(added);
+      }
       var input = el.querySelector(".filter-input");
       if (input) {
         input.value = "";
+      }
+      // select-kit closes once the single choice is made.
+      if (tagOpts.maximum === 1) {
+        el.open = false;
       }
       changed(added);
     }
@@ -3192,7 +3214,37 @@
     return text;
   }
 
-  // For the review queue's ReviewableFieldTags.
+  // A closed, empty copy of the composer's chooser for another form, its
+  // options (and labels) overridden; null where the viewer has none.
+  miniTagChooser.copy = function (overrides) {
+    var source = document.querySelector("#reply-control details.mini-tag-chooser");
+    if (!source) {
+      return null;
+    }
+    var details = source.cloneNode(true);
+    details.open = false;
+    details.classList.remove("is-expanded");
+    details.removeAttribute("category-id");
+    var options = {};
+    try {
+      options = JSON.parse(details.dataset.options || "{}");
+    } catch (_) {}
+    var labels = Object.assign({}, options.labels, (overrides || {}).labels);
+    Object.assign(options, overrides);
+    options.labels = labels;
+    if (options.chooser === "tag-chooser") {
+      details.classList.remove("mini-tag-chooser", "no-tags");
+      details.classList.add("tag-chooser");
+    }
+    details.dataset.options = JSON.stringify(options);
+    var body = details.querySelector(".select-kit-body");
+    body.innerHTML = "";
+    body.removeAttribute("style");
+    return details;
+  };
+
+  // For the review queue's ReviewableFieldTags, MoveToTopic's tags and
+  // the bulk actions' ManageTagsForm.
   Discourse.miniTagChooser = miniTagChooser;
 
   function form(pairs) {

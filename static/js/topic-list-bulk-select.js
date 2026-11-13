@@ -19,15 +19,25 @@
 //   With topics selected a topic manager (canDoBulkActions) gets the Bulk
 //   Actions DMenu and the selected count. Its items follow `visible`,
 //   read off the rows (their statuses). Close, archive, unlist, relist,
-//   un-pin, delete, reset bump dates, update category, update
-//   notifications and make personal message open BulkTopicActions, which
-//   sends Topic.bulkOperation (PUT /topics/bulk, thirty topics a
-//   request) and lists what failed; Mark Unread sends at once; Dismiss is
-//   the list's dismiss button (topic-dismiss.js, which also labels its
-//   buttons with the count and sends the selected topics). Then the list
-//   is drawn again (router.refresh), out of the mode, under a toast.
-//   Manage tags (ManageTagsForm), Pin (BulkPinOptions) and the nested
-//   replies items are refused, named.
+//   pin, un-pin, delete, reset bump dates, update category, update
+//   notifications, manage tags and make personal message open
+//   BulkTopicActions, which sends Topic.bulkOperation (PUT /topics/bulk,
+//   thirty topics a request) and lists what failed; Mark Unread sends at
+//   once; Dismiss is the list's dismiss button (topic-dismiss.js, which
+//   also labels its buttons with the count and sends the selected
+//   topics). Then the list is drawn again (router.refresh), out of the
+//   mode, under a toast. The nested replies items are refused, named.
+//
+//   Manage tags is ManageTagsForm (modal/bulk-topic-actions/
+//   manage-tags-form.gjs): tags to remove (or all of them), tags to add
+//   and replacement rows, each a TagChooser offering existing tags only
+//   (the composer's chooser, Discourse.miniTagChooser.copy), sent as one
+//   manage_tags operation, as JSON. Pin is BulkPinOptions (modal/
+//   feature-topic/bulk-pin-options.gjs): topic-admin-modals.js'
+//   PinOptionSection for the topics' categories and for every list, each
+//   until a date it requires, with /topics/feature_stats' counts. Not as
+//   Ember: a replacement row's chooser does not move above its header on
+//   mobile (mobilePlacement).
 (function () {
   "use strict";
 
@@ -54,6 +64,12 @@
   var avatars = new WeakMap();
   var observer = null;
   var menu = null;
+  // An action's refresh on its way: { toast: [kind, text] or null }.
+  var refreshing = null;
+  // While the page is drawn again in place (page.js' redraw), and whether
+  // the mode goes back on over the list it brings.
+  var redrawing = false;
+  var resume = false;
 
   function config() {
     var el = document.getElementById("topic-bulk-select");
@@ -112,6 +128,79 @@
 
   function rowOf(id) {
     return document.querySelector('#list-area tbody.topic-list-body > tr.topic-list-item[data-topic-id="' + Number(id) + '"]');
+  }
+
+  function escapeHtml(text) {
+    return String(text == null ? "" : text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // A topic's category off its row's badge, as { id, link }
+  // (categoryLinkHTML); a row drawn without one is in the config's
+  // fallback_category.
+  function categoryOf(row) {
+    var badge = row.querySelector(
+      ".link-bottom-line .badge-category[data-category-id], .topic-item-stats__category-tags .badge-category[data-category-id]"
+    );
+    if (!badge) {
+      return config().fallback_category || null;
+    }
+    var wrapper = badge.closest(".badge-category__wrapper");
+    return { id: Number(badge.dataset.categoryId), link: wrapper ? wrapper.outerHTML : "" };
+  }
+
+  // BulkTopicActions#soleCategory: the selected topics' category when
+  // they share one (bulkSelectHelper.selectedCategoryIds).
+  function soleCategory() {
+    var found = [];
+    selected
+      .map(rowOf)
+      .filter(Boolean)
+      .map(categoryOf)
+      .forEach(function (category) {
+        var id = category ? category.id : null;
+        if (
+          !found.some(function (other) {
+            return (other ? other.id : null) === id;
+          })
+        ) {
+          found.push(category);
+        }
+      });
+    return found.length === 1 ? found[0] : null;
+  }
+
+  // Category.findById's badge for a category on the page, or nothing.
+  function categoryLink(id) {
+    var fallback = config().fallback_category;
+    if (fallback && fallback.id === id) {
+      return fallback.link;
+    }
+    var badge = document.querySelector('#list-area tr.topic-list-item .badge-category[data-category-id="' + Number(id) + '"]');
+    var wrapper = badge && badge.closest(".badge-category__wrapper");
+    return wrapper ? wrapper.outerHTML : "";
+  }
+
+  // renderTag
+  function renderTag(name) {
+    var visible = escapeHtml(name);
+    var lower = visible.toLowerCase();
+    return (
+      "<a href='" +
+      basePath() +
+      "/tag/" +
+      lower.split(".").join("%2E") +
+      "' data-tag-name=\"" +
+      lower +
+      "\" class='discourse-tag " +
+      escapeHtml(config().tag_style || "simple") +
+      "'>" +
+      visible +
+      "</a>"
+    );
   }
 
   function unported(what) {
@@ -466,7 +555,8 @@
   }
 
   // jQuery.param, for Topic.bulkOperation's data: topic_ids, operation,
-  // tracked (sent empty when undefined).
+  // tracked (sent empty when undefined). With asJSON (manage_tags, whose
+  // operation nests lists) the data is JSON, the undefined left out.
   function bulkBody(ids, operation, tracked) {
     var body = new URLSearchParams();
     ids.forEach(function (id) {
@@ -480,18 +570,18 @@
     return body.toString();
   }
 
-  function bulkOperation(ids, operation) {
+  function bulkOperation(ids, operation, asJSON) {
     var headers = {};
     try {
       headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
     } catch (_) {}
-    headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+    headers["Content-Type"] = asJSON ? "application/json" : "application/x-www-form-urlencoded; charset=UTF-8";
     headers.Accept = "application/json, text/javascript, */*; q=0.01";
     return fetch(basePath() + "/topics/bulk", {
       method: "PUT",
       headers: headers,
       credentials: "same-origin",
-      body: bulkBody(ids, operation),
+      body: asJSON ? JSON.stringify({ topic_ids: ids, operation: operation }) : bulkBody(ids, operation),
     }).then(function (r) {
       if (!r.ok) {
         throw r;
@@ -522,11 +612,13 @@
   }
 
   // BulkTopicActions#_processChunks: thirty topics a request, their
-  // topic_ids and errors merged; a request that fails counts its topics
-  // under its error and ends the run.
+  // topic_ids, errors and tag_category_errors merged; a request that
+  // fails counts its topics under its error and ends the run.
   function processChunks(ids, operation) {
     var done = [];
     var errors = {};
+    var tagCategoryErrors = {};
+    var asJSON = operation.type === "manage_tags";
     var chunks = [];
     for (var i = 0; i < ids.length; i += CHUNK) {
       chunks.push(ids.slice(i, i + CHUNK));
@@ -536,13 +628,21 @@
         if (!go) {
           return false;
         }
-        return bulkOperation(chunk, operation).then(
+        return bulkOperation(chunk, operation, asJSON).then(
           function (result) {
             ((result && result.topic_ids) || []).forEach(function (id) {
               done.push(id);
             });
             Object.keys((result && result.errors) || {}).forEach(function (message) {
               errors[message] = (errors[message] || 0) + result.errors[message];
+            });
+            ((result && result.tag_category_errors) || []).forEach(function (error) {
+              var key = error.category_id + ":" + error.tag_names.join(",");
+              if (tagCategoryErrors[key]) {
+                tagCategoryErrors[key].count += error.count;
+              } else {
+                tagCategoryErrors[key] = Object.assign({}, error);
+              }
             });
             return true;
           },
@@ -556,27 +656,27 @@
       });
     }, Promise.resolve(true));
     return run.then(function () {
-      return { topics: done, errors: Object.keys(errors).length ? errors : null };
+      var restricted = Object.keys(tagCategoryErrors).map(function (key) {
+        return tagCategoryErrors[key];
+      });
+      return {
+        topics: done,
+        errors: Object.keys(errors).length ? errors : null,
+        tagCategoryErrors: restricted.length ? restricted : null,
+      };
     });
   }
 
   // refreshClosure (router.refresh) and toggleBulkSelect, then the toast
-  // over the list drawn again.
+  // over the list drawn again (the last refresh's, when one overtakes
+  // another).
   function refresh(kind, text) {
     disable();
     if (!Discourse.refresh) {
       location.reload();
       return;
     }
-    if (text) {
-      document.addEventListener(
-        "discourse:redrawn",
-        function () {
-          toast(kind, text);
-        },
-        { once: true }
-      );
-    }
+    refreshing = { toast: text ? [kind, text] : null };
     Discourse.refresh();
   }
 
@@ -587,14 +687,17 @@
   }
 
   // BulkTopicActions. opts: { title, description, confirm, allowSilent,
-  // category, notifications, closeNote } and operation(state), the
-  // operation performAction sends.
+  // category, notifications, closeNote, manageTags, pin, showFooter } and
+  // operation(state), the operation performAction sends (ManageTagsForm
+  // and BulkPinOptions hand theirs over).
   function showModal(opts) {
     if (!Discourse.modal) {
       return;
     }
     var ids = selected.slice();
     var state = { categoryId: undefined, notificationLevelId: null, closeNote: null, notifyUsers: false };
+    // registerCustomAction: ManageTagsForm's triggerSubmit.
+    var customAction = null;
     var bodyEl = null;
     var footerEl = null;
     var closeModal = null;
@@ -602,6 +705,9 @@
 
     function drawFooter() {
       footerEl.textContent = "";
+      if (opts.showFooter === false) {
+        return;
+      }
       if (opts.allowSilent) {
         var options = el(
           '<div class="topic-bulk-actions-options"><label class="checkbox-label" for="topic-bulk-action-options__notify"><input id="topic-bulk-action-options__notify" class="ember-checkbox" type="checkbox"></label></div>'
@@ -618,8 +724,9 @@
       });
       footerEl.appendChild(cancel);
       var confirm = dButton("btn-primary", "bulk-topics-confirm", opts.confirm ? t(opts.confirm, ids.length) : t("topics.bulk.confirm"));
-      confirm.disabled = !!opts.notifications;
-      confirm.addEventListener("click", perform);
+      // disabledSubmit: no level yet, or ManageTagsForm with nothing set.
+      confirm.disabled = !!opts.notifications || !!opts.manageTags;
+      confirm.addEventListener("click", performAction);
       footerEl.appendChild(confirm);
     }
 
@@ -662,6 +769,22 @@
         });
         section.appendChild(list);
       }
+      if (opts.manageTags) {
+        var form = manageTagsForm({
+          category: soleCategory(),
+          onPerform: perform,
+          setSubmitDisabled: function (value) {
+            footerEl.querySelector("#bulk-topics-confirm").disabled = value;
+          },
+        });
+        customAction = form.submit;
+        section.appendChild(form.el);
+      }
+      if (opts.pin) {
+        bulkPinOptions(section, soleCategory(), function (pin) {
+          perform(Object.assign({ type: "pin" }, pin));
+        });
+      }
       if (opts.closeNote) {
         var note = el(
           '<div class="bulk-close-note-section"><label></label><textarea id="bulk-close-note"></textarea></div>'
@@ -686,11 +809,27 @@
       });
     }
 
-    // _showErrors: what was done, skipped and refused, and why.
-    function showErrors(errors, done) {
-      var failed = Object.keys(errors).reduce(function (sum, message) {
-        return sum + errors[message];
-      }, 0);
+    // _buildTagCategoryError
+    function tagCategoryError(error) {
+      return t("topics.bulk.tag_not_allowed_in_category", error.tag_names.length)
+        .split("%{tags}")
+        .join(error.tag_names.map(renderTag).join(" "))
+        .split("%{category}")
+        .join(categoryLink(error.category_id) || escapeHtml(error.category_name));
+    }
+
+    // _showErrors: what was done, skipped and refused, and why (the tags
+    // a category does not allow first).
+    function showErrors(errors, tagCategoryErrors, done) {
+      errors = errors || {};
+      tagCategoryErrors = tagCategoryErrors || [];
+      var failed =
+        tagCategoryErrors.reduce(function (sum, error) {
+          return sum + error.count;
+        }, 0) +
+        Object.keys(errors).reduce(function (sum, message) {
+          return sum + errors[message];
+        }, 0);
       var skipped = ids.length - done - failed;
       section.classList.remove("is-loading");
       section.textContent = "";
@@ -708,6 +847,12 @@
         }
       });
       var list = document.createElement("ul");
+      tagCategoryErrors.forEach(function (error) {
+        var item = document.createElement("li");
+        item.innerHTML = tagCategoryError(error);
+        item.appendChild(document.createTextNode(" (" + t("topics.bulk.error_topic_count", error.count) + ")"));
+        list.appendChild(item);
+      });
       Object.keys(errors).forEach(function (message) {
         var item = document.createElement("li");
         item.textContent = message + " (" + t("topics.bulk.error_topic_count", errors[message]) + ")";
@@ -725,9 +870,17 @@
       footerEl.appendChild(close);
     }
 
-    // performAction, then forEachPerformed / performAndRefresh.
-    function perform() {
-      var operation = opts.operation(state);
+    // performAction: the action's operation, or the form's own submit.
+    function performAction() {
+      if (customAction) {
+        customAction();
+      } else {
+        perform(opts.operation(state));
+      }
+    }
+
+    // forEachPerformed / performAndRefresh
+    function perform(operation) {
       if (opts.allowSilent) {
         operation.silent = !state.notifyUsers;
       }
@@ -736,8 +889,8 @@
       }
       loading();
       processChunks(ids, operation).then(function (result) {
-        if (result.errors) {
-          showErrors(result.errors, result.topics.length);
+        if (result.errors || result.tagCategoryErrors) {
+          showErrors(result.errors, result.tagCategoryErrors, result.topics.length);
           return;
         }
         closeModal();
@@ -764,6 +917,437 @@
     if (note) {
       note.focus();
     }
+  }
+
+  // FKField: the container, title and description around a control, and
+  // its error. opts: { title, description, full, error }.
+  function fkField(name, type, control, opts) {
+    var field = document.createElement("div");
+    field.className =
+      "form-kit__container form-kit__field form-kit__field-" +
+      type +
+      (opts.error ? " has-error" : "") +
+      (opts.full ? " --full" : "");
+    field.dataset.name = name;
+    field.id = "control-" + name.split(".").join("-");
+    field.dataset.controlType = type;
+    if (opts.title) {
+      var label = el('<label class="form-kit__container-title"><span></span></label>');
+      label.firstChild.textContent = opts.title;
+      if (control.id) {
+        label.htmlFor = control.id;
+      }
+      field.appendChild(label);
+    }
+    if (opts.description) {
+      var description = el('<p class="form-kit-text form-kit__container-description"></p>');
+      description.textContent = opts.description;
+      field.appendChild(description);
+    }
+    var content = el('<div class="form-kit__container-content"></div>');
+    content.appendChild(control.el || control);
+    if (opts.error) {
+      var meta = el(
+        '<div class="form-kit__meta"><p aria-live="assertive" class="form-kit__errors"><span>' +
+          icon("triangle-exclamation") +
+          " </span></p></div>"
+      );
+      meta.querySelector("span").appendChild(document.createTextNode(opts.error));
+      content.appendChild(meta);
+    }
+    field.appendChild(content);
+    return field;
+  }
+
+  // FKControlTagChooser: TagChooser over a copy of the composer's chooser,
+  // existing tags only (no allowCreate). opts: { value, categoryId,
+  // everyTag, maximum, placeholder, blocked(), onChange(tags) }.
+  function tagChooser(opts) {
+    var overrides = {
+      chooser: "tag-chooser",
+      allowAny: false,
+      everyTag: !!opts.everyTag,
+      labels: {
+        optional: t("select_kit.default_header_text"),
+        filter_placeholder: opts.placeholder || t("tagging.choose_for_topic"),
+      },
+    };
+    if (opts.maximum) {
+      overrides.maximum = opts.maximum;
+    }
+    var details = Discourse.miniTagChooser.copy(overrides);
+    details.classList.add("form-kit__control-tag-chooser");
+    var chooser = Discourse.miniTagChooser(details, {
+      categoryId: function () {
+        return opts.categoryId ? String(opts.categoryId) : "";
+      },
+      blocked: opts.blocked,
+      changed: function () {
+        opts.onChange(chooser.selected().slice());
+      },
+      opened: function () {
+        if (Discourse.topicAdminModals) {
+          Discourse.topicAdminModals.floatBody(details);
+        }
+      },
+    });
+    chooser.set(opts.value);
+    return details;
+  }
+
+  // ManageTagsForm. api: { category, onPerform(operation),
+  // setSubmitDisabled(value) }; returns its element and triggerSubmit.
+  function manageTagsForm(api) {
+    var key = function (name) {
+      return t("topic_bulk_actions.manage_tags." + name);
+    };
+    var categoryId = api.category ? api.category.id : null;
+    var data = { remove_all_tags: false, remove_tags: [], add_tags: [], replace_rows: [{ from: [], to: [] }] };
+    // FormKit's errors, by field name.
+    var errors = {};
+    var form = document.createElement("form");
+    form.className = "form-kit manage-tags-form";
+    form.setAttribute("novalidate", "");
+
+    // #replaceRowStatus
+    function status(row) {
+      var from = row.from[0];
+      var to = row.to[0];
+      if (!from && !to) {
+        return "empty";
+      }
+      if (to && !from) {
+        return "missing-from";
+      }
+      if (from && !to) {
+        return "missing-to";
+      }
+      return "valid";
+    }
+
+    // #isEmpty
+    function isEmpty() {
+      return (
+        !data.remove_all_tags &&
+        data.add_tags.length === 0 &&
+        data.remove_tags.length === 0 &&
+        data.replace_rows.every(function (row) {
+          return status(row) === "empty";
+        })
+      );
+    }
+
+    // validateReplaceRows
+    function validate() {
+      errors = {};
+      data.replace_rows.forEach(function (row, index) {
+        var state = status(row);
+        if (state === "missing-from") {
+          errors["replace_rows." + index + ".from"] = key("replace.missing_from");
+        } else if (state === "missing-to") {
+          errors["replace_rows." + index + ".to"] = key("replace.missing_to");
+        }
+      });
+      return Object.keys(errors).length === 0;
+    }
+
+    // afterFieldSet; a field with an error is validated again.
+    function fieldSet(name) {
+      api.setSubmitDisabled(isEmpty());
+      if (errors[name]) {
+        validate();
+        draw();
+      }
+    }
+
+    // FKErrorsSummary
+    function errorsSummary() {
+      var names = Object.keys(errors);
+      var summary = el(
+        '<div aria-live="assertive" class="form-kit__errors-summary"><h2 class="form-kit__errors-summary-title">' +
+          icon("triangle-exclamation") +
+          ' </h2><ul class="form-kit__errors-summary-list"></ul></div>'
+      );
+      summary.firstChild.appendChild(document.createTextNode(t("form_kit.errors_summary_title", names.length)));
+      names.forEach(function (name) {
+        var id = "control-" + name.split(".").join("-");
+        var item = el('<li><a rel="noopener noreferrer"></a></li>');
+        item.firstChild.href = "#" + id;
+        item.firstChild.textContent = key("replace.title");
+        item.appendChild(document.createTextNode(": " + errors[name]));
+        // focusField
+        item.firstChild.addEventListener("click", function (event) {
+          event.preventDefault();
+          var header = form.querySelector("#" + id + " summary");
+          if (header) {
+            header.focus();
+          }
+        });
+        summary.lastChild.appendChild(item);
+      });
+      return summary;
+    }
+
+    function removeSection() {
+      var container = el(
+        '<div class="form-kit__container manage-tags-form__remove-section --full"><div class="form-kit__container-content --full"></div></div>'
+      );
+      var content = container.firstChild;
+      if (data.remove_all_tags) {
+        var alert = el(
+          '<div class="form-kit__alert alert alert-error manage-tags-form__warning"><span class="form-kit__alert-message"></span></div>'
+        );
+        alert.firstChild.innerHTML = key("remove.all_warning");
+        content.appendChild(alert);
+      } else {
+        content.appendChild(
+          fkField(
+            "remove_tags",
+            "tag-chooser",
+            tagChooser({
+              value: data.remove_tags,
+              everyTag: true,
+              onChange: function (tags) {
+                data.remove_tags = tags;
+                fieldSet("remove_tags");
+              },
+            }),
+            { title: key("remove.title"), description: key("remove.description"), full: true }
+          )
+        );
+      }
+      // FKControlToggle (DToggleSwitch)
+      var toggle = el(
+        '<div class="d-toggle-switch"><label class="d-toggle-switch__label"><button class="d-toggle-switch__checkbox form-kit__control-toggle" id="manage-tags-remove-all" role="switch" type="button"></button><span class="d-toggle-switch__checkbox-slider"></span></label></div>'
+      );
+      var button = toggle.querySelector("button");
+      button.setAttribute("aria-checked", data.remove_all_tags ? "true" : "false");
+      if (data.remove_all_tags) {
+        toggle.querySelector(".d-toggle-switch__checkbox-slider").innerHTML = icon("check");
+      }
+      button.addEventListener("click", function () {
+        data.remove_all_tags = !data.remove_all_tags;
+        api.setSubmitDisabled(isEmpty());
+        draw();
+        form.querySelector("#manage-tags-remove-all").focus();
+      });
+      content.appendChild(
+        fkField("remove_all_tags", "toggle", { el: toggle, id: "manage-tags-remove-all" }, { title: key("remove.all_toggle") })
+      );
+      return container;
+    }
+
+    // A replacement row's chooser: one tag, the other side's left out
+    // (blockedTagsFor).
+    function replaceField(row, index, side) {
+      var other = side === "from" ? "to" : "from";
+      var name = "replace_rows." + index + "." + side;
+      return fkField(
+        name,
+        "tag-chooser",
+        tagChooser({
+          value: row[side],
+          maximum: 1,
+          placeholder: key("replace." + side + "_placeholder"),
+          categoryId: side === "to" ? categoryId : null,
+          everyTag: side === "from" || !categoryId,
+          blocked: function () {
+            return row[other];
+          },
+          onChange: function (tags) {
+            row[side] = tags;
+            fieldSet(name);
+          },
+        }),
+        { full: true, error: errors[name] }
+      );
+    }
+
+    function replaceSection() {
+      var container = el(
+        '<div class="form-kit__container manage-tags-form__replace --full"><span class="form-kit__container-title"></span><p class="form-kit-text form-kit__container-subtitle"></p><div class="form-kit__container-content --full"></div></div>'
+      );
+      container.children[0].textContent = key("replace.title");
+      container.children[1].textContent = key("replace.description");
+      var content = container.lastChild;
+      if (data.replace_rows.length) {
+        var collection = el('<div class="form-kit__collection"></div>');
+        data.replace_rows.forEach(function (row, index) {
+          var line = el(
+            '<div class="form-kit__row"><div class="form-kit__col --col-5"></div><div class="form-kit__col --col-1 manage-tags-form__replace-arrow">' +
+              icon("arrow-right") +
+              '</div><div class="form-kit__col --col-5"></div><div class="form-kit__col --col-1"><button class="btn no-text btn-icon form-kit__button manage-tags-form__replace-row-remove" type="button">' +
+              icon("xmark") +
+              '<span aria-hidden="true">&#8203;</span></button></div></div>'
+          );
+          line.children[0].appendChild(replaceField(row, index, "from"));
+          line.children[2].appendChild(replaceField(row, index, "to"));
+          var remove = line.querySelector(".manage-tags-form__replace-row-remove");
+          remove.title = key("replace.remove_replacement");
+          // removeReplaceRow: the errors are not re-keyed, so all go.
+          remove.addEventListener("click", function () {
+            data.replace_rows.splice(index, 1);
+            errors = {};
+            api.setSubmitDisabled(isEmpty());
+            draw();
+          });
+          collection.appendChild(line);
+        });
+        content.appendChild(collection);
+      }
+      var add = el(
+        '<button class="btn btn-icon-text form-kit__button btn-default manage-tags-form__replace-row-add" type="button">' +
+          icon("plus") +
+          '<span class="d-button-label"></span></button>'
+      );
+      add.lastChild.textContent = key("replace.add_replacement");
+      // addItemToCollection
+      add.addEventListener("click", function () {
+        data.replace_rows.push({ from: [], to: [] });
+        draw();
+      });
+      content.appendChild(add);
+      return container;
+    }
+
+    function draw() {
+      form.textContent = "";
+      if (Object.keys(errors).length) {
+        form.appendChild(errorsSummary());
+      }
+      form.appendChild(removeSection());
+      form.appendChild(
+        fkField(
+          "add_tags",
+          "tag-chooser",
+          tagChooser({
+            value: data.add_tags,
+            categoryId: categoryId,
+            everyTag: !categoryId,
+            onChange: function (tags) {
+              data.add_tags = tags;
+              fieldSet("add_tags");
+            },
+          }),
+          { title: key("add.title"), description: key("add.description"), full: true }
+        )
+      );
+      form.appendChild(replaceSection());
+    }
+
+    function ids(tags) {
+      return tags.map(function (tag) {
+        return tag.id;
+      });
+    }
+
+    // triggerSubmit, onSubmit and #buildPayload
+    function submit() {
+      if (!validate()) {
+        draw();
+        return;
+      }
+      api.onPerform({
+        type: "manage_tags",
+        add_tag_ids: ids(data.add_tags),
+        remove_tag_ids: data.remove_all_tags ? [] : ids(data.remove_tags),
+        remove_all_tags: data.remove_all_tags,
+        replace_tags: data.replace_rows
+          .filter(function (row) {
+            return status(row) === "valid";
+          })
+          .map(function (row) {
+            return { from_tag_id: row.from[0].id, to_tag_id: row.to[0].id };
+          }),
+      });
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      submit();
+    });
+    draw();
+    return { el: form, submit: submit };
+  }
+
+  // BulkPinOptions: PinOptionSection (topic-admin-modals.js) for the
+  // topics' categories and, as the menu is a topic manager's
+  // (canManageTopic), for every list; `category` the selection's sole
+  // one, whose pins loadFeatureStats counts.
+  function bulkPinOptions(section, category, onPin) {
+    var modals = Discourse.topicAdminModals;
+    var carrier = { strings: config().strings };
+    var stats = null;
+    var paragraphs = [];
+
+    // DConditionalLoadingSpinner (small) until the counts arrive.
+    function statsParagraph(render) {
+      var p = document.createElement("p");
+      p.innerHTML = '<div class="spinner small"></div>';
+      paragraphs.push([p, render]);
+      return p;
+    }
+
+    function pinnedInCategoryStatsMessage() {
+      var count = stats.pinned_in_category_count || 0;
+      var text = count === 0 ? t("topic.feature_topic.not_pinned") : t("topic.feature_topic.already_pinned", count);
+      return text.split("%{categoryLink}").join(category.link);
+    }
+
+    function pinnedGloballyStatsMessage() {
+      if (stats.pinned_globally_count) {
+        return t("topic.feature_topic.already_pinned_globally", stats.pinned_globally_count);
+      }
+      return t("topic.feature_topic.not_pinned_globally");
+    }
+
+    section.appendChild(
+      modals.pinOptionSection(carrier, {
+        buttonLabel: t("topic.bulk_feature_topic.pin_button"),
+        note: t("topic.bulk_feature_topic.pin_note"),
+        pinMessage: t("topic.bulk_feature_topic.pin"),
+        stats: category ? statsParagraph(pinnedInCategoryStatsMessage) : null,
+        onPin: function (until) {
+          onPin({ pinned_globally: false, pinned_until: until });
+        },
+      })
+    );
+    section.appendChild(document.createElement("hr"));
+    section.appendChild(
+      modals.pinOptionSection(carrier, {
+        buttonLabel: t("topic.bulk_feature_topic.pin_globally_button"),
+        note: t("topic.bulk_feature_topic.pin_note"),
+        pinMessage: t("topic.bulk_feature_topic.pin_globally"),
+        stats: statsParagraph(pinnedGloballyStatsMessage),
+        confirmMessage: function () {
+          if (stats && stats.pinned_globally_count >= modals.MAX_GLOBALLY_PINNED_TOPICS) {
+            return t("topic.feature_topic.confirm_pin_globally", stats.pinned_globally_count);
+          }
+          return null;
+        },
+        onPin: function (until) {
+          onPin({ pinned_globally: true, pinned_until: until });
+        },
+      })
+    );
+
+    // loadFeatureStats
+    fetch(basePath() + "/topics/feature_stats.json" + (category ? "?category_id=" + category.id : ""), {
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .catch(function () {
+        return null;
+      })
+      .then(function (result) {
+        stats = result || { pinned_in_category_count: 0, pinned_globally_count: 0 };
+        paragraphs.forEach(function (pair) {
+          pair[0].innerHTML = pair[1]();
+        });
+      });
   }
 
   function simple(type) {
@@ -892,10 +1476,27 @@
         deferTopics();
         break;
       case "manage-tags":
-        unported("the bulk actions' Manage tags (ManageTagsForm and its tag choosers)");
+        // The choosers are copies of the composer's.
+        if (!Discourse.miniTagChooser || !Discourse.miniTagChooser.copy()) {
+          unported("the bulk actions' Manage tags without the composer's tag chooser");
+          break;
+        }
+        showModal({
+          title: "topics.bulk.manage_tags",
+          confirm: "topics.bulk.confirm_apply_to_topics",
+          allowSilent: true,
+          manageTags: true,
+        });
         break;
       case "pin-topics":
-        unported("the bulk actions' Pin (BulkPinOptions, GET /topics/feature_stats)");
+        // DFutureDateInput is penalize-user.js', moment loaded first.
+        if (!Discourse.futureDateInput || !Discourse.topicAdminModals) {
+          unported("the bulk actions' Pin without its date input");
+          break;
+        }
+        Discourse.futureDateInput.load().then(function () {
+          showModal({ title: "topics.bulk.pin_topics", pin: true, showFooter: false });
+        });
         break;
       case "enable-nested-replies":
         unported("the bulk actions' Enable nested replies (NestedTopic::Toggle)");
@@ -977,9 +1578,33 @@
     }
   });
 
-  // The mode is the page's: gone with the list it was turned on for.
+  document.addEventListener("discourse:before-redraw", function () {
+    redrawing = true;
+  });
+  document.addEventListener("discourse:redrawn", function () {
+    redrawing = false;
+    var done = refreshing;
+    refreshing = null;
+    if (done && done.toast) {
+      toast(done.toast[0], done.toast[1]);
+    }
+  });
+
+  // The mode is the page's: gone with the list it was turned on for. One
+  // turned on while an action's refresh was on its way goes back on over
+  // the list drawn again, nothing selected: the BulkSelectHelper outlives
+  // router.refresh, whose setupController clears its selection.
   Discourse.onPage(function () {
+    if (resume) {
+      resume = false;
+      enable();
+    }
     return function () {
+      resume = redrawing && !!refreshing && enabled;
+      // Another page: the refresh was this list's.
+      if (!redrawing) {
+        refreshing = null;
+      }
       enabled = false;
       selected = [];
       lastChecked = null;

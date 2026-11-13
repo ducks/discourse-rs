@@ -1533,6 +1533,10 @@ pub struct LatestPage {
     /// topic-list-bulk-select.js' config (bulk_select_config), empty for
     /// a viewer who cannot bulk select the list.
     pub bulk_select_config: String,
+    /// What BulkPinOptions needs besides, for a topic manager: the date
+    /// input's #penalize-user-config and, where the page has none, the
+    /// confirmation's #dialog-strings.
+    pub bulk_pin_config: String,
 }
 
 /// What DiscoveryTopics' footer reads besides the list itself: the list's
@@ -1847,12 +1851,15 @@ fn js_strings(
 /// the viewer is to BulkSelectTopicsDropdown's `visible` rules, the
 /// list's filter (the dismiss items are the new and unread routes'), and
 /// the strings of the header's controls, the dropdown and the
-/// BulkTopicActions modal.
+/// BulkTopicActions modal. `fallback_category` is the category (its id
+/// and categoryLinkHTML) of a row drawn without a badge: the list's own
+/// under hideCategory, else the uncategorized one.
 pub fn bulk_select_config(
     i18n: &I18n,
     settings: &SiteSettings,
     viewer: &Viewer,
     filter: &str,
+    fallback_category: Option<(i64, String)>,
 ) -> Result<String, SettingError> {
     let mut strings = serde_json::Map::new();
     js_strings(
@@ -1876,6 +1883,20 @@ pub fn bulk_select_config(
             "topic_bulk_actions.close_topics.note",
             "topic_bulk_actions.close_topics.optional",
             "topic_bulk_actions.manage_tags.name",
+            "topic_bulk_actions.manage_tags.add.title",
+            "topic_bulk_actions.manage_tags.add.description",
+            "topic_bulk_actions.manage_tags.remove.title",
+            "topic_bulk_actions.manage_tags.remove.description",
+            "topic_bulk_actions.manage_tags.remove.all_toggle",
+            "topic_bulk_actions.manage_tags.remove.all_warning",
+            "topic_bulk_actions.manage_tags.replace.title",
+            "topic_bulk_actions.manage_tags.replace.description",
+            "topic_bulk_actions.manage_tags.replace.add_replacement",
+            "topic_bulk_actions.manage_tags.replace.remove_replacement",
+            "topic_bulk_actions.manage_tags.replace.from_placeholder",
+            "topic_bulk_actions.manage_tags.replace.to_placeholder",
+            "topic_bulk_actions.manage_tags.replace.missing_from",
+            "topic_bulk_actions.manage_tags.replace.missing_to",
             "topic_bulk_actions.pin_topics.name",
             "topic_bulk_actions.unpin_topics.name",
             "topic_bulk_actions.unpin_topics.description",
@@ -1899,6 +1920,19 @@ pub fn bulk_select_config(
             "topics.bulk.delete",
             "topics.bulk.reset_bump_dates",
             "topics.bulk.unpin_topics",
+            "topics.bulk.manage_tags",
+            "topics.bulk.pin_topics",
+            "topic.bulk_feature_topic.pin",
+            "topic.bulk_feature_topic.pin_note",
+            "topic.bulk_feature_topic.pin_globally",
+            "topic.bulk_feature_topic.pin_button",
+            "topic.bulk_feature_topic.pin_globally_button",
+            "topic.feature_topic.not_pinned",
+            "topic.feature_topic.not_pinned_globally",
+            "topic.feature_topic.pin_until",
+            "topic.feature_topic.pin_validation",
+            "tagging.choose_for_topic",
+            "select_kit.default_header_text",
             "topics.bulk.confirm",
             "topics.bulk.notify",
             "topics.bulk.performing",
@@ -1930,6 +1964,12 @@ pub fn bulk_select_config(
             "topics.bulk.not_completed",
             "topics.bulk.skipped_count",
             "topics.bulk.error_topic_count",
+            "topics.bulk.confirm_apply_to_topics",
+            "topics.bulk.tag_not_allowed_in_category",
+            "topic.feature_topic.already_pinned",
+            "topic.feature_topic.already_pinned_globally",
+            "topic.feature_topic.confirm_pin_globally",
+            "form_kit.errors_summary_title",
         ],
     );
     let can_manage = viewer.can_manage_topic();
@@ -1946,6 +1986,10 @@ pub fn bulk_select_config(
         "nested_replies": viewer.staff
             && settings.get("nested_replies_enabled")?.truthy()
             && !settings.get("nested_replies_default")?.truthy(),
+        // renderTag's class, for the tags a category refuses.
+        "tag_style": settings.get("tag_style")?.to_s(),
+        "fallback_category": fallback_category
+            .map(|(id, link)| serde_json::json!({ "id": id, "link": link })),
         "strings": strings,
     });
     Ok(config.to_string().replace('<', "\\u003c"))
@@ -2931,7 +2975,46 @@ pub async fn latest_page(
             if viewer.can_manage_topic()
                 || (matches!(footer.filter, "new" | "unread") && !rows.is_empty()) =>
         {
-            bulk_select_config(i18n, settings, viewer, footer.filter)?
+            let id = footer
+                .category_id
+                .map(i64::from)
+                .filter(|_| shape.hide_category)
+                .unwrap_or(cx.settings.uncategorized_category_id);
+            let fallback = categories.get(&id).map(|c| {
+                let link = crate::topic_list_view::category_badge_any(&cx, c, true, false);
+                (id, link)
+            });
+            bulk_select_config(i18n, settings, viewer, footer.filter, fallback)?
+        }
+        _ => String::new(),
+    };
+    let bulk_pin_config = match site.viewer.as_ref() {
+        Some(viewer) if viewer.can_manage_topic() => {
+            let timezone: Option<String> = sqlx::query_scalar::<_, Option<String>>(
+                "SELECT o.timezone FROM user_options o JOIN users u ON u.id = o.user_id \
+                 WHERE u.username_lower = $1",
+            )
+            .bind(viewer.username.to_lowercase())
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten();
+            let mut config = crate::penalize_view::config(
+                i18n,
+                settings,
+                &crate::penalize_view::Assets {
+                    base_path: &site.base_path,
+                },
+                timezone.as_deref(),
+                None,
+            );
+            // The chat drawer brings the page its own.
+            if !site.chrome.chat_drawer_outlet || site.chrome.chat_drawer.is_empty() {
+                config.push_str(&format!(
+                    "<script type=\"application/json\" id=\"dialog-strings\">{}</script>",
+                    dialog_strings(i18n)
+                ));
+            }
+            config
         }
         _ => String::new(),
     };
@@ -2977,6 +3060,7 @@ pub async fn latest_page(
         new_list_controls,
         dismiss_strings,
         bulk_select_config,
+        bulk_pin_config,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
