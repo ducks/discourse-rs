@@ -232,6 +232,52 @@
     sendBeaconPageview(preNavigationUrl);
   }
 
+  // The live stream redraws rows out of band, most naming the element
+  // they replace (hx-swap-oob="outerHTML:<selector>"). Such a row the
+  // page does
+  // not hold (a sidebar tag that became a top tag after the page was
+  // drawn, a post not loaded) has nowhere to go, and htmx logs
+  // htmx:oobErrorNoTarget for it: such rows are taken out of the message
+  // first. The live stream's element names this extension (macros.html);
+  // htmx loads after this script, so it is defined once the page is in.
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!window.htmx || !htmx.defineExtension) {
+      return;
+    }
+    htmx.defineExtension("live-rows", {
+      transformResponse: function (text, xhr) {
+        if (xhr || typeof text !== "string" || text.indexOf("hx-swap-oob") === -1) {
+          return text;
+        }
+        var holder = document.createElement("template");
+        holder.innerHTML = text;
+        var dropped = false;
+        Array.prototype.slice.call(holder.content.children).forEach(function (row) {
+          // Only a replacement: another kind of row may act on what an
+          // earlier row of the same message puts in (the solved status
+          // appended, deleted and appended again).
+          var spec = row.getAttribute("hx-swap-oob") || "";
+          var prefix = "outerHTML:";
+          if (spec.indexOf(prefix) !== 0) {
+            return;
+          }
+          var found = false;
+          try {
+            found = !!document.querySelector(spec.slice(prefix.length));
+          } catch (e) {
+            // A selector this cannot read is htmx's to deal with.
+            found = true;
+          }
+          if (!found) {
+            row.remove();
+            dropped = true;
+          }
+        });
+        return dropped ? holder.innerHTML : text;
+      },
+    });
+  });
+
   // A page is asked for as the browser asks for one: not as XHR, which
   // the server answers with JSON (a member's hx-headers say so for their
   // other requests). The page it leaves is kept for the pages that
