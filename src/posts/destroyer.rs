@@ -370,8 +370,9 @@ async fn decide(
 
 /// `PostDestroyer#destroy`: deleted outright by those who moderate the
 /// topic (or anyone, with delete_removed_posts_after below 1), marked for
-/// deletion when the author removes their own.
-async fn destroy(
+/// deletion when the author removes their own. The caller has asked the
+/// guardian already (topics#destroy, TopicsBulkAction#delete).
+pub async fn destroy(
     pool: &PgPool,
     ctx: &Ctx<'_>,
     guardian: &Guardian,

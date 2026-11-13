@@ -717,6 +717,15 @@ fn cast_bool(value: &str) -> bool {
     )
 }
 
+/// ActiveModel's NUMERIC_REGEX (`/\A\s*[+-]?\d/`): whether the integer
+/// type takes a string for a number.
+fn starts_numeric(value: &str) -> bool {
+    // Ruby's \s: space, \t, \n, \v, \f, \r.
+    let rest = value.trim_start_matches([' ', '\t', '\n', '\x0b', '\x0c', '\r']);
+    let rest = rest.strip_prefix(['+', '-']).unwrap_or(rest);
+    rest.starts_with(|c: char| c.is_ascii_digit())
+}
+
 /// `Topic.visibility_reasons[:bulk_action]`
 const BULK_ACTION: i32 = 5;
 
@@ -764,8 +773,29 @@ impl BulkAction<'_, '_> {
     /// unless asked otherwise, without a bump or the edit rate limit.
     async fn change_category(&mut self) -> Result<Result<(), String>, AppError> {
         let s = self.ctx.settings;
-        let category = self.op("category_id").unwrap_or_default();
-        let category_id = crate::ruby::to_i(&category) as i32;
+        let category = self.op("category_id");
+        let target = category.as_deref().map_or(0, crate::ruby::to_i);
+        // topics.where.not(category_id: category_id): the integer type
+        // serializes a string without a leading number ("", "abc") to NULL,
+        // bound as `category_id != NULL`, which no topic satisfies. With no
+        // param it is `IS NOT NULL`, as `<> 0` is here.
+        if let Some(given) = &category
+            && target == 0
+            && given != "0"
+            && !starts_numeric(given)
+        {
+            return Ok(Ok(()));
+        }
+        // Category.find in can_move_topic_to_category? raises RecordNotFound
+        // for an id past the column's range, as for any missing one.
+        if target > i64::from(i32::MAX) {
+            return Err(Unsupported("a bulk move to a missing category (RecordNotFound)").into());
+        }
+        // Below the range the relation is every topic (`1=1`), messages
+        // included, each raising in the revisor as a negative id does.
+        let Ok(category_id) = i32::try_from(target) else {
+            return Err(Unsupported("a bulk move to a category id out of range").into());
+        };
         let updatable: Vec<i32> = sqlx::query_scalar(
             "SELECT id FROM topics WHERE id = ANY($1) AND deleted_at IS NULL AND category_id <> $2 ORDER BY ctid",
         )
@@ -780,6 +810,8 @@ impl BulkAction<'_, '_> {
                     .fetch_one(&mut *self.conn)
                     .await?;
             if !exists {
+                // Category.find raises inside the hijack, whose rescues
+                // leave RecordNotFound out: a 500 in Rails too.
                 return Err(
                     Unsupported("a bulk move to a missing category (RecordNotFound)").into(),
                 );
@@ -822,6 +854,12 @@ impl BulkAction<'_, '_> {
             .await?;
             if !has_first_post {
                 continue;
+            }
+            if category_id < 0 {
+                // The revisor's category callback: Category.find raises.
+                return Err(
+                    Unsupported("a bulk move to a negative category id (RecordNotFound)").into(),
+                );
             }
             let fields = crate::posting::revise_topic::TopicFields {
                 category_id: Some(category_id),
@@ -963,24 +1001,26 @@ impl BulkAction<'_, '_> {
     }
 
     /// `delete`: each first post the user may delete, through
-    /// PostDestroyer.
+    /// PostDestroyer as topics#destroy runs it, each topic's delete
+    /// committed on its own. Staff and those who moderate the topic delete
+    /// outright (their own topics too, without a staff log); an author
+    /// otherwise marks theirs for deletion.
     async fn delete(&mut self) -> Result<Result<(), String>, AppError> {
         let s = self.ctx.settings;
-        let user_id = self.user()?;
         for topic_id in self.topics().await? {
-            let Some((topic, _)) = self.topic_ctx(topic_id).await? else {
+            let Some((topic, can_see)) = self.topic_ctx(topic_id).await? else {
                 continue;
             };
             if !self.guardian.can_delete_topic(s, &topic)? {
                 continue;
             }
-            let first: Option<(i32, Option<NaiveDateTime>, Option<i32>)> = sqlx::query_as(
-                "SELECT id, deleted_at, user_id FROM posts WHERE topic_id = $1 ORDER BY post_number LIMIT 1",
+            let first: Option<(i32, Option<NaiveDateTime>)> = sqlx::query_as(
+                "SELECT id, deleted_at FROM posts WHERE topic_id = $1 ORDER BY post_number LIMIT 1",
             )
             .bind(topic_id)
             .fetch_optional(&mut *self.conn)
             .await?;
-            let Some((post_id, deleted_at, author)) = first else {
+            let Some((post_id, deleted_at)) = first else {
                 continue;
             };
             if deleted_at.is_some() {
@@ -988,14 +1028,12 @@ impl BulkAction<'_, '_> {
                     Unsupported("bulk deleting a topic whose first post is deleted").into(),
                 );
             }
-            if !self.guardian.is_staff() || author == Some(user_id) {
-                return Err(Unsupported("bulk deleting one's own topics").into());
-            }
-            crate::post_destroyer::destroy_by_staff_in(
-                &mut *self.conn,
+            crate::post_destroyer::destroy(
+                self.pool,
                 self.ctx,
                 self.guardian,
                 post_id,
+                can_see,
                 &crate::post_destroyer::Request {
                     context: None,
                     reviewable_id: None,
