@@ -120,6 +120,7 @@ mod theme_html_pages;
 mod theme_screenshots;
 mod top_hot_lists;
 mod topic_json;
+mod topics_bulk;
 mod tracking_report;
 mod user_activity_pages;
 mod user_avatars;
