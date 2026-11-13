@@ -1044,3 +1044,56 @@ async fn bulk_actions_assign_and_unassign() {
         .await;
     assert_eq!(status, 403);
 }
+
+/// A small action in the assigner's transaction and PostCreator for a new
+/// topic both lock the category's row and the author's user_stats row:
+/// racing them for one user in one category deadlocks unless both take
+/// them in the same order.
+#[tokio::test]
+async fn assigning_races_the_assigners_new_topics_without_deadlock() {
+    const ROUNDS: usize = 30;
+    let db = TestDb::new().await;
+    let st = site(&db).await;
+    add_to_group(&db.pool, STAFF, USER1).await;
+    let category: i32 = sqlx::query_scalar("SELECT category_id FROM topics WHERE id = $1")
+        .bind(TOPIC)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let mut assigner = Client::login(st.clone(), "admin").await;
+    let mut author = Client::login(st.clone(), "admin").await;
+    let mut failed = Vec::new();
+    for round in 0..ROUNDS {
+        // Reassigned every round, so each one adds its small action.
+        let to = if round % 2 == 0 { "user1" } else { "admin" };
+        let topic = json!({
+            "title": format!("Racing the assigner for the category, round {round}"),
+            "raw": format!("A new topic by the assigner while assigning, round {round}."),
+            "category": category,
+        });
+        let (assigned, created) = tokio::join!(
+            assigner.put("/assign/assign.json", assign_body("Topic", TOPIC, to)),
+            author.send(Method::POST, "/posts.json", Some(&topic)),
+        );
+        for (what, (status, body)) in [("assign", assigned), ("topic", created)] {
+            if status != 200 {
+                failed.push(format!("round {round} {what}: {status} {body}"));
+            }
+        }
+    }
+    assert!(
+        failed.is_empty(),
+        "{} of {ROUNDS} rounds failed:\n{}",
+        failed.len(),
+        failed.join("\n")
+    );
+    let (small_actions, topics): (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM posts WHERE topic_id = $1 AND action_code IN ('assigned', 'reassigned')), \
+                (SELECT COUNT(*) FROM topics WHERE title LIKE 'Racing the assigner for the category, round %')",
+    )
+    .bind(TOPIC)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!((small_actions, topics), (ROUNDS as i64, ROUNDS as i64));
+}
