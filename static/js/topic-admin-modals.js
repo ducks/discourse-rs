@@ -185,6 +185,109 @@
 
   // ---- FeatureTopic ----
 
+  // PinOptionSection: its form, the date required in the future, a
+  // confirmation first when asked. `topic` holds the strings; opts:
+  // { stats (the stats paragraph), note, pinMessage, buttonLabel,
+  // confirmMessage(), onPin(until) }. FeatureTopic's and the bulk
+  // actions' BulkPinOptions (topic-list-bulk-select.js).
+  function pinOptionSection(topic, opts) {
+    var m = window.moment;
+    var form = document.createElement("form");
+    form.className = "form-kit feature-section";
+    form.setAttribute("novalidate", "");
+    var summary = document.createElement("div");
+    form.appendChild(summary);
+    var description = document.createElement("div");
+    description.className = "feature-section__description";
+    form.appendChild(description);
+    if (opts.stats) {
+      description.appendChild(opts.stats);
+    }
+    var note = document.createElement("p");
+    note.textContent = opts.note;
+    description.appendChild(note);
+    var pinMessage = document.createElement("p");
+    pinMessage.innerHTML = opts.pinMessage + " " + icon("far-clock");
+    pinMessage.className = "feature-section__pin-message";
+    description.appendChild(pinMessage);
+
+    var value = null;
+    var field = document.createElement("div");
+    field.className = "form-kit__container form-kit__field form-kit__field-custom";
+    field.id = "control-pinUntil";
+    field.dataset.name = "pinUntil";
+    field.dataset.controlType = "custom";
+    field.innerHTML = '<div class="form-kit__container-content"><div class="form-kit__control-custom"></div></div>';
+    description.appendChild(field);
+    dates().draw(field.querySelector(".form-kit__control-custom"), {
+      className: "pin-until",
+      label: "",
+      onChangeInput: function (v) {
+        value = v;
+        if (field.classList.contains("has-error")) {
+          validate();
+        }
+      },
+    });
+    var submit = button("btn-primary form-kit__button", opts.buttonLabel, null, "submit");
+    description.appendChild(submit);
+
+    // validatePinUntil, with FormKit's errors summary and the field's
+    // error.
+    function validate() {
+      var parsed = m(value, dates().FORMAT);
+      var valid = !!value && parsed.isValid() && parsed > m();
+      field.classList.toggle("has-error", !valid);
+      var error = field.querySelector(".form-kit__errors");
+      if (error) {
+        error.remove();
+      }
+      summary.innerHTML = "";
+      summary.className = "";
+      if (!valid) {
+        var message = t(topic, "topic.feature_topic.pin_validation");
+        var title = t(topic, "topic.feature_topic.pin_until");
+        error = document.createElement("p");
+        error.setAttribute("aria-live", "assertive");
+        error.className = "form-kit__errors";
+        error.innerHTML = "<span>" + icon("triangle-exclamation") + " " + escapeHtml(message) + "</span>";
+        field.appendChild(error);
+        summary.className = "form-kit__errors-summary";
+        summary.setAttribute("aria-live", "assertive");
+        summary.innerHTML =
+          '<h2 class="form-kit__errors-summary-title">' +
+          icon("triangle-exclamation") +
+          " " +
+          escapeHtml(tCount(topic, "form_kit.errors_summary_title", 1)) +
+          '</h2><ul class="form-kit__errors-summary-list"><li><a href="#control-pinUntil" rel="noopener noreferrer">' +
+          escapeHtml(title) +
+          "</a>: " +
+          escapeHtml(message) +
+          "</li></ul>";
+      }
+      return valid;
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      if (!validate()) {
+        return;
+      }
+      var confirm = opts.confirmMessage && opts.confirmMessage();
+      if (confirm && Discourse.dialog) {
+        Discourse.dialog.yesNoConfirm({
+          message: confirm,
+          didConfirm: function () {
+            opts.onPin(value);
+          },
+        });
+      } else {
+        opts.onPin(value);
+      }
+    });
+    return form;
+  }
+
   function featureTopic(topic) {
     if (!dates() || !Discourse.modal) {
       return;
@@ -266,104 +369,6 @@
         });
     }
 
-    // PinOptionSection: its form, the date required in the future, a
-    // confirmation first when asked.
-    function pinOptionSection(opts, close) {
-      var form = document.createElement("form");
-      form.className = "form-kit feature-section";
-      form.setAttribute("novalidate", "");
-      var summary = document.createElement("div");
-      form.appendChild(summary);
-      var description = document.createElement("div");
-      description.className = "feature-section__description";
-      form.appendChild(description);
-      if (opts.stats) {
-        description.appendChild(statsParagraph(opts.stats));
-      }
-      description.appendChild(text(opts.note));
-      var pinMessage = paragraph(opts.pinMessage + " " + icon("far-clock"));
-      pinMessage.className = "feature-section__pin-message";
-      description.appendChild(pinMessage);
-
-      var value = null;
-      var field = document.createElement("div");
-      field.className = "form-kit__container form-kit__field form-kit__field-custom";
-      field.id = "control-pinUntil";
-      field.dataset.name = "pinUntil";
-      field.dataset.controlType = "custom";
-      field.innerHTML = '<div class="form-kit__container-content"><div class="form-kit__control-custom"></div></div>';
-      description.appendChild(field);
-      dates().draw(field.querySelector(".form-kit__control-custom"), {
-        className: "pin-until",
-        label: "",
-        onChangeInput: function (v) {
-          value = v;
-          if (field.classList.contains("has-error")) {
-            validate();
-          }
-        },
-      });
-      var submit = button("btn-primary form-kit__button", opts.buttonLabel, null, "submit");
-      description.appendChild(submit);
-
-      // validatePinUntil, with FormKit's errors summary and the field's
-      // error.
-      function validate() {
-        var parsed = m(value, dates().FORMAT);
-        var valid = !!value && parsed.isValid() && parsed > m();
-        field.classList.toggle("has-error", !valid);
-        var error = field.querySelector(".form-kit__errors");
-        if (error) {
-          error.remove();
-        }
-        summary.innerHTML = "";
-        summary.className = "";
-        if (!valid) {
-          var message = t(topic, "topic.feature_topic.pin_validation");
-          var title = t(topic, "topic.feature_topic.pin_until");
-          error = document.createElement("p");
-          error.setAttribute("aria-live", "assertive");
-          error.className = "form-kit__errors";
-          error.innerHTML = "<span>" + icon("triangle-exclamation") + " " + escapeHtml(message) + "</span>";
-          field.appendChild(error);
-          summary.className = "form-kit__errors-summary";
-          summary.setAttribute("aria-live", "assertive");
-          summary.innerHTML =
-            '<h2 class="form-kit__errors-summary-title">' +
-            icon("triangle-exclamation") +
-            " " +
-            escapeHtml(tCount(topic, "form_kit.errors_summary_title", 1)) +
-            '</h2><ul class="form-kit__errors-summary-list"><li><a href="#control-pinUntil" rel="noopener noreferrer">' +
-            escapeHtml(title) +
-            "</a>: " +
-            escapeHtml(message) +
-            "</li></ul>";
-        }
-        return valid;
-      }
-
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        if (!validate()) {
-          return;
-        }
-        var confirm = opts.confirmMessage && opts.confirmMessage();
-        if (confirm && Discourse.dialog) {
-          Discourse.dialog.yesNoConfirm({
-            message: confirm,
-            didConfirm: function () {
-              opts.onPin(value);
-              close();
-            },
-          });
-        } else {
-          opts.onPin(value);
-          close();
-        }
-      });
-      return form;
-    }
-
     Discourse.modal.show({
       className: "feature-topic",
       title: t(topic, "topic.feature_topic.title"),
@@ -394,40 +399,36 @@
           body.appendChild(section);
         } else {
           body.appendChild(
-            pinOptionSection(
-              {
-                buttonLabel: t(topic, "topic.feature.pin"),
-                note: t(topic, "topic.feature_topic.pin_note"),
-                pinMessage: t(topic, "topic.feature_topic.pin", { categoryLink: categoryLink }),
-                stats: alreadyPinnedMessage,
-                onPin: function (until) {
-                  saveStatus("pinned", true, until);
-                },
+            pinOptionSection(topic, {
+              buttonLabel: t(topic, "topic.feature.pin"),
+              note: t(topic, "topic.feature_topic.pin_note"),
+              pinMessage: t(topic, "topic.feature_topic.pin", { categoryLink: categoryLink }),
+              stats: statsParagraph(alreadyPinnedMessage),
+              onPin: function (until) {
+                saveStatus("pinned", true, until);
+                close();
               },
-              close
-            )
+            })
           );
           if (canPinGlobally) {
             body.appendChild(document.createElement("hr"));
             body.appendChild(
-              pinOptionSection(
-                {
-                  buttonLabel: t(topic, "topic.feature.pin_globally"),
-                  note: t(topic, "topic.feature_topic.global_pin_note"),
-                  pinMessage: t(topic, "topic.feature_topic.pin_globally"),
-                  stats: pinGloballyStatsMessage,
-                  confirmMessage: function () {
-                    if (stats && stats.pinned_globally_count >= MAX_GLOBALLY_PINNED_TOPICS) {
-                      return tCount(topic, "topic.feature_topic.confirm_pin_globally", stats.pinned_globally_count);
-                    }
-                    return null;
-                  },
-                  onPin: function (until) {
-                    saveStatus("pinned_globally", true, until);
-                  },
+              pinOptionSection(topic, {
+                buttonLabel: t(topic, "topic.feature.pin_globally"),
+                note: t(topic, "topic.feature_topic.global_pin_note"),
+                pinMessage: t(topic, "topic.feature_topic.pin_globally"),
+                stats: statsParagraph(pinGloballyStatsMessage),
+                confirmMessage: function () {
+                  if (stats && stats.pinned_globally_count >= MAX_GLOBALLY_PINNED_TOPICS) {
+                    return tCount(topic, "topic.feature_topic.confirm_pin_globally", stats.pinned_globally_count);
+                  }
+                  return null;
                 },
-                close
-              )
+                onPin: function (until) {
+                  saveStatus("pinned_globally", true, until);
+                  close();
+                },
+              })
             );
           }
         }
@@ -1433,8 +1434,11 @@
     changeTimestamp: changeTimestamp,
     slowMode: slowMode,
     makePublic: makePublic,
-    // For the MoveToTopic modal (select-posts.js).
+    // For the MoveToTopic modal (select-posts.js) and BulkTopicActions
+    // (topic-list-bulk-select.js).
     categoryChooser: categoryChooser,
     floatBody: floatBody,
+    pinOptionSection: pinOptionSection,
+    MAX_GLOBALLY_PINNED_TOPICS: MAX_GLOBALLY_PINNED_TOPICS,
   };
 })();

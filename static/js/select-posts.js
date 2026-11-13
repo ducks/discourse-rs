@@ -897,24 +897,11 @@
     // The composer's tag chooser, copied; nothing where the viewer has
     // none.
     function tagField(form, withCategory) {
-      var source = document.querySelector("#reply-control details.mini-tag-chooser");
-      if (!source || !Discourse.miniTagChooser) {
+      var details = Discourse.miniTagChooser && Discourse.miniTagChooser.copy({ allowAny: false });
+      if (!details) {
         return;
       }
       form.appendChild(el("<label>" + escapeHtml(s["tagging.tags"]) + "</label>"));
-      var details = source.cloneNode(true);
-      details.open = false;
-      details.classList.remove("is-expanded");
-      details.removeAttribute("category-id");
-      var options = {};
-      try {
-        options = JSON.parse(details.dataset.options || "{}");
-      } catch (e) {}
-      options.allowAny = false;
-      details.dataset.options = JSON.stringify(options);
-      var body = details.querySelector(".select-kit-body");
-      body.innerHTML = "";
-      body.removeAttribute("style");
       var chooser = Discourse.miniTagChooser(details, {
         categoryId: function () {
           return withCategory && state.categoryId ? String(state.categoryId) : "";

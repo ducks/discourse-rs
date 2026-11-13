@@ -63,8 +63,10 @@
 {% if !top_lists.is_empty() %}<script src="{{ crate::assets::url(base_path, "top-period.js") }}"></script>{% endif %}
 {% if self.empty_filter() %}<script src="{{ crate::assets::url(base_path, "empty-topic-filter.js") }}"></script>{% endif %}
 {# BulkSelectHelper for who can bulk select the list (canBulkSelect);
-    BulkTopicActions' CategoryChooser is topic-admin-modals.js'. -#}
-{% if bulk_select() %}<script type="application/json" id="topic-bulk-select">{{ bulk_select_config|safe }}</script><script src="{{ crate::assets::url(base_path, "topic-list-bulk-select.js") }}"></script>{% endif %}{% if bulk_actions() %}<script src="{{ crate::assets::url(base_path, "topic-admin-modals.js") }}"></script>{% endif %}{% if !dismiss_strings.is_empty() %}<script src="{{ crate::assets::url(base_path, "topic-dismiss.js") }}" data-topic-dismiss data-strings="{{ dismiss_strings }}"></script>{% endif %}
+    BulkTopicActions' CategoryChooser and PinOptionSection are
+    topic-admin-modals.js', the latter's date input penalize-user.js'
+    and its confirmation dialog.js'. -#}
+{% if bulk_select() %}<script type="application/json" id="topic-bulk-select">{{ bulk_select_config|safe }}</script><script src="{{ crate::assets::url(base_path, "topic-list-bulk-select.js") }}"></script>{% endif %}{% if bulk_actions() %}{{ bulk_pin_config|safe }}<script src="{{ crate::assets::url(base_path, "dialog.js") }}"></script><script src="{{ crate::assets::url(base_path, "penalize-user.js") }}"></script><script src="{{ crate::assets::url(base_path, "topic-admin-modals.js") }}"></script>{% endif %}{% if !dismiss_strings.is_empty() %}<script src="{{ crate::assets::url(base_path, "topic-dismiss.js") }}" data-topic-dismiss data-strings="{{ dismiss_strings }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream, and the site banner's messages for anyone. -#}
