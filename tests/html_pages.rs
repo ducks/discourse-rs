@@ -2072,6 +2072,92 @@ async fn topic_page_draws_the_topic_timer_notice() {
     assert_eq!(timer_info(&admin.page(path).await), EMPTY);
 }
 
+// SlowModeInfo under the posts (components/slow-mode-info.gjs), before
+// TopicTimerInfo: the wait between posts for every viewer of an open
+// topic in slow mode, the remove button for who may manage topics.
+#[tokio::test]
+async fn topic_page_draws_the_slow_mode_notice() {
+    const OPEN: &str = "<div class=\"topic-status-info\">";
+    fn bottom(html: &str) -> &str {
+        let open = "<div class=\"loading-container\">";
+        let rest = &html[html.rfind(open).expect("the posts' last container") + open.len()..];
+        rest[..rest.find("</section>").unwrap()].trim_end()
+    }
+    let path = "/t/parity-fixture-replies-and-posters/35";
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(st.clone(), "admin").await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let set = async |sql: &str| {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    };
+    assert!(!user1.page(path).await.contains(OPEN));
+    assert!(!admin.page(path).await.contains(OPEN));
+
+    set("UPDATE topics SET slow_mode_seconds = 900 WHERE id = 35").await;
+    let hourglass = r##"<svg class="fa d-icon d-icon-hourglass-start svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#hourglass-start"></use></svg>"##;
+    let heading = format!(
+        "{OPEN}<h3 class=\"slow-mode-heading\"><span>{hourglass} Please wait 15 minutes between your posts in this topic</span>"
+    );
+    let plain = format!("{heading}</h3></div><div class=\"topic-timer-info\"></div></div>");
+    let (_, _, html) = get(&db.pool, path).await;
+    assert_eq!(bottom(&html), plain);
+    assert_eq!(bottom(&user1.page(path).await), plain);
+    // canManageTopic: the trash can.
+    let html = admin.page(path).await;
+    let info = bottom(&html);
+    assert!(info.starts_with(&heading), "{info}");
+    let rest = &info[heading.len()..];
+    assert!(
+        rest.starts_with(r#"<button class="btn no-text btn-icon slow-mode-remove" type="button"><svg class="fa d-icon d-icon-trash-can "#),
+        "{rest}"
+    );
+    assert!(
+        rest.ends_with("</button></h3></div><div class=\"topic-timer-info\"></div></div>"),
+        "{rest}"
+    );
+    assert_eq!(info.matches("<button").count(), 1);
+    // A leader manages topics too.
+    set("UPDATE users SET trust_level = 4 WHERE username = 'user1'").await;
+    assert_eq!(
+        user1.page(path).await.matches("slow-mode-remove").count(),
+        1
+    );
+    set("UPDATE users SET trust_level = 1 WHERE username = 'user1'").await;
+
+    // durationTextFromSeconds, and the notice before the timer's.
+    set("INSERT INTO topic_timers (execute_at, status_type, user_id, timerable_id, based_on_last_post, \
+           public_type, created_at, updated_at, type) \
+         VALUES (now() + interval '3 days 2 hours', 1, 1, 35, FALSE, TRUE, now(), now(), 'TopicTimer')")
+    .await;
+    for (seconds, text) in [(30, "a few seconds"), (3600, "an hour"), (86400, "a day")] {
+        set(&format!(
+            "UPDATE topics SET slow_mode_seconds = {seconds} WHERE id = 35"
+        ))
+        .await;
+        let html = user1.page(path).await;
+        let info = bottom(&html);
+        assert!(
+            info.contains(&format!("</svg> Please wait {text} between your posts in this topic</span></h3></div><div class=\"topic-timer-info\" data-execute-at=")),
+            "{info}"
+        );
+        assert!(!info.contains("slow-mode-remove"), "{info}");
+    }
+
+    // A closed topic, and no seconds: nothing.
+    set("DELETE FROM topic_timers WHERE timerable_id = 35").await;
+    set("UPDATE topics SET closed = TRUE WHERE id = 35").await;
+    assert_eq!(
+        bottom(&admin.page(path).await),
+        "<div class=\"topic-timer-info\"></div></div>"
+    );
+    set("UPDATE topics SET closed = FALSE, slow_mode_seconds = 0 WHERE id = 35").await;
+    assert_eq!(
+        bottom(&admin.page(path).await),
+        "<div class=\"topic-timer-info\"></div></div>"
+    );
+}
+
 /// The page's `<script type="application/json" id="...">` block, parsed.
 fn json_block(html: &str, id: &str) -> Option<serde_json::Value> {
     let open = format!("<script type=\"application/json\" id=\"{id}\">");

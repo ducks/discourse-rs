@@ -3637,6 +3637,36 @@ fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> 
     )
 }
 
+/// SlowModeInfo (components/slow-mode-info.gjs) under the posts, before
+/// TopicTimerInfo: the wait between posts of an open topic in slow mode,
+/// and for who may manage topics (canManageTopic) the button that turns
+/// it off (static/js/topic-admin-menu.js). Empty as Ember leaves it.
+pub fn slow_mode_info(cx: &PostContext, view: &Value) -> String {
+    let l = cx.list;
+    let seconds = view["slow_mode_seconds"].as_i64().unwrap_or(0);
+    if seconds <= 0 || view["closed"] == true {
+        return String::new();
+    }
+    let notice = t_with(
+        l,
+        "topic.slow_mode_notice.duration",
+        &[("duration", &crate::viewer_dates::humanize_seconds(seconds))],
+    );
+    let remove = if cx.topic.menus.can_manage_topic {
+        format!(
+            "<button class=\"btn no-text btn-icon slow-mode-remove\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            d_icon("trash-can", None)
+        )
+    } else {
+        String::new()
+    };
+    format!(
+        "<div class=\"topic-status-info\"><h3 class=\"slow-mode-heading\"><span>{} {}</span>{remove}</h3></div>",
+        d_icon("hourglass-start", None),
+        escape(&notice)
+    )
+}
+
 /// TopicTimerInfo (components/topic-timer-info.gjs) under the posts: the
 /// public timer's notice, its title the time in full, and for who may set
 /// timers the edit and remove buttons (static/js/topic-admin-menu.js).

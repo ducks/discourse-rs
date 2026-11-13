@@ -472,6 +472,27 @@
     }
   });
 
+  // SlowModeInfo's button under the posts, for who may manage topics:
+  // disableSlowMode (Topic.setSlowMode with no seconds), the page drawn
+  // again where Ember empties the notice. popupAjaxError on a failure.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("#topic .topic-status-info button.slow-mode-remove");
+    var topic = button && topicData();
+    if (!topic) {
+      return;
+    }
+    request("PUT", "/t/" + topic.id + "/slow_mode", { seconds: "0" })
+      .then(function (r) {
+        if (!r.ok) {
+          return popupError(r);
+        }
+        location.reload();
+      })
+      .catch(function (e) {
+        console.error(e);
+      });
+  });
+
   document.addEventListener("click", function (event) {
     if (!window.Discourse || !Discourse.float) {
       return;
