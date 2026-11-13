@@ -3821,10 +3821,12 @@ route table has been made, so this list may be short.
     of it: the keyboard shortcuts pause, the notices' live redraw),
     selecting posts (the mode, its
     controls, SelectedPosts, change owner and delete with all selected
-    are `feat/select-posts`, static/js/select-posts.js; left of it,
-    each refused by name: DELETE /posts/destroy_many, PUT
-    /posts/merge_posts and GET /posts/:id/reply-ids are not routed,
-    MoveToTopic's modal is not built, Shift+B) and the nested replies
+    are `feat/select-posts`, static/js/select-posts.js; DELETE
+    /posts/destroy_many, PUT /posts/merge_posts and GET
+    /posts/:id/reply-ids are ported, `feat/posts-bulk-endpoints`, and
+    wired to delete selected, merge selected posts and select +replies,
+    `feat/select-posts-actions`; left of it: MoveToTopic's modal,
+    refused by name, and Shift+B) and the nested replies
     toggle (PUT
     /n/:slug/:id/toggle)
     194c2. ~~`feat/site-banner`~~ (done) S: the banner topic drawn where
