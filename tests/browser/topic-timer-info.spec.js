@@ -3,7 +3,7 @@
 // viewer, its time left and title in the browser's zone, the pencil and
 // the trash can for who may set timers, and the notice going with its
 // time. Each change is checked in topic_timers.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, topicAdminMenu } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
 const MODAL = ".d-modal.edit-topic-timer-modal";
@@ -37,7 +37,7 @@ test("a close timer's notice for staff, a member and a visitor; the pencil edits
   await expect(page.locator(INFO)).toBeEmpty();
 
   // Set through the modal: the page is drawn again with the notice.
-  await page.locator(".topic-admin-menu-trigger:visible").first().click();
+  await topicAdminMenu(page);
   await page.locator(`${MENU} .admin-topic-timer-update .btn`).click();
   const modal = page.locator(MODAL);
   await modal.locator("#tap_tile_tomorrow").click();

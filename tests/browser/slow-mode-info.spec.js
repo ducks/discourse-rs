@@ -3,7 +3,7 @@
 // open topic in slow mode, before the topic timer's notice, and the
 // trash can for who may manage topics, which turns slow mode off. Each
 // change is checked in the topics row.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, topicAdminMenu } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
 const MODAL = ".d-modal.edit-slow-mode-modal";
@@ -38,7 +38,7 @@ test("slow mode's notice for staff, a member and a visitor; the trash can turns 
   await expect(page.locator(INFO)).toHaveCount(0);
 
   // Set through EditSlowMode: the page is drawn again with the notice.
-  await page.locator(".topic-admin-menu-trigger:visible").first().click();
+  await topicAdminMenu(page);
   await page.locator(`${MENU} .topic-admin-slow-mode .btn`).click();
   const modal = page.locator(MODAL);
   await modal.locator(".slow-mode-type summary").click();

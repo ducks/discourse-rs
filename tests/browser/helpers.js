@@ -181,6 +181,21 @@ function member() {
   return { name, id };
 }
 
+// Opens the topic admin menu (the first trigger in sight: the timeline's
+// on a wide window) and waits out DMenu's opening animation (float-down,
+// 250ms). Playwright retries a click on an item that still moves, and
+// its fourth try first scrolls the item to the top of the window: past
+// the timeline's dock the trigger, then the menu, jump a frame later,
+// between the click's aim and its press or its press and its release,
+// and the click lands on no item. Returns the menu.
+async function topicAdminMenu(page) {
+  await page.locator(".topic-admin-menu-trigger:visible").first().click();
+  const menu = page.locator(".topic-admin-menu-content");
+  await base.expect(menu).toBeVisible();
+  await menu.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+  return menu;
+}
+
 // A label for what a test writes, unique across runs and workers.
 function label(what) {
   return `${what} ${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
@@ -192,4 +207,4 @@ function asset(rel) {
   return fs.readFileSync(path.join(ROOT, "static", rel), "utf8");
 }
 
-module.exports = { test, expect: base.expect, login, api, topic, sql, label, member, asset, PASSWORD };
+module.exports = { test, expect: base.expect, login, api, topic, sql, label, member, asset, topicAdminMenu, PASSWORD };
