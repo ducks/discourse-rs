@@ -1,5 +1,6 @@
-//! Port of PostsController#destroy and #recover, and TopicsController#destroy:
-//! DELETE /posts/:id, PUT /posts/:post_id/recover, DELETE /t/:id.
+//! Port of PostsController#destroy, #destroy_many and #recover, and
+//! TopicsController#destroy: DELETE /posts/:id, DELETE /posts/destroy_many,
+//! PUT /posts/:post_id/recover, DELETE /t/:id.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -26,13 +27,13 @@ fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
 
 /// What the shared front lets through: the params, or the response that
 /// ends the request.
-enum Front {
+pub(super) enum Front {
     Params(Map<String, Value>),
     Stop(Response),
 }
 
 /// The shared front: params, CSRF and requires_login.
-fn front(
+pub(super) fn front(
     state: &AppState,
     guardian: &crate::guardian::Guardian,
     headers: &HeaderMap,
@@ -233,4 +234,135 @@ pub async fn destroy_topic(
             .into_response(),
         Outcome::RateLimited(refused) => refused.into_response(&state.i18n),
     })
+}
+
+/// A list param's members as `to_i` has them; ids no post could have are
+/// dropped.
+pub(super) fn ids_of(list: &[Value], what: &'static str) -> Result<Vec<i32>, Unsupported> {
+    let mut ids = Vec::with_capacity(list.len());
+    for item in list {
+        let item = params::scalar(item).ok_or(Unsupported(what))?;
+        if let Ok(id) = i32::try_from(crate::ruby::to_i(&item)) {
+            ids.push(id);
+        }
+    }
+    Ok(ids)
+}
+
+/// DELETE /posts/destroy_many(.json)
+pub async fn destroy_many(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = match front(&state, &guardian, &headers, &uri, &body, "DELETE") {
+        Front::Params(p) => p,
+        Front::Stop(response) => return Ok(response),
+    };
+    // params.require(:post_ids), then post_ids_including_replies:
+    // params[:post_ids].map(&:to_i)
+    let mut post_ids = match p.get("post_ids") {
+        None | Some(Value::Null) => return Ok(super::accounts::param_missing("post_ids")),
+        Some(Value::String(s)) if s.is_empty() => {
+            return Ok(super::accounts::param_missing("post_ids"));
+        }
+        Some(Value::Array(list)) if list.is_empty() => {
+            return Ok(super::accounts::param_missing("post_ids"));
+        }
+        Some(Value::Array(list)) => ids_of(list, "post_ids holding lists or hashes")?,
+        Some(_) => {
+            return Err(
+                Unsupported("post_ids that are not a list (NoMethodError in Rails)").into(),
+            );
+        }
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    // PostReply.where(post_id: params[:reply_post_ids]).pluck(:reply_post_id)
+    let parents = match p.get("reply_post_ids") {
+        None | Some(Value::Null | Value::Bool(false)) => None,
+        Some(Value::Array(list)) => Some(ids_of(list, "reply_post_ids holding lists or hashes")?),
+        Some(Value::Object(_)) => return Err(Unsupported("reply_post_ids as a hash").into()),
+        Some(one) => Some(ids_of(
+            std::slice::from_ref(one),
+            "reply_post_ids as a hash",
+        )?),
+    };
+    if let Some(parents) = parents {
+        let replies: Vec<i32> =
+            sqlx::query_scalar("SELECT reply_post_id FROM post_replies WHERE post_id = ANY($1)")
+                .bind(&parents)
+                .fetch_all(&mut *conn)
+                .await?;
+        post_ids.extend(replies);
+    }
+    // Post.where(id:).order(:id)
+    let posts: Vec<(i32, i32)> = sqlx::query_as(
+        "SELECT id, topic_id FROM posts WHERE id = ANY($1) AND deleted_at IS NULL ORDER BY id",
+    )
+    .bind(&post_ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    if posts.is_empty() {
+        return Ok(super::search::invalid_parameters(&state, "post_ids"));
+    }
+    // guardian.ensure_can_delete_post_or_topic!(p), each before any goes.
+    let mut sees = Vec::with_capacity(posts.len());
+    for &(id, topic_id) in &posts {
+        match post_destroyer::can_delete(&mut conn, &ctx, &guardian, id, topic_id, true).await? {
+            Some(can_see_topic) => sees.push(can_see_topic),
+            None => return Ok(super::search::invalid_access(&state)),
+        }
+    }
+    let mut prepared = Vec::with_capacity(posts.len());
+    for (&(id, _), &can_see_topic) in posts.iter().zip(&sees) {
+        prepared
+            .push(post_destroyer::prepare(&mut conn, &ctx, &guardian, id, can_see_topic).await?);
+    }
+    drop(conn);
+    // Post.transaction. `defer_flags` (agree_with_first_reply_flag) only
+    // reaches a post with a pending flag, which the destroyer refuses.
+    let mut tx = state.pool.begin().await?;
+    let held = post_destroyer::Deferred::default();
+    let req = Request {
+        context: None,
+        reviewable_id: None,
+        deferred: Some(&held),
+    };
+    for prepared in &prepared {
+        post_destroyer::destroy_prepared(&mut tx, &ctx, &guardian, prepared, &req).await?;
+    }
+    for (name, args) in held
+        .into_inner()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+    {
+        crate::jobs::enqueue(&mut tx, name, args).await?;
+    }
+    tx.commit().await?;
+    // DiscourseEvent :posts_destroyed: nothing listens.
+    Ok(StatusCode::OK.into_response())
+}
+
+/// Another verb on a collection route's path (DELETE /posts/merge_posts):
+/// Rails routes it to posts#destroy with the name as `:id`.
+pub async fn destroy_named(
+    state: State<AppState>,
+    guardian: AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let id = super::posts::last_segment(&uri);
+    destroy_post(state, guardian, Path(id), headers, uri, body).await
 }

@@ -3,6 +3,7 @@
 pub mod actions;
 pub mod admin;
 pub mod destroyer;
+pub mod merger;
 pub mod mover;
 pub mod owner_changer;
 pub mod view;

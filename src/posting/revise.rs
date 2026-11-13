@@ -63,6 +63,9 @@ pub struct Changes {
     /// `reply_to_post_number:`, when posts#update has the key: the post
     /// replied to, None for none.
     pub reply_to_post_number: Option<Option<i32>>,
+    /// `revise!`'s block as PostMerger gives it: the posts merged in,
+    /// destroyed in the revision's transaction once the post is revised.
+    pub merged: Vec<crate::post_destroyer::Prepared>,
 }
 
 #[derive(Debug)]
@@ -840,6 +843,25 @@ pub async fn revise(
         if let Err(refused) = limiter.performed(pool, true).await? {
             tx.rollback().await?;
             return Ok(Outcome::RateLimited(refused));
+        }
+    }
+    // `yield if block_given?`: PostMerger's destroys, whose after-commit
+    // jobs go out with the revision's.
+    if !changes.merged.is_empty() {
+        let held = crate::post_destroyer::Deferred::default();
+        let req = crate::post_destroyer::Request {
+            context: None,
+            reviewable_id: None,
+            deferred: Some(&held),
+        };
+        for prepared in &changes.merged {
+            crate::post_destroyer::destroy_prepared(&mut tx, ctx, editor, prepared, &req).await?;
+        }
+        for (name, args) in held
+            .into_inner()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+        {
+            deferred.push(name, args);
         }
     }
     // revise_topic: a first post's excerpt.

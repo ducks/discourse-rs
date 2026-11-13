@@ -820,3 +820,96 @@ pub async fn raw(
         .await?;
     Ok(([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], raw).into_response())
 }
+
+/// GET /posts/:id/reply-ids(.json) (posts#reply_ids): `Post#reply_ids`,
+/// the replies to the post and theirs up to MAX_REPLY_LEVEL deep, each
+/// with its level, by id. A post that replies to more than one post is
+/// left out (only_replies_to_single_post), as is one `Post.secured` hides.
+pub async fn reply_ids(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    /// `Post::MAX_REPLY_LEVEL`
+    const MAX_REPLY_LEVEL: i32 = 1000;
+    let Ok(post_id) = strip_format(&id).parse::<i32>() else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cook_host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &cook_host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let Some(access) =
+        revisions::find_post_with_deleted(&mut conn, &ctx, &guardian, post_id).await?
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let replies: Vec<(i32, i32)> = sqlx::query_as(
+        "WITH RECURSIVE breadcrumb(id, level) AS ( \
+           SELECT $1::int, 0 \
+           UNION \
+           SELECT reply_post_id, level + 1 FROM post_replies AS r \
+             JOIN posts AS p ON p.id = reply_post_id \
+             JOIN breadcrumb AS b ON (r.post_id = b.id) \
+           WHERE r.post_id <> r.reply_post_id AND b.level < $2 AND p.topic_id = $3 \
+         ), breadcrumb_with_count AS ( \
+           SELECT id, level, COUNT(*) AS count FROM post_replies AS r \
+             JOIN breadcrumb AS b ON (r.reply_post_id = b.id) \
+           WHERE r.reply_post_id <> r.post_id GROUP BY id, level \
+         ) \
+         SELECT b.id, MIN(b.level) FROM breadcrumb_with_count b JOIN posts p ON p.id = b.id \
+         WHERE b.level > 0 AND b.count = 1 AND p.deleted_at IS NULL AND p.post_type = ANY($4) \
+         GROUP BY b.id ORDER BY b.id",
+    )
+    .bind(post_id)
+    .bind(MAX_REPLY_LEVEL)
+    .bind(access.topic_id)
+    .bind(guardian.visible_post_types(&settings)?)
+    .fetch_all(&mut *conn)
+    .await?;
+    let replies: Vec<Value> = replies
+        .into_iter()
+        .map(|(id, level)| json!({ "id": id, "level": level }))
+        .collect();
+    Ok(Json(replies).into_response())
+}
+
+/// The path's last segment: the name a collection route (`merge_posts`)
+/// is to the member routes Rails gives its other verbs to.
+pub(super) fn last_segment(uri: &Uri) -> String {
+    uri.path()
+        .rsplit('/')
+        .next()
+        .unwrap_or_default()
+        .to_string()
+}
+
+/// GET on a collection route's path: posts#show with the name as `:id`.
+pub async fn show_named(
+    state: State<AppState>,
+    guardian: AuthGuardian,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let id = last_segment(&uri);
+    show(state, guardian, Path(id), uri).await
+}
+
+/// PUT on another collection route's path: posts#update with the name as
+/// `:id`.
+pub async fn update_named(
+    state: State<AppState>,
+    guardian: AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let id = last_segment(&uri);
+    update(state, guardian, Path(id), headers, uri, body).await
+}

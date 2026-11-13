@@ -314,22 +314,26 @@ pub async fn destroy_by_staff(
     destroy(pool, ctx, guardian, post_id, true, req).await
 }
 
-/// `PostDestroyer#destroy`: deleted outright by those who moderate the
-/// topic (or anyone, with delete_removed_posts_after below 1), marked for
-/// deletion when the author removes their own.
-async fn destroy(
-    pool: &PgPool,
+/// What `PostDestroyer#destroy` settles before it writes.
+struct Decided {
+    post: Post,
+    topic: Topic,
+    /// perform_delete, else mark_for_deletion.
+    perform: bool,
+    should_reset_bumped_at: bool,
+}
+
+async fn decide(
+    conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     post_id: i32,
     can_see_topic: bool,
-    req: &Request<'_>,
-) -> Result<(), AppError> {
+) -> Result<Decided, AppError> {
     let s = ctx.settings;
     let user = guardian.user().ok_or(Unsupported("deleting anonymously"))?;
-    let mut conn = pool.acquire().await?;
-    let post = load_post(&mut conn, post_id).await?;
-    let topic = load_topic(&mut conn, post.topic_id).await?;
+    let post = load_post(&mut *conn, post_id).await?;
+    let topic = load_topic(&mut *conn, post.topic_id).await?;
     let should_reset_bumped_at = topic.highest_post_number == post.post_number
         && post.post_number != 1
         && post.post_type != post_types::WHISPER;
@@ -343,7 +347,7 @@ async fn destroy(
         // Rails does nothing here; the guardian lets no one else through.
         return Err(Unsupported("deleting another's post without moderating the topic").into());
     }
-    refuse_unported_deletion(&mut conn, &post, &topic).await?;
+    refuse_unported_deletion(&mut *conn, &post, &topic).await?;
     // resolve_reviewables_for_author_deletion
     if own {
         let pending: bool = sqlx::query_scalar(
@@ -356,25 +360,137 @@ async fn destroy(
             return Err(Unsupported("authors deleting posts under review").into());
         }
     }
+    Ok(Decided {
+        post,
+        topic,
+        perform,
+        should_reset_bumped_at,
+    })
+}
+
+/// `PostDestroyer#destroy`: deleted outright by those who moderate the
+/// topic (or anyone, with delete_removed_posts_after below 1), marked for
+/// deletion when the author removes their own.
+async fn destroy(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    can_see_topic: bool,
+    req: &Request<'_>,
+) -> Result<(), AppError> {
+    let user = guardian.user().ok_or(Unsupported("deleting anonymously"))?;
+    let mut conn = pool.acquire().await?;
+    let decided = decide(&mut conn, ctx, guardian, post_id, can_see_topic).await?;
     drop(conn);
 
-    if !perform {
-        mark_for_deletion(pool, ctx, guardian, &post).await?;
+    if !decided.perform {
+        mark_for_deletion(pool, ctx, guardian, &decided.post).await?;
     }
     let mut tx = pool.begin().await?;
     finish(
         &mut tx,
         ctx,
         user.id,
-        &post,
-        &topic,
+        &decided.post,
+        &decided.topic,
         req,
-        perform,
-        should_reset_bumped_at,
+        decided.perform,
+        decided.should_reset_bumped_at,
     )
     .await?;
     tx.commit().await?;
     Ok(())
+}
+
+/// A destroy settled, with its post and topic as read then. A batch
+/// (posts#destroy_many, PostMerger) prepares all of its posts before the
+/// first goes, as Rails holds each post and `post.topic` from before.
+pub struct Prepared(Decided);
+
+/// `guardian.can_delete_post_or_topic?(post)` for a live post (with
+/// `or_topic` false `can_delete_post?`, which refuses a first post):
+/// whether the user sees its topic when they may, None when they may not.
+pub async fn can_delete(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    topic_id: i32,
+    or_topic: bool,
+) -> Result<Option<bool>, AppError> {
+    use crate::topic_guardian::{PostCtx, TopicCtx};
+    let s = ctx.settings;
+    let Some(post) = PostCtx::load(&mut *conn, post_id).await? else {
+        return Ok(None);
+    };
+    let Some(topic) = TopicCtx::load(&mut *conn, s, guardian, topic_id).await? else {
+        return Ok(None);
+    };
+    if post.is_first_post() {
+        // post.topic && can_delete_topic?(post.topic): a trashed topic is
+        // no topic to its post.
+        if !or_topic || topic.trashed() || !guardian.can_delete_topic(s, &topic)? {
+            return Ok(None);
+        }
+    } else if topic.trashed() {
+        // Without `post.topic` only an admin still sees the post, whose
+        // destroy then skips what it does to the topic.
+        if guardian.is_admin() {
+            return Err(Unsupported("deleting a post of a deleted topic").into());
+        }
+        return Ok(None);
+    }
+    let secure = guardian.secure_category_ids(&mut *conn, s).await?;
+    let can_see_topic = guardian.can_see_topic(s, &topic, true, &secure)?;
+    if !post.is_first_post() {
+        let can_see_post = guardian.can_see_post(s, &post, can_see_topic)?;
+        if !guardian.can_delete_post(s, &topic, &post, can_see_post)? {
+            return Ok(None);
+        }
+    }
+    Ok(Some(can_see_topic))
+}
+
+/// `PostDestroyer#destroy` up to its writes, for a destroy on the
+/// caller's transaction. Marking an author's own post for deletion revises
+/// it, which is not ported inside a transaction.
+pub async fn prepare(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    can_see_topic: bool,
+) -> Result<Prepared, AppError> {
+    let decided = decide(conn, ctx, guardian, post_id, can_see_topic).await?;
+    if !decided.perform {
+        return Err(Unsupported("marking an author's post for deletion in a batch").into());
+    }
+    Ok(Prepared(decided))
+}
+
+/// The rest of a prepared `PostDestroyer#destroy`, on the caller's
+/// transaction.
+pub async fn destroy_prepared(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    prepared: &Prepared,
+    req: &Request<'_>,
+) -> Result<(), AppError> {
+    let user = guardian.user().ok_or(Unsupported("deleting anonymously"))?;
+    let decided = &prepared.0;
+    finish(
+        conn,
+        ctx,
+        user.id,
+        &decided.post,
+        &decided.topic,
+        req,
+        decided.perform,
+        decided.should_reset_bumped_at,
+    )
+    .await
 }
 
 /// `PostDestroyer.new(staff, post, context:, reviewable_id:).destroy` on

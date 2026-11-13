@@ -43,6 +43,7 @@ mod pm_invite;
 mod post_actions;
 mod post_admin;
 mod post_destroy;
+mod post_merge;
 mod post_voting;
 mod posts;
 mod presence;
@@ -2709,6 +2710,34 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/posts/{id}/pending.json", get(user_activity::pending))
         .route("/posts/{id}/recover", put(post_destroy::recover_post))
         .route("/posts/{id}/recover.json", put(post_destroy::recover_post))
+        // posts' collection routes, which Rails matches before `:id`: the
+        // other verbs on their paths reach the member actions.
+        .route(
+            "/posts/destroy_many",
+            get(posts::show_named)
+                .put(posts::update_named)
+                .delete(post_destroy::destroy_many),
+        )
+        .route(
+            "/posts/destroy_many.json",
+            get(posts::show_named)
+                .put(posts::update_named)
+                .delete(post_destroy::destroy_many),
+        )
+        .route(
+            "/posts/merge_posts",
+            get(posts::show_named)
+                .put(post_merge::merge_posts)
+                .delete(post_destroy::destroy_named),
+        )
+        .route(
+            "/posts/merge_posts.json",
+            get(posts::show_named)
+                .put(post_merge::merge_posts)
+                .delete(post_destroy::destroy_named),
+        )
+        .route("/posts/{id}/reply-ids", get(posts::reply_ids))
+        .route("/posts/{id}/reply-ids.json", get(posts::reply_ids))
         // The post admin menu's actions.
         .route("/posts/{id}/post_type", put(post_admin::post_type))
         .route("/posts/{id}/post_type.json", put(post_admin::post_type))
