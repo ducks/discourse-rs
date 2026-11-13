@@ -256,11 +256,9 @@ test("ConvertToPublicTopic makes a message a topic in the category chosen", asyn
     .toEqual([["regular", "4"]]);
 });
 
-test("the timer and multi-select stay refused, named", async ({ page, context, session }) => {
+test("multi-select stays refused, named", async ({ page, context, session }) => {
   const t = await setup(session, context);
   await page.goto(t.url);
-  await menuItem(page, "admin-topic-timer-update");
-  await expect(page.locator("#page-error")).toHaveText("Not ported yet: the topic timer modal (EditTopicTimer, 194c1).");
   await menuItem(page, "topic-admin-multi-select");
   await expect(page.locator("#page-error")).toHaveText(
     "Not ported yet: selecting posts (the topic's multi-select mode, 194c1).",

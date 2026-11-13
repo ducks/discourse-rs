@@ -16,6 +16,14 @@
 //   Discourse.topicAdminModals.makePublic(topic)
 //       ConvertToPublicTopic: a copy of the composer's CategoryChooser,
 //       PUT /t/:id/convert-topic/public.
+//   Discourse.topicAdminModals.editTopicTimer(topic)
+//       EditTopicTimer (components/modal/edit-topic-timer.gjs with
+//       EditTopicTimerForm): the timer types the topic's state offers,
+//       DTimeShortcutPicker or DRelativeTimePicker (bookmark-modal.js's
+//       Discourse.timeShortcutPicker) by type, the category for
+//       publishing, the TopicTimerInfo preview, POST /t/:id/timer to set
+//       or remove. Not ported: pausing the keyboard shortcuts, the
+//       preview's periodic redraw.
 //
 // The page is drawn again once a change is saved, where Ember re-renders
 // in place. The date inputs are penalize-user.js's (Discourse
@@ -857,13 +865,20 @@
       });
   }
 
-  // CategoryChooser: a copy of the composer's, nothing chosen.
-  function categoryChooser(topic, onChange) {
+  // CategoryChooser: a copy of the composer's, nothing chosen. opts:
+  // { excludeCategoryId, value } (a category left out, the one chosen).
+  function categoryChooser(topic, onChange, opts) {
+    opts = opts || {};
     var source = document.querySelector("#reply-control details.category-chooser");
     if (!source) {
       return null;
     }
     var chooser = source.cloneNode(true);
+    if (opts.excludeCategoryId) {
+      chooser.querySelectorAll('.category-row[data-value="' + Number(opts.excludeCategoryId) + '"]').forEach(function (row) {
+        row.remove();
+      });
+    }
     chooser.open = false;
     chooser.classList.remove("is-expanded", "has-selection");
     var filter = chooser.querySelector(".filter-input");
@@ -896,12 +911,7 @@
         row.hidden = term !== "" && row.dataset.name.toLowerCase().indexOf(term) < 0;
       });
     });
-    chooser.addEventListener("click", function (event) {
-      var row = event.target.closest(".category-row");
-      if (!row) {
-        return;
-      }
-      event.preventDefault();
+    function choose(row) {
       header.innerHTML = "";
       var name = document.createElement("span");
       name.className = "name";
@@ -919,6 +929,20 @@
       header.title = row.dataset.name;
       summary.dataset.value = row.dataset.value;
       chooser.classList.add("has-selection");
+    }
+    if (opts.value) {
+      var chosen = chooser.querySelector('.category-row[data-value="' + Number(opts.value) + '"]');
+      if (chosen) {
+        choose(chosen);
+      }
+    }
+    chooser.addEventListener("click", function (event) {
+      var row = event.target.closest(".category-row");
+      if (!row) {
+        return;
+      }
+      event.preventDefault();
+      choose(row);
       chooser.open = false;
       onChange(parseInt(row.dataset.value, 10));
     });
@@ -979,7 +1003,432 @@
     });
   }
 
+  // ---- EditTopicTimer ----
+
+  // future-date-input-selector's FORMAT
+  var TIMER_FORMAT = "YYYY-MM-DD HH:mmZ";
+  // d-native-select's NO_VALUE_OPTION
+  var NO_VALUE_OPTION = "__NONE__";
+  var AFTER_LAST_POST = ["close_after_last_post", "delete_after_last_post"];
+
+  // publicTimerTypes
+  function timerTypes(topic) {
+    var types = [];
+    function add(id, key) {
+      types.push({ id: id, name: t(topic, "topic." + key + ".title") });
+    }
+    if (!topic.closed) {
+      add("close", "auto_close");
+      add("close_after_last_post", "auto_close_after_last_post");
+    }
+    if (topic.closed) {
+      add("open", "auto_reopen");
+    }
+    if (topic.can_delete) {
+      add("delete", "auto_delete");
+      add("delete_after_last_post", "auto_delete_after_last_post");
+    }
+    add("bump", "auto_bump");
+    if (topic.can_delete) {
+      add("delete_replies", "auto_delete_replies");
+    }
+    if (topic.closed) {
+      add("close", "temp_open");
+    }
+    if (!topic.closed) {
+      add("open", "temp_close");
+    }
+    if (topic.category_read_restricted || topic.private_message || !topic.visible) {
+      add("publish_to_category", "publish_to_category");
+    }
+    return types;
+  }
+
+  // Category.findById, of the categories the chooser lists: its slug and
+  // url (the row's data-url).
+  function timerCategory(id) {
+    var row = id && document.querySelector('#reply-control details.category-chooser .category-row[data-value="' + Number(id) + '"]');
+    if (!row || !row.dataset.url) {
+      return null;
+    }
+    var parts = row.dataset.url.split("/");
+    return { slug: parts[parts.length - 2], url: row.dataset.url };
+  }
+
+  // TopicTimerInfo (components/topic-timer-info.gjs) as the modal draws
+  // it, without the edit and remove buttons: the notice, or nothing.
+  function topicTimerInfo(topic, a) {
+    var m = window.moment;
+    var el = document.createElement("div");
+    el.className = "topic-timer-info";
+    if (!a.executeAt) {
+      return el;
+    }
+    var deleteReplies = a.statusType === "delete_replies";
+    var left = m.duration(m(a.executeAt) - m());
+    if (!(left.asMinutes() > 0 || deleteReplies || a.basedOnLastPost)) {
+      return el;
+    }
+    var options = {
+      timeLeft: left.humanize(true),
+      duration: m.duration(parseInt(a.durationMinutes, 10) || 0, "minutes").humanize({ s: 60, m: 60, h: 24 }),
+    };
+    var category = timerCategory(a.categoryId);
+    if (category) {
+      options.categoryName = escapeHtml(category.slug);
+      options.categoryUrl = escapeHtml(category.url);
+    }
+    // _noticeKey
+    var statusType = a.statusType === "silent_close" ? "close" : a.statusType;
+    if (a.basedOnLastPost && (statusType === "close" || statusType === "delete")) {
+      statusType += "_after_last_post";
+    }
+    el.innerHTML =
+      '<h3 class="topic-timer-heading"><span>' +
+      icon("far-clock") +
+      " " +
+      t(topic, "topic.status_update_notice.auto_" + statusType, options) +
+      '</span><div class="topic-timer-modify"></div></h3>';
+    el.querySelector("span").title = m(a.executeAt).format("LLLL");
+    return el;
+  }
+
+  function editTopicTimer(topic) {
+    var pickers = Discourse.timeShortcutPicker;
+    if (!pickers || !Discourse.modal) {
+      return;
+    }
+    pickers.load().then(function () {
+      openEditTopicTimer(topic);
+    });
+  }
+
+  function openEditTopicTimer(topic) {
+    var m = window.moment;
+    var pickers = Discourse.timeShortcutPicker;
+    var types = timerTypes(topic);
+    // The topic's timer, else createDefaultTimer.
+    var timer = topic.topic_timer ? Object.assign({}, topic.topic_timer) : { status_type: types[0].id };
+    // The picker's last choice (EditTopicTimerForm's timerType).
+    var timerType = null;
+    var bodyEl = null;
+    var form = null;
+    var select = null;
+    var picker = null;
+    var marks = {};
+    var parts = {};
+
+    function statusType() {
+      if (timer.based_on_last_post && (timer.status_type === "close" || timer.status_type === "delete")) {
+        return timer.status_type + "_after_last_post";
+      }
+      return timer.status_type;
+    }
+
+    function useDuration() {
+      return AFTER_LAST_POST.concat("delete_replies").indexOf(statusType()) !== -1;
+    }
+
+    function showFutureDateInput() {
+      return ["open", "delete", "bump", "publish_to_category", "close"].indexOf(statusType()) !== -1;
+    }
+
+    function executeAt() {
+      if (useDuration()) {
+        return m().add(parseFloat(timer.duration_minutes), "minutes").format(TIMER_FORMAT);
+      }
+      return timer.updateTime;
+    }
+
+    // willCloseImmediately, willDeleteImmediately
+    function immediately(type) {
+      return (
+        statusType() === type &&
+        !!timer.duration_minutes &&
+        m(topic.last_posted_at).add(timer.duration_minutes, "minutes") < m()
+      );
+    }
+
+    function showTopicTimerInfo() {
+      if (!statusType() || immediately("close_after_last_post") || immediately("delete_after_last_post")) {
+        return false;
+      }
+      if (statusType() === "publish_to_category" && !timer.category_id) {
+        return false;
+      }
+      if (timerType === "custom" && timer.updateTime) {
+        if (m(timer.updateTime) < m()) {
+          return false;
+        }
+      } else if (useDuration()) {
+        return !!timer.duration_minutes;
+      }
+      return !!timer.updateTime;
+    }
+
+    // A part of the form drawn before its mark, or taken out.
+    function place(name, shown) {
+      var el = parts[name];
+      if (shown && el.parentNode !== form) {
+        form.insertBefore(el, marks[name]);
+      } else if (!shown && el.parentNode === form) {
+        el.remove();
+      }
+      return shown;
+    }
+
+    // The warnings and the TopicTimerInfo preview.
+    function drawNotices() {
+      form.querySelectorAll(":scope > .warning, :scope > .modal-topic-timer-info").forEach(function (el) {
+        el.remove();
+      });
+      [
+        ["close_after_last_post", "topic.auto_close_immediate"],
+        ["delete_after_last_post", "topic.auto_delete_immediate"],
+      ].forEach(function (pair) {
+        if (!immediately(pair[0])) {
+          return;
+        }
+        var hours = Math.round((new Date() - new Date(topic.last_posted_at)) / (1000 * 60 * 60));
+        var warning = document.createElement("div");
+        warning.className = "warning";
+        warning.innerHTML = icon("triangle-exclamation") + " " + escapeHtml(tCount(topic, pair[1], hours));
+        form.appendChild(warning);
+      });
+      if (!showTopicTimerInfo()) {
+        return;
+      }
+      var info = document.createElement("div");
+      info.className = "alert alert-info modal-topic-timer-info";
+      info.appendChild(
+        topicTimerInfo(topic, {
+          basedOnLastPost: timer.based_on_last_post,
+          categoryId: timer.category_id,
+          durationMinutes: timer.duration_minutes,
+          executeAt: executeAt(),
+          statusType: statusType(),
+        })
+      );
+      form.appendChild(info);
+    }
+
+    function drawOptions() {
+      var value = statusType();
+      var none = value ? "none_placeholder" : "select_placeholder";
+      select.innerHTML = [{ id: NO_VALUE_OPTION, name: t(topic, none) }]
+        .concat(types)
+        .map(function (type) {
+          var selected = type.id === (value || NO_VALUE_OPTION);
+          return (
+            '<option class="d-native-select__option' +
+            (selected ? ' --selected" selected="' : "") +
+            '" value="' +
+            type.id +
+            '">' +
+            escapeHtml(type.name) +
+            "</option>"
+          );
+        })
+        .join("");
+      select.value = value || NO_VALUE_OPTION;
+    }
+
+    // The form's parts for the timer's type, as its template's ifs.
+    function draw() {
+      if (place("publish", statusType() === "publish_to_category") && !parts.publish.querySelector("details")) {
+        var chooser = categoryChooser(
+          topic,
+          function (id) {
+            timer.category_id = id;
+            drawNotices();
+          },
+          // excludeCategoryId
+          { excludeCategoryId: topic.visible ? topic.category_id : null, value: timer.category_id }
+        );
+        if (chooser) {
+          parts.publish.appendChild(chooser);
+        }
+      }
+      place("whenLabel", showFutureDateInput());
+      if (place("when", showFutureDateInput())) {
+        if (!picker) {
+          picker = pickers.mount(parts.when, {
+            timezone: pickers.timezone(),
+            prefilledDatetime: timer.execute_at || null,
+            // hiddenTimeShortcutOptions
+            hiddenOptions: ["none", "later_today", "later_this_week"],
+            // timeOptions
+            timeShortcuts: function (shortcuts) {
+              return [
+                shortcuts.laterToday(),
+                shortcuts.tomorrow(),
+                shortcuts.laterThisWeek(),
+                shortcuts.thisWeekend(),
+                shortcuts.monday(),
+                shortcuts.twoWeeks(),
+                shortcuts.nextMonth(),
+                shortcuts.sixMonths(),
+              ];
+            },
+            // onTimeSelected, onChangeInput
+            onTimeSelected: function (type, time) {
+              timerType = type;
+              timer.updateTime = m.isMoment(time) ? time.format(TIMER_FORMAT) : time;
+              drawNotices();
+            },
+          });
+        }
+      } else if (picker) {
+        picker.destroy();
+        picker = null;
+        parts.when.innerHTML = "";
+      }
+      if (place("duration", useDuration())) {
+        if (!parts.duration.querySelector(".relative-time-picker")) {
+          parts.duration.appendChild(
+            pickers.relativeTimePicker({
+              durationMinutes: timer.duration_minutes,
+              // changeDuration
+              onChange: function (minutes) {
+                timer.duration_minutes = minutes;
+                drawNotices();
+              },
+            })
+          );
+        }
+      } else {
+        var relative = parts.duration.querySelector(".relative-time-picker");
+        if (relative) {
+          relative.remove();
+        }
+      }
+      if (parts.publish.parentNode !== form) {
+        var old = parts.publish.querySelector("details");
+        if (old) {
+          old.remove();
+        }
+      }
+      drawNotices();
+    }
+
+    function group(name, label) {
+      var el = document.createElement("div");
+      el.className = "control-group";
+      el.innerHTML = '<label class="control-label"></label>';
+      el.firstChild.textContent = t(topic, "topic.topic_status_update." + label);
+      parts[name] = el;
+    }
+
+    // TopicTimer.update, the page drawn again after. popupAjaxError on a
+    // failure.
+    function setTimer(button, close, data) {
+      button.disabled = true;
+      return ajax("POST", "/t/" + topic.id + "/timer", data)
+        .then(function () {
+          close();
+          reload();
+        })
+        .catch(function (r) {
+          button.disabled = false;
+          return extractError(topic, r).then(function (message) {
+            if (Discourse.dialog) {
+              Discourse.dialog.popupAjaxError(message);
+            } else {
+              window.alert(message);
+            }
+          });
+        });
+    }
+
+    // The type the server knows, for the after last post ones.
+    function serverType() {
+      var type = timer.status_type;
+      return AFTER_LAST_POST.indexOf(type) !== -1 ? type.replace("_after_last_post", "") : type;
+    }
+
+    Discourse.modal.show({
+      className: "edit-topic-timer-modal",
+      attributes: { id: "topic-timer-modal" },
+      title: t(topic, "topic.topic_status_update.title"),
+      body: function (body) {
+        bodyEl = body;
+        form = document.createElement("form");
+        form.addEventListener("submit", function (event) {
+          event.preventDefault();
+        });
+        form.innerHTML = '<div class="control-group"><select class="d-native-select timer-type"></select></div>';
+        select = form.querySelector("select");
+        ["publish", "whenLabel", "when", "duration"].forEach(function (name) {
+          marks[name] = document.createComment(name);
+          form.appendChild(marks[name]);
+        });
+        group("publish", "publish_to");
+        group("duration", "duration");
+        parts.whenLabel = document.createElement("label");
+        parts.whenLabel.className = "control-label";
+        parts.whenLabel.textContent = t(topic, "topic.topic_status_update.when");
+        parts.when = document.createElement("div");
+        body.appendChild(form);
+        drawOptions();
+        // onChangeStatusType
+        select.addEventListener("input", function () {
+          var value = select.value === NO_VALUE_OPTION ? null : select.value;
+          timer.based_on_last_post = AFTER_LAST_POST.indexOf(value) !== -1;
+          timer.status_type = value;
+          drawOptions();
+          draw();
+        });
+        draw();
+      },
+      footer: function (footer, close) {
+        var save = button("btn-primary", t(topic, "topic.topic_status_update.save"));
+        footer.appendChild(save);
+        // saveTimer
+        save.addEventListener("click", function () {
+          var flash = null;
+          if (!timer.updateTime && !timer.duration_minutes) {
+            flash = "time_frame_required";
+          } else if (timer.duration_minutes && !timer.updateTime && timer.duration_minutes <= 0) {
+            flash = "min_duration";
+          } else if (timer.duration_minutes && !timer.updateTime && timer.duration_minutes > 20 * 365 * 1440) {
+            // No more than 20 years.
+            flash = "max_duration";
+          } else if (timer.status_type === "publish_to_category" && !timer.category_id) {
+            flash = "category_required";
+          }
+          setFlash(bodyEl, flash && t(topic, "topic.topic_status_update." + flash));
+          if (flash) {
+            return;
+          }
+          // jQuery sends a null time as an empty one.
+          setTimer(save, close, {
+            time: timer.updateTime || "",
+            status_type: serverType(),
+            based_on_last_post: timer.based_on_last_post || undefined,
+            category_id: timer.category_id || undefined,
+            duration_minutes: timer.duration_minutes || undefined,
+          });
+        });
+        if (timer.execute_at) {
+          var remove = button("btn-danger", t(topic, "topic.topic_status_update.remove"));
+          footer.appendChild(remove);
+          // removeTimer
+          remove.addEventListener("click", function () {
+            setTimer(remove, close, { time: "", status_type: serverType() });
+          });
+        }
+      },
+      onClose: function () {
+        if (picker) {
+          picker.destroy();
+          picker = null;
+        }
+      },
+    });
+  }
+
   Discourse.topicAdminModals = {
+    editTopicTimer: editTopicTimer,
     featureTopic: featureTopic,
     changeTimestamp: changeTimestamp,
     slowMode: slowMode,

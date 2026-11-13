@@ -3811,9 +3811,11 @@ route table has been made, so this list may be short.
     tests/browser/topic-admin-actions.spec.js. The rest is 194c1 and
     194c2
     194c1. `feat/topic-admin-actions-rest` M: what the topic admin menu
-    still refuses: the EditTopicTimer modal (its endpoint is ported; it
-    needs DTimeShortcutPicker's tap tiles, DRelativeTimePicker and
-    TopicTimerInfo), selecting posts (the topic's multi-select mode and
+    still refuses: ~~the EditTopicTimer modal~~ (done,
+    `feat/edit-topic-timer-modal`: all its types, the pickers from
+    bookmark-modal.js, the preview; browser topic-timer-modal (4). Left
+    of it: TopicTimerInfo on the topic page, the keyboard shortcuts
+    pause), selecting posts (the topic's multi-select mode and
     its bulk actions) and the nested replies toggle (PUT
     /n/:slug/:id/toggle)
     194c2. ~~`feat/site-banner`~~ (done) S: the banner topic drawn where

@@ -942,6 +942,9 @@ pub fn modal_script_attrs(
         "time_shortcut.start_of_next_business_week",
         "time_shortcut.start_of_next_business_week_alt",
         "time_shortcut.next_month",
+        // EditTopicTimer's (static/js/topic-admin-modals.js)
+        "time_shortcut.two_weeks",
+        "time_shortcut.six_months",
         "time_shortcut.custom",
         "time_shortcut.last_custom",
         "time_shortcut.none",

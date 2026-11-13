@@ -13,8 +13,9 @@
 // convert-topic/private and Reset Bump Date PUTs reset-bump-date; the
 // page is then drawn again, where Ember re-renders it in place. Pinning
 // and banners (FeatureTopic), Make Public (ConvertToPublicTopic), the
-// timestamp (ChangeTimestamp) and slow mode (EditSlowMode) open their
-// modals (static/js/topic-admin-modals.js). The post menu is the menu
+// timestamp (ChangeTimestamp), slow mode (EditSlowMode) and the topic
+// timer (EditTopicTimer) open their modals
+// (static/js/topic-admin-modals.js). The post menu is the menu
 // service's (modalForMobile, autofocus); its Moderation History links
 // work, and its actions are the topic controller's on the post its
 // template's data-post describes: the staff color (PUT post_type),
@@ -232,8 +233,8 @@
         location.reload();
       });
     },
-    "admin-topic-timer-update": function () {
-      unported("the topic timer modal (EditTopicTimer, 194c1)");
+    "admin-topic-timer-update": function (topic) {
+      modals("editTopicTimer", topic);
     },
     "topic-admin-change-timestamp": function (topic) {
       modals("changeTimestamp", topic);
