@@ -974,6 +974,13 @@
       ]
     },
     {
+      "name": "topic-title-editor.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-title-editor.js"
+      ]
+    },
+    {
       "name": "user-notes.js",
       "content_type": "js",
       "files": [

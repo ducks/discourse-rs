@@ -569,8 +569,18 @@ pub fn private_message_glyph(
 }
 
 /// topic-title: the message glyph (private_message_glyph), the statuses,
-/// the title with its emoji, the category badge and the tags.
+/// the title with its emoji and, for who may edit the topic
+/// (details.can_edit), the edit pencil static/js/topic-title-editor.js
+/// opens TopicTitleEditor from, the category badge and the tags.
 pub fn topic_title(list: &ListContext, view: &Value, url: &str, glyph: &str) -> String {
+    let pencil = if view["details"]["can_edit"] == true {
+        format!(
+            "<span class=\"edit-topic__wrapper\">{}</span>",
+            icon("pencil", Some("edit-topic"))
+        )
+    } else {
+        String::new()
+    };
     let category = view["category_id"]
         .as_i64()
         .and_then(|id| list.categories.get(&id));
@@ -580,7 +590,7 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str, glyph: &str) -> 
     let title = s(&view["title"]);
     let fancy = view["fancy_title"].as_str().unwrap_or(title);
     format!(
-        "<div class=\"title-wrapper\"><h1 data-topic-id=\"{}\">{glyph}<span class=\"topic-statuses\">{}</span><a class=\"fancy-title\" href=\"{}\">{}</a></h1><div class=\"topic-category\">{badge}<div class=\"topic-header-extra\"><div class=\"list-tags\">{}</div></div></div></div>",
+        "<div class=\"title-wrapper\"><h1 data-topic-id=\"{}\">{glyph}<span class=\"topic-statuses\">{}</span><a class=\"fancy-title\" href=\"{}\">{}{pencil}</a></h1><div class=\"topic-category\">{badge}<div class=\"topic-header-extra\"><div class=\"list-tags\">{}</div></div></div></div>",
         view["id"],
         crate::topic_list_view::topic_statuses(list, view),
         escape(url),

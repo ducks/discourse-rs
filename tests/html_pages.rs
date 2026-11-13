@@ -2345,6 +2345,48 @@ async fn staff_get_the_topic_and_post_admin_menus() {
     assert!(!html.contains("admin-post-menu-content"));
 }
 
+// The title's editor (static/js/topic-title-editor.js) for who may edit
+// the topic (details.can_edit): the pencil closing the title's link as
+// topic.gjs draws it, what the editor starts from, its script and the
+// category chooser's. Anyone else's title is as it was.
+#[tokio::test]
+async fn who_may_edit_a_topic_gets_the_titles_pencil() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let path = "/t/parity-fixture-replies-and-posters/35";
+    let title = r#"<a class="fancy-title" href="/t/parity-fixture-replies-and-posters/35">Parity fixture: replies and posters"#;
+    let pencil = r##"<span class="edit-topic__wrapper"><svg class="fa d-icon d-icon-pencil svg-icon fa-width-auto edit-topic svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#pencil"></use></svg></span>"##;
+    let mut admin = Member::logged_in(st.clone(), "admin").await;
+    let html = admin.page(path).await;
+    assert!(
+        html.contains(&format!("{title}{pencil}</a></h1>")),
+        "{html}"
+    );
+    let block = &html[html
+        .find("<script type=\"application/json\" class=\"topic-title-editor-config\">")
+        .unwrap()..];
+    let block = &block[block.find('>').unwrap() + 1..block.find("</script>").unwrap()];
+    let editor: serde_json::Value = serde_json::from_str(block).unwrap();
+    assert_eq!(editor["title"], "Parity fixture: replies and posters");
+    assert_eq!(editor["category_id"], 4);
+    assert_eq!(editor["private_message"], false);
+    assert_eq!(editor["max_topic_title_length"], 255);
+    assert_eq!(editor["strings"]["composer.save_edit"], "Save Edit");
+    assert_eq!(editor["strings"]["composer.cancel"], "Cancel");
+    assert!(html.contains("/assets/topic-title-editor.js?v="));
+    assert!(html.contains("/assets/topic-admin-modals.js?v="));
+
+    // A member who may not, and a visitor.
+    let mut user2 = Member::logged_in(st, "user2").await;
+    let member = user2.page(path).await;
+    let (_, _, visitor) = get(&db.pool, path).await;
+    for html in [&member, &visitor] {
+        assert!(html.contains(&format!("{title}</a></h1>")), "{html}");
+        assert!(!html.contains("edit-topic__wrapper"));
+        assert!(!html.contains("topic-title-editor"));
+    }
+}
+
 // The multi-select mode (static/js/select-posts.js) for who gets the
 // topic admin menu's Select Posts: the rules' topic and viewer state and
 // the strings in #select-posts-config, and on each post's article its

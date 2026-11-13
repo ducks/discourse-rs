@@ -295,6 +295,29 @@ h6 code {
     width: 90%;
   }
 }
+/* topic.scss:189: TopicTitleEditor's input and the title's edit pencil
+   (static/js/topic-title-editor.js) */
+#topic-title .title-wrapper input#edit-title {
+  width: 100%;
+}
+/* topic.scss:193 */
+#topic-title .title-wrapper .edit-topic__wrapper {
+  white-space: nowrap;
+  font-size: var(--font-down-3);
+  vertical-align: .125em;
+  margin-left: var(--space-1);
+}
+/* topic.scss:203 */
+html.discourse-no-touch #topic-title .title-wrapper .fancy-title .edit-topic {
+  opacity: 0;
+  transition: opacity .15s linear;
+  background: none;
+}
+/* topic.scss:209 */
+html.discourse-no-touch #topic-title .title-wrapper .fancy-title:hover .edit-topic,
+html.discourse-no-touch #topic-title .title-wrapper .fancy-title:focus .edit-topic {
+  opacity: 1;
+}
 /* topic.scss:219 */
 @media(width < 40rem) {
   #topic-title .title-wrapper .topic-category {
@@ -320,6 +343,87 @@ h6 code {
 #topic-title h1 a {
   color: var(--primary);
 }
+/* topic.scss:242 */
+#topic-title a.edit-topic .d-icon {
+  font-size: .8em;
+}
+/* topic.scss:246 */
+#topic-title .edit-topic-title {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  gap: .5em;
+  width: 100%;
+  max-width: calc(var(--topic-body-width) + var(--topic-body-width-padding)*2 + var(--topic-avatar-width));
+}
+/* topic.scss:257 */
+#topic-title .edit-topic-title .select-kit .category-row {
+  max-width: unset;
+}
+/* topic.scss:271 */
+#topic-title .edit-title__wrapper {
+  flex: 1 1 100%;
+}
+/* topic.scss:274 */
+#topic-title .edit-title__wrapper #edit-title {
+  width: 100%;
+  margin: 0;
+}
+/* topic.scss:280 */
+#topic-title .edit-category__wrapper {
+  flex: 1 1 5%;
+}
+/* topic.scss:280 */
+@media(width < 48rem) {
+  #topic-title .edit-category__wrapper {
+    min-width: 0;
+  }
+}
+/* topic.scss:287 */
+#topic-title .edit-category__wrapper .select-kit.combo-box.category-chooser {
+  width: 100%;
+  height: 100%;
+}
+/* topic.scss:293 */
+#topic-title .edit-tags__wrapper {
+  flex: 1 1 33%;
+}
+/* topic.scss:293 */
+@media(width < 48rem) {
+  #topic-title .edit-tags__wrapper {
+    flex: 1 1 100%;
+  }
+}
+/* topic.scss:300 */
+#topic-title .edit-tags__wrapper .mini-tag-chooser {
+  width: 100%;
+}
+/* topic.scss:304 */
+#topic-title .edit-tags__wrapper .select-kit-header--filter {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+/* topic.scss:304 */
+@media(width < 48rem) {
+  #topic-title .edit-tags__wrapper .select-kit-header--filter {
+    flex-wrap: wrap;
+  }
+}
+/* topic.scss:312 */
+#topic-title .edit-tags__wrapper .select-kit-header--filter button {
+  min-width: 0;
+}
+/* topic.scss:317 */
+#topic-title .edit-tags__wrapper .multi-select-filter {
+  flex-shrink: 0;
+  min-width: 2em;
+}
+/* topic.scss:323 */
+#topic-title .edit-controls {
+  display: flex;
+  width: 100%;
+  gap: .5em;
+}
 /* topic.scss:339 */
 .private-message-glyph {
   color: var(--primary-medium);
@@ -328,6 +432,32 @@ h6 code {
 /* topic.scss:344 */
 .private_message {
   background: var(--d-content-background);
+}
+/* topic.scss:348: a message's title editor, its glyph over the input */
+.private_message #topic-title .edit-topic-title {
+  position: relative;
+  min-width: 0;
+}
+/* topic.scss:352 */
+.private_message #topic-title .edit-topic-title .private-message-glyph {
+  position: absolute;
+  z-index: 1;
+  left: .75em;
+  top: 1.2em;
+}
+/* topic.scss:363 */
+.private_message #topic-title .edit-topic-title #edit-title {
+  padding-left: 2.25em;
+}
+/* topic.scss:367 */
+.private_message #topic-title .edit-topic-title .mini-tag-chooser {
+  margin-left: 0;
+}
+/* topic.scss:370 */
+@media(width >= 40rem) {
+  .private_message #topic-title .edit-topic-title .mini-tag-chooser .selected-name {
+    max-width: 500px;
+  }
 }
 /* topic.scss:393 */
 .post-links-container {
