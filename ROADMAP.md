@@ -3815,9 +3815,11 @@ route table has been made, so this list may be short.
     `feat/edit-topic-timer-modal`: all its types, the pickers from
     bookmark-modal.js, the preview; browser topic-timer-modal (4). TopicTimerInfo
     under the posts is `feat/topic-timer-info`, rendered by the server
-    with viewer_dates; browser topic-timer-info (3). Left of it: the
-    keyboard shortcuts pause, the notice's periodic redraw,
-    SlowModeInfo), selecting posts (the topic's multi-select mode and
+    with viewer_dates; browser topic-timer-info (3). SlowModeInfo beside
+    it is `feat/slow-mode-info` (viewer_dates::humanize_seconds, the
+    button for who may manage topics; browser slow-mode-info (2)). Left
+    of it: the keyboard shortcuts pause, the notices' live redraw),
+    selecting posts (the topic's multi-select mode and
     its bulk actions) and the nested replies toggle (PUT
     /n/:slug/:id/toggle)
     194c2. ~~`feat/site-banner`~~ (done) S: the banner topic drawn where

@@ -398,6 +398,23 @@ pub(crate) fn humanize(now: DateTime<Utc>, at: DateTime<Utc>) -> String {
     let as_seconds = days_of_months * 86_400.0 + ms / 1000.0;
     let as_days = days_of_months + ms / 864e5;
     let as_months = f64::from(months) + (ms / 864e5) * 4800.0 / 146_097.0;
+    relative_time(as_seconds, as_days, as_months)
+}
+
+/// `moment.duration(seconds, "seconds").humanize()` in English
+/// (helpers/slow-mode's durationTextFromSeconds): "a few seconds",
+/// "15 minutes", "an hour".
+pub(crate) fn humanize_seconds(seconds: i64) -> String {
+    let as_seconds = seconds.max(0) as f64;
+    // Duration#as: the days to months as moment converts them.
+    let as_days = as_seconds / 86_400.0;
+    let as_months = as_days * 4800.0 / 146_097.0;
+    relative_time(as_seconds, as_days, as_months)
+}
+
+/// moment's relativeTime with its default thresholds, of a duration's
+/// `as("s")`, `as("d")` and `as("M")`.
+fn relative_time(as_seconds: f64, as_days: f64, as_months: f64) -> String {
     let round = |x: f64| (x + 0.5).floor() as i64;
     let seconds = round(as_seconds);
     let minutes = round(as_seconds / 60.0);
@@ -688,6 +705,48 @@ mod tests {
         assert_eq!(humanize(now, at("2029-10-18T12:00:00Z")), "3 years");
         // Past dates read the same.
         assert_eq!(humanize(now, at("2026-10-16T12:00:00Z")), "2 days");
+    }
+
+    /// What moment 2.30 answers for each.
+    #[test]
+    fn humanize_seconds_as_moment_with_its_default_thresholds() {
+        for (seconds, text) in [
+            (0, "a few seconds"),
+            (1, "a few seconds"),
+            (44, "a few seconds"),
+            (45, "a minute"),
+            (89, "a minute"),
+            (90, "2 minutes"),
+            (600, "10 minutes"),
+            (2640, "44 minutes"),
+            (2669, "44 minutes"),
+            (2670, "an hour"),
+            (2700, "an hour"),
+            (3600, "an hour"),
+            (5399, "an hour"),
+            (5400, "2 hours"),
+            (14400, "4 hours"),
+            (75600, "21 hours"),
+            (77399, "21 hours"),
+            (77400, "a day"),
+            (79200, "a day"),
+            (86400, "a day"),
+            (129599, "a day"),
+            (129600, "2 days"),
+            (2203199, "25 days"),
+            (2203200, "a month"),
+            (2592000, "a month"),
+            (3888000, "a month"),
+            (3900000, "a month"),
+            (27000000, "10 months"),
+            (28000000, "a year"),
+            (31536000, "a year"),
+            (47000000, "a year"),
+            (48000000, "2 years"),
+            (630720000, "20 years"),
+        ] {
+            assert_eq!(humanize_seconds(seconds), text, "{seconds} seconds");
+        }
     }
 
     /// What moment 2.30 answers for each.
