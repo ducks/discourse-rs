@@ -1379,7 +1379,7 @@ pub async fn category(
             subset: params.last("subset"),
             category_id: Some(category.id),
             no_subcategories: none,
-            tag_id: None,
+            ..Default::default()
         },
     )
     .await?;
@@ -2133,7 +2133,11 @@ async fn list_crawler(
 /// ListController's `ensure_logged_in` for the login-only filters: the 403
 /// `not_logged_in` body, which a page request gets as the not-found page
 /// (not_found::html_errors).
-fn ensure_logged_in(state: &AppState, guardian: &Guardian, kind: ListKind) -> Option<Response> {
+pub(super) fn ensure_logged_in(
+    state: &AppState,
+    guardian: &Guardian,
+    kind: ListKind,
+) -> Option<Response> {
     if !kind.requires_login() || guardian.is_authenticated() {
         return None;
     }

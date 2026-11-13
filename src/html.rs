@@ -1512,6 +1512,9 @@ pub struct LatestPage {
     pub list_bottom: String,
     /// TopicDismissButtons in the navigation controls (dismiss_buttons).
     pub dismiss_top: String,
+    /// NewListHeaderControlsWrapper above the topics (new_list_controls),
+    /// empty off a member's unified new list.
+    pub new_list_controls: String,
     /// topic-dismiss.js' strings (dismiss_strings), empty without the
     /// buttons.
     pub dismiss_strings: String,
@@ -1528,6 +1531,8 @@ pub struct ListFooterScope<'a> {
     pub category_id: Option<i32>,
     pub no_subcategories: bool,
     pub tag_id: Option<i32>,
+    /// The tag's name, which Topic.resetNew sends (`tag_name`).
+    pub tag_name: Option<&'a str>,
 }
 
 /// SvgDocumentsCheckmark, EmptyTopicFilter's image.
@@ -1666,6 +1671,9 @@ pub fn dismiss_buttons(
             out.push_str(" data-no-subcategories=\"\"");
         }
     }
+    if let Some(name) = scope.tag_name.filter(|_| show_reset_new) {
+        out.push_str(&format!(" data-tag-name=\"{}\"", escape(name)));
+    }
     out.push('>');
     if show_dismiss_read {
         out.push_str(&format!(
@@ -1700,6 +1708,74 @@ pub fn dismiss_buttons(
                 t("topics.bulk.dismiss_new"),
             ));
         }
+    }
+    out.push_str("</div>");
+    out
+}
+
+/// NewListHeaderControls' topics and replies labels: the member's new
+/// topics and unread replies within the list's category and tag
+/// (DiscoveryTopics#newTopicsCount, #newRepliesCount), the count drawn
+/// only past zero.
+pub fn new_list_labels(
+    i18n: &I18n,
+    tracking: &crate::topic_tracking_report::Tracking,
+    category_id: Option<i32>,
+    no_subcategories: bool,
+    tag_id: Option<i32>,
+) -> [String; 2] {
+    use crate::topic_tracking_report::Kind;
+    [("topics", Kind::New), ("replies", Kind::Unread)].map(|(name, kind)| {
+        let count = tracking.count_scoped(kind, category_id, no_subcategories, tag_id);
+        let label = if count > 0 {
+            i18n.t_with(
+                &format!("js.filters.new.{name}_with_count"),
+                &[("count", &count.to_string())],
+            )
+        } else {
+            i18n.t(&format!("js.filters.new.{name}"))
+                .map(str::to_string)
+        };
+        crate::topic_list_view::escape(&label.unwrap_or_else(|| name.to_string()))
+    })
+}
+
+/// NewListHeaderControlsWrapper, which DiscoveryTopics draws above the
+/// new list under unified new (showTopicsAndRepliesToggle): All, Topics
+/// and Replies, the list's `subset` pressed. discovery-topic-list.js
+/// goes to the subset clicked, and the page's stream keeps the counts
+/// (the `new_list` live param, routes::live). Ember hides it while bulk
+/// select is on, which the topic lists do not have yet.
+pub fn new_list_controls(
+    i18n: &I18n,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+    scope: &ListFooterScope,
+) -> String {
+    use crate::topic_list_view::escape;
+    let Some(tracking) = tracking.filter(|t| t.unified_new && scope.filter == "new") else {
+        return String::new();
+    };
+    let t = |key: &str| escape(i18n.t(&format!("js.filters.new.{key}")).unwrap_or_default());
+    let [topics, replies] = new_list_labels(
+        i18n,
+        tracking,
+        scope.category_id,
+        scope.no_subcategories,
+        scope.tag_id,
+    );
+    let current = scope.subset.filter(|s| matches!(*s, "topics" | "replies"));
+    let mut out = String::from("<div class=\"topic-replies-toggle-wrapper\">");
+    for (name, subset, title, label) in [
+        ("all", None, "all_tooltip", t("all")),
+        ("topics", Some("topics"), "new_topics_tooltip", topics),
+        ("replies", Some("replies"), "new_replies_tooltip", replies),
+    ] {
+        let active = current == subset;
+        out.push_str(&format!(
+            "<button aria-pressed=\"{active}\" class=\"topics-replies-toggle --{name}{}\" title=\"{}\">{label}</button>",
+            if active { " active" } else { "" },
+            t(title),
+        ));
     }
     out.push_str("</div>");
     out
@@ -2695,6 +2771,20 @@ pub async fn latest_page(
     } else {
         String::new()
     };
+    let new_list_controls = new_list_controls(i18n, site.chrome.tracking.as_ref(), footer);
+    if !new_list_controls.is_empty() {
+        // The scope the stream counts the toggle's labels in.
+        let id = |id: Option<i32>| id.map(|id| id.to_string()).unwrap_or_default();
+        site.chrome.live_param(
+            "new_list",
+            &format!(
+                "{}.{}.{}",
+                id(footer.category_id),
+                u8::from(footer.no_subcategories),
+                id(footer.tag_id),
+            ),
+        );
+    }
     Ok(LatestPage {
         title: site.site_title.clone(),
         site_title: site.site_title,
@@ -2720,6 +2810,7 @@ pub async fn latest_page(
         top_lists,
         list_bottom,
         dismiss_top,
+        new_list_controls,
         dismiss_strings,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()

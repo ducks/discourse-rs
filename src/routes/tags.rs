@@ -287,12 +287,17 @@ async fn show_list(
         Some("hot") => ListKind::Hot,
         // discourse-topic-voting's (TagsController#show_votes).
         Some("votes") => ListKind::Votes,
+        Some("new") => ListKind::New,
         Some(_) => {
             return Err(
-                Unsupported("tag list filters other than latest, top, hot and votes").into(),
+                Unsupported("tag list filters other than latest, top, hot, new and votes").into(),
             );
         }
     };
+    // requires_login, but for the anonymous filters' lists.
+    if let Some(response) = super::list::ensure_logged_in(&state, &guardian, kind) {
+        return Ok(response);
+    }
     let base_path = state.config.globals.relative_url_root().to_string();
 
     // set_category: missing or unreadable -> 404; no slug check.
@@ -521,11 +526,14 @@ async fn show_list(
             hide_category: false,
             highlight_last_visited: super::list::highlights_last_visited(kind, &params),
         },
-        // Tag lists are latest, top, hot or votes: no subset, and no
-        // tracking counts to scope.
+        // DiscoveryTopics' counts within the list's category and tag.
         &crate::html::ListFooterScope {
             filter: kind.name(),
-            ..Default::default()
+            subset: params.last("subset"),
+            category_id: category.as_ref().map(|c| c.id),
+            no_subcategories: path.no_subcategories,
+            tag_id: tag.as_ref().map(|t| t.id),
+            tag_name: tag.as_ref().map(|t| t.name.as_str()),
         },
     )
     .await?;

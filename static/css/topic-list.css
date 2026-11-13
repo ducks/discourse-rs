@@ -144,6 +144,75 @@
   }
 }
 
+/* _topic-list.scss:697: the new list's All / Topics / Replies toggle
+   (NewListHeaderControlsWrapper), nav-active and nav-hover expanded */
+.topic-replies-toggle-wrapper {
+  padding: 0 var(--nav-horizontal-padding);
+}
+
+.topic-replies-toggle-wrapper .topics-replies-toggle {
+  background: none;
+  border: none;
+  line-height: var(--line-height-large);
+  padding: var(--space-2);
+  position: relative;
+  font-size: var(--font-down-1-rem);
+}
+
+.topic-replies-toggle-wrapper .topics-replies-toggle.active {
+  color: var(--d-nav-color--active);
+  background: var(--d-nav-bg-color--active);
+}
+
+.topic-replies-toggle-wrapper .topics-replies-toggle.active .d-icon {
+  color: var(--d-nav-color--active);
+}
+
+.topic-replies-toggle-wrapper .topics-replies-toggle.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: var(--d-nav-underline-height);
+  background: var(--d-nav-color--active);
+}
+
+@media (forced-colors: active) {
+  .topic-replies-toggle-wrapper .topics-replies-toggle.active::after {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}
+
+.topic-replies-toggle-wrapper .topics-replies-toggle:hover {
+  color: var(--d-nav-color--hover);
+  background: var(--d-nav-bg-color--hover);
+}
+
+.topic-replies-toggle-wrapper .topics-replies-toggle:hover .d-icon {
+  color: var(--d-nav-color--active);
+}
+
+@media (width < 40rem) {
+  .topic-replies-toggle-wrapper {
+    border-bottom: 1px solid var(--primary-low);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 1;
+    position: relative;
+  }
+  .topic-replies-toggle-wrapper .topics-replies-toggle {
+    flex-grow: 1;
+    padding: 0.75em;
+  }
+  .topic-replies-toggle-wrapper .topics-replies-toggle.active::after {
+    height: 1px;
+    bottom: -1px;
+  }
+}
+
 /* _topic-list.scss:474: a top list's PeriodChooser */
 @media (width >= 40rem) {
   #list-area .top-lists h2 {

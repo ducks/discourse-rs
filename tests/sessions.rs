@@ -1335,6 +1335,26 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
     assert!(everything.contains(dot));
     assert!(link(&html, "li[data-category-id='4']").contains(dot));
 
+    // The new list's toggle (`new_list`: category, no_subcategories,
+    // tag): its Topics and Replies labels, counted in that scope.
+    for (scope, topics, replies) in [
+        (".0.", "Topics (1)", "Replies (1)"),
+        ("4.0.", "Topics", "Replies (1)"),
+        ("34.0.", "Topics (1)", "Replies"),
+        (".0.2", "Topics", "Replies (1)"),
+    ] {
+        let mut body = client.open(&format!("/live?new_list={scope}")).await;
+        let mut buffer = String::new();
+        let html = common::next_sse_event(&mut body, &mut buffer, "list").await;
+        assert_eq!(
+            html,
+            format!(
+                r#"<button hx-swap-oob="innerHTML:.topic-replies-toggle-wrapper > .topics-replies-toggle.--topics">{topics}</button><button hx-swap-oob="innerHTML:.topic-replies-toggle-wrapper > .topics-replies-toggle.--replies">{replies}</button>"#
+            ),
+            "{scope}"
+        );
+    }
+
     // In the mobile view the stream keeps the nav trigger's label (latest
     // counting new and unread there) and the sheet's items.
     client.cookies.push(("mobile_view".into(), "1".into()));
