@@ -91,16 +91,33 @@ async function choose(page, name) {
   await expect(page.locator(MENU)).toHaveCount(0);
 }
 
+// Runs what sends an action, then waits for its refresh to draw the list
+// again (page.js' discourse:redrawn). The toast alone does not say so: an
+// action's toast stays three seconds, long enough to be taken for the
+// next action's while that one's refresh is still on its way, and the
+// mode turned on then is the old list's.
+async function redrawnAfter(page, act) {
+  await page.evaluate(() => {
+    window.bulkSelectRedrawn = new Promise((resolve) =>
+      document.addEventListener("discourse:redrawn", resolve, { once: true }),
+    );
+  });
+  await act();
+  await page.evaluate(() => window.bulkSelectRedrawn);
+}
+
 // The modal's confirm button, then the list drawn again out of the mode
 // under the toast.
 async function confirm(page, text) {
   const button = page.locator(`${MODAL} #bulk-topics-confirm`);
   await expect(button).toHaveText(text);
-  await button.click();
+  await redrawnAfter(page, () => button.click());
   await completed(page);
 }
 
+// After the action's refresh (redrawnAfter): its toast, alone.
 async function completed(page) {
+  await expect(page.locator(".fk-d-default-toast.-success")).toHaveCount(1);
   await expect(page.locator(".fk-d-default-toast.-success .fk-d-default-toast__message")).toHaveText(
     "Bulk operations completed successfully!",
   );
@@ -460,7 +477,7 @@ test("an admin marks the selected topics unread and resets their bump dates", as
   // Mark Unread (defer) asks nothing.
   await enter(page, cat.path, ids);
   await select(page, [a]);
-  await choose(page, "defer");
+  await redrawnAfter(page, () => choose(page, "defer"));
   await completed(page);
   expect(timings()).toEqual([b]);
 
@@ -750,7 +767,7 @@ test("an admin pins the selected topics in their category until a date", async (
     await page.locator('.future-date-input-selector-row[data-value="next_month"]').click();
     await expect(inCategory.locator(".form-kit__errors")).toHaveCount(0);
     const sent = bulkRequest(page);
-    await inCategory.locator(".form-kit__button").click();
+    await redrawnAfter(page, () => inCategory.locator(".form-kit__button").click());
     const body = decodeURIComponent((await sent).postData());
     expect(body).toMatch(
       new RegExp(
@@ -801,6 +818,68 @@ test("an admin pins the selected topics in their category until a date", async (
       await api(admin, "PUT", `/t/${id}/status`, { status: "pinned", enabled: "false" });
     }
   }
+});
+
+test("the mode turned on while an action's refresh is on its way stays on over the list drawn again", async ({
+  page,
+  context,
+  session,
+}) => {
+  const admin = await session("admin");
+  const cat = await category(admin);
+  const ids = await topicsIn(await session("user1"), cat, 2);
+  const [a, b] = ids;
+  await login(context, "admin");
+  await enter(page, cat.path, ids);
+
+  // The list asked for again is held back until the test lets it go.
+  let release = null;
+  let held = null;
+  const holding = new Promise((resolve) => (held = resolve));
+  const list = (url) => url.pathname === cat.path;
+  await page.route(list, async (route) => {
+    if (route.request().headers()["hx-request"]) {
+      held();
+      await new Promise((resolve) => (release = resolve));
+    }
+    await route.continue();
+  });
+
+  await select(page, [a]);
+  await choose(page, "close-topics");
+  await page.evaluate(() => {
+    window.bulkSelectRedrawn = new Promise((resolve) =>
+      document.addEventListener("discourse:redrawn", resolve, { once: true }),
+    );
+  });
+  await page.locator(`${MODAL} #bulk-topics-confirm`).click();
+  await holding;
+  // The action is done and the mode off, over the list as it was: no
+  // toast yet.
+  await expect(page.locator(MODAL)).toHaveCount(0);
+  await expect(page.locator(TABLE)).toHaveClass("topic-list");
+  await expect(page.locator(".fk-d-default-toast")).toHaveCount(0);
+  await expect(row(page, a)).not.toHaveClass(/(^| )closed( |$)/);
+  await page.locator(TOGGLE).click();
+  await expect(page.locator(TABLE)).toHaveClass("topic-list sticky-header bulk-select-enabled");
+  await select(page, [b]);
+
+  release();
+  await page.evaluate(() => window.bulkSelectRedrawn);
+  // The list drawn again: the closed topic, the toast, and the mode
+  // still on with its checkboxes, nothing selected.
+  await expect(row(page, a)).toHaveClass(/(^| )closed( |$)/);
+  await expect(page.locator(".fk-d-default-toast.-success .fk-d-default-toast__message")).toHaveText(
+    "Bulk operations completed successfully!",
+  );
+  await expect(page.locator(TABLE)).toHaveClass("topic-list sticky-header bulk-select-enabled");
+  await expect(page.locator("#list-area input.bulk-select")).toHaveCount(3);
+  expect(await selected(page)).toEqual([]);
+  await expect(page.locator(TRIGGER)).toHaveCount(0);
+  await select(page, [b]);
+  await expect(page.locator(COUNT)).toHaveText("1 selected");
+  await page.unroute(list);
+  expect(column(ids, "closed")).toEqual(sorted(ids).map((id) => [id, id === a ? "t" : "f"]));
 });
 
 test("the nested replies item, where offered, says it is not ported", async ({ page, context, session }) => {

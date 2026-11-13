@@ -64,6 +64,12 @@
   var avatars = new WeakMap();
   var observer = null;
   var menu = null;
+  // An action's refresh on its way: { toast: [kind, text] or null }.
+  var refreshing = null;
+  // While the page is drawn again in place (page.js' redraw), and whether
+  // the mode goes back on over the list it brings.
+  var redrawing = false;
+  var resume = false;
 
   function config() {
     var el = document.getElementById("topic-bulk-select");
@@ -662,22 +668,15 @@
   }
 
   // refreshClosure (router.refresh) and toggleBulkSelect, then the toast
-  // over the list drawn again.
+  // over the list drawn again (the last refresh's, when one overtakes
+  // another).
   function refresh(kind, text) {
     disable();
     if (!Discourse.refresh) {
       location.reload();
       return;
     }
-    if (text) {
-      document.addEventListener(
-        "discourse:redrawn",
-        function () {
-          toast(kind, text);
-        },
-        { once: true }
-      );
-    }
+    refreshing = { toast: text ? [kind, text] : null };
     Discourse.refresh();
   }
 
@@ -1579,9 +1578,33 @@
     }
   });
 
-  // The mode is the page's: gone with the list it was turned on for.
+  document.addEventListener("discourse:before-redraw", function () {
+    redrawing = true;
+  });
+  document.addEventListener("discourse:redrawn", function () {
+    redrawing = false;
+    var done = refreshing;
+    refreshing = null;
+    if (done && done.toast) {
+      toast(done.toast[0], done.toast[1]);
+    }
+  });
+
+  // The mode is the page's: gone with the list it was turned on for. One
+  // turned on while an action's refresh was on its way goes back on over
+  // the list drawn again, nothing selected: the BulkSelectHelper outlives
+  // router.refresh, whose setupController clears its selection.
   Discourse.onPage(function () {
+    if (resume) {
+      resume = false;
+      enable();
+    }
     return function () {
+      resume = redrawing && !!refreshing && enabled;
+      // Another page: the refresh was this list's.
+      if (!redrawing) {
+        refreshing = null;
+      }
       enabled = false;
       selected = [];
       lastChecked = null;
