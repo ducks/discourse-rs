@@ -1185,6 +1185,28 @@ impl Mover<'_, '_> {
             &cooked,
         )
         .await?;
+        // track_latest_on_category, which PostCreator runs after its
+        // transaction. The mover's is still open, so the category's row is
+        // locked before track_topic locks the author's user_stats, as a
+        // new topic does (see posting::small_action).
+        if let Some(category_id) = dest.category_id {
+            if post_number == 1 {
+                sqlx::query(
+                    "UPDATE categories SET latest_topic_id = $2, latest_post_id = $3 WHERE id = $1",
+                )
+                .bind(category_id)
+                .bind(topic_id)
+                .bind(new_id)
+                .execute(&mut *conn)
+                .await?;
+            } else {
+                sqlx::query("UPDATE categories SET latest_post_id = $2 WHERE id = $1")
+                    .bind(category_id)
+                    .bind(new_id)
+                    .execute(&mut *conn)
+                    .await?;
+            }
+        }
         // track_topic
         change_topic_user(
             self.ctx.bus,
@@ -1358,8 +1380,8 @@ impl Mover<'_, '_> {
             &quoted,
         )
         .await?;
-        // After PostCreator's transaction: publish (replies only), the
-        // category's latest, post_created's web hooks; its jobs later.
+        // After PostCreator's transaction: publish (replies only),
+        // post_created's web hooks; its jobs later.
         if post_number != 1 {
             crate::bus::publish_post_change(
                 ctx,
@@ -1370,24 +1392,6 @@ impl Mover<'_, '_> {
                 false,
             )
             .await?;
-        }
-        if let Some(category_id) = dest.category_id {
-            if post_number == 1 {
-                sqlx::query(
-                    "UPDATE categories SET latest_topic_id = $2, latest_post_id = $3 WHERE id = $1",
-                )
-                .bind(category_id)
-                .bind(topic_id)
-                .bind(new_id)
-                .execute(&mut *conn)
-                .await?;
-            } else {
-                sqlx::query("UPDATE categories SET latest_post_id = $2 WHERE id = $1")
-                    .bind(category_id)
-                    .bind(new_id)
-                    .execute(&mut *conn)
-                    .await?;
-            }
         }
         crate::web_hooks::enqueue_post_hooks(
             &mut *conn,

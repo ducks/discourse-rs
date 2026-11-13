@@ -280,6 +280,18 @@ async fn add_inner(
         )
         .await?;
     }
+    // track_latest_on_category, which PostCreator runs after its
+    // transaction. Here the caller's is still open, so the category's row
+    // is locked before track_topic locks the author's user_stats: the
+    // order a new topic takes them in (Topic's after_create counts the
+    // category, then track_topic). The other way round the two deadlock.
+    if let Some(category_id) = category_id {
+        sqlx::query("UPDATE categories SET latest_post_id = $2 WHERE id = $1")
+            .bind(category_id)
+            .bind(post_id)
+            .execute(&mut *conn)
+            .await?;
+    }
     // track_topic
     change_topic_user(
         ctx.bus,
@@ -492,14 +504,7 @@ async fn add_inner(
     )
     .await?;
 
-    // track_latest_on_category; the search index skips an empty raw.
-    if let Some(category_id) = category_id {
-        sqlx::query("UPDATE categories SET latest_post_id = $2 WHERE id = $1")
-            .bind(category_id)
-            .bind(post_id)
-            .execute(&mut *conn)
-            .await?;
-    }
+    // The search index skips an empty raw.
     if !raw.is_empty() {
         index_message(&mut *conn, ctx, topic_id, post_id, &cooked, private_message).await?;
     }
