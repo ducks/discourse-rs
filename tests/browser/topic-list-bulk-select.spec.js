@@ -374,7 +374,7 @@ test("an admin closes, archives, unlists and relists exactly the selected topics
   expect(column(ids, "visible")).toEqual(sorted(ids).map((id) => [id, "t"]));
 });
 
-test("an admin deletes the selected topics, and a refusal is listed in the modal", async ({ page, context, session }) => {
+test("an admin deletes the selected topics, their own too, and a failure is listed in the modal", async ({ page, context, session }) => {
   const admin = await session("admin");
   const cat = await category(admin);
   const ids = await topicsIn(await session("user1"), cat, 3);
@@ -391,10 +391,20 @@ test("an admin deletes the selected topics, and a refusal is listed in the modal
     sorted([...ids, own]).map((id) => [id, id === a || id === c ? "t" : "f"]),
   );
 
-  // The port's endpoint refuses deleting one's own topic: the modal
-  // lists the failure (_showErrors), and closing it leaves the mode.
+  // An admin's own topic goes like any other.
   await page.locator(TOGGLE).click();
   await select(page, [own]);
+  await choose(page, "delete-topics");
+  await confirm(page, "Delete 1 topic");
+  expect(column([own, b], "deleted_at IS NOT NULL")).toEqual(
+    sorted([own, b]).map((id) => [id, id === own ? "t" : "f"]),
+  );
+
+  // What the server refuses is listed in the modal (_showErrors), and
+  // closing it leaves the mode: a failure made here, for the one left.
+  await page.route("**/topics/bulk", (route) => route.fulfill({ status: 500, body: "" }));
+  await page.locator(TOGGLE).click();
+  await select(page, [b]);
   await choose(page, "delete-topics");
   await page.locator(`${MODAL} #bulk-topics-confirm`).click();
   const errors = page.locator(`${MODAL} .topic-bulk-actions-modal__errors`);
@@ -403,7 +413,8 @@ test("an admin deletes the selected topics, and a refusal is listed in the modal
   await page.locator(`${MODAL} #bulk-topics-close`).click();
   await expect(page.locator(MODAL)).toHaveCount(0);
   await expect(page.locator("#list-area input.bulk-select")).toHaveCount(0);
-  expect(column([own, b], "deleted_at IS NOT NULL")).toEqual(sorted([own, b]).map((id) => [id, "f"]));
+  await page.unroute("**/topics/bulk");
+  expect(column([b], "deleted_at IS NOT NULL")).toEqual([[b, "f"]]);
 });
 
 test("an admin moves the selected topics to a category and sets their notification level", async ({
