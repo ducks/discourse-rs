@@ -6809,12 +6809,18 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     9999 (:67), `[date]` without a date (:585), era tokens in a format
     (:528), email timezones chrono-tz lacks or without an abbreviation
     (:590,601)
-240. `feat/lazy-videos-ui` S: discourse-lazy-videos' client: LazyVideo's
-    thumbnail button, title bar, dominant color, provider icon and
-    play_video label, LazyIframe's YouTube (list, start time), Vimeo and
-    TikTok embeds, the per-provider settings, lazy-videos.scss
-    (src/assets.rs); the email reduce_cooked turning each video into a
-    paragraph link (email/notification.rs:913-945)
+240. `feat/lazy-videos-ui` S: ~~discourse-lazy-videos' client:
+    LazyVideo's thumbnail button, title bar, dominant color, provider
+    icon and play_video label, LazyIframe's YouTube (list, start time),
+    Vimeo and TikTok embeds, the per-provider settings, lazy-videos.scss
+    (src/assets.rs)~~ (done in `feat/lazy-videos-ui`:
+    static/js/lazy-videos.js, a decorateCooked decorator on the stream's
+    posts, loaded while lazy_videos_enabled; the provider settings and
+    the label come in #cooked-config; css/lazy-videos.css is in
+    discourse.css whatever the setting, as the other plugins' are; no
+    preventCloak, the port cloaks no posts); the email reduce_cooked
+    turning each video into a paragraph link
+    (email/notification.rs:913-945)
 241. `feat/lazy-videos-crawler` S: CrawlerPostEnd's VideoObject JSON-LD
     per video at the end of each crawler post
     (server:topic-show-crawler-post-end); with 163's solved schema

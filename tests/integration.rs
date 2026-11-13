@@ -80,6 +80,7 @@ mod plugin_cakeday;
 mod plugin_captcha;
 mod plugin_gamification;
 mod plugin_graphviz;
+mod plugin_lazy_videos;
 mod plugin_login_with_amazon;
 mod plugin_math;
 mod plugin_microsoft_auth;
