@@ -4,7 +4,7 @@
 // topic, ChangeTimestamp, resetting the bump date, EditSlowMode and
 // ConvertToPublicTopic. Each change is checked in the database, the page
 // drawn again; what stays unported is refused, named.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, topicAdminMenu } = require("./helpers");
 
 async function setup(session, context) {
   const user1 = await session("user1");
@@ -21,8 +21,7 @@ const MENU = ".topic-admin-menu-content";
 let reloaded;
 
 async function openMenu(page) {
-  await page.locator(".topic-admin-menu-trigger:visible").first().click();
-  await expect(page.locator(MENU)).toBeVisible();
+  await topicAdminMenu(page);
 }
 
 // After a reload the browser restores the scroll and the suggested

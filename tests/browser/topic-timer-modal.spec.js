@@ -3,7 +3,7 @@
 // tile, the duration types' relative picker, publishing to a category,
 // the flashes, the TopicTimerInfo preview, setting and removing. Each
 // change is checked in topic_timers, the page drawn again.
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, topicAdminMenu } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
 const MODAL = ".d-modal.edit-topic-timer-modal";
@@ -34,8 +34,7 @@ async function settled(page) {
 }
 
 async function openModal(page) {
-  await page.locator(".topic-admin-menu-trigger:visible").first().click();
-  await expect(page.locator(MENU)).toBeVisible();
+  await topicAdminMenu(page);
   await page.locator(`${MENU} .admin-topic-timer-update .btn`).click();
   const modal = page.locator(MODAL);
   await expect(modal.locator(".d-modal__title-text")).toHaveText("Topic Timer");
@@ -235,4 +234,37 @@ test("a message is published to a category, which is required", async ({ page, c
   const again = await openModal(page);
   await expect(again.locator("select.timer-type")).toHaveValue("publish_to_category");
   await expect(again.locator("details.category-chooser summary")).toHaveAttribute("data-value", "4");
+});
+
+// The CI failure: the item clicked while the menu still floats down.
+// Playwright's fourth try at a moving item scrolls it to the top of the
+// window, here past the timeline's dock: the timeline undocks a frame
+// later and the menu jumps with its trigger under the click. At rest
+// the item is clicked where it is and the page never scrolls.
+test("Set Topic Timer is clicked in a menu at rest, the page not scrolled to reach it", async ({
+  page,
+  context,
+  session,
+}) => {
+  const user0 = await session("user0");
+  const user1 = await session("user1");
+  const t = await topic(
+    user1,
+    label("Topic timer modal"),
+    label("A topic for the topic timer modal spec"),
+    [1, 2].map((n) => ({ context: user0, raw: label(`Reply ${n} for the topic timer modal spec`) })),
+  );
+  await login(context, "admin");
+  await page.goto(t.url);
+  await expect(page.locator("#posts article[data-post-id]")).toHaveCount(3);
+  // Long enough to leave the dock behind.
+  await expect(page.locator(".timeline-container")).toHaveClass(/timeline-docked/);
+  expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeGreaterThan(150);
+
+  const menu = await topicAdminMenu(page);
+  expect(await menu.evaluate((el) => el.getAnimations().filter((a) => a.playState !== "finished").length)).toBe(0);
+  await page.evaluate(() => window.addEventListener("scroll", () => (window.scrolledForClick = true), { once: true }));
+  await menu.locator(".admin-topic-timer-update .btn").click();
+  await expect(page.locator(`${MODAL} .d-modal__title-text`)).toHaveText("Topic Timer");
+  expect(await page.evaluate(() => window.scrolledForClick)).toBeUndefined();
 });

@@ -5,7 +5,7 @@
 // form, the button waiting for what its destination needs, the request
 // Topic.movePosts or mergeTopic makes and the destination topic the page
 // then goes to. Each move is checked in the database.
-const { test, expect, login, api, topic, sql, label, member } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, member, topicAdminMenu } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
 const PANEL = ".container.posts > .selected-posts";
@@ -46,7 +46,7 @@ async function open(page, t, ids) {
   await page.goto(t.url);
   await expect(page.locator("#posts article[data-post-id]")).toHaveCount(t.posts.length);
   await settled(page);
-  await page.locator(".topic-admin-menu-trigger:visible").first().click();
+  await topicAdminMenu(page);
   await page.locator(`${MENU} .topic-admin-multi-select .btn`).click();
   await expect(page.locator(PANEL)).toBeVisible();
   if (ids === "all") {

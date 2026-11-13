@@ -7,7 +7,7 @@
 // selection (or, from the post admin menu, one post) to another member.
 // Each change is checked in the database. Move to opens the MoveToTopic
 // modal (move-to-topic.spec.js).
-const { test, expect, login, api, topic, sql, label } = require("./helpers");
+const { test, expect, login, api, topic, sql, label, topicAdminMenu } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
 const PANEL = ".container.posts > .selected-posts";
@@ -54,8 +54,7 @@ async function settled(page) {
 }
 
 async function toggleMode(page) {
-  await page.locator(".topic-admin-menu-trigger:visible").first().click();
-  await expect(page.locator(MENU)).toBeVisible();
+  await topicAdminMenu(page);
   await page.locator(`${MENU} .topic-admin-multi-select .btn`).click();
   await expect(page.locator(MENU)).toHaveCount(0);
 }
