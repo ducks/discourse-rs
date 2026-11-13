@@ -113,8 +113,8 @@ pub mod plugins;
 pub mod posting;
 pub mod posts;
 pub use posts::{
-    actions as post_actions, destroyer as post_destroyer, mover as post_mover,
-    owner_changer as post_owner_changer, view as post_view,
+    actions as post_actions, destroyer as post_destroyer, merger as post_merger,
+    mover as post_mover, owner_changer as post_owner_changer, view as post_view,
 };
 pub mod preferences_view;
 pub mod presence;

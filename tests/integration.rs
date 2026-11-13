@@ -92,6 +92,7 @@ mod plugin_wasm_htmx;
 mod policy;
 mod post_reply_to;
 mod post_voting;
+mod posts_bulk;
 mod preferences_pages;
 mod presence;
 mod pretty_text;
