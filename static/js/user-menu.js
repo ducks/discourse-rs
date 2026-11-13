@@ -7,8 +7,9 @@
 // (the cn cookie, as UserMenuNotificationItem#onClick sets it); Dismiss
 // marks the tab's notifications read, asking first while important ones
 // are unread (DismissNotificationConfirmationModal); the profile tab
-// toggles presence, sets the user status (user-status.js), leaves do not
-// disturb and logs out. A click outside,
+// toggles presence, sets the user status (user-status.js), pauses
+// notifications (DoNotDisturbModal) or leaves do not disturb, and logs
+// out. A click outside,
 // on the mobile view's cloak, or Escape closes it.
 (function () {
   "use strict";
@@ -190,6 +191,76 @@
     });
   }
 
+  // doNotDisturbClick's saving
+  var leavingDoNotDisturb = false;
+
+  // DoNotDisturbModal (modal/do-not-disturb.gjs): a DTapTile per duration,
+  // which enterDoNotDisturbFor saves (the header's moon follows over the
+  // live stream, as updateDoNotDisturbStatus draws it), and the button to
+  // the notification schedule preferences.
+  function doNotDisturbModal(model) {
+    Discourse.modal.show({
+      className: "do-not-disturb-modal",
+      title: model.title,
+      body: function (body, closeModal) {
+        // @flash, as DFlashMessage draws it above the body.
+        function flash(message) {
+          var alert = body.parentNode.querySelector("#modal-alert");
+          if (!alert) {
+            alert = document.createElement("div");
+            alert.id = "modal-alert";
+            alert.setAttribute("role", "alert");
+            alert.className = "alert";
+            body.parentNode.insertBefore(alert, body);
+          }
+          alert.textContent = message;
+        }
+        function saveDuration(duration) {
+          request("POST", basePath() + "/do-not-disturb.json", { duration: duration })
+            .then(function () {
+              closeModal();
+            })
+            .catch(function (e) {
+              flash(e.message);
+            });
+        }
+        var grid = document.createElement("div");
+        grid.className = "tap-tile-grid";
+        model.options.forEach(function (option) {
+          var tile = document.createElement("div");
+          tile.setAttribute("role", "button");
+          tile.tabIndex = 0;
+          tile.setAttribute("aria-pressed", "false");
+          tile.className = "do-not-disturb-tile tap-tile";
+          tile.id = "tap_tile_" + option[0];
+          tile.textContent = option[1];
+          tile.addEventListener("click", function () {
+            saveDuration(option[0]);
+          });
+          tile.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+              event.stopPropagation();
+              saveDuration(option[0]);
+            }
+          });
+          grid.appendChild(tile);
+        });
+        body.appendChild(grid);
+        var schedule = document.createElement("button");
+        schedule.className = "btn btn-text btn-default";
+        schedule.type = "button";
+        schedule.innerHTML = '<span class="d-button-label"></span>';
+        schedule.querySelector(".d-button-label").textContent = model.set_schedule;
+        // navigateToNotificationSchedule
+        schedule.addEventListener("click", function () {
+          closeModal();
+          window.location.href = model.schedule_url;
+        });
+        body.appendChild(schedule);
+      },
+    });
+  }
+
   function wantsNewWindow(event) {
     return event.shiftKey || event.metaKey || event.ctrlKey || event.button === 1;
   }
@@ -250,18 +321,30 @@
         });
       return;
     }
-    if (target.closest(".do-not-disturb button")) {
-      if (target.closest(".do-not-disturb").classList.contains("enabled")) {
-        request("DELETE", basePath() + "/do-not-disturb")
+    var dnd = target.closest(".do-not-disturb");
+    if (dnd && target.closest("button")) {
+      // doNotDisturbClick: leaveDoNotDisturb while paused, else the modal.
+      if (dnd.classList.contains("enabled")) {
+        if (leavingDoNotDisturb) {
+          return;
+        }
+        leavingDoNotDisturb = true;
+        request("DELETE", basePath() + "/do-not-disturb.json")
           .then(function () {
             return load("profile");
           })
           .catch(function (e) {
             showError(e.message);
+          })
+          .then(function () {
+            leavingDoNotDisturb = false;
           });
       } else {
+        var modal = dnd.dataset.modal ? JSON.parse(dnd.dataset.modal) : null;
         close();
-        showError("Not ported yet: the do not disturb modal.");
+        if (modal && Discourse.modal) {
+          doNotDisturbModal(modal);
+        }
       }
       return;
     }

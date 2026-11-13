@@ -3710,3 +3710,234 @@ async fn members_clear_and_restore_a_topics_pin() {
     assert_eq!(reply.status, StatusCode::FORBIDDEN);
     assert_eq!(cleared(5).await, Some(None));
 }
+
+/// The user menu's "Pause notifications" (UserMenuProfileTabContent's
+/// doNotDisturbClick): the item carries what DoNotDisturbModal draws
+/// while notifications aren't paused; DoNotDisturbController#create takes
+/// each of the modal's durations and #destroy ends the active timing; the
+/// current user's do_not_disturb_until and the header's moon follow, the
+/// moon going on its own as the timing ends.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_user_menu_pauses_notifications() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let mut anon = Client::new(client.state.clone());
+    anon.fetch_csrf().await;
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    client.fetch_csrf().await;
+    let xhr = [("x-requested-with", "XMLHttpRequest")];
+    let timings = || {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_as::<_, (chrono::NaiveDateTime, chrono::NaiveDateTime, bool)>(
+                "SELECT starts_at, ends_at, scheduled FROM do_not_disturb_timings \
+                 WHERE user_id = (SELECT id FROM users WHERE username = 'user1') ORDER BY id",
+            )
+            .fetch_all(&pool)
+            .await
+            .unwrap()
+        }
+    };
+    let clear = || {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query("DELETE FROM do_not_disturb_timings")
+                .execute(&pool)
+                .await
+                .unwrap();
+        }
+    };
+
+    // Not paused: the modal's title, tiles and schedule button.
+    let menu = client.get("/user-menu?tab=profile").await.body;
+    assert!(
+        menu.contains(
+            "<li class=\"do-not-disturb\" data-modal=\"{&quot;title&quot;:&quot;Pause notifications for…&quot;,&quot;options&quot;:[[&quot;30&quot;,&quot;30 minutes&quot;],[&quot;60&quot;,&quot;1 hour&quot;],[&quot;120&quot;,&quot;2 hours&quot;],[&quot;tomorrow&quot;,&quot;Until tomorrow&quot;]],&quot;set_schedule&quot;:&quot;Set a notification schedule&quot;,&quot;schedule_url&quot;:&quot;/u/user1/preferences/notifications&quot;}\"><button class=\"btn no-text btn-flat profile-tab-btn\" type=\"button\">"
+        ),
+        "{menu}"
+    );
+    let current = client.get("/session/current.json").await.json();
+    assert_eq!(current["current_user"]["do_not_disturb_until"], Value::Null);
+
+    // requires_login
+    for method in [Method::POST, Method::DELETE] {
+        let reply = anon
+            .send(method, "/do-not-disturb.json", &xhr, "duration=30")
+            .await;
+        assert_eq!(reply.status, StatusCode::FORBIDDEN);
+        assert_eq!(reply.json()["error_type"], "not_logged_in");
+    }
+    // Discourse::InvalidParameters: no duration, or one that is neither
+    // minutes nor "tomorrow".
+    for body in ["", "duration=", "duration=later"] {
+        let reply = client
+            .send(Method::POST, "/do-not-disturb.json", &xhr, body)
+            .await;
+        assert_eq!(reply.status, StatusCode::BAD_REQUEST, "{body}");
+        assert_eq!(reply.json()["error_type"], "invalid_parameters", "{body}");
+    }
+    // ends_at_greater_than_starts_at
+    let reply = client
+        .send(Method::POST, "/do-not-disturb.json", &xhr, "duration=-5")
+        .await;
+    assert_eq!(reply.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(reply.json()["errors"], json!(["Ends at is invalid"]));
+    assert!(timings().await.is_empty());
+
+    // The modal's minutes.
+    for minutes in [30, 60, 120] {
+        let before = chrono::Utc::now().naive_utc();
+        let reply = client
+            .send(
+                Method::POST,
+                "/do-not-disturb.json",
+                &xhr,
+                &format!("duration={minutes}"),
+            )
+            .await;
+        assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+        let rows = timings().await;
+        assert_eq!(rows.len(), 1, "{rows:?}");
+        let (starts_at, ends_at, scheduled) = rows[0];
+        assert!(!scheduled);
+        let slack = chrono::Duration::seconds(5);
+        assert!(
+            starts_at >= before - slack && starts_at <= before + slack,
+            "{starts_at}"
+        );
+        let length = ends_at - starts_at;
+        assert!(
+            (length - chrono::Duration::minutes(minutes)).abs() < slack,
+            "{minutes}: {length}"
+        );
+        // The answer's ends_at is the current user's do_not_disturb_until.
+        let answered = reply.json()["ends_at"].clone();
+        assert!(answered.is_string(), "{}", reply.body);
+        let current = client.get("/session/current.json").await.json();
+        assert_eq!(current["current_user"]["do_not_disturb_until"], answered);
+        clear().await;
+    }
+
+    // "tomorrow": Time.now.end_of_day.
+    let reply = client
+        .send(
+            Method::POST,
+            "/do-not-disturb.json",
+            &xhr,
+            "duration=tomorrow",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let rows = timings().await;
+    assert_eq!(rows.len(), 1, "{rows:?}");
+    let (starts_at, ends_at, _) = rows[0];
+    // Unless the day turned between the request and here.
+    assert!(
+        ends_at.date() == starts_at.date() || ends_at.date() == chrono::Utc::now().date_naive(),
+        "{ends_at}"
+    );
+    assert_eq!(
+        ends_at.format("%H:%M:%S%.6f").to_string(),
+        "23:59:59.999999"
+    );
+
+    // Paused: the item is on with its end, and has no modal to open.
+    let menu = client.get("/user-menu?tab=profile").await.body;
+    assert!(
+        menu.contains("<li class=\"do-not-disturb enabled\"><button class=\"btn no-text btn-flat profile-tab-btn\" type=\"button\"><svg class=\"fa d-icon d-icon-toggle-on "),
+        "{menu}"
+    );
+    assert!(
+        menu.contains("<span>Pause notifications</span> <span class=\"relative-date\""),
+        "{menu}"
+    );
+    assert!(!menu.contains("data-modal"), "{menu}");
+
+    // The header's moon, with the page and live; #destroy takes it away.
+    let moon = r#"<div class="do-not-disturb-background" title="Notifications paused">"#;
+    assert!(client.get("/latest").await.body.contains(moon));
+    let mut body = client.open("/live").await;
+    let mut buffer = String::new();
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.contains(moon), "{header}");
+    let reply = client
+        .send(Method::DELETE, "/do-not-disturb.json", &xhr, "")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.json(), json!({ "success": "OK" }));
+    assert!(timings().await.is_empty());
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(!header.contains(moon), "{header}");
+    let reply = client
+        .send(Method::POST, "/do-not-disturb.json", &xhr, "duration=30")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.contains(moon), "{header}");
+    // canUserReceiveNotifications: an alert isn't shown while paused.
+    let user_id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'user1'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let alert_state = client.state.clone();
+    let alert = || {
+        let (pool, st) = (db.pool.clone(), alert_state.clone());
+        async move {
+            let mut tx = pool.begin().await.unwrap();
+            discourse_rs::bus::publish_notification_alert(
+                &st.bus,
+                &mut tx,
+                user_id,
+                &json!({
+                    "notification_type": 2,
+                    "username": "user2",
+                    "topic_title": "A topic",
+                    "excerpt": "A reply",
+                    "post_url": "/t/a-topic/35/2",
+                }),
+            )
+            .await
+            .unwrap();
+            tx.commit().await.unwrap();
+        }
+    };
+    alert().await;
+    let reply = client
+        .send(Method::DELETE, "/do-not-disturb.json", &xhr, "")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        header.starts_with(r#"<button id="toggle-current-user""#),
+        "{header}"
+    );
+    assert!(!header.contains(moon), "{header}");
+    alert().await;
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        header.starts_with(r#"<div id="notification-alert""#),
+        "{header}"
+    );
+    drop(body);
+    let reply = client
+        .send(Method::POST, "/do-not-disturb.json", &xhr, "duration=30")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let current = client.get("/session/current.json").await.json();
+    assert!(current["current_user"]["do_not_disturb_until"].is_string());
+    assert!(!client.get("/latest").await.body.contains("data-modal"));
+
+    // The notifications service's timer: the moon goes as the timing ends,
+    // with no message.
+    sqlx::query("UPDATE do_not_disturb_timings SET ends_at = now() + interval '2 seconds'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut body = client.open("/live").await;
+    let mut buffer = String::new();
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.contains(moon), "{header}");
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(!header.contains(moon), "{header}");
+}

@@ -374,14 +374,36 @@ async fn initial(live: &mut Live) -> Result<(), AppError> {
 /// Waits for the next message and takes whatever else is already due with
 /// it; `None` when the stream's lifetime is up.
 async fn next_batch(live: &mut Live) -> Option<Result<(), AppError>> {
-    let first = tokio::time::timeout_at(live.deadline, live.subscription.next())
-        .await
-        .ok()?;
+    // The notifications service's _checkDoNotDisturb timer: the moon goes
+    // as do not disturb ends, the badge it hid drawn in its place.
+    let first = match do_not_disturb_end(live) {
+        Some(end) if end < live.deadline => {
+            match tokio::time::timeout_at(end, live.subscription.next()).await {
+                Ok(first) => first,
+                Err(_) => return Some(push_badge(live, None)),
+            }
+        }
+        _ => tokio::time::timeout_at(live.deadline, live.subscription.next())
+            .await
+            .ok()?,
+    };
     let mut batch = vec![first];
     while let Ok(item) = tokio::time::timeout(Duration::ZERO, live.subscription.next()).await {
         batch.push(item);
     }
     Some(handle_batch(live, batch).await)
+}
+
+/// When the member's do not disturb ends, while the badge last sent
+/// still shows it.
+fn do_not_disturb_end(live: &Live) -> Option<tokio::time::Instant> {
+    let until = live.badge.do_not_disturb_until?;
+    if !live.badge.in_do_not_disturb() {
+        return None;
+    }
+    let left = (until - crate::clock::now_naive()).to_std().ok()?;
+    // Past the end, as in_do_not_disturb counts the end itself in.
+    tokio::time::Instant::now().checked_add(left + Duration::from_millis(1))
 }
 
 async fn handle_batch(
@@ -448,6 +470,10 @@ async fn handle_batch(
             // ChatSidebarIndicators' userStatus, on a DM's link.
             chat = chat || live.chat.is_some();
         } else if alert.as_ref() == Some(&message.channel) {
+            // canUserReceiveNotifications: none while in do not disturb.
+            if live.badge.in_do_not_disturb() {
+                continue;
+            }
             let base = live.state.config.globals.relative_url_root();
             live.pending.push_back(
                 Event::default()
