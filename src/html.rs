@@ -529,6 +529,36 @@ pub(crate) fn dialog_strings(i18n: &I18n) -> String {
     .replace('<', "\\u003c")
 }
 
+/// The `#delete-replies-strings` block: what topic.js's delete replies
+/// dialog (the topic controller's deletePost) says, by its key under
+/// js.post.controls.delete_replies.
+fn delete_replies_strings(i18n: &I18n) -> String {
+    let mut strings: serde_json::Map<String, Value> = [
+        "confirm",
+        "direct_replies.one",
+        "direct_replies.other",
+        "all_replies.one",
+        "all_replies.other",
+        "just_the_post",
+    ]
+    .into_iter()
+    .map(|key| {
+        let text = i18n
+            .t(&format!("js.post.controls.delete_replies.{key}"))
+            .unwrap_or(key);
+        (key.to_string(), Value::from(text))
+    })
+    .collect();
+    strings.insert(
+        "cancel".to_string(),
+        Value::from(i18n.t("js.cancel").unwrap_or("cancel")),
+    );
+    format!(
+        "<script type=\"application/json\" id=\"delete-replies-strings\">{}</script>",
+        Value::Object(strings).to_string().replace('<', "\\u003c")
+    )
+}
+
 /// The `#post-admin-config` block: what topic-admin-menu.js's
 /// ChangePostNoticeModal says.
 fn post_admin_config(i18n: &I18n) -> String {
@@ -3136,6 +3166,9 @@ pub async fn topic_page(
     if viewer.is_some() {
         flag_menus.push_str(&post_admin_config(i18n));
     }
+    if staff {
+        flag_menus.push_str(&delete_replies_strings(i18n));
+    }
     let topic_menus = format!(
         "{topic_admin_menu}{topic_bookmarks_menu}{}{}{flag_menus}",
         crate::post_view::add_pm_participants_config(&cx, view),
@@ -3163,9 +3196,11 @@ pub async fn topic_page(
     let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref(), pm_counts)?;
     let quote_config = quote_button_config(conn, i18n, settings, view, viewer).await?;
     // A message's participant removal asks first; a poll and the flag
-    // modal report their errors in a dialog.
+    // modal report their errors in a dialog; staff deleting a post with
+    // replies are asked about the replies.
     let dialog_strings = if viewer.is_some()
-        && (view["archetype"] == "private_message"
+        && (staff
+            || view["archetype"] == "private_message"
             || post_settings.poll.is_some()
             || !topic_admin_menu.is_empty()
             || !topic_bookmarks_menu.is_empty()

@@ -19,7 +19,8 @@
 // rendered as DialogHolder renders them into #dialog-holder, closed by
 // its buttons, the close button, the overlay or Escape (the last three
 // cancel). `buttons` replaces the footer's: { label, class, icon,
-// action }. The labels come from the page's #dialog-strings (ok_value,
+// action }, a bare btn without a class as DButton's, cancelling when its
+// action is "cancel". The labels come from the page's #dialog-strings (ok_value,
 // cancel, yes_value, no_value, modal.close).
 (function () {
   "use strict";
@@ -80,9 +81,8 @@
 
   function button(cls, label, iconName) {
     return (
-      '<button class="btn ' +
-      (iconName ? "btn-icon-text " : "") +
-      cls +
+      '<button class="' +
+      ("btn " + (iconName ? "btn-icon-text " : "") + cls).trim() +
       '" type="button">' +
       (iconName ? icon(iconName) : "") +
       '<span class="d-button-label">' +
@@ -123,7 +123,7 @@
       html += '<div class="dialog-footer">';
       if (options.buttons) {
         options.buttons.forEach(function (b) {
-          html += button(b.class || "btn-default", b.label, b.icon);
+          html += button(b.class || "",b.label, b.icon);
           actions.push(b.action || null);
         });
       } else {

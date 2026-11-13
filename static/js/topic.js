@@ -696,17 +696,145 @@
     }
   }
 
-  // popupAjaxError: the error the server gave.
+  // popupAjaxError: the error the server gave, in the dialog where the
+  // page carries it.
   function popupError(r) {
+    var popup = function (text) {
+      if (Discourse.dialog) {
+        Discourse.dialog.popupAjaxError(text);
+      } else {
+        window.alert(text);
+      }
+    };
+    var status = r.statusText || "HTTP " + r.status;
     return r
       .json()
       .then(function (body) {
-        window.alert((body.errors || [r.statusText]).join("\n"));
+        popup((body.errors || [status]).join("\n"));
       })
       .catch(function () {
-        window.alert(r.statusText);
+        popup(status);
       });
   }
+
+  function baseUri() {
+    return (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+  }
+
+  // Post.deleteMany: DELETE /posts/destroy_many with post_ids[] as jQuery
+  // sends them, then each of the posts the page draws again as the
+  // server has it (Ember's setDeletedState, after the answer and not
+  // before it).
+  function deleteMany(ids) {
+    var root = baseUri();
+    var headers = memberHeaders();
+    headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+    var form = new URLSearchParams();
+    ids.forEach(function (id) {
+      form.append("post_ids[]", String(id));
+    });
+    form.append("agree_with_first_reply_flag", "true");
+    fetch(root + "/posts/destroy_many", {
+      method: "DELETE",
+      headers: headers,
+      credentials: "same-origin",
+      body: form.toString(),
+    }).then(function (r) {
+      if (!r.ok) {
+        return popupError(r);
+      }
+      ids.forEach(function (id) {
+        if (document.querySelector('article[data-post-id="' + id + '"]')) {
+          htmx.ajax("GET", root + "/live/post/" + id, { swap: "none" });
+        }
+      });
+    });
+  }
+
+  // The topic controller's deletePost for staff deleting a post with
+  // replies (the server's data-has-replies): its reply ids, then the
+  // delete replies dialog: the post and its direct replies, the post and
+  // all of them when some are deeper, the post alone (`justThePost`, as
+  // is a post whose replies are gone) or nothing.
+  function deletePostReplies(postId, justThePost) {
+    var id = parseInt(postId, 10);
+    fetch(baseUri() + "/posts/" + id + "/reply-ids.json", {
+      headers: memberHeaders(),
+      credentials: "same-origin",
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          // Ember leaves the failure unhandled: nothing is deleted.
+          throw new Error("reply-ids: " + r.status);
+        }
+        return r.json();
+      })
+      .then(function (replies) {
+        if (replies.length === 0) {
+          justThePost();
+          return;
+        }
+        var s = {};
+        try {
+          s = JSON.parse(document.getElementById("delete-replies-strings").textContent);
+        } catch (e) {
+          // No strings: the buttons go unlabelled.
+        }
+        var label = function (key, count) {
+          return String(s[key + (count === 1 ? ".one" : ".other")]).replace("%{count}", count);
+        };
+        var all = replies.map(function (r) {
+          return r.id;
+        });
+        var direct = replies
+          .filter(function (r) {
+            return r.level === 1;
+          })
+          .map(function (r) {
+            return r.id;
+          });
+        var buttons = [
+          {
+            label: label("direct_replies", direct.length),
+            class: "btn-primary",
+            action: function () {
+              deleteMany([id].concat(direct));
+            },
+          },
+        ];
+        if (all.length > direct.length) {
+          buttons.push({
+            label: label("all_replies", all.length),
+            action: function () {
+              deleteMany([id].concat(all));
+            },
+          });
+        }
+        buttons.push({ label: s.just_the_post, action: justThePost });
+        buttons.push({ label: s.cancel, class: "btn-flat", action: "cancel" });
+        Discourse.dialog.alert({ title: s.confirm, buttons: buttons });
+      })
+      .catch(function (e) {
+        console.error(e);
+      });
+  }
+
+  // The post menu's delete goes by htmx: a post with replies asks first,
+  // and its request is the dialog's just this post.
+  document.addEventListener("htmx:confirm", function (event) {
+    var del = event.target;
+    if (!del.matches || !del.matches(".post-action-menu__delete[data-has-replies]")) {
+      return;
+    }
+    var article = del.closest("article[data-post-id]");
+    if (!article) {
+      return;
+    }
+    event.preventDefault();
+    deletePostReplies(article.dataset.postId, function () {
+      event.detail.issueRequest(true);
+    });
+  });
 
   // A message's participant off it (TopicController#removeAllowedUser and
   // #removeAllowedGroup): PUT remove-allowed-user or remove-allowed-group,
@@ -876,8 +1004,8 @@
     // A small action's delete and recover (the topic controller's
     // deletePost and recoverPost): DELETE /posts/:id with the page as its
     // context (Post#destroy), PUT /posts/:id/recover, then the post again
-    // as the server draws it. Staff deleting one with replies get the
-    // reply-ids dialog in Ember, not ported.
+    // as the server draws it. Staff deleting one with replies are asked
+    // about the replies first (deletePostReplies).
     var smallAction = event.target.closest(
       ".small-action-delete, .small-action-recover"
     );
@@ -886,17 +1014,7 @@
       if (!article || smallAction.disabled) {
         return;
       }
-      if (smallAction.hasAttribute("data-has-replies")) {
-        var error = document.getElementById("page-error");
-        if (error) {
-          error.textContent =
-            "Not ported yet: deleting a post with replies (the delete replies dialog).";
-          error.hidden = false;
-        }
-        return;
-      }
-      var root =
-        (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+      var root = baseUri();
       var postId = article.dataset.postId;
       var recover = smallAction.classList.contains("small-action-recover");
       var headers = memberHeaders();
@@ -905,14 +1023,21 @@
         headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
         init.body = "context=" + encodeURIComponent(location.pathname);
       }
-      smallAction.disabled = true;
-      fetch(root + "/posts/" + postId + (recover ? "/recover" : ""), init).then(function (r) {
-        if (!r.ok) {
-          smallAction.disabled = false;
-          return popupError(r);
-        }
-        htmx.ajax("GET", root + "/live/post/" + postId, { swap: "none" });
-      });
+      var send = function () {
+        smallAction.disabled = true;
+        fetch(root + "/posts/" + postId + (recover ? "/recover" : ""), init).then(function (r) {
+          if (!r.ok) {
+            smallAction.disabled = false;
+            return popupError(r);
+          }
+          htmx.ajax("GET", root + "/live/post/" + postId, { swap: "none" });
+        });
+      };
+      if (!recover && smallAction.hasAttribute("data-has-replies")) {
+        deletePostReplies(postId, send);
+      } else {
+        send();
+      }
       return;
     }
     // The footer's share: ShareTopic (share-topic.js).
