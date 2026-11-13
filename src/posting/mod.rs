@@ -175,6 +175,13 @@ pub enum TopicUserAttr {
     /// `first_visited_at` and `last_visited_at` (TopicUser.track_visit!);
     /// a created row takes create_missing_record's own time instead.
     VisitedAt(chrono::NaiveDateTime),
+    /// `cleared_pinned_at` (Topic#clear_pin_for; #re_pin_for's nil).
+    ClearedPinnedAt(Option<chrono::NaiveDateTime>),
+}
+
+/// A timestamp column's SQL literal.
+fn timestamp_sql(at: &chrono::NaiveDateTime) -> String {
+    format!("'{}'::timestamp", at.format("%Y-%m-%d %H:%M:%S%.6f"))
 }
 
 /// `TopicUser.change(user_id, topic_id, attrs)`: update the row, or create
@@ -210,11 +217,13 @@ pub async fn change_topic_user(
                 ));
             }
             TopicUserAttr::VisitedAt(at) => {
-                let at = at.format("%Y-%m-%d %H:%M:%S%.6f");
-                sets.push(format!(
-                    "first_visited_at = '{at}'::timestamp, last_visited_at = '{at}'::timestamp"
-                ));
+                let at = timestamp_sql(at);
+                sets.push(format!("first_visited_at = {at}, last_visited_at = {at}"));
             }
+            TopicUserAttr::ClearedPinnedAt(at) => sets.push(format!(
+                "cleared_pinned_at = {}",
+                at.as_ref().map_or("NULL".into(), timestamp_sql)
+            )),
         }
     }
     let updated = sqlx::query(&format!(
@@ -283,6 +292,10 @@ async fn create_missing_record(
             TopicUserAttr::LastEmailedPostNumber(n) => {
                 columns.push("last_emailed_post_number".into());
                 values.push(n.to_string());
+            }
+            TopicUserAttr::ClearedPinnedAt(at) => {
+                columns.push("cleared_pinned_at".into());
+                values.push(at.as_ref().map_or("NULL".into(), timestamp_sql));
             }
             TopicUserAttr::NotificationLevel(..) | TopicUserAttr::VisitedAt(_) => {}
         }
