@@ -581,7 +581,7 @@ fn mobile_category_topic(cx: &ListContext, topic: &Value) -> String {
     };
     format!(
         "<tr class=\"{classes}\"><td class=\"main-link\"><div class=\"topic-inset\"><span class=\"topic-statuses\">{}</span> <a href=\"{url}\" class=\"title\" data-topic-id=\"{id}\">{title}</a>{unseen} {age}</div></td><td class=\"num posts\">{count}</td></tr>",
-        topic_statuses(cx, topic)
+        crate::topic_list_view::topic_statuses_with(cx, topic, true)
     )
 }
 

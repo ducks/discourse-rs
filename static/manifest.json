@@ -287,6 +287,13 @@
       ]
     },
     {
+      "name": "topic-status.js",
+      "content_type": "js",
+      "files": [
+        "js/topic-status.js"
+      ]
+    },
+    {
       "name": "oneboxes.js",
       "content_type": "js",
       "files": [

@@ -3529,3 +3529,164 @@ async fn bus_tags_follow_message_bus_group_ids() {
         assert_eq!(group_tags(&held), sorted(want), "granular {granular}");
     }
 }
+
+/// TopicStatus' pin toggle (topic-status.gjs): a member's pinned status is
+/// `a.pin-toggle-button`, a visitor's the span. TopicsController#clear_pin
+/// and #re_pin set and clear the member's `cleared_pinned_at`, and the
+/// lists and the topic follow (PinnedCheck).
+#[tokio::test]
+async fn members_clear_and_restore_a_topics_pin() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let mut anon = Client::new(client.state.clone());
+    anon.fetch_csrf().await;
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    client.fetch_csrf().await;
+    let xhr = [("x-requested-with", "XMLHttpRequest")];
+    let cleared = |topic_id: i32| {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_scalar::<_, Option<chrono::NaiveDateTime>>(
+                "SELECT cleared_pinned_at FROM topic_users WHERE topic_id = $1 \
+                   AND user_id = (SELECT id FROM users WHERE username = 'user1')",
+            )
+            .bind(topic_id)
+            .fetch_optional(&pool)
+            .await
+            .unwrap()
+        }
+    };
+    let topic = |list: &Value, id: i64| -> Value {
+        list["topic_list"]["topics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["id"] == id)
+            .cloned()
+            .unwrap_or_else(|| panic!("topic {id} in {list}"))
+    };
+    let row = |page: &str, id: i64| -> String {
+        let marker = format!(r#"data-topic-id="{id}">"#);
+        let start = page.find(&marker).unwrap_or_else(|| panic!("{marker}"));
+        page[start..start + page[start..].find("</tr>").unwrap()].to_string()
+    };
+    let thumbtack = |class: &str| {
+        format!(
+            r##"<svg class="fa d-icon d-icon-thumbtack svg-icon fa-width-auto{class} svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#thumbtack"></use></svg>"##
+        )
+    };
+    let pinned_help = "This topic is pinned for you; it will display at the top of its category";
+    let unpinned_help = "This topic is unpinned for you; it will display in regular order";
+    let pinned_link = format!(
+        r#"<span class="topic-statuses"><a class="topic-status --pinned pin-toggle-button" href="" title="{pinned_help}">{}</a></span>"#,
+        thumbtack("")
+    );
+    let unpinned_link = format!(
+        r#"<span class="topic-statuses"><a class="topic-status --unpinned pin-toggle-button" href="" title="{unpinned_help}">{}</a></span>"#,
+        thumbtack(" unpinned")
+    );
+    let pinned_span = format!(
+        r#"<span class="topic-statuses"><span class="topic-status --pinned" title="{pinned_help}">{}</span></span>"#,
+        thumbtack("")
+    );
+
+    // Topic 5 is pinned globally; user1 has no topic user for it.
+    assert_eq!(cleared(5).await, None);
+    let page = client.get("/latest").await.body;
+    assert!(row(&page, 5).contains(&pinned_link), "{}", row(&page, 5));
+    // topic-status.js, with the titles it swaps.
+    assert!(page.contains(&format!(
+        r#"" data-pinned="{pinned_help}" data-unpinned="{unpinned_help}"></script>"#
+    )));
+    let visitor = anon.get("/latest").await.body;
+    assert!(
+        row(&visitor, 5).contains(&pinned_span),
+        "{}",
+        row(&visitor, 5)
+    );
+    assert!(!visitor.contains("pin-toggle-button"));
+    assert!(!visitor.contains("topic-status.js"));
+    // The topic's title and the docked header's copy.
+    let page = client.get("/t/welcome-to-discourse/5").await.body;
+    assert_eq!(page.matches(&pinned_link).count(), 2, "{page}");
+    let visitor = anon.get("/t/welcome-to-discourse/5").await.body;
+    assert_eq!(visitor.matches(&pinned_span).count(), 2);
+    assert!(!visitor.contains("pin-toggle-button"));
+
+    // requires_login
+    let reply = anon.send(Method::PUT, "/t/5/clear-pin", &xhr, "").await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN);
+    assert_eq!(reply.json()["error_type"], "not_logged_in");
+    let reply = anon.send(Method::PUT, "/t/5/re-pin", &xhr, "").await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN);
+    assert_eq!(reply.json()["error_type"], "not_logged_in");
+
+    // clear_pin: `render body: nil`, and the topic user it makes.
+    let before = chrono::Utc::now().naive_utc();
+    let reply = client.send(Method::PUT, "/t/5/clear-pin", &xhr, "").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.body, "");
+    let at = cleared(5).await.flatten().expect("cleared_pinned_at");
+    assert!(at >= before - chrono::Duration::seconds(1), "{at}");
+    let list = client.get("/latest.json").await.json();
+    assert_eq!(topic(&list, 5)["pinned"], false);
+    assert_eq!(topic(&list, 5)["unpinned"], true);
+    // No longer held at the top.
+    assert_ne!(list["topic_list"]["topics"][0]["id"], 5);
+    let view = client.get("/t/5.json").await.json();
+    assert_eq!(view["pinned"], false);
+    assert_eq!(view["unpinned"], true);
+    let page = client.get("/latest").await.body;
+    assert!(row(&page, 5).contains(&unpinned_link), "{}", row(&page, 5));
+    let page = client.get("/t/welcome-to-discourse/5").await.body;
+    assert_eq!(page.matches(&unpinned_link).count(), 2, "{page}");
+    // The pin is the member's own.
+    let visitor = anon.get("/latest").await.body;
+    assert!(row(&visitor, 5).contains(&pinned_span));
+    assert_eq!(
+        anon.get("/latest.json").await.json()["topic_list"]["topics"][0]["id"],
+        5
+    );
+
+    // re_pin
+    let reply = client.send(Method::PUT, "/t/5/re-pin.json", &xhr, "").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.body, "");
+    assert_eq!(cleared(5).await, Some(None));
+    let list = client.get("/latest.json").await.json();
+    assert_eq!(list["topic_list"]["topics"][0]["id"], 5);
+    assert_eq!(topic(&list, 5)["pinned"], true);
+    assert_eq!(topic(&list, 5)["unpinned"], Value::Null);
+    let page = client.get("/latest").await.body;
+    assert!(row(&page, 5).contains(&pinned_link));
+
+    // A topic that isn't pinned takes the time all the same, and shows
+    // neither status; re_pin on a topic with no topic user makes one.
+    assert_eq!(cleared(35).await, Some(None));
+    let reply = client.send(Method::PUT, "/t/35/clear-pin", &xhr, "").await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert!(cleared(35).await.flatten().is_some());
+    let list = client.get("/latest.json").await.json();
+    assert_eq!(topic(&list, 35)["pinned"], false);
+    assert_ne!(topic(&list, 35)["unpinned"], true);
+    assert!(!row(&client.get("/latest").await.body, 35).contains("pin-toggle-button"));
+    assert_eq!(cleared(4).await, None);
+
+    // ensure_can_see!: another's message, a restricted category's topic,
+    // a deleted topic and none at all are InvalidAccess.
+    for id in [36, 4, 40, 999_999] {
+        for action in ["clear-pin", "re-pin"] {
+            let path = format!("/t/{id}/{action}");
+            let reply = client.send(Method::PUT, &path, &xhr, "").await;
+            assert_eq!(reply.status, StatusCode::FORBIDDEN, "{path}");
+            assert_eq!(reply.json()["error_type"], "invalid_access", "{path}");
+        }
+        assert_eq!(cleared(id).await, None);
+    }
+    // Without the CSRF token nothing is written.
+    client.csrf = None;
+    let reply = client.send(Method::PUT, "/t/5/clear-pin", &xhr, "").await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN);
+    assert_eq!(cleared(5).await, Some(None));
+}
