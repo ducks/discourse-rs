@@ -1672,6 +1672,138 @@ async fn the_new_list_draws_the_subset_toggle() {
     assert_eq!(subset_toggle(&html), []);
 }
 
+/// A tag's unread list (TagsController#show_unread, TopicQuery#list_unread
+/// within the tag) is a member's: topic 35, user1's one unread, is tagged
+/// guide and in General. Its Dismiss… carries the tag for dismissRead,
+/// and PUT /topics/bulk dismisses within the tag. The other members'
+/// lists (unseen, read, posted, bookmarks) answer under a tag too; a
+/// visitor has none of them (requires_login).
+#[tokio::test]
+async fn a_tags_unread_list_is_a_members() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let ids = |v: &serde_json::Value| -> Vec<i64> {
+        v["topic_list"]["topics"]
+            .as_array()
+            .unwrap_or_else(|| panic!("{v}"))
+            .iter()
+            .map(|t| t["id"].as_i64().unwrap())
+            .collect()
+    };
+    for (path, expected) in [
+        ("/tag/guide/2/l/unread.json", vec![35]),
+        ("/tag/2/l/unread.json", vec![35]),
+        ("/tag/guide/l/unread.json", vec![35]),
+        ("/tags/c/general/4/guide/2/l/unread.json", vec![35]),
+        ("/tags/c/general/4/none/guide/2/l/unread.json", vec![35]),
+        // Not in the subcategory, and not tagged howto.
+        (
+            "/tags/c/general/sub-general/34/guide/2/l/unread.json",
+            vec![],
+        ),
+        ("/tag/howto/1/l/unread.json", vec![]),
+    ] {
+        assert_eq!(ids(&user1.json(path).await), expected, "{path}");
+    }
+    let page = user1.json("/tag/guide/2/l/unread.json?per_page=1").await;
+    assert_eq!(
+        page["topic_list"]["more_topics_url"],
+        "/tag/guide/2/l/unread?match_all_tags=true&page=1&per_page=1&tags%5B%5D=guide"
+    );
+
+    let html = user1.page("/tag/guide/2/l/unread").await;
+    assert!(html.contains(r#"data-topic-id="35""#), "{html}");
+    // Unified new folds the unread pill into new's.
+    assert_eq!(active_nav(&html), None);
+    assert!(
+        html.contains("<title>Unread guide topics - Discourse</title>"),
+        "{html}"
+    );
+    // DismissRead's button, the tag on its row for topic-dismiss.js.
+    assert!(
+        html.contains(
+            r#"<div class="row dismiss-container-top" data-tag-name="guide"><button class="btn btn-default dismiss-read" id="dismiss-topics-top" title="Dismiss just new posts or stop tracking topics" type="button"><span class="d-button-label">Dismiss…</span></button></div>"#
+        ),
+        "{html}"
+    );
+    assert!(html.contains("/assets/topic-dismiss.js?v="));
+    // A tag within a category has the list; its navigation, and so the
+    // top row, is not drawn yet.
+    let html = user1.page("/tags/c/general/4/guide/2/l/unread").await;
+    assert!(html.contains(r#"data-topic-id="35""#), "{html}");
+    assert!(html.contains("<title>Unread guide topics in General - Discourse</title>"));
+    // Nothing unread under howto: the row is there, empty.
+    let html = user1.page("/tag/howto/1/l/unread").await;
+    assert!(html.contains(r#"<div class="row dismiss-container-top"></div>"#));
+    assert!(!html.contains(r#"data-topic-id="35""#));
+
+    // The other members' lists.
+    for filter in ["unseen", "read", "posted", "bookmarks"] {
+        let path = format!("/tag/guide/2/l/{filter}");
+        let list = user1.json(&format!("{path}.json")).await;
+        assert!(list["topic_list"]["topics"].is_array(), "{path}: {list}");
+        let html = user1.page(&path).await;
+        assert!(html.contains("tags-page"), "{path}");
+        assert!(html.contains("tag-guide"), "{path}");
+        assert!(html.contains(" guide topics - Discourse</title>"), "{path}");
+    }
+
+    // A visitor: the not-found page, and not_logged_in for the JSON.
+    for filter in ["unread", "unseen", "read", "posted", "bookmarks"] {
+        let (status, _, html) = get(&db.pool, &format!("/tag/guide/2/l/{filter}")).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{filter}");
+        assert!(!html.contains("dismiss-read"), "{filter}");
+        let (status, json) = get_json(&db.pool, &format!("/tag/guide/2/l/{filter}.json")).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "{filter}");
+        assert_eq!(json["error_type"], "not_logged_in", "{filter}");
+    }
+
+    // What the row's Dismiss sends: the unread topics of another tag stay.
+    let csrf = user1
+        .send(
+            Request::get("/session/csrf.json").header("x-requested-with", "XMLHttpRequest"),
+            "",
+        )
+        .await;
+    let csrf: serde_json::Value = serde_json::from_str(&csrf).unwrap();
+    let csrf = csrf["csrf"].as_str().unwrap().to_string();
+    let mut bulk = async |body: &str| -> serde_json::Value {
+        let reply = user1
+            .send(
+                Request::put("/topics/bulk")
+                    .header("x-requested-with", "XMLHttpRequest")
+                    .header("x-csrf-token", csrf.as_str())
+                    .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded"),
+                body,
+            )
+            .await;
+        serde_json::from_str(&reply).unwrap_or_else(|e| panic!("{e}: {reply}"))
+    };
+    let reply = bulk(
+        "filter=unread&operation%5Btype%5D=dismiss_posts&tracked=false&include_subcategories=true&tag_name=howto",
+    )
+    .await;
+    assert_eq!(reply["topic_ids"], serde_json::json!([]));
+    let reply = bulk(
+        "filter=unread&operation%5Btype%5D=dismiss_posts&tracked=false&include_subcategories=true&tag_name=guide",
+    )
+    .await;
+    assert_eq!(reply["topic_ids"], serde_json::json!([35]));
+    let (read, highest): (i32, i32) = sqlx::query_as(
+        "SELECT tu.last_read_post_number, t.highest_post_number FROM topic_users tu \
+         JOIN topics t ON t.id = tu.topic_id WHERE tu.topic_id = 35 AND tu.user_id = 3",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(read, highest);
+    assert_eq!(
+        ids(&user1.json("/tag/guide/2/l/unread.json").await),
+        [] as [i64; 0]
+    );
+}
+
 /// The topic lists' bulk select (the discovery controller's
 /// canBulkSelect): the header's toggle, topic-list-bulk-select.js and its
 /// config for a topic manager on any list and for a member on the new

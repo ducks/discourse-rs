@@ -13,6 +13,7 @@ use sqlx::PgConnection;
 use super::session::{bad_csrf, csrf_ok};
 use crate::guardian::Guardian;
 use crate::params;
+use crate::pm_lists::{Inbox, PmQuery};
 use crate::posting::Ctx;
 use crate::pretty_text::Host;
 use crate::session::current::AuthGuardian;
@@ -152,7 +153,24 @@ pub async fn bulk(
         }
         Ok(None) if present(&p, "filter").as_deref() == Some("unread") => {
             let mut conn = state.pool.acquire().await?;
-            bulk_unread_topic_ids(&mut conn, &settings, &guardian, &p).await?
+            // bulk_unread_topic_ids: a message inbox's unread
+            // (filter_private_messages_unread), or the regular topics'.
+            if given(&p, "private_message_inbox") {
+                let inbox = p
+                    .get("private_message_inbox")
+                    .and_then(params::scalar)
+                    .unwrap_or_default();
+                let Some(inbox) =
+                    private_message_filter(&mut conn, &settings, &guardian, &p, &inbox).await?
+                else {
+                    return Ok(super::topics::not_found_response(&state));
+                };
+                pm_query(&mut conn, &settings, &guardian)?
+                    .unread_ids(&inbox)
+                    .await?
+            } else {
+                bulk_unread_topic_ids(&mut conn, &settings, &guardian, &p).await?
+            }
         }
         Ok(None) => return Ok(super::accounts::param_missing("topic_ids")),
     };
@@ -204,9 +222,6 @@ async fn bulk_unread_topic_ids(
     guardian: &Guardian,
     p: &Map<String, Value>,
 ) -> Result<Vec<i32>, AppError> {
-    if given(p, "private_message_inbox") {
-        return Err(Unsupported("bulk actions over a message inbox's unread topics").into());
-    }
     let user_id = guardian
         .user_id()
         .ok_or(Unsupported("bulk actions anonymously"))?;
@@ -480,59 +495,24 @@ pub async fn pm_reset_new(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    let user_id = guardian
-        .user_id()
-        .ok_or(Unsupported("dismissing anonymously"))?;
-    // private_messages_for(user, :all | :user)
-    let personal = format!(
-        "topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {user_id})"
-    );
-    let groups = format!(
-        "topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
-           JOIN group_users gu ON gu.user_id = {user_id} AND gu.group_id = tg.group_id)"
-    );
-    let all = format!("({personal} OR {groups})");
     let mut conn = state.pool.acquire().await?;
     let scope: Vec<i32> = match topic_ids(&p) {
         Err(()) => return Ok(not_a_list(&state)),
         Ok(Some(ids)) => {
-            sqlx::query_scalar(&format!(
-                "SELECT topics.id FROM topics WHERE topics.deleted_at IS NULL \
-               AND topics.archetype = 'private_message' AND {all} AND topics.id IN ({})",
-                join_ids(&ids)
-            ))
-            .fetch_all(&mut *conn)
-            .await?
+            pm_query(&mut conn, s, &guardian)?
+                .ids_among(&Inbox::All, &ids)
+                .await?
         }
         Ok(None) => {
             let Some(inbox) = present(&p, "inbox") else {
                 return Ok(super::accounts::param_missing("inbox"));
             };
-            let messages = match inbox.as_str() {
-                "group" => {
-                    return Err(Unsupported("dismissing a group inbox's new messages").into());
-                }
-                "user" => personal,
-                _ => all,
+            let Some(inbox) = private_message_filter(&mut conn, s, &guardian, &p, &inbox).await?
+            else {
+                return Ok(super::topics::not_found_response(&state));
             };
             // filter_private_message_new
-            let start = guardian.treat_as_new_topic_start_date(&mut conn, s).await?;
-            let start = match start {
-                Some(t) => format!(
-                    "topics.created_at >= '{}'",
-                    t.format("%Y-%m-%d %H:%M:%S%.6f")
-                ),
-                None => "FALSE".to_string(),
-            };
-            sqlx::query_scalar(&format!(
-                "SELECT topics.id FROM topics \
-                 LEFT OUTER JOIN topic_users AS tu ON (topics.id = tu.topic_id AND tu.user_id = {user_id}) \
-                 WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' AND {messages} \
-                   AND ({start}) AND (tu.last_read_post_number IS NULL) \
-                   AND (COALESCE(tu.notification_level, 2) >= 2)"
-            ))
-            .fetch_all(&mut *conn)
-            .await?
+            pm_query(&mut conn, s, &guardian)?.new_ids(&inbox).await?
         }
     };
     drop(conn);
@@ -543,6 +523,68 @@ pub async fn pm_reset_new(
         Json(json!({"success": "OK", "topic_ids": topic_ids})),
     )
         .into_response())
+}
+
+/// A TopicQuery over the user's own messages, unlimited.
+fn pm_query<'a>(
+    conn: &'a mut PgConnection,
+    settings: &'a SiteSettings,
+    guardian: &'a Guardian,
+) -> Result<PmQuery<'a>, AppError> {
+    Ok(PmQuery {
+        conn,
+        settings,
+        guardian,
+        options: Default::default(),
+        owner_id: guardian
+            .user_id()
+            .ok_or(Unsupported("message inboxes anonymously"))?,
+    })
+}
+
+/// `private_message_filter`: the inbox a param names. A group's is of the
+/// group `group_name` names (compared as given with the lowered names),
+/// whose messages the user must see; None is NotFound.
+async fn private_message_filter(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    guardian: &Guardian,
+    p: &Map<String, Value>,
+    inbox: &str,
+) -> Result<Option<Inbox>, AppError> {
+    match inbox {
+        "group" => {
+            let name = match p.get("group_name") {
+                None | Some(Value::Null) => return Ok(None),
+                Some(v) => {
+                    params::scalar(v).ok_or(Unsupported("a group_name that is not a string"))?
+                }
+            };
+            let group: Option<i32> =
+                sqlx::query_scalar("SELECT id FROM groups WHERE lower(name) = $1 LIMIT 1")
+                    .bind(&name)
+                    .fetch_optional(&mut *conn)
+                    .await?;
+            let Some(group_id) = group else {
+                return Ok(None);
+            };
+            // can_see_group_messages?
+            let sees = guardian.is_admin()
+                || (guardian.is_moderator()
+                    && group_id == crate::guardian::auto_groups::MODERATORS as i32)
+                || (guardian.in_setting_groups(s, "personal_message_enabled_groups")?
+                    && sqlx::query_scalar(
+                        "SELECT EXISTS (SELECT 1 FROM group_users WHERE group_id = $1 AND user_id = $2)",
+                    )
+                    .bind(group_id)
+                    .bind(guardian.user_id())
+                    .fetch_one(&mut *conn)
+                    .await?);
+            Ok(sees.then_some(Inbox::Group(name)))
+        }
+        "user" => Ok(Some(Inbox::User)),
+        _ => Ok(Some(Inbox::All)),
+    }
 }
 
 /// `ActiveModel::Type::Boolean.new.cast`: everything but the false values

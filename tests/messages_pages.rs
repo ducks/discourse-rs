@@ -557,3 +557,297 @@ async fn a_profile_offers_to_message_its_user() {
     let own = user1.page("/u/user1/summary").await;
     assert!(!own.contains("compose-pm"));
 }
+
+/// TopicDismissButtons on a member's new and unread message lists
+/// (user-topics-list.gjs) with the route's inbox for topic-dismiss.js,
+/// and what the buttons send: Topic.pmResetNew (PUT /topics/pm-reset-new)
+/// and DismissRead's Topic.bulkOperationByFilter with
+/// private_message_inbox (PUT /topics/bulk). user1 (id 3) has message 42
+/// unread and 43 and 44 (archived) never read; topic 35 is their unread
+/// regular topic and 34 their new one, which neither request touches.
+#[tokio::test]
+async fn the_new_and_unread_message_lists_dismiss() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+
+    let html = user1.page("/u/user1/messages/new").await;
+    assert!(
+        html.contains(
+            "<div class=\"row dismiss-container-top\" data-pm-inbox=\"user\"><button class=\"btn btn-icon-text btn-default dismiss-read\" id=\"dismiss-new-top\" type=\"button\">"
+        ),
+        "{html}"
+    );
+    assert!(html.contains("data-topic-id=\"43\""));
+    assert!(html.contains("/assets/topic-dismiss.js?v="));
+    assert!(html.contains("<script type=\"application/json\" id=\"topic-dismiss-strings\">{"));
+    let html = user1.page("/u/user1/messages/unread").await;
+    assert!(
+        html.contains(
+            "<div class=\"row dismiss-container-top\" data-pm-inbox=\"user\"><button class=\"btn btn-default dismiss-read\" id=\"dismiss-topics-top\" title=\"Dismiss just new posts or stop tracking topics\" type=\"button\"><span class=\"d-button-label\">Dismiss…</span></button></div>"
+        ),
+        "{html}"
+    );
+    assert!(html.contains("data-topic-id=\"42\""));
+    assert!(html.contains("\"topics.bulk.also_dismiss_topics\":\"Stop tracking these topics"));
+    // The inbox has nothing to dismiss, and no script for it.
+    let html = user1.page("/u/user1/messages").await;
+    assert!(html.contains("<div class=\"row dismiss-container-top\"></div>"));
+    assert!(!html.contains("topic-dismiss"));
+
+    // Dismiss… on unread.
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/topics/bulk",
+            "filter=unread&operation%5Btype%5D=dismiss_posts&tracked=false&private_message_inbox=user",
+        )
+        .await;
+    let reply: serde_json::Value =
+        serde_json::from_str(&reply).unwrap_or_else(|e| panic!("{e}: {reply}"));
+    assert_eq!(reply, serde_json::json!({"topic_ids": [42]}));
+    let read = |topic_id: i32| {
+        let pool = db.pool.clone();
+        async move {
+            sqlx::query_as::<_, (i32, i32, i32)>(
+                "SELECT tu.last_read_post_number, t.highest_post_number, tu.notification_level \
+                 FROM topic_users tu JOIN topics t ON t.id = tu.topic_id \
+                 WHERE tu.topic_id = $1 AND tu.user_id = 3",
+            )
+            .bind(topic_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+        }
+    };
+    assert_eq!(read(42).await, (2, 2, 3));
+    let (last_read, highest, _) = read(35).await;
+    assert!(last_read < highest, "the regular topic stays unread");
+    let html = user1.page("/u/user1/messages/unread").await;
+    assert!(!html.contains("data-topic-id=\"42\""));
+    assert!(!html.contains("dismiss-container-top"), "{html}");
+
+    // Dismiss on new.
+    let reply = user1
+        .send(Method::PUT, "/topics/pm-reset-new", "inbox=user")
+        .await;
+    let reply: serde_json::Value =
+        serde_json::from_str(&reply).unwrap_or_else(|e| panic!("{e}: {reply}"));
+    assert_eq!(reply["success"], "OK");
+    let mut dismissed: Vec<i64> = reply["topic_ids"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|id| id.as_i64().unwrap())
+        .collect();
+    dismissed.sort_unstable();
+    assert_eq!(dismissed, [43, 44]);
+    let rows: Vec<i32> = sqlx::query_scalar(
+        "SELECT topic_id FROM dismissed_topic_users WHERE user_id = 3 AND topic_id > 36 ORDER BY topic_id",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(rows, [43, 44]);
+    let html = user1.page("/u/user1/messages/new").await;
+    assert!(!html.contains("data-topic-id=\"43\""));
+    assert!(!html.contains("dismiss-container-top"), "{html}");
+    // filter_private_message_new leaves dismissed messages in, and
+    // dismiss_topics counts them again.
+    let reply = user1
+        .send(Method::PUT, "/topics/pm-reset-new", "inbox=user")
+        .await;
+    let reply: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(reply["topic_ids"].as_array().map(Vec::len), Some(2));
+    let count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM dismissed_topic_users WHERE user_id = 3 AND topic_id > 36",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(count, 2);
+}
+
+/// DismissRead's "Stop tracking these topics" on the unread messages:
+/// the regular notification level instead of the read position.
+#[tokio::test]
+async fn unread_messages_dismiss_by_no_longer_tracking_them() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/topics/bulk",
+            "filter=unread&operation%5Btype%5D=change_notification_level&operation%5Bnotification_level_id%5D=1&tracked=false&private_message_inbox=user",
+        )
+        .await;
+    let reply: serde_json::Value =
+        serde_json::from_str(&reply).unwrap_or_else(|e| panic!("{e}: {reply}"));
+    assert_eq!(reply, serde_json::json!({"topic_ids": [42]}));
+    let (last_read, level): (i32, i32) = sqlx::query_as(
+        "SELECT last_read_post_number, notification_level FROM topic_users WHERE topic_id = 42 AND user_id = 3",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!((last_read, level), (1, 1));
+    let level: i32 = sqlx::query_scalar(
+        "SELECT notification_level FROM topic_users WHERE topic_id = 35 AND user_id = 3",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(level >= 2, "the regular topic stays tracked");
+    let html = user1.page("/u/user1/messages/unread").await;
+    assert!(!html.contains("data-topic-id=\"42\""));
+}
+
+/// A group inbox's new and unread lists: the rows carry the group, and
+/// the requests (inbox or private_message_inbox `group` with group_name)
+/// reach that group's messages alone. TopicsController's
+/// private_message_filter is NotFound for a group that is missing, not
+/// named, named in another case than its lowered name, or whose messages
+/// the user cannot see.
+#[tokio::test]
+async fn a_group_inboxs_new_and_unread_lists_dismiss() {
+    let db = TestDb::new().await;
+    for sql in [
+        // Message 90, new to admin; 91, which admin read to its first post.
+        "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, highest_staff_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, 1, true)",
+        "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post.', '<p>The first post.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
+        "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+        "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+        "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, highest_staff_post_number, visible) VALUES (91, 'Another message the moderators received', 'Another message the moderators received', 'another-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '2 hours', now() - interval '1 hour', now() - interval '1 hour', 2, 2, 2, true)",
+        "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (910, 91, 3, 1, 'The first post.', '<p>The first post.</p>', now() - interval '2 hours', now() - interval '2 hours', now() - interval '2 hours', 1), (911, 91, 3, 2, 'The second post.', '<p>The second post.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 2)",
+        "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (91, 3, now(), now())",
+        "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (91, 2)",
+        "INSERT INTO topic_users (topic_id, user_id, last_read_post_number, notification_level, first_visited_at, last_visited_at) VALUES (91, 1, 1, 3, now() - interval '2 hours', now() - interval '2 hours')",
+        "UPDATE groups SET has_messages = true WHERE id = 2",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let html = admin.page("/u/admin/messages/group/moderators/new").await;
+    assert!(
+        html.contains(
+            "<div class=\"row dismiss-container-top\" data-pm-inbox=\"group\" data-group-name=\"moderators\"><button class=\"btn btn-icon-text btn-default dismiss-read\" id=\"dismiss-new-top\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains("data-topic-id=\"90\""));
+    assert!(html.contains("/assets/topic-dismiss.js?v="));
+    let html = admin
+        .page("/u/admin/messages/group/moderators/unread")
+        .await;
+    assert!(
+        html.contains(
+            "<div class=\"row dismiss-container-top\" data-pm-inbox=\"group\" data-group-name=\"moderators\"><button class=\"btn btn-default dismiss-read\" id=\"dismiss-topics-top\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains("data-topic-id=\"91\""));
+
+    let json = |reply: String| -> serde_json::Value {
+        serde_json::from_str(&reply).unwrap_or_else(|e| panic!("{e}: {reply}"))
+    };
+    // NotFound, for either request.
+    let mut user1 = Client::logged_in(st, "user1").await;
+    for group in [
+        "&group_name=nobody",
+        "",
+        "&group_name=Moderators",
+        "&group_name=",
+    ] {
+        let reply = json(
+            admin
+                .send(
+                    Method::PUT,
+                    "/topics/pm-reset-new",
+                    &format!("inbox=group{group}"),
+                )
+                .await,
+        );
+        assert_eq!(reply["error_type"], "not_found", "{group}: {reply}");
+        let reply = json(
+            admin
+                .send(
+                    Method::PUT,
+                    "/topics/bulk",
+                    &format!("filter=unread&operation%5Btype%5D=dismiss_posts&tracked=false&private_message_inbox=group{group}"),
+                )
+                .await,
+        );
+        assert_eq!(reply["error_type"], "not_found", "{group}: {reply}");
+    }
+    // user1 is no moderator.
+    let reply = json(
+        user1
+            .send(
+                Method::PUT,
+                "/topics/pm-reset-new",
+                "inbox=group&group_name=moderators",
+            )
+            .await,
+    );
+    assert_eq!(reply["error_type"], "not_found", "{reply}");
+    let reply = json(
+        user1
+            .send(
+                Method::PUT,
+                "/topics/bulk",
+                "filter=unread&operation%5Btype%5D=dismiss_posts&tracked=false&private_message_inbox=group&group_name=moderators",
+            )
+            .await,
+    );
+    assert_eq!(reply["error_type"], "not_found", "{reply}");
+    let none: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM dismissed_topic_users WHERE topic_id = 90")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(none, 0);
+
+    // The group's unread: 91, not admin's own unread messages.
+    let reply = json(
+        admin
+            .send(
+                Method::PUT,
+                "/topics/bulk",
+                "filter=unread&operation%5Btype%5D=dismiss_posts&tracked=false&private_message_inbox=group&group_name=moderators",
+            )
+            .await,
+    );
+    assert_eq!(reply, serde_json::json!({"topic_ids": [91]}));
+    let read: i32 = sqlx::query_scalar(
+        "SELECT last_read_post_number FROM topic_users WHERE topic_id = 91 AND user_id = 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(read, 2);
+    // The group's new: 90.
+    let reply = json(
+        admin
+            .send(
+                Method::PUT,
+                "/topics/pm-reset-new",
+                "inbox=group&group_name=moderators",
+            )
+            .await,
+    );
+    assert_eq!(
+        reply,
+        serde_json::json!({"success": "OK", "topic_ids": [90]})
+    );
+    let rows: Vec<(i32, i32)> = sqlx::query_as(
+        "SELECT topic_id, user_id FROM dismissed_topic_users WHERE topic_id >= 90 ORDER BY topic_id",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(rows, [(90, 1)]);
+    let html = admin.page("/u/admin/messages/group/moderators/new").await;
+    assert!(!html.contains("data-topic-id=\"90\""), "{html}");
+}
