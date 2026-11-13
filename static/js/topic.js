@@ -1000,6 +1000,33 @@
       });
   });
 
+  // TopicTimerInfo's renderTopicTimer once the timer's time has come: the
+  // notice goes (a page from the anonymous cache can outlive its timer).
+  // The notice waits in a template until the last post is in.
+  var timerInfoExpiry = null;
+  function expireTimerInfo() {
+    clearTimeout(timerInfoExpiry);
+    var info = document.querySelector("#topic .topic-timer-info[data-execute-at]");
+    if (!info) {
+      return;
+    }
+    var left = parseInt(info.dataset.executeAt, 10) - Date.now();
+    if (!(left > 0)) {
+      info.textContent = "";
+      info.removeAttribute("data-execute-at");
+    } else if (left < 0x7fffffff) {
+      // setTimeout's longest delay.
+      timerInfoExpiry = setTimeout(expireTimerInfo, left);
+    }
+  }
+  Discourse.onPage(function () {
+    expireTimerInfo();
+    return function () {
+      clearTimeout(timerInfoExpiry);
+    };
+  });
+  document.addEventListener("post-stream:loaded-all", expireTimerInfo);
+
   // The timeline, on each topic page (page.js); its window listeners go
   // with the page.
   Discourse.onPage(function () {

@@ -26,7 +26,8 @@
           {%- for post in posts %}{{ post|safe }}{% endfor -%}
           {%- if live %}<div class="post-stream__bottom-boundary"></div>{% else %}<div aria-hidden="true" class="load-more-sentinel"></div><div class="post-stream-load-more-accessible sr-only"><h2 class="post-stream-load-more-accessible__heading" id="post-stream-load-more-heading__below">{{ stream.below_label }}</h2></div>{% endif -%}</div><div class="loading-container"></div></div>
       <div id="topic-bottom"></div>{% if live %}{{ reply_where|safe }}{% else if !reply_where.is_empty() %}<template class="loaded-all-posts">{{ reply_where|safe }}</template>{% endif %}
-      <div class="loading-container"><div class="topic-timer-info"></div></div>
+      {# TopicTimerInfo, in the loadingFilter spinner once every post is in. #}
+      <div class="loading-container">{% if live %}{{ timer_info|safe }}{% else %}<template class="loaded-all-posts">{{ timer_info|safe }}</template>{% endif %}</div>
     </section>
   </div>
 </div>

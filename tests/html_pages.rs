@@ -1912,6 +1912,166 @@ async fn staff_get_the_topic_and_post_admin_menus() {
     assert!(!html.contains("admin-post-menu-content"));
 }
 
+/// The page's TopicTimerInfo, in the loading container under the posts.
+fn timer_info(html: &str) -> &str {
+    let open = "<div class=\"loading-container\"><div class=\"topic-timer-info\"";
+    let start =
+        html.find(open).expect("the timer info") + "<div class=\"loading-container\">".len();
+    let rest = &html[start..];
+    rest[..rest.find("</section>").unwrap()].trim_end()
+}
+
+// TopicTimerInfo under the posts (components/topic-timer-info.gjs): the
+// public timer's notice for every viewer, the edit and remove buttons
+// for who may set timers, and nothing where Ember draws nothing.
+#[tokio::test]
+async fn topic_page_draws_the_topic_timer_notice() {
+    const EMPTY: &str = "<div class=\"topic-timer-info\"></div></div>";
+    let path = "/t/parity-fixture-replies-and-posters/35";
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(st.clone(), "admin").await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    assert_eq!(timer_info(&user1.page(path).await), EMPTY);
+
+    let at: chrono::NaiveDateTime = sqlx::query_scalar(
+        "INSERT INTO topic_timers (execute_at, status_type, user_id, timerable_id, based_on_last_post, \
+           public_type, created_at, updated_at, type) \
+         VALUES (now() + interval '3 days 2 hours', 1, 1, 35, FALSE, TRUE, now(), now(), 'TopicTimer') \
+         RETURNING execute_at",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let ms = at.and_utc().timestamp_millis();
+    let clock = r##"<svg class="fa d-icon d-icon-far-clock svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-clock"></use></svg>"##;
+    // The title is moment's LLLL, the time left its humanize(true); both
+    // in UTC here and redrawn by static/js/dates.js.
+    let heading = format!(
+        "<div class=\"topic-timer-info\" data-execute-at=\"{ms}\"><h3 class=\"topic-timer-heading\"><span title=\"{}\" data-tz-title=\"%{{{ms}:LLLL}}\">{clock} This topic will automatically close <span data-tz-text=\"in %{{{ms}:@humanize}}\">in 3 days</span>.</span><div class=\"topic-timer-modify\">",
+        at.format("%A, %B %-d, %Y %-I:%M %p")
+    );
+    let plain = format!("{heading}</div></h3></div></div>");
+    let (_, _, html) = get(&db.pool, path).await;
+    assert_eq!(timer_info(&html), plain);
+    assert_eq!(timer_info(&user1.page(path).await), plain);
+    // canSetTopicTimer: the pencil and the trash can.
+    let html = admin.page(path).await;
+    let info = timer_info(&html);
+    assert!(info.starts_with(&heading), "{info}");
+    let buttons = &info[heading.len()..];
+    let edit = buttons.find(r#"<button class="btn no-text btn-icon topic-timer-edit" title="edit timer" type="button"><svg class="fa d-icon d-icon-pencil "#);
+    let remove = buttons.find(r#"<button class="btn no-text btn-icon topic-timer-remove" title="remove timer" type="button"><svg class="fa d-icon d-icon-trash-can "#);
+    assert!(edit.is_some() && edit < remove, "{buttons}");
+    assert_eq!(buttons.matches("<button").count(), 2);
+
+    // _noticeKey and the durations; a timer counting from the last post
+    // or deleting replies stays past its time.
+    for (set, notice) in [
+        (
+            "based_on_last_post = TRUE, duration_minutes = 300, execute_at = now() - interval '1 hour'",
+            "This topic will close 5 hours after the last reply.",
+        ),
+        (
+            "status_type = 8",
+            "This topic will close 5 hours after the last reply.",
+        ),
+        (
+            "status_type = 4, duration_minutes = 4320",
+            "This topic will be deleted 3 days after the last reply.",
+        ),
+        (
+            "status_type = 7, based_on_last_post = FALSE, duration_minutes = 2880",
+            "Replies on this topic are automatically deleted after 2 days.",
+        ),
+    ] {
+        sqlx::query(&format!(
+            "UPDATE topic_timers SET {set} WHERE timerable_id = 35"
+        ))
+        .execute(&db.pool)
+        .await
+        .unwrap();
+        let html = user1.page(path).await;
+        let info = timer_info(&html);
+        assert!(
+            info.starts_with("<div class=\"topic-timer-info\"><h3"),
+            "{info}"
+        );
+        assert!(info.contains(&format!("</svg> {notice}</span>")), "{info}");
+    }
+    for (set, notice) in [
+        ("status_type = 8", "This topic will automatically close "),
+        (
+            "status_type = 4",
+            "This topic will be automatically deleted ",
+        ),
+        (
+            "status_type = 6",
+            "This topic will be automatically bumped ",
+        ),
+        (
+            "status_type = 3, category_id = 4",
+            "This topic will be published to <a href=/c/general/4>#general</a> ",
+        ),
+    ] {
+        sqlx::query(&format!(
+            "UPDATE topic_timers SET execute_at = now() + interval '5 hours 10 minutes', {set} WHERE timerable_id = 35"
+        ))
+        .execute(&db.pool)
+        .await
+        .unwrap();
+        let html = user1.page(path).await;
+        let info = timer_info(&html);
+        assert!(
+            info.contains(&format!("</svg> {notice}<span data-tz-text=\"in %{{")),
+            "{info}"
+        );
+        assert!(
+            info.contains(":@humanize}\">in 5 hours</span>.</span>"),
+            "{info}"
+        );
+    }
+
+    // Past its time, and a timer for the state the topic is in: nothing.
+    sqlx::query("UPDATE topic_timers SET status_type = 1, category_id = NULL, execute_at = now() - interval '1 minute' WHERE timerable_id = 35")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(timer_info(&admin.page(path).await), EMPTY);
+    sqlx::query(
+        "UPDATE topic_timers SET execute_at = now() + interval '1 day' WHERE timerable_id = 35",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    assert_ne!(timer_info(&admin.page(path).await), EMPTY);
+    sqlx::query("UPDATE topics SET closed = TRUE WHERE id = 35")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(timer_info(&admin.page(path).await), EMPTY);
+    // A silent close is not the topic's status: Ember draws it.
+    sqlx::query("UPDATE topic_timers SET status_type = 8 WHERE timerable_id = 35")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_ne!(timer_info(&admin.page(path).await), EMPTY);
+    // An open timer shows on the closed topic, not once it is open.
+    sqlx::query("UPDATE topic_timers SET status_type = 2 WHERE timerable_id = 35")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert!(
+        timer_info(&admin.page(path).await)
+            .contains("</svg> This topic will automatically open <span"),
+    );
+    sqlx::query("UPDATE topics SET closed = FALSE WHERE id = 35")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(timer_info(&admin.page(path).await), EMPTY);
+}
+
 /// The page's `<script type="application/json" id="...">` block, parsed.
 fn json_block(html: &str, id: &str) -> Option<serde_json::Value> {
     let open = format!("<script type=\"application/json\" id=\"{id}\">");

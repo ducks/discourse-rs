@@ -223,6 +223,36 @@ h6 code {
 .topic-timer-info:empty {
   padding: 0;
 }
+/* topic.scss:128 */
+.topic-status-info span .d-icon,
+.topic-timer-info span .d-icon {
+  font-size: var(--font-down-1);
+}
+/* topic.scss:132 */
+.topic-status-info .topic-timer-heading,
+.topic-status-info .slow-mode-heading,
+.topic-timer-info .topic-timer-heading,
+.topic-timer-info .slow-mode-heading {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: var(--below-topic-margin) 0;
+}
+/* topic.scss:140 */
+.topic-status-info .slow-mode-remove,
+.topic-status-info .topic-timer-modify,
+.topic-timer-info .slow-mode-remove,
+.topic-timer-info .topic-timer-modify {
+  display: flex;
+  margin-left: auto;
+  align-self: flex-start;
+}
+/* topic.scss:147 */
+.topic-status-info button,
+.topic-timer-info button {
+  font-size: var(--font-down-2);
+  background: transparent;
+}
 /* topic.scss:153 */
 .title-wrapper {
   display: flex;

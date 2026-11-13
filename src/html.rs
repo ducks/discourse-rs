@@ -2442,6 +2442,8 @@ pub struct TopicPage {
     pub bottom_map: String,
     pub timeline: String,
     pub footer_buttons: String,
+    /// TopicTimerInfo, under the posts (post_view::topic_timer_info).
+    pub timer_info: String,
     pub more_topics: String,
     /// The topic admin menu's content for its triggers and the add
     /// participant modal's config (each empty without one).
@@ -3098,6 +3100,7 @@ pub async fn topic_page(
         String::new()
     };
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
+    let timer_info = crate::post_view::topic_timer_info(&cx, view);
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
     let topic_bookmarks_menu = crate::post_view::topic_bookmarks_menu(&cx, view);
     // The flag modal for members; for staff the penalty modal its take
@@ -3274,6 +3277,7 @@ pub async fn topic_page(
         bottom_map,
         timeline,
         footer_buttons,
+        timer_info,
         more_topics,
         topic_menus,
         topic_id: id,
