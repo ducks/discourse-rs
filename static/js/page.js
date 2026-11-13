@@ -287,13 +287,15 @@
   // from the element's internal `boosted` flag once the response is in,
   // and an out-of-band swap replacing the link meanwhile (the live
   // stream's sidebar or nav redraw) cleans that flag off, so the page
-  // arrived with the address bar left on the page before.
+  // arrived with the address bar left on the page before. A link that
+  // replaces the entry instead (hx-replace-url, a query param Ember
+  // marks `replace: true`) keeps that.
   document.addEventListener("htmx:configRequest", function (event) {
     if (boosted(event)) {
       Discourse.previousUrl = location.pathname + location.search;
       delete event.detail.headers["X-Requested-With"];
       var elt = event.detail.elt;
-      if (elt && !elt.hasAttribute("hx-push-url")) {
+      if (elt && !elt.hasAttribute("hx-push-url") && !elt.hasAttribute("hx-replace-url")) {
         elt.setAttribute("hx-push-url", "true");
       }
       trackNavigation(event);
