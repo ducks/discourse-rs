@@ -170,6 +170,13 @@
         if (logo && logo.parentNode) {
           logo.replaceWith(minimized);
         }
+        // The same topic's pin toggle, as the title has it by now
+        // (topic-status.js).
+        var pin = topicTitle.querySelector("a.pin-toggle-button");
+        var copy = info.querySelector("a.pin-toggle-button");
+        if (pin && copy && Discourse.setPinToggle) {
+          Discourse.setPinToggle(copy, pin.classList.contains("--pinned"));
+        }
         outlet.after(info);
         // Boosted once in the page, where they inherit hx-boost.
         if (!processed && window.htmx) {

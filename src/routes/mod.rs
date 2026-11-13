@@ -102,6 +102,7 @@ mod topic_convert;
 mod topic_excerpts;
 mod topic_move;
 mod topic_notifications;
+mod topic_pin;
 mod topic_posts;
 mod topic_status;
 mod topic_timer;
@@ -1019,6 +1020,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/t/{slug}/remove_bookmarks.json",
             put(bookmark_writes::remove_topic_bookmarks),
         )
+        // TopicsController#clear_pin and #re_pin; {slug} holds the topic id.
+        .route("/t/{slug}/clear-pin", put(topic_pin::clear_pin))
+        .route("/t/{slug}/clear-pin.json", put(topic_pin::clear_pin))
+        .route("/t/{slug}/re-pin", put(topic_pin::re_pin))
+        .route("/t/{slug}/re-pin.json", put(topic_pin::re_pin))
         .route("/t/{slug}/change-owner", post(change_owner::change_owner))
         .route(
             "/t/{slug}/change-owner.json",
@@ -3206,6 +3212,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(asset),
         )
         .route("/assets/sidebar.js", get(asset))
+        .route("/assets/topic-status.js", get(asset))
         .route("/assets/invite.js", get(asset))
         .route("/assets/login.js", get(asset))
         .route("/assets/user-invited.js", get(asset))

@@ -104,6 +104,10 @@
         other layout (page.js) brings no head of its own. -#}
     <script src="{{ crate::assets::url(base_path, "navigation-bar.js") }}" defer></script>
     {%- if viewer.is_some() %}
+    {#- TopicStatus' pin toggle, wherever a member's page draws a topic. -#}
+    <script src="{{ crate::assets::url(base_path, "topic-status.js") }}" data-pinned="{{ chrome.t("topic_statuses.pinned.help") }}" data-unpinned="{{ chrome.t("topic_statuses.unpinned.help") }}"></script>
+    {%- endif %}
+    {%- if viewer.is_some() %}
     {#- The composer's rich editor loader (docs/rich-editor.md): classic and
         not deferred, so the import map it writes precedes every module
         import, lightbox.js's included, on any page an htmx navigation may

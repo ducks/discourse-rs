@@ -4578,10 +4578,12 @@ route table has been made, so this list may be short.
     screenshots 0.00% but the avatar's new-pms badge (194), and the title
     goes back to the top. Found by the screenshot run. Left, split into
     266a.
-    266a. `feat/docked-header-topic-rest` S: a member's pin toggle in the
-    statuses (TopicStatus' pin-toggle-button links and
+    266a. `feat/docked-header-topic-rest` S: ~~a member's pin toggle in
+    the statuses (TopicStatus' pin-toggle-button links and
     togglePinnedForUser's PUT /t/:id/clear-pin and re-pin) is drawn as a
-    span here as on the title and lists (topic_list_view.rs:1299,1305); a
+    span here as on the title and lists
+    (topic_list_view.rs:1299,1305)~~ (done in `feat/topic-pin-toggle`,
+    see 264a; the docked copy takes the title's state as it docks); a
     group participant's card is refused
     (static/js/header-topic-info.js:225); the small logo's dark variant
     is 258a's (header_topic_view.rs:41); FeaturedLink never draws, since a
@@ -4695,11 +4697,23 @@ route table has been made, so this list may be short.
     anon 9.52/9.52%, user1 5.30/4.80%; what is left of them is the
     header logo, the nav row 4px higher and text widths, none of it
     this page's. Left, split into 264a.
-    264a. `feat/categories-tracking-rest` S: TopicStatus' pin toggle for
-    a member (`<a class="pin-toggle-button">` with clearPin and rePin,
-    PUT /t/:id/clear-pin and /re-pin, unported) is drawn as the
-    visitor's span on every list (topic_list_view.rs:1264); the
-    category badges don't follow live tracking updates, which refresh
+    264a. `feat/categories-tracking-rest` S: ~~TopicStatus' pin toggle
+    for a member (`<a class="pin-toggle-button">` with clearPin and
+    rePin, PUT /t/:id/clear-pin and /re-pin, unported) is drawn as the
+    visitor's span on every list (topic_list_view.rs:1264)~~ (done in
+    `feat/topic-pin-toggle`: TopicsController#clear_pin and #re_pin
+    (routes/topic_pin.rs) through TopicUser.change's cleared_pinned_at;
+    topic_statuses draws canAct's link on the lists, the categories
+    page's latest column, the topic's title and the docked header, and
+    the span under disableActions (MobileCategoryTopic and the post
+    list no longer link the bookmark either); static/js/topic-status.js
+    is togglePinnedForUser, the status, the row's `pinned` class and
+    its pinned excerpt redrawn in place, the order kept until the list
+    loads again, pinned again when the request fails. Left: the
+    reviewable's topic link draws the toggle but names no topic id to
+    send; a pinned Uncategorized topic's badge comes back only on a
+    reload; the last-visit line stays where it was); the category
+    badges don't follow live tracking updates, which refresh
     only the nav pills and the sidebar (routes/live.rs:799)
 265. ~~`fix/top-period-chooser`~~ (done) S: the top lists (/top,
     `?period=`, /c/:slug/l/top, /tag/:tag/l/top) drew no period heading,

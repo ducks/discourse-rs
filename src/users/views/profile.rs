@@ -1196,7 +1196,7 @@ fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
     };
     out.push_str(&format!(
         "<div class=\"post-list-item__details\"><div class=\"stream-topic-title\"><span class=\"topic-statuses\">{}</span><span class=\"title\"><a aria-label=\"{}\" href=\"{}\">{title_html}</a></span></div><div class=\"post-list-item__metadata\">",
-        crate::topic_list_view::topic_statuses(cx, a),
+        crate::topic_list_view::topic_statuses_with(cx, a, true),
         escape(&aria),
         escape(&url)
     ));

@@ -1288,7 +1288,8 @@ fn featured_users(topic: &Value) -> Vec<Value> {
     users
 }
 
-/// TopicStatus, for a visitor (a member's pin toggles are links).
+/// TopicStatus: a member's (canAct) bookmark and pin are links, the pin
+/// toggled by static/js/topic-status.js.
 pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
     topic_statuses_with(cx, topic, false)
 }
@@ -1338,15 +1339,21 @@ pub fn topic_statuses_with(cx: &ListContext, topic: &Value, disable_actions: boo
             icon(CLOSED_ICON, None)
         ));
     }
+    // canAct: a.pin-toggle-button (togglePinned), else the span.
+    let (pin_open, pin_class, pin_close) = if cx.member_trust_level.is_some() && !disable_actions {
+        ("<a", " pin-toggle-button\" href=\"", "</a>")
+    } else {
+        ("<span", "", "</span>")
+    };
     if flag("pinned") {
         statuses.push_str(&format!(
-            "<span class=\"topic-status --pinned\" title=\"{}\">{}</span>",
+            "{pin_open} class=\"topic-status --pinned{pin_class}\" title=\"{}\">{}{pin_close}",
             t(cx, "topic_statuses.pinned.help"),
             icon("thumbtack", None)
         ));
     } else if flag("unpinned") {
         statuses.push_str(&format!(
-            "<span class=\"topic-status --unpinned\" title=\"{}\">{}</span>",
+            "{pin_open} class=\"topic-status --unpinned{pin_class}\" title=\"{}\">{}{pin_close}",
             t(cx, "topic_statuses.unpinned.help"),
             icon("thumbtack", Some("unpinned"))
         ));
