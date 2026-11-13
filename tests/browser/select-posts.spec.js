@@ -1,11 +1,11 @@
 // The topic's multi-select mode (select-posts.js): the topic admin menu's
 // Select Posts turns it on and off, each post gets its select controls
 // (select, +below, +replies), SelectedPosts counts the selection and
-// offers what the topic controller's rules allow, Delete selected with
-// every post selected deletes the topic, and the ChangeOwner modal hands
-// the selection (or, from the post admin menu, one post) to another
-// member. Each change is checked in the database. What needs an endpoint
-// that is not routed is refused, named.
+// offers what the topic controller's rules allow, Delete selected deletes
+// the selected posts (with every post selected, the topic), Merge
+// selected posts merges them, and the ChangeOwner modal hands the
+// selection (or, from the post admin menu, one post) to another member.
+// Each change is checked in the database. Move to is refused, named.
 const { test, expect, login, api, topic, sql, label } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
@@ -382,27 +382,119 @@ test("ChangeOwner flashes its error when the change is refused", async ({ page, 
   expect(owners(t)).toEqual(["user1", "user0", "user0", "user2"]);
 });
 
-test("what has no endpoint yet is refused, named", async ({ page, context, session }) => {
+test("+replies selects the post and its replies", async ({ page, context, session }) => {
+  const t = await setup(session, context);
+  await enter(page, t);
+  const panel = page.locator(PANEL);
+  const replyIds = page.waitForResponse((r) => r.url().endsWith(`/posts/${t.posts[1]}/reply-ids.json`));
+  await controls(page, t.posts[1]).locator(".select-replies").click();
+  expect(await (await replyIds).json()).toEqual([{ id: t.posts[3], level: 1 }]);
+  await expect(panel.locator("p").first()).toHaveText("You have selected 2 posts.");
+  expect(await selected(page)).toEqual([t.posts[1], t.posts[3]]);
+  expect(await buttons(page, t.posts[1])).toEqual(["select-post"]);
+  expect(await buttons(page, t.posts[2])).toEqual(["select-below", "select-post"]);
+  // Two authors: no owner to change, no merging.
+  expect(await actions(page)).toEqual(["delete selected", "move to"]);
+
+  // A reply already selected is counted once.
+  await controls(page, t.posts[1]).locator(".select-post").click();
+  await expect(panel.locator("p").first()).toHaveText("You have selected 1 post.");
+  await controls(page, t.posts[1]).locator(".select-replies").click();
+  await expect(panel.locator("p").first()).toHaveText("You have selected 2 posts.");
+  expect(await selected(page)).toEqual([t.posts[1], t.posts[3]]);
+  expect(deleted(t)).toEqual([]);
+});
+
+test("Delete selected deletes the selected posts", async ({ page, context, session }) => {
+  const t = await setup(session, context);
+  await enter(page, t);
+  await controls(page, t.posts[1]).locator(".select-post").click();
+  await controls(page, t.posts[3]).locator(".select-post").click();
+  await page.locator(`${PANEL} .btn-danger`).click();
+  const dialog = page.locator(".dialog-content");
+  await expect(dialog.locator(".dialog-body")).toHaveText("Are you sure you want to delete these 2 posts?");
+  // No leaves everything as it was.
+  await dialog.locator(".dialog-footer .btn", { hasText: "No" }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(deleted(t)).toEqual([]);
+  expect(await selected(page)).toEqual([t.posts[1], t.posts[3]]);
+
+  await page.locator(`${PANEL} .btn-danger`).click();
+  const destroyed = page.waitForRequest((r) => r.url().endsWith("/posts/destroy_many"));
+  await Promise.all([page.waitForEvent("load"), dialog.locator(".dialog-footer .btn", { hasText: "Yes" }).click()]);
+  // Post.deleteMany's params, form encoded.
+  const request = await destroyed;
+  expect(request.method()).toBe("DELETE");
+  expect(decodeURIComponent(request.postData())).toBe(
+    `post_ids[]=${t.posts[1]}&post_ids[]=${t.posts[3]}&agree_with_first_reply_flag=true`,
+  );
+  expect(deleted(t)).toEqual([t.posts[1], t.posts[3]]);
+  expect(sql("SELECT deleted_at IS NULL FROM topics WHERE id = :'p1'", t.id)).toEqual([["t"]]);
+  // The page drawn again, the mode off.
+  await expect(page.locator(".selected-posts")).toHaveCount(0);
+  await expect(page.locator(".select-posts")).toHaveCount(0);
+});
+
+function raws(t) {
+  return sql("SELECT replace(raw, E'\\n', '|') FROM posts WHERE topic_id = :'p1' ORDER BY post_number", t.id).map(
+    (r) => r[0],
+  );
+}
+
+test("Merge selected posts merges the posts of one author", async ({ page, context, session }) => {
+  const t = await setup(session, context);
+  const before = raws(t);
+  await enter(page, t);
+  await controls(page, t.posts[1]).locator(".select-post").click();
+  await controls(page, t.posts[2]).locator(".select-post").click();
+  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
+  const dialog = page.locator(".dialog-content");
+  await expect(dialog.locator(".dialog-body")).toHaveText("Are you sure you want to merge these 2 posts?");
+  // No leaves everything as it was.
+  await dialog.locator(".dialog-footer .btn", { hasText: "No" }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(raws(t)).toEqual(before);
+  expect(await selected(page)).toEqual([t.posts[1], t.posts[2]]);
+
+  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
+  await Promise.all([page.waitForEvent("load"), dialog.locator(".dialog-footer .btn", { hasText: "Yes" }).click()]);
+  // The last of them holds them all, the others are deleted.
+  expect(raws(t)).toEqual([before[0], before[1], `${before[1]}||${before[2]}`, before[3]]);
+  expect(deleted(t)).toEqual([t.posts[1]]);
+  await expect(page.locator(".selected-posts")).toHaveCount(0);
+  await expect(page.locator(".select-posts")).toHaveCount(0);
+});
+
+test("Merge selected posts shows what the server refuses", async ({ page, context, session }) => {
+  const t = await setup(session, context);
+  const before = raws(t);
+  await enter(page, t);
+  await controls(page, t.posts[1]).locator(".select-post").click();
+  await controls(page, t.posts[2]).locator(".select-post").click();
+  // One of the two changes hands after the page was drawn, which still
+  // offers the merge.
+  sql("UPDATE posts SET user_id = (SELECT id FROM users WHERE username = 'user2') WHERE id = :'p1'", t.posts[2]);
+  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
+  const dialog = page.locator(".dialog-content");
+  await dialog.locator(".dialog-footer .btn", { hasText: "Yes" }).click();
+  await expect(dialog.locator(".dialog-body")).toHaveText("Posts belonging to different users cannot be merged.");
+  // The mode went off with the confirm (toggleMultiSelect).
+  await expect(page.locator(".selected-posts")).toHaveCount(0);
+  expect(raws(t)).toEqual(before);
+  expect(deleted(t)).toEqual([]);
+  expect(owners(t)).toEqual(["user1", "user0", "user2", "user2"]);
+});
+
+test("Move to is refused, named", async ({ page, context, session }) => {
   const t = await setup(session, context);
   await enter(page, t);
   const error = page.locator("#page-error");
-
-  await controls(page, t.posts[1]).locator(".select-replies").click();
-  await expect(error).toHaveText("Not ported yet: selecting a post's replies (GET /posts/:id/reply-ids).");
-  expect(await selected(page)).toEqual([]);
 
   await controls(page, t.posts[1]).locator(".select-post").click();
   await controls(page, t.posts[2]).locator(".select-post").click();
   await page.locator(`${PANEL} .btn.move-to-topic`).click();
   await expect(error).toHaveText("Not ported yet: moving posts (MoveToTopic).");
   await expect(page.locator(".d-modal")).toHaveCount(0);
-
-  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
-  await expect(error).toHaveText("Not ported yet: merging the selected posts (PUT /posts/merge_posts).");
-
-  await page.locator(`${PANEL} .btn-danger`).click();
-  await expect(error).toHaveText("Not ported yet: deleting the selected posts (DELETE /posts/destroy_many).");
-  await expect(page.locator(".dialog-content")).toHaveCount(0);
 
   expect(await selected(page)).toEqual([t.posts[1], t.posts[2]]);
   expect(deleted(t)).toEqual([]);

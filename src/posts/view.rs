@@ -2025,6 +2025,8 @@ pub fn select_posts_config(cx: &PostContext, view: &Value) -> String {
         "topic.change_owner.instructions_without_old_user.other",
         "post.delete.confirm.one",
         "post.delete.confirm.other",
+        "post.merge.confirm.one",
+        "post.merge.confirm.other",
         "saving",
         "select_kit.default_header_text",
         "select_kit.no_content",

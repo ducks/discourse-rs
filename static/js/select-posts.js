@@ -17,10 +17,13 @@
 //     Change Ownership opens it for its one post.
 //
 // Delete selected asks as Ember does and, with every post selected,
-// deletes the topic (the admin menu's delete). What needs an endpoint
-// that is not routed is refused, named: deleting some of the posts
-// (DELETE /posts/destroy_many), merging them (PUT /posts/merge_posts),
-// select +replies (GET /posts/:id/reply-ids) and Move to (MoveToTopic).
+// deletes the topic (the admin menu's delete); otherwise it is
+// Post.deleteMany (DELETE /posts/destroy_many). Merge selected posts is
+// Post.mergePosts (PUT /posts/merge_posts), select +replies the post's
+// GET /posts/:id/reply-ids. Both writes turn the mode off as Ember does
+// and then draw the page again, where Ember marks the posts in place or
+// waits for the message bus; what the server refuses is shown as
+// popupAjaxError shows it. Move to (MoveToTopic) is refused, named.
 //
 // The posts' state is the server's: the stream's ids on #posts, and on a
 // post's article data-username, data-can-delete and data-has-replies.
@@ -69,6 +72,47 @@
       name +
       '"></use></svg>'
     );
+  }
+
+  // ajax with jQuery's form encoding: `ids` as post_ids[].
+  function request(method, path, ids, extra) {
+    var headers = memberHeaders();
+    headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+    var form = new URLSearchParams();
+    ids.forEach(function (id) {
+      form.append("post_ids[]", String(id));
+    });
+    Object.keys(extra || {}).forEach(function (key) {
+      form.append(key, extra[key]);
+    });
+    return fetch(base() + path, {
+      method: method,
+      headers: headers,
+      credentials: "same-origin",
+      body: form.toString(),
+    }).then(function (r) {
+      return r.ok ? r : Promise.reject(r);
+    });
+  }
+
+  // popupAjaxError: the errors the server gave, in a dialog.
+  function popupError(r) {
+    if (!(r instanceof Response)) {
+      console.error(r);
+      return;
+    }
+    r.json()
+      .catch(function () {
+        return {};
+      })
+      .then(function (body) {
+        var text = ((body && body.errors) || [r.statusText || "HTTP " + r.status]).join("\n");
+        Discourse.dialog.popupAjaxError(text);
+      });
+  }
+
+  function plural(cfg, key, count) {
+    return String(cfg.strings[key + (count === 1 ? ".one" : ".other")]).replace("%{count}", count);
   }
 
   function unported(what) {
@@ -324,7 +368,7 @@
       changeOwner(cfg, { ids: mode.ids.slice(), count: now.count, username: now.username });
     });
     add(r.canMergePosts, "btn-primary", "up-down", s["topic.merge_posts.action"], function () {
-      unported("merging the selected posts (PUT /posts/merge_posts)");
+      mergePosts(cfg);
     });
     var cancel = link("", s["topic.multi_select.cancel"], toggle);
     cancel.className = "cancel";
@@ -390,25 +434,73 @@
     draw();
   }
 
-  // deleteSelected: every post selected is the topic deleted. Deleting
-  // some of them is Post.deleteMany, whose endpoint is not routed.
+  // deleteSelected: every post selected is the topic deleted, otherwise
+  // Post.deleteMany. Ember marks the posts deleted without waiting and
+  // leaves a failure unhandled; here the page is drawn again, or the
+  // server's errors are shown.
   function deleteSelected(cfg) {
-    var r = rules(cfg);
-    if (!r.selectedAll || !mode.helpers.deleteTopic) {
-      unported("deleting the selected posts (DELETE /posts/destroy_many)");
-      return;
-    }
-    var deleteTopic = mode.helpers.deleteTopic;
-    var topic = mode.topic;
     Discourse.dialog.yesNoConfirm({
-      message: String(cfg.strings["post.delete.confirm." + (r.count === 1 ? "one" : "other")]).replace(
-        "%{count}",
-        r.count
-      ),
+      message: plural(cfg, "post.delete.confirm", rules(cfg).count),
       didConfirm: function () {
-        deleteTopic(topic);
+        if (!current()) {
+          return;
+        }
+        if (rules(cfg).selectedAll && mode.helpers.deleteTopic) {
+          mode.helpers.deleteTopic(mode.topic);
+          return;
+        }
+        var ids = mode.ids.slice();
+        toggle();
+        request("DELETE", "/posts/destroy_many", ids, { agree_with_first_reply_flag: "true" })
+          .then(function () {
+            location.reload();
+          })
+          .catch(popupError);
       },
     });
+  }
+
+  // mergePosts: Post.mergePosts, its failure popupAjaxError's.
+  function mergePosts(cfg) {
+    Discourse.dialog.yesNoConfirm({
+      message: plural(cfg, "post.merge.confirm", rules(cfg).count),
+      didConfirm: function () {
+        if (!current()) {
+          return;
+        }
+        var ids = mode.ids.slice();
+        toggle();
+        request("PUT", "/posts/merge_posts", ids)
+          .then(function () {
+            location.reload();
+          })
+          .catch(popupError);
+      },
+    });
+  }
+
+  // selectReplies: the post and its replies (GET /posts/:id/reply-ids)
+  // join the selection, drawn or not. Ember leaves a failure unhandled.
+  function selectReplies(id) {
+    fetch(base() + "/posts/" + id + "/reply-ids.json", { headers: memberHeaders(), credentials: "same-origin" })
+      .then(function (r) {
+        return r.ok ? r.json() : Promise.reject(r);
+      })
+      .then(function (replies) {
+        if (!current()) {
+          return;
+        }
+        mode.ids = union(
+          mode.ids,
+          [id].concat(
+            replies.map(function (reply) {
+              return reply.id;
+            })
+          )
+        );
+        draw();
+      })
+      .catch(popupError);
   }
 
   // ChangeOwnerModal for `model`: { ids, count, username }, the posts'
@@ -547,7 +639,7 @@
       var from = all.indexOf(id);
       mode.ids = union(mode.ids, withoutSmallActions(from === -1 ? [] : all.slice(from), loadedPosts()));
     } else if (clicked.classList.contains("select-replies")) {
-      unported("selecting a post's replies (GET /posts/:id/reply-ids)");
+      selectReplies(id);
       return;
     }
     draw();
