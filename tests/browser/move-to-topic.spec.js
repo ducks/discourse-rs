@@ -317,7 +317,9 @@ test("what the server refuses is the modal's flash", async ({ page, context, ses
   await modal.locator('.category-row[data-value="4"]').click();
   const accepted = page.waitForResponse((r) => r.url().endsWith(`/t/${t.id}/move-posts`));
   await submit.click();
-  expect((await (await accepted).json()).success).toBe(true);
+  // The page leaves for the new topic at once: the body may be gone by
+  // the time it is asked for, the status is not.
+  expect((await accepted).status()).toBe(200);
   await page.waitForURL((url) => !url.pathname.endsWith(`/${t.id}`));
   const [moved] = topicsOf([t.posts[1]]);
   expect(topicRow(moved)[0]).toBe(title);
