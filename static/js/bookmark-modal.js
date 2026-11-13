@@ -134,9 +134,16 @@
   function load() {
     if (!ready) {
       var moment = window.moment ? Promise.resolve() : loadScript(s.moment);
-      ready = moment.then(function () {
-        return window.moment.tz ? null : loadScript(s.moment_timezone);
-      });
+      ready = moment
+        .then(function () {
+          return window.moment.tz ? null : loadScript(s.moment_timezone);
+        })
+        // A load that failed is tried again by the next caller, not
+        // kept as its answer.
+        .catch(function (error) {
+          ready = null;
+          throw error;
+        });
     }
     return ready;
   }
@@ -147,7 +154,10 @@
       return Promise.resolve();
     }
     if (!pikaday) {
-      pikaday = loadScript(s.pikaday);
+      pikaday = loadScript(s.pikaday).catch(function (error) {
+        pikaday = null;
+        throw error;
+      });
     }
     return pikaday;
   }

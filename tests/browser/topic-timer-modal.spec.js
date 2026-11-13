@@ -53,6 +53,33 @@ function timers(id, columns) {
   );
 }
 
+test("a failed load of the modal's scripts is tried again by the next click", async ({ page, context, session, pageErrors }) => {
+  const t = await topic(await session("user1"), label("Topic timer retry"), label("A topic whose timer modal loads twice"));
+  await login(context, "admin");
+  // moment is loaded for the modal (bookmark-modal.js's load): the first
+  // request for it fails.
+  let failed = 0;
+  await page.route(/\/moment[^/]*\.js(\?|$)/, (route) => {
+    if (failed === 0) {
+      failed += 1;
+      return route.abort();
+    }
+    return route.continue();
+  });
+  await page.goto(t.url);
+  let menu = await topicAdminMenu(page);
+  await menu.locator(".admin-topic-timer-update .btn").click();
+  await expect.poll(() => failed).toBe(1);
+  await expect(page.locator(MODAL)).toHaveCount(0);
+  await page.keyboard.press("Escape");
+
+  menu = await topicAdminMenu(page);
+  await menu.locator(".admin-topic-timer-update .btn").click();
+  await expect(page.locator(MODAL).locator(".d-modal__title-text")).toHaveText("Topic Timer");
+  // The failed script is a console error, not an uncaught one.
+  expect(pageErrors).toEqual([]);
+});
+
 test("an open topic's types, the required time frame, a tile sets the timer and Remove Timer removes it", async ({
   page,
   context,
