@@ -3819,8 +3819,13 @@ route table has been made, so this list may be short.
     it is `feat/slow-mode-info` (viewer_dates::humanize_seconds, the
     button for who may manage topics; browser slow-mode-info (2)). Left
     of it: the keyboard shortcuts pause, the notices' live redraw),
-    selecting posts (the topic's multi-select mode and
-    its bulk actions) and the nested replies toggle (PUT
+    selecting posts (the mode, its
+    controls, SelectedPosts, change owner and delete with all selected
+    are `feat/select-posts`, static/js/select-posts.js; left of it,
+    each refused by name: DELETE /posts/destroy_many, PUT
+    /posts/merge_posts and GET /posts/:id/reply-ids are not routed,
+    MoveToTopic's modal is not built, Shift+B) and the nested replies
+    toggle (PUT
     /n/:slug/:id/toggle)
     194c2. ~~`feat/site-banner`~~ (done) S: the banner topic drawn where
     Ember draws DiscourseBanner: atop the discovery layout (the lists and

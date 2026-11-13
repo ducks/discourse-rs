@@ -721,6 +721,13 @@
       ]
     },
     {
+      "name": "select-posts.js",
+      "content_type": "js",
+      "files": [
+        "js/select-posts.js"
+      ]
+    },
+    {
       "name": "topic-bookmarks-menu.js",
       "content_type": "js",
       "files": [
