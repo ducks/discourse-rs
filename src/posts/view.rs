@@ -284,6 +284,11 @@ pub struct StaffMenus {
     pub nested_replies_toggle: Option<bool>,
     /// InvitePanel's showApprovalMessage: staff, with `must_approve_users`.
     pub invite_approval_notice: bool,
+    /// What the MoveToTopic modal reads of the viewer: `currentUser.admin`
+    /// (canSplitToPM), `site.can_create_tag` and `site.can_tag_pms`.
+    pub admin: bool,
+    pub can_create_tag: bool,
+    pub can_tag_pms: bool,
 }
 
 impl StaffMenus {
@@ -328,6 +333,9 @@ impl StaffMenus {
                 && !settings.get("nested_replies_default")?.truthy())
             .then(|| view["is_nested_view"] == true),
             invite_approval_notice: staff && settings.get("must_approve_users")?.truthy(),
+            admin: guardian.is_admin(),
+            can_create_tag: guardian.can_create_tag(settings)?,
+            can_tag_pms: guardian.can_tag_pms(settings)?,
         })
     }
 }
@@ -1991,8 +1999,8 @@ pub fn add_pm_participants_config(cx: &PostContext, view: &Value) -> String {
 /// the topic controller's multi-select rules (canMergeTopic,
 /// canChangeOwner, canDeleteSelected) need of the topic and the viewer,
 /// and the strings of SelectedPosts, the posts' select controls and the
-/// ChangeOwner modal. Empty unless the viewer may select posts or change
-/// a post's owner.
+/// ChangeOwner and MoveToTopic modals. Empty unless the viewer may select
+/// posts or change a post's owner.
 pub fn select_posts_config(cx: &PostContext, view: &Value) -> String {
     let m = &cx.topic.menus;
     if cx.viewer.is_none() || !(m.multi_select || m.can_change_post_owner) {
@@ -2014,6 +2022,40 @@ pub fn select_posts_config(cx: &PostContext, view: &Value) -> String {
         "topic.multi_select.description.one",
         "topic.multi_select.description.other",
         "topic.move_to.action",
+        "topic.move_to.title",
+        "topic.move_to.error",
+        "topic.split_topic.title",
+        "topic.split_topic.topic_name",
+        "topic.split_topic.radio_label",
+        "topic.split_topic.instructions.one",
+        "topic.split_topic.instructions.other",
+        "topic.merge_topic.title",
+        "topic.merge_topic.radio_label",
+        "topic.merge_topic.instructions.one",
+        "topic.merge_topic.instructions.other",
+        "topic.merge_topic.chronological_order",
+        "topic.move_to_new_message.title",
+        "topic.move_to_new_message.message_title",
+        "topic.move_to_new_message.radio_label",
+        "topic.move_to_new_message.participants",
+        "topic.move_to_new_message.instructions.one",
+        "topic.move_to_new_message.instructions.other",
+        "topic.move_to_existing_message.title",
+        "topic.move_to_existing_message.radio_label",
+        "topic.move_to_existing_message.instructions.one",
+        "topic.move_to_existing_message.instructions.other",
+        "choose_topic.none_found",
+        "choose_topic.title.search",
+        "choose_topic.title.placeholder",
+        "choose_message.none_found",
+        "choose_message.title.search",
+        "choose_message.title.placeholder",
+        "composer.title_placeholder",
+        "categories.category",
+        "tagging.tags",
+        "loading",
+        "generic_error_with_reason",
+        "multiple_errors",
         "topic.merge_posts.action",
         "topic.change_owner.title",
         "topic.change_owner.action",
@@ -2043,6 +2085,12 @@ pub fn select_posts_config(cx: &PostContext, view: &Value) -> String {
         "staff": cx.staff,
         "can_move_posts": view["details"]["can_move_posts"] == true,
         "can_change_post_owner": m.can_change_post_owner,
+        // MoveToTopic: topic.isPrivateMessage, currentUser.admin,
+        // site.can_create_tag and site.can_tag_pms.
+        "private_message": view["archetype"] == "private_message",
+        "admin": m.admin,
+        "can_create_tag": m.can_create_tag,
+        "can_tag_pms": m.can_tag_pms,
         "strings": strings,
     });
     format!(

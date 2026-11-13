@@ -23,7 +23,10 @@
 // GET /posts/:id/reply-ids. Both writes turn the mode off as Ember does
 // and then draw the page again, where Ember marks the posts in place or
 // waits for the message bus; what the server refuses is shown as
-// popupAjaxError shows it. Move to (MoveToTopic) is refused, named.
+// popupAjaxError shows it. Move to opens MoveToTopic
+// (components/modal/move-to-topic.gjs) with its ChooseTopic and
+// ChooseMessage, POSTing /t/:id/move-posts or, with every post selected,
+// /t/:id/merge-topic, and then goes to the destination topic.
 //
 // The posts' state is the server's: the stream's ids on #posts, and on a
 // post's article data-username, data-can-delete and data-has-replies.
@@ -115,14 +118,6 @@
     return String(cfg.strings[key + (count === 1 ? ".one" : ".other")]).replace("%{count}", count);
   }
 
-  function unported(what) {
-    var notice = document.getElementById("page-error");
-    if (notice) {
-      notice.textContent = "Not ported yet: " + what + ".";
-      notice.hidden = false;
-    }
-  }
-
   // The mode while it is on: its panel, the selected post ids in the
   // order chosen, the observer drawing the controls of posts as they
   // arrive, and the admin menu's topic and delete.
@@ -176,6 +171,12 @@
         wrapper: article.parentNode,
         smallAction: article.classList.contains("small-action"),
         firstPost: article.parentNode.dataset.postNumber === "1",
+        number: parseInt(article.parentNode.dataset.postNumber, 10),
+        // post_type regular: neither a whisper nor a moderator action.
+        regular:
+          !article.classList.contains("small-action") &&
+          !article.parentNode.classList.contains("whisper") &&
+          !article.parentNode.classList.contains("moderator"),
         username: article.dataset.username,
         canDelete: article.hasAttribute("data-can-delete"),
         hasReplies: article.hasAttribute("data-has-replies"),
@@ -233,6 +234,14 @@
       canDeselectAll: all,
       canDeleteSelected: count > 0 && ((all && cfg.staff) || everyDeletable),
       canMergeTopic: cfg.can_move_posts && count > 0,
+      // MoveToTopic's canSplitTopic: not every post, and the first of
+      // those drawn a regular post.
+      canSplitTopic:
+        !all &&
+        selected.length > 0 &&
+        selected.slice().sort(function (a, b) {
+          return a.number - b.number;
+        })[0].regular,
       canChangeOwner: cfg.can_change_post_owner && count > 0 && username !== undefined,
       canMergePosts: count > 1 && username !== undefined && everyDeletable,
     };
@@ -361,7 +370,8 @@
       deleteSelected(cfg);
     });
     add(r.canMergeTopic, "btn-primary move-to-topic", "right-from-bracket", s["topic.move_to.action"], function () {
-      unported("moving posts (MoveToTopic)");
+      var now = rules(cfg);
+      moveToTopic(cfg, { ids: mode.ids.slice(), count: now.count, selectedAll: now.selectedAll, canSplitTopic: now.canSplitTopic });
     });
     add(r.canChangeOwner, "btn-primary", "user", s["topic.change_owner.action"], function () {
       var now = rules(cfg);
@@ -520,20 +530,6 @@
       submit.firstChild.textContent = saving ? s.saving : s["topic.change_owner.action"];
     }
 
-    function flash(text) {
-      var modal = submit.closest(".d-modal");
-      var alert = modal.querySelector("#modal-alert");
-      if (!alert) {
-        alert = document.createElement("div");
-        alert.id = "modal-alert";
-        alert.setAttribute("role", "alert");
-        alert.className = "alert alert-error";
-        var body = modal.querySelector(".d-modal__body");
-        body.parentNode.insertBefore(alert, body);
-      }
-      alert.textContent = text;
-    }
-
     // Topic.changeOwners
     function save() {
       saving = true;
@@ -562,7 +558,7 @@
           location.reload();
         })
         .catch(function () {
-          flash(s["topic.change_owner.error"]);
+          modalFlash(submit, s["topic.change_owner.error"]);
           saving = false;
           sync();
         });
@@ -610,6 +606,576 @@
         footer.appendChild(submit);
         submit.addEventListener("click", save);
         sync();
+      },
+    });
+  }
+
+  // DModal's @flash (error): `text` above the modal's body, or none.
+  function modalFlash(inside, text) {
+    var modal = inside.closest(".d-modal");
+    var alert = modal.querySelector("#modal-alert");
+    if (!text) {
+      if (alert) {
+        alert.remove();
+      }
+      return;
+    }
+    if (!alert) {
+      alert = document.createElement("div");
+      alert.id = "modal-alert";
+      alert.setAttribute("role", "alert");
+      alert.className = "alert alert-error";
+      var body = modal.querySelector(".d-modal__body");
+      body.parentNode.insertBefore(alert, body);
+    }
+    alert.textContent = text;
+  }
+
+  // extractError over a failed response's body, else `fallback`.
+  function extractError(s, r, body, fallback) {
+    var errors = body && Array.isArray(body.errors) ? body.errors : [];
+    if (errors.length > 1) {
+      return String(s.multiple_errors).replace(
+        "%{errors}",
+        errors
+          .map(function (e, i) {
+            return i + 1 + ") " + e;
+          })
+          .join(" ")
+      );
+    }
+    if (errors.length === 1) {
+      return String(s.generic_error_with_reason).replace("%{error}", errors[0]);
+    }
+    if (body && (body.error || body.message)) {
+      return body.error || body.message;
+    }
+    if (r && r.status >= 400) {
+      return r.status + " " + r.statusText;
+    }
+    return fallback;
+  }
+
+  // ChooseTopic and ChooseMessage (components/choose-topic.gjs,
+  // choose-message.gjs): the topics, or the messages, found by title, url
+  // or id through /search/query as searchForTerm asks, the current topic
+  // left out; one result alone is chosen. `chosen(topic)` hears the
+  // choice, null when a search starts. TopicStatus and the title's emoji
+  // are not drawn.
+  function chooseTopic(cfg, kind, chosen) {
+    var s = cfg.strings;
+    var message = kind === "message";
+    var name = message ? "choose-message" : "choose-topic";
+    var strings = message ? "choose_message." : "choose_topic.";
+    var root = document.createElement("div");
+    root.className = name;
+    var label = escapeHtml(s[strings + "title.search"]);
+    root.innerHTML =
+      '<label for="' +
+      name +
+      '-title">' +
+      (message ? label : "<span>" + label + "</span>") +
+      '</label><input id="' +
+      name +
+      '-title" placeholder="' +
+      escapeHtml(s[strings + "title.placeholder"]) +
+      '" type="text"><div class="' +
+      name +
+      '__search-results">&nbsp;</div>';
+    var input = root.querySelector("input");
+    var results = root.querySelector("." + name + "__search-results");
+    var timer = null;
+    var searches = 0;
+    var found = [];
+
+    // dBoundCategoryLink, as the composer's category chooser draws the
+    // category.
+    function category(id) {
+      var row = id && document.querySelector('#reply-control details.category-chooser .category-row[data-value="' + Number(id) + '"]');
+      var badge = row && row.querySelector(".category-status > .badge-category__wrapper");
+      if (!badge) {
+        return "";
+      }
+      badge = badge.cloneNode(true);
+      badge.querySelectorAll(".topic-count").forEach(function (count) {
+        count.remove();
+      });
+      return badge.outerHTML;
+    }
+
+    function draw() {
+      if (!found.length) {
+        results.textContent = s[strings + "none_found"];
+        return;
+      }
+      var rows = found
+        .map(function (t) {
+          return message
+            ? '<div class="controls existing-message"><label class="radio"><input name="choose_message_id" type="radio" value="' +
+                t.id +
+                '"><span class="message-title">' +
+                escapeHtml(t.title) +
+                "</span></label></div>"
+            : '<div class="controls existing-topic"><label class="radio"><input id="choose-topic-' +
+                t.id +
+                '" name="choose_topic_id" type="radio" value="' +
+                t.id +
+                '"><span class="topic-title">' +
+                escapeHtml(t.title) +
+                '</span><span class="topic-categories">' +
+                category(t.category_id) +
+                "</span></label></div>";
+        })
+        .join("");
+      results.innerHTML = message ? rows : '<div class="choose-topic-list" role="radiogroup">' + rows + "</div>";
+      if (found.length === 1) {
+        results.querySelector("input").checked = true;
+        chosen(found[0]);
+      }
+    }
+
+    function search(term) {
+      var params = new URLSearchParams({
+        term: term,
+        type_filter: message ? "private_messages" : "topic",
+        search_for_id: "true",
+        restrict_to_archetype: message ? "private_message" : "regular",
+      });
+      var mine = searches;
+      var headers = memberHeaders();
+      headers.Accept = "application/json";
+      fetch(base() + "/search/query?" + params.toString(), { credentials: "same-origin", headers: headers })
+        .then(function (r) {
+          return r.ok ? r.json() : {};
+        })
+        .catch(function () {
+          return {};
+        })
+        .then(function (body) {
+          // The term changed since: these results are ignored.
+          if (mine !== searches || !root.isConnected) {
+            return;
+          }
+          // results.posts.map((item) => item.topic)
+          var topics = (body && body.topics) || [];
+          found = [];
+          ((body && body.posts) || []).forEach(function (post) {
+            var topic = topics.find(function (candidate) {
+              return candidate.id === post.topic_id;
+            });
+            if (topic && topic.id !== cfg.topic_id && found.indexOf(topic) === -1) {
+              found.push(topic);
+            }
+          });
+          draw();
+        });
+    }
+
+    input.addEventListener("keydown", function (event) {
+      // ignoreEnter
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+    input.addEventListener("input", function () {
+      clearTimeout(timer);
+      searches++;
+      chosen(null);
+      var term = input.value;
+      if (!term) {
+        results.innerHTML = "&nbsp;";
+        return;
+      }
+      results.textContent = s.loading;
+      // DAsyncContent's @debounce: INPUT_DELAY.
+      timer = setTimeout(function () {
+        search(term);
+      }, 250);
+    });
+    results.addEventListener("change", function (event) {
+      var id = Number(event.target.value);
+      chosen(
+        found.find(function (t) {
+          return t.id === id;
+        }) || null
+      );
+    });
+    return root;
+  }
+
+  // MoveToTopic (components/modal/move-to-topic.gjs) for `model`:
+  // { ids, count, selectedAll, canSplitTopic }. A topic offers a new
+  // topic, an existing topic and (an admin's) a new message; a message a
+  // new message (an admin's) and an existing message; with every post
+  // selected, or a first post that is not a regular one, only the
+  // existing one. Topic.movePosts, or with every post selected
+  // mergeTopic, then the destination topic.
+  //
+  // Not as Ember: the button waits for what its destination needs (a
+  // title, or a chosen topic), where Ember's is enabled by either under
+  // any destination and then fails; the category chooser is the
+  // composer's (topic-admin-modals.js) and the tags the composer's
+  // MiniTagChooser, offering existing tags only (tag_ids carries no new
+  // tag), where Ember has TagChooser.
+  function moveToTopic(cfg, model) {
+    if (!Discourse.modal) {
+      return;
+    }
+    var s = cfg.strings;
+    var canSplitTopic = model.canSplitTopic;
+    var canSplitToPM = canSplitTopic && cfg.admin;
+    var state = {
+      selection: "new_topic",
+      topicName: "",
+      categoryId: null,
+      tags: [],
+      participants: [],
+      chronologicalOrder: false,
+      selectedTopic: null,
+      saving: false,
+    };
+    if (cfg.private_message) {
+      state.selection = canSplitToPM ? "new_message" : "existing_message";
+    } else if (!canSplitTopic) {
+      state.selection = "existing_topic";
+    }
+    var TITLES = {
+      new_topic: "topic.split_topic.title",
+      existing_topic: "topic.merge_topic.title",
+      new_message: "topic.move_to_new_message.title",
+      existing_message: "topic.move_to_existing_message.title",
+    };
+    var bodyEl;
+    var submit;
+    var close;
+    var order;
+
+    function existing() {
+      return state.selection === "existing_topic" || state.selection === "existing_message";
+    }
+
+    // buttonDisabled and buttonTitle
+    function sync() {
+      submit.disabled = state.saving || (existing() ? !state.selectedTopic : !state.topicName);
+      submit.querySelector(".d-button-label").textContent = s[TITLES[state.selection]];
+      // The chronological order checkbox, once a topic is chosen.
+      if (order) {
+        order.parts.forEach(function (part) {
+          if (state.selectedTopic) {
+            order.form.appendChild(part);
+          } else {
+            part.remove();
+          }
+        });
+      }
+    }
+
+    function el(html) {
+      var holder = document.createElement("div");
+      holder.innerHTML = html;
+      return holder.firstChild;
+    }
+
+    function instructions(key) {
+      var p = document.createElement("p");
+      p.innerHTML = plural(cfg, key, model.count);
+      return p;
+    }
+
+    function titleField(form) {
+      var input = el('<input class="ember-text-field" id="split-topic-name" type="text">');
+      input.placeholder = s["composer.title_placeholder"];
+      input.value = state.topicName;
+      input.addEventListener("input", function () {
+        state.topicName = input.value;
+        sync();
+      });
+      form.appendChild(input);
+    }
+
+    // The composer's tag chooser, copied; nothing where the viewer has
+    // none.
+    function tagField(form, withCategory) {
+      var source = document.querySelector("#reply-control details.mini-tag-chooser");
+      if (!source || !Discourse.miniTagChooser) {
+        return;
+      }
+      form.appendChild(el("<label>" + escapeHtml(s["tagging.tags"]) + "</label>"));
+      var details = source.cloneNode(true);
+      details.open = false;
+      details.classList.remove("is-expanded");
+      details.removeAttribute("category-id");
+      var options = {};
+      try {
+        options = JSON.parse(details.dataset.options || "{}");
+      } catch (e) {}
+      options.allowAny = false;
+      details.dataset.options = JSON.stringify(options);
+      var body = details.querySelector(".select-kit-body");
+      body.innerHTML = "";
+      body.removeAttribute("style");
+      var chooser = Discourse.miniTagChooser(details, {
+        categoryId: function () {
+          return withCategory && state.categoryId ? String(state.categoryId) : "";
+        },
+        changed: function () {
+          state.tags = chooser.selected().slice();
+        },
+        opened: function () {
+          if (Discourse.topicAdminModals) {
+            Discourse.topicAdminModals.floatBody(details);
+          }
+        },
+      });
+      chooser.set(state.tags);
+      form.appendChild(details);
+    }
+
+    function chooseField(form, kind) {
+      form.appendChild(
+        chooseTopic(cfg, kind, function (topic) {
+          state.selectedTopic = topic;
+          sync();
+        })
+      );
+    }
+
+    function orderField(form) {
+      var label = el(
+        '<label class="checkbox-label" for="chronological-order"><input id="chronological-order" class="ember-checkbox" type="checkbox">' +
+          escapeHtml(s["topic.merge_topic.chronological_order"]) +
+          "</label>"
+      );
+      var box = label.querySelector("input");
+      box.checked = state.chronologicalOrder;
+      box.addEventListener("change", function () {
+        state.chronologicalOrder = box.checked;
+      });
+      order = { form: form, parts: [document.createElement("hr"), label] };
+    }
+
+    function newMessageForm() {
+      var form = document.createElement("form");
+      form.appendChild(el("<label>" + escapeHtml(s["topic.move_to_new_message.message_title"]) + "</label>"));
+      titleField(form);
+      if (cfg.can_tag_pms) {
+        tagField(form, false);
+      }
+      return form;
+    }
+
+    // The destination's instructions and form, as the template's ifs.
+    function draw() {
+      while (bodyEl.lastChild && !bodyEl.lastChild.classList.contains("radios")) {
+        bodyEl.lastChild.remove();
+      }
+      // A ChooseTopic drawn again starts with nothing chosen.
+      state.selectedTopic = null;
+      order = null;
+      var form;
+      if (state.selection === "existing_topic") {
+        bodyEl.appendChild(instructions("topic.merge_topic.instructions"));
+        form = document.createElement("form");
+        chooseField(form, "topic");
+        orderField(form);
+      } else if (state.selection === "new_topic") {
+        bodyEl.appendChild(instructions("topic.split_topic.instructions"));
+        form = document.createElement("form");
+        form.className = "split-new-topic-form";
+        var title = el('<div class="control-group"><label></label></div>');
+        title.firstChild.textContent = s["topic.split_topic.topic_name"];
+        titleField(title);
+        form.appendChild(title);
+        var chooser =
+          Discourse.topicAdminModals &&
+          Discourse.topicAdminModals.categoryChooser(
+            mode ? mode.topic : {},
+            function (id) {
+              state.categoryId = id;
+            },
+            { value: state.categoryId }
+          );
+        if (chooser) {
+          var category = el('<div class="control-group"><label></label></div>');
+          category.firstChild.textContent = s["categories.category"];
+          chooser.classList.add("small");
+          category.appendChild(chooser);
+          form.appendChild(category);
+        }
+        if (cfg.can_create_tag) {
+          var tags = document.createElement("div");
+          tags.className = "control-group";
+          tagField(tags, true);
+          if (tags.firstChild) {
+            form.appendChild(tags);
+          }
+        }
+      } else if (state.selection === "new_message") {
+        bodyEl.appendChild(instructions("topic.move_to_new_message.instructions"));
+        form = newMessageForm();
+      } else {
+        bodyEl.appendChild(instructions("topic.move_to_existing_message.instructions"));
+        form = document.createElement("form");
+        chooseField(form, "message");
+        form.appendChild(el("<label>" + escapeHtml(s["topic.move_to_new_message.participants"]) + "</label>"));
+        if (Discourse.emailGroupUserChooser) {
+          var details = el(
+            '<details class="select-kit multi-select user-chooser email-group-user-chooser participant-selector"><summary data-name="" data-value="" tabindex="0" class="select-kit-header multi-select-header"><div class="select-kit-header-wrapper"></div></summary><div class="select-kit-body"></div></details>'
+          );
+          form.appendChild(details);
+          Discourse.emailGroupUserChooser
+            .attach(details, {
+              none: s["select_kit.default_header_text"],
+              placeholder: "",
+              noContent: s["select_kit.no_content"],
+              resultsOne: s["select_kit.results_count.one"],
+              resultsOther: s["select_kit.results_count.other"],
+              deleteItem: s["select_kit.delete_item"],
+              allowEmails: false,
+              includeMessageableGroups: false,
+              onChange: function (values) {
+                state.participants = values.slice();
+              },
+            })
+            .set(state.participants);
+        }
+        orderField(form);
+      }
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+      });
+      bodyEl.appendChild(form);
+      sync();
+    }
+
+    // movePostsTo: the params as jQuery encodes them.
+    function params() {
+      var form = new URLSearchParams();
+      function ids() {
+        model.ids.forEach(function (id) {
+          form.append("post_ids[]", String(id));
+        });
+      }
+      function tagIds() {
+        var tagged = state.tags.filter(function (t) {
+          return t.id;
+        });
+        if (!tagged.length) {
+          return;
+        }
+        tagged.forEach(function (t) {
+          form.append("tag_ids[]", String(t.id));
+        });
+      }
+      if (existing()) {
+        if (!model.selectedAll) {
+          ids();
+        }
+        form.append("destination_topic_id", String(state.selectedTopic.id));
+        if (state.selection === "existing_message") {
+          form.append("participants", state.participants.join(","));
+          form.append("archetype", "private_message");
+        }
+        form.append("chronological_order", String(state.chronologicalOrder));
+      } else if (!model.selectedAll) {
+        form.append("title", state.topicName);
+        ids();
+        if (state.selection === "new_topic") {
+          form.append("category_id", state.categoryId ? String(state.categoryId) : "");
+          tagIds();
+        } else {
+          tagIds();
+          form.append("archetype", "private_message");
+        }
+      }
+      return form;
+    }
+
+    function performMove() {
+      state.saving = true;
+      modalFlash(submit, null);
+      sync();
+      var headers = memberHeaders();
+      headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+      var response = null;
+      fetch(base() + "/t/" + cfg.topic_id + (model.selectedAll ? "/merge-topic" : "/move-posts"), {
+        method: "POST",
+        headers: headers,
+        credentials: "same-origin",
+        body: params().toString(),
+      })
+        .then(function (r) {
+          response = r;
+          return r.json().catch(function () {
+            return null;
+          });
+        })
+        .then(function (result) {
+          // moveResult: anything but success is an error.
+          if (!response.ok || !result || !result.success) {
+            return Promise.reject(response.ok ? null : result);
+          }
+          close();
+          if (current()) {
+            toggle();
+          }
+          // DiscourseURL.routeTo(result.url)
+          window.location.assign(result.url);
+        })
+        .catch(function (body) {
+          if (body instanceof Error) {
+            console.error(body);
+            body = null;
+            response = null;
+          }
+          modalFlash(submit, extractError(s, response && !response.ok ? response : null, body, s["topic.move_to.error"]));
+          state.saving = false;
+          sync();
+        });
+    }
+
+    function radio(value, id, key) {
+      return (
+        '<label class="radio-label" for="' +
+        id +
+        '"><input id="' +
+        id +
+        '" name="move-to-entity" type="radio" value="' +
+        value +
+        '"' +
+        (state.selection === value ? " checked" : "") +
+        ">" +
+        escapeHtml(s[key]) +
+        "</label>"
+      );
+    }
+
+    close = Discourse.modal.show({
+      className: "choose-topic-modal",
+      attributes: { id: "choosing-topic" },
+      title: s["topic.move_to.title"],
+      body: function (body) {
+        bodyEl = body;
+        var radios = document.createElement("div");
+        radios.className = "radios";
+        var newMessage = canSplitToPM ? radio("new_message", "move-to-new-message", "topic.move_to_new_message.radio_label") : "";
+        radios.innerHTML = cfg.private_message
+          ? newMessage + radio("existing_message", "move-to-existing-message", "topic.move_to_existing_message.radio_label")
+          : (canSplitTopic ? radio("new_topic", "move-to-new-topic", "topic.split_topic.radio_label") : "") +
+            radio("existing_topic", "move-to-existing-topic", "topic.merge_topic.radio_label") +
+            newMessage;
+        radios.addEventListener("change", function (event) {
+          state.selection = event.target.value;
+          draw();
+        });
+        body.appendChild(radios);
+      },
+      footer: function (footer) {
+        submit = el(button("btn-primary", "", null, "right-from-bracket"));
+        footer.appendChild(submit);
+        submit.addEventListener("click", performMove);
+        draw();
       },
     });
   }

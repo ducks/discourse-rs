@@ -3825,8 +3825,13 @@ route table has been made, so this list may be short.
     /posts/destroy_many, PUT /posts/merge_posts and GET
     /posts/:id/reply-ids are ported, `feat/posts-bulk-endpoints`, and
     wired to delete selected, merge selected posts and select +replies,
-    `feat/select-posts-actions`; left of it: MoveToTopic's modal,
-    refused by name, and Shift+B) and the nested replies
+    `feat/select-posts-actions`; MoveToTopic's modal with ChooseTopic
+    and ChooseMessage is `feat/move-to-topic-modal`: new topic,
+    existing topic, new and existing message, merge-topic with every
+    post selected; browser move-to-topic (8). Left of it: Shift+B,
+    TagChooser (the composer's MiniTagChooser stands in, existing tags
+    only), TopicStatus and emoji in ChooseTopic's rows, the modal's
+    plugin outlets and value transformers) and the nested replies
     toggle (PUT
     /n/:slug/:id/toggle)
     194c2. ~~`feat/site-banner`~~ (done) S: the banner topic drawn where

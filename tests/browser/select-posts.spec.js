@@ -5,7 +5,8 @@
 // the selected posts (with every post selected, the topic), Merge
 // selected posts merges them, and the ChangeOwner modal hands the
 // selection (or, from the post admin menu, one post) to another member.
-// Each change is checked in the database. Move to is refused, named.
+// Each change is checked in the database. Move to opens the MoveToTopic
+// modal (move-to-topic.spec.js).
 const { test, expect, login, api, topic, sql, label } = require("./helpers");
 
 const MENU = ".topic-admin-menu-content";
@@ -485,17 +486,20 @@ test("Merge selected posts shows what the server refuses", async ({ page, contex
   expect(owners(t)).toEqual(["user1", "user0", "user2", "user2"]);
 });
 
-test("Move to is refused, named", async ({ page, context, session }) => {
+test("Move to opens the MoveToTopic modal", async ({ page, context, session }) => {
   const t = await setup(session, context);
   await enter(page, t);
-  const error = page.locator("#page-error");
 
   await controls(page, t.posts[1]).locator(".select-post").click();
   await controls(page, t.posts[2]).locator(".select-post").click();
   await page.locator(`${PANEL} .btn.move-to-topic`).click();
-  await expect(error).toHaveText("Not ported yet: moving posts (MoveToTopic).");
-  await expect(page.locator(".d-modal")).toHaveCount(0);
+  const modal = page.locator(".d-modal.choose-topic-modal");
+  await expect(modal.locator(".d-modal__title-text")).toHaveText("Move to");
+  await expect(page.locator("#page-error")).toBeHidden();
 
+  // Closed, the mode and its selection are as they were.
+  await modal.locator(".modal-close").click();
+  await expect(modal).toHaveCount(0);
   expect(await selected(page)).toEqual([t.posts[1], t.posts[2]]);
   expect(deleted(t)).toEqual([]);
   expect(sql("SELECT COUNT(*) FROM posts WHERE topic_id = :'p1'", t.id)).toEqual([["4"]]);

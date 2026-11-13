@@ -458,6 +458,44 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .d-modal.--quick-palette .d-modal__body input {
   width: auto;
 }
+/* modal-overrides.scss:120: the MoveToTopic modal (select-posts.js) */
+.d-modal.choose-topic-modal .d-modal__container {
+  width: 40em;
+}
+/* modal-overrides.scss:127 */
+.d-modal.choose-topic-modal #split-topic-name,
+.d-modal.choose-topic-modal #choose-topic-title,
+.d-modal.choose-topic-modal #choose-message-title {
+  width: 100%;
+}
+/* modal-overrides.scss:133 */
+.d-modal.choose-topic-modal .choose-message__search-results,
+.d-modal.choose-topic-modal .choose-topic__search-results {
+  margin: 0 0 1em 0;
+}
+/* modal-overrides.scss:140 */
+.d-modal.choose-topic-modal .category-chooser {
+  margin-bottom: 9px;
+}
+/* modal-overrides.scss:144 */
+.d-modal.choose-topic-modal .controls.existing-topic {
+  margin-bottom: 0.75em;
+}
+/* modal-overrides.scss:149 */
+.d-modal.choose-topic-modal .existing-topic .radio {
+  flex-wrap: wrap;
+}
+/* modal-overrides.scss:154 */
+.d-modal.choose-topic-modal .existing-topic .topic-title {
+  max-width: 90%;
+}
+/* modal-overrides.scss:158 */
+.d-modal.choose-topic-modal .existing-topic .topic-categories {
+  display: flex;
+  font-weight: normal;
+  gap: 0.5em;
+  width: 100%;
+}
 /* modal-overrides.scss:610: the ChangeOwner modal (select-posts.js) */
 .change-ownership-modal .d-modal__body {
   display: flex;

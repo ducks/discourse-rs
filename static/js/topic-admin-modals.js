@@ -1433,5 +1433,8 @@
     changeTimestamp: changeTimestamp,
     slowMode: slowMode,
     makePublic: makePublic,
+    // For the MoveToTopic modal (select-posts.js).
+    categoryChooser: categoryChooser,
+    floatBody: floatBody,
   };
 })();
