@@ -3637,6 +3637,98 @@ fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> 
     )
 }
 
+/// TopicTimerInfo (components/topic-timer-info.gjs) under the posts: the
+/// public timer's notice, its title the time in full, and for who may set
+/// timers the edit and remove buttons (static/js/topic-admin-menu.js).
+/// Empty as Ember leaves it: no timer, one whose time has passed (unless
+/// it counts from the last post or deletes replies) or one for the state
+/// the topic is already in. static/js/dates.js draws the time left and
+/// the title in the browser, static/js/topic.js clears the notice
+/// once its time passes.
+pub fn topic_timer_info(cx: &PostContext, view: &Value) -> String {
+    const EMPTY: &str = "<div class=\"topic-timer-info\"></div>";
+    let l = cx.list;
+    let timer = &view["topic_timer"];
+    let status_type = s(&timer["status_type"]);
+    let based_on_last_post = timer["based_on_last_post"] == true;
+    let Some(at) = date(&timer["execute_at"]) else {
+        return EMPTY.to_string();
+    };
+    let lasting = based_on_last_post || status_type == "delete_replies";
+    if !lasting && at <= l.now {
+        return EMPTY.to_string();
+    }
+    let topic_status = if view["closed"] == true {
+        "close"
+    } else {
+        "open"
+    };
+    if topic_status == status_type {
+        return EMPTY.to_string();
+    }
+    // _noticeKey
+    let notice_type = match (status_type, based_on_last_post) {
+        ("close" | "silent_close", true) => "close_after_last_post",
+        ("silent_close", false) => "close",
+        ("delete", true) => "delete_after_last_post",
+        (other, _) => other,
+    };
+    // duration.humanize(true): moment's "in %s" around the time left.
+    let (tz, time_left) = crate::viewer_dates::text(
+        l,
+        &format!("in {}", crate::viewer_dates::marker(at, "@humanize")),
+    );
+    let duration =
+        crate::viewer_dates::humanize_minutes(timer["duration_minutes"].as_i64().unwrap_or(0));
+    let category = timer["category_id"]
+        .as_i64()
+        .and_then(|id| l.categories.get(&id));
+    let category_name = category.map(|c| escape(&c.slug)).unwrap_or_default();
+    let category_url = category
+        .map(|c| escape(&crate::topic_list_view::category_url(l, c)))
+        .unwrap_or_default();
+    let placeholder = "\u{0}";
+    let notice = t_with(
+        l,
+        &format!("topic.status_update_notice.auto_{notice_type}"),
+        &[
+            ("timeLeft", placeholder),
+            ("duration", &duration),
+            ("categoryName", &category_name),
+            ("categoryUrl", &category_url),
+        ],
+    )
+    .replace(placeholder, &format!("<span{tz}>{time_left}</span>"));
+    let mut buttons = String::new();
+    if cx.topic.menus.can_set_topic_timer {
+        for (class, title, icon_name) in [
+            ("topic-timer-edit", "post.controls.edit_timer", "pencil"),
+            (
+                "topic-timer-remove",
+                "post.controls.remove_timer",
+                "trash-can",
+            ),
+        ] {
+            buttons.push_str(&format!(
+                "<button class=\"btn no-text btn-icon {class}\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+                escape(&t(l, title)),
+                d_icon(icon_name, None)
+            ));
+        }
+    }
+    // What topic.js clears the notice at.
+    let expires = if lasting {
+        String::new()
+    } else {
+        format!(" data-execute-at=\"{}\"", at.timestamp_millis())
+    };
+    format!(
+        "<div class=\"topic-timer-info\"{expires}><h3 class=\"topic-timer-heading\"><span{}>{} {notice}</span><div class=\"topic-timer-modify\">{buttons}</div></h3></div>",
+        crate::viewer_dates::attr(l, "title", &crate::viewer_dates::marker(at, "LLLL")),
+        d_icon("far-clock", None)
+    )
+}
+
 /// The topic's footer buttons: an anonymous reader's Reply (to log in);
 /// a member's share, bookmark, a message's Archive (or Move to Inbox),
 /// Flag, Mark unread, Reply and the notifications button; a message draws

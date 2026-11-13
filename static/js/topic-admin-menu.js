@@ -445,6 +445,33 @@
     });
   }
 
+  // TopicTimerInfo's buttons under the posts, for who may set timers:
+  // the pencil opens EditTopicTimer (showTopicTimerModal), the trash can
+  // is the topic controller's removeTopicTimer (TopicTimer.update with
+  // the timer's type and no time), the page drawn again where Ember
+  // empties the notice. popupAjaxError on a failure.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("#topic .topic-timer-info .topic-timer-modify button");
+    var topic = button && topicData();
+    if (!topic) {
+      return;
+    }
+    if (button.classList.contains("topic-timer-edit")) {
+      modals("editTopicTimer", topic);
+    } else if (button.classList.contains("topic-timer-remove") && topic.topic_timer) {
+      request("POST", "/t/" + topic.id + "/timer", { time: "", status_type: topic.topic_timer.status_type })
+        .then(function (r) {
+          if (!r.ok) {
+            return popupError(r);
+          }
+          location.reload();
+        })
+        .catch(function (e) {
+          console.error(e);
+        });
+    }
+  });
+
   document.addEventListener("click", function (event) {
     if (!window.Discourse || !Discourse.float) {
       return;

@@ -421,6 +421,33 @@ pub(crate) fn humanize(now: DateTime<Utc>, at: DateTime<Utc>) -> String {
     }
 }
 
+/// `moment.duration(minutes, "minutes").humanize({ s: 60, m: 60, h: 24 })`
+/// in English (TopicTimerInfo's duration): "4 hours", "a day", "2 months".
+pub(crate) fn humanize_minutes(minutes: i64) -> String {
+    let minutes = minutes.max(0);
+    // Duration#as: the days to months as moment converts them.
+    let as_days = minutes as f64 / 1440.0;
+    let as_months = as_days * 4800.0 / 146_097.0;
+    let round = |x: f64| (x + 0.5).floor() as i64;
+    let hours = round(minutes as f64 / 60.0);
+    let days = round(as_days);
+    let months = round(as_months);
+    let years = round(as_months / 12.0);
+    match () {
+        _ if minutes < 1 => "a few seconds".to_string(),
+        _ if minutes <= 1 => "a minute".to_string(),
+        _ if minutes < 60 => format!("{minutes} minutes"),
+        _ if hours <= 1 => "an hour".to_string(),
+        _ if hours < 24 => format!("{hours} hours"),
+        _ if days <= 1 => "a day".to_string(),
+        _ if days < 26 => format!("{days} days"),
+        _ if months <= 1 => "a month".to_string(),
+        _ if months < 11 => format!("{months} months"),
+        _ if years <= 1 => "a year".to_string(),
+        _ => format!("{years} years"),
+    }
+}
+
 /// relativeAgeTiny with its options.
 fn tiny<C: DateContext + ?Sized>(cx: &C, at: DateTime<Utc>, options: Tiny) -> String {
     let timeline = options == Tiny::Timeline;
@@ -661,6 +688,38 @@ mod tests {
         assert_eq!(humanize(now, at("2029-10-18T12:00:00Z")), "3 years");
         // Past dates read the same.
         assert_eq!(humanize(now, at("2026-10-16T12:00:00Z")), "2 days");
+    }
+
+    /// What moment 2.30 answers for each.
+    #[test]
+    fn humanize_minutes_as_moment_with_the_timer_thresholds() {
+        for (minutes, text) in [
+            (0, "a few seconds"),
+            (1, "a minute"),
+            (2, "2 minutes"),
+            (59, "59 minutes"),
+            (60, "an hour"),
+            (89, "an hour"),
+            (90, "2 hours"),
+            (1380, "23 hours"),
+            (1410, "a day"),
+            (1440, "a day"),
+            (2159, "a day"),
+            (2160, "2 days"),
+            (4320, "3 days"),
+            (36719, "25 days"),
+            (36720, "a month"),
+            (64800, "a month"),
+            (66240, "2 months"),
+            (129600, "3 months"),
+            (446400, "10 months"),
+            (460800, "a year"),
+            (788400, "a year"),
+            (790000, "2 years"),
+            (10512000, "20 years"),
+        ] {
+            assert_eq!(humanize_minutes(minutes), text, "{minutes} minutes");
+        }
     }
 
     #[test]
