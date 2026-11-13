@@ -3707,8 +3707,8 @@ route table has been made, so this list may be short.
     its reminder notifications (dependent_reminder_notifications).
     Refused, naming their items: editing a bookmark (BookmarkModal, 196),
     resuming a message draft (the message composer, 196); the user
-    topic lists' bulk select button is drawn without its actions, as on
-    every topic list (183)
+    topic lists' bulk select button is drawn without its actions (183;
+    the discovery lists' works, `feat/topic-list-bulk-select`)
     193d. ~~`feat/user-pages-prefs-more`~~ (done) M: preferences emails
     (chat's email frequency, the digest and mailing list controls), the
     email change page (/preferences/email and ?new, validated and saved
@@ -4760,8 +4760,8 @@ route table has been made, so this list may be short.
     `new_list` live param, routes/live.rs list_state), and its bulk
     select variant in the list header (templates/latest.html:40):
     upstream has none any more, DiscoveryTopics only hides the toggle
-    while bulk select is on (renderNewListHeaderControls), which waits
-    for the topic lists' bulk select (183); EmptyTopicFilter's
+    while bulk select is on (renderNewListHeaderControls), done in
+    `feat/topic-list-bulk-select`; EmptyTopicFilter's
     education in a member's empty list footer is done (270)
 269. ~~`fix/new-topic-route`~~ (done) S: GET /new-topic and /new-message
     answered 404 (the PWA manifest's New Topic shortcut and embedding's
@@ -5040,13 +5040,27 @@ route table has been made, so this list may be short.
     menu's and modal's boxes and styles all match. Ember's DismissNew
     modal has no caller upstream and is not drawn. Left, split into 270b.
     270b. `feat/topic-list-load-more` S: (loading more on scroll is done
-    in 283) the dismiss buttons' selected
-    variants ("Dismiss (n)", topic_ids) wait for the discovery lists'
-    bulk select, which is drawn without its actions (templates/latest.html:40,
-    183); tag unread lists (new is 265a's), and so their dismiss
+    in 283) tag unread lists (new is 265a's), and so their dismiss
     buttons, are refused (src/routes/tags.rs:293); the messages lists'
     dismiss buttons are drawn without actions
-    (src/messages_view.rs:353, 183)
+    (src/messages_view.rs:353, 183). Done in
+    `feat/topic-list-bulk-select`: the discovery lists' bulk select
+    (BulkSelectHelper, static/js/topic-list-bulk-select.js): the
+    toggle for canBulkSelect (topic managers; members on new and
+    unread lists with topics, category and tag ones too), the checkbox
+    cells, row click and shift range selection, Select All and Clear
+    All, rows loaded later, the subset toggle hidden in the mode, the
+    dismiss buttons' selected variants ("Dismiss (n)", topic_ids), and
+    for topic managers BulkSelectTopicsDropdown with BulkTopicActions
+    over PUT /topics/bulk: dismiss, update category, update
+    notifications, reset bump dates, mark unread, close (with its
+    note), archive, un-pin, unlist, relist, make personal message and
+    delete, a failure listed in the modal. Left, refused by name:
+    Manage tags (ManageTagsForm's tag choosers), Pin (BulkPinOptions,
+    feature_stats), the nested replies items (NestedTopic::Toggle);
+    the endpoint refuses bulk deleting one's own topics
+    (src/topics/bulk.rs:992); the user and message topic lists'
+    toggles (183)
 272. ~~`fix/avatar-dpr`~~ (done) S: on a phone or any screen with a
     device pixel ratio above 1.1 every avatar loaded a smaller image than
     Ember's (a Pixel 5's 48px post avatar 48.png where Ember asks for
@@ -5523,10 +5537,10 @@ route table has been made, so this list may be short.
     the chunk (post_view::stream); the lists' last visit separator and
     the bottom dismiss buttons' five topic rule are the loaded page's,
     not the whole list's; the a11y announcements while loading
-    (a11y.announce); bulk select's addTopics for loaded rows (270b); the
-    posts' cloaking (post-stream--cloaked) is not ported, so every loaded
-    post stays drawn; megatopics (isMegaTopic, lastId, fetchNextWindow
-    over post_number and asc, which GET /t/:id/posts.json answers) are
+    (a11y.announce); the posts' cloaking (post-stream--cloaked) is not
+    ported, so every loaded post stays drawn; megatopics (isMegaTopic,
+    lastId, fetchNextWindow over post_number and asc, which GET
+    /t/:id/posts.json answers) are
     not, the topic view always carries the stream; keyboard navigation
     (j/k, keyboard:move-selection loading at a boundary) waits for the
     keyboard shortcuts, which the port doesn't have; GET

@@ -877,3 +877,37 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .edit-topic-timer-modal .modal-topic-timer-info .topic-timer-info {
   border-top: 0;
 }
+
+/* modal-overrides.scss: BulkTopicActions (topic-list-bulk-select.js). */
+.d-modal.topic-bulk-actions-modal p {
+  margin-top: 0;
+}
+
+.d-modal.topic-bulk-actions-modal #bulk-topics-cancel {
+  margin-left: auto;
+}
+
+.d-modal.topic-bulk-actions-modal .bulk-close-note-section {
+  margin-top: 1em;
+}
+
+.d-modal.topic-bulk-actions-modal .d-modal__container {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+}
+
+.bulk-notification-list {
+  margin-bottom: 1.5em;
+}
+
+.notification-level-radio {
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin-bottom: 0.5em;
+}
+
+.notification-level-radio .description {
+  width: 100%;
+  margin-top: 0.25em;
+}

@@ -15,6 +15,12 @@
 // list's category from the row, then refresh the page where it stands
 // (router.refresh), which redraws the list, the nav pills and the
 // sidebar's counts. A failure is left unhandled as Ember leaves it.
+//
+// With topics selected in the list's bulk select mode
+// (topic-list-bulk-select.js, @selectedTopics) the buttons carry the
+// count ("Dismiss (2)"), resetNew sends the topics as topic_ids and
+// dismissRead is Topic.bulkOperation on them instead of the filter. The
+// Bulk Actions menu's Dismiss is these (Discourse.topicDismiss).
 (function () {
   "use strict";
 
@@ -30,6 +36,16 @@
 
   function t(key) {
     return strings[key] || key;
+  }
+
+  function counted(key, count) {
+    var text = (count === 1 && strings[key + ".one"]) || strings[key + ".other"] || key;
+    return text.split("%{count}").join(String(count));
+  }
+
+  // BulkSelectHelper#selected, as ids.
+  function selectedTopics() {
+    return Discourse.bulkSelectTopics ? Discourse.bulkSelectTopics.selected() : [];
   }
 
   function basePath() {
@@ -89,6 +105,9 @@
     if (row.dataset.tagName) {
       data.push(["tag_name", row.dataset.tagName]);
     }
+    selectedTopics().forEach(function (id) {
+      data.push(["topic_ids[]", String(id)]);
+    });
     // The combo is drawn under unified new only; the classic button
     // dismisses with no options.
     if (row.querySelector(".topic-dismiss-buttons__combo")) {
@@ -106,9 +125,16 @@
     return put("/topics/reset-new", data).then(refresh);
   }
 
-  // Topic.bulkOperationByFilter("unread", operation, options, isTracked).
+  // Topic.bulkOperationByFilter("unread", operation, options, isTracked),
+  // or with topics selected Topic.bulkOperation(selected, operation, {},
+  // isTracked).
   function dismissRead(row, stopTracking) {
-    var data = [["filter", "unread"]];
+    var ids = selectedTopics();
+    var data = ids.length
+      ? ids.map(function (id) {
+          return ["topic_ids[]", String(id)];
+        })
+      : [["filter", "unread"]];
     if (stopTracking) {
       data.push(["operation[type]", "change_notification_level"]);
       data.push(["operation[notification_level_id]", "1"]);
@@ -116,6 +142,9 @@
       data.push(["operation[type]", "dismiss_posts"]);
     }
     data.push(["tracked", String(tracked())]);
+    if (ids.length) {
+      return put("/topics/bulk", data);
+    }
     if (row.dataset.categoryId) {
       data.push(["category_id", row.dataset.categoryId]);
     }
@@ -130,9 +159,10 @@
   // once the dismissal is done (BulkSelectHelper#dismissRead).
   function openDismissRead(row) {
     var icon = Discourse.cooked ? Discourse.cooked.icon : function () { return ""; };
+    var count = selectedTopics().length;
     Discourse.modal.show({
       className: "dismiss-read-modal",
-      title: t("topics.bulk.dismiss_read"),
+      title: count ? counted("topics.bulk.dismiss_read_with_selected", count) : t("topics.bulk.dismiss_read"),
       body: function (body) {
         var p = document.createElement("p");
         var controls = document.createElement("div");
@@ -194,6 +224,57 @@
       },
     });
   }
+
+  // TopicDismissButtons#dismissLabel and #dismissNewLabel: the label
+  // the page drew, or with topics selected its `_with_selected` form.
+  function label(button) {
+    var id = button.id || "";
+    if (id.indexOf("dismiss-topics-") === 0) {
+      return "topics.bulk.dismiss_button";
+    }
+    if (id.indexOf("dismiss-new-menu-") === 0 || id.indexOf("dismiss-new-") !== 0) {
+      return null;
+    }
+    if (!button.closest(".topic-dismiss-buttons__combo")) {
+      return "topics.bulk.dismiss_new";
+    }
+    var subset = new URLSearchParams(location.search).get("subset");
+    return subset === "topics"
+      ? "topics.bulk.dismiss_new_topics"
+      : subset === "replies"
+        ? "topics.bulk.dismiss_new_replies"
+        : "topics.bulk.dismiss_all";
+  }
+
+  document.addEventListener("discourse:bulk-select-topics", function () {
+    var count = selectedTopics().length;
+    document.querySelectorAll(".dismiss-container-top button, .dismiss-container-bottom button").forEach(function (button) {
+      var key = label(button);
+      var text = button.querySelector(".d-button-label");
+      if (!key || !text) {
+        return;
+      }
+      if (button.dataset.label === undefined) {
+        button.dataset.label = text.textContent;
+      }
+      text.textContent = count ? counted(key + "_with_selected", count) : button.dataset.label;
+    });
+  });
+
+  // The list's own dismissal, for the Bulk Actions menu's Dismiss
+  // (BulkSelectHelper's onResetNew, the dropdown's dismiss-unread).
+  Discourse.topicDismiss = {
+    resetNew: function () {
+      var row = document.querySelector(".dismiss-container-top");
+      return row ? resetNew(row, false) : null;
+    },
+    dismissRead: function () {
+      var row = document.querySelector(".dismiss-container-top");
+      if (row) {
+        openDismissRead(row);
+      }
+    },
+  };
 
   document.addEventListener("click", function (event) {
     var button = event.target.closest(

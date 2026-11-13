@@ -1672,6 +1672,99 @@ async fn the_new_list_draws_the_subset_toggle() {
     assert_eq!(subset_toggle(&html), []);
 }
 
+/// The topic lists' bulk select (the discovery controller's
+/// canBulkSelect): the header's toggle, topic-list-bulk-select.js and its
+/// config for a topic manager on any list and for a member on the new
+/// and unread lists while they have topics; a visitor's page has none of
+/// it.
+#[tokio::test]
+async fn topic_lists_draw_bulk_select_for_who_can_use_it() {
+    let db = TestDb::new().await;
+    const TOGGLE: &str = r#"<th class="topic-list-data default" data-sort-order="default" scope="col"><button class="btn-transparent bulk-select no-text" title="toggle bulk selection of topics">"#;
+    const CONFIG: &str = r#"<script type="application/json" id="topic-bulk-select">{"#;
+    let drawn = |html: &str| {
+        let toggle = html.contains(TOGGLE);
+        assert_eq!(html.contains(CONFIG), toggle, "{html}");
+        assert_eq!(
+            html.contains("/assets/topic-list-bulk-select.js?v="),
+            toggle
+        );
+        toggle
+    };
+    let bulk_config = |html: &str| -> serde_json::Value {
+        let json = html.split(r#"id="topic-bulk-select">"#).nth(1).unwrap();
+        serde_json::from_str(&json[..json.find("</script>").unwrap()]).unwrap()
+    };
+
+    for path in ["/latest", "/c/general/4", "/tag/guide/2"] {
+        let (_, _, html) = get(&db.pool, path).await;
+        assert!(!drawn(&html), "{path}");
+        assert!(!html.contains("bulk-select"), "{path}");
+    }
+
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st.clone(), "user1").await;
+    for path in ["/latest", "/top", "/c/general/4", "/tag/guide/2"] {
+        assert!(!drawn(&user1.page(path).await), "{path}");
+    }
+    // showResetNew and showDismissRead: the list has topics.
+    for (path, filter) in [
+        ("/new", "new"),
+        ("/unread", "unread"),
+        ("/c/general/4/l/unread", "unread"),
+        ("/tag/guide/2/l/new", "new"),
+    ] {
+        let html = user1.page(path).await;
+        assert!(drawn(&html), "{path}");
+        let config = bulk_config(&html);
+        assert_eq!(config["filter"], filter, "{path}");
+        assert_eq!(config["can_manage_topic"], false);
+        assert_eq!(config["staff"], false);
+        assert_eq!(config["can_delete_all_posts_and_topics"], false);
+        assert_eq!(config["manage_tags"], false);
+        assert_eq!(config["strings"]["topics.bulk.select_all"], "Select All");
+        assert_eq!(
+            config["strings"]["topics.bulk.selected_count.other"],
+            "%{count} selected"
+        );
+        // The dismiss buttons' labels with topics selected.
+        assert!(html.contains(
+            "&#34;topics.bulk.dismiss_all_with_selected.other&#34;:&#34;Dismiss (%{count})&#34;"
+        ));
+    }
+    // Sub General has nothing unread for user1.
+    assert!(!drawn(
+        &user1.page("/c/general/sub-general/34/l/unread").await
+    ));
+
+    let mut admin = Member::logged_in(st, "admin").await;
+    for (path, filter) in [
+        ("/latest", "latest"),
+        ("/c/general/4", "latest"),
+        ("/tag/guide/2", "latest"),
+    ] {
+        let html = admin.page(path).await;
+        assert!(drawn(&html), "{path}");
+        let config = bulk_config(&html);
+        assert_eq!(config["filter"], filter, "{path}");
+        assert_eq!(config["can_manage_topic"], true);
+        assert_eq!(config["staff"], true);
+        assert_eq!(config["can_delete_all_posts_and_topics"], true);
+        assert_eq!(config["manage_tags"], true);
+        assert_eq!(config["nested_replies"], false);
+        // A description's markup cannot end the script.
+        assert!(html.contains(r#"\u003ca href='https://meta.discourse.org/t/understanding-closed-unlisted-and-archived-topics/51238' target='_blank'>Learn more\u003c/a>"#));
+        assert!(
+            config["strings"]["topic_bulk_actions.close_topics.description"]
+                .as_str()
+                .unwrap()
+                .ends_with("Learn more</a>")
+        );
+        // The category chooser's modal, for Update Category.
+        assert!(html.contains("/assets/topic-admin-modals.js?v="), "{path}");
+    }
+}
+
 /// The docked header's template (header_topic_view): what
 /// static/js/header-topic-info.js swaps into the header once the topic's
 /// title scrolls out of view.

@@ -243,6 +243,8 @@ ICONS=(
   question
   caret-down
   caret-up
+  # The topic lists' bulk actions (Reset Bump Dates).
+  anchor
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
