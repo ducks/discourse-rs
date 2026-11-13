@@ -89,16 +89,20 @@ pub async fn timer(
     }
     let creating = present("time").is_some() || present("duration_minutes").is_some();
     if status_type == topic_timer::types::PUBLISH_TO_CATEGORY && creating {
-        let category: Option<i32> =
-            match present("category_id").and_then(|c| crate::ruby::integer(&c)) {
-                Some(id) => {
-                    sqlx::query_scalar("SELECT id FROM categories WHERE id = $1")
-                        .bind(id)
-                        .fetch_optional(&mut *tx)
-                        .await?
-                }
-                None => None,
-            };
+        // Bound as an int4, as the statement's other callers bind it: a
+        // connection prepares it once, with the first caller's types.
+        let category: Option<i32> = match present("category_id")
+            .and_then(|c| crate::ruby::integer(&c))
+            .and_then(|id| i32::try_from(id).ok())
+        {
+            Some(id) => {
+                sqlx::query_scalar("SELECT id FROM categories WHERE id = $1")
+                    .bind(id)
+                    .fetch_optional(&mut *tx)
+                    .await?
+            }
+            None => None,
+        };
         let Some(category) = category else {
             return Ok(super::topics::not_found_response(&state));
         };

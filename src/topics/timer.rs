@@ -349,7 +349,9 @@ pub async fn set_or_create_timer(
     let mut duration = existing.as_ref().and_then(|t| t.duration_minutes);
     let mut category_id = existing.as_ref().and_then(|t| t.category_id);
     if status_type == types::PUBLISH_TO_CATEGORY {
-        category_id = match opts.category_id {
+        // Bound as an int4, as the statement's other callers bind it: a
+        // connection prepares it once, with the first caller's types.
+        category_id = match opts.category_id.and_then(|id| i32::try_from(id).ok()) {
             Some(id) => {
                 sqlx::query_scalar("SELECT id FROM categories WHERE id = $1")
                     .bind(id)
