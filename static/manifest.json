@@ -79,6 +79,7 @@
         "css/discourse-math.css",
         "css/discourse-templates.css",
         "css/footnote.css",
+        "css/lazy-videos.css",
         "css/poll.css",
         "css/spoiler-alert.css",
         "css/user-notes.css",
@@ -795,6 +796,13 @@
       "content_type": "js",
       "files": [
         "js/checklist.js"
+      ]
+    },
+    {
+      "name": "lazy-videos.js",
+      "content_type": "js",
+      "files": [
+        "js/lazy-videos.js"
       ]
     },
     {

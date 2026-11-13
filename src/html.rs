@@ -328,6 +328,9 @@ pub struct Chrome {
     /// discourse-footnote's inline footnotes (static/js/inline-footnotes.js):
     /// the plugin is on and display_footnotes_inline.
     pub inline_footnotes: bool,
+    /// discourse-lazy-videos' client (static/js/lazy-videos.js):
+    /// lazy_videos_enabled.
+    pub lazy_videos: bool,
     /// What static/js/local-dates.js reads, as data attributes for its
     /// script tag; empty while discourse_local_dates_enabled is off.
     pub local_dates_attrs: String,
@@ -716,12 +719,16 @@ const COOKED_SETTINGS: &[&str] = &[
     "display_footnotes_inline",
     "checklist_enabled",
     "policy_enabled",
+    "lazy_youtube_enabled",
+    "lazy_vimeo_enabled",
+    "lazy_tiktok_enabled",
 ];
 
 /// The client strings the cooked decorators show, by their js.* key.
 const COOKED_STRINGS: &[&str] = &[
     "spoiler.label.show",
     "checklist.item",
+    "lazy_videos.play_video",
     "copy_codeblock.copied",
     "copy_codeblock.copy",
     "copy_codeblock.fullscreen",
@@ -1039,6 +1046,7 @@ impl Site {
         };
         self.chrome.inline_footnotes = settings.get("enable_markdown_footnotes")?.truthy()
             && settings.get("display_footnotes_inline")?.truthy();
+        self.chrome.lazy_videos = settings.get("lazy_videos_enabled")?.truthy();
         self.chrome.graphviz_attrs =
             crate::plugins::graphviz::script_attrs(settings, &state.i18n, &self.base_path)?;
         self.chrome.math_attrs =

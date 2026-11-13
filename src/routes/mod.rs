@@ -3272,6 +3272,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/poll.js", get(asset))
         .route("/assets/poll-builder.js", get(asset))
         .route("/assets/checklist.js", get(asset))
+        .route("/assets/lazy-videos.js", get(asset))
         .route("/assets/cakeday.js", get(asset))
         .route("/assets/discourse-captcha.js", get(asset))
         .route("/assets/gamification.js", get(asset))

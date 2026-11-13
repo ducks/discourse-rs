@@ -135,6 +135,9 @@
     <script src="{{ crate::assets::url(base_path, "codeblock-buttons.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "quote-controls.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "checklist.js") }}" defer></script>
+    {%- if chrome.lazy_videos %}
+    <script src="{{ crate::assets::url(base_path, "lazy-videos.js") }}" defer></script>
+    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "policy.js") }}" data-title="{{ chrome.t("discourse_policy.title") }}" defer></script>
     {%- if !chrome.templates_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "templates.js") }}"{{ chrome.templates_attrs|safe }} defer></script>
