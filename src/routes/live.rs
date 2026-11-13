@@ -97,6 +97,10 @@ pub struct Params {
     since: Option<i64>,
     /// The page's active nav pill: a member's counts in the pills.
     nav: Option<String>,
+    /// A member's unified new list, its category, no_subcategories and
+    /// tag (`<id>.<0|1>.<id>`, html::latest_page): the counts on its
+    /// All / Topics / Replies toggle.
+    new_list: Option<String>,
     /// The page's sidebar (`Active::key`): a member's counts on its links.
     sidebar: Option<String>,
     /// The topic page's posts, `<first>-<last>` post numbers.
@@ -230,6 +234,15 @@ pub async fn page(
         lists,
         since,
         nav: params.nav.filter(|_| user_id.is_some()),
+        new_list: params
+            .new_list
+            .filter(|_| user_id.is_some())
+            .and_then(|scope| {
+                let mut ids = scope.split('.').map(|part| part.parse::<i32>().ok());
+                let (category_id, no_subcategories, tag_id) =
+                    (ids.next()?, ids.next()?, ids.next()?);
+                Some((category_id, no_subcategories == Some(1), tag_id))
+            }),
         mobile: crate::mobile::mobile_view(),
         sidebar: params
             .sidebar
@@ -305,6 +318,9 @@ struct Live {
     since: Option<NaiveDateTime>,
     /// The nav pill and sidebar a member's counts are kept on.
     nav: Option<String>,
+    /// The new list's toggle: the category, no_subcategories and tag its
+    /// counts are taken in.
+    new_list: Option<(Option<i32>, bool, Option<i32>)>,
     /// The page was rendered in the mobile view, whose nav is one trigger
     /// with its items in a sheet (crate::mobile, decided at connect time).
     mobile: bool,
@@ -1163,7 +1179,7 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
             r#"<div id="list-updates" class="list-updates" hx-swap-oob="true">{banner}</div>"#
         ));
     }
-    if live.nav.is_none() && live.sidebar.is_none() {
+    if live.nav.is_none() && live.sidebar.is_none() && live.new_list.is_none() {
         return Ok(out);
     }
     let tracking =
@@ -1220,6 +1236,23 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
                     crate::topic_list_view::escape(&item.label)
                 ));
             }
+        }
+    }
+    if let (Some((category_id, no_subcategories, tag_id)), Some(tracking)) =
+        (live.new_list, tracking.as_ref())
+    {
+        // NewListHeaderControls' topicsButtonLabel and repliesButtonLabel.
+        let labels = crate::html::new_list_labels(
+            &live.state.i18n,
+            tracking,
+            category_id,
+            no_subcategories,
+            tag_id,
+        );
+        for (name, label) in ["topics", "replies"].into_iter().zip(labels) {
+            out.push_str(&format!(
+                r#"<button hx-swap-oob="innerHTML:.topic-replies-toggle-wrapper > .topics-replies-toggle.--{name}">{label}</button>"#
+            ));
         }
     }
     if let Some(active) = &live.sidebar {

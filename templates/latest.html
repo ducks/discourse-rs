@@ -25,6 +25,9 @@
  <div class="row full-width">
   <div id="list-area">
    <div class="contents">
+  {%- if !new_list_controls.is_empty() %}
+  {{ new_list_controls|safe }}
+  {%- endif %}
   {%- if !top_lists.is_empty() %}
   <div class="top-lists">{{ top_lists|safe }}</div>
   {%- endif %}

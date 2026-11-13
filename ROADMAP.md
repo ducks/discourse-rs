@@ -4745,12 +4745,24 @@ route table has been made, so this list may be short.
     own), with /top rows in parity/screens/pages and summary.json; the
     chooser's computed layout matches and a row goes to the same URL.
     Left, split into 265a.
-    265a. `feat/new-list-subset-toggle` S: /new's All / Topics / Replies
-    toggle (NewListHeaderControlsWrapper, with unified new, which is on
+    265a. `feat/new-list-subset-toggle` S: ~~/new's All / Topics /
+    Replies toggle (NewListHeaderControlsWrapper, with unified new, on
     for everyone) with the member's new and unread counts within the
-    category or tag, kept live, and its bulk select variant in the list
-    header (templates/latest.html:25); EmptyTopicFilter's education in a
-    member's empty list footer is done (270)
+    category or tag, kept live~~ (done in `feat/new-list-subset-toggle`:
+    html::new_list_controls above the topics of /new, /c/:slug/:id/l/new
+    and a tag's new list, tags#show_new, which was refused and is now
+    served to members, its dismiss buttons sending Topic.resetNew's
+    tag_name; All never counts, Topics and Replies only past zero
+    (filters.new.all_with_count has no caller upstream); a button
+    replaces the URL's `subset`, the other discovery query params kept
+    in Ember's order (discovery-topic-list.js); the page's stream
+    recounts the two labels in the list's category and tag, the
+    `new_list` live param, routes/live.rs list_state), and its bulk
+    select variant in the list header (templates/latest.html:40):
+    upstream has none any more, DiscoveryTopics only hides the toggle
+    while bulk select is on (renderNewListHeaderControls), which waits
+    for the topic lists' bulk select (183); EmptyTopicFilter's
+    education in a member's empty list footer is done (270)
 269. ~~`fix/new-topic-route`~~ (done) S: GET /new-topic and /new-message
     answered 404 (the PWA manifest's New Topic shortcut and embedding's
     create link point there). Now new_topic#index (routes/new_topic.rs)
@@ -5030,10 +5042,11 @@ route table has been made, so this list may be short.
     270b. `feat/topic-list-load-more` S: (loading more on scroll is done
     in 283) the dismiss buttons' selected
     variants ("Dismiss (n)", topic_ids) wait for the discovery lists'
-    bulk select, which is drawn without its actions (templates/latest.html:36,
-    183); tag new and unread lists, and so their dismiss buttons, are
-    refused (src/routes/tags.rs:292); the messages lists' dismiss buttons
-    are drawn without actions (src/messages_view.rs:353, 183)
+    bulk select, which is drawn without its actions (templates/latest.html:40,
+    183); tag unread lists (new is 265a's), and so their dismiss
+    buttons, are refused (src/routes/tags.rs:293); the messages lists'
+    dismiss buttons are drawn without actions
+    (src/messages_view.rs:353, 183)
 272. ~~`fix/avatar-dpr`~~ (done) S: on a phone or any screen with a
     device pixel ratio above 1.1 every avatar loaded a smaller image than
     Ember's (a Pixel 5's 48px post avatar 48.png where Ember asks for

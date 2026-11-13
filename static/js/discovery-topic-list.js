@@ -43,8 +43,50 @@
     row.classList.add("highlighted");
   }
 
+  // The discovery controller's query params, in the order Ember writes them.
+  var QUERY_PARAMS = [
+    "order", "ascending", "status", "state", "search", "max_posts", "min_posts", "q", "before",
+    "bumped_before", "f", "subset", "period", "topic_ids", "group_name", "tags", "match_all_tags",
+    "no_subcategories", "no_tags", "exclude_tag",
+  ];
+
+  // NewListHeaderControlsWrapper#click: changeNewListSubset sets the
+  // `subset` query param (replace: true), which reloads the list from
+  // its first page; the other query params stay.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".topic-replies-toggle-wrapper button.topics-replies-toggle");
+    if (!button) {
+      return;
+    }
+    event.preventDefault();
+    var subset = button.classList.contains("--topics") ? "topics" : button.classList.contains("--replies") ? "replies" : null;
+    var current = new URLSearchParams(location.search);
+    if ((current.get("subset") || null) === subset) {
+      return;
+    }
+    var params = new URLSearchParams();
+    QUERY_PARAMS.forEach(function (name) {
+      if (name === "subset" ? subset : current.has(name)) {
+        params.set(name, name === "subset" ? subset : current.get(name));
+      }
+    });
+    var query = params.toString();
+    var url = location.pathname + (query ? "?" + query : "");
+    if (!window.htmx) {
+      window.location.replace(url);
+      return;
+    }
+    var link = document.createElement("a");
+    link.href = url;
+    link.hidden = true;
+    link.setAttribute("hx-replace-url", "true");
+    document.getElementById("main-outlet").appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  });
+
   Discourse.onPage(function () {
-    var sentinel = document.querySelector("#list-area .load-more-sentinel[data-more-url]");
+    var sentinel =document.querySelector("#list-area .load-more-sentinel[data-more-url]");
     var body = document.querySelector("#list-area tbody.topic-list-body");
     if (!sentinel || !body) {
       return;

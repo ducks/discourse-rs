@@ -85,6 +85,10 @@
       data.push(["category_id", row.dataset.categoryId]);
       data.push(["include_subcategories", String(!row.hasAttribute("data-no-subcategories"))]);
     }
+    // A tag's new list (the discovery model's tag).
+    if (row.dataset.tagName) {
+      data.push(["tag_name", row.dataset.tagName]);
+    }
     // The combo is drawn under unified new only; the classic button
     // dismisses with no options.
     if (row.querySelector(".topic-dismiss-buttons__combo")) {

@@ -1493,6 +1493,185 @@ async fn the_new_list_subset_picks_topics_or_replies() {
     );
 }
 
+/// NewListHeaderControlsWrapper's buttons as drawn: (name, pressed, label).
+fn subset_toggle(html: &str) -> Vec<(String, bool, String)> {
+    let Some(start) = html.find(r#"<div class="topic-replies-toggle-wrapper">"#) else {
+        return Vec::new();
+    };
+    let wrapper = &html[start..];
+    let wrapper = &wrapper[..wrapper.find("</div>").unwrap()];
+    wrapper
+        .split("<button ")
+        .skip(1)
+        .map(|button| {
+            let pressed = button.starts_with(r#"aria-pressed="true""#);
+            let class = button.split(r#"class=""#).nth(1).unwrap();
+            let class = &class[..class.find('"').unwrap()];
+            assert_eq!(class.ends_with(" active"), pressed, "{button}");
+            let name = class
+                .strip_prefix("topics-replies-toggle --")
+                .unwrap()
+                .trim_end_matches(" active");
+            let label = &button[button.find('>').unwrap() + 1..button.find("</button>").unwrap()];
+            (name.to_string(), pressed, label.to_string())
+        })
+        .collect()
+}
+
+/// The new list's All / Topics / Replies toggle (DiscoveryTopics'
+/// NewListHeaderControlsWrapper, unified new): the member's new topics
+/// and unread replies within the list's category and tag, a count drawn
+/// only past zero, the `subset` pressed; and the same lists as JSON.
+/// Topic 34, user1's one new topic, is Sub General's definition; topic
+/// 35, their one unread, is in General.
+#[tokio::test]
+async fn the_new_list_draws_the_subset_toggle() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let row =
+        |name: &str, pressed: bool, label: &str| (name.to_string(), pressed, label.to_string());
+    for (path, expected) in [
+        (
+            "/new",
+            [
+                row("all", true, "All"),
+                row("topics", false, "Topics (1)"),
+                row("replies", false, "Replies (1)"),
+            ],
+        ),
+        (
+            "/new?subset=topics",
+            [
+                row("all", false, "All"),
+                row("topics", true, "Topics (1)"),
+                row("replies", false, "Replies (1)"),
+            ],
+        ),
+        (
+            "/new?subset=replies",
+            [
+                row("all", false, "All"),
+                row("topics", false, "Topics (1)"),
+                row("replies", true, "Replies (1)"),
+            ],
+        ),
+        // Anything else is the whole list.
+        (
+            "/new?subset=other",
+            [
+                row("all", true, "All"),
+                row("topics", false, "Topics (1)"),
+                row("replies", false, "Replies (1)"),
+            ],
+        ),
+        // A subcategory's definition is not its parent's topic.
+        (
+            "/c/general/4/l/new",
+            [
+                row("all", true, "All"),
+                row("topics", false, "Topics"),
+                row("replies", false, "Replies (1)"),
+            ],
+        ),
+        (
+            "/c/general/sub-general/34/l/new?subset=replies",
+            [
+                row("all", false, "All"),
+                row("topics", false, "Topics (1)"),
+                row("replies", true, "Replies"),
+            ],
+        ),
+        (
+            "/tag/guide/2/l/new?subset=replies",
+            [
+                row("all", false, "All"),
+                row("topics", false, "Topics"),
+                row("replies", true, "Replies (1)"),
+            ],
+        ),
+    ] {
+        let html = user1.page(path).await;
+        assert_eq!(subset_toggle(&html), expected, "{path}");
+        assert!(
+            html.contains(
+                r#"<div class="contents">
+  <div class="topic-replies-toggle-wrapper"><button aria-pressed=""#
+            ),
+            "{path}"
+        );
+    }
+    let html = user1.page("/new").await;
+    assert!(html.contains(
+        r#"<button aria-pressed="true" class="topics-replies-toggle --all active" title="All new topics and topics replied to in the last few days">All</button><button aria-pressed="false" class="topics-replies-toggle --topics" title="New topics">Topics (1)</button><button aria-pressed="false" class="topics-replies-toggle --replies" title="New replies">Replies (1)</button></div>"#
+    ));
+    // The stream counts the labels in the list's category and tag.
+    assert!(html.contains("&#38;new_list=.0."), "{html}");
+    let html = user1.page("/c/general/sub-general/34/l/new").await;
+    assert!(html.contains("&#38;new_list=34.0."));
+    let html = user1.page("/c/general/4/none/l/new").await;
+    assert!(html.contains("&#38;new_list=4.1."));
+    let html = user1.page("/tag/guide/2/l/new").await;
+    assert!(html.contains("&#38;new_list=.0.2"));
+    // Topic.resetNew's tag_name, for topic-dismiss.js.
+    assert!(
+        html.contains(r#"<div class="row dismiss-container-top" data-tag-name="guide">"#),
+        "{html}"
+    );
+    // Only the new list has it.
+    for path in ["/latest", "/unread", "/c/general/4", "/tag/guide/2"] {
+        let html = user1.page(path).await;
+        assert_eq!(subset_toggle(&html), [], "{path}");
+        assert!(!html.contains("new_list="), "{path}");
+    }
+
+    let ids = |v: &serde_json::Value| -> Vec<i64> {
+        v["topic_list"]["topics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| t["id"].as_i64().unwrap())
+            .collect()
+    };
+    for (path, expected) in [
+        // A category's list leaves out its subcategories' definitions.
+        ("/c/general/4/l/new.json", vec![35]),
+        ("/c/general/4/l/new.json?subset=topics", vec![]),
+        ("/c/general/4/l/new.json?subset=replies", vec![35]),
+        ("/c/general/4/none/l/new.json?subset=topics", vec![]),
+        (
+            "/c/general/sub-general/34/l/new.json?subset=topics",
+            vec![34],
+        ),
+        (
+            "/c/general/sub-general/34/l/new.json?subset=replies",
+            vec![],
+        ),
+        ("/tag/guide/2/l/new.json", vec![35]),
+        ("/tag/guide/2/l/new.json?subset=topics", vec![]),
+        ("/tag/guide/2/l/new.json?subset=replies", vec![35]),
+        ("/tag/guide/2/l/new.json?subset=other", vec![35]),
+    ] {
+        assert_eq!(ids(&user1.json(path).await), expected, "{path}");
+    }
+    let page = user1
+        .json("/tag/guide/2/l/new.json?subset=replies&per_page=1")
+        .await;
+    assert_eq!(
+        page["topic_list"]["more_topics_url"],
+        "/tag/guide/2/l/new?match_all_tags=true&page=1&per_page=1&subset=replies&tags%5B%5D=guide"
+    );
+
+    // A visitor has no new list, under a tag either (requires_login,
+    // the not-found page for a page request).
+    let (status, _, html) = get(&db.pool, "/new").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(subset_toggle(&html), []);
+    let (status, _, html) = get(&db.pool, "/tag/guide/2/l/new").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(subset_toggle(&html), []);
+}
+
 /// The docked header's template (header_topic_view): what
 /// static/js/header-topic-info.js swaps into the header once the topic's
 /// title scrolls out of view.
