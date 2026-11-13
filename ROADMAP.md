@@ -1754,7 +1754,19 @@ with the viewport, guessing from the user agent without it
     JSON), the bookmarks tab, the profile tab, show all, dismiss with its
     confirmation, the menu-panel.scss rules, the bookmarks tab with chat
     message bookmarks and their reminders (161). Left: the review queue tab
-    (refused), the do not disturb and user status modals,
+    (refused), ~~the do not disturb and user status modals~~ (done: the
+    status modal in 130b, DoNotDisturbModal in
+    `feat/do-not-disturb-modal`: the profile tab's Pause notifications
+    item carries the modal's strings while off and opens it
+    (static/js/user-menu.js): a DTapTile per duration (30, 60, 120,
+    tomorrow; click or Enter) saved by POST /do-not-disturb.json, the
+    error as the modal's flash, the notification schedule button to the
+    notifications preferences. The endpoints, the item's on state and
+    the header's moon were there. Tests: sessions
+    the_user_menu_pauses_notifications, browser do-not-disturb (3).
+    Left: the client's other readers of isInDoNotDisturb, none ported:
+    desktop notifications, the push subscription prompt, the title's
+    and favicon's counts, the notification sound),
     show_user_menu_avatars (refused)
 96. ~~`feat/mobile-composer`~~ (done) L: the mobile composer's controls
     (the toolbar toggle in place of the preview and fullscreen ones), its
@@ -3954,9 +3966,11 @@ route table has been made, so this list may be short.
     current live too. Compared on rs-ref-d as admin and moderator: a
     flag shows the badge live, agreeing clears it, a new message shows
     its badge. Still refused: category group moderators' counts
-    (enable_category_group_moderation). Not drawn: the moon going away
+    (enable_category_group_moderation). ~~Not drawn: the moon going away
     on its own when do not disturb ends (the notifications service's
-    timer; a reload or the next message redraws it), the first
+    timer; a reload or the next message redraws it)~~ (done in
+    `feat/do-not-disturb-modal`: the live stream redraws the badge as
+    the timing ends). Not drawn: the first
     notification user tip, and the perform result's fast-tracked counts
     (the job's message follows within the worker's poll)
     194h. `feat/user-menu-avatars` S: show_user_menu_avatars, the user
@@ -3971,7 +3985,8 @@ route table has been made, so this list may be short.
     and its toggle, the composer's
     actions menu (196a) and toolbar menus (196r3), the insert-date
     modal (49, 96), the desktop header's search menu (94; the advanced
-    filters panel was 143i), the do not disturb and user status modals (95),
+    filters panel was 143i), ~~the do not disturb and user status modals
+    (95)~~ (done, 130b and `feat/do-not-disturb-modal`),
     the drafts and post menus as sheets, the jump to post prompt (98),
     the topic map's menus, the footer's flag, mark unread and pinned
     buttons, the sidebar's header actions and Customize (milestone 4.5),

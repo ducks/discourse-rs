@@ -1343,8 +1343,30 @@ pub fn profile_tab(cx: &MenuContext) -> String {
         .map(|d| d.with_timezone(&chrono::Utc))
         .filter(|d| *d > cx.now);
     let pause = escape(&cx.t("pause_notifications.label"));
+    // What doNotDisturbClick's DoNotDisturbModal draws (user-menu.js):
+    // its title, the tiles' durations with their labels, and the
+    // notification schedule button with the preferences page it opens.
+    let modal = if dnd_until.is_some() {
+        String::new()
+    } else {
+        let option = |id: &str, key: &str| {
+            serde_json::json!([id, cx.t(&format!("pause_notifications.options.{key}"))])
+        };
+        let data = serde_json::json!({
+            "title": cx.t("pause_notifications.title"),
+            "options": [
+                option("30", "half_hour"),
+                option("60", "one_hour"),
+                option("120", "two_hours"),
+                option("tomorrow", "tomorrow"),
+            ],
+            "set_schedule": cx.t("pause_notifications.set_schedule"),
+            "schedule_url": format!("{path}/preferences/notifications"),
+        });
+        format!(" data-modal=\"{}\"", escape(&data.to_string()))
+    };
     out.push_str(&format!(
-        "<li class=\"do-not-disturb{}\">{}</li>",
+        "<li class=\"do-not-disturb{}\"{modal}>{}</li>",
         if dnd_until.is_some() { " enabled" } else { "" },
         match dnd_until {
             // The end as dAgeWithTooltip, unless it is DoNotDisturb.forever.
