@@ -1932,7 +1932,18 @@ async fn staff_get_what_the_multi_select_mode_reads() {
     assert_eq!(config_json["staff"], true);
     assert_eq!(config_json["can_move_posts"], true);
     assert_eq!(config_json["can_change_post_owner"], true);
+    // What the MoveToTopic modal reads.
+    assert_eq!(config_json["private_message"], false);
+    assert_eq!(config_json["admin"], true);
+    assert!(config_json["can_create_tag"].is_boolean());
+    assert!(config_json["can_tag_pms"].is_boolean());
     let strings = &config_json["strings"];
+    assert_eq!(strings["topic.move_to.title"], "Move to");
+    assert_eq!(
+        strings["topic.merge_topic.instructions.other"],
+        "Please choose the topic you'd like to move those <b>%{count}</b> posts to."
+    );
+    assert_eq!(strings["choose_message.none_found"], "No messages found.");
     assert_eq!(
         strings["topic.multi_select.description.other"],
         "You have selected <b>%{count}</b> posts."
