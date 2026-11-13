@@ -1099,9 +1099,15 @@
     if (!pickers || !Discourse.modal) {
       return;
     }
-    pickers.load().then(function () {
-      openEditTopicTimer(topic);
-    });
+    pickers
+      .load()
+      .then(function () {
+        openEditTopicTimer(topic);
+      })
+      // The scripts the modal needs did not load: said, not swallowed.
+      .catch(function (error) {
+        console.error("EditTopicTimer", error);
+      });
   }
 
   function openEditTopicTimer(topic) {
