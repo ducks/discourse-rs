@@ -367,6 +367,17 @@ pub fn category_badge_html(
     {
         return String::new();
     }
+    category_badge_any(cx, category, link, hide_parent)
+}
+
+/// `categoryBadgeHTML` with `allowUncategorized`: the uncategorized
+/// category's badge too, whatever suppress_uncategorized_badge says.
+pub fn category_badge_any(
+    cx: &ListContext,
+    category: &ListCategory,
+    link: bool,
+    hide_parent: bool,
+) -> String {
     let parent = category.parent_id.and_then(|id| cx.categories.get(&id));
     let url = category_url(cx, category);
     // categoryVariables

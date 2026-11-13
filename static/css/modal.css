@@ -901,6 +901,45 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   margin-bottom: 1.5em;
 }
 
+/* bulk-topic-actions-manage-tags.scss: ManageTagsForm (its rules on
+   form-kit's classes are form-kit.css' and mobile.css'). */
+.manage-tags-form__remove-section {
+  position: relative;
+}
+
+.manage-tags-form__remove-section #control-remove_all_tags {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+}
+
+.manage-tags-form__warning {
+  margin-top: 2rem;
+}
+
+.manage-tags-form__replace-arrow {
+  text-align: center;
+  height: 2.25em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.manage-tags-form__replace-row-add {
+  width: 100%;
+}
+
+/* feature-topic-modal.scss: PinOptionSection (FeatureTopic and the bulk
+   actions' BulkPinOptions; its icon's rule is mobile.css'). */
+.feature-section__description {
+  width: 100%;
+}
+
+.feature-section__pin-message {
+  margin-bottom: var(--space-1);
+}
+
 .notification-level-radio {
   flex-wrap: wrap;
   align-items: baseline;

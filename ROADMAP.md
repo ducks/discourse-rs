@@ -5055,12 +5055,18 @@ route table has been made, so this list may be short.
     over PUT /topics/bulk: dismiss, update category, update
     notifications, reset bump dates, mark unread, close (with its
     note), archive, un-pin, unlist, relist, make personal message and
-    delete, a failure listed in the modal. Left, refused by name:
-    Manage tags (ManageTagsForm's tag choosers), Pin (BulkPinOptions,
-    feature_stats), the nested replies items (NestedTopic::Toggle);
-    the endpoint refuses bulk deleting one's own topics
-    (src/topics/bulk.rs:992); the user and message topic lists'
-    toggles (183)
+    delete, a failure listed in the modal. Done in
+    `feat/bulk-tags-and-pin`: Manage tags (ManageTagsForm: remove,
+    remove all, add and replacement rows over one manage_tags
+    operation sent as JSON, its TagChoosers copies of the composer's
+    chooser through Discourse.miniTagChooser.copy, existing tags only,
+    tag_category_errors listed) and Pin (BulkPinOptions over
+    FeatureTopic's PinOptionSection, the date required, feature_stats'
+    counts for the selection's sole category). Left, refused by name:
+    the nested replies items (NestedTopic::Toggle); a replacement
+    row's mobilePlacement; the endpoint refuses bulk deleting one's
+    own topics (src/topics/bulk.rs:992); the user and message topic
+    lists' toggles (183)
 272. ~~`fix/avatar-dpr`~~ (done) S: on a phone or any screen with a
     device pixel ratio above 1.1 every avatar loaded a smaller image than
     Ember's (a Pixel 5's 48px post avatar 48.png where Ember asks for
