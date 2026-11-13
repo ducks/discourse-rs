@@ -3139,6 +3139,7 @@ pub async fn topic_title_html(
     };
     let glyph = crate::post_view::private_message_glyph(list, view, can_send_pms, inbox.as_deref());
     let mut title_html = crate::post_view::topic_title(list, view, topic_url, &glyph);
+    title_html.push_str(&topic_title_editor_config(settings, list, view)?);
     // discourse-topic-voting's topic-title outlet.
     if view["can_vote"] == serde_json::Value::Bool(true) {
         let voter = match voter {
@@ -3159,6 +3160,44 @@ pub async fn topic_title_html(
         ));
     }
     Ok(title_html)
+}
+
+/// What static/js/topic-title-editor.js edits the title with
+/// (TopicTitleEditor and TopicMetadata over the topic controller's
+/// buffered title, category_id and tags), for who may edit the topic
+/// (details.can_edit): nothing for anyone else.
+fn topic_title_editor_config(
+    settings: &SiteSettings,
+    list: &crate::topic_list_view::ListContext<'_>,
+    view: &Value,
+) -> Result<String, HtmlError> {
+    if view["details"]["can_edit"] != true {
+        return Ok(String::new());
+    }
+    let mut strings = serde_json::Map::new();
+    for key in [
+        "composer.save_edit",
+        "composer.cancel",
+        "category.choose",
+        "generic_error",
+        "generic_error_with_reason",
+        "multiple_errors",
+    ] {
+        strings.insert(key.into(), json!(crate::topic_list_view::t(list, key)));
+    }
+    let config = json!({
+        "title": view["title"],
+        "category_id": view["category_id"],
+        "tags": view["tags"],
+        "private_message": view["archetype"] == "private_message",
+        "max_topic_title_length": settings.get("max_topic_title_length")?.to_i(),
+        "support_mixed_text_direction": settings.get("support_mixed_text_direction")?.truthy(),
+        "strings": strings,
+    });
+    Ok(format!(
+        "<script type=\"application/json\" class=\"topic-title-editor-config\">{}</script>",
+        config.to_string().replace('<', "\\u003c")
+    ))
 }
 
 /// CurrentUserSerializer#ignored_users: the usernames a member ignores.

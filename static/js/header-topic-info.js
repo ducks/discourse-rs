@@ -214,13 +214,16 @@
       history.replaceState(history.state, "", url);
       window.scrollTo(window.scrollX, 0);
     }
-    info.querySelectorAll(".topic-link, .more-participants").forEach(function (link) {
-      link.addEventListener("click", jumpToTopPost, true);
-    });
+    function bind() {
+      info.querySelectorAll(".topic-link, .more-participants").forEach(function (link) {
+        link.addEventListener("click", jumpToTopPost, true);
+      });
+      info.querySelectorAll(".trigger-user-card a, .trigger-group-card a").forEach(triggerCard);
+    }
 
     // Participant: topic-header:trigger-user-card and
     // topic-header:trigger-group-card. The group card is not ported.
-    info.querySelectorAll(".trigger-user-card a, .trigger-group-card a").forEach(function (link) {
+    function triggerCard(link) {
       link.addEventListener(
         "click",
         function (event) {
@@ -238,7 +241,29 @@
         },
         true
       );
-    });
+    }
+    bind();
+
+    // header:update-topic: the topic as the template has it now, once it
+    // was edited (topic-title-editor.js).
+    function updateTopic() {
+      var fresh = template.content.querySelector(".extra-info-wrapper");
+      if (!fresh) {
+        return;
+      }
+      var stale = info;
+      info = fresh.cloneNode(true);
+      bind();
+      processed = false;
+      if (docked) {
+        stale.replaceWith(info);
+        if (window.htmx) {
+          processed = true;
+          window.htmx.process(info);
+        }
+      }
+    }
+    document.addEventListener("discourse:header-update-topic", updateTopic);
 
     // enterTopic(topic, isLoadingFirstPost)
     var nearPost = location.pathname.match(/\/t\/[^/]+\/\d+\/(\d+)/);
@@ -258,9 +283,24 @@
     observer.observe(topicTitle);
     window.addEventListener("scroll", onScroll, { passive: true });
 
+    // A live redraw of the title (routes/live.rs render_title) swaps the
+    // element for a new one: that one is watched from then on.
+    function retitled() {
+      var next = document.getElementById("topic-title");
+      if (topicTitle.isConnected || !next) {
+        return;
+      }
+      observer.unobserve(topicTitle);
+      topicTitle = next;
+      observer.observe(topicTitle);
+    }
+    document.addEventListener("htmx:oobAfterSwap", retitled);
+
     return function () {
       observer.disconnect();
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("discourse:header-update-topic", updateTopic);
+      document.removeEventListener("htmx:oobAfterSwap", retitled);
       clearTimeout(pauseTimer);
       clearTimeout(throttleTimer);
       clearTimeout(bottomTimer);

@@ -43,7 +43,7 @@
 <script src="{{ crate::assets::url(base_path, "post-stream.js") }}"></script>
 {#- The topic admin menu and the posts' admin menus. -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
-{% if topic_menus.contains("topic-admin-menu-template") %}<script src="{{ crate::assets::url(base_path, "topic-admin-modals.js") }}"></script>{% endif %}
+{% if topic_menus.contains("topic-admin-menu-template") || title_html.contains("topic-title-editor-config") %}<script src="{{ crate::assets::url(base_path, "topic-admin-modals.js") }}"></script>{% endif %}
 {#- The multi-select mode (SelectedPosts) and the ChangeOwner modal, with its user chooser. -#}
 {% if topic_menus.contains("select-posts-config") %}<script src="{{ crate::assets::url(base_path, "email-group-user-chooser.js") }}"></script><script src="{{ crate::assets::url(base_path, "select-posts.js") }}"></script>{% endif %}
 {#- The footer's bookmarks menu (TopicBookmarksMenu). -#}
@@ -57,6 +57,8 @@
 <script type="application/json" id="quote-button-config">{{ quote_config|safe }}</script>
 <script src="{{ crate::assets::url(base_path, "share-topic.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "quote-button.js") }}"></script>
+{#- The title's editor (TopicTitleEditor), its category chooser topic-admin-modals.js's. -#}
+{% if title_html.contains("topic-title-editor-config") %}<script src="{{ crate::assets::url(base_path, "topic-title-editor.js") }}"></script>{% endif %}
 {% if title_html.contains("title-voting") %}<script src="{{ crate::assets::url(base_path, "topic-voting.js") }}"></script>{% endif %}
 {{ reactions_emoji_picker|safe }}
 {% if reactions %}<script src="{{ crate::assets::url(base_path, "discourse-reactions.js") }}"></script>{% endif %}

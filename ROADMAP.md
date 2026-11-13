@@ -4659,10 +4659,22 @@ route table has been made, so this list may be short.
     as user1, parity/screens/pages). Left, split into 262a.
     262a. `feat/pm-topic-view-rest` S: the browse more line is drawn once with the
     page's own message read through the posts shown, not kept live from
-    the pmTopicTrackingState bus messages; the title's edit pencil and
+    the pmTopicTrackingState bus messages; ~~the title's edit pencil and
     title editing (TopicTitleEditor, the edit-title glyph's styles) are
-    not drawn for any topic (the admin menu's wrench is 194a); the
-    header's topic title once scrolled past, with its glyph, is 266's
+    not drawn for any topic~~ (done in `feat/topic-title-editor`: for
+    details.can_edit the pencil in the title's link and
+    static/js/topic-title-editor.js, the title's click swapping it for
+    #edit-title, the composer's category and tag choosers copied and the
+    save and cancel buttons; Escape cancels, Ctrl+Enter saves, the
+    buffer's changes go as Topic.update sends them (PUT /t/:slug/:id,
+    JSON, keep_existing_draft), a refusal is popupAjaxError's dialog; the
+    title, category, tags, body classes, document title, address slug
+    and docked header are drawn again, and a live redraw of the title
+    waits for the open editor. Left: the edit-topic plugin outlets, the
+    featured link's removal, localization editing, MiniTagChooser's
+    useHeaderFilter, the print stylesheet's rule) (the admin menu's
+    wrench is 194a); the header's topic title once scrolled past, with
+    its glyph, is 266's
     262b. ~~`feat/add-pm-participants`~~ (done) S: the add participant
     button's AddPmParticipants modal (InvitePanel,
     static/js/add-pm-participants.js): its EmailGroupUserChooser over
