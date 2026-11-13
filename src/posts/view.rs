@@ -2701,7 +2701,14 @@ fn delete_button(cx: &PostContext, p: &Value) -> Option<String> {
             false,
             "post.controls.delete",
             format!(
-                " hx-delete=\"{base}/posts/{id}\" hx-swap=\"none\" hx-on::after-request=\"refreshPost(event, '{base}/live/post/{id}')\""
+                " hx-delete=\"{base}/posts/{id}\" hx-swap=\"none\" hx-on::after-request=\"refreshPost(event, '{base}/live/post/{id}')\"{}",
+                // deletePost's reply check (staff, reply_count): topic.js
+                // asks before the request goes.
+                if cx.staff && p["reply_count"].as_i64().unwrap_or(0) > 0 {
+                    " data-has-replies"
+                } else {
+                    ""
+                }
             ),
         )
     } else if show_flag_delete {
@@ -3030,8 +3037,8 @@ fn small_action_icon(code: &str) -> &'static str {
 /// (`can_edit`), then delete (Post#canDelete). topic.js wires them to the
 /// topic controller's recoverPost, editPost and deletePost by the
 /// article's post id. Staff deleting a post with replies get the
-/// reply-ids dialog in Ember, which isn't ported: the delete says so
-/// (`data-has-replies`) and topic.js refuses it.
+/// reply-ids dialog: the delete says so (`data-has-replies`) and topic.js
+/// asks.
 fn small_action_buttons(cx: &PostContext, p: &Value) -> String {
     if cx.viewer.is_none() {
         return String::new();

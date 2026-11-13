@@ -4856,10 +4856,18 @@ route table has been made, so this list may be short.
     edit and save drew the same DOM after each step but for 268a's
     tabindex. Found by the screenshot run on /t/41. Left, split into
     268a.
-    268a. `feat/small-action-buttons-rest` S: staff deleting a small
+    268a. `feat/small-action-buttons-rest` S: ~~staff deleting a small
     action with replies get Ember's reply-ids dialog (delete replies or
-    not, GET /posts/:id/reply-ids, not routed): refused
-    (static/js/topic.js:828; post_view.rs:1531 marks it); ~~after an
+    not, GET /posts/:id/reply-ids, not routed): refused~~ (done in
+    `feat/delete-post-replies-dialog`: the topic controller's
+    deletePost for staff and a post with replies, small action or
+    not: topic.js asks reply-ids, then the dialog (direct replies,
+    all of them when some are deeper, just the post, cancel) and
+    Post.deleteMany, the posts on the page drawn again from the
+    server once it answers rather than marked deleted before; a
+    failed reply-ids is logged, a refused destroy_many (a flagged
+    post, Unsupported) shown in the dialog; permanently deleting
+    (force_destroy) stays 194d1's); ~~after an
     edit is saved the composer doesn't DiscourseURL.routeTo the post~~
     (done in `fix/composer-save-jump`: every save goes to its post as
     the composer service does, through topic.js's routeToPost: an edit
