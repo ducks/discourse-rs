@@ -2619,8 +2619,9 @@ have handlers now.
     topic_guardian.rs:399,823) and publishing them
     (jobs/topic_timers.rs:132, TopicPublisher)
 159. `feat/tags-reads-rest` S: tags_listed_by_group
-    (routes/tags.rs:661), tag list filters other than latest, top, hot
-    and votes (:286), the messages' tags pages (routes/users.rs:85,1214),
+    (routes/tags.rs:661), ~~tag list filters other than latest, top, hot
+    and votes (:286)~~ (done in `feat/tag-unread-and-pm-dismiss`,
+    270b), the messages' tags pages (routes/users.rs:85,1214),
     tag and hashtag search over localized tags (hashtags.rs:571;
     tagging.rs:569; routes/tag_search.rs:161; routes/search_menu.rs:380;
     routes/tag_admin.rs:1157, with 168)
@@ -3219,8 +3220,9 @@ have handlers now.
     (pm_lists.rs:151), period on message lists (routes/messages.rs:171),
     group_pm_alert past group_pm_user_limit (pm_invite.rs:523), inviting
     a user who now ignores the inviter (:253), the inbox of a group the
-    viewer isn't in (routes/users.rs:1045), the dismiss and bulk select
-    buttons (33b; the user topic lists' too, 193c)
+    viewer isn't in (routes/users.rs:1045), the ~~dismiss and~~ bulk
+    select buttons (33b; the user topic lists' too, 193c; the dismiss
+    buttons done in `feat/tag-unread-and-pm-dismiss`, 270b)
 184. `feat/user-deletion-rest` S: blocking a deleted user's links
     (user_destroyer.rs:456, block_urls), MCP authorizations (:473; the
     preferences' list, preferences_view/security.rs:125), the
@@ -3339,10 +3341,11 @@ route table has been made, so this list may be short.
     and flags, the split's topic rate limits, trashing a merged topic's
     embed, post_mover.rs:2105,817,996,2150,141,1836), 188i5.
     `feat/topic-edits-bulk-rest` M (a published page's topic converted,
-    topic_converter.rs:236; a group's message inbox in pm-reset-new and
-    bulk archiving, filter=unread over a message inbox, bulk deleting
+    topic_converter.rs:236; a group's message inbox in ~~pm-reset-new
+    and~~ bulk archiving, ~~filter=unread over a message inbox~~ (both
+    done in `feat/tag-unread-and-pm-dismiss`, 270b), bulk deleting
     one's own topics or as a non-staff user, the nested view toggle
-    while nested replies are on, routes/topics_bulk.rs:171,206,511;
+    while nested replies are on, routes/topics_bulk.rs:188;
     topics_bulk.rs:952,1094). A category definition's
     description changing on a title edit is published with 190a's
     CategorySerializer
@@ -5040,10 +5043,27 @@ route table has been made, so this list may be short.
     menu's and modal's boxes and styles all match. Ember's DismissNew
     modal has no caller upstream and is not drawn. Left, split into 270b.
     270b. `feat/topic-list-load-more` S: (loading more on scroll is done
-    in 283) tag unread lists (new is 265a's), and so their dismiss
+    in 283) ~~tag unread lists (new is 265a's), and so their dismiss
     buttons, are refused (src/routes/tags.rs:293); the messages lists'
     dismiss buttons are drawn without actions
-    (src/messages_view.rs:353, 183). Done in
+    (src/messages_view.rs:353, 183)~~ (done in
+    `feat/tag-unread-and-pm-dismiss`: tags#show_unread, and unseen,
+    read, posted and bookmarks, the rest of Discourse.filters' loop,
+    served to members under /tag and /tags/c; the unread list's
+    Dismiss… sends tag_name, the tag's name where Ember now sends the
+    tag model's numeric id, which the endpoint matches against no
+    tag's name. The message lists' buttons are topic-dismiss.js' too,
+    the row carrying the route's inbox and group: new is
+    Topic.pmResetNew, unread DismissRead with private_message_inbox,
+    stop tracking included. PUT /topics/pm-reset-new and /topics/bulk
+    take TopicsController#private_message_filter's group inbox and
+    filter_private_messages_unread through pm_lists' new_ids,
+    unread_ids and ids_among, which also give the user and all
+    inboxes the default scope's `visible` and group_with_messages_ids).
+    Left: a tag within a category draws no navigation, so no top
+    dismiss row (src/routes/tags.rs:578); a bulk operation's `group`
+    (src/routes/topics_bulk.rs:188); the message lists' bulk select
+    (183). Done in
     `feat/topic-list-bulk-select`: the discovery lists' bulk select
     (BulkSelectHelper, static/js/topic-list-bulk-select.js): the
     toggle for canBulkSelect (topic managers; members on new and

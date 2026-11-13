@@ -41,6 +41,16 @@ pub enum GroupView {
     Unread,
 }
 
+/// `private_messages_for(user, type)`'s type, as
+/// TopicsController#private_message_filter picks it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Inbox {
+    User,
+    /// With `options[:group_name]`.
+    Group(String),
+    All,
+}
+
 pub struct PmQuery<'a> {
     pub conn: &'a mut PgConnection,
     pub settings: &'a SiteSettings,
@@ -285,6 +295,131 @@ impl PmQuery<'_> {
             wheres.push(format!("topics.id NOT IN ({ids})"));
         }
         self.fetch(&joins, &wheres, per_page).await
+    }
+
+    /// `filter_private_message_new(owner, type).pluck(:id)` with
+    /// `limit: false`: TopicsController#private_message_reset_new's scope.
+    pub async fn new_ids(&mut self, inbox: &Inbox) -> Result<Vec<i32>, TopicQueryError> {
+        let (joins, mut wheres) = self.inbox_scope(inbox).await?;
+        wheres.push(self.new_filter().await?);
+        self.pluck_ids(&joins, &wheres).await
+    }
+
+    /// `filter_private_messages_unread(owner, type).pluck(:id)` with
+    /// `limit: false`: TopicsController#bulk_unread_topic_ids' for a
+    /// message inbox.
+    pub async fn unread_ids(&mut self, inbox: &Inbox) -> Result<Vec<i32>, TopicQueryError> {
+        let owner = self.owner_id;
+        let (joins, mut wheres) = self.inbox_scope(inbox).await?;
+        wheres.push(self.unread_filter(owner, self.settings)?);
+        let user_first: Option<NaiveDateTime> =
+            sqlx::query_scalar("SELECT first_unread_pm_at FROM user_stats WHERE user_id = $1")
+                .bind(owner)
+                .fetch_optional(&mut *self.conn)
+                .await?
+                .flatten();
+        let first_unread = match inbox {
+            Inbox::User => user_first,
+            // `group`: the first group whose name matches the pattern.
+            Inbox::Group(name) => sqlx::query_scalar(
+                "SELECT first_unread_pm_at FROM group_users WHERE user_id = $1 AND group_id = \
+                 (SELECT id FROM groups WHERE name ILIKE $2 ORDER BY id LIMIT 1) LIMIT 1",
+            )
+            .bind(owner)
+            .bind(name)
+            .fetch_optional(&mut *self.conn)
+            .await?
+            .flatten(),
+            Inbox::All => {
+                let groups_first: Option<NaiveDateTime> = sqlx::query_scalar(
+                    "SELECT MIN(first_unread_pm_at) FROM group_users WHERE user_id = $1",
+                )
+                .bind(owner)
+                .fetch_one(&mut *self.conn)
+                .await?;
+                [user_first, groups_first].into_iter().flatten().min()
+            }
+        };
+        if let Some(at) = first_unread {
+            wheres.push(format!("(topics.updated_at >= '{}')", sql_time(at)));
+        }
+        self.pluck_ids(&joins, &wheres).await
+    }
+
+    /// `private_messages_for(owner, type).where("topics.id IN (?)",
+    /// ids).pluck(:id)` with `limit: false`.
+    pub async fn ids_among(
+        &mut self,
+        inbox: &Inbox,
+        ids: &[i32],
+    ) -> Result<Vec<i32>, TopicQueryError> {
+        let (joins, mut wheres) = self.inbox_scope(inbox).await?;
+        let ids = ids
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        wheres.push(format!("(topics.id IN ({ids}))"));
+        self.pluck_ids(&joins, &wheres).await
+    }
+
+    /// `private_messages_for(owner, type)`: the default scope's joins and
+    /// conditions with the inbox's.
+    async fn inbox_scope(
+        &mut self,
+        inbox: &Inbox,
+    ) -> Result<(Vec<String>, Vec<String>), TopicQueryError> {
+        let owner = self.owner_id;
+        let mut joins = vec![format!(
+            "LEFT OUTER JOIN topic_users AS tu ON (topics.id = tu.topic_id AND tu.user_id = {owner})"
+        )];
+        let mut wheres = vec![
+            "topics.deleted_at IS NULL".to_string(),
+            "topics.archetype = 'private_message'".to_string(),
+        ];
+        // `.visible` for regular users.
+        if !self.guardian.is_staff() {
+            wheres.push("topics.visible = TRUE".to_string());
+        }
+        match inbox {
+            Inbox::User => wheres.push(format!(
+                "(topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {owner}))"
+            )),
+            Inbox::Group(name) => {
+                let lowered = name.to_lowercase().replace('\'', "''");
+                joins.push(format!(
+                    "INNER JOIN topic_allowed_groups tag ON tag.topic_id = topics.id \
+                     AND tag.group_id IN (SELECT id FROM groups WHERE LOWER(name) = '{lowered}')"
+                ));
+                if !self.guardian.is_admin() {
+                    joins.push(format!(
+                        "INNER JOIN group_users gu ON gu.group_id = tag.group_id AND gu.user_id = {owner}"
+                    ));
+                }
+            }
+            Inbox::All => wheres.push(self.personal_and_groups_clause(owner).await?),
+        }
+        Ok((joins, wheres))
+    }
+
+    /// The scope's ids in the default order, unlimited.
+    async fn pluck_ids(
+        &mut self,
+        joins: &[String],
+        wheres: &[String],
+    ) -> Result<Vec<i32>, TopicQueryError> {
+        let order = crate::topic_query::sortable_order(
+            self.options.order.as_deref(),
+            self.options.ascending,
+            self.settings,
+        )?;
+        Ok(sqlx::query_scalar(&format!(
+            "SELECT topics.id FROM topics {} WHERE {} ORDER BY {order}",
+            joins.join(" "),
+            wheres.join(" AND ")
+        ))
+        .fetch_all(&mut *self.conn)
+        .await?)
     }
 
     /// `user_personal_and_groups_private_messages(owner)` without a

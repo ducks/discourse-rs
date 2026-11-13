@@ -1550,7 +1550,8 @@ pub struct ListFooterScope<'a> {
     pub category_id: Option<i32>,
     pub no_subcategories: bool,
     pub tag_id: Option<i32>,
-    /// The tag's name, which Topic.resetNew sends (`tag_name`).
+    /// The tag's name, which Topic.resetNew and the unread list's
+    /// dismissRead send (`tag_name`).
     pub tag_name: Option<&'a str>,
 }
 
@@ -1690,7 +1691,10 @@ pub fn dismiss_buttons(
             out.push_str(" data-no-subcategories=\"\"");
         }
     }
-    if let Some(name) = scope.tag_name.filter(|_| show_reset_new) {
+    if let Some(name) = scope
+        .tag_name
+        .filter(|_| show_reset_new || show_dismiss_read)
+    {
         out.push_str(&format!(" data-tag-name=\"{}\"", escape(name)));
     }
     out.push('>');

@@ -12,15 +12,23 @@
 //           change to the regular notification level.
 //
 // Both send `tracked` from the list's f (or filter) query param and the
-// list's category from the row, then refresh the page where it stands
-// (router.refresh), which redraws the list, the nav pills and the
-// sidebar's counts. A failure is left unhandled as Ember leaves it.
+// list's category and tag from the row, then refresh the page where it
+// stands (router.refresh), which redraws the list, the nav pills and
+// the sidebar's counts. A failure is left unhandled as Ember leaves it.
 //
 // With topics selected in the list's bulk select mode
 // (topic-list-bulk-select.js, @selectedTopics) the buttons carry the
 // count ("Dismiss (2)"), resetNew sends the topics as topic_ids and
 // dismissRead is Topic.bulkOperation on them instead of the filter. The
 // Bulk Actions menu's Dismiss is these (Discourse.topicDismiss).
+//
+// A member's message lists (user-topics-list.gjs; messages::view draws
+// the rows with the route's inbox, and the strings in
+// #topic-dismiss-strings): the new list's button is the controller's
+// resetNew (Topic.pmResetNew, PUT /topics/pm-reset-new with the inbox
+// and a group inbox's group), which refreshes only when something was
+// dismissed; the unread list's DismissRead sends the route's
+// dismissReadTopics (private_message_inbox, and group_name).
 (function () {
   "use strict";
 
@@ -31,7 +39,8 @@
   var script = document.currentScript;
   var strings = {};
   try {
-    strings = JSON.parse(script.dataset.strings || "{}");
+    var element = document.getElementById("topic-dismiss-strings");
+    strings = JSON.parse(script.dataset.strings || (element && element.textContent) || "{}");
   } catch (_) {}
 
   function t(key) {
@@ -125,6 +134,20 @@
     return put("/topics/reset-new", data).then(refresh);
   }
 
+  // Topic.pmResetNew's data: the controller's selection is an empty
+  // list here, which jQuery leaves out.
+  function pmResetNew(row) {
+    var data = [["inbox", row.dataset.pmInbox]];
+    if (row.dataset.groupName) {
+      data.push(["group_name", row.dataset.groupName]);
+    }
+    return put("/topics/pm-reset-new", data).then(function (result) {
+      if (result && result.topic_ids && result.topic_ids.length > 0) {
+        refresh();
+      }
+    });
+  }
+
   // Topic.bulkOperationByFilter("unread", operation, options, isTracked),
   // or with topics selected Topic.bulkOperation(selected, operation, {},
   // isTracked).
@@ -145,11 +168,25 @@
     if (ids.length) {
       return put("/topics/bulk", data);
     }
+    // A message list's options are the inbox alone.
+    if (row.dataset.pmInbox) {
+      data.push(["private_message_inbox", row.dataset.pmInbox]);
+      if (row.dataset.groupName) {
+        data.push(["group_name", row.dataset.groupName]);
+      }
+      return put("/topics/bulk", data);
+    }
     if (row.dataset.categoryId) {
       data.push(["category_id", row.dataset.categoryId]);
     }
     if (!row.hasAttribute("data-no-subcategories")) {
       data.push(["include_subcategories", "true"]);
+    }
+    // A tag's unread list. Ember passes the tag model's id here
+    // (tagName: this.model.tag?.id), the tag's name until tags took
+    // numeric ids; the endpoint matches tags.name, so the name is sent.
+    if (row.dataset.tagName) {
+      data.push(["tag_name", row.dataset.tagName]);
     }
     return put("/topics/bulk", data);
   }
@@ -266,7 +303,10 @@
   Discourse.topicDismiss = {
     resetNew: function () {
       var row = document.querySelector(".dismiss-container-top");
-      return row ? resetNew(row, false) : null;
+      if (!row) {
+        return null;
+      }
+      return row.dataset.pmInbox ? pmResetNew(row) : resetNew(row, false);
     },
     dismissRead: function () {
       var row = document.querySelector(".dismiss-container-top");
@@ -288,7 +328,11 @@
     if (id.indexOf("dismiss-new-menu-") === 0) {
       openMenu(button, row);
     } else if (id.indexOf("dismiss-new-") === 0) {
-      resetNew(row, false);
+      if (row.dataset.pmInbox) {
+        pmResetNew(row);
+      } else {
+        resetNew(row, false);
+      }
     } else if (id.indexOf("dismiss-topics-") === 0) {
       openDismissRead(row);
     }

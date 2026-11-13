@@ -353,10 +353,23 @@ fn topic_list(cx: &ListContext, m: &Messages) -> String {
     let show_reset_new = filter == Some("new");
     let show_dismiss_read = filter == Some("unread");
     let dismiss = |position: &str| {
-        if position == "bottom" && topics.len() <= 5 {
+        // showBottomDismissButtons: none in the mobile view.
+        if position == "bottom" && (topics.len() <= 5 || crate::mobile::mobile_view()) {
             return String::new();
         }
-        let mut out = format!("<div class=\"row dismiss-container-{position}\">");
+        let mut out = format!("<div class=\"row dismiss-container-{position}\"");
+        // The route's inbox and group, which the buttons send
+        // (controller.inbox and group, dismissReadOptions).
+        if show_dismiss_read || show_reset_new {
+            match m.group {
+                Some((name, _)) => out.push_str(&format!(
+                    " data-pm-inbox=\"group\" data-group-name=\"{}\"",
+                    escape(name)
+                )),
+                None => out.push_str(" data-pm-inbox=\"user\""),
+            }
+        }
+        out.push('>');
         if show_dismiss_read {
             out.push_str(&format!(
                 "<button class=\"btn btn-default dismiss-read\" id=\"dismiss-topics-{position}\" title=\"{}\" type=\"button\"><span class=\"d-button-label\">{}</span></button>",
@@ -394,7 +407,7 @@ fn topic_list(cx: &ListContext, m: &Messages) -> String {
             escape(&t(cx, key))
         )
     };
-    format!(
+    let mut out = format!(
         "<div class=\"paginated-topics-list\">{}<div><div class=\"loading-container\">\
          <table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header\"><tr>\
          <th class=\"topic-list-data default\" data-sort-order=\"default\" scope=\"col\">{}<span>{}</span></th>\
@@ -418,7 +431,15 @@ fn topic_list(cx: &ListContext, m: &Messages) -> String {
         sortable("activity", "activity"),
         dismiss("bottom"),
         posters = escape(&t(cx, "posters")),
-    )
+    );
+    // topic-dismiss.js' strings (DismissRead's).
+    if show_dismiss_read || show_reset_new {
+        out.push_str(&format!(
+            "<script type=\"application/json\" id=\"topic-dismiss-strings\">{}</script>",
+            crate::html::dismiss_strings(cx.i18n).replace('<', "\\u003c")
+        ));
+    }
+    out
 }
 
 /// templates/exception.gjs for an ajax error the route's model hit: the

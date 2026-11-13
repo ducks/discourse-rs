@@ -287,12 +287,14 @@ async fn show_list(
         Some("hot") => ListKind::Hot,
         // discourse-topic-voting's (TagsController#show_votes).
         Some("votes") => ListKind::Votes,
+        // The members' lists (Discourse.filters less the anonymous ones).
         Some("new") => ListKind::New,
-        Some(_) => {
-            return Err(
-                Unsupported("tag list filters other than latest, top, hot, new and votes").into(),
-            );
-        }
+        Some("unread") => ListKind::Unread,
+        Some("unseen") => ListKind::Unseen,
+        Some("read") => ListKind::Read,
+        Some("posted") => ListKind::Posted,
+        Some("bookmarks") => ListKind::Bookmarks,
+        Some(_) => return Err(Unsupported("a tag list filter outside Discourse.filters").into()),
     };
     // requires_login, but for the anonymous filters' lists.
     if let Some(response) = super::list::ensure_logged_in(&state, &guardian, kind) {
