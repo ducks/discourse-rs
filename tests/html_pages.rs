@@ -1912,6 +1912,107 @@ async fn staff_get_the_topic_and_post_admin_menus() {
     assert!(!html.contains("admin-post-menu-content"));
 }
 
+// The multi-select mode (static/js/select-posts.js) for who gets the
+// topic admin menu's Select Posts: the rules' topic and viewer state and
+// the strings in #select-posts-config, and on each post's article its
+// author, can_delete and hasReplies. A member who manages nothing gets
+// none of it.
+#[tokio::test]
+async fn staff_get_what_the_multi_select_mode_reads() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Member::logged_in(st.clone(), "admin").await;
+    let html = admin.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(template(&html, "topic-admin-menu-template").contains("topic-admin-multi-select"));
+    let open = "<script type=\"application/json\" id=\"select-posts-config\">";
+    let config_json = &html[html.find(open).expect("the config") + open.len()..];
+    let config_json: serde_json::Value =
+        serde_json::from_str(&config_json[..config_json.find("</script>").unwrap()]).unwrap();
+    assert_eq!(config_json["topic_id"], 35);
+    assert_eq!(config_json["staff"], true);
+    assert_eq!(config_json["can_move_posts"], true);
+    assert_eq!(config_json["can_change_post_owner"], true);
+    let strings = &config_json["strings"];
+    assert_eq!(
+        strings["topic.multi_select.description.other"],
+        "You have selected <b>%{count}</b> posts."
+    );
+    assert_eq!(
+        strings["topic.multi_select.select_below.label"],
+        "select +below"
+    );
+    assert_eq!(strings["topic.change_owner.title"], "Change Owner");
+    assert_eq!(
+        strings["post.delete.confirm.one"],
+        "Are you sure you want to delete that post?"
+    );
+    assert!(html.contains("/assets/select-posts.js?v="));
+    assert!(html.contains("/assets/email-group-user-chooser.js?v="));
+    // Each post's article, and the post admin menu's post with its author.
+    let (posts, replied): (Vec<(i32, String)>, Vec<i32>) = {
+        let rows: Vec<(i32, String, i32)> = sqlx::query_as(
+            "SELECT p.post_number, u.username, p.reply_count FROM posts p \
+             JOIN users u ON u.id = p.user_id \
+             WHERE p.topic_id = 35 AND p.deleted_at IS NULL AND p.post_type = 1 \
+             ORDER BY p.post_number",
+        )
+        .fetch_all(&db.pool)
+        .await
+        .unwrap();
+        (
+            rows.iter().map(|r| (r.0, r.1.clone())).collect(),
+            rows.iter().filter(|r| r.2 > 0).map(|r| r.0).collect(),
+        )
+    };
+    assert!(posts.len() > 1);
+    for (number, username) in &posts {
+        let Some(at) = html.find(&format!(" id=\"post_{number}\">")) else {
+            continue;
+        };
+        let article = &html[html[..at].rfind("<article ").unwrap()..at];
+        // The first post's can_delete is false (PostSerializer's: it
+        // goes with its topic).
+        assert!(
+            article.contains(&format!(
+                " data-username=\"{username}\"{}",
+                if *number == 1 { "" } else { " data-can-delete" }
+            )),
+            "{article}"
+        );
+        assert_eq!(article.contains(" data-can-delete"), *number != 1);
+        assert_eq!(
+            article.contains(" data-has-replies"),
+            replied.contains(number),
+            "{article}"
+        );
+    }
+    let post = &html[html.find("id=\"post_2\"").unwrap()..];
+    assert!(
+        template(post, "admin-post-menu-content").contains("change-owner"),
+        "the post menu's Change Ownership"
+    );
+    let data = &post[post.find("data-post=\"").unwrap()..];
+    assert!(
+        data[..data.find('>').unwrap()].contains(&format!(
+            "&quot;username&quot;:&quot;{}&quot;",
+            posts.iter().find(|p| p.0 == 2).unwrap().1
+        )),
+        "{}",
+        &data[..data.find('>').unwrap()]
+    );
+
+    let mut user1 = Member::logged_in(st, "user1").await;
+    let html = user1.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(!html.contains("select-posts-config"));
+    assert!(!html.contains("/assets/select-posts.js"));
+    assert!(!html.contains(" data-can-delete"));
+    assert!(!html.contains(" data-has-replies"));
+    for article in html.split("<article ").skip(1) {
+        let tag = &article[..article.find('>').unwrap()];
+        assert!(!tag.contains(" data-username="), "{tag}");
+    }
+}
+
 /// The page's TopicTimerInfo, in the loading container under the posts.
 fn timer_info(html: &str) -> &str {
     let open = "<div class=\"loading-container\"><div class=\"topic-timer-info\"";

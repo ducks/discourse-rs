@@ -165,10 +165,6 @@ test("the post notice modal adds, changes and deletes the notice", async ({ page
 test("the modals not ported stay refused, named", async ({ page, context, session }) => {
   const { t, reply } = await setup(session, context);
   await page.goto(t.url);
-  await menuButton(page, reply, "change-owner");
-  await expect(page.locator("#page-error")).toHaveText(
-    "Not ported yet: the change ownership modal (ChangePostOwner, 194d1).",
-  );
   await menuButton(page, reply, "grant-badge");
   await expect(page.locator("#page-error")).toHaveText("Not ported yet: the grant badge modal (GrantBadgeModal, 194d1).");
 });

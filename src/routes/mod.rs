@@ -3224,6 +3224,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/discovery-topic-list.js", get(asset))
         .route("/assets/topic-admin-menu.js", get(asset))
         .route("/assets/topic-admin-modals.js", get(asset))
+        .route("/assets/select-posts.js", get(asset))
         .route("/assets/add-pm-participants.js", get(asset))
         .route("/assets/header-topic-info.js", get(asset))
         .route("/assets/post-voting.js", get(asset))

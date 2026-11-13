@@ -256,15 +256,6 @@ test("ConvertToPublicTopic makes a message a topic in the category chosen", asyn
     .toEqual([["regular", "4"]]);
 });
 
-test("multi-select stays refused, named", async ({ page, context, session }) => {
-  const t = await setup(session, context);
-  await page.goto(t.url);
-  await menuItem(page, "topic-admin-multi-select");
-  await expect(page.locator("#page-error")).toHaveText(
-    "Not ported yet: selecting posts (the topic's multi-select mode, 194c1).",
-  );
-});
-
 // The site banner (DiscourseBanner, static/js/site-banner.js): the banner
 // topic drawn atop the lists, the categories page, the tags index and the
 // topic, dismissed (the member's dismissed_banner_key, a visitor's in

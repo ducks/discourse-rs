@@ -3137,8 +3137,9 @@ pub async fn topic_page(
         flag_menus.push_str(&post_admin_config(i18n));
     }
     let topic_menus = format!(
-        "{topic_admin_menu}{topic_bookmarks_menu}{}{flag_menus}",
-        crate::post_view::add_pm_participants_config(&cx, view)
+        "{topic_admin_menu}{topic_bookmarks_menu}{}{}{flag_menus}",
+        crate::post_view::add_pm_participants_config(&cx, view),
+        crate::post_view::select_posts_config(&cx, view)
     );
     let header_topic_info = crate::header_topic_view::template(
         &cx,

@@ -263,6 +263,9 @@ pub struct StaffMenus {
     pub can_set_topic_timer: bool,
     /// `currentUser.canChangePostOwner`
     pub can_change_post_owner: bool,
+    /// The topic admin menu's Select Posts: canManageTopic or
+    /// `details.can_split_merge_topic`.
+    pub multi_select: bool,
     /// `details.can_edit_staff_notes` (Post#canEditStaffNotes)
     pub can_edit_staff_notes: bool,
     /// `details.can_permanently_delete`, for a deleted first post.
@@ -311,6 +314,7 @@ impl StaffMenus {
             can_manage_topic,
             can_set_topic_timer,
             can_change_post_owner,
+            multi_select: can_manage_topic || d["can_split_merge_topic"] == true,
             can_edit_staff_notes: d["can_edit_staff_notes"] == true,
             can_permanently_delete: d["can_permanently_delete"] == true,
             can_publish_page: d["can_publish_page"] == true,
@@ -812,8 +816,22 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     } else {
         ""
     };
+    // What the multi-select mode's rules read of a post
+    // (static/js/select-posts.js): its author, can_delete and hasReplies.
+    let mut select = String::new();
+    if cx.topic.menus.multi_select {
+        if !username.is_empty() {
+            select.push_str(&format!(" data-username=\"{}\"", escape(username)));
+        }
+        if flag("can_delete") {
+            select.push_str(" data-can-delete");
+        }
+        if p["reply_count"].as_i64().unwrap_or(0) > 0 {
+            select.push_str(" data-has-replies");
+        }
+    }
     format!(
-        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2>{}<article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}{}{map}</article></div>",
+        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\"{heading_tz}>{heading}</h2>{}<article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\"{select} id=\"post_{number}\">{}{}{map}</article></div>",
         classes.join(" "),
         // Before the post-article wrapper: discourse-post-voting's header.
         crate::plugins::post_voting::view::answer_header(cx, p),
@@ -1900,10 +1918,12 @@ fn admin_post_menu(cx: &PostContext, p: &Value) -> String {
             1,
         ));
     }
-    // What topic-admin-menu.js acts on: the post's id, type, wiki and
-    // staff notice (the ChangePostNoticeModal's text).
+    // What topic-admin-menu.js acts on: the post's id, author (the
+    // ChangeOwner modal's old user), type, wiki and staff notice (the
+    // ChangePostNoticeModal's text).
     let post = serde_json::json!({
         "id": p["id"],
+        "username": p["username"],
         "post_type": p["post_type"],
         "wiki": p["wiki"] == true,
         "notice": (!p["notice"].is_null()).then(|| serde_json::json!({ "raw": p["notice"]["raw"] })),
@@ -1967,6 +1987,68 @@ pub fn add_pm_participants_config(cx: &PostContext, view: &Value) -> String {
     )
 }
 
+/// The `#select-posts-config` block static/js/select-posts.js reads: what
+/// the topic controller's multi-select rules (canMergeTopic,
+/// canChangeOwner, canDeleteSelected) need of the topic and the viewer,
+/// and the strings of SelectedPosts, the posts' select controls and the
+/// ChangeOwner modal. Empty unless the viewer may select posts or change
+/// a post's owner.
+pub fn select_posts_config(cx: &PostContext, view: &Value) -> String {
+    let m = &cx.topic.menus;
+    if cx.viewer.is_none() || !(m.multi_select || m.can_change_post_owner) {
+        return String::new();
+    }
+    const KEYS: &[&str] = &[
+        "topic.multi_select.select_post.label",
+        "topic.multi_select.select_post.title",
+        "topic.multi_select.selected_post.label",
+        "topic.multi_select.selected_post.title",
+        "topic.multi_select.select_replies.label",
+        "topic.multi_select.select_replies.title",
+        "topic.multi_select.select_below.label",
+        "topic.multi_select.select_below.title",
+        "topic.multi_select.delete",
+        "topic.multi_select.cancel",
+        "topic.multi_select.select_all",
+        "topic.multi_select.deselect_all",
+        "topic.multi_select.description.one",
+        "topic.multi_select.description.other",
+        "topic.move_to.action",
+        "topic.merge_posts.action",
+        "topic.change_owner.title",
+        "topic.change_owner.action",
+        "topic.change_owner.error",
+        "topic.change_owner.placeholder",
+        "topic.change_owner.instructions.one",
+        "topic.change_owner.instructions.other",
+        "topic.change_owner.instructions_without_old_user.one",
+        "topic.change_owner.instructions_without_old_user.other",
+        "post.delete.confirm.one",
+        "post.delete.confirm.other",
+        "saving",
+        "select_kit.default_header_text",
+        "select_kit.no_content",
+        "select_kit.results_count.one",
+        "select_kit.results_count.other",
+        "select_kit.delete_item",
+    ];
+    let strings: serde_json::Map<String, Value> = KEYS
+        .iter()
+        .map(|key| (key.to_string(), Value::String(t(cx.list, key))))
+        .collect();
+    let config = serde_json::json!({
+        "topic_id": cx.topic.id,
+        "staff": cx.staff,
+        "can_move_posts": view["details"]["can_move_posts"] == true,
+        "can_change_post_owner": m.can_change_post_owner,
+        "strings": strings,
+    });
+    format!(
+        "<script type=\"application/json\" id=\"select-posts-config\">{}</script>",
+        config.to_string().replace('<', "\\u003c")
+    )
+}
+
 /// TopicAdminMenu#showAdminButton
 fn shows_topic_admin_menu(cx: &PostContext, view: &Value) -> bool {
     let d = &view["details"];
@@ -2011,7 +2093,7 @@ pub fn topic_admin_menu(cx: &PostContext, view: &Value) -> String {
     let can_delete = d["can_delete"] == true;
     let can_recover = d["can_recover"] == true;
     let mut items = String::new();
-    if m.can_manage_topic || d["can_split_merge_topic"] == true {
+    if m.multi_select {
         items.push_str(&dropdown_item(
             "topic-admin-multi-select",
             "",

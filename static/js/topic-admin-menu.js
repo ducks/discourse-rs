@@ -15,12 +15,14 @@
 // and banners (FeatureTopic), Make Public (ConvertToPublicTopic), the
 // timestamp (ChangeTimestamp), slow mode (EditSlowMode) and the topic
 // timer (EditTopicTimer) open their modals
-// (static/js/topic-admin-modals.js). The post menu is the menu
+// (static/js/topic-admin-modals.js); Select Posts toggles the topic's
+// multi-select mode (static/js/select-posts.js). The post menu is the menu
 // service's (modalForMobile, autofocus); its Moderation History links
 // work, and its actions are the topic controller's on the post its
 // template's data-post describes: the staff color (PUT post_type),
 // unhiding, locking, wiki and rebuilding the HTML PUT to the post, the
-// notice opens ChangePostNoticeModal (PUT notice), and the post is drawn
+// notice opens ChangePostNoticeModal (PUT notice), Change Ownership the
+// ChangeOwner modal, and the post is drawn
 // again after (GET /live/post/:id), where Ember re-renders it. What
 // either opens that is not ported is refused, named.
 (function () {
@@ -177,8 +179,12 @@
 
   // The topic controller's actions, by the item's class.
   var TOPIC_ACTIONS = {
-    "topic-admin-multi-select": function () {
-      unported("selecting posts (the topic's multi-select mode, 194c1)");
+    // toggleMultiSelect (static/js/select-posts.js); its Delete selected
+    // with every post selected is this menu's delete.
+    "topic-admin-multi-select": function (topic) {
+      if (Discourse.selectPosts) {
+        Discourse.selectPosts.toggle(topic, { deleteTopic: TOPIC_ACTIONS["topic-admin-delete"] });
+      }
     },
     "topic-admin-delete": function (topic) {
       if (topic.deleteConfirm && Discourse.modal) {
@@ -378,6 +384,12 @@
     },
     "add-notice": changeNotice,
     "change-notice": changeNotice,
+    // changePostOwner: the ChangeOwner modal (static/js/select-posts.js).
+    "change-owner": function (post) {
+      if (Discourse.selectPosts) {
+        Discourse.selectPosts.changeOwner(post);
+      }
+    },
     // Post#unhide: Ember leaves a failure unhandled.
     "unhide-post": function (post) {
       return request("PUT", "/posts/" + post.id + "/unhide").then(function (r) {
@@ -408,7 +420,6 @@
 
   // What the post admin menu opens that is not ported.
   var POST_UNPORTED = {
-    "change-owner": "the change ownership modal (ChangePostOwner, 194d1)",
     "grant-badge": "the grant badge modal (GrantBadgeModal, 194d1)",
     "permanently-delete": "permanently deleting posts (force_destroy, 194d1)",
     "publish-page": "publishing pages (PublishPageModal, 194d1)",

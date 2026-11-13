@@ -44,6 +44,8 @@
 {#- The topic admin menu and the posts' admin menus. -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-admin-menu.js") }}"></script>{% endif %}
 {% if topic_menus.contains("topic-admin-menu-template") %}<script src="{{ crate::assets::url(base_path, "topic-admin-modals.js") }}"></script>{% endif %}
+{#- The multi-select mode (SelectedPosts) and the ChangeOwner modal, with its user chooser. -#}
+{% if topic_menus.contains("select-posts-config") %}<script src="{{ crate::assets::url(base_path, "email-group-user-chooser.js") }}"></script><script src="{{ crate::assets::url(base_path, "select-posts.js") }}"></script>{% endif %}
 {#- The footer's bookmarks menu (TopicBookmarksMenu). -#}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "topic-bookmarks-menu.js") }}"></script>{% endif %}
 {#- A message's add participant modal (AddPmParticipants). -#}

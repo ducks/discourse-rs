@@ -458,6 +458,16 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
 .d-modal.--quick-palette .d-modal__body input {
   width: auto;
 }
+/* modal-overrides.scss:610: the ChangeOwner modal (select-posts.js) */
+.change-ownership-modal .d-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+/* modal-overrides.scss:616 */
+.change-ownership-modal .d-modal__body .select-kit-header--filter {
+  width: 100%;
+}
 /* modal-overrides.scss:834, the flag modal (flag-modal.js) */
 .flag-modal-body form {
   margin: 0;

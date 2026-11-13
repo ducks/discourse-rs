@@ -214,6 +214,9 @@
   // strings ({ none, placeholder, noContent, resultsOne, resultsOther,
   // deleteItem }), allowEmails and onChange(values). Values are the
   // selected usernames, group names and emails in the order chosen.
+  // maximum (select-kit's option) stops the search once that many are
+  // chosen and closes the chooser on the last; includeMessageableGroups
+  // false leaves the groups out, as a chooser of users only does.
   function attach(details, opts) {
     var values = [];
     var groups = {};
@@ -309,7 +312,7 @@
       clearTimeout(searchTimer);
       var seq = ++searchSeq;
       choiceHighlighted = false;
-      if (term === "" || skipSearch(term, opts.allowEmails)) {
+      if (term === "" || skipSearch(term, opts.allowEmails) || full()) {
         highlighted = 0;
         renderBody(term === "" ? null : []);
         return;
@@ -319,7 +322,7 @@
           term: term,
           include_groups: "false",
           include_mentionable_groups: "false",
-          include_messageable_groups: "true",
+          include_messageable_groups: opts.includeMessageableGroups === false ? "false" : "true",
           topic_allowed_users: "false",
           limit: "6",
         });
@@ -339,6 +342,10 @@
           })
           .catch(function () {});
       }, 300);
+    }
+
+    function full() {
+      return !!opts.maximum && values.length >= opts.maximum;
     }
 
     function changed() {
@@ -361,7 +368,11 @@
         groups[value] = true;
       }
       highlighted = 0;
-      renderBody(null, "");
+      if (full()) {
+        details.open = false;
+      } else {
+        renderBody(null, "");
+      }
       changed();
     }
 
