@@ -4065,3 +4065,108 @@ async fn the_user_menu_pauses_notifications() {
     let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
     assert!(!header.contains(moon), "{header}");
 }
+
+/// A message's page keeps its browse more line counted
+/// (BrowseMore#privateMessageBrowseMoreMessage over pmTopicTrackingState):
+/// a reply the reader has not read counts as unread, and their read of it
+/// takes it off again. Message 42 is user1's to user0, whose reply is
+/// post 49; user1 has read its first post.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_messages_browse_more_line_follows_the_readers_tracking_state() {
+    use discourse_rs::pm_tracking_state as pm;
+    const USER1: i32 = 3;
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let settings = {
+        let mut conn = st.pool.acquire().await.unwrap();
+        discourse_rs::site_settings::SiteSettings::load(
+            &mut conn,
+            &st.site_setting_defs,
+            &st.config.globals,
+        )
+        .await
+        .unwrap()
+    };
+    let mut client = Client::new(st.clone());
+    client.login("user1", "password").await;
+    let from = st.bus.now().await.unwrap();
+    // The page drawn with the first post alone.
+    let mut body = client
+        .open(&format!("/live?topic=42&posts=1-1&position={from}"))
+        .await;
+    let mut buffer = String::new();
+    let swap = r#"<h3 class="more-topics__browse-more" hx-swap-oob="outerHTML:.more-topics__browse-more">"#;
+
+    let mut tx = db.pool.begin().await.unwrap();
+    pm::publish_unread(&st.bus, &settings, &mut tx, 49)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    // The message format's own line breaks, collapsed. user1 has two new
+    // messages besides.
+    let line = |html: &str| html.split_whitespace().collect::<Vec<_>>().join(" ");
+    let html = line(&common::next_sse_event(&mut body, &mut buffer, "more-topics").await);
+    assert_eq!(
+        html,
+        format!(
+            r#"{swap} There is <a href="/u/user1/messages/unread">1 unread</a> and <a href="/u/user1/messages/new">2 new</a> messages remaining, or browse other <a href="/u/user1/messages">personal messages</a> </h3>"#
+        )
+    );
+
+    // A read that leaves the line as it is sends nothing: the next line
+    // is the reply's read.
+    let mut tx = db.pool.begin().await.unwrap();
+    pm::publish_read(&st.bus, &settings, &mut tx, 42, Some(1), USER1, Some(3))
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    sqlx::query(
+        "UPDATE topic_users SET last_read_post_number = 2 WHERE topic_id = 42 AND user_id = $1",
+    )
+    .bind(USER1)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let mut tx = db.pool.begin().await.unwrap();
+    pm::publish_read(&st.bus, &settings, &mut tx, 42, Some(2), USER1, Some(3))
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let html = line(&common::next_sse_event(&mut body, &mut buffer, "more-topics").await);
+    assert_eq!(
+        html,
+        format!(
+            r#"{swap} There are <a href="/u/user1/messages/new">2 new</a> messages remaining, or browse other <a href="/u/user1/messages">personal messages</a> </h3>"#
+        )
+    );
+
+    // A topic that is not a message has no such line to keep.
+    let from = st.bus.now().await.unwrap();
+    let mut body = client
+        .open(&format!("/live?topic=35&posts=1-5&position={from}"))
+        .await;
+    let mut buffer = String::new();
+    let mut tx = db.pool.begin().await.unwrap();
+    pm::publish_read(&st.bus, &settings, &mut tx, 42, Some(1), USER1, Some(3))
+        .await
+        .unwrap();
+    discourse_rs::bus::publish_post_change(
+        &discourse_rs::posting::Ctx {
+            host: &discourse_rs::pretty_text::Host::from_state(&st),
+            settings: &settings,
+            config: &st.config,
+            i18n: &st.i18n,
+            bus: &st.bus,
+        },
+        &mut tx,
+        36,
+        "revised",
+        Default::default(),
+        true,
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    common::next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(!buffer.contains("more-topics"), "{buffer}");
+}

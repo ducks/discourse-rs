@@ -15,12 +15,43 @@ const CHANNEL_PREFIX: &str = "/private-message-topic-tracking-state";
 /// `Group::AUTO_GROUPS[:staff]`
 const STAFF: i32 = 3;
 
-fn user_channel(user_id: i32) -> String {
+/// The user's own channel, which pmTopicTrackingState#startTracking hears.
+pub fn user_channel(user_id: i32) -> String {
     format!("{CHANNEL_PREFIX}/user/{user_id}")
 }
 
-fn group_channel(group_id: i32) -> String {
+/// A group's channel, heard for each of the user's groups with messages.
+pub fn group_channel(group_id: i32) -> String {
     format!("{CHANNEL_PREFIX}/group/{group_id}")
+}
+
+/// TopicViewSerializer#suggested_group_name: none for a message the user
+/// is addressed in directly, else the name of one of their groups it is
+/// addressed to; whose inbox the message's browse more line reads.
+pub async fn suggested_group_name(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    user_id: i32,
+) -> Result<Option<String>, sqlx::Error> {
+    let direct: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2)",
+    )
+    .bind(topic_id)
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if direct {
+        return Ok(None);
+    }
+    sqlx::query_scalar(
+        "SELECT groups.name FROM groups JOIN group_users ON group_users.group_id = groups.id \
+         WHERE group_users.group_id IN (SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1) \
+         AND group_users.user_id = $2 LIMIT 1",
+    )
+    .bind(topic_id)
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await
 }
 
 /// `topic.allowed_groups.pluck(:id)`

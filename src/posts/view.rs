@@ -4640,13 +4640,32 @@ fn private_message_browse_more(
     view: &Value,
     counts: PmCounts,
 ) -> Result<String, crate::message_format::ParseError> {
+    pm_browse_more_message(
+        cx.list.i18n,
+        cx.list.base_path,
+        cx.viewer.unwrap_or_default(),
+        view["suggested_group_name"].as_str(),
+        counts,
+    )
+}
+
+/// The message's browse more line for `username`, reading `group`'s inbox
+/// (the message's suggested_group_name) or their own: what the page draws
+/// in `.more-topics__browse-more`, and GET /live draws again as the
+/// viewer's pmTopicTrackingState changes.
+pub fn pm_browse_more_message(
+    i18n: &crate::i18n::I18n,
+    base: &str,
+    username: &str,
+    group: Option<&str>,
+    counts: PmCounts,
+) -> Result<String, crate::message_format::ParseError> {
     use crate::message_format::{Arg, format};
-    let l = cx.list;
-    let base = l.base_path;
-    let username = cx.viewer.unwrap_or_default();
-    let group = view["suggested_group_name"]
-        .as_str()
-        .filter(|g| !g.is_empty());
+    let group = group.filter(|g| !g.is_empty());
+    let t_with = |key: &str, args: &[(&str, &str)]| {
+        i18n.t_with(&format!("js.{key}"), args)
+            .unwrap_or_else(|| key.to_string())
+    };
     // BrowseMore#groupLink
     let group_link = |name: &str| {
         format!(
@@ -4662,7 +4681,7 @@ fn private_message_browse_more(
         } else {
             "js.user.messages.read_more_personal_pm_MF"
         };
-        let message = l.i18n.t(key).unwrap_or_default();
+        let message = i18n.t(key).unwrap_or_default();
         format(
             message,
             &[
@@ -4677,13 +4696,11 @@ fn private_message_browse_more(
         )
     } else if let Some(group) = group {
         Ok(t_with(
-            l,
             "user.messages.read_more_in_group",
             &[("groupLink", &group_link(group))],
         ))
     } else {
         Ok(t_with(
-            l,
             "user.messages.read_more",
             &[("basePath", base), ("username", username)],
         ))
