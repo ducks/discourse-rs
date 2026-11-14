@@ -317,8 +317,12 @@ feat/flag-and-penalty-modals:
   count of a reviewed post's flags (which opens /review) as Ember draws
   it. The backend's flags that send a message and topic flags are ported
   with it (post_actions/flag_notify_*, flag_illegal_with_message,
-  flag_spam_with_message, flag_topic_*). Still refused, saying so in the
-  modal: official warnings, queueing for review, flags in messages (147).
+  flag_spam_with_message, flag_topic_*). ~~Still refused, saying so in
+  the modal: official warnings, queueing for review, flags in messages
+  (147).~~ (done in `feat/flag-modal-rest`: all three, Delete Spammer's
+  email lookup and the penalty modal over a chat message; left, named:
+  queueing a topic's first post, and for a chat message official
+  warnings and queueing for review)
 - [x] Admin silence and suspend answered "Not ported yet: the silence modal"
   on the admin user page (step 23): PenalizeUser ported
   (static/js/penalize-user.js, src/penalize_view.rs) with DFutureDateInput's
@@ -2450,12 +2454,19 @@ have handlers now.
     (jobs/user_email.rs:93,101,105,507), sendmail delivery
     (email/mod.rs:169), mailing list mode (the
     notify_mailing_list_subscribers job)
-147. `feat/flags-rest` M: official warnings (is_warning, flags.rs:204;
-    PostCreator's is_warning and UserWarning), undoing flags
-    (routes/post_actions.rs:212), flags in messages (flags.rs:129),
-    staff queueing a post for review (:177), hiding on a trusted user's
-    spam flag (:578), silencing new users on spam flags and the scoring
-    behind it (:615; guardian.rs:392; current_user.rs:909). Flags that
+147. `feat/flags-rest` M: ~~official warnings (is_warning, flags.rs:204;
+    PostCreator's is_warning and UserWarning)~~ (done in
+    `feat/flag-modal-rest`: TopicCreator#create_warning through the
+    flag's message, the moderator_warning subtype and the user_warnings
+    row; POST /posts still refuses is_warning), undoing flags
+    (routes/post_actions.rs), ~~flags in messages (flags.rs:129), staff
+    queueing a post for review (:177)~~ (done in `feat/flag-modal-rest`:
+    a message's posts flagged as any other; queue_for_review hides a
+    reply at once with reason queued_by_staff and its system message,
+    refused for a topic's first post, which unlists the topic, 148),
+    hiding on a trusted user's spam flag (flags.rs), silencing new
+    users on spam flags and the scoring behind it (flags.rs;
+    guardian.rs:392; current_user.rs:909). Flags that
     send a message (notify user, notify moderators, illegal, spam with a
     message) and flagging topics are ported
     (feat/flag-and-penalty-modals); flags on posts already in review
