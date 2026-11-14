@@ -2214,6 +2214,19 @@ async fn create_topic(
     Ok(Ok(topic_id))
 }
 
+/// The categories' rows locked in id order, in the mode their counters'
+/// UPDATEs take (none of them a key column). A transaction that writes
+/// two categories takes both here first: written in the order the topic
+/// or its posts move, two opposite moves each hold the row the other
+/// waits for.
+pub async fn lock_categories(conn: &mut PgConnection, ids: &[i32]) -> Result<(), sqlx::Error> {
+    sqlx::query("SELECT id FROM categories WHERE id = ANY($1) ORDER BY id FOR NO KEY UPDATE")
+        .bind(ids)
+        .execute(&mut *conn)
+        .await?;
+    Ok(())
+}
+
 /// `CategoryFeaturedTopic.feature_topics_for(category, existing)`: the
 /// system user's list, then the anonymous one, rewritten in rank order
 /// unless it equals `existing` (only the periodical updates pass it).
