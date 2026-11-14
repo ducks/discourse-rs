@@ -158,7 +158,9 @@ test("the contextual count is the posts others make in the topic viewed in a hid
   await expect(page).toHaveTitle(`(1) ${plain}`);
   await mention();
   await expect(page).toHaveTitle(`(2) ${plain}`);
-  await unread(page, 1);
+  // The notification came; its count is not waited for, as reading the
+  // post on this page takes it back to 0.
+  await expect(page.locator("#notification-alert a")).toContainText("mentioned you");
   await expect(page).toHaveTitle(`(2) ${plain}`);
 
   await setHidden(page, false);
