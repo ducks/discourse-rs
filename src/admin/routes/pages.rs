@@ -644,6 +644,7 @@ pub async fn groups_index(
             filter: &filter,
             kind: kind.as_deref(),
             can_create_group,
+            current_user: guardian.user().is_some(),
         },
     );
     let cx = shell.cx(&state);

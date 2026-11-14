@@ -42,6 +42,25 @@ fn button(class: &str, icon_name: &str, label: &str, attrs: &str) -> String {
     )
 }
 
+/// What groups.js draws RequestGroupMembershipForm with, and the dialog
+/// (dialog.js and its #dialog-strings) popupAjaxError loads on a page
+/// that has none. For a member's pages only.
+fn membership_strings(cx: &ListContext) -> String {
+    let strings = serde_json::json!({
+        "title": t(cx, "groups.membership_request.title"),
+        "reason": t(cx, "groups.membership_request.reason"),
+        "submit": t(cx, "groups.membership_request.submit"),
+        "cancel": t(cx, "cancel"),
+        "generic_error": t(cx, "generic_error"),
+        "dialogSrc": crate::assets::url(cx.base_path, "dialog.js"),
+        "dialogStrings": crate::html::dialog_strings(cx.i18n),
+    });
+    format!(
+        "<script type=\"application/json\" id=\"group-membership-strings\">{}</script>",
+        strings.to_string().replace('<', "\\u003c")
+    )
+}
+
 /// GroupInfo: the first of full_name, display_name and name, and the
 /// second as the mention name.
 fn group_info(group: &Value) -> String {
@@ -67,8 +86,17 @@ fn group_info(group: &Value) -> String {
     )
 }
 
-/// GroupMembershipButton: join, leave or request, else `inner`.
-fn membership_button(cx: &ListContext, group: &Value, inner: &str, class: &str) -> String {
+/// GroupMembershipButton: join, leave or request, else `inner`. For a
+/// member (`current_user`) the request button carries the group's
+/// membership_request_template, which RequestGroupMembershipForm
+/// (groups.js) starts its reason from; a visitor's goes to the login.
+fn membership_button(
+    cx: &ListContext,
+    group: &Value,
+    inner: &str,
+    class: &str,
+    current_user: bool,
+) -> String {
     let member = truthy(&group["is_group_user"]);
     let data = format!(
         " data-group-id=\"{}\" data-group-name=\"{}\"",
@@ -90,11 +118,16 @@ fn membership_button(cx: &ListContext, group: &Value, inner: &str, class: &str) 
             &data,
         )
     } else if truthy(&group["allow_membership_requests"]) && !member {
+        let template = group["membership_request_template"]
+            .as_str()
+            .filter(|_| current_user)
+            .map(|t| format!(" data-membership-request-template=\"{}\"", escape(t)))
+            .unwrap_or_default();
         button(
             "btn-default group-index-request",
             "user-plus",
             &t(cx, "groups.request"),
-            &data,
+            &format!("{data}{template}"),
         )
     } else {
         inner.to_string()
@@ -125,7 +158,7 @@ fn description(excerpt: &str) -> String {
 }
 
 /// GroupCard
-fn group_card(cx: &ListContext, group: &Value) -> String {
+fn group_card(cx: &ListContext, group: &Value, current_user: bool) -> String {
     let name = s(&group["name"]);
     let flair_url = group["flair_url"].as_str().filter(|v| !v.is_empty());
     let flair_html = flair_url
@@ -174,7 +207,7 @@ fn group_card(cx: &ListContext, group: &Value) -> String {
         user = icon("user", None),
         count = group["user_count"].as_i64().unwrap_or(0),
         desc = description(s(&group["bio_excerpt"])),
-        button = membership_button(cx, group, &status, ""),
+        button = membership_button(cx, group, &status, "", current_user),
     )
 }
 
@@ -223,6 +256,8 @@ pub struct Index<'a> {
     pub kind: Option<&'a str>,
     /// `currentUser.can_create_group`
     pub can_create_group: bool,
+    /// Whether there is a current user.
+    pub current_user: bool,
 }
 
 /// The `#main-outlet` content of /groups.
@@ -276,13 +311,16 @@ pub fn render_index(cx: &ListContext, v: &Index) -> String {
     } else {
         out.push_str("<div><div class=\"container\"><div class=\"groups-boxes\">");
         for group in &groups {
-            out.push_str(&group_card(cx, group));
+            out.push_str(&group_card(cx, group, v.current_user));
         }
         out.push_str(
             "</div></div><div aria-hidden=\"true\" class=\"load-more-sentinel\"></div></div><div class=\"loading-container\"></div>",
         );
     }
     out.push_str("</section>");
+    if v.current_user {
+        out.push_str(&membership_strings(cx));
+    }
     out
 }
 
@@ -461,7 +499,7 @@ pub fn render_show(cx: &ListContext, v: &Show) -> String {
         ));
     }
     out.push_str("</div><div class=\"group-details-button\">");
-    out.push_str(&membership_button(cx, g, "", ""));
+    out.push_str(&membership_button(cx, g, "", "", v.viewer.is_some()));
     if admin {
         if truthy(&g["automatic"]) {
             out.push_str(&button(
@@ -484,7 +522,7 @@ pub fn render_show(cx: &ListContext, v: &Show) -> String {
             "btn-primary group-message-button",
             "envelope",
             &t(cx, "groups.message"),
-            "",
+            &format!(" data-group-name=\"{}\"", escape(name)),
         ));
     }
     out.push_str("</div></div>");
@@ -526,6 +564,9 @@ pub fn render_show(cx: &ListContext, v: &Show) -> String {
         can_manage_group && !truthy(&g["automatic"]),
     ));
     out.push_str("</div></div>");
+    if v.viewer.is_some() {
+        out.push_str(&membership_strings(cx));
+    }
     out
 }
 
