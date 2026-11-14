@@ -40,6 +40,8 @@ pub fn script_attrs(
             "groupName": t("chat.direct_message_creator.group_name"),
             "membersOne": t("chat.direct_message_creator.members_counter.one"),
             "membersOther": t("chat.direct_message_creator.members_counter.other"),
+            "addToChannel": t("chat.direct_message_creator.add_to_channel"),
+            "saved": t("saved"),
             "cancel": t("cancel"),
             "title": t("chat.new_message_modal.title"),
         },

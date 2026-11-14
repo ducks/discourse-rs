@@ -6352,11 +6352,32 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     and the profile's Chat button, with the same requests. Recorded as
     chat/dm_create_from_new_message_modal (rs-ref-d); tests/plugin_pages.rs.
     Left, split into 222a.
-    222a. `feat/chat-new-message-rest` S: the channel list options menu
+    222a. `feat/chat-new-message-rest` S: ~~the channel list options menu
     (ChatChannelListSidebarMenu: Start DM and Start group chat among its
     items; the drawer's and full-page lists draw its button without a
-    menu), the add members mode (MODES.add_members, from a channel's
-    members, refused with the info route), and in the modal's rows the
+    menu)~~ (done in `feat/chat-channel-create`, which this entry
+    predates: static/js/chat-channel-menus.js draws the menu for the
+    section's button, drawer, full page and sidebar, with Start DM for
+    chat.userCanDirectMessage and Start group chat for
+    chatGuardian.canUseGroupChat opening the modal in its search and
+    new group modes; `feat/chat-channel-list-menu` opens the modal once
+    the menu has closed, so the menu's focus back to its trigger no
+    longer takes it from the modal's field, and adds its browser
+    spec, tests/browser/chat-channel-list-menu.spec.js), ~~the add
+    members mode (MODES.add_members, from a channel's members, refused
+    with the info route)~~ (done in `feat/chat-channel-list-menu`: the
+    members list draws canAddMembers' add member item (a group direct
+    message, or a one to one without a message, for who may use group
+    chats) and chat-channel-info.js puts MessageCreator in the list's
+    place, not in the modal, as ChatRouteChannelInfoMembers does;
+    chat-new-message.js draws AddMembers there: the count on top of
+    the channel's members against chat_max_direct_message_users, the
+    selector searching with excluded_memberships_channel_id, Cancel
+    back to the list, Add to channel as POST
+    /chat/api/channels/:id/memberships (Chat::AddUsersToChannel, ported
+    before and recorded as chat/dm_add_users*), then the Saved toast
+    and the channel. Not ported: the loading slider around the save),
+    and in the modal's rows the
     presence dot (is-online), avatar flair, unread thread
     counts (threads, 99), emoji in channel titles; /chat/new-message with
     a message (#seedDraft, a draft seeded in the browser, refused)

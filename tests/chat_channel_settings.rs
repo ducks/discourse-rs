@@ -877,3 +877,95 @@ async fn a_dms_members_are_listed_whatever_its_direct_message_id() {
     assert!(html.contains("data-username=\"user2\""), "{html}");
     assert!(!html.contains("-no-results"), "{html}");
 }
+
+/// ChatRouteChannelInfoMembers#canAddMembers: the add member item, with
+/// the channel's members count for AddMembers, on a group direct message
+/// and on a one to one without a message; not once the one to one has
+/// one, nor on a category channel, nor where group chats are off for the
+/// member (chatGuardian.canUseGroupChat).
+#[tokio::test]
+async fn the_members_list_offers_adding_members_to_a_direct_message() {
+    let db = TestDb::new().await;
+    let day = "now() - interval '1 day'";
+    for sql in [
+        format!(
+            "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (3, false, {day}, {day}), (4, true, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (3, 3, {day}, {day}), (3, 4, {day}, {day}), (4, 3, {day}, {day}), (4, 4, {day}, {day}), (4, 2, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 3, 'DirectMessageChannel', 0, 2, NULL, 0, {day}, {day}), (4, 'DirectMessage', 4, 'DirectMessageChannel', 0, 3, NULL, 0, {day}, {day})"
+        ),
+        format!(
+            "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, {day}, {day}), (4, 3, true, false, 2, {day}, {day}), (3, 4, true, false, 2, {day}, {day}), (4, 4, true, false, 2, {day}, {day}), (2, 4, true, false, 2, {day}, {day})"
+        ),
+    ] {
+        exec(&db, &sql).await;
+    }
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let item = |count: i64| {
+        format!(
+            "<ul class=\"c-channel-members__list\"><li class=\"c-channel-members__list-item -add-member\" role=\"button\" tabindex=\"0\" data-memberships-count=\"{count}\"><svg class=\"fa d-icon d-icon-plus svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#plus\"></use></svg><span>Add Member</span></li><li class=\"c-channel-members__list-item -member\""
+        )
+    };
+    async fn members(client: &mut Client, id: i64) -> String {
+        let (status, location, html) = client.page(&format!("/chat/c/-/{id}/info/members")).await;
+        match location {
+            Some(location) => {
+                assert_eq!(status, 302);
+                let (status, _, html) = client.page(&location).await;
+                assert_eq!(status, 200, "{html}");
+                html
+            }
+            None => {
+                assert_eq!(status, 200, "{html}");
+                html
+            }
+        }
+    }
+    // A one to one without a message, and a group.
+    let html = members(&mut user1, 3).await;
+    assert!(html.contains(&item(2)), "{html}");
+    let html = members(&mut user1, 4).await;
+    assert!(html.contains(&item(3)), "{html}");
+    // The next items are a page's: the item isn't among them.
+    let (status, _, page) = user1
+        .page("/chat/c/-/3/info/members/page?username=user")
+        .await;
+    assert_eq!(status, 200, "{page}");
+    assert!(page.contains("data-username=\"user2\""), "{page}");
+    assert!(!page.contains("-add-member"), "{page}");
+    // A category channel has none.
+    let html = members(&mut user1, 2).await;
+    assert!(!html.contains("-add-member"), "{html}");
+    // With a message the one to one has none, the group keeps its own.
+    for id in [3, 4] {
+        let (status, sent) = user1
+            .json(
+                Method::POST,
+                &format!("/chat/{id}.json"),
+                Some(json!({ "message": "hello" })),
+            )
+            .await;
+        assert_eq!(status, 200, "{sent}");
+    }
+    let html = members(&mut user1, 3).await;
+    assert!(!html.contains("-add-member"), "{html}");
+    let html = members(&mut user1, 4).await;
+    assert!(html.contains(&item(3)), "{html}");
+    // Group chats off: a member has none, staff do.
+    exec(
+        &db,
+        "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) VALUES ('chat_max_direct_message_users', 3, '1', now(), now())",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let html = members(&mut user1, 4).await;
+    assert!(!html.contains("-add-member"), "{html}");
+    let mut admin = Client::logged_in(st, "admin").await;
+    let html = members(&mut admin, 4).await;
+    assert!(html.contains("-add-member"), "{html}");
+}

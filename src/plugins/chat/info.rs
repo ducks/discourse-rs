@@ -7,9 +7,9 @@
 use serde_json::Value;
 
 use super::channels::{ChannelRow, Context};
+use crate::AppError;
 use crate::post_view::d_icon;
 use crate::topic_list_view::escape;
-use crate::{AppError, Unsupported};
 
 /// An info route's tab.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -776,22 +776,18 @@ impl Context<'_> {
 
     /// ChatRouteChannelInfoMembers: the filter and the first members
     /// (`listChannelMemberships` with limit 20); chat-channel-info.js
-    /// filters and loads more as it scrolls. Adding members is a group
-    /// DM's (MessageCreator's add members mode): refused.
+    /// filters and loads more as it scrolls. `canAddMembers` draws the add
+    /// member item, which chat-channel-info.js swaps the list for
+    /// MessageCreator's add members mode with (chat-new-message.js).
     async fn info_members(&mut self, channel: &ChannelRow, c: &Value) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
         let dm = channel.chatable_type == "DirectMessage";
         let can_group = self.guardian.is_staff()
             || self.settings.get("chat_max_direct_message_users")?.to_i() > 1;
-        if dm
+        let can_add = dm
             && can_group
-            && (c["chatable"]["group"] == true || c["last_message"]["message"].is_null())
-        {
-            return Err(
-                Unsupported("adding members to a direct message from its members (222a)").into(),
-            );
-        }
+            && (c["chatable"]["group"] == true || c["last_message"]["message"].is_null());
         let members = self.members(channel, 0, 20, None).await?;
         let mut out = String::from("<div class=\"c-routes --channel-info-members\">");
         let slug = super::page::slugified_title(c);
@@ -819,6 +815,16 @@ impl Context<'_> {
             d_icon("magnifying-glass", Some("d-filter-input__icon -right"))
         ));
         out.push_str("<ul class=\"c-channel-members__list\">");
+        if can_add {
+            // With the channel's membershipsCount, which AddMembers counts
+            // from.
+            out.push_str(&format!(
+                "<li class=\"c-channel-members__list-item -add-member\" role=\"button\" tabindex=\"0\" data-memberships-count=\"{}\">{}<span>{}</span></li>",
+                c["memberships_count"].as_i64().unwrap_or(0),
+                d_icon("plus", None),
+                escape(&t("chat.members_view.add_member"))
+            ));
+        }
         out.push_str(&self.member_items(channel, &members).await?);
         out.push_str("</ul><div class=\"c-channel-members__load-more\"><br></div></div></div>");
         Ok(out)

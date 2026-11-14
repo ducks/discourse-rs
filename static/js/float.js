@@ -873,12 +873,17 @@
     menu: menu,
     tooltip: tooltip,
     showTooltip: showTooltip,
+    // Resolves once the floats are closed, their trigger focused again.
     close: function (identifier) {
-      open.slice().forEach(function (instance) {
-        if (instance.options.identifier === identifier) {
-          instance.close();
-        }
-      });
+      return Promise.all(
+        open
+          .filter(function (instance) {
+            return instance.options.identifier === identifier;
+          })
+          .map(function (instance) {
+            return instance.close();
+          })
+      );
     },
   };
 
