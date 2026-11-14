@@ -950,3 +950,41 @@ html.keyboard-visible:not(.ios-device) .d-modal .d-modal__container {
   width: 100%;
   margin-top: 0.25em;
 }
+
+/* DExpandingTextArea (common/components/expanding-text-area.scss), which
+   RequestGroupMembershipForm's reason is. */
+.expanding-text-area {
+  width:100%;
+  min-width:0;
+}
+.expanding-text-area > textarea {
+  field-sizing:content;
+  height:auto;
+  resize:none;
+  max-width:100%;
+  padding:var(--expanding-text-area-padding, 0.5em 0.65em);
+  min-height:var(--expanding-text-area-min-height, auto);
+  max-height:var(--expanding-text-area-max-height, none);
+}
+@supports not (field-sizing: content) {
+  .expanding-text-area {
+    display:grid;
+    grid-template-columns:minmax(0, 1fr);
+  }
+  .expanding-text-area > textarea {
+    grid-area:1/1;
+  }
+  .expanding-text-area::after {
+    content:attr(data-replicated-value) " ";
+    white-space:pre-wrap;
+    word-break:break-word;
+    visibility:hidden;
+    grid-area:1/1;
+    box-sizing:border-box;
+    padding:var(--expanding-text-area-padding, 0.5em 0.65em);
+    border:1px solid transparent;
+    font:inherit;
+    min-height:var(--expanding-text-area-min-height, auto);
+    max-height:var(--expanding-text-area-max-height, none);
+  }
+}

@@ -366,3 +366,106 @@ async fn the_group_card_shows_what_the_viewer_may_see() {
     let (status, _) = visitor.page("/group-card/nobody").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+/// The Request button: a member's carries the group's template for
+/// RequestGroupMembershipForm with the form's strings on the page, a
+/// visitor's page is as it was; and GroupMembershipRequester's guards on
+/// the request itself.
+#[tokio::test]
+async fn a_member_requests_membership_from_the_groups_page() {
+    let db = TestDb::new().await;
+    custom_groups(&db).await;
+    for sql in [
+        "INSERT INTO groups (id, name, visibility_level, members_visibility_level, allow_membership_requests, membership_request_template, user_count, created_at, updated_at) \
+         VALUES (9004, 'askers', 0, 0, TRUE, 'I am \"<b>\" & ', 1, now(), now())",
+        "INSERT INTO group_users (group_id, user_id, owner, created_at, updated_at) VALUES (9004, 1, TRUE, now(), now())",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+
+    let (status, html) = Client::anonymous(st.clone()).page("/g/askers").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(
+        "<div class=\"group-membership-button\"><button class=\"btn btn-icon-text btn-default group-index-request\" data-group-id=\"9004\" data-group-name=\"askers\" type=\"button\">"
+    ), "{html}");
+    assert!(!html.contains("group-membership-strings"));
+    assert!(!html.contains("group-message-button"));
+
+    let mut user2 = Client::logged_in(st.clone(), "user2").await;
+    let (status, html) = user2.page("/g/askers").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(
+        "group-index-request\" data-group-id=\"9004\" data-group-name=\"askers\" data-membership-request-template=\"I am &quot;&lt;b&gt;&quot; &amp; \" type=\"button\">"
+    ), "{html}");
+    assert!(html.contains("<script type=\"application/json\" id=\"group-membership-strings\">{"));
+    assert!(html.contains("\"title\":\"Request to join @%{group_name}\""));
+    // The directory's cards have the button too.
+    let (_, html) = user2.page("/groups").await;
+    assert!(html.contains("data-group-name=\"askers\" data-membership-request-template="));
+    assert!(html.contains("id=\"group-membership-strings\""));
+    // An owner has no button, and the Message button names its group.
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (_, html) = admin.page("/g/askers").await;
+    assert!(!html.contains("group-index-request"));
+    let (_, html) = admin.page("/g/testers").await;
+    assert!(html.contains("btn-primary group-message-button\" data-group-name=\"testers\""));
+
+    let requests = || async {
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM group_requests WHERE group_id = 9004")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap()
+    };
+    let path = "/groups/askers/request_membership.json";
+    // raise Discourse::InvalidAccess if guardian.is_silenced?
+    sqlx::query("UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, body) = user2
+        .send(Method::POST, path, "reason=please", true, None)
+        .await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
+    assert_eq!(requests().await, 0);
+    sqlx::query("UPDATE users SET silenced_till = NULL WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+
+    let (status, body) = user2.send(Method::POST, path, "", true, None).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+    let (status, body) = user2
+        .send(Method::POST, path, "reason=please", true, None)
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let url = json["relative_url"].as_str().unwrap();
+    assert!(
+        url.starts_with("/t/membership-request-for-askers/"),
+        "{body}"
+    );
+    let allowed: Vec<String> = sqlx::query_scalar(
+        "SELECT u.username FROM topic_allowed_users a JOIN users u ON u.id = a.user_id \
+         JOIN topics t ON t.id = a.topic_id WHERE t.title = 'Membership Request for @askers' AND t.archetype = 'private_message' ORDER BY 1",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(allowed, ["admin", "user2"]);
+    // AlreadyRequested
+    let (status, body) = user2
+        .send(Method::POST, path, "reason=again", true, None)
+        .await;
+    assert_eq!(status, StatusCode::CONFLICT, "{body}");
+    assert!(
+        body.contains("You have already requested membership for this group."),
+        "{body}"
+    );
+    assert_eq!(requests().await, 1);
+    // A member may not ask.
+    let (status, _) = admin
+        .send(Method::POST, path, "reason=me", true, None)
+        .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+}

@@ -1754,7 +1754,19 @@ with the viewport, guessing from the user agent without it
     JSON), the bookmarks tab, the profile tab, show all, dismiss with its
     confirmation, the menu-panel.scss rules, the bookmarks tab with chat
     message bookmarks and their reminders (161). Left: the review queue tab
-    (refused), the do not disturb and user status modals,
+    (refused), ~~the do not disturb and user status modals~~ (done: the
+    status modal in 130b, DoNotDisturbModal in
+    `feat/do-not-disturb-modal`: the profile tab's Pause notifications
+    item carries the modal's strings while off and opens it
+    (static/js/user-menu.js): a DTapTile per duration (30, 60, 120,
+    tomorrow; click or Enter) saved by POST /do-not-disturb.json, the
+    error as the modal's flash, the notification schedule button to the
+    notifications preferences. The endpoints, the item's on state and
+    the header's moon were there. Tests: sessions
+    the_user_menu_pauses_notifications, browser do-not-disturb (3).
+    Left: the client's other readers of isInDoNotDisturb, none ported:
+    desktop notifications, the push subscription prompt, the title's
+    and favicon's counts, the notification sound),
     show_user_menu_avatars (refused)
 96. ~~`feat/mobile-composer`~~ (done) L: the mobile composer's controls
     (the toolbar toggle in place of the preview and fullscreen ones), its
@@ -3954,9 +3966,11 @@ route table has been made, so this list may be short.
     current live too. Compared on rs-ref-d as admin and moderator: a
     flag shows the badge live, agreeing clears it, a new message shows
     its badge. Still refused: category group moderators' counts
-    (enable_category_group_moderation). Not drawn: the moon going away
+    (enable_category_group_moderation). ~~Not drawn: the moon going away
     on its own when do not disturb ends (the notifications service's
-    timer; a reload or the next message redraws it), the first
+    timer; a reload or the next message redraws it)~~ (done in
+    `feat/do-not-disturb-modal`: the live stream redraws the badge as
+    the timing ends). Not drawn: the first
     notification user tip, and the perform result's fast-tracked counts
     (the job's message follows within the worker's poll)
     194h. `feat/user-menu-avatars` S: show_user_menu_avatars, the user
@@ -3971,7 +3985,8 @@ route table has been made, so this list may be short.
     and its toggle, the composer's
     actions menu (196a) and toolbar menus (196r3), the insert-date
     modal (49, 96), the desktop header's search menu (94; the advanced
-    filters panel was 143i), the do not disturb and user status modals (95),
+    filters panel was 143i), ~~the do not disturb and user status modals
+    (95)~~ (done, 130b and `feat/do-not-disturb-modal`),
     the drafts and post menus as sheets, the jump to post prompt (98),
     the topic map's menus, the footer's flag, mark unread and pinned
     buttons, the sidebar's header actions and Customize (milestone 4.5),
@@ -5858,6 +5873,25 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     word that a message follows and only Close. Tests: browser
     bulk-invite-modal (1, the invite the job makes checked in the
     database)
+295. ~~`feat/group-request-membership`~~ (done) S: a group page's
+    Request and Message buttons had no handler (the endpoint was 82e's).
+    Now groups.js: Request opens RequestGroupMembershipForm
+    (components/modal/request-group-membership-form.gjs: the title with
+    the group's name, the reason starting as the group's
+    membership_request_template within 5000 characters in
+    DExpandingTextArea, Submit disabled while it is empty or the request
+    is out), POSTs /groups/:name/request_membership.json and goes to the
+    message it answers with, errors in popupAjaxError's dialog (loaded
+    with its strings on a page without one); a visitor's goes to the
+    login. Also on the directory's cards, and exported as
+    Discourse.groupMembership.request({ name,
+    membership_request_template }) for the group card. Message is
+    messageGroup: the composer for a message to the group. The endpoint
+    now refuses a silenced member as GroupMembershipRequester does.
+    Tests: browser group-request-membership (5), groups_pages. Left:
+    the group card's two buttons, the composer marking the recipient as
+    a group (hasGroups), and Join and Leave still reporting errors with
+    window.alert
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
