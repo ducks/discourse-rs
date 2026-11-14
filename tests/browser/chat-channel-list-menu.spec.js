@@ -85,7 +85,12 @@ test("add member on a direct message's members adds the chosen members and opens
   await expect(list.locator(".c-channel-members__list-item.-member")).toHaveCount(2);
 
   // The item stays through the filter's results, which are the members'.
-  const filtered = page.waitForResponse((r) => r.url().includes("/info/members/page") && r.url().includes(other.name));
+  // The filter's own request: the channel's slug is the other member's
+  // name too, so the list's next page would match on the address alone.
+  const filtered = page.waitForResponse((r) => {
+    const url = new URL(r.url());
+    return url.pathname.endsWith("/info/members/page") && url.searchParams.get("username") === other.name;
+  });
   await list.locator(".c-channel-members__filter input").fill(other.name);
   await filtered;
   await expect(list.locator(".c-channel-members__list-item.-member")).toHaveCount(1);
