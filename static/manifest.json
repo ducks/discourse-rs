@@ -421,6 +421,13 @@
       ]
     },
     {
+      "name": "combo-box.js",
+      "content_type": "js",
+      "files": [
+        "js/combo-box.js"
+      ]
+    },
+    {
       "name": "login.js",
       "content_type": "js",
       "files": [

@@ -143,6 +143,13 @@
       if (value === undefined || value === null) {
         return;
       }
+      // jQuery.param: a list's items each under key[].
+      if (Array.isArray(value)) {
+        value.forEach(function (item) {
+          body.append(prefix + "[]", item);
+        });
+        return;
+      }
       if (typeof value === "object") {
         Object.keys(value).forEach(function (k) {
           add(prefix ? prefix + "[" + k + "]" : k, value[k]);
@@ -1751,6 +1758,8 @@
     var isDeveloper = false;
     var formSubmitted = false;
     var hp = { challengeDate: null, expiry: 0, promise: null };
+    // userFieldsValidationHelper.validationVisible
+    var fieldsValidationVisible = false;
 
     if (auth && auth.associate_url) {
       form.insertBefore(
@@ -2032,11 +2041,131 @@
       valueEntered(passwordInput);
     }
 
+    // userFieldsValidationHelper's fields (TrackedUserField), as the
+    // server drew them in position order. `element` is UserFieldBase's
+    // field.element: the dropdown's header, else the component's input.
+    var userFields = (D.user_fields || [])
+      .map(function (field) {
+        var control = form.querySelector('[data-user-field="' + field.id + '"]');
+        if (!control) {
+          return null;
+        }
+        var component = control.closest(".user-field");
+        return {
+          field: field,
+          control: control,
+          component: component,
+          element: field.field_type === "dropdown" ? control.querySelector(".select-kit-header") : component.querySelector("input"),
+          instructions: component.querySelector(".instructions"),
+          tip: null,
+        };
+      })
+      .filter(Boolean);
+
+    // The component's value: null until a multiselect is touched, as the
+    // helper starts every field.
+    function userFieldValue(f) {
+      var control = f.control;
+      switch (f.field.field_type) {
+        case "confirm":
+          return control.checked;
+        case "dropdown":
+          return Discourse.comboBox.value(control);
+        case "multiselect":
+          var items = JSON.parse(control.dataset.items || "[]");
+          if (!items.length && control.dataset.dirty !== "true") {
+            return null;
+          }
+          return items.map(function (item) {
+            return item[0];
+          });
+        default:
+          return control.value;
+      }
+    }
+
+    // TrackedUserField#validation
+    function userFieldValidation(f) {
+      if (!fieldsValidationVisible) {
+        return { ok: true };
+      }
+      var value = userFieldValue(f);
+      var type = f.field.field_type;
+      if (f.field.required && (!value || value.length === 0)) {
+        var key =
+          type === "confirm"
+            ? "user_fields.required_checkbox"
+            : type === "text" || type === "date"
+              ? "user_fields.required"
+              : "user_fields.required_select";
+        return { failed: true, element: f.element, reason: t(key, { name: f.field.name }) };
+      }
+      var password = passwordInput ? passwordInput.value : "";
+      if (password && type === "text" && value && value.toLowerCase().indexOf(password.toLowerCase()) !== -1) {
+        return { failed: true, element: f.element, reason: t("user_fields.same_as_password") };
+      }
+      return { ok: true };
+    }
+
+    // userFieldsValidation: the first field that fails.
+    function userFieldsValidation() {
+      for (var i = 0; i < userFields.length; i++) {
+        var v = userFieldValidation(userFields[i]);
+        if (v.failed) {
+          return v;
+        }
+      }
+      return { ok: true };
+    }
+
+    // DInputTip without an id.
+    function fieldTip(validation, hidden) {
+      return (
+        '<div class="tip ' +
+        (validation.failed ? "bad" : "good") +
+        (hidden ? " hidden" : "") +
+        '">' +
+        (validation.reason ? icon(validation.failed ? "xmark" : "check") + escape(validation.reason) : "") +
+        "</div>"
+      );
+    }
+
+    // Each UserField: value-entered, and its tip. The confirm's is always
+    // there, hidden without a reason; the others' takes the
+    // instructions' place while the field fails.
+    function drawUserFields() {
+      userFields.forEach(function (f) {
+        var value = userFieldValue(f);
+        f.component.classList.toggle("value-entered", !!value && value.length > 0);
+        var v = userFieldValidation(f);
+        if (f.field.field_type === "confirm") {
+          var old = f.component.querySelector(".controls > .tip");
+          if (old) {
+            old.replaceWith(el(fieldTip(v, !v.reason)));
+          }
+          return;
+        }
+        if (f.tip) {
+          f.tip.remove();
+          f.tip = null;
+        }
+        var controls = f.component.querySelector(".controls");
+        if (v.failed) {
+          f.tip = el(fieldTip(v, false));
+          f.instructions.remove();
+          controls.appendChild(f.tip);
+        } else if (!f.instructions.parentNode) {
+          controls.appendChild(f.instructions);
+        }
+      });
+    }
+
     function drawAll() {
       drawEmail();
       drawUsername();
       drawName();
       drawPassword();
+      drawUserFields();
     }
 
     // The server's instructions, as first drawn.
@@ -2111,12 +2240,52 @@
       });
     }
     if (passwordInput) {
-      passwordInput.addEventListener("input", drawPassword);
+      passwordInput.addEventListener("input", function () {
+        drawPassword();
+        drawUserFields();
+      });
       passwordField(passwordInput, passwordInput.parentNode.querySelector(".caps-lock-warning"));
       var mask = passwordInput.parentNode.querySelector(".toggle-password-mask");
       if (mask) {
         bindMask(mask, passwordInput);
       }
+    }
+    // A field's value changing: its inputs, a dropdown's row
+    // (combo-box.js's prefs-change), a multiselect's choices.
+    ["input", "change", "prefs-change"].forEach(function (type) {
+      form.addEventListener(type, function (event) {
+        if (event.target.closest && event.target.closest(".user-fields") && !event.target.closest(".select-kit-body")) {
+          drawUserFields();
+        }
+      });
+    });
+    // The dropdowns: ComboBox's events over combo-box.js.
+    if (form.querySelector(".user-fields details.prefs-combo")) {
+      form.addEventListener(
+        "toggle",
+        function (event) {
+          var chooser = event.target;
+          if (!chooser.matches || !chooser.matches("details.prefs-combo")) {
+            return;
+          }
+          Discourse.comboBox.expanded(chooser);
+          if (chooser.open) {
+            Discourse.comboBox.float(chooser);
+          }
+        },
+        true
+      );
+      document.addEventListener("click", function (event) {
+        var row = event.target.closest(".user-fields details.prefs-combo .select-kit-row");
+        form.querySelectorAll(".user-fields details.prefs-combo[open]").forEach(function (chooser) {
+          if (!chooser.contains(event.target) || row) {
+            chooser.open = false;
+          }
+        });
+        if (row) {
+          Discourse.comboBox.select(row.closest("details"), row);
+        }
+      });
     }
     form.querySelectorAll("input").forEach(function (input) {
       input.addEventListener("focusin", function () {
@@ -2185,6 +2354,14 @@
         user_fields: undefined,
         timezone: timezone(),
       };
+      // Every field's value: null as jQuery sends it, empty.
+      if (userFields.length) {
+        data.user_fields = {};
+        userFields.forEach(function (f) {
+          var value = userFieldValue(f);
+          data.user_fields[f.field.id] = value === null ? "" : value;
+        });
+      }
       if (nameInput) {
         data.name = nameInput.value;
       }
@@ -2241,17 +2418,21 @@
       }
       flash(null);
       forceReason = true;
+      fieldsValidationVisible = true;
       emailValidationVisible = true;
       drawAll();
-      var failed = [emailValidation(), usernameValidation(), nameValidation(), passwordValidation()].filter(function (v) {
-        return v.failed;
-      })[0];
+      var failed = [emailValidation(), usernameValidation(), nameValidation(), passwordValidation(), userFieldsValidation()].filter(
+        function (v) {
+          return v.failed;
+        }
+      )[0];
       if (failed) {
         if (failed.element) {
           failed.element.focus();
         }
         return;
       }
+      fieldsValidationVisible = false;
       forceReason = false;
       performAccountCreation();
     }
@@ -2262,7 +2443,7 @@
     });
     // actionOnEnter
     form.addEventListener("keydown", function (event) {
-      if (event.key === "Enter" && !formSubmitted && event.target.tagName === "INPUT") {
+      if (event.key === "Enter" && !formSubmitted && event.target.tagName === "INPUT" && !event.target.closest(".select-kit")) {
         event.preventDefault();
         event.stopPropagation();
         createAccount();
