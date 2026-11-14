@@ -182,6 +182,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/user-menu", get(user_menu::show))
         .route("/search-menu", get(search_menu::show))
         .route("/user-card/{username}", get(user_card::show))
+        .route("/group-card/{name}", get(groups::card))
         .route("/live/post/{id}", get(live::post))
         .route("/live/gap/{topic_id}", get(live::gap))
         .route("/live/timeline/{topic_id}", get(live::timeline))

@@ -145,6 +145,102 @@ fn flair(group: &Value, url: Option<&str>) -> String {
     )
 }
 
+/// GroupCardContents' maxMembersToDisplay.
+pub const CARD_MEMBERS: i64 = 10;
+
+/// GroupCardContents (components/group-card-contents.gjs), loaded: the
+/// group card static/js/user-card.js opens, from the group's document
+/// and its first members (groups#members', when the viewer may see
+/// them).
+pub fn render_card(
+    cx: &ListContext,
+    enable_badges: bool,
+    group: &Value,
+    members: Option<&Value>,
+) -> String {
+    let base = cx.base_path;
+    let name = escape(s(&group["name"]));
+    let path = format!("{base}/g/{name}");
+    // _showCallback: the users icon for a group without a flair.
+    let flair_url = group["flair_url"].as_str().filter(|v| !v.is_empty());
+    let no_bg_color = group["flair_bg_color"].as_str().is_none_or(str::is_empty);
+    let flair_html = flair(
+        group,
+        flair_url.or(if no_bg_color { Some("users") } else { None }),
+    );
+    let secondary = match group["full_name"].as_str().filter(|v| !v.is_empty()) {
+        Some(full_name) => format!(
+            "<div class=\"names__secondary full-name\">{}</div>",
+            escape(full_name)
+        ),
+        None => format!("<div class=\"names__secondary username\">{name}</div>"),
+    };
+    // leaveGroup asks first unless anyone may join again.
+    let confirm_leave = if truthy(&group["public_admission"]) {
+        String::new()
+    } else {
+        format!(
+            " data-confirm-leave=\"{}\"",
+            escape(&t(cx, "groups.confirm_leave"))
+        )
+    };
+    let mut out = format!(
+        "<div id=\"group-card\" class=\"no-bg group-card show{} group-card-{name}\" data-group-name=\"{name}\"{confirm_leave}>\
+         <div class=\"card-content\"><div class=\"card-row first-row\">\
+         <div class=\"group-card-avatar\"><a class=\"card-huge-avatar\" href=\"{path}\">{flair_html}</a></div>\
+         <div class=\"names\"><span><div class=\"names__primary {name}\"><a class=\"group-page-link\" href=\"{path}\">{name}</a></div>{secondary}</span></div>\
+         <ul class=\"usercard-controls group-details-button\"><li>{}</li>",
+        if enable_badges { " show-badges" } else { "" },
+        membership_button(cx, group, "", "", cx.member_trust_level.is_some()),
+    );
+    if truthy(&group["messageable"]) {
+        out.push_str(&format!(
+            "<li>{}</li>",
+            button(
+                "btn-primary group-message-button inline",
+                "envelope",
+                &t(cx, "groups.message"),
+                "",
+            )
+        ));
+    }
+    out.push_str("</ul></div>");
+    // `trustHTML bio_excerpt`
+    if let Some(bio) = group["bio_excerpt"].as_str().filter(|b| !b.is_empty()) {
+        out.push_str(&format!(
+            "<div class=\"card-row second-row\"><div class=\"bio\">{bio}</div></div>"
+        ));
+    }
+    let members = members
+        .and_then(|m| m["members"].as_array())
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    if !members.is_empty() {
+        out.push_str("<div class=\"card-row third-row\"><div class=\"members metadata\">");
+        for member in members.iter().take(CARD_MEMBERS as usize) {
+            out.push_str(&format!(
+                "<a class=\"card-tiny-avatar\" href=\"{base}/u/{}\">{}</a>",
+                escape(&s(&member["username"]).to_lowercase()),
+                crate::post_view::avatar_img(
+                    s(&member["avatar_template"]),
+                    cx.settings.avatar_size_24,
+                    ""
+                )
+            ));
+        }
+        let more = group["user_count"].as_i64().unwrap_or(0) - CARD_MEMBERS;
+        if more > 0 {
+            out.push_str(&format!(
+                "<a class=\"more-members-link\" href=\"{path}\"><span class=\"more-members-count\">+{more} {}</span></a>",
+                escape(&t(cx, "more"))
+            ));
+        }
+        out.push_str("</div></div>");
+    }
+    out.push_str("</div></div>");
+    out
+}
+
 /// The card's description (`trustHTML bio_excerpt`). The card is a link,
 /// and the HTML parser closes it at a link inside, where Ember's DOM keeps
 /// one inside the other: an excerpt with links is left in a template that

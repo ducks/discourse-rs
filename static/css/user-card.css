@@ -699,6 +699,47 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* user-card.scss:562, the group card's own (group-card-contents.gjs) */
+.group-card .first-row .group-card-avatar {
+  margin-top: var(--avatar-margin);
+}
+/* user-card.scss:569 */
+.group-card .first-row .avatar-flair {
+  display: flex;
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: var(--avatar-width);
+  height: var(--avatar-width);
+  color: var(--primary);
+}
+/* user-card.scss:577 */
+.group-card .first-row .avatar-flair .d-icon {
+  margin: auto;
+  font-size: calc(var(--avatar-width)/1.5);
+}
+/* user-card.scss:582 */
+.group-card .first-row .avatar-flair.rounded {
+  border-radius: 50%;
+}
+/* user-card.scss:589 */
+.group-card .second-row {
+  max-height: 150px;
+  overflow: auto;
+}
+/* user-card.scss:594 */
+.group-card .second-row .bio a:not(.mention) {
+  color: var(--tertiary);
+}
+/* user-card.scss:598 */
+.group-card .second-row .bio img {
+  max-width: 100%;
+  height: auto;
+}
+/* user-card.scss:603 */
+.group-card .second-row .bio .overflow {
+  max-height: 60px;
+  overflow: hidden;
+}
 /* user-card.scss:580 */
 @media (width < 40rem) {
   .card-cloak {

@@ -287,6 +287,86 @@ async fn the_members_page_redirects_to_the_groups_page() {
     }
 }
 
+/// The group card (GET /group-card/:name, GroupCardContents): the flair,
+/// names, GroupMembershipButton and Message, the bio excerpt and the
+/// first members, as the viewer's group document allows.
+#[tokio::test]
+async fn the_group_card_shows_what_the_viewer_may_see() {
+    let db = TestDb::new().await;
+    custom_groups(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut visitor = Client::anonymous(st.clone());
+    let (status, html) = visitor.page("/group-card/testers").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        html.starts_with(
+            "<div id=\"group-card\" class=\"no-bg group-card show show-badges group-card-testers\" data-group-name=\"testers\">\
+             <div class=\"card-content\"><div class=\"card-row first-row\">\
+             <div class=\"group-card-avatar\"><a class=\"card-huge-avatar\" href=\"/g/testers\">\
+             <div class=\"avatar-flair avatar-flair-testers rounded\" style=\"background-color: #ff0000\" title=\"testers\">"
+        ),
+        "{html}"
+    );
+    assert!(html.contains(
+        "<div class=\"names__primary testers\"><a class=\"group-page-link\" href=\"/g/testers\">testers</a></div>\
+         <div class=\"names__secondary full-name\">test team</div>"
+    ));
+    // Anyone may join; only a user is told whether they may message it.
+    assert!(html.contains("group-index-join"), "{html}");
+    assert!(!html.contains("group-message-button"));
+    assert!(html.contains("<div class=\"card-row second-row\"><div class=\"bio\">We test"));
+    assert_eq!(
+        html.matches("<a class=\"card-tiny-avatar\" href=\"/u/")
+            .count(),
+        3
+    );
+    assert!(
+        html.contains("<a class=\"card-tiny-avatar\" href=\"/u/user1\"><img alt=\"\" width=\"24\"")
+    );
+    assert!(!html.contains("more-members-link"));
+
+    // A member leaves without being asked (anyone may join again) and
+    // may message the group.
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let (_, html) = user1.page("/group-card/testers").await;
+    assert!(html.contains("group-index-leave"), "{html}");
+    assert!(!html.contains("data-confirm-leave"));
+    assert!(html.contains("btn-primary group-message-button inline"));
+
+    // More members than the card shows: the count of the rest.
+    sqlx::query("UPDATE groups SET user_count = 14 WHERE id = 9001")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = user1.page("/group-card/testers").await;
+    assert!(
+        html.contains("<a class=\"more-members-link\" href=\"/g/testers\"><span class=\"more-members-count\">+4 More</span></a>"),
+        "{html}"
+    );
+
+    // Hidden members, no full name shown twice, no flair: the users icon.
+    let (_, html) = user1.page("/group-card/hidden_members").await;
+    assert!(html.contains("d-icon-users"), "{html}");
+    assert!(html.contains("<div class=\"names__secondary full-name\">Hidden Members</div>"));
+    assert!(!html.contains("third-row"));
+    assert!(!html.contains("group-membership-button\"><button"));
+
+    // A group one can't join again asks before its member leaves it; a
+    // members-only group is not found for anyone else.
+    sqlx::query("UPDATE groups SET public_exit = TRUE WHERE id = 9002")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = user1.page("/group-card/members_only").await;
+    assert!(html.contains("<div class=\"names__secondary username\">members_only</div>"));
+    assert!(html.contains("group-index-leave"), "{html}");
+    assert!(html.contains("data-confirm-leave=\"Are you sure you want to leave this group?\""));
+    let (status, _) = visitor.page("/group-card/members_only").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, _) = visitor.page("/group-card/nobody").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
 /// The Request button: a member's carries the group's template for
 /// RequestGroupMembershipForm with the form's strings on the page, a
 /// visitor's page is as it was; and GroupMembershipRequester's guards on
