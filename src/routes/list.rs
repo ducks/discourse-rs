@@ -1503,8 +1503,13 @@ pub async fn category(
         page.chrome
             .discovery_body_classes(&["category", &class, "navigation-category"]);
     }
-    page.breadcrumbs =
-        crate::html::category_breadcrumbs(&list_cx, &settings, i64::from(category.id), none)?;
+    page.breadcrumbs = crate::html::category_breadcrumbs(
+        &list_cx,
+        &settings,
+        i64::from(category.id),
+        none,
+        crate::html::TagCrumb::All,
+    )?;
     let can_vote = crate::plugins::topic_voting::enabled(&settings)?
         && crate::plugins::topic_voting::category_votes(&mut conn, category.id).await?;
     page.nav = crate::html::category_nav_items(
@@ -1516,6 +1521,7 @@ pub async fn category(
         ),
         category.id,
         none,
+        crate::html::TagCrumb::All,
         kind.name(),
         page.chrome.tracking.as_ref(),
         can_vote,

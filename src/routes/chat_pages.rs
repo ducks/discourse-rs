@@ -1232,7 +1232,7 @@ pub async fn live_user_threads(
 
 /// Journey::Router::Utils.escape_path: a path keeps the unreserved
 /// characters, the sub-delimiters, ":", "@" and "/" unescaped.
-const PATH: &percent_encoding::AsciiSet = &percent_encoding::NON_ALPHANUMERIC
+pub(super) const PATH: &percent_encoding::AsciiSet = &percent_encoding::NON_ALPHANUMERIC
     .remove(b'-')
     .remove(b'.')
     .remove(b'_')

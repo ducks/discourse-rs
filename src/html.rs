@@ -1484,6 +1484,20 @@ impl Site {
                 None,
             );
         }
+        // ApplicationHelper#body_classes' `primary-group-<name>`, in Rails'
+        // layout and so ahead of the client's classes.
+        if let Some(user_id) = guardian.user_id() {
+            let primary_group: Option<String> = sqlx::query_scalar(
+                "SELECT g.name FROM users u JOIN groups g ON g.id = u.primary_group_id \
+                 WHERE u.id = $1",
+            )
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if let Some(name) = primary_group {
+                classes.insert(0, format!("primary-group-{}", name.to_lowercase()));
+            }
+        }
         self.chrome.body_classes = classes.join(" ");
         Ok(())
     }
@@ -2143,17 +2157,59 @@ pub fn tag_breadcrumbs(i18n: &I18n, tag_name: &str, tag_id: i32) -> String {
         None,
         None,
     ));
-    out.push_str(&breadcrumb_drop(
+    out.push_str(&tag_drop(
         i18n,
-        "tag",
-        &format!(" has-selection tag-{}", escape(&tag_name.to_lowercase())),
-        tag_name,
-        &escape(tag_name),
-        Some(i64::from(tag_id)),
-        None,
+        TagCrumb::Tag {
+            name: tag_name,
+            id: tag_id,
+        },
     ));
     out.push_str("</ol>");
     out
+}
+
+/// What BreadCrumbs' TagDrop shows.
+#[derive(Clone, Copy)]
+pub enum TagCrumb<'a> {
+    /// No tag: "tags" (`tag_all`).
+    All,
+    /// The untagged list (`none`): "no tags".
+    Untagged,
+    /// A tag's list, the tag selected.
+    Tag { name: &'a str, id: i32 },
+}
+
+/// TagDrop's header in the breadcrumbs.
+fn tag_drop(i18n: &I18n, tag: TagCrumb<'_>) -> String {
+    use crate::topic_list_view::escape;
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
+    match tag {
+        TagCrumb::All => {
+            let label = t("tagging.selector_tags");
+            breadcrumb_drop(i18n, "tag", " tag_all", &label, &escape(&label), None, None)
+        }
+        TagCrumb::Untagged => {
+            let label = t("tagging.selector_no_tags");
+            breadcrumb_drop(
+                i18n,
+                "tag",
+                " tag-none",
+                &label,
+                &escape(&label),
+                None,
+                None,
+            )
+        }
+        TagCrumb::Tag { name, id } => breadcrumb_drop(
+            i18n,
+            "tag",
+            &format!(" has-selection tag-{}", escape(&name.to_lowercase())),
+            name,
+            &escape(name),
+            Some(i64::from(id)),
+            None,
+        ),
+    }
 }
 
 /// The navigation pills on a tag's list: the top menu's filters under
@@ -2200,12 +2256,14 @@ pub fn tag_nav_items(
 
 /// BreadCrumbs on a category's list: a drop per level of the category's
 /// ancestry (its own selected), then one for its subcategories when it
-/// has any (`no subcategories` on its /none list), then the tag drop.
+/// has any (`no subcategories` on its /none list), then the tag drop,
+/// showing `tag` on a tag's list in the category.
 pub fn category_breadcrumbs(
     list: &crate::topic_list_view::ListContext,
     settings: &SiteSettings,
     category_id: i64,
     no_subcategories: bool,
+    tag: TagCrumb<'_>,
 ) -> Result<String, SettingError> {
     use crate::topic_list_view::{category_badge_html, escape};
     let i18n = list.i18n;
@@ -2280,16 +2338,7 @@ pub fn category_breadcrumbs(
         });
     }
     if settings.get("tagging_enabled")?.truthy() {
-        let label = t("tagging.selector_tags");
-        out.push_str(&breadcrumb_drop(
-            i18n,
-            "tag",
-            " tag_all",
-            &label,
-            &escape(&label),
-            None,
-            None,
-        ));
+        out.push_str(&tag_drop(i18n, tag));
     }
     out.push_str("</ol>");
     Ok(out)
@@ -2298,7 +2347,9 @@ pub fn category_breadcrumbs(
 /// NavItem.buildList for a category's list: the top menu's filters but
 /// `categories`, each at the category's path (`/none` kept), counted in
 /// the category; then the plugins' items (discourse-topic-voting's Votes
-/// and My Votes on a voting category, before Top).
+/// and My Votes on a voting category, before Top). A tag's list in the
+/// category has the same items: `category_path` is then NavItem.pathFor's
+/// `/tags/c/<category>[/none]/<tag>` and `tag` scopes the counts.
 #[allow(clippy::too_many_arguments)]
 pub fn category_nav_items(
     i18n: &I18n,
@@ -2306,6 +2357,7 @@ pub fn category_nav_items(
     category_path: &str,
     category_id: i32,
     no_subcategories: bool,
+    tag: TagCrumb<'_>,
     active: &str,
     tracking: Option<&crate::topic_tracking_report::Tracking>,
     can_vote: bool,
@@ -2315,8 +2367,14 @@ pub fn category_nav_items(
         .filter(|item| item.name != "categories")
         .map(|mut item| {
             item.href = format!("{category_path}/l/{}", item.name);
-            item.label =
-                category_nav_label(i18n, &item.name, tracking, category_id, no_subcategories);
+            item.label = category_nav_label(
+                i18n,
+                &item.name,
+                tracking,
+                category_id,
+                no_subcategories,
+                tag,
+            );
             item
         })
         .collect();
@@ -2356,17 +2414,23 @@ pub fn category_nav_items(
 }
 
 /// NavItem#displayName within a category (`lookupCount` with the
-/// category, and noSubcategories on its /none list).
+/// category, noSubcategories on its /none list, and the tag's id on a
+/// tag's list there, where `latest` never counts).
 fn category_nav_label(
     i18n: &I18n,
     name: &str,
     tracking: Option<&crate::topic_tracking_report::Tracking>,
     category_id: i32,
     no_subcategories: bool,
+    tag: TagCrumb<'_>,
 ) -> String {
+    let in_tag = !matches!(tag, TagCrumb::All);
     let count = match tracking {
-        Some(_) if name == "latest" && !crate::mobile::mobile_view() => 0,
-        Some(t) => t.lookup_in(name, category_id, no_subcategories),
+        Some(_) if name == "latest" && (in_tag || !crate::mobile::mobile_view()) => 0,
+        Some(t) => match tag {
+            TagCrumb::Tag { id, .. } => t.lookup_in_tag(name, category_id, no_subcategories, id),
+            _ => t.lookup_in(name, category_id, no_subcategories),
+        },
         None => 0,
     };
     let title = || {
