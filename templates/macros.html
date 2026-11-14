@@ -36,6 +36,8 @@
   <div class="container">
     <section class="navigation-container{% if category_nav %} category-navigation{% endif %}">
       {{ breadcrumbs|safe }}
+      {#- No pills on a tag intersection (DNavigation). #}
+      {%- if !nav.is_empty() %}
       <ul class="nav nav-pills" id="navigation-bar">
         {%- if mobile %}
         <li>
@@ -58,6 +60,7 @@
         {%- endfor %}
         {%- endif %}
       </ul>
+      {%- endif %}
       {%- if chrome.can_create_topic || !admin_controls.is_empty() || category_nav || mobile || dismiss_top.contains("<button") %}
       <div class="navigation-controls">
         {%- if mobile && bulk_select %}

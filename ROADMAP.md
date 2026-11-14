@@ -5369,9 +5369,20 @@ route table has been made, so this list may be short.
     `/tag/:tag_name?...&tags[]=`; a repeated tag or the first again is
     url_for(params)'s 302, a synonym first its target's 301, one tag
     alone `/tags/*tag_name`'s redirect; the page has `tags-intersection`
-    and no pills, as DNavigation draws none. Left: BreadCrumbs'
+    and no pills, as DNavigation draws none. Left: ~~BreadCrumbs'
     TagsIntersectionChooser (the page names its tags in the port's tag
-    heading instead), the category drop from its `category` param, the
+    heading instead)~~ (done in `feat/tags-intersection-chooser`: the
+    list controls with the category drop and the chooser, drawn closed
+    with the tags selected, the first its record and the others by the
+    list's names; MiniTagChooser moves out of composer.js into
+    mini-tag-chooser.js, shipped with navigation-bar.js, so a visitor
+    has it; its search and max_tags_per_topic are MiniTagChooser's, each
+    change goes where onChange does: `/tags/intersection/<main>/...`
+    while the main tag stays, `/tag/<slug>/<id>` once it is alone, the
+    others' intersection or `/tag/<name>` when it goes, `/tags` for
+    none; the port's heading goes. Left: New Topic there opens without
+    the tags, the category drop's rows go to the category alone), the
+    category drop from its `category` param, the
     tagIntersection search context and the .rss feed); /filter's
     `navigation-filter` comes with item 197
 274. ~~`fix/profile-polish`~~ (done) S: the profile pages' gaps a

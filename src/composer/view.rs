@@ -569,41 +569,67 @@ pub struct TagChooser {
 /// `site.tags_filter_regexp`: DiscourseTagging::TAGS_FILTER_REGEXP's source.
 const TAGS_FILTER_REGEXP: &str = r#"[\/\?#\[\]@!\$&'\(\)\*\+,;=%\\`^\s|\{\}"<>]+"#;
 
+impl TagChooser {
+    pub fn load(
+        settings: &crate::site_settings::SiteSettings,
+        guardian: &crate::guardian::Guardian,
+    ) -> Result<Self, crate::site_settings::SettingError> {
+        Ok(TagChooser {
+            can_create: guardian.can_create_tag(settings)?,
+            staff: guardian.is_staff(),
+            max_tags_per_topic: settings.get("max_tags_per_topic")?.to_i(),
+            max_tag_search_results: settings.get("max_tag_search_results")?.to_i(),
+            max_tag_length: settings.get("max_tag_length")?.to_i(),
+            force_lowercase: settings.get("force_lowercase_tags")?.truthy(),
+            sort_alphabetically: settings.get("tags_sort_alphabetically")?.truthy(),
+            prioritize_recent: settings.get("prioritize_recently_used_tags")?.truthy(),
+            style: settings.get("tag_style")?.to_s(),
+        })
+    }
+
+    /// The chooser's `data-options` (mini-tag-chooser.js): select-kit's
+    /// options and the strings it draws.
+    pub fn options(&self, i18n: &crate::i18n::I18n) -> serde_json::Value {
+        let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or(key).to_string();
+        let labels = serde_json::json!({
+            "optional": t("tagging.choose_for_topic"),
+            "required_one": t("tagging.choose_for_topic_required.one"),
+            "required_other": t("tagging.choose_for_topic_required.other"),
+            "required_group_one": t("tagging.choose_for_topic_required_group.one"),
+            "required_group_other": t("tagging.choose_for_topic_required_group.other"),
+            "filter_placeholder": t("select_kit.filter_placeholder"),
+            "filter_placeholder_with_any": t("select_kit.filter_placeholder_with_any"),
+            "delete_item": t("select_kit.delete_item"),
+            "create": t("select_kit.create"),
+            "no_content": t("select_kit.no_content"),
+            "results_one": t("select_kit.results_count.one"),
+            "results_other": t("select_kit.results_count.other"),
+            "max_one": t("select_kit.max_content_reached.one"),
+            "max_other": t("select_kit.max_content_reached.other"),
+            "synonym_hint": t("tagging.synonym_hint"),
+            "tags_missing_one": t("composer.error.tags_missing.one"),
+            "tags_missing_other": t("composer.error.tags_missing.other"),
+        });
+        serde_json::json!({
+            "allowAny": self.can_create,
+            "staff": self.staff,
+            "maximum": self.max_tags_per_topic,
+            "limit": self.max_tag_search_results,
+            "maxLength": self.max_tag_length,
+            "forceLowercase": self.force_lowercase,
+            "sortAlphabetically": self.sort_alphabetically,
+            "prioritizeRecent": self.prioritize_recent,
+            "filterRegexp": TAGS_FILTER_REGEXP,
+            "style": self.style,
+            "labels": labels,
+        })
+    }
+}
+
 /// The `.tags-input`: MiniTagChooser closed (its body is drawn when it
-/// opens, by composer.js) and its validation's tip.
+/// opens, by mini-tag-chooser.js) and its validation's tip.
 fn tag_chooser(list: &ListContext, tags: &TagChooser, category: Option<i64>) -> String {
-    let labels = serde_json::json!({
-        "optional": t(list, "tagging.choose_for_topic"),
-        "required_one": t(list, "tagging.choose_for_topic_required.one"),
-        "required_other": t(list, "tagging.choose_for_topic_required.other"),
-        "required_group_one": t(list, "tagging.choose_for_topic_required_group.one"),
-        "required_group_other": t(list, "tagging.choose_for_topic_required_group.other"),
-        "filter_placeholder": t(list, "select_kit.filter_placeholder"),
-        "filter_placeholder_with_any": t(list, "select_kit.filter_placeholder_with_any"),
-        "delete_item": t(list, "select_kit.delete_item"),
-        "create": t(list, "select_kit.create"),
-        "no_content": t(list, "select_kit.no_content"),
-        "results_one": t(list, "select_kit.results_count.one"),
-        "results_other": t(list, "select_kit.results_count.other"),
-        "max_one": t(list, "select_kit.max_content_reached.one"),
-        "max_other": t(list, "select_kit.max_content_reached.other"),
-        "synonym_hint": t(list, "tagging.synonym_hint"),
-        "tags_missing_one": t(list, "composer.error.tags_missing.one"),
-        "tags_missing_other": t(list, "composer.error.tags_missing.other"),
-    });
-    let options = serde_json::json!({
-        "allowAny": tags.can_create,
-        "staff": tags.staff,
-        "maximum": tags.max_tags_per_topic,
-        "limit": tags.max_tag_search_results,
-        "maxLength": tags.max_tag_length,
-        "forceLowercase": tags.force_lowercase,
-        "sortAlphabetically": tags.sort_alphabetically,
-        "prioritizeRecent": tags.prioritize_recent,
-        "filterRegexp": TAGS_FILTER_REGEXP,
-        "style": tags.style,
-        "labels": labels,
-    });
+    let options = tags.options(list.i18n);
     format!(
         "<div class=\"tags-input\"><details{} class=\"select-kit multi-select mini-tag-chooser no-tags\" data-options=\"{}\"><summary data-name=\"\" data-value=\"\" tabindex=\"0\" class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\"><span class=\"formatted-selection\">{}</span>{}</div></summary><div class=\"select-kit-body\"></div></details><a tabindex=\"0\" class=\"popup-tip good hide\"> {}</a></div>",
         category

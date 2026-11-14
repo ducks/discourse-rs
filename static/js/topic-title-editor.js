@@ -19,7 +19,7 @@
 //                                  left open
 //
 // The choosers are copies of the composer's (topic-admin-modals.js's
-// categoryChooser, composer.js's miniTagChooser.copy). Once saved the
+// categoryChooser, mini-tag-chooser.js's miniTagChooser.copy). Once saved the
 // title is the answer's fancy_title at once, as Topic.update sets it,
 // and the rest of what the topic's reload draws again (the category, the
 // tags, the body's classes, the document's title, the docked header's

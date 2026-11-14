@@ -596,6 +596,38 @@ async fn tag_intersections_list_the_topics_with_every_tag() {
     assert!(!html.contains(r#"href="/t/parity-fixture-tagged-in-a-subcategory/38/1""#));
     assert!(!html.contains(r#"id="navigation-bar""#));
     assert!(!html.contains(r#"id="show-tag-info""#));
+    // BreadCrumbs: the category drop, then TagsIntersectionChooser with
+    // the tags selected (the first its record, the others by name) in
+    // place of TagDrop, and no heading of the port's own.
+    assert!(!html.contains(r#"class="tag-heading""#));
+    assert!(html.contains(r#"<ol class="category-breadcrumb"><li><details class="select-kit single-select combobox combo-box category-drop category-breadcrumb__category-selector">"#));
+    assert!(!html.contains("tag-drop"));
+    let chooser = html
+        .split(r#"<li><details class="select-kit multi-select mini-tag-chooser tags-intersection-chooser has-selection" "#)
+        .nth(1)
+        .expect("the intersection chooser")
+        .split("</details>")
+        .next()
+        .unwrap();
+    assert!(chooser.contains(
+        r#"data-tags="[{&quot;id&quot;:1,&quot;name&quot;:&quot;howto&quot;,&quot;slug&quot;:&quot;howto&quot;},{&quot;name&quot;:&quot;guide&quot;}]""#
+    ));
+    assert!(chooser.contains(
+        r#"<summary data-name="howto,guide" data-value="1,guide" tabindex="0" class="select-kit-header multi-select-header">"#
+    ));
+    assert!(chooser.contains(
+        r#"<span class="formatted-selection">howto, guide</span><svg class="fa d-icon d-icon-plus "#
+    ));
+    // MiniTagChooser's options: max_tags_per_topic, and no new tags for
+    // an anonymous visitor.
+    assert!(chooser.contains("&quot;maximum&quot;:5"));
+    assert!(chooser.contains("&quot;allowAny&quot;:false"));
+    // The script binding it comes with every page.
+    let script = discourse_rs::assets::url("", "navigation-bar.js");
+    assert!(html.contains(&script));
+    let (_, _, js) = get(&db.pool, &script).await;
+    assert!(js.contains("Discourse.miniTagChooser = miniTagChooser;"));
+    assert!(js.contains("details.tags-intersection-chooser"));
 
     // A synonym first goes to its target's own list, a hidden tag is a 404.
     sqlx::query(

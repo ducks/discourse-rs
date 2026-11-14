@@ -26,6 +26,11 @@
   margin-bottom: 0;
 }
 
+/* tagging.scss:407 */
+body.tags-intersection .category-breadcrumb {
+  margin-right: auto;
+}
+
 @media (width >= 40rem) {
   .category-breadcrumb .select-kit {
     align-self: stretch;

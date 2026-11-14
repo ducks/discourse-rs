@@ -19,7 +19,7 @@
 <h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
 {% endif %}{% endif %}
 {{ tag_info|safe }}
-{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, self.bulk_select(), dismiss_top) %}{% endif %}
+{% if !nav.is_empty() || !breadcrumbs.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav, self.bulk_select(), dismiss_top) %}{% endif %}
 <div id="list-updates" class="list-updates"></div>
 <div class="container list-container --topic-list">
  <div class="row full-width">
