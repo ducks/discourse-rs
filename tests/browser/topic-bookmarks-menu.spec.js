@@ -168,6 +168,26 @@ test("on a phone the menu and the submenu are bottom sheets", async ({ page, con
   await expect.poll(() => adminBookmarks(t)).toEqual([["Topic", ""]]);
 });
 
+test("a post's menu closed before its bookmark is made still draws it", async ({ page, context, session }) => {
+  const t = await setup(session, context, { topicBookmark: false });
+  await page.goto(t.url);
+  let release;
+  const held = new Promise((resolve) => (release = resolve));
+  await page.route("**/bookmarks.json", async (route) => {
+    await held;
+    await route.continue();
+  });
+  const post = page.locator(`article[data-post-id="${t.posts[0]}"]`);
+  await post.locator(".post-action-menu__show-more").click();
+  await post.locator(".post-action-menu__bookmark").click();
+  await expect(page.locator(".bookmark-menu-content .bookmark-menu__title")).toHaveText("Bookmarked!");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".bookmark-menu-content")).toHaveCount(0);
+  release();
+  await expect(post.locator(".post-action-menu__bookmark.bookmarked[data-bookmark]")).toBeVisible();
+  await expect(page.locator(TRIGGER)).toHaveText("Edit bookmarks");
+});
+
 test("a post bookmarked from its menu: the footer counts it", async ({ page, context, session }) => {
   const t = await setup(session, context, { topicBookmark: false });
   await page.goto(t.url);
