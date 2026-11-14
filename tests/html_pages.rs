@@ -1744,10 +1744,18 @@ async fn a_tags_unread_list_is_a_members() {
         "{html}"
     );
     assert!(html.contains("/assets/topic-dismiss.js?v="));
-    // A tag within a category has the list; its navigation, and so the
-    // top row, is not drawn yet.
+    // A tag within a category has the list, and its pills count within
+    // both (lookupCount with the category and the tag's id; unified new
+    // has no unread pill).
     let html = user1.page("/tags/c/general/4/guide/2/l/unread").await;
     assert!(html.contains(r#"data-topic-id="35""#), "{html}");
+    assert!(
+        html.contains(r#"<a class="" href="/tags/c/general/4/guide/2/l/new">New (1)</a>"#),
+        "{html}"
+    );
+    assert!(html.contains(
+        r#"<div class="row dismiss-container-top" data-category-id="4" data-tag-name="guide">"#
+    ));
     assert!(html.contains("<title>Unread guide topics in General - Discourse</title>"));
     // Nothing unread under howto: the row is there, empty.
     let html = user1.page("/tag/howto/1/l/unread").await;
@@ -2205,6 +2213,32 @@ async fn discovery_lists_carry_embers_body_classes() {
             "category-general chat-enabled {uc} staff has-sidebar-page category navigation-category"
         )
     );
+    // A member with a primary group: ApplicationHelper#body_classes'
+    // `primary-group-<name>`, lowercased, after the layout's category class.
+    let group: i32 = sqlx::query_scalar(
+        "INSERT INTO groups (name, created_at, updated_at) VALUES ('Parity_Crew', now(), now()) RETURNING id",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE users SET primary_group_id = $1 WHERE username = 'admin'")
+        .bind(group)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = admin.page("/c/general/4").await;
+    assert_eq!(
+        body_classes(&html),
+        format!(
+            "category-general primary-group-parity_crew chat-enabled {uc} staff has-sidebar-page category navigation-category"
+        )
+    );
+    let html = admin.page("/latest").await;
+    assert!(body_classes(&html).starts_with("primary-group-parity_crew chat-enabled "));
+    sqlx::query("UPDATE users SET primary_group_id = NULL WHERE username = 'admin'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
     // No banner, no banner classes or script.
     common::set_setting(&db.pool, "enable_welcome_banner", 5, "f").await;
     let (_, _, html) = get(&db.pool, "/latest").await;

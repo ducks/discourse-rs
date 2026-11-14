@@ -5293,14 +5293,36 @@ route table has been made, so this list may be short.
     273a. `fix/list-chrome-rest` S: chat's ChatBodyClass
     `has-preloaded-chat-channels`, which every member page with chat gets
     once the channels load (src/html.rs:1099 adds only chat-enabled);
-    Rails' `primary-group-<name>` for a member with a primary group
-    (src/html.rs:800); a tag in a category draws no breadcrumbs or pills
-    (src/routes/tags.rs:568); the welcome banner and its classes on a
+    ~~Rails' `primary-group-<name>` for a member with a primary group
+    (src/html.rs:800)~~ (done in `feat/tag-category-chrome`:
+    ApplicationHelper#body_classes' class, the group's name lowercased,
+    first among the chrome's classes and after a category page's
+    `category-<slug>` as Rails' layout has them); ~~a tag in a category
+    draws no breadcrumbs or pills (src/routes/tags.rs:568)~~ (done in
+    `feat/tag-category-chrome`: /tags/c/... draws the category's
+    navigation, category_breadcrumbs with the tag in TagDrop (`no tags`
+    on the untagged list) and category_nav_items at NavItem.pathFor's
+    `/tags/c/<category>[/none]/<tag slug>/<id>/l/<filter>`, counted in
+    the category and the tag, `latest` never; the port's placeholder
+    headings go. A plain tag list with a `category` param stays the
+    tag's own page, as Rails redirects only a wrong slug or a name to
+    the /tags/c form. Left: the category and tag edit buttons
+    (TagCategoryAdminDropdown) and the composer's tag there); the
+    welcome banner and its classes on a
     category's or a tag's list under welcome_banner_page_visibility
     discovery or all_pages (only latest, the filters and categories ask
-    for it, src/html.rs:1914); /tags/intersection/:tag/*additional_tags
-    (`tags-intersection`) is not routed; /filter's `navigation-filter`
-    comes with item 197
+    for it, src/html.rs:1914); ~~/tags/intersection/:tag/*additional_tags
+    (`tags-intersection`) is not routed~~ (done in
+    `feat/tag-category-chrome`: tags#show on the name route's list path,
+    the other tags after tag_params', so the next page is
+    `/tag/:tag_name?...&tags[]=`; a repeated tag or the first again is
+    url_for(params)'s 302, a synonym first its target's 301, one tag
+    alone `/tags/*tag_name`'s redirect; the page has `tags-intersection`
+    and no pills, as DNavigation draws none. Left: BreadCrumbs'
+    TagsIntersectionChooser (the page names its tags in the port's tag
+    heading instead), the category drop from its `category` param, the
+    tagIntersection search context and the .rss feed); /filter's
+    `navigation-filter` comes with item 197
 274. ~~`fix/profile-polish`~~ (done) S: the profile pages' gaps a
     screenshot run found. UserNotificationsDropdown (Normal / Mute /
     Ignore) drew its header spread across the button with a grey bell:

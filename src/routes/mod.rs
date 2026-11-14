@@ -2868,6 +2868,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/tags.json", get(tags::index_json))
         .route("/tags/c/{*path}", cached!(get(tags::show_in_category)))
         .route(
+            "/tags/intersection/{*path}",
+            cached!(get(tags::show_intersection)),
+        )
+        .route(
             "/tag_groups",
             get(tag_groups::index).post(tag_groups::create),
         )

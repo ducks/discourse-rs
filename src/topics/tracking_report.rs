@@ -184,6 +184,26 @@ impl Tracking {
         }
     }
 
+    /// `lookupCount` for the `new` and `unread` nav items on a tag's list
+    /// in a category.
+    pub fn lookup_in_tag(
+        &self,
+        filter: &str,
+        category_id: i32,
+        no_subcategories: bool,
+        tag_id: i32,
+    ) -> i64 {
+        let count =
+            |kind: Kind| self.count_scoped(kind, Some(category_id), no_subcategories, Some(tag_id));
+        match filter {
+            "latest" | "new" if self.unified_new => count(Kind::New) + count(Kind::Unread),
+            "latest" => count(Kind::New) + count(Kind::Unread),
+            "new" => count(Kind::New),
+            "unread" => count(Kind::Unread),
+            _ => 0,
+        }
+    }
+
     /// `lookupCount` for the `new` and `unread` nav items on a tag's list.
     pub fn lookup_tag(&self, filter: &str, tag_id: i32) -> i64 {
         let count = |kind: Kind| self.count(kind, None, Some(tag_id));

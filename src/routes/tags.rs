@@ -37,6 +37,9 @@ struct TagPath {
     /// `/l/:filter`
     filter: Option<String>,
     json: bool,
+    /// `/tags/intersection/:tag_name/*additional_tag_names`: the tags after
+    /// the first, empty on every other route.
+    additional: Vec<String>,
 }
 
 /// Splits `/tag/...` and `/tags/c/...` paths the way the routes do.
@@ -102,7 +105,43 @@ fn parse_path(path: &str, with_category: bool) -> Result<TagPath, Unsupported> {
         no_subcategories,
         filter,
         json,
+        additional: Vec::new(),
     })
+}
+
+/// Journey::Router::Utils.escape_segment: escape_path's set, "/" escaped.
+const SEGMENT: &percent_encoding::AsciiSet = &super::chat_pages::PATH.add(b'/');
+
+/// `Hash#to_query` of the request's query params, for the URL url_for
+/// writes from `params`: each key's pairs, sorted.
+fn to_query(pairs: &[(String, String)]) -> Result<String, Unsupported> {
+    let mut params: std::collections::BTreeMap<&str, Vec<String>> = Default::default();
+    for (key, value) in pairs {
+        let escaped = |k: &str| {
+            format!(
+                "{}={}",
+                crate::ruby::cgi_escape(k),
+                crate::ruby::cgi_escape(value)
+            )
+        };
+        match key.find('[') {
+            // A plain key overwrites what came before.
+            None => {
+                params.insert(key, vec![escaped(key)]);
+            }
+            Some(i) if &key[i..] == "[]" && !params.contains_key(&key[..i]) => {
+                params.entry(key).or_default().push(escaped(key));
+            }
+            Some(_) => {
+                return Err(Unsupported(
+                    "nested query params on a tag intersection redirect",
+                ));
+            }
+        }
+    }
+    let mut out: Vec<String> = params.into_values().map(|v| v.join("&")).collect();
+    out.sort();
+    Ok(out.join("&"))
 }
 
 /// `tags[]` from the query string, which TagsController#tag_params
@@ -185,6 +224,54 @@ pub async fn show_in_category(
     requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, true)?;
+    let fullpath = super::fullpath_of(requested.as_ref().map(|r| &r.0), &uri);
+    show_list(
+        state, guardian, parsed, params, raw_query, headers, uri, fullpath,
+    )
+    .await
+}
+
+/// GET /tags/intersection/{*path}: `:tag_name/*additional_tag_names`, the
+/// latest list of the topics carrying every tag. With one tag only the
+/// `/tags/*tag_name` redirect answers, to `/tag/intersection/<tag>`.
+#[allow(clippy::too_many_arguments)]
+pub async fn show_intersection(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(path): Path<String>,
+    Query(params): Query<ListParams>,
+    RawQuery(raw_query): RawQuery,
+    headers: HeaderMap,
+    uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
+) -> Result<Response, AppError> {
+    let (names, json) = match path.strip_suffix(".json") {
+        Some(p) => (p, true),
+        None => (path.as_str(), false),
+    };
+    if names.ends_with(".rss") {
+        return Err(Unsupported("a tag intersection's feed").into());
+    }
+    let mut names = names.split('/').filter(|s| !s.is_empty());
+    let Some(tag_name) = names.next() else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let additional: Vec<String> = names.map(str::to_string).collect();
+    if additional.is_empty() {
+        let base_path = state.config.globals.relative_url_root();
+        return Ok(redirect(
+            &headers,
+            format!("{base_path}/tag/intersection/{tag_name}"),
+        ));
+    }
+    let parsed = TagPath {
+        tag: TagRef::Name(tag_name.to_string()),
+        category_path: None,
+        no_subcategories: false,
+        filter: None,
+        json,
+        additional,
+    };
     let fullpath = super::fullpath_of(requested.as_ref().map(|r| &r.0), &uri);
     show_list(
         state, guardian, parsed, params, raw_query, headers, uri, fullpath,
@@ -356,8 +443,10 @@ async fn show_list(
         };
         // should_redirect_tag?: never for JSON; canonical URLs only when
         // the slug is off; legacy ones always.
-        // A numeric-named tag reached through /tag/:tag_id keeps its URL.
+        // A numeric-named tag reached through /tag/:tag_id keeps its URL,
+        // and an intersection's first tag its name.
         let should_redirect = !path.json
+            && path.additional.is_empty()
             && match &path.tag {
                 TagRef::SlugId(slug, _) => *slug != t.slug_for_url(),
                 TagRef::Id(_) => !found_by_name,
@@ -397,8 +486,49 @@ async fn show_list(
         (None, TagRef::Name(name)) => name.clone(),
         (None, _) => unreachable!("id routes 404 without a tag"),
     };
+    // An intersection that repeats a tag, or names the first again, goes
+    // to the one without (`url_for(params)`, so the tag as it was given,
+    // the query params sorted, and the tag's own list when none is left).
+    if !path.additional.is_empty() {
+        let mut trimmed: Vec<&String> = Vec::new();
+        for name in &path.additional {
+            if *name != tag_name && !trimmed.contains(&name) {
+                trimmed.push(name);
+            }
+        }
+        if trimmed.len() != path.additional.len() {
+            let segment = |s: &str| percent_encoding::utf8_percent_encode(s, SEGMENT).to_string();
+            let given = match &path.tag {
+                TagRef::Name(name) => segment(name),
+                _ => unreachable!("an intersection names its first tag"),
+            };
+            let mut url = if trimmed.is_empty() {
+                format!("{base_path}/tag/{given}")
+            } else {
+                let rest: Vec<String> = trimmed.iter().map(|t| segment(t)).collect();
+                format!("{base_path}/tags/intersection/{given}/{}", rest.join("/"))
+            };
+            if path.json {
+                url.push_str(".json");
+            }
+            let query = to_query(&params.pairs)?;
+            if !query.is_empty() {
+                url.push_str(&format!("?{query}"));
+            }
+            let host = headers
+                .get(header::HOST)
+                .and_then(|h| h.to_str().ok())
+                .unwrap_or("localhost");
+            return Ok((
+                StatusCode::FOUND,
+                [(header::LOCATION, format!("http://{host}{url}"))],
+            )
+                .into_response());
+        }
+    }
     // tag_params: query tags[] win over the path tag, except that the
-    // name-based routes prepend it (TopicQueryParams).
+    // name-based routes prepend it (TopicQueryParams); an intersection's
+    // other tags follow.
     let mut tags = query_tags(raw_query.as_deref())?;
     if tags.is_empty() {
         tags.push(tag_name.clone());
@@ -406,6 +536,7 @@ async fn show_list(
         tags.insert(0, tag_name.clone());
         tags.dedup();
     }
+    tags.extend(path.additional.iter().cloned());
     let no_tags = tag_name == "none";
     let request = TagListRequest {
         tags: if no_tags { Vec::new() } else { tags },
@@ -485,16 +616,18 @@ async fn show_list(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
+    let intersection = !path.additional.is_empty();
     let active = match &category {
-        None => crate::sidebar::Active::Tag(tag_name.to_string()),
-        Some(_) => crate::sidebar::Active::None,
+        None if !intersection => crate::sidebar::Active::Tag(tag_name.to_string()),
+        _ => crate::sidebar::Active::None,
     };
     site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
     // TagShowRoute#setupController: the tag's searchContext (its id); a
-    // tag in a category is an intersection the port's search can't scope.
-    if category.is_none() {
+    // tag in a category or with others is an intersection the port's search
+    // can't scope.
+    if category.is_none() && !intersection {
         let id: Option<i32> = sqlx::query_scalar("SELECT id FROM tags WHERE lower(name) = $1")
             .bind(tag_name.to_lowercase())
             .fetch_optional(&mut *conn)
@@ -548,13 +681,27 @@ async fn show_list(
             page.chrome
                 .discovery_body_classes(&["tags-page", "category", &class, &tag_class]);
         }
+        None if intersection => {
+            page.chrome
+                .discovery_body_classes(&[&tag_class, "tags-page", "tags-intersection"])
+        }
         None => page
             .chrome
             .discovery_body_classes(&[&tag_class, "tags-page"]),
     }
+    // DNavigation draws no pills for an intersection and the port not its
+    // TagsIntersectionChooser, so the heading names the tags.
     page.tag = Some(crate::html::TagHeading {
-        name: tag_name.clone(),
+        name: if intersection {
+            request.tags.join(" & ")
+        } else {
+            tag_name.clone()
+        },
         url: match &tag {
+            _ if intersection => format!(
+                "{base_path}/tags/intersection/{tag_name}/{}",
+                path.additional.join("/")
+            ),
             Some(t) => t.url(&base_path),
             None => format!("{base_path}/tag/{tag_name}"),
         },
@@ -562,6 +709,7 @@ async fn show_list(
     // The tag's own page: its info and edit buttons, the TagInfo panel and
     // a member's notification level in it.
     if category.is_none()
+        && !intersection
         && let Some(t) = &tag
     {
         let controls =
@@ -579,6 +727,59 @@ async fn show_list(
             t.id,
             kind.name(),
             page.chrome.tracking.as_ref(),
+        )?;
+    }
+    // A tag in a category: the category's navigation with the tag in its
+    // drop and NavItem.pathFor's `/tags/c/<category>[/none]/<tag>` pills
+    // (`none`, the untagged list, has no id).
+    if let Some(c) = &category {
+        let crumb = match &tag {
+            Some(t) => crate::html::TagCrumb::Tag {
+                name: &t.name,
+                id: t.id,
+            },
+            None if no_tags => crate::html::TagCrumb::Untagged,
+            None => crate::html::TagCrumb::All,
+        };
+        let categories = crate::topic_list_view::categories(&mut conn).await?;
+        let list_cx = crate::topic_list_view::ListContext {
+            i18n: &state.i18n,
+            base_path: &base_path,
+            now: chrono::Utc::now(),
+            categories: &categories,
+            expand_all_pinned: true,
+            hide_category: false,
+            member_trust_level: None,
+            settings: crate::topic_list_view::ListSettings::load(&settings)?,
+        };
+        page.category_nav = true;
+        page.breadcrumbs = crate::html::category_breadcrumbs(
+            &list_cx,
+            &settings,
+            i64::from(c.id),
+            path.no_subcategories,
+            crumb,
+        )?;
+        let can_vote = crate::plugins::topic_voting::enabled(&settings)?
+            && crate::plugins::topic_voting::category_votes(&mut conn, c.id).await?;
+        let tag_path = match &tag {
+            Some(t) => format!("{}/{}", t.slug_for_url(), t.id),
+            None => tag_name.clone(),
+        };
+        page.nav = crate::html::category_nav_items(
+            &state.i18n,
+            &settings,
+            &format!(
+                "{base_path}/tags/c/{}{}/{tag_path}",
+                c.full_slug(&mut conn).await?,
+                if path.no_subcategories { "/none" } else { "" }
+            ),
+            c.id,
+            path.no_subcategories,
+            crumb,
+            kind.name(),
+            page.chrome.tracking.as_ref(),
+            can_vote,
         )?;
     }
     // canonical_url: the canonical tag route for this action; the title

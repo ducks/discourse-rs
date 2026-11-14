@@ -454,9 +454,10 @@ async fn tag_pages_render_html() {
     assert!(html.contains(r#"href="/t/parity-fixture-liked-and-archived/41/1""#));
     assert!(!html.contains("welcome-to-discourse"));
 
+    // A tag in a category: the category's navigation (below), no heading.
     let (_, _, html) = get(&db.pool, "/tags/c/general/4/howto/1").await;
-    assert!(html.contains(r#"<h1 class="category-heading">"#));
-    assert!(html.contains(r#"class="tag-heading""#));
+    assert!(!html.contains(r#"<h1 class="category-heading">"#));
+    assert!(!html.contains(r#"class="tag-heading""#));
 
     // The page lists what the JSON does, and stays the tag's own with a
     // `category` param.
@@ -476,4 +477,140 @@ async fn tag_pages_render_html() {
     assert!(html.contains("<h3>Other Tags</h3>"));
     assert!(html.contains(r#"<a href="/tag/1" class="discourse-tag simple">howto</a>"#));
     assert!(html.contains(r#"<span class="tag-count">x 2</span>"#));
+}
+
+/// DNavigation on a tag's list in a category: BreadCrumbs' category drops
+/// with the category selected and TagDrop with the tag, and
+/// NavItem.pathFor's `/tags/c/<category>[/none]/<tag>/l/<filter>` pills
+/// without `categories`. Source-derived (the chrome is Ember's).
+#[tokio::test]
+async fn a_tag_in_a_category_draws_the_category_navigation() {
+    let db = TestDb::new().await;
+    let (status, _, html) = get(&db.pool, "/tags/c/general/4/howto/1").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#"<section class="navigation-container category-navigation">"#));
+    assert!(html.contains("category-drop has-selection category-breadcrumb__category-selector"));
+    assert!(html.contains(r#"data-name="General" data-value="4""#));
+    // General has a subcategory: its drop, nothing selected.
+    assert!(html.contains("category-drop category-breadcrumb__subcategory-selector"));
+    assert!(html.contains(r#"tag-drop has-selection tag-howto"#));
+    assert!(html.contains(r#"data-name="howto" data-value="1""#));
+    assert!(html.contains(
+        r#"<a aria-current="page" class="active" href="/tags/c/general/4/howto/1/l/latest">Latest</a>"#
+    ));
+    assert!(html.contains(r#"href="/tags/c/general/4/howto/1/l/hot""#));
+    assert!(!html.contains("nav-item_categories"));
+    // The tag's own controls stay on its own page.
+    assert!(!html.contains(r#"id="show-tag-info""#));
+
+    // The filter's pill is the active one.
+    let (_, _, html) = get(&db.pool, "/tags/c/general/4/howto/1/l/hot").await;
+    assert!(html.contains(
+        r#"<a aria-current="page" class="active" href="/tags/c/general/4/howto/1/l/hot">Hot</a>"#
+    ));
+
+    // /none: "no subcategories" selected, and kept in the pills.
+    let (_, _, html) = get(&db.pool, "/tags/c/general/4/none/howto/1").await;
+    assert!(html.contains("category-drop has-selection category-breadcrumb__subcategory-selector"));
+    assert!(html.contains(r#"href="/tags/c/general/4/none/howto/1/l/latest""#));
+
+    // A subcategory: both levels selected, its full path in the pills.
+    let (_, _, html) = get(&db.pool, "/tags/c/general/sub-general/34/howto/1").await;
+    assert!(html.contains(r#"data-name="General" data-value="4""#));
+    assert!(html.contains(r#"data-name="Sub General" data-value="34""#));
+    assert!(html.contains(r#"href="/tags/c/general/sub-general/34/howto/1/l/latest""#));
+
+    // The untagged list in a category: TagDrop's "no tags", and the tag's
+    // slug alone in the pills.
+    let (status, _, html) = get(&db.pool, "/tags/c/general/4/none").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("tag-drop tag-none"));
+    assert!(html.contains(r#"data-name="no tags" data-value="""#));
+    assert!(html.contains(r#"href="/tags/c/general/4/none/l/latest""#));
+
+    // What navigation-bar.js links from the drops with both selected.
+    let (status, _, _) = get(&db.pool, "/tags/c/-/4/howto/1").await;
+    assert_eq!(status, StatusCode::OK);
+}
+
+/// `/tags/intersection/:tag_name/*additional_tag_names` (tags#show): the
+/// topics carrying every tag, on the name route's page_params (the next
+/// page is `/tag/:tag_name` with `tags[]`), repeats redirected away.
+/// Source-derived: no recording covers the route.
+#[tokio::test]
+async fn tag_intersections_list_the_topics_with_every_tag() {
+    let db = TestDb::new().await;
+    // howto: 41 and 38; guide: 41 and 35.
+    let (status, _, body) = get(&db.pool, "/tags/intersection/howto/guide.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(ids(&body), vec![41]);
+    let json: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["topic_list"]["tags"].as_array().unwrap().len(), 2);
+    let (_, _, body) = get(
+        &db.pool,
+        "/tags/intersection/howto/guide.json?per_page=1&category=general",
+    )
+    .await;
+    let json: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(
+        json["topic_list"]["more_topics_url"],
+        "/tag/howto?category=general&match_all_tags=true&page=1&per_page=1\
+         &tags%5B%5D=howto&tags%5B%5D=guide"
+    );
+    // A tag nothing carries empties it; an unknown first tag is a 404.
+    let (status, _, body) = get(&db.pool, "/tags/intersection/howto/nope.json").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(ids(&body), Vec::<i64>::new());
+    let (status, _, _) = get(&db.pool, "/tags/intersection/nope/howto.json").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+
+    // Repeats and the first tag again: url_for(params), a 302.
+    let (status, location, _) = get(
+        &db.pool,
+        "/tags/intersection/howto/guide/howto/guide.json?b=2&a=1",
+    )
+    .await;
+    assert_eq!(status, StatusCode::FOUND);
+    assert_eq!(
+        location.as_deref(),
+        Some("http://test.localhost/tags/intersection/howto/guide.json?a=1&b=2")
+    );
+    let (status, location, _) = get(&db.pool, "/tags/intersection/howto/howto").await;
+    assert_eq!(status, StatusCode::FOUND);
+    assert_eq!(location.as_deref(), Some("http://test.localhost/tag/howto"));
+    // One tag only is `/tags/*tag_name`'s redirect.
+    let (status, location, _) = get(&db.pool, "/tags/intersection/howto").await;
+    assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    assert_eq!(
+        location.as_deref(),
+        Some("http://test.localhost/tag/intersection/howto")
+    );
+
+    // The page: no redirect to the tag's canonical URL, Navigation's
+    // `tags-intersection`, the first tag in the title.
+    let (status, _, html) = get(&db.pool, "/tags/intersection/howto/guide").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<title>Latest howto topics - Discourse</title>"));
+    assert!(html.contains(" tag-howto tags-page tags-intersection\""));
+    assert!(html.contains(r#"href="/t/parity-fixture-liked-and-archived/41/1""#));
+    assert!(!html.contains(r#"href="/t/parity-fixture-tagged-in-a-subcategory/38/1""#));
+    assert!(!html.contains(r#"id="navigation-bar""#));
+    assert!(!html.contains(r#"id="show-tag-info""#));
+
+    // A synonym first goes to its target's own list, a hidden tag is a 404.
+    sqlx::query(
+        "INSERT INTO tags (name, target_tag_id, created_at, updated_at) VALUES ('how-to', 1, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (status, location, _) = get(&db.pool, "/tags/intersection/how-to/guide.json").await;
+    assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    assert_eq!(
+        location.as_deref(),
+        Some("http://test.localhost/tag/howto/1.json")
+    );
+    restrict_tag(&db.pool, 1, 3).await;
+    let (status, _, _) = get(&db.pool, "/tags/intersection/howto/guide.json").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
 }
