@@ -825,6 +825,65 @@ async fn show_inner(
     Ok(Json(json!({"group": doc, "extras": {"visible_group_names": names}})).into_response())
 }
 
+/// GET /group-card/:name: the group card's HTML (groups_view::render_card)
+/// for static/js/user-card.js. It is what the Ember client builds from
+/// `/groups/:name.json` and, when the group says can_see_members,
+/// `/groups/:name/members.json?offset=0&limit=10`; a group the viewer
+/// can't see is not found and the script closes the card, as Ember does
+/// when the fetch fails.
+pub async fn card(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(name): Path<String>,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let Some((group, membership)) = find_visible(&mut conn, &guardian, Some(&name), None).await?
+    else {
+        return Ok(not_found(&state));
+    };
+    let doc = show_json(&state, &mut conn, &settings, &guardian, &group, membership).await?;
+    let members = if doc["can_see_members"] == true {
+        let mut query = Map::new();
+        query.insert("offset".into(), json!("0"));
+        query.insert(
+            "limit".into(),
+            json!(crate::groups_view::CARD_MEMBERS.to_string()),
+        );
+        members_doc(&state, &mut conn, &settings, &guardian, &group.name, &query)
+            .await?
+            .ok()
+    } else {
+        None
+    };
+    let categories = std::collections::HashMap::new();
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: state.config.globals.relative_url_root(),
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    let html = crate::groups_view::render_card(
+        &cx,
+        settings.get("enable_badges")?.truthy(),
+        &doc,
+        members.as_ref(),
+    );
+    Ok((
+        [
+            (axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (axum::http::header::CACHE_CONTROL, "no-store"),
+        ],
+        html,
+    )
+        .into_response())
+}
+
 /// A user as BasicUserSerializer shows them.
 async fn basic_user(
     conn: &mut PgConnection,

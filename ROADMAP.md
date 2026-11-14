@@ -4586,9 +4586,23 @@ route table has been made, so this list may be short.
     togglePinnedForUser's PUT /t/:id/clear-pin and re-pin) is drawn as a
     span here as on the title and lists
     (topic_list_view.rs:1299,1305)~~ (done in `feat/topic-pin-toggle`,
-    see 264a; the docked copy takes the title's state as it docks); a
+    see 264a; the docked copy takes the title's state as it docks); ~~a
     group participant's card is refused
-    (static/js/header-topic-info.js:225); the small logo's dark variant
+    (static/js/header-topic-info.js:225)~~ (done in `feat/group-card`:
+    GroupCardContents on the user card's script (static/js/user-card.js,
+    Discourse.showGroupCard), opened by a group mention in a post
+    (a.mention-group), a `[data-group-card]` name and the docked
+    header's group, drawn by GET /group-card/:name from the group's
+    document and its first ten members: flair, names, bio excerpt,
+    member avatars and +N, GroupMembershipButton's Join and Leave in
+    place and Message to the composer (composer.open's hasGroups);
+    left: Request goes to the group's page, since
+    RequestGroupMembershipForm is ported nowhere (the group page's
+    Request and Message buttons do nothing, src/groups/view.rs:94,580),
+    Leave's confirmation is the browser's where dialog.js is not loaded,
+    and the docked-card class and the composer preview's mentions
+    (d-editor:preview-click-group-card) are not ported); the small
+    logo's dark variant
     is 258a's (header_topic_view.rs:41); FeaturedLink never draws, since a
     topic with a featured link refuses at featured_link_root_domain
     (topic_view.rs:556; header_topic_view.rs:107); a live title edit

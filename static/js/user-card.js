@@ -7,6 +7,13 @@
 // it or Escape closes it, and so does clicking the same target again.
 // The layout leaves this script out where Ember's card would not open
 // (hide_user_profiles_from_public for an anonymous visitor).
+//
+// The group card (group-card-contents.gjs, the same base): a click on a
+// group's name carrying data-group-card or on a group mention
+// (a.mention-group) opens it the same way, with the card the server
+// renders (GET /group-card/:name, what Ember builds from
+// /groups/:name.json and its first ten members). Its Join and Leave are
+// GroupMembershipButton's and its Message the composer's openNewMessage.
 (function () {
   "use strict";
 
@@ -18,7 +25,7 @@
   var LISTEN_IN = ["#main-outlet", "#d-menu-portals", ".modal-container"];
   var AVATAR_OVERFLOW_SIZE = 44;
 
-  var card = null; // { target, username, element, menu, loading }
+  var card = null; // { kind: "user" | "group", target, username, element, menu, loading }
   // showBadges (enable_badges), from the layout's script tag.
   var script = document.currentScript;
   var showBadges = !script || script.dataset.showBadges !== "false";
@@ -48,8 +55,18 @@
     return topic ? topic.dataset.topicId : null;
   }
 
-  function placeholder(username) {
+  function placeholder(kind, username) {
     var element = document.createElement("div");
+    if (kind === "group") {
+      // GroupCardContents while loading: no group, so no group class.
+      element.id = "group-card";
+      element.className = "no-bg group-card show" + (showBadges ? " show-badges" : "");
+      element.innerHTML =
+        '<div class="card-content"><div class="card-row first-row"><div class="group-card-avatar">' +
+        '<div class="card-avatar-placeholder animated-placeholder placeholder-animation"></div>' +
+        '</div></div><div class="card-row second-row"><div class="animated-placeholder placeholder-animation"></div></div></div>';
+      return element;
+    }
     // The attributes in the order Ember renders them.
     element.setAttribute("aria-label", cardLabel);
     element.id = "user-card";
@@ -167,15 +184,15 @@
   }
 
   function load(state) {
-    var url = basePath() + "/user-card/" + encodeURIComponent(state.username);
-    var topic = topicId();
+    var url = basePath() + "/" + state.kind + "-card/" + encodeURIComponent(state.username);
+    var topic = state.kind === "user" && topicId();
     if (topic) {
       url += "?include_post_count_for=" + encodeURIComponent(topic);
     }
     fetch(url, { credentials: "same-origin", headers: { "X-Requested-With": "XMLHttpRequest" } })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("user card " + response.status);
+          throw new Error(state.kind + " card " + response.status);
         }
         return response.text();
       })
@@ -188,6 +205,11 @@
         var loaded = holder.firstElementChild;
         // The element stays (it is the menu's content and may have
         // focus); it takes the loaded card's attributes and contents.
+        // The group card is loaded again after a join or a leave, with
+        // other attributes.
+        ["data-group-name", "data-confirm-leave"].forEach(function (name) {
+          state.element.removeAttribute(name);
+        });
         Array.prototype.slice.call(loaded.attributes).forEach(function (attr) {
           state.element.setAttribute(attr.name, attr.value);
         });
@@ -202,7 +224,7 @@
   }
 
   // _show(): false when the click is the card's to handle.
-  function show(username, target) {
+  function show(kind, username, target) {
     // Don't show if nested: a link in the card navigates.
     if (target.closest(".card-content")) {
       close();
@@ -215,7 +237,7 @@
         return false;
       }
     }
-    var state = { target: target, username: username, element: placeholder(username), loading: true, menu: null };
+    var state = { kind: kind, target: target, username: username, element: placeholder(kind, username), loading: true, menu: null };
     card = state;
     // Ember positions in next(): after the click is done.
     setTimeout(function () {
@@ -235,9 +257,10 @@
     });
   }
 
-  // _cardClickHandler: an avatar ([data-user-card]) first, else a mention.
-  // In the capture phase, so the card is opened before the boosted link
-  // would navigate.
+  // _cardClickHandler: an avatar ([data-user-card]) first, else a mention;
+  // then the group card's, a name ([data-group-card]) first, else a group
+  // mention. In the capture phase, so the card is opened before the
+  // boosted link would navigate.
   document.addEventListener(
     "click",
     function (event) {
@@ -247,11 +270,19 @@
       var avatar = event.target.closest("[data-user-card]");
       var mention = avatar ? null : event.target.closest("a.mention");
       var matched = avatar || mention;
+      var kind = "user";
+      if (!matched) {
+        avatar = event.target.closest("[data-group-card]");
+        matched = avatar || event.target.closest("a.mention-group");
+        kind = "group";
+      }
       if (!matched || wantsNewWindow(event)) {
         return;
       }
-      var username = avatar ? avatar.dataset.userCard : matched.innerText.trim().replace(/^@/, "");
-      if (!show(username, matched)) {
+      var username = avatar
+        ? avatar.getAttribute("data-" + kind + "-card")
+        : matched.innerText.trim().replace(/^@/, "");
+      if (!show(kind, username, matched)) {
         event.preventDefault();
         event.stopPropagation();
       }
@@ -264,8 +295,9 @@
     if (!card || !(event.target instanceof Element)) {
       return;
     }
-    var avatar = event.target.closest("[data-user-card]");
-    if ((avatar && avatar.getAttribute("data-user-card")) || event.target.closest("#user-card")) {
+    var attr = "data-" + card.kind + "-card";
+    var avatar = event.target.closest("[" + attr + "]");
+    if ((avatar && avatar.getAttribute(attr)) || event.target.closest("#" + card.kind + "-card")) {
       return;
     }
     close();
@@ -312,10 +344,117 @@
     window.composer.composePrivateMessage(username, post);
   });
 
-  // topic-header:trigger-user-card: the docked header's participants open
-  // the card by their avatar (static/js/header-topic-info.js).
+  function csrfHeaders() {
+    var headers = {};
+    try {
+      headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
+    } catch (e) {
+      // No token: the server refuses the request and says so.
+    }
+    headers["X-Requested-With"] = "XMLHttpRequest";
+    return headers;
+  }
+
+  // popupAjaxError
+  function ajaxError(response) {
+    return response
+      .json()
+      .then(function (body) {
+        return (body.errors || [response.statusText]).join("\n");
+      })
+      .catch(function () {
+        return response.statusText;
+      })
+      .then(function (text) {
+        if (Discourse.dialog) {
+          Discourse.dialog.popupAjaxError(text);
+        } else {
+          window.alert(text);
+        }
+      });
+  }
+
+  // group.join() and group.leave(), then the card with the group as it
+  // is now (is_group_user and reloadMembers).
+  function membership(state, button, method, path) {
+    button.disabled = true;
+    fetch(basePath() + "/groups/" + encodeURIComponent(button.dataset.groupId) + path, {
+      method: method,
+      credentials: "same-origin",
+      headers: csrfHeaders(),
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return ajaxError(response);
+        }
+        if (card === state) {
+          load(state);
+        }
+      })
+      .finally(function () {
+        button.disabled = false;
+      });
+  }
+
+  // The group card's buttons and links. In the capture phase and stopped
+  // there: the groups pages' own handlers (groups.js) take the same
+  // classes and draw the page again.
+  document.addEventListener(
+    "click",
+    function (event) {
+      if (!card || card.kind !== "group" || !(event.target instanceof Element)) {
+        return;
+      }
+      var el = event.target.closest("#group-card button, #group-card a.card-tiny-avatar");
+      if (!el) {
+        return;
+      }
+      var state = card;
+      var name = state.element.dataset.groupName;
+      event.preventDefault();
+      event.stopPropagation();
+      if (el.matches("a.card-tiny-avatar")) {
+        // close(): the click is prevented, the card goes.
+        close();
+      } else if (el.matches(".group-index-join, .group-index-request") && !document.body.getAttribute("hx-headers")) {
+        // showLogin
+        window.location.assign(basePath() + "/login");
+      } else if (el.matches(".group-index-join")) {
+        membership(state, el, "PUT", "/join.json");
+      } else if (el.matches(".group-index-leave")) {
+        // leaveGroup: asked first unless anyone may join again.
+        var confirmLeave = state.element.dataset.confirmLeave;
+        if (!confirmLeave) {
+          membership(state, el, "DELETE", "/leave.json");
+        } else if (Discourse.dialog) {
+          Discourse.dialog.yesNoConfirm({
+            message: confirmLeave,
+            didConfirm: function () {
+              membership(state, el, "DELETE", "/leave.json");
+            },
+          });
+        } else if (window.confirm(confirmLeave)) {
+          membership(state, el, "DELETE", "/leave.json");
+        }
+      } else if (el.matches(".group-index-request")) {
+        // Not ported: RequestGroupMembershipForm. The group's page.
+        window.location.assign(basePath() + "/g/" + encodeURIComponent(name));
+      } else if (el.matches(".group-message-button") && window.composer) {
+        // messageGroup: composer.openNewMessage, the card left open.
+        window.composer.open({ mode: "private-message", recipients: [name], hasGroups: true });
+      }
+    },
+    true
+  );
+
+  // topic-header:trigger-user-card and topic-header:trigger-group-card:
+  // the docked header's participants open the card by their avatar or
+  // name (static/js/header-topic-info.js).
   Discourse.showUserCard = function (username, target) {
-    show(username, target);
+    show("user", username, target);
+  };
+  Discourse.showGroupCard = function (name, target) {
+    show("group", name, target);
   };
   // card:close, from chat-new-message.js's Chat button.
   Discourse.closeUserCard = close;

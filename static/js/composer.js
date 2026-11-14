@@ -661,7 +661,7 @@
     if (opts.mode === "private-message") {
       // composer.open: the recipients, title and tags it was opened with.
       title.value = opts.title || "";
-      setRecipients(opts.recipients);
+      setRecipients(opts.recipients, opts.hasGroups);
       setTags(opts.tags || []);
       if (warning) {
         warning.querySelector("input").checked = false;
@@ -2394,15 +2394,16 @@
     return recipients ? recipients.values() : [];
   }
 
-  // targetRecipients as a string ("a,b") or a list.
-  function setRecipients(list) {
+  // targetRecipients as a string ("a,b") or a list; hasGroups when they
+  // are groups (the group card's messageGroup).
+  function setRecipients(list, hasGroups) {
     if (!recipients) {
       return;
     }
     if (typeof list === "string") {
       list = list.split(",");
     }
-    recipients.set(list || []);
+    recipients.set(list || [], hasGroups ? list : []);
     syncWarning();
   }
 

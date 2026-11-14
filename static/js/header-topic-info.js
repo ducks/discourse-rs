@@ -222,7 +222,7 @@
     }
 
     // Participant: topic-header:trigger-user-card and
-    // topic-header:trigger-group-card. The group card is not ported.
+    // topic-header:trigger-group-card (static/js/user-card.js).
     function triggerCard(link) {
       link.addEventListener(
         "click",
@@ -230,10 +230,8 @@
           event.preventDefault();
           event.stopImmediatePropagation();
           if (link.parentNode.classList.contains("trigger-group-card")) {
-            var error = document.getElementById("page-error");
-            if (error) {
-              error.textContent = "Not ported yet: the group card.";
-              error.hidden = false;
+            if (Discourse.showGroupCard) {
+              Discourse.showGroupCard(link.getAttribute("title"), link);
             }
           } else if (Discourse.showUserCard) {
             Discourse.showUserCard(link.getAttribute("title"), link);
