@@ -175,6 +175,34 @@ pub(crate) async fn should_block(
     Ok(found.2 == 1)
 }
 
+/// EmailValidator on a stripped, downcased `email`, as full messages of
+/// :email; a screened address's match recorded.
+pub(crate) async fn email_validator_errors(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    i18n: &I18n,
+    email: &str,
+) -> Result<Vec<String>, AppError> {
+    let t = |key: &str| i18n.t(key).unwrap_or(key).to_string();
+    let mut errors: Vec<String> = Vec::new();
+    let mut invalid = false;
+    if email.is_empty() {
+        errors.push(format!("Email {}", t("user.email.blank")));
+        invalid = true;
+    } else if !crate::accounts::valid_email(email) {
+        errors.push(format!("Email {}", t("user.email.invalid")));
+        invalid = true;
+    }
+    if !crate::signup::email_allowed(s, email)? {
+        errors.push(format!("Email {}", t("user.email.not_allowed")));
+        invalid = true;
+    }
+    if !invalid && should_block(&mut *conn, s, email).await? {
+        errors.push(format!("Email {}", t("user.email.blocked")));
+    }
+    Ok(errors)
+}
+
 /// `EmailUpdater#change_to(email, add:)`: the error messages, none when
 /// the request was made (or a taken address quietly mailed its owner).
 #[allow(clippy::too_many_arguments)]
@@ -189,23 +217,7 @@ pub async fn change_to(
 ) -> Result<Vec<String>, AppError> {
     let email = email.trim().to_lowercase();
     let t = |key: &str| i18n.t(key).unwrap_or(key).to_string();
-    let mut errors: Vec<String> = Vec::new();
-    // EmailValidator, as full messages of :email.
-    let mut invalid = false;
-    if email.is_empty() {
-        errors.push(format!("Email {}", t("user.email.blank")));
-        invalid = true;
-    } else if !crate::accounts::valid_email(&email) {
-        errors.push(format!("Email {}", t("user.email.invalid")));
-        invalid = true;
-    }
-    if !crate::signup::email_allowed(s, &email)? {
-        errors.push(format!("Email {}", t("user.email.not_allowed")));
-        invalid = true;
-    }
-    if !invalid && should_block(&mut *conn, s, &email).await? {
-        errors.push(format!("Email {}", t("user.email.blocked")));
-    }
+    let mut errors = email_validator_errors(&mut *conn, s, i18n, &email).await?;
     if !errors.is_empty() {
         return Ok(errors);
     }

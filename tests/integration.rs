@@ -7,6 +7,7 @@
 mod common;
 
 mod about_pages;
+mod activation_email;
 mod admin_advanced_pages;
 mod admin_config_pages;
 mod admin_customize_pages;

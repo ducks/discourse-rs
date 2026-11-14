@@ -445,7 +445,15 @@ pub async fn create(
     // user.active && user.email_confirmed?
     let email_confirmed = email_confirmed(&mut conn, user.id, email.as_deref()).await?;
     if !user.active || !email_confirmed {
-        return Ok(not_activated(&state, email.as_deref()));
+        return not_activated(
+            &state,
+            &settings,
+            &mut conn,
+            &mut session,
+            user.id,
+            email.as_deref(),
+        )
+        .await;
     }
     complete_login(
         &state,
@@ -461,15 +469,44 @@ pub async fn create(
     .await
 }
 
-/// `not_activated(user)`
-pub(super) fn not_activated(state: &AppState, email: Option<&str>) -> Response {
-    json_response(json!({
-        "error": state.i18n.t("login.not_activated")
-            .unwrap_or("You can't log in yet. We sent an activation email to you. Please follow the instructions in the email to activate your account."),
-        "reason": "not_activated",
-        "sent_to_email": email,
-        "current_email": email,
-    }))
+/// `not_activated(user)`: the session told which account may have its
+/// activation email sent again or changed.
+pub(super) async fn not_activated(
+    state: &AppState,
+    settings: &SiteSettings,
+    conn: &mut sqlx::PgConnection,
+    session: &mut crate::session::forum::ForumSession,
+    user_id: i32,
+    email: Option<&str>,
+) -> Result<Response, AppError> {
+    session.map.insert(
+        super::accounts::ACTIVATE_USER_KEY.into(),
+        Scalar::Int(user_id.into()),
+    );
+    session.changed = true;
+    // user.find_email: where the last signup email went, when that is an
+    // address.
+    let last_sent: Option<String> = sqlx::query_scalar(
+        "SELECT to_address FROM email_logs WHERE user_id = $1 AND email_type = 'signup' \
+         ORDER BY created_at DESC LIMIT 1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let sent_to = last_sent
+        .filter(|a| crate::accounts::valid_email(a))
+        .or_else(|| email.map(str::to_string));
+    let cookie = session.set_cookie(state, settings)?;
+    super::accounts::with_session_cookie(
+        json_response(json!({
+            "error": state.i18n.t("login.not_activated")
+                .unwrap_or("You can't log in yet. We sent an activation email to you. Please follow the instructions in the email to activate your account."),
+            "reason": "not_activated",
+            "sent_to_email": sent_to,
+            "current_email": email,
+        })),
+        cookie,
+    )
 }
 
 /// `user.email_confirmed?`: a confirmed token for the primary email, no

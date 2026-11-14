@@ -679,28 +679,72 @@ pub fn activation_controls(cx: &Cx, must_approve: bool, can_edit_email: bool) ->
     out
 }
 
-/// templates/account-created.gjs with account-created/index.gjs: the
-/// progress bar at activate, the welcome, the signup's message (HTML,
-/// as the server wrote it) and the activation controls.
-pub fn account_created_page(
-    cx: &Cx,
-    site_title: &str,
-    message: &str,
-    show_controls: bool,
-    must_approve: bool,
-    can_edit_email: bool,
-) -> String {
+/// The account-created route's child routes.
+#[derive(Clone, Copy, PartialEq)]
+pub enum AccountCreatedStep {
+    Index,
+    Resent,
+    EditEmail,
+}
+
+/// What account-created draws: the signup's message and, for the account
+/// the session names, its address and the activation controls.
+pub struct AccountCreated<'a> {
+    pub step: AccountCreatedStep,
+    pub site_title: &'a str,
+    /// HTML, as the server wrote it.
+    pub message: &'a str,
+    pub email: Option<&'a str>,
+    pub show_controls: bool,
+    pub must_approve: bool,
+    pub can_edit_email: bool,
+}
+
+/// templates/account-created.gjs with its child route's template: the
+/// progress bar at activate, then the index's welcome, message and
+/// activation controls, resent's notice, or edit-email's
+/// ActivationEmailForm with its buttons.
+pub fn account_created_page(cx: &Cx, v: &AccountCreated) -> String {
     let mut out = format!(
-        "<div class=\"account-created\">{}{}<div class=\"success-info\">{message}</div>",
-        progress_bar(must_approve, "activate"),
-        welcome_header(
-            &(cx.t)("invites.welcome_to").replace("%{site_name}", site_title),
-            None,
-            ""
-        ),
+        "<div class=\"account-created\">{}",
+        progress_bar(v.must_approve, "activate")
     );
-    if show_controls {
-        out.push_str(&activation_controls(cx, must_approve, can_edit_email));
+    match v.step {
+        AccountCreatedStep::Index => {
+            out.push_str(&welcome_header(
+                &(cx.t)("invites.welcome_to").replace("%{site_name}", v.site_title),
+                None,
+                "",
+            ));
+            out.push_str(&format!("<div class=\"success-info\">{}</div>", v.message));
+            if v.show_controls {
+                out.push_str(&activation_controls(cx, v.must_approve, v.can_edit_email));
+            }
+        }
+        AccountCreatedStep::Resent => {
+            let message = match v.email {
+                Some(email) => (cx.t)("login.sent_activation_email_again")
+                    .replace("%{currentEmail}", &escape(email)),
+                None => escape(&(cx.t)("login.sent_activation_email_again_generic")),
+            };
+            out.push_str(&format!("<div class=\"ac-message\">{message}</div>"));
+        }
+        AccountCreatedStep::EditEmail => {
+            out.push_str(&format!(
+                "<div class=\"ac-message\"><p>{}</p><input class=\"activate-new-email\" type=\"text\" value=\"{}\"></div>\
+                 <div class=\"activation-controls\">{}{}</div>",
+                escape(&(cx.t)("login.provide_new_email")),
+                escape(v.email.unwrap_or("")),
+                // The address is the account's own until it is typed over.
+                button(
+                    "btn-primary",
+                    None,
+                    &(cx.t)("login.submit_new_email"),
+                    " disabled=\"\""
+                ),
+                button("edit-cancel", None, &(cx.t)("cancel"), ""),
+            ));
+        }
     }
     out.push_str("</div>");
     out

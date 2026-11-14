@@ -1382,3 +1382,354 @@ pub async fn perform_account_activation(
     let cookie = session.set_cookie(&state, &settings)?;
     with_session_cookie(response, cookie)
 }
+
+/// `SessionController::ACTIVATE_USER_KEY`: the account a signup or a
+/// refused login left in the session.
+pub(crate) const ACTIVATE_USER_KEY: &str = "activate_user";
+
+/// The account the activation endpoints act on.
+#[derive(sqlx::FromRow)]
+struct ActivationUser {
+    id: i32,
+    active: bool,
+    approved: bool,
+    admin: bool,
+    username_lower: String,
+    name: Option<String>,
+    email: Option<String>,
+    from_staged: bool,
+}
+
+const ACTIVATION_USER: &str = "SELECT u.id, u.active, u.approved, u.admin, u.username_lower, u.name, \
+       (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
+       EXISTS (SELECT 1 FROM user_custom_fields WHERE user_id = u.id AND name = 'from_staged' AND value = 't') AS from_staged \
+     FROM users u";
+
+/// `User.find_by_username_or_email(login)` (system and anonymous users
+/// too): by any of the user's emails when the login has an `@`, else by
+/// username.
+async fn activation_user_by_login(
+    conn: &mut sqlx::PgConnection,
+    login: &str,
+) -> Result<Option<ActivationUser>, AppError> {
+    let user = if login.contains('@') {
+        sqlx::query_as(&format!(
+            "{ACTIVATION_USER} WHERE u.id = (SELECT e.user_id FROM user_emails e WHERE lower(e.email) = $1 \
+             ORDER BY e.user_id LIMIT 1)"
+        ))
+        .bind(login.to_lowercase())
+        .fetch_optional(&mut *conn)
+        .await?
+    } else {
+        sqlx::query_as(&format!("{ACTIVATION_USER} WHERE u.username_lower = $1"))
+            .bind(accounts::normalize_username(login)?)
+            .fetch_optional(&mut *conn)
+            .await?
+    };
+    Ok(user)
+}
+
+/// `@user.email_tokens.create!(email: @user.email, scope: signup)` and
+/// `EmailToken.enqueue_signup_email(token, to_address: @user.email)`:
+/// the signup's activation email again, the earlier signup tokens expired.
+async fn send_signup_email(
+    conn: &mut sqlx::PgConnection,
+    user_id: i32,
+    email: &str,
+) -> Result<(), AppError> {
+    let token =
+        accounts::create_email_token(&mut *conn, user_id, email, token_scopes::SIGNUP).await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "critical_user_email",
+        json!({"type": "signup", "user_id": user_id, "email_token": token, "to_address": email}),
+    )
+    .await?;
+    Ok(())
+}
+
+/// POST /u/action/send_activation_email(.json): another activation email
+/// for the account the session names (any account, for staff). An empty
+/// 200; no account is a 404, another's or a site that approves its users
+/// a 403, an activated one a 409.
+pub async fn send_activation_email(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let staff = guardian.is_staff();
+    if !staff {
+        let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+        if let Err(refused) = crate::rate_limiter::perform_each(
+            &state.pool,
+            state.config.rate_limits,
+            [
+                RateLimiter::new(None, &format!("activate-hr-{ip}"), 30, 3600),
+                RateLimiter::new(None, &format!("activate-min-{ip}"), 6, 60),
+            ],
+        )
+        .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
+    }
+    if settings.get("must_approve_users")?.truthy() {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let user = match params::string(&p, "username").filter(|u| !u.trim().is_empty()) {
+        Some(login) => activation_user_by_login(&mut conn, &login).await?,
+        None => None,
+    };
+    let Some(user) = user else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_user = match session.map.get(ACTIVATE_USER_KEY) {
+        Some(crate::session::cookie::Scalar::Int(id)) => Some(*id),
+        _ => None,
+    };
+    if !staff && session_user != Some(i64::from(user.id)) {
+        return Ok(super::search::invalid_access(&state));
+    }
+    if session.map.remove(ACTIVATE_USER_KEY).is_some() {
+        session.changed = true;
+    }
+    let cookie = session.set_cookie(&state, &settings)?;
+    if user.active
+        && super::session::email_confirmed(&mut conn, user.id, user.email.as_deref()).await?
+    {
+        return with_session_cookie(
+            json_error(
+                StatusCode::CONFLICT,
+                vec![
+                    state
+                        .i18n
+                        .t("activation.activated")
+                        .unwrap_or_default()
+                        .to_string(),
+                ],
+            ),
+            cookie,
+        );
+    }
+    let Some(email) = user.email.as_deref() else {
+        return Err(crate::Unsupported("an activation email for a user without an email").into());
+    };
+    let mut tx = state.pool.begin().await?;
+    send_signup_email(&mut tx, user.id, email).await?;
+    tx.commit().await?;
+    // `render body: nil`
+    with_session_cookie(StatusCode::OK.into_response(), cookie)
+}
+
+/// PUT /u/update-activation-email(.json): another address for an account
+/// that is not active yet, named by the session or by a username and its
+/// password, and the activation email sent there. The tokens sent to the
+/// old address are gone with it (UserEmail#destroy_email_tokens).
+pub async fn update_activation_email(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let enabled = state.config.rate_limits;
+    let hourly = |key: String| RateLimiter::new(None, &key, 5, 3600);
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    if let Err(refused) = hourly(format!("activate-edit-email-hr-{ip}"))
+        .performed(&state.pool, enabled)
+        .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
+    let session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_user = match session.map.get(ACTIVATE_USER_KEY) {
+        Some(crate::session::cookie::Scalar::Int(id)) => Some(id.to_string()),
+        Some(crate::session::cookie::Scalar::Str(id)) => Some(id.clone()),
+        _ => None,
+    };
+    let username = match p.get("username") {
+        None | Some(Value::Null) => None,
+        Some(v) => match params::scalar(v) {
+            Some(u) => Some(u).filter(|u| !u.trim().is_empty()),
+            None => return Err(crate::Unsupported("a username that isn't a string").into()),
+        },
+    };
+    let user = if let Some(username) = username {
+        if let Err(refused) = hourly(format!("activate-edit-email-hr-username-{username}"))
+            .performed(&state.pool, enabled)
+            .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
+        let Some(user) = activation_user_by_login(&mut conn, &username).await? else {
+            return Ok(super::search::invalid_access(&state));
+        };
+        let has_password: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_passwords WHERE user_id = $1)")
+                .bind(user.id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if !has_password {
+            return Ok(super::search::invalid_access(&state));
+        }
+        let Some(password) = params::string(&p, "password") else {
+            return Err(crate::Unsupported(
+                "update_activation_email with a username and no password (NoMethodError)",
+            )
+            .into());
+        };
+        let check = crate::session::token::confirm_password(&mut conn, user.id, &password)
+            .await
+            .map_err(|e| match e {
+                crate::session::token::PasswordError::Db(e) => AppError::from(e),
+                crate::session::token::PasswordError::Unsupported(u) => AppError::from(u),
+            })?;
+        if !check.is_some_and(|c| c.matches) {
+            return Ok(super::search::invalid_access(&state));
+        }
+        Some(user)
+    } else if let Some(key) = session_user {
+        if let Err(refused) = hourly(format!("activate-edit-email-hr-user-key-{key}"))
+            .performed(&state.pool, enabled)
+            .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
+        // `user_key.to_i`
+        match i32::try_from(crate::ruby::to_i(&key)) {
+            Ok(id) => {
+                sqlx::query_as(&format!("{ACTIVATION_USER} WHERE u.id = $1"))
+                    .bind(id)
+                    .fetch_optional(&mut *conn)
+                    .await?
+            }
+            Err(_) => None,
+        }
+    } else {
+        None
+    };
+    let Some(user) = user.filter(|u| !u.active && !guardian.is_authenticated() && !u.from_staged)
+    else {
+        return Ok(super::search::invalid_access(&state));
+    };
+    drop(conn);
+
+    let mut tx = state.pool.begin().await?;
+    // @user.lock!
+    sqlx::query("SELECT id FROM users WHERE id = $1 FOR UPDATE")
+        .bind(user.id)
+        .execute(&mut *tx)
+        .await?;
+    let Some((email_id, old_email)): Option<(i32, String)> = sqlx::query_as(
+        "SELECT id, email FROM user_emails WHERE user_id = $1 AND \"primary\" LIMIT 1",
+    )
+    .bind(user.id)
+    .fetch_optional(&mut *tx)
+    .await?
+    else {
+        return Err(crate::Unsupported("an activation email for a user without an email").into());
+    };
+    let revoke_approval = settings.get("must_approve_users")?.truthy()
+        && user.approved
+        && super::session::email_confirmed(&mut tx, user.id, Some(&old_email)).await?;
+
+    // primary_email.save: UserEmail's validations, in their order.
+    let given = params::string(&p, "email");
+    let email = given.as_deref().unwrap_or("").trim().to_lowercase();
+    let mut errors: Vec<String> = Vec::new();
+    if email.trim().is_empty() {
+        errors.push(format!(
+            "Email {}",
+            state
+                .i18n
+                .t("errors.messages.blank")
+                .unwrap_or("can't be blank")
+        ));
+    }
+    // The address validated and looked up only when it changes.
+    let changed = email != old_email;
+    if changed {
+        errors.extend(
+            crate::email_updater::email_validator_errors(&mut tx, &settings, &state.i18n, &email)
+                .await?,
+        );
+        let normalized = crate::signup::normalize_email(&email);
+        let taken: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM user_emails WHERE id <> $1 \
+               AND (lower(email) = $2 OR ($4 AND lower(normalized_email) = $3)))",
+        )
+        .bind(email_id)
+        .bind(&email)
+        .bind(&normalized)
+        .bind(settings.get("normalize_emails")?.truthy())
+        .fetch_one(&mut *tx)
+        .await?;
+        if taken {
+            errors.push(format!(
+                "Email {}",
+                state
+                    .i18n
+                    .t("errors.messages.taken")
+                    .unwrap_or("has already been taken")
+            ));
+        }
+    }
+    if !errors.is_empty() {
+        // The screened address's match stays recorded.
+        tx.commit().await?;
+        return Ok(json_error(StatusCode::UNPROCESSABLE_ENTITY, errors));
+    }
+    if changed {
+        crate::email_updater::destroy_email_tokens(&mut tx, &old_email).await?;
+        let normalized = Some(crate::signup::normalize_email(&email)).filter(|n| !n.is_empty());
+        sqlx::query(
+            "UPDATE user_emails SET email = $2, normalized_email = $3, updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(email_id)
+        .bind(&email)
+        .bind(normalized)
+        .execute(&mut *tx)
+        .await?;
+    }
+    if revoke_approval {
+        sqlx::query(
+            "UPDATE users SET approved = FALSE, approved_by_id = NULL, approved_at = NULL, \
+             updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(user.id)
+        .execute(&mut *tx)
+        .await?;
+        crate::user_updater::after_save(
+            &mut tx,
+            &settings,
+            user.id,
+            // Never an active admin: the account is not active.
+            user.admin && user.active,
+            &user.username_lower,
+            user.name.as_deref(),
+        )
+        .await?;
+    }
+    send_signup_email(&mut tx, user.id, &email).await?;
+    tx.commit().await?;
+    Ok(Json(json!({"success": "OK"})).into_response())
+}

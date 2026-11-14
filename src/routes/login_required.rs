@@ -347,6 +347,13 @@ const STRINGS: &[&str] = &[
     "login.not_activated",
     "login.resend_title",
     "login.change_email",
+    "login.provide_new_email",
+    "login.submit_new_email",
+    "login.sent_activation_email_again",
+    "login.sent_activation_email_again_generic",
+    "invites.welcome_to",
+    "cancel",
+    "close",
     "login.show_password_title",
     "login.hide_password_title",
     "login.second_factor_title",
@@ -1299,22 +1306,41 @@ pub async fn show_account_created(
     let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?;
     crawler.description = site.site_description.clone();
     let t = |key: &str| site.chrome.t(key);
+    use crate::login_page_view::AccountCreatedStep;
+    let path = uri.path().trim_end_matches('/');
+    let step = if path.ends_with("/resent") {
+        AccountCreatedStep::Resent
+    } else if path.ends_with("/edit-email") {
+        AccountCreatedStep::EditEmail
+    } else {
+        AccountCreatedStep::Index
+    };
+    let site_title = settings.get("title")?.to_s();
     let body = crate::login_page_view::account_created_page(
         &crate::login_page_view::Cx {
             t: &t,
             mobile: crate::mobile::mobile_view(),
         },
-        &settings.get("title")?.to_s(),
-        &message,
-        show_controls,
-        settings.get("must_approve_users")?.truthy(),
-        settings.get("enable_local_logins")?.truthy() || settings.get("email_editable")?.truthy(),
+        &crate::login_page_view::AccountCreated {
+            step,
+            site_title: &site_title,
+            message: &message,
+            email: account.as_ref().map(|(_, email)| email.as_str()),
+            show_controls,
+            must_approve: settings.get("must_approve_users")?.truthy(),
+            can_edit_email: settings.get("enable_local_logins")?.truthy()
+                || settings.get("email_editable")?.truthy(),
+        },
     );
+    // The accountCreated preload: the message, whether the controls show
+    // and, for the session's account, its username and address.
+    let mut created = json!({"message": message, "show_controls": show_controls});
+    if let Some((username, email)) = &account {
+        created["username"] = json!(username);
+        created["email"] = json!(email);
+    }
     let mut extra = serde_json::Map::new();
-    extra.insert(
-        "account".into(),
-        json!(account.map(|(username, email)| json!({"username": username, "email": email}))),
-    );
+    extra.insert("account_created".into(), created);
     let data = login_data(&state, &settings, "account-created", &csrf_token, extra)?;
     let page = AuthPage {
         crawler,

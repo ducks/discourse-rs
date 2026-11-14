@@ -1159,6 +1159,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(login_required::show_account_created),
         )
         .route(
+            "/u/account-created/resent",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/u/account-created/edit-email",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/users/account-created/resent",
+            get(login_required::show_account_created),
+        )
+        .route(
+            "/users/account-created/edit-email",
+            get(login_required::show_account_created),
+        )
+        .route(
             "/login-preferences",
             get(login_required::show_login_preferences),
         )
@@ -2552,6 +2568,38 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/users/activate-account/{token}",
             put(accounts::perform_account_activation),
+        )
+        .route(
+            "/u/action/send_activation_email",
+            post(accounts::send_activation_email),
+        )
+        .route(
+            "/u/action/send_activation_email.json",
+            post(accounts::send_activation_email),
+        )
+        .route(
+            "/users/action/send_activation_email",
+            post(accounts::send_activation_email),
+        )
+        .route(
+            "/users/action/send_activation_email.json",
+            post(accounts::send_activation_email),
+        )
+        .route(
+            "/u/update-activation-email",
+            put(accounts::update_activation_email),
+        )
+        .route(
+            "/u/update-activation-email.json",
+            put(accounts::update_activation_email),
+        )
+        .route(
+            "/users/update-activation-email",
+            put(accounts::update_activation_email),
+        )
+        .route(
+            "/users/update-activation-email.json",
+            put(accounts::update_activation_email),
         )
         .route("/u/email-login", post(accounts::email_login))
         .route("/session/forgot_password", post(accounts::forgot_password))
