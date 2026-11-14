@@ -78,6 +78,10 @@
           return encodeURIComponent(k) + "=" + encodeURIComponent(data[k]);
         })
         .join("&");
+      // A GET carries its data in the query.
+      if (method === "GET" && body) {
+        url += "?" + body;
+      }
       return fetch(base + url, {
         method: method,
         credentials: "same-origin",
@@ -209,6 +213,23 @@
     }
 
     function setError(text) {
+      var details = form.querySelector(".code-login-form__signup-details-step");
+      if (details) {
+        // codeError on the signup details step: a paragraph before its
+        // button, apart from the username field's error.
+        var p = details.querySelector("p.code-login-form__error");
+        if (p) {
+          p.remove();
+        }
+        if (text) {
+          p = document.createElement("p");
+          p.className = "code-login-form__error";
+          p.setAttribute("role", "alert");
+          p.textContent = text;
+          details.querySelector(".code-login-form__continue-to-site").before(p);
+        }
+        return;
+      }
       var el = form.querySelector(".code-login-form__error");
       if (el) {
         el.textContent = text || "";
@@ -420,11 +441,17 @@
         icon("pencil") +
         '</span></button><div class="code-login-form__username-field"><label for="code-login-username">' +
         escape(S.username_label) +
-        '</label><div class="code-login-form__username-input"><input aria-describedby="code-login-username-error" autocomplete="off" class="code-login-form__new-account-username" id="code-login-username" name="username" placeholder="' +
+        '</label><div class="code-login-form__username-input"><input aria-describedby="code-login-username-instructions code-login-username-error" autocomplete="off" class="code-login-form__new-account-username" id="code-login-username" name="username" placeholder="' +
         escape(S.username_placeholder) +
         '" type="text" value="' +
         escape(suggested || "") +
-        '"></div><div aria-live="polite" class="code-login-form__error" id="code-login-username-error" role="alert"></div></div></div>' +
+        '"></div>' +
+        (S.username_instructions
+          ? '<span class="more-info code-login-form__field-instructions" id="code-login-username-instructions">' +
+            escape(S.username_instructions) +
+            "</span>"
+          : "") +
+        '<div aria-live="polite" class="code-login-form__error" id="code-login-username-error" role="alert"></div></div></div>' +
         button("btn-large btn-primary code-login-form__continue-to-site", S.account_ready_continue) +
         "</div>";
       var input = form.querySelector("#code-login-username");
@@ -439,11 +466,107 @@
           ? Discourse.boundAvatar(template, 144)
           : '<span class="code-login-form__avatar-placeholder">' + icon("user") + "</span>";
       }
-      drawAvatar();
+      var continueButton = form.querySelector(".code-login-form__continue-to-site");
+      var errorEl = form.querySelector("#code-login-username-error");
+      var instructions = form.querySelector("#code-login-username-instructions");
+      var available = false;
+      var checking = false;
+      var usernameError = null;
+      var checkSeq = 0;
+      var debounce = null;
+      // The field's error and instructions (showInstructions), the
+      // avatar, and continueDisabled.
+      function draw() {
+        errorEl.textContent = usernameError || "";
+        if (usernameError) {
+          input.setAttribute("aria-invalid", "true");
+        } else {
+          input.removeAttribute("aria-invalid");
+        }
+        if (instructions && usernameError) {
+          instructions.remove();
+        } else if (instructions && !instructions.isConnected) {
+          errorEl.before(instructions);
+        }
+        input.disabled = verifying;
+        avatarButton.disabled = verifying;
+        continueButton.disabled = verifying || !available || checking;
+        drawAvatar();
+      }
+      // checkUsernameAvailability: User.checkUsername with the email,
+      // an answer behind a newer check or for another name dropped.
+      function checkUsernameAvailability() {
+        var username = input.value.trim();
+        if (!username) {
+          available = false;
+          usernameError = null;
+          draw();
+          return;
+        }
+        var seq = ++checkSeq;
+        checking = true;
+        draw();
+        request("GET", "/u/check_username.json", { username: username, email: email })
+          .then(function (r) {
+            if (seq !== checkSeq || username !== input.value.trim()) {
+              return;
+            }
+            var result = r.body || {};
+            if (!r.ok) {
+              available = false;
+            } else if (result.available) {
+              available = true;
+              usernameError = null;
+              if (result.avatar_template) {
+                avatarTemplate = result.avatar_template;
+              }
+            } else {
+              available = false;
+              usernameError =
+                (result.errors && result.errors.join(" ")) ||
+                (result.suggestion
+                  ? (S.username_unavailable || "").replace("%{suggestion}", result.suggestion)
+                  : S.username_taken);
+            }
+          })
+          .catch(function () {
+            if (seq === checkSeq) {
+              available = false;
+            }
+          })
+          .then(function () {
+            if (seq === checkSeq && input.isConnected) {
+              checking = false;
+              draw();
+            }
+          });
+      }
+      // verifyCode's username_errors, and its verifying.
+      usernameStep = {
+        failed: function (errors) {
+          usernameError = errors.join(" ");
+          available = false;
+          draw();
+        },
+        redraw: function () {
+          if (input.isConnected) {
+            draw();
+          }
+        },
+      };
+      draw();
+      // setupSignupDetails: a suggested username is checked.
+      if (input.value.trim()) {
+        checkUsernameAvailability();
+      }
       // usernameChanged
       input.addEventListener("input", function () {
+        available = false;
+        usernameError = null;
         avatarTemplate = null;
-        drawAvatar();
+        clearTimeout(debounce);
+        debounce = setTimeout(checkUsernameAvailability, 350);
+        draw();
       });
       // changeAvatar: AvatarSelectorModal with deferSave.
       avatarButton.addEventListener("click", function () {
@@ -467,12 +590,36 @@
           labels: selector.labels,
         });
       });
-      form.querySelector(".code-login-form__continue-to-site").addEventListener("click", function () {
-        verify(input.value.trim());
+      // continueAfterSignup
+      continueButton.addEventListener("click", function () {
+        if (!continueButton.disabled) {
+          setError("");
+          verify(input.value.trim());
+        }
       });
     }
 
+    // The signup details step's username field, once drawn.
+    var usernameStep = null;
+    var verifying = false;
+
     function verify(username) {
+      if (verifying) {
+        return Promise.resolve();
+      }
+      verifying = true;
+      if (usernameStep) {
+        usernameStep.redraw();
+      }
+      return verifyRequest(username).finally(function () {
+        verifying = false;
+        if (usernameStep) {
+          usernameStep.redraw();
+        }
+      });
+    }
+
+    function verifyRequest(username) {
       var data = {
         invite_key: key,
         email: email,
@@ -485,12 +632,11 @@
       return request("POST", "/session/login-code/verify.json", data).then(function (result) {
         var b = result.body || {};
         if (b.username_required) {
+          // The step is drawn ready for typing.
+          verifying = false;
           signupDetailsStep(b);
-        } else if (b.username_errors && b.username_errors.length) {
-          var el = form.querySelector("#code-login-username-error");
-          if (el) {
-            el.textContent = b.username_errors[0];
-          }
+        } else if (b.username_errors && b.username_errors.length && usernameStep) {
+          usernameStep.failed(b.username_errors);
         } else if (b.success && (b.redirect_url || b.account_created)) {
           return (b.account_created ? savePendingAvatar(b) : Promise.resolve()).then(function () {
             window.location.href = b.redirect_url || base + "/";

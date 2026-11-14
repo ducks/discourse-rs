@@ -3619,8 +3619,17 @@ route table has been made, so this list may be short.
     (done in `feat/account-leftovers`: AvatarSelectorModal with
     deferSave from static/js/avatar-selector.js, which the preferences
     share, the upload or selectable avatar saved once the account
-    exists); the username step's availability check with its avatar
-    preview; invites past the first page (DLoadMore)
+    exists); ~~the username step's availability check with its avatar
+    preview~~ (done in `feat/signup-username-check`: CodeLoginForm's
+    checkUsernameAvailability in static/js/invite.js, the debounced
+    GET /u/check_username with the email, its errors or
+    code_login.username_unavailable and username_taken, the answer's
+    avatar_template as the preview, Continue disabled until the name
+    is available, the username instructions, and the username
+    suggested from the email on the verify answer); the username
+    step's random usernames (enable_random_usernames: the dice, GET
+    /u/random-username, generated usernames) and can_edit_avatar;
+    invites past the first page (DLoadMore)
     192e. ~~`feat/invites-bulk`~~ (done) S: POST /invites/upload_csv
     (the header row or the email, groups, topic_id columns,
     max_bulk_invites), Jobs::BulkInvite (groups by name the admin may

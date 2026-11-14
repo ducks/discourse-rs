@@ -164,6 +164,13 @@ async fn an_invite_link_asks_a_visitor_for_their_email() {
     assert!(html.contains("\"selectable_avatars_mode\":\"disabled\""));
     assert!(html.contains("\"letter_based\":\"System assigned profile picture\""));
     assert!(html.contains("id=\"dialog-strings\""));
+    // The username step's check: CodeLoginForm's errors, and no
+    // instructions unless show_signup_form_username_instructions.
+    assert!(html.contains(
+        "\"username_unavailable\":\"That username isn't available. Try %{suggestion}.\""
+    ));
+    assert!(html.contains("\"username_taken\":\"That username is taken. Try another.\""));
+    assert!(!html.contains("\"username_instructions\""));
 }
 
 #[tokio::test]
