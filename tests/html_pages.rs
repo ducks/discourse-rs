@@ -1706,6 +1706,22 @@ async fn a_tags_unread_list_is_a_members() {
     ] {
         assert_eq!(ids(&user1.json(path).await), expected, "{path}");
     }
+    // state and filter narrow a member's tag list (TagsController merges
+    // them raw): user1 mutes 41 and watches 38, and has liked nothing. A
+    // blank filter hides `f`, where ListController drops it.
+    for (path, expected) in [
+        ("/tag/howto/1.json", vec![38]),
+        ("/tag/howto/1.json?state=muted", vec![41]),
+        ("/tag/howto/1.json?state=watching", vec![38]),
+        ("/tag/howto/1.json?state=tracking", vec![]),
+        ("/tag/howto/1.json?state=", vec![38]),
+        ("/tag/howto/1.json?filter=liked", vec![]),
+        ("/tag/howto/1.json?f=liked", vec![]),
+        ("/tag/howto/1.json?filter=&f=liked", vec![38]),
+        ("/latest.json?tags=howto&filter=&f=liked", vec![]),
+    ] {
+        assert_eq!(ids(&user1.json(path).await), expected, "{path}");
+    }
     let page = user1.json("/tag/guide/2/l/unread.json?per_page=1").await;
     assert_eq!(
         page["topic_list"]["more_topics_url"],

@@ -157,13 +157,8 @@ async fn list_options_filter_the_topics() {
 #[tokio::test]
 async fn unported_list_options_are_refused() {
     let db = TestDb::new().await;
-    for path in [
-        "/latest.json?tags=a&tags[]=b",
-        "/tag/howto.json?status=closed",
-    ] {
-        let (status, _) = get(&db.pool, path).await;
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
-    }
+    let (status, _) = get(&db.pool, "/latest.json?tags=a&tags[]=b").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
     for (path, param) in [
         ("/latest.json?status[]=closed", "status"),
         ("/latest.json?before=-1", "before"),

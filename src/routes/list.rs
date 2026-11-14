@@ -97,45 +97,22 @@ const PUBLIC_OPTIONS: [&str; 26] = [
 /// URL besides the list options.
 const PAGE_PARAMS: [&str; 4] = ["username", "group_name", "groupname", "period"];
 
-/// The list options TagsController's lists handle, the only ones they
-/// take (TagsController#build_topic_list_options re-reads the rest raw).
-pub(super) const TAG_LIST_OPTIONS: [&str; 10] = [
-    "page",
-    "per_page",
+/// The options TagsController#build_topic_list_options merges over
+/// TopicQueryParams' as the request gave them, blank or not, where
+/// ListController only takes present ones. (page, topic_ids and category
+/// are merged too: the first two read the same either way and category is
+/// the one set_category found.)
+const TAG_RAW_OPTIONS: [&str; 9] = [
     "order",
     "ascending",
+    "min_posts",
+    "max_posts",
+    "status",
+    "filter",
     "state",
-    "subset",
-    "tags",
-    "match_all_tags",
-    "no_subcategories",
-    "no_tags",
+    "search",
+    "q",
 ];
-
-/// TagsController#build_topic_list_options merges topic_ids, category,
-/// order, ascending, min_posts, max_posts, status, filter, state, search
-/// and q in raw, blank or not, and turns match_all_tags=false into an any
-/// tag list: only the options its lists port are taken, and those as
-/// ListController takes them.
-pub(super) fn refuse_unported_tag_list_params(params: &ListParams) -> Result<(), Unsupported> {
-    let raw = rack_params(&params.pairs)?;
-    for (key, value) in &raw {
-        if PUBLIC_OPTIONS.contains(&key.as_str()) && !TAG_LIST_OPTIONS.contains(&key.as_str()) {
-            return Err(Unsupported(
-                "list filters on tag lists beyond page, per_page, order, ascending, state, subset and tags",
-            ));
-        }
-        if matches!(key.as_str(), "order" | "ascending" | "state") && !value.present() {
-            return Err(Unsupported(
-                "a blank order, ascending or state on tag lists",
-            ));
-        }
-        if key == "match_all_tags" && value.as_str() == Some("false") {
-            return Err(Unsupported("match_all_tags=false on tag lists"));
-        }
-    }
-    Ok(())
-}
 
 /// A query param as Rack parses it: `k=v` a string, `k[]=v` an array,
 /// `k[x]=v` (or deeper) a hash.
@@ -248,19 +225,19 @@ pub(super) fn build_options(
     params: &ListParams,
     settings: &SiteSettings,
 ) -> Result<Result<Options, String>, Unsupported> {
-    build_options_for(params, settings, false)
+    build_options_for(params, settings, None)
 }
 
-/// build_options, for a tag list when `tag_route`: the route's tag_name
-/// puts `tags` in an array, whatever the query gave, so it is always
-/// valid there (TagsController reads the tags itself).
+/// build_options, for a tag list when `tag` is given. A name route's
+/// tag_name puts `tags` in an array, whatever the query gave, so it is
+/// always valid there (TagsController reads the tags itself).
 pub(super) fn build_options_for(
     params: &ListParams,
     settings: &SiteSettings,
-    tag_route: bool,
+    tag: Option<&TagListRequest>,
 ) -> Result<Result<Options, String>, Unsupported> {
     let mut raw = list_params(params)?;
-    if tag_route {
+    if tag.is_some_and(|t| t.name_route) {
         raw.remove("tags");
     }
     for key in PUBLIC_OPTIONS {
@@ -271,7 +248,7 @@ pub(super) fn build_options_for(
         }
     }
     check_next_url_params(&raw, settings)?;
-    Ok(Ok(options_from(&raw, settings)))
+    Ok(Ok(options_from(&raw, settings, tag.is_some())))
 }
 
 /// `TopicQuery.validators` for a present value; options without one
@@ -308,20 +285,29 @@ fn valid(key: &str, value: &Param, settings: &SiteSettings) -> bool {
     }
 }
 
-/// The validated params as TopicQuery options.
+/// The validated params as TopicQuery options. A tag list's
+/// TAG_RAW_OPTIONS are the request's even when blank: of those only order,
+/// status, state and filter are read by more than `present?`.
 fn options_from(
     raw: &std::collections::BTreeMap<String, Param>,
     settings: &SiteSettings,
+    tag_route: bool,
 ) -> Options {
     let get = |key: &str| raw.get(key).filter(|p| p.present());
     let string = |key: &str| get(key).and_then(Param::as_str).map(str::to_string);
+    let merged = |key: &str| match raw.get(key) {
+        Some(Param::Str(s)) if tag_route => Some(s.clone()),
+        _ => string(key),
+    };
     let number = |key: &str| get(key).and_then(Param::as_str).map(crate::ruby::to_i);
     let flag = |key: &str| string(key).as_deref() == Some("true");
     let mut options = Options {
-        no_definitions: !settings
-            .get("show_category_definitions_in_topic_lists")
-            .map(|v| v.truthy())
-            .unwrap_or(false),
+        // ListController's.
+        no_definitions: !tag_route
+            && !settings
+                .get("show_category_definitions_in_topic_lists")
+                .map(|v| v.truthy())
+                .unwrap_or(false),
         ..Options::default()
     };
     options.page = number("page").unwrap_or(0);
@@ -333,13 +319,20 @@ fn options_from(
     if options.category.is_some() {
         options.no_definitions = false;
     }
-    options.order = string("order");
+    // A blank order is still an order: "default", unpinned, and no
+    // category sort.
+    options.order = merged("order");
     options.ascending = flag("ascending");
     options.min_posts = number("min_posts");
     options.max_posts = number("max_posts");
-    options.status = string("status");
-    options.filter = string("filter").or_else(|| string("f"));
-    options.state = string("state");
+    options.status = merged("status");
+    // `options[:filter] || options[:f]`: a tag list's blank filter is
+    // truthy, so it hides `f` and filters nothing.
+    options.filter = match merged("filter") {
+        Some(filter) => Some(filter).filter(|f| !crate::ruby::is_blank(f)),
+        None => string("f"),
+    };
+    options.state = merged("state");
     options.search = string("search");
     options.subset = string("subset");
     match get("tags") {
@@ -386,6 +379,20 @@ pub(super) fn next_url(
     options: &Options,
     username_in_path: bool,
 ) -> String {
+    next_url_for(list_path, params, options, username_in_path, None)
+}
+
+/// next_url, for TagsController's lists when `tag` is given: its
+/// build_topic_list_options' tags, match_all_tags, clamped per_page and
+/// raw options, and its page_params (the category set_category found by
+/// the `category` param; nothing of ListController's).
+pub(super) fn next_url_for(
+    list_path: &str,
+    params: &ListParams,
+    options: &Options,
+    username_in_path: bool,
+    tag: Option<&TagListRequest>,
+) -> String {
     // The params were parsed once already (build_options).
     let raw = list_params(params).unwrap_or_default();
     let mut pairs: Vec<String> = Vec::new();
@@ -410,35 +417,43 @@ pub(super) fn next_url(
         ),
         _ => {}
     };
+    let present = |key: &str| raw.get(key).filter(|p| p.present()).cloned();
+    let per_page = || options.per_page.map(|n| Param::Str(n.to_string()));
     for key in PUBLIC_OPTIONS {
-        let value = match key {
-            "page" => continue,
+        let value = match (key, tag) {
+            ("page", _) => continue,
+            ("category", Some(t)) => t.category_param.clone().map(Param::Str),
             // The route's category is in the path.
-            "category" if options.category_id.is_some() => continue,
-            "per_page" => match (raw.get(key).filter(|p| p.present()), options.per_page) {
-                (Some(p), _) => p.clone(),
-                (None, Some(n)) => Param::Str(n.to_string()),
-                (None, None) => continue,
-            },
-            "no_subcategories" if options.no_subcategories => Param::Str("true".into()),
-            "topic_ids" => match &options.topic_ids {
-                Some(ids) => Param::Arr(ids.iter().map(|id| id.to_string()).collect()),
-                None => continue,
-            },
+            ("category", None) if options.category_id.is_some() => continue,
+            // `params[:per_page].to_i.clamp(1, 30)`
+            ("per_page", Some(_)) => per_page(),
+            ("per_page", None) => present(key).or_else(per_page),
+            ("no_subcategories", _) if options.no_subcategories => Some(Param::Str("true".into())),
+            ("topic_ids", _) => options
+                .topic_ids
+                .as_ref()
+                .map(|ids| Param::Arr(ids.iter().map(|id| id.to_string()).collect())),
             // page_params' group_name wins; the same value.
-            "group_name" => continue,
-            _ => match raw.get(key).filter(|p| p.present()) {
-                Some(p) => p.clone(),
-                None => continue,
-            },
+            ("group_name", None) => continue,
+            // `options.delete(:tags)` on the untagged list.
+            ("tags", Some(t)) => (!t.no_tags).then(|| Param::Arr(t.tags.clone())),
+            // `options[:match_all_tags] ||= true`
+            ("match_all_tags", Some(t)) if !t.no_tags => {
+                present(key).or_else(|| Some(Param::Str("true".into())))
+            }
+            ("no_tags", Some(t)) if t.no_tags => Some(Param::Str("true".into())),
+            (key, Some(_)) if TAG_RAW_OPTIONS.contains(&key) => raw.get(key).cloned(),
+            _ => present(key),
         };
-        push(key, &value);
+        if let Some(value) = value {
+            push(key, &value);
+        }
     }
     if options.no_definitions {
         push("no_definitions", &Param::Str("true".into()));
     }
     for key in PAGE_PARAMS {
-        if key == "username" && username_in_path {
+        if tag.is_some() || (key == "username" && username_in_path) {
             continue;
         }
         if let Some(value) = raw.get(key).filter(|p| p.present()) {
@@ -492,12 +507,19 @@ fn check_next_url_params(
 }
 
 /// What TagsController does differently from ListController when it
-/// builds a list: `tags`/`no_tags`, per_page clamped to 30, the top period
-/// straight from the param or top_page_default_timeframe, and the
-/// next-page URL carrying `match_all_tags` and `tags[]`.
+/// builds a list: `tags`/`no_tags`, match_all_tags unless the request's
+/// is false, per_page clamped to 30, its raw options (TAG_RAW_OPTIONS),
+/// the top period straight from the param or top_page_default_timeframe,
+/// and its own page_params in the next-page URL.
 pub(super) struct TagListRequest {
     pub(super) tags: Vec<String>,
     pub(super) no_tags: bool,
+    /// A `/tag/:tag_name` route, where TopicQueryParams rewrites
+    /// `params[:tags]`.
+    pub(super) name_route: bool,
+    /// The slug_for_url of the category the `category` param named
+    /// (page_params' `category`, off the `/tags/c/` routes).
+    pub(super) category_param: Option<String>,
 }
 
 /// The /latest document, shared by the JSON and HTML responses.
@@ -553,7 +575,7 @@ pub(super) async fn list_document_for(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let t_settings = t0.elapsed();
-    let mut options = match build_options_for(params, &settings, tag_request.is_some())? {
+    let mut options = match build_options_for(params, &settings, tag_request)? {
         Ok(o) => o,
         Err(e) => return Ok(Err(e)),
     };
@@ -607,11 +629,18 @@ pub(super) async fn list_document_for(
         options.no_definitions = false;
         options.no_subcategories |= no_subcategories;
         options.per_page = options.per_page.map(|p| p.clamp(1, 30));
-        options.tags = t.tags.clone();
-        options.first_tag = t.tags.first().cloned();
-        // `options[:match_all_tags] ||= true`
-        options.match_all_tags = true;
-        options.no_tags |= t.no_tags;
+        if t.no_tags {
+            // `options.delete(:tags)`
+            options.tags = Vec::new();
+            options.first_tag = None;
+            options.no_tags = true;
+        } else {
+            options.tags = t.tags.clone();
+            options.first_tag = t.tags.first().cloned();
+            // `options[:match_all_tags] ||= true`: a "false" is truthy and
+            // stays, an any tag list.
+            options.match_all_tags = params.last("match_all_tags") != Some("false");
+        }
     }
     let urls = Urls {
         config: &state.config,
@@ -634,10 +663,7 @@ pub(super) async fn list_document_for(
     let category_id = query.options.category_id;
 
     let t_query = t0.elapsed();
-    let more = match tag_request {
-        Some(t) => super::tags::next_url(list_path, params, &options, t),
-        None => next_url(list_path, params, &options, false),
-    };
+    let more = next_url_for(list_path, params, &options, false, tag_request);
     let mut json = TopicListSerializer {
         conn: &mut conn,
         settings: &settings,
@@ -1074,9 +1100,16 @@ mod tests {
         assert_eq!(invalid("tags[k]=v").as_deref(), Some("tags"));
         // A tag list's route tag_name makes tags an array.
         assert!(
-            build_options_for(&params("tags[0]=x"), &s, true)
+            build_options_for(&params("tags[0]=x"), &s, Some(&tag_request(true)))
                 .unwrap()
                 .is_ok()
+        );
+        assert_eq!(
+            build_options_for(&params("tags[0]=x"), &s, Some(&tag_request(false)))
+                .unwrap()
+                .err()
+                .as_deref(),
+            Some("tags")
         );
         // Blank values are not validated.
         assert_eq!(invalid("page=&per_page=%20&before="), None);
@@ -1141,13 +1174,62 @@ mod tests {
         );
     }
 
+    fn tag_request(name_route: bool) -> TagListRequest {
+        TagListRequest {
+            tags: vec!["howto".into()],
+            no_tags: false,
+            name_route,
+            category_param: None,
+        }
+    }
+
     #[test]
-    fn tag_lists_refuse_the_options_they_do_not_take() {
-        assert!(refuse_unported_tag_list_params(&params("page=1&tags=a&state=muted")).is_ok());
-        assert!(refuse_unported_tag_list_params(&params("status=closed")).is_err());
-        assert!(refuse_unported_tag_list_params(&params("topic_ids=")).is_err());
-        assert!(refuse_unported_tag_list_params(&params("order=")).is_err());
-        assert!(refuse_unported_tag_list_params(&params("match_all_tags=false")).is_err());
+    fn tag_lists_take_their_raw_options_blank_or_not() {
+        let s = settings();
+        let p = params("order=&status=&state=%20&filter=&f=liked&search=&min_posts=");
+        let o = build_options(&p, &s).unwrap().unwrap();
+        assert_eq!((o.order, o.status, o.state), (None, None, None));
+        assert_eq!(o.filter.as_deref(), Some("liked"));
+        let request = tag_request(true);
+        let o = build_options_for(&p, &s, Some(&request)).unwrap().unwrap();
+        assert_eq!(o.order.as_deref(), Some(""));
+        assert_eq!(o.status.as_deref(), Some(""));
+        assert_eq!(o.state.as_deref(), Some(" "));
+        assert_eq!(o.filter, None);
+        assert_eq!((o.search.clone(), o.min_posts), (None, None));
+        assert_eq!(
+            next_url_for("/tag/howto", &p, &o, false, Some(&request)),
+            "/tag/howto?f=liked&filter=&match_all_tags=true&min_posts=&order=&page=1\
+             &search=&state=+&status=&tags%5B%5D=howto"
+        );
+    }
+
+    #[test]
+    fn tag_next_url_carries_the_tag_params() {
+        let s = settings();
+        let mut request = tag_request(false);
+        let p = params("per_page=50&match_all_tags=false&username=bob&period=all&category=4");
+        let mut o = build_options_for(&p, &s, Some(&request)).unwrap().unwrap();
+        o.per_page = Some(30);
+        o.category_id = Some(4);
+        assert_eq!(
+            next_url_for("/tag/howto/1", &p, &o, false, Some(&request)),
+            "/tag/howto/1?match_all_tags=false&page=1&per_page=30&tags%5B%5D=howto"
+        );
+        request.category_param = Some("general".into());
+        assert_eq!(
+            next_url_for("/tag/howto/1", &p, &o, false, Some(&request)),
+            "/tag/howto/1?category=general&match_all_tags=false&page=1&per_page=30\
+             &tags%5B%5D=howto"
+        );
+        request.no_tags = true;
+        request.category_param = None;
+        let p = params("tags[]=x&no_subcategories=false");
+        let o = build_options_for(&p, &s, Some(&request)).unwrap().unwrap();
+        assert_eq!(
+            next_url_for("/tag/none", &p, &o, false, Some(&request)),
+            "/tag/none?no_subcategories=false&no_tags=true&page=1"
+        );
     }
 
     #[test]

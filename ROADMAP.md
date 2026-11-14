@@ -5055,20 +5055,45 @@ route table has been made, so this list may be short.
     and invalid, a member's state, filter and muted tag, the category
     sort, the category and top routes), all matching; tests in
     tests/latest_json.rs and tests/html_pages.rs. Left, split into 271a.
-    271a. `feat/list-query-filters-rest` S: tag lists take only page,
+    271a. `feat/list-query-filters-rest` S: ~~tag lists take only page,
     per_page, order, ascending, state, subset and the tags (TagsController
     merges the rest raw, blank or not, and match_all_tags=false makes an
-    any tag list; routes/list.rs:113,118,123);
+    any tag list; routes/list.rs:113,118,123)~~ (done in
+    `feat/tag-list-params`: the tag lists build their options as
+    TagsController#build_topic_list_options does, on ListController's
+    parser (build_options_for and next_url_for, routes/list.rs).
+    TopicQueryParams' part is the same: every public option, present and
+    valid, else the 400 naming it, so before, bumped_before, f, subset,
+    group_name, exclude_tag, no_tags and the plugins' filter the tag
+    lists too. Over it order, ascending, min_posts, max_posts, status,
+    filter, state, search and q are the request's even when blank: a
+    blank order is "default" (bumped_at, nothing pinned, no category
+    sort), a blank filter hides `f`, the rest filter nothing, and all of
+    them stay in the next-page URL (`status=`). match_all_tags=false
+    stays, an any tag list. set_category's `category` param off the
+    /tags/c routes: Category.query_category's top-level slug or id,
+    blank or not, a 404 when none or unreadable, the list scoped to it,
+    the HTML redirects under /tags/c/ and the next page carrying its
+    slug_for_url; the page stays the tag's own. The next-page URL is
+    TagsController's page_params (no username, groupname or period) with
+    per_page clamped. A `tags` hash is a 400 on the id routes, where no
+    tag_name makes it an array. Derived from the Rails source, no
+    recording: tests in tests/tag_pages.rs and tests/html_pages.rs.
+    Left: a `category` param that is not a string
+    (routes/tags.rs:265), a `tag_name` query param on the id routes
+    (TopicQueryParams puts it in front of `tags`), set_category's
+    permalink lookup for the param's miss, and the intersection routes,
+    273a's);
     (discourse-assign's `assigned` is done, feat/plugin-assign);
     discourse-events' sort by event start date for a category
-    (topic_query.rs:455); `search` with search_ignore_accents
-    (topic_query.rs:416); a before or bumped_before reaching past year 1
-    (topic_query.rs:886); page_params' username or group name under
+    (topics/query.rs:541); `search` with search_ignore_accents
+    (topics/query.rs:501); a before or bumped_before reaching past year 1
+    (topics/query.rs:977); page_params' username or group name under
     unicode_usernames, or not a string, and plugin params given as hashes
-    (routes/list.rs:465,471,479); list params Rack rejects, given as both
+    (routes/list.rs:487,493,501); list params Rack rejects, given as both
     a value and an array or hash, or arrays of hashes (Rails' 400 Bad
-    Request; routes/list.rs:182,188,192), and tag_name that is not a
-    string (routes/list.rs:208,215)
+    Request; routes/list.rs:170,176,180), and tag_name that is not a
+    string (routes/list.rs:196,203)
 270. ~~`fix/topic-list-footer`~~ (done) S: the discovery lists (/latest,
     /new, /unread, /top, /hot, the category and tag lists) drew no
     `footer.topic-list-bottom`, found by a screenshot run: the page footer

@@ -117,6 +117,164 @@ async fn tag_lists_filter_by_tag_and_intersect() {
     assert_eq!(ids(&body), vec![38]);
 }
 
+/// TagsController#build_topic_list_options: TopicQueryParams' options
+/// (every public one, present and valid) under its own raw ones.
+#[tokio::test]
+async fn tag_lists_take_the_list_params() {
+    let db = TestDb::new().await;
+    // howto: 41 (archived, in general) and 38 (in its subcategory); guide:
+    // 41 and 35 (two posts); untagged: 5 and 37 (closed, in category 2).
+    for (path, want) in [
+        ("/tag/howto.json?status=archived", vec![41]),
+        ("/tag/howto/1.json?status=open", vec![38]),
+        ("/tag/howto.json?status=closed", vec![]),
+        ("/tag/none.json?status=closed", vec![37]),
+        ("/tags/c/general/4/howto/1.json?status=open", vec![38]),
+        ("/tag/guide/2.json?min_posts=2", vec![35]),
+        ("/tag/guide/2.json?max_posts=1", vec![41]),
+        ("/tag/howto/1.json?topic_ids=38,5", vec![38]),
+        ("/tag/howto/1.json?topic_ids[]=41", vec![41]),
+        ("/tag/howto/1.json?topic_ids=", vec![]),
+        ("/tag/howto/1.json?exclude_tag=guide", vec![38]),
+        ("/tag/howto/1.json?before=36500", vec![]),
+        ("/tag/howto/1.json?bumped_before=36500", vec![]),
+        ("/tag/howto/1.json?search=zzznothing", vec![]),
+        ("/tag/howto/1.json?search=subcategory", vec![38]),
+        (
+            "/tag/howto/1.json?order=created&ascending=true",
+            vec![38, 41],
+        ),
+        ("/tag/howto/1.json?state=watching_first_post", vec![]),
+        // The `category` param: a top-level slug or id (set_category).
+        ("/tag/howto.json?category=general", vec![41, 38]),
+        (
+            "/tag/howto.json?category=general&no_subcategories=true",
+            vec![41],
+        ),
+        (
+            "/tag/howto.json?category=4&no_subcategories=false",
+            vec![41, 38],
+        ),
+        ("/tag/guide/2.json?category=2", vec![]),
+        // Any of the tags, where the tag routes otherwise want them all.
+        ("/tag/howto/1.json?tags[]=howto&tags[]=guide", vec![41]),
+        (
+            "/tag/howto/1.json?tags[]=howto&tags[]=guide&match_all_tags=false",
+            vec![35, 41, 38],
+        ),
+        (
+            "/tag/howto.json?tags[]=guide&match_all_tags=false",
+            vec![35, 41, 38],
+        ),
+        (
+            "/tag/howto.json?tags[]=nope&match_all_tags=false",
+            vec![41, 38],
+        ),
+        ("/tag/howto.json?tags[]=guide&match_all_tags=", vec![41]),
+        // Blank values filter nothing.
+        (
+            "/tag/howto.json?status=&state=&filter=&search=&min_posts=&max_posts=&ascending=&q=",
+            vec![41, 38],
+        ),
+    ] {
+        let (status, _, body) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        assert_eq!(ids(&body), want, "{path}");
+    }
+
+    // The next page keeps the options: the raw ones blank or not, the
+    // param's category by its slug, the route's left to the path.
+    for (path, want) in [
+        (
+            "/tag/howto.json?status=&order=&q=a%20b&ascending=&per_page=1",
+            "/tag/howto?ascending=&match_all_tags=true&order=&page=1&per_page=1&q=a+b\
+             &status=&tags%5B%5D=howto",
+        ),
+        (
+            "/tag/howto/1.json?status=listed&per_page=1&match_all_tags=false&exclude_tag=x&page=",
+            "/tag/howto/1?exclude_tag=x&match_all_tags=false&page=1&per_page=1&status=listed\
+             &tags%5B%5D=howto",
+        ),
+        (
+            "/tag/howto.json?category=4&no_subcategories=true&topic_ids=41,38&per_page=1",
+            "/tag/howto?category=general&match_all_tags=true&no_subcategories=true&page=1\
+             &per_page=1&tags%5B%5D=howto&topic_ids%5B%5D=41&topic_ids%5B%5D=38",
+        ),
+        (
+            "/tags/c/general/4/howto/1.json?category=2&min_posts=1&per_page=1",
+            "/tags/c/general/4/howto/1?match_all_tags=true&min_posts=1&page=1&per_page=1\
+             &tags%5B%5D=howto",
+        ),
+        (
+            "/tag/none.json?max_posts=5&per_page=1&username=bob",
+            "/tag/none?max_posts=5&no_tags=true&page=1&per_page=1",
+        ),
+    ] {
+        let (status, _, body) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+        let json: Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(json["topic_list"]["more_topics_url"], want, "{path}");
+    }
+
+    // A blank order is an order all the same: "default", so bumped_at
+    // with no pinned topics first.
+    sqlx::query("UPDATE topics SET pinned_at = now(), pinned_globally = true WHERE id = 38")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, _, body) = get(&db.pool, "/tag/howto.json").await;
+    assert_eq!(ids(&body), vec![38, 41]);
+    let (_, _, body) = get(&db.pool, "/tag/howto.json?order=").await;
+    assert_eq!(ids(&body), vec![41, 38]);
+    let (_, _, body) = get(&db.pool, "/latest.json?tags=howto&order=").await;
+    assert_eq!(ids(&body), vec![38, 41]);
+}
+
+/// TopicQueryParams validates what is present, and set_category 404s on
+/// a `category` param naming no top-level category the viewer can see.
+#[tokio::test]
+async fn tag_lists_check_the_list_params() {
+    let db = TestDb::new().await;
+    for (path, param) in [
+        ("/tag/howto.json?status[]=closed", "status"),
+        ("/tag/howto/1.json?min_posts=abc", "min_posts"),
+        ("/tag/howto/1.json?before=-1", "before"),
+        ("/tag/howto/1.json?match_all_tags=no", "match_all_tags"),
+        (
+            "/tag/howto/1.json?no_subcategories=maybe",
+            "no_subcategories",
+        ),
+        ("/tag/howto/1.json?search[]=x", "search"),
+        ("/tag/howto/1.json?order=%20&ascending=x", "ascending"),
+        // Only a name route's tag_name makes `tags` an array.
+        ("/tag/howto/1.json?tags[k]=v", "tags"),
+    ] {
+        let (status, _, body) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{path}");
+        let json: Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(
+            json["errors"][0],
+            format!("You supplied invalid parameters to the request: {param}"),
+            "{path}"
+        );
+    }
+    let (status, _, _) = get(&db.pool, "/tag/howto.json?tags[k]=v").await;
+    assert_eq!(status, StatusCode::OK);
+
+    for path in [
+        "/tag/howto.json?category=nope",
+        "/tag/howto.json?category=",
+        // A subcategory, by slug or id, and one anonymous can't see.
+        "/tag/howto.json?category=sub-general",
+        "/tag/howto.json?category=34",
+        "/tag/howto.json?category=staff",
+        "/tag/howto/1?category=nope",
+    ] {
+        let (status, _, _) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{path}");
+    }
+}
+
 #[tokio::test]
 async fn tag_routes_redirect_and_404() {
     let db = TestDb::new().await;
@@ -141,6 +299,13 @@ async fn tag_routes_redirect_and_404() {
     );
     let (status, _, _) = get(&db.pool, "/tag/wrong/1.json").await;
     assert_eq!(status, StatusCode::OK);
+    // The `category` param's category takes the redirect under /tags/c.
+    let (status, location, _) = get(&db.pool, "/tag/howto?category=general&status=open").await;
+    assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    assert_eq!(
+        location.as_deref(),
+        Some("http://test.localhost/tags/c/general/4/howto/1?category=general&status=open")
+    );
 
     for path in [
         "/tag/nope",
@@ -292,6 +457,18 @@ async fn tag_pages_render_html() {
     let (_, _, html) = get(&db.pool, "/tags/c/general/4/howto/1").await;
     assert!(html.contains(r#"<h1 class="category-heading">"#));
     assert!(html.contains(r#"class="tag-heading""#));
+
+    // The page lists what the JSON does, and stays the tag's own with a
+    // `category` param.
+    let (status, _, html) = get(&db.pool, "/tag/howto/1?status=open&category=general").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains(r#"href="/t/parity-fixture-tagged-in-a-subcategory/38/1""#));
+    assert!(!html.contains(r#"href="/t/parity-fixture-liked-and-archived/41/1""#));
+    assert!(!html.contains(r#"<h1 class="category-heading">"#));
+    assert!(html.contains(r#"id="show-tag-info""#));
+    let (_, _, html) = get(&db.pool, "/tag/howto/1?match_all_tags=false&tags[]=guide").await;
+    assert!(html.contains(r#"href="/t/parity-fixture-liked-and-archived/41/1""#));
+    assert!(!html.contains(r#"href="/t/parity-fixture-tagged-in-a-subcategory/38/1""#));
 
     let (status, _, html) = get(&db.pool, "/tags").await;
     assert_eq!(status, StatusCode::OK);
