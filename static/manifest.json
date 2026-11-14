@@ -1023,6 +1023,13 @@
       ]
     },
     {
+      "name": "desktop-notifications.js",
+      "content_type": "js",
+      "files": [
+        "js/desktop-notifications.js"
+      ]
+    },
+    {
       "name": "user-status.js",
       "content_type": "js",
       "files": [

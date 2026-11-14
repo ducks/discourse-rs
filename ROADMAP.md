@@ -1769,9 +1769,9 @@ with the viewport, guessing from the user agent without it
     notifications preferences. The endpoints, the item's on state and
     the header's moon were there. Tests: sessions
     the_user_menu_pauses_notifications, browser do-not-disturb (3).
-    Left: the client's other readers of isInDoNotDisturb, none ported:
-    desktop notifications, the push subscription prompt, the title's
-    and favicon's counts, the notification sound),
+    Left: the client's other readers of isInDoNotDisturb, not ported:
+    the push subscription (186), the title's and favicon's counts, the
+    notification sound; desktop notifications are 296's),
     show_user_menu_avatars (refused)
 96. ~~`feat/mobile-composer`~~ (done) L: the mobile composer's controls
     (the toolbar toggle in place of the preview and fullscreen ones), its
@@ -2978,7 +2978,7 @@ have handlers now.
     preview done, feat/chat-rest: chat-audio-manager's sounds synthesized
     with Web Audio in static/js/preferences.js, played on choosing one and
     by the preview button; left: playing them on a new message or mention,
-    since no desktop notification alert handler is ported). Tests:
+    over core's desktop notification handler, 296, with 225b). Tests:
     tests/chat_rest.rs
 163. `feat/solved-rest` S: discourse-solved's crawler schema markup and
     lists by solved status (its auto close timers, web hooks and search
@@ -5937,6 +5937,41 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the group card's two buttons, the composer marking the recipient as
     a group (hasGroups), and Join and Leave still reporting errors with
     window.alert
+296. ~~`feat/desktop-notifications`~~ (done) M: a member's alerts
+    (/notification-alert/:id) only filled the header's
+    #notification-alert, and the preferences' PushNotificationSelect
+    refused every level but none. Now static/js/desktop-notifications.js
+    (lib/desktop-notifications, the desktop-notifications service's
+    browser half, subscribe-user-notifications' onAlert): the stream
+    sends the alert's payload as a `notification-alert` JSON event
+    beside the header's (none in do not disturb, as before), shown with
+    the Notification API when the device isn't mobile, the permission
+    wasn't denied as the page loaded, the tab is the primary one (in
+    sight at load or focused since, no other tab focused after: the
+    keyValueStore's focus-tracker; a focused tab shows them too, as
+    Ember's) and notifications-disabled isn't "disabled": the title
+    translated_title or notifications.popup.<type> (username, topic,
+    site_title, group_name), the excerpt as body, the small logo else
+    the logo as icon, the tag discourse-notification-<title>-<topic>,
+    its click routing to the post and closing it. The select enables
+    (Notification.requestPermission, confirmNotification closed after
+    10s, the store "enabled", the level saved) and disables (the store
+    "disabled", the level none), shows the saved level only while the
+    browser is subscribed, and its denied and not supported buttons
+    follow Notification alone. NotificationConsentBanner
+    (push_notifications_prompt, an installed app, permission not yet
+    answered, not dismissed) above the global notice. No service worker
+    controls the page, so isPushNotificationsSupported is false and
+    every browser takes the desktop branch; with 186 a push-capable
+    browser under enable_desktop_push_notifications subscribes to push
+    instead and desktop is disabled for it. Tests: browser
+    desktop-notifications (8), sessions
+    members_hear_their_notifications_on_every_page and
+    the_user_menu_pauses_notifications. Left: the handler registry
+    (registerDesktopNotificationHandler, 225b), the
+    desktop-notification-opened app event, Mobile.mobileForced in
+    isMobileDevice, isEnabledPush and the push half (186); the
+    header's #notification-alert, which Ember has not, still drawn
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script
@@ -6603,7 +6638,8 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat's desktop notifications and their sound (chat-audio's
     registerDesktopNotificationHandler over /chat/notification-alert,
     ChatNotificationManager, chat-alert-dedup; core's desktop
-    notifications aren't ported), the title counter
+    notifications are 296's, without the handler registry), the title
+    counter
     (addDocumentTitleCounter, getDocumentTitleCount; core's document
     title service isn't ported), the help modal's chat section (the
     keyboard shortcuts help is refused, static/js/sidebar.js:144), and

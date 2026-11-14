@@ -148,6 +148,9 @@
     {%- if !chrome.bookmark_modal_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "bookmark-modal.js") }}"{{ chrome.bookmark_modal_attrs|safe }} defer></script>
     {%- endif %}
+    {%- if !chrome.desktop_notifications_attrs.is_empty() %}
+    <script src="{{ crate::assets::url(base_path, "desktop-notifications.js") }}"{{ chrome.desktop_notifications_attrs|safe }} defer></script>
+    {%- endif %}
     {%- if !chrome.user_status_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "user-status.js") }}"{{ chrome.user_status_attrs|safe }} defer></script>
     {%- endif %}

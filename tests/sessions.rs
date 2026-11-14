@@ -1576,6 +1576,19 @@ async fn members_hear_their_notifications_on_every_page() {
     assert!(alert.contains("&lt;script&gt;"), "{alert}");
     assert!(!alert.contains("<script>"), "{alert}");
     assert!(!alert.contains("<b>"), "{alert}");
+    // And onAlert's payload as published, for
+    // static/js/desktop-notifications.js.
+    let event = common::next_sse_event(&mut body, &mut buffer, "notification-alert").await;
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&event).unwrap(),
+        serde_json::json!({
+            "notification_type": 2,
+            "username": "user2",
+            "topic_title": "A <b>bold</b> title",
+            "excerpt": "<script>alert(1)</script>",
+            "post_url": "/t/a-topic/35/2",
+        }),
+    );
 
     // Reading them all clears the count.
     let reply = client
@@ -3881,7 +3894,7 @@ async fn the_user_menu_pauses_notifications() {
         .await
         .unwrap();
     let alert_state = client.state.clone();
-    let alert = || {
+    let alert = |excerpt: &'static str| {
         let (pool, st) = (db.pool.clone(), alert_state.clone());
         async move {
             let mut tx = pool.begin().await.unwrap();
@@ -3893,7 +3906,7 @@ async fn the_user_menu_pauses_notifications() {
                     "notification_type": 2,
                     "username": "user2",
                     "topic_title": "A topic",
-                    "excerpt": "A reply",
+                    "excerpt": excerpt,
                     "post_url": "/t/a-topic/35/2",
                 }),
             )
@@ -3902,7 +3915,7 @@ async fn the_user_menu_pauses_notifications() {
             tx.commit().await.unwrap();
         }
     };
-    alert().await;
+    alert("A reply").await;
     let reply = client
         .send(Method::DELETE, "/do-not-disturb.json", &xhr, "")
         .await;
@@ -3913,12 +3926,34 @@ async fn the_user_menu_pauses_notifications() {
         "{header}"
     );
     assert!(!header.contains(moon), "{header}");
-    alert().await;
+    alert("A reply").await;
     let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
     assert!(
         header.starts_with(r#"<div id="notification-alert""#),
         "{header}"
     );
+    // The desktop notification's event goes with it, and not while
+    // paused: the next one the stream holds is the one sent after.
+    let excerpt = |event: String| {
+        serde_json::from_str::<serde_json::Value>(&event).unwrap()["excerpt"]
+            .as_str()
+            .unwrap()
+            .to_string()
+    };
+    let event = common::next_sse_event(&mut body, &mut buffer, "notification-alert").await;
+    assert_eq!(excerpt(event), "A reply");
+    let reply = client
+        .send(Method::POST, "/do-not-disturb.json", &xhr, "duration=30")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    alert("paused").await;
+    let reply = client
+        .send(Method::DELETE, "/do-not-disturb.json", &xhr, "")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    alert("shown").await;
+    let event = common::next_sse_event(&mut body, &mut buffer, "notification-alert").await;
+    assert_eq!(excerpt(event), "shown");
     drop(body);
     let reply = client
         .send(Method::POST, "/do-not-disturb.json", &xhr, "duration=30")

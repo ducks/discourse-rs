@@ -478,8 +478,16 @@ async fn handle_batch(
             live.pending.push_back(
                 Event::default()
                     .event("header")
-                    .id(id)
+                    .id(id.clone())
                     .data(notification_alert(base, &message.data)),
+            );
+            // onAlert: the payload as published, for
+            // static/js/desktop-notifications.js's onNotification.
+            live.pending.push_back(
+                Event::default()
+                    .event("notification-alert")
+                    .id(id)
+                    .data(message.data.to_string()),
             );
         } else if live.chat_channels.contains(&message.channel) {
             chat = true;
