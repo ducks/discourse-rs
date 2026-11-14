@@ -5,35 +5,7 @@
 // in the account preferences and, deferred, for a new account on the
 // invite page (invite.js). Each test works on a member, an invite and an
 // address of its own.
-const { test, expect, login, sql, member } = require("./helpers");
-
-// The codes the server emails, kept as they are enqueued: the worker
-// deletes the job once the email is sent, and the table holds a hash.
-function captureCodes() {
-  sql(
-    "SET client_min_messages = warning; \
-     CREATE TABLE IF NOT EXISTS public.browser_test_login_codes (id bigserial PRIMARY KEY, to_address text, code text); \
-     CREATE OR REPLACE FUNCTION public.browser_test_keep_login_code() RETURNS trigger LANGUAGE plpgsql AS $$ \
-       BEGIN \
-         IF NEW.name = 'send_email_login_code' THEN \
-           INSERT INTO public.browser_test_login_codes (to_address, code) VALUES (NEW.args->>'to_address', NEW.args->>'code'); \
-         END IF; \
-         RETURN NEW; \
-       END $$; \
-     DROP TRIGGER IF EXISTS browser_test_keep_login_code ON discourse_rs.jobs; \
-     CREATE TRIGGER browser_test_keep_login_code AFTER INSERT ON discourse_rs.jobs \
-       FOR EACH ROW EXECUTE FUNCTION public.browser_test_keep_login_code();",
-  );
-}
-
-function codeFor(address) {
-  const rows = sql(
-    "SELECT code FROM public.browser_test_login_codes WHERE to_address = :'p1' ORDER BY id DESC LIMIT 1",
-    address,
-  );
-  expect(rows.length, `a code for ${address}`).toBe(1);
-  return rows[0][0];
-}
+const { test, expect, login, sql, member, captureCodes, codeFor } = require("./helpers");
 
 function resetCodes(address) {
   return sql(

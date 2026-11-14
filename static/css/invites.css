@@ -1330,7 +1330,7 @@ body.static-login .login-welcome .body-page-button-container {
   grid-column:1/-1;
   gap:.25em .5em;
 }
-.code-login-form__account-fields .code-login-form__username-field>label,.code-login-form__account-fields .code-login-form__username-field>.code-login-form__error {
+.code-login-form__account-fields .code-login-form__username-field>label,.code-login-form__account-fields .code-login-form__username-field>.code-login-form__field-instructions,.code-login-form__account-fields .code-login-form__username-field>.code-login-form__error {
   grid-column:1/-1;
 }
 .code-login-form__account-fields .code-login-form__username-input {
@@ -1461,6 +1461,12 @@ body.static-login .login-welcome .body-page-button-container {
 .code-login-form__instructions {
   margin:0;
   color:var(--primary-high);
+}
+/* common/login/code-login-form.scss: &__field-instructions */
+.code-login-form__field-instructions {
+  font-size:var(--font-down-1);
+  color:var(--primary-medium);
+  overflow-wrap:anywhere;
 }
 .code-login-form__error {
   color:var(--danger);

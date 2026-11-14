@@ -1581,6 +1581,8 @@ async fn accept_page(
         ("signup_details_title", "code_login.signup_details_title"),
         ("username_label", "code_login.username_label"),
         ("username_placeholder", "code_login.username_placeholder"),
+        ("username_taken", "code_login.username_taken"),
+        ("username_unavailable", "code_login.username_unavailable"),
         (
             "account_ready_continue",
             "code_login.account_ready_continue",
@@ -1590,6 +1592,13 @@ async fn accept_page(
         ("generic_error", "generic_error"),
     ] {
         strings.insert(name.into(), json!(t(key)));
+    }
+    // CodeLoginUsernameField's showInstructions.
+    if s.get("show_signup_form_username_instructions")?.truthy() {
+        strings.insert(
+            "username_instructions".into(),
+            json!(t("user.username.instructions")),
+        );
     }
     // DOtp's six slots.
     strings.insert(
@@ -2160,10 +2169,35 @@ pub async fn verify_login_code(
         }
         let Some(username) = &username else {
             // render_signup_username_required for an invite
-            let suggested = suggest_username(&mut tx, &state.i18n, &s, &email, false).await?;
-            if suggested.is_some() {
-                return Err(Unsupported("suggesting an invitee's username from the email").into());
+            // UserNameSuggester.suggest(email, allow_generic_fallback:
+            // false), nil when it is UserNameSuggester.generic_username?
+            // (the fallback username with any trailing digits). Not
+            // ported: RandomUsernameGenerator.generate for an email
+            // that suggests nothing (enable_random_usernames).
+            let base = |n: &str| {
+                n.trim_end_matches(|c: char| c.is_ascii_digit())
+                    .to_lowercase()
+            };
+            let mut generic = sanitize_username(state.i18n.t("fallback_username").unwrap_or(""))?;
+            if generic.is_empty() {
+                generic = "user".into();
             }
+            let suggested = suggest_username(&mut tx, &state.i18n, &s, &email, false)
+                .await?
+                .filter(|name| base(name).is_empty() || base(name) != base(&generic));
+            let avatar_template = match &suggested {
+                Some(name) => {
+                    let urls = crate::url::Urls {
+                        config: &state.config,
+                        settings: &s,
+                    };
+                    Some(
+                        crate::avatar::default_template(&s, &urls, name)
+                            .map_err(crate::users::UsersError::from)?,
+                    )
+                }
+                None => None,
+            };
             let trust_level = s.get("default_invitee_trust_level")?.to_i();
             let mut group_ids: Vec<i64> = vec![10];
             for (level, id) in [(1, 11), (2, 12), (3, 13), (4, 14)] {
@@ -2189,10 +2223,10 @@ pub async fn verify_login_code(
             tx.commit().await?;
             return Ok(Json(json!({
                 "username_required": true,
-                "username": null,
+                "username": suggested,
                 "generated_username": false,
                 "trust_level": trust_level,
-                "avatar_template": null,
+                "avatar_template": avatar_template,
                 "can_upload_avatar": group_ids.iter().any(|g| allowed.contains(g)),
             }))
             .into_response());
