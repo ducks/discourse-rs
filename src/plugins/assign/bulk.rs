@@ -27,6 +27,9 @@ pub enum Outcome {
 
 pub struct Bulk<'a, 'b> {
     pub conn: &'a mut PgConnection,
+    /// Each topic's assignment commits on its own, as nothing wraps the
+    /// operations' loops.
+    pub pool: &'a sqlx::PgPool,
     pub ctx: &'a Ctx<'b>,
     pub guardian: &'a Guardian,
     pub operation: &'a Map<String, Value>,
@@ -74,6 +77,7 @@ impl Bulk<'_, '_> {
             {
                 continue;
             }
+            let mut tx = self.pool.begin().await?;
             let result = Assigner {
                 ctx: self.ctx,
                 target: &target,
@@ -82,7 +86,7 @@ impl Bulk<'_, '_> {
                 permissions: &permissions,
             }
             .assign(
-                &mut *self.conn,
+                &mut tx,
                 &assign_to,
                 AssignOpts {
                     status: status.clone(),
@@ -91,6 +95,7 @@ impl Bulk<'_, '_> {
                 },
             )
             .await?;
+            tx.commit().await?;
             match result {
                 Ok(()) | Err(Reason::AlreadyAssigned | Reason::GroupAlreadyAssigned) => {
                     changed.push(topic_id);
@@ -136,6 +141,7 @@ impl Bulk<'_, '_> {
             {
                 continue;
             }
+            let mut tx = self.pool.begin().await?;
             Assigner {
                 ctx: self.ctx,
                 target: &target,
@@ -143,8 +149,9 @@ impl Bulk<'_, '_> {
                 guardian: self.guardian,
                 permissions: &permissions,
             }
-            .unassign(&mut *self.conn, false, false)
+            .unassign(&mut tx, false, false)
             .await?;
+            tx.commit().await?;
         }
         Ok(Outcome::Done {
             changed: Vec::new(),

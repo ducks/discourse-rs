@@ -64,9 +64,11 @@ pub const PLUGIN_OPERATIONS: [&str; 2] = ["assign", "unassign"];
 
 /// One run of an operation (`TopicsBulkAction.new(user, ids, operation)`).
 pub struct BulkAction<'a, 'b> {
+    /// Outside any transaction, for what the operations read.
     pub conn: &'a mut PgConnection,
-    /// For the operations that save through their own transactions
-    /// (revisions, conversions), as Rails commits each topic's.
+    /// TopicsBulkAction wraps nothing: each topic's change is begun and
+    /// committed on its own, and a failure midway leaves the earlier
+    /// topics changed.
     pub pool: &'a sqlx::PgPool,
     pub ctx: &'a Ctx<'b>,
     pub guardian: &'a Guardian,
@@ -122,6 +124,7 @@ impl<'a, 'b> BulkAction<'a, 'b> {
                 let topic_ids = self.topics().await?;
                 let run = crate::plugins::assign::bulk::Bulk {
                     conn: &mut *self.conn,
+                    pool: self.pool,
                     ctx: self.ctx,
                     guardian: self.guardian,
                     operation: &self.operation,
@@ -535,7 +538,8 @@ impl<'a, 'b> BulkAction<'a, 'b> {
 
     /// The user's unread channel (TopicTrackingState.publish_dismiss_new*).
     async fn publish_unread(
-        &mut self,
+        &self,
+        conn: &mut PgConnection,
         message_type: &str,
         topic_ids: &[i32],
     ) -> Result<(), AppError> {
@@ -545,7 +549,7 @@ impl<'a, 'b> BulkAction<'a, 'b> {
         self.ctx
             .bus
             .publish(
-                &mut *self.conn,
+                conn,
                 &format!("/unread/{user_id}"),
                 &json!({"message_type": message_type, "payload": {"topic_ids": sorted}}),
                 Some(&[crate::bus::user_tag(user_id)]),
@@ -563,16 +567,19 @@ impl<'a, 'b> BulkAction<'a, 'b> {
         } else {
             "highest_post_number"
         };
+        let ids = self.topic_ids.clone();
+        let mut tx = self.pool.begin().await?;
         sqlx::query(&format!(
             "UPDATE topic_users tu SET last_read_post_number = t.{column} FROM topics t \
              WHERE t.id = tu.topic_id AND tu.user_id = $1 AND t.id = ANY($2)"
         ))
         .bind(user_id)
-        .bind(&self.topic_ids)
-        .execute(&mut *self.conn)
+        .bind(&ids)
+        .execute(&mut *tx)
         .await?;
-        let ids = self.topic_ids.clone();
-        self.publish_unread("dismiss_new_posts", &ids).await?;
+        self.publish_unread(&mut tx, "dismiss_new_posts", &ids)
+            .await?;
+        tx.commit().await?;
         self.changed.extend(ids);
         Ok(Ok(()))
     }
@@ -603,8 +610,10 @@ impl<'a, 'b> BulkAction<'a, 'b> {
             }
         }
         if !ids.is_empty() {
+            // insert_all is one statement: the rows go in together.
+            let mut tx = self.pool.begin().await?;
             let (now,): (NaiveDateTime,) = sqlx::query_as("SELECT clock_timestamp()::timestamp")
-                .fetch_one(&mut *self.conn)
+                .fetch_one(&mut *tx)
                 .await?;
             for id in &ids {
                 sqlx::query(
@@ -614,10 +623,11 @@ impl<'a, 'b> BulkAction<'a, 'b> {
                 .bind(id)
                 .bind(user_id)
                 .bind(now)
-                .execute(&mut *self.conn)
+                .execute(&mut *tx)
                 .await?;
             }
-            self.publish_unread("dismiss_new", &ids).await?;
+            self.publish_unread(&mut tx, "dismiss_new", &ids).await?;
+            tx.commit().await?;
         }
         self.changed = ids;
         Ok(Ok(()))
@@ -632,8 +642,9 @@ impl<'a, 'b> BulkAction<'a, 'b> {
             if !self.can_see(topic_id).await? {
                 continue;
             }
-            crate::read_tracking::destroy_last_for(&mut *self.conn, user_id, whisperer, topic_id)
-                .await?;
+            let mut tx = self.pool.begin().await?;
+            crate::read_tracking::destroy_last_for(&mut tx, user_id, whisperer, topic_id).await?;
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
@@ -653,9 +664,10 @@ impl<'a, 'b> BulkAction<'a, 'b> {
             if !self.can_see(topic_id).await? {
                 continue;
             }
+            let mut tx = self.pool.begin().await?;
             change_topic_user(
                 self.ctx.bus,
-                &mut *self.conn,
+                &mut tx,
                 user_id,
                 topic_id,
                 &[TopicUserAttr::NotificationLevel(
@@ -664,6 +676,7 @@ impl<'a, 'b> BulkAction<'a, 'b> {
                 )],
             )
             .await?;
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
@@ -918,16 +931,10 @@ impl BulkAction<'_, '_> {
                 visibility_reason_id: (status == Status::Visible).then_some(BULK_ACTION),
                 ..Default::default()
             };
-            topic_status::apply(
-                &mut *self.conn,
-                self.ctx,
-                topic_id,
-                user_id,
-                status,
-                enabled,
-                &opts,
-            )
-            .await?;
+            let mut tx = self.pool.begin().await?;
+            topic_status::apply(&mut tx, self.ctx, topic_id, user_id, status, enabled, &opts)
+                .await?;
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
@@ -950,16 +957,9 @@ impl BulkAction<'_, '_> {
                 until: until.as_deref(),
                 ..Default::default()
             };
-            topic_status::apply(
-                &mut *self.conn,
-                self.ctx,
-                topic_id,
-                user_id,
-                status,
-                true,
-                &opts,
-            )
-            .await?;
+            let mut tx = self.pool.begin().await?;
+            topic_status::apply(&mut tx, self.ctx, topic_id, user_id, status, true, &opts).await?;
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
@@ -985,8 +985,9 @@ impl BulkAction<'_, '_> {
             } else {
                 Status::Pinned
             };
+            let mut tx = self.pool.begin().await?;
             topic_status::apply(
-                &mut *self.conn,
+                &mut tx,
                 self.ctx,
                 topic_id,
                 user_id,
@@ -995,6 +996,7 @@ impl BulkAction<'_, '_> {
                 &StatusOpts::default(),
             )
             .await?;
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
@@ -1056,7 +1058,9 @@ impl BulkAction<'_, '_> {
             if !self.can_see(topic_id).await? {
                 continue;
             }
-            crate::post_destroyer::reset_bumped_at(&mut *self.conn, topic_id).await?;
+            let mut tx = self.pool.begin().await?;
+            crate::post_destroyer::reset_bumped_at(&mut tx, topic_id).await?;
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
@@ -1073,37 +1077,28 @@ impl BulkAction<'_, '_> {
             if !can_see || !topic.private_message() {
                 continue;
             }
+            let mut tx = self.pool.begin().await?;
             if archive {
-                crate::archived_messages::user_archive(
-                    self.ctx.bus,
-                    &mut *self.conn,
-                    user_id,
-                    topic_id,
-                )
-                .await?;
+                crate::archived_messages::user_archive(self.ctx.bus, &mut tx, user_id, topic_id)
+                    .await?;
                 crate::plugins::assign::lifecycle::archive_message(
-                    &mut *self.conn,
-                    self.ctx,
-                    topic_id,
-                    false,
+                    &mut tx, self.ctx, topic_id, false,
                 )
                 .await?;
             } else if crate::archived_messages::user_move_to_inbox(
                 self.ctx.bus,
-                &mut *self.conn,
+                &mut tx,
                 user_id,
                 topic_id,
             )
             .await?
             {
                 crate::plugins::assign::lifecycle::move_to_inbox(
-                    &mut *self.conn,
-                    self.ctx,
-                    topic_id,
-                    false,
+                    &mut tx, self.ctx, topic_id, false,
                 )
                 .await?;
             }
+            tx.commit().await?;
             self.changed.push(topic_id);
         }
         Ok(Ok(()))
