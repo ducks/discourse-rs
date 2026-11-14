@@ -5,6 +5,13 @@
 //! - `post`, on a topic page (`topic=<id>`): each change on the topic's
 //!   channel that is about a post, the post appended when created,
 //!   replaced when changed, removed when deleted or not visible to them.
+//! - `more-topics`, on a message's page for the member reading it: the
+//!   browse more line under its suggested messages (BrowseMore), counted
+//!   again from their PrivateMessageTopicTrackingState report after each
+//!   message on their own and their groups'
+//!   `/private-message-topic-tracking-state` channels that changes
+//!   pmTopicTrackingState's states (a new message not their own, a reply,
+//!   a read; their own reading comes back as a read).
 //! - `list`, on list pages and for members everywhere: the latest list's
 //!   "N new or updated topics" banner (`filter=latest`, `since` the page's
 //!   render time), the viewer's own list query run again, and a member's
@@ -216,6 +223,18 @@ pub async fn page(
         chat_channels.extend(CHAT_GLOBAL_CHANNELS.iter().map(|c| c.to_string()));
         channels.extend(chat_channels.iter().cloned());
     }
+    // A message's page: pmTopicTrackingState's channels, for its browse
+    // more line.
+    let browse_more = match (topic_id, user_id) {
+        (Some(topic_id), Some(user_id)) => {
+            let mut conn = state.pool.acquire().await?;
+            BrowseMore::load(&mut conn, &guardian, topic_id, user_id).await?
+        }
+        _ => None,
+    };
+    if let Some(browse_more) = &browse_more {
+        channels.extend(browse_more.channels.iter().cloned());
+    }
     let subscription = state.bus.subscribe(from, Filter { channels, tags });
     let live = Live {
         user_status,
@@ -225,6 +244,7 @@ pub async fn page(
         settings,
         subscription,
         reconnect: false,
+        browse_more,
         topic_channel: topic_id.map(crate::bus::topic_channel),
         polls_channel: topic_id.map(|id| format!("/polls/{id}")),
         tail: params.tail.as_deref() == Some("1"),
@@ -307,6 +327,8 @@ struct Live {
     /// the stream ends once its events are out, and the browser's
     /// reconnect subscribes to what the member follows now.
     reconnect: bool,
+    /// A message's page: its browse more line kept counted.
+    browse_more: Option<BrowseMore>,
     topic_channel: Option<String>,
     /// `/polls/<topic_id>`: a post's polls changed (PollsUpdater, votes,
     /// toggle_status), for static/js/poll.js to draw them again.
@@ -421,6 +443,7 @@ async fn handle_batch(
     let do_not_disturb = live.user_id.map(|id| format!("/do-not-disturb/{id}"));
     let mut tracking: Option<Position> = None;
     let mut chat = false;
+    let mut pm_tracking = false;
     let mut last: Option<Position> = None;
     for item in batch {
         let message = match item? {
@@ -507,6 +530,23 @@ async fn handle_batch(
                     .id(id)
                     .data(message.data.to_string()),
             );
+        } else if live
+            .browse_more
+            .as_ref()
+            .is_some_and(|b| b.channels.contains(&message.channel))
+        {
+            // pmTopicTrackingState#_processMessage: a new message that is
+            // not the member's own, a reply and a read change its states;
+            // a group's archiving does not.
+            pm_tracking = pm_tracking
+                || match message.data["message_type"].as_str() {
+                    Some("new_topic") => {
+                        message.data["payload"]["created_by_user_id"].as_i64()
+                            != live.user_id.map(i64::from)
+                    }
+                    Some("read" | "unread") => true,
+                    _ => false,
+                };
         } else if live.chat_channels.contains(&message.channel) {
             chat = true;
             if follows_changed(live, &message) {
@@ -520,9 +560,108 @@ async fn handle_batch(
         // Carries the batch's last position, so the ids stay in bus order.
         recount_lists(live, last).await?;
     }
+    if pm_tracking {
+        push_browse_more(live, last).await?;
+    }
     if chat {
         chat_chrome(live, last).await?;
     }
+    Ok(())
+}
+
+/// A message's page, for the member reading it: what its browse more line
+/// (BrowseMore#privateMessageBrowseMoreMessage) is counted from.
+struct BrowseMore {
+    topic_id: i32,
+    /// The message's suggested_group_name: the group whose inbox the line
+    /// reads, else the member's own.
+    group: Option<String>,
+    /// pmTopicTrackingState#startTracking's channels: the member's own
+    /// and each of their groups' with messages.
+    channels: Vec<String>,
+    /// The line last sent.
+    sent: Option<String>,
+}
+
+impl BrowseMore {
+    /// `None` for a topic that is not a message.
+    async fn load(
+        conn: &mut sqlx::PgConnection,
+        guardian: &Guardian,
+        topic_id: i32,
+        user_id: i32,
+    ) -> Result<Option<Self>, AppError> {
+        let private_message: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND archetype = 'private_message')",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if !private_message {
+            return Ok(None);
+        }
+        let group =
+            crate::pm_tracking_state::suggested_group_name(&mut *conn, topic_id, user_id).await?;
+        let mut channels = vec![crate::pm_tracking_state::user_channel(user_id)];
+        // currentUser.groupsWithMessages
+        for (id, _, has_messages) in
+            crate::pm_tracking_state::viewer_groups(&mut *conn, guardian).await?
+        {
+            if has_messages {
+                channels.push(crate::pm_tracking_state::group_channel(id));
+            }
+        }
+        Ok(Some(Self {
+            topic_id,
+            group,
+            channels,
+            sent: None,
+        }))
+    }
+}
+
+/// The message's browse more line counted again and, when it changed
+/// since it was last sent, queued to replace the one the page drew. The
+/// message counts as read through the posts the page was drawn with, as
+/// the page counted it (pm_tracking_state::browse_more_counts).
+async fn push_browse_more(live: &mut Live, id: Option<Position>) -> Result<(), AppError> {
+    let (Some(browse_more), Some(user)) = (live.browse_more.as_ref(), live.guardian.user()) else {
+        return Ok(());
+    };
+    let seen = live.posts.map(|(_, last)| last).unwrap_or(0);
+    let counts = {
+        let mut conn = live.state.pool.acquire().await?;
+        crate::pm_tracking_state::browse_more_counts(
+            &mut conn,
+            &live.settings,
+            &live.guardian,
+            browse_more.group.as_deref(),
+            (browse_more.topic_id, seen),
+        )
+        .await?
+    };
+    let line = crate::post_view::pm_browse_more_message(
+        &live.state.i18n,
+        live.state.config.globals.relative_url_root(),
+        &user.username,
+        browse_more.group.as_deref(),
+        counts,
+    )
+    .map_err(crate::html::HtmlError::from)?;
+    if browse_more.sent.as_ref() == Some(&line) {
+        return Ok(());
+    }
+    let html = format!(
+        r#"<h3 class="more-topics__browse-more" hx-swap-oob="outerHTML:.more-topics__browse-more">{line}</h3>"#
+    );
+    if let Some(browse_more) = live.browse_more.as_mut() {
+        browse_more.sent = Some(line);
+    }
+    let mut event = Event::default().event("more-topics").data(html);
+    if let Some(position) = id {
+        event = event.id(position.to_string());
+    }
+    live.pending.push_back(event);
     Ok(())
 }
 

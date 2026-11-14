@@ -3173,25 +3173,8 @@ impl TopicView<'_> {
     /// one of the viewer's groups the PM is addressed to.
     async fn suggested_group_name(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
         let uid = self.guardian.user_id().unwrap_or(0);
-        let direct: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2)",
-        )
-        .bind(topic.id)
-        .bind(uid)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if direct {
-            return Ok(Value::Null);
-        }
-        let name: Option<String> = sqlx::query_scalar(
-            "SELECT groups.name FROM groups JOIN group_users ON group_users.group_id = groups.id \
-             WHERE group_users.group_id IN (SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1) \
-             AND group_users.user_id = $2 LIMIT 1",
-        )
-        .bind(topic.id)
-        .bind(uid)
-        .fetch_optional(&mut *self.conn)
-        .await?;
+        let name =
+            crate::pm_tracking_state::suggested_group_name(&mut *self.conn, topic.id, uid).await?;
         Ok(json!(name))
     }
 
