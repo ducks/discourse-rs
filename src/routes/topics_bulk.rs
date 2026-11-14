@@ -87,7 +87,8 @@ async fn begin(
     Ok(Ok(Request { p, settings }))
 }
 
-/// Runs an operation in its own transaction.
+/// Runs an operation outside any transaction, as TopicsBulkAction wraps
+/// nothing: the operation commits each topic's change on its own.
 async fn run(
     state: &AppState,
     ctx: &Ctx<'_>,
@@ -95,12 +96,10 @@ async fn run(
     topic_ids: Vec<i32>,
     operation: Map<String, Value>,
 ) -> Result<Performed, AppError> {
-    let mut tx = state.pool.begin().await?;
-    let performed = BulkAction::new(&mut tx, &state.pool, ctx, guardian, topic_ids, operation)
+    let mut conn = state.pool.acquire().await?;
+    BulkAction::new(&mut conn, &state.pool, ctx, guardian, topic_ids, operation)
         .perform()
-        .await?;
-    tx.commit().await?;
-    Ok(performed)
+        .await
 }
 
 fn operation(kind: &str) -> Map<String, Value> {

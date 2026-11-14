@@ -297,3 +297,73 @@ async fn change_category_to_uncategorized() {
     assert_eq!(status, 500);
     assert_eq!(category_of(&db.pool, BY_USER0).await, Some(UNCATEGORIZED));
 }
+
+/// A close's small action and PostCreator for a new topic both lock the
+/// category's row and the author's user_stats row. A bulk close holding
+/// one transaction over topics in two categories keeps the first one's
+/// user_stats while it waits for the second category, against the same
+/// user's new topic there: each topic's close commits on its own, as
+/// TopicsBulkAction wraps nothing.
+#[tokio::test]
+async fn closing_races_the_closers_new_topics_in_the_categories_without_deadlock() {
+    const ROUNDS: usize = 30;
+    const TOPICS: [i32; 3] = [BY_USER0, BY_ADMIN, BY_USER1];
+    let db = TestDb::new().await;
+    let st = site(&db).await;
+    let mut closer = Client::logged_in(st.clone(), "admin").await;
+    let mut in_general = Client::logged_in(st.clone(), "admin").await;
+    let mut in_sub_general = Client::logged_in(st.clone(), "admin").await;
+    let close = TOPICS
+        .iter()
+        .map(|id| format!("topic_ids[]={id}&"))
+        .collect::<String>()
+        + "operation[type]=close";
+    let topic = |category: i32, round: usize| {
+        format!(
+            "title=Racing+the+bulk+close+in+category+{category}+round+{round}\
+             &raw=A+new+topic+by+the+closer+during+a+bulk+close,+round+{round}.&category={category}"
+        )
+    };
+    let mut failed = Vec::new();
+    for round in 0..ROUNDS {
+        // Reopened every round, so each one adds its small actions.
+        sqlx::query("UPDATE topics SET closed = FALSE WHERE id = ANY($1)")
+            .bind(&TOPICS[..])
+            .execute(&db.pool)
+            .await
+            .unwrap();
+        let (general, sub_general) = (topic(GENERAL, round), topic(SUB_GENERAL, round));
+        let (closed, first, second) = tokio::join!(
+            bulk(&mut closer, &close),
+            in_general.request("POST", "/posts.json", &general),
+            in_sub_general.request("POST", "/posts.json", &sub_general),
+        );
+        if closed.0 == 200 && closed.1["topic_ids"] != json!([BY_USER0, BY_USER1, BY_ADMIN]) {
+            failed.push(format!("round {round} close changed {}", closed.1));
+        }
+        for (what, (status, body)) in [("close", closed), ("topic", first), ("topic", second)] {
+            if status != 200 {
+                failed.push(format!("round {round} {what}: {status} {body}"));
+            }
+        }
+    }
+    assert!(
+        failed.is_empty(),
+        "{} failures in {ROUNDS} rounds:\n{}",
+        failed.len(),
+        failed.join("\n")
+    );
+    let (closed, small_actions, topics): (i64, i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM topics WHERE id = ANY($1) AND closed), \
+                (SELECT COUNT(*) FROM posts WHERE topic_id = ANY($1) AND action_code = 'closed.enabled'), \
+                (SELECT COUNT(*) FROM topics WHERE title LIKE 'Racing the bulk close in category %')",
+    )
+    .bind(&TOPICS[..])
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        (closed, small_actions, topics),
+        (3, (ROUNDS * 3) as i64, (ROUNDS * 2) as i64)
+    );
+}
