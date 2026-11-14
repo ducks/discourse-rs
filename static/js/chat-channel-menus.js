@@ -296,16 +296,19 @@
         submenu(button, section, id === "filterChannels" ? "filter" : "sort");
         return;
       }
-      Discourse.float.close("chat-channel-list-options-menu");
-      if (id === "createChannel") {
-        createChannel();
-      } else if (id === "browseChannels") {
-        go("/chat/browse/open");
-      } else if (id === "startDm" && Discourse.chatNewMessage) {
-        Discourse.chatNewMessage.show();
-      } else if (id === "startGroupChat" && Discourse.chatNewMessage) {
-        Discourse.chatNewMessage.show("NEW_GROUP");
-      }
+      // Once closed: the menu gives its trigger the focus as it goes,
+      // which a modal opened before that would lose.
+      Discourse.float.close("chat-channel-list-options-menu").then(function () {
+        if (id === "createChannel") {
+          createChannel();
+        } else if (id === "browseChannels") {
+          go("/chat/browse/open");
+        } else if (id === "startDm" && Discourse.chatNewMessage) {
+          Discourse.chatNewMessage.show();
+        } else if (id === "startGroupChat" && Discourse.chatNewMessage) {
+          Discourse.chatNewMessage.show("NEW_GROUP");
+        }
+      });
     });
   }
 

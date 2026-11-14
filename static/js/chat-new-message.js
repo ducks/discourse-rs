@@ -7,7 +7,10 @@
 // GET /chat/api/chatables as typed; a user opens the direct message with
 // them (chat.upsertDmChannel, POST /chat/api/direct-message-channels), a
 // group or "New group chat" goes to the new group mode (NewGroup with
-// MembersSelector), which creates a group direct message. The profile's
+// MembersSelector), which creates a group direct message. A direct
+// message's members route draws the creator itself, without the modal, in
+// the add members mode (AddMembers, POST
+// /chat/api/channels/:id/memberships; chat-channel-info.js). The profile's
 // and the user card's Chat buttons (ChatDirectMessageButton) open the
 // direct message with their user directly, as /chat/new-message with
 // recipients (ChatNewMessageRoute) does with them. A channel opens through
@@ -28,7 +31,7 @@
   var MAX_RESULTS = 10;
   // discourse/lib/environment's INPUT_DELAY.
   var INPUT_DELAY = 250;
-  var MODES = { search: "SEARCH", new_group: "NEW_GROUP" };
+  var MODES = { search: "SEARCH", new_group: "NEW_GROUP", add_members: "ADD_MEMBERS" };
 
   function basePath() {
     return (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
@@ -642,13 +645,16 @@
   }
 
   // MessageCreator in the modal: its mode, its members, and the search
-  // or the new group drawn into the creator.
-  function showModal(initialMode) {
+  // or the new group drawn into the creator. With `inline` (its
+  // container, channelId, membershipsCount, onCancel and onSaved) it is
+  // the members route's MessageCreator instead, held to the add members
+  // mode for that channel.
+  function showModal(initialMode, inline) {
     // ChatModalNewMessage#shouldRender
-    if (!cfg.publicChannels && !cfg.canDirectMessage) {
+    if (!inline && !cfg.publicChannels && !cfg.canDirectMessage) {
       return;
     }
-    if (!window.Discourse || !Discourse.modal) {
+    if (!window.Discourse || (!inline && !Discourse.modal)) {
       return;
     }
     var context = { channels: [] };
@@ -691,10 +697,11 @@
       });
     }
 
+    // NewGroup's count, and AddMembers' on top of the channel's members.
     function membersCount() {
       return state.members.reduce(function (acc, member) {
         return acc + (member.type === "group" ? member.model.chat_enabled_user_count : 1);
-      }, 0);
+      }, inline ? inline.membershipsCount || 0 : 0);
     }
 
     function searchModeHtml() {
@@ -762,13 +769,10 @@
       );
     }
 
-    function newGroupHtml() {
+    // MembersSelector
+    function selectorHtml() {
       return (
-        '<div class="chat-message-creator__new-group-container"><div class="chat-message-creator__new-group"><div class="chat-message-creator__new-group-header-container"><div class="chat-message-creator__new-group-header"><input class="ember-text-field chat-message-creator__new-group-header__input" name="channel-name" placeholder="' +
-        escapeHtml(s.groupName) +
-        '" type="text">' +
-        countHtml() +
-        '</div></div><span style="display: contents"><div class="chat-message-creator__add-members-header-container"><div class="chat-message-creator__add-members-header"><div class="chat-message-creator__members-container"><div class="chat-message-creator__members">' +
+        '<span style="display: contents"><div class="chat-message-creator__add-members-header-container"><div class="chat-message-creator__add-members-header"><div class="chat-message-creator__members-container"><div class="chat-message-creator__members">' +
         icon("magnifying-glass") +
         membersHtml() +
         '<input autofocus class="ember-text-field chat-message-creator__members-input" placeholder="' +
@@ -777,8 +781,36 @@
         noTextButton("btn-flat chat-message-creator__add-members__close-btn", "xmark") +
         "</div></div>" +
         listHtml(items(), state.highlighted, membersCount() >= cfg.maxDmUsers, membersCount()) +
-        "</span>" +
+        "</span>"
+      );
+    }
+
+    function newGroupHtml() {
+      return (
+        '<div class="chat-message-creator__new-group-container"><div class="chat-message-creator__new-group"><div class="chat-message-creator__new-group-header-container"><div class="chat-message-creator__new-group-header"><input class="ember-text-field chat-message-creator__new-group-header__input" name="channel-name" placeholder="' +
+        escapeHtml(s.groupName) +
+        '" type="text">' +
+        countHtml() +
+        "</div></div>" +
+        selectorHtml() +
         footerHtml() +
+        "</div></div>"
+      );
+    }
+
+    // AddMembers
+    function addMembersHtml() {
+      return (
+        '<div class="chat-message-creator__add-members-container"><div class="chat-message-creator__add-members">' +
+        countHtml() +
+        selectorHtml() +
+        (state.members.length
+          ? '<div class="chat-message-creator__add-members-footer-container"><div class="chat-message-creator__add-members-footer"><button class="btn btn-flat" type="button"><span class="d-button-label">' +
+            escapeHtml(s.cancel) +
+            '</span></button><button class="btn btn-primary add-to-channel" type="button"><span class="d-button-label">' +
+            escapeHtml(s.addToChannel) +
+            "</span></button></div></div>"
+          : "") +
         "</div></div>"
       );
     }
@@ -799,7 +831,8 @@
           })
         : null;
       var caret = focused ? active.selectionStart : null;
-      creator.innerHTML = state.mode === MODES.search ? searchModeHtml() : newGroupHtml();
+      creator.innerHTML =
+        state.mode === MODES.search ? searchModeHtml() : state.mode === MODES.add_members ? addMembersHtml() : newGroupHtml();
       var values = {
         "chat-message-creator__search-input__input": state.term,
         "chat-message-creator__members-input": state.filter,
@@ -844,7 +877,11 @@
       var options =
         state.mode === MODES.search
           ? { preloadChannels: !state.term }
-          : { includeCategoryChannels: false, includeDirectMessageChannels: false };
+          : {
+              includeCategoryChannels: false,
+              includeDirectMessageChannels: false,
+              excludedMembershipsChannelId: inline ? inline.channelId : undefined,
+            };
       search(context, state.mode === MODES.search ? state.term : term, options)
         .then(function (found) {
           if (mine !== seq) {
@@ -965,11 +1002,46 @@
         .map(function (m) {
           return m.model.name;
         });
+      if (state.mode === MODES.add_members) {
+        // AddMembers#saveGroupMembers (chatApi.addMembersToChannel)
+        var h = headers();
+        h["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+        fetch(basePath() + "/chat/api/channels/" + inline.channelId + "/memberships", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: h,
+          body: param({ usernames: usernames, groups: groups }),
+        })
+          .then(function (r) {
+            return r
+              .json()
+              .catch(function () {
+                return {};
+              })
+              .then(function (json) {
+                if (!r.ok) {
+                  throw json;
+                }
+              });
+          })
+          .then(function () {
+            seq++;
+            inline.onSaved(s.saved);
+          }, popupAjaxError);
+        return;
+      }
       createDmChannel({ usernames: usernames, groups: groups }, { name: state.newGroupTitle }).then(done, popupAjaxError);
     }
 
-    // The cancel action: back to the search, the members gone.
+    // The cancel action: back to the search, the members gone; the
+    // members route's takes its creator away instead (onCancel).
     function cancel() {
+      if (inline) {
+        clearTimeout(searchTimer);
+        seq++;
+        inline.onCancel();
+        return;
+      }
       changeMode(MODES.search);
     }
 
@@ -988,117 +1060,123 @@
       });
     }
 
-    closeModal = Discourse.modal.show({
-      className: "chat-modal-new-message --quick-palette",
-      hideHeader: true,
-      title: s.title,
-      body: function (body) {
-        body.innerHTML = '<div class="chat-message-creator-container"><div class="chat-message-creator"></div></div>';
-        root = body;
-        render();
+    function mount(body) {
+      body.innerHTML = '<div class="chat-message-creator-container"><div class="chat-message-creator"></div></div>';
+      root = body;
+      render();
 
-        // ListHandler and Members' keys.
-        body.addEventListener("keydown", function (event) {
-          var input = event.target;
-          if (input.classList && input.classList.contains("chat-message-creator__members-input") && input.value === "") {
-            if (event.key === "Backspace" && state.members.length) {
-              event.preventDefault();
-              event.stopPropagation();
-              if (!state.highlightedMember) {
-                state.highlightedMember = state.members[state.members.length - 1];
-                refresh();
-              } else {
-                unselectMember(state.highlightedMember);
-              }
-              return;
-            }
-            if ((event.key === "ArrowLeft" || event.key === "ArrowRight") && state.members.length) {
-              event.preventDefault();
-              event.stopPropagation();
-              state.highlightedMember = step(state.members.map(function (m) {
-                return Object.assign({}, m, { enabled: true });
-              }), state.highlightedMember, event.key === "ArrowRight");
-              state.highlightedMember =
-                state.members.find(function (m) {
-                  return state.highlightedMember && m.identifier === state.highlightedMember.identifier;
-                }) || null;
+      // ListHandler and Members' keys.
+      body.addEventListener("keydown", function (event) {
+        var input = event.target;
+        if (input.classList && input.classList.contains("chat-message-creator__members-input") && input.value === "") {
+          if (event.key === "Backspace" && state.members.length) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!state.highlightedMember) {
+              state.highlightedMember = state.members[state.members.length - 1];
               refresh();
-              return;
-            }
-            if (event.key === "Enter" && state.highlightedMember) {
-              event.preventDefault();
-              event.stopPropagation();
+            } else {
               unselectMember(state.highlightedMember);
-              return;
-            }
-          }
-          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            event.preventDefault();
-            event.stopPropagation();
-            highlight(step(items(), state.highlighted, event.key === "ArrowDown"));
-          } else if (event.key === "Enter" && state.highlighted && !input.closest(".chat-message-creator__new-group-header")) {
-            event.preventDefault();
-            event.stopPropagation();
-            select(state.highlighted, event.shiftKey);
-          }
-        });
-        body.addEventListener("input", function (event) {
-          var input = event.target;
-          if (input.classList.contains("chat-message-creator__search-input__input")) {
-            onFilter(input.value);
-          } else if (input.classList.contains("chat-message-creator__members-input")) {
-            state.highlightedMember = null;
-            onFilter(input.value);
-          } else if (input.classList.contains("chat-message-creator__new-group-header__input")) {
-            state.newGroupTitle = input.value;
-          }
-        });
-        body.addEventListener("click", function (event) {
-          var li = event.target.closest(".chat-message-creator__list-item");
-          if (li) {
-            var item = itemAt(li);
-            if (item) {
-              select(item, event.shiftKey);
             }
             return;
           }
-          var member = event.target.closest(".chat-message-creator__member");
-          if (member) {
-            var chips = Array.prototype.slice.call(root.querySelectorAll(".chat-message-creator__member"));
-            unselectMember(state.members[chips.indexOf(member)]);
+          if ((event.key === "ArrowLeft" || event.key === "ArrowRight") && state.members.length) {
+            event.preventDefault();
+            event.stopPropagation();
+            state.highlightedMember = step(state.members.map(function (m) {
+              return Object.assign({}, m, { enabled: true });
+            }), state.highlightedMember, event.key === "ArrowRight");
+            state.highlightedMember =
+              state.members.find(function (m) {
+                return state.highlightedMember && m.identifier === state.highlightedMember.identifier;
+              }) || null;
+            refresh();
             return;
           }
-          if (event.target.closest(".chat-message-creator__search-input__cancel-button")) {
-            closeModal();
-          } else if (
-            event.target.closest(".chat-message-creator__add-members__close-btn") ||
-            event.target.closest(".chat-message-creator__new-group-footer .btn-flat")
-          ) {
-            cancel();
-          } else if (event.target.closest(".create-chat-group")) {
-            createGroup();
+          if (event.key === "Enter" && state.highlightedMember) {
+            event.preventDefault();
+            event.stopPropagation();
+            unselectMember(state.highlightedMember);
+            return;
           }
-        });
-        body.addEventListener("mousemove", function (event) {
-          var li = event.target.closest(".chat-message-creator__list-item");
-          if (li) {
-            var item = itemAt(li);
-            if (item && (!state.highlighted || state.highlighted.identifier !== item.identifier)) {
-              highlight(item);
-            }
+        }
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          event.stopPropagation();
+          highlight(step(items(), state.highlighted, event.key === "ArrowDown"));
+        } else if (event.key === "Enter" && state.highlighted && !input.closest(".chat-message-creator__new-group-header")) {
+          event.preventDefault();
+          event.stopPropagation();
+          select(state.highlighted, event.shiftKey);
+        }
+      });
+      body.addEventListener("input", function (event) {
+        var input = event.target;
+        if (input.classList.contains("chat-message-creator__search-input__input")) {
+          onFilter(input.value);
+        } else if (input.classList.contains("chat-message-creator__members-input")) {
+          state.highlightedMember = null;
+          onFilter(input.value);
+        } else if (input.classList.contains("chat-message-creator__new-group-header__input")) {
+          state.newGroupTitle = input.value;
+        }
+      });
+      body.addEventListener("click", function (event) {
+        var li = event.target.closest(".chat-message-creator__list-item");
+        if (li) {
+          var item = itemAt(li);
+          if (item) {
+            select(item, event.shiftKey);
           }
-        });
-        body.addEventListener(
-          "mouseleave",
-          function (event) {
-            if (event.target.classList && event.target.classList.contains("chat-message-creator__list-item")) {
-              highlight(null);
-            }
-          },
-          true
-        );
-      },
-    });
+          return;
+        }
+        var member = event.target.closest(".chat-message-creator__member");
+        if (member) {
+          var chips = Array.prototype.slice.call(root.querySelectorAll(".chat-message-creator__member"));
+          unselectMember(state.members[chips.indexOf(member)]);
+          return;
+        }
+        if (event.target.closest(".chat-message-creator__search-input__cancel-button")) {
+          closeModal();
+        } else if (
+          event.target.closest(".chat-message-creator__add-members__close-btn") ||
+          event.target.closest(".chat-message-creator__new-group-footer .btn-flat, .chat-message-creator__add-members-footer .btn-flat")
+        ) {
+          cancel();
+        } else if (event.target.closest(".create-chat-group, .add-to-channel")) {
+          createGroup();
+        }
+      });
+      body.addEventListener("mousemove", function (event) {
+        var li = event.target.closest(".chat-message-creator__list-item");
+        if (li) {
+          var item = itemAt(li);
+          if (item && (!state.highlighted || state.highlighted.identifier !== item.identifier)) {
+            highlight(item);
+          }
+        }
+      });
+      body.addEventListener(
+        "mouseleave",
+        function (event) {
+          if (event.target.classList && event.target.classList.contains("chat-message-creator__list-item")) {
+            highlight(null);
+          }
+        },
+        true
+      );
+    }
+
+    if (inline) {
+      mount(inline.container);
+    } else {
+      closeModal = Discourse.modal.show({
+        className: "chat-modal-new-message --quick-palette",
+        hideHeader: true,
+        title: s.title,
+        body: mount,
+      });
+    }
 
     // The member's channels for the preloaded list, then the first fetch.
     myChannels()
@@ -1239,5 +1317,14 @@
     };
   });
 
-  Discourse.chatNewMessage = { show: showModal, startChatting: startChatting };
+  Discourse.chatNewMessage = {
+    show: function (initialMode) {
+      showModal(initialMode);
+    },
+    // MessageCreator with @mode add members, for a channel's members.
+    addMembers: function (inline) {
+      showModal(MODES.add_members, inline);
+    },
+    startChatting: startChatting,
+  };
 })();

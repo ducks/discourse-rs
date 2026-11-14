@@ -2221,6 +2221,8 @@ async fn every_page_carries_the_new_message_modal() {
             "&quot;groupName&quot;:&quot;Group chat name (optional)&quot;",
             "&quot;membersOther&quot;:&quot;%{count}/%{max} members&quot;",
             "&quot;createGroup&quot;:&quot;Create group chat&quot;",
+            "&quot;addToChannel&quot;:&quot;Add to channel&quot;",
+            "&quot;saved&quot;:&quot;Saved!&quot;",
             "&quot;canGroupChat&quot;:true",
             "&quot;maxDmUsers&quot;:20",
             "&quot;canDirectMessage&quot;:true",

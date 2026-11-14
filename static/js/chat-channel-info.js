@@ -903,7 +903,12 @@
       })
       .then(function (html) {
         if (replace) {
+          // The add member item is the route's, not a page's.
+          var add = list.querySelector(".-add-member");
           list.innerHTML = html;
+          if (add) {
+            list.prepend(add);
+          }
           done = false;
         } else if (html.trim()) {
           list.insertAdjacentHTML("beforeend", html);
@@ -915,6 +920,45 @@
       .finally(function () {
         loading = false;
       });
+  }
+
+  // addMember: MessageCreator in its add members mode where the list was
+  // (showAddMembers, chat-new-message.js). A cancel brings the list back
+  // as the route draws it; once saved, the toast and the channel.
+  var arrivalToast = null;
+  function addMembers(root, item) {
+    if (!Discourse.chatNewMessage || !Discourse.chatNewMessage.addMembers) {
+      return;
+    }
+    var holder = document.createElement("div");
+    holder.style.display = "contents";
+    root.hidden = true;
+    root.after(holder);
+    Discourse.chatNewMessage.addMembers({
+      container: holder,
+      channelId: root.dataset.channelId,
+      membershipsCount: parseInt(item.dataset.membershipsCount, 10) || 0,
+      onCancel: function () {
+        holder.remove();
+        root.hidden = false;
+        var filter = root.querySelector(".c-channel-members__filter input");
+        if (filter) {
+          filter.value = "";
+          filter.focus();
+        }
+        loadMembers(true);
+      },
+      onSaved: function (text) {
+        // The toast outlives the transition: the drawer stays under it,
+        // a full page shows it once the channel is in.
+        if (root.closest(".chat-drawer")) {
+          toast(text);
+        } else {
+          arrivalToast = text;
+        }
+        go(root.dataset.pageUrl.slice(basePath().length).replace(/\/info\/members\/page$/, ""));
+      },
+    });
   }
 
   document.addEventListener("input", function (event) {
@@ -930,6 +974,11 @@
   document.addEventListener("click", function (event) {
     var root = membersRoot();
     if (!root || !root.contains(event.target)) {
+      return;
+    }
+    var add = event.target.closest(".c-channel-members__list-item.-add-member");
+    if (add) {
+      addMembers(root, add);
       return;
     }
     var item = event.target.closest(".c-channel-members__list-item.-member");
@@ -954,7 +1003,7 @@
     if (event.key !== "Enter") {
       return;
     }
-    var info = event.target.closest && event.target.closest(".c-channel-members .-user-info");
+    var info = event.target.closest && event.target.closest(".c-channel-members .-user-info, .c-channel-members .-add-member");
     if (info) {
       info.click();
     }
@@ -996,4 +1045,10 @@
   };
 
   Discourse.onPage(mountMembers);
+  Discourse.onPage(function () {
+    if (arrivalToast) {
+      toast(arrivalToast);
+      arrivalToast = null;
+    }
+  });
 })();
