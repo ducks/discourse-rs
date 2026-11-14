@@ -1430,7 +1430,8 @@
       return null;
     }
     var suffix = " - " + config.siteTitle;
-    var title = document.title;
+    // Without the tab count (static/js/document-title.js, members).
+    var title = Discourse.documentTitle ? Discourse.documentTitle.getTitle() : document.title;
     if (config.siteTitle && title.slice(-suffix.length) === suffix) {
       return title.slice(0, -suffix.length);
     }

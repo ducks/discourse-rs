@@ -1770,8 +1770,8 @@ with the viewport, guessing from the user agent without it
     the header's moon were there. Tests: sessions
     the_user_menu_pauses_notifications, browser do-not-disturb (3).
     Left: the client's other readers of isInDoNotDisturb, not ported:
-    the push subscription (186), the title's and favicon's counts, the
-    notification sound; desktop notifications are 296's),
+    the push subscription (186), the notification sound; the title's
+    and favicon's counts are 296's, desktop notifications 297's),
     show_user_menu_avatars (refused)
 96. ~~`feat/mobile-composer`~~ (done) L: the mobile composer's controls
     (the toolbar toggle in place of the preview and fullscreen ones), its
@@ -2978,7 +2978,7 @@ have handlers now.
     preview done, feat/chat-rest: chat-audio-manager's sounds synthesized
     with Web Audio in static/js/preferences.js, played on choosing one and
     by the preview button; left: playing them on a new message or mention,
-    over core's desktop notification handler, 296, with 225b). Tests:
+    over core's desktop notification handler, 297, with 225b). Tests:
     tests/chat_rest.rs
 163. `feat/solved-rest` S: discourse-solved's crawler schema markup and
     lists by solved status (its auto close timers, web hooks and search
@@ -5937,7 +5937,28 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the group card's two buttons, the composer marking the recipient as
     a group (hasGroups), and Join and Leave still reporting errors with
     window.alert
-296. ~~`feat/desktop-notifications`~~ (done) M: a member's alerts
+296. ~~`feat/document-title-counts`~~ (done) S: a member's tab title
+    never changed with what was new. Now static/js/document-title.js,
+    Ember's document-title service with d-document's listeners: by the
+    title_count_mode option, the notifications count
+    (all_unread_notifications_count and unseen_reviewable_count, taken
+    as onNotification changes them while the tab is hidden, 0 once it
+    shows again) or the contextual one (the latest list's banner count;
+    the posts others make in the topic viewed in a hidden tab, cleared
+    on showing it; 0 with each page), as "(N) title", or with
+    dynamic_favicon drawn on the favicon instead (update-tab-count's
+    Favcount canvas), and no title count during do not disturb. The
+    numbers ride the header redraw (Badge::count_attrs on the avatar),
+    the banner's data-count and a marker ending the `post` event for a
+    post by someone else (sent off the topic's last page too). The
+    prefix goes back on whatever writes <title> (each page, the title
+    editor) and readers ask Discourse.documentTitle.getTitle()
+    (local-dates). Tests: browser document-title-counts (6), live_page.
+    Left: chat's addDocumentTitleCounter and its forced updates,
+    /favicon/proxied for a favicon on another origin, the banner on
+    lists other than the front page's latest, and
+    discourse:focus-changed's other listeners
+297. ~~`feat/desktop-notifications`~~ (done) M: a member's alerts
     (/notification-alert/:id) only filled the header's
     #notification-alert, and the preferences' PushNotificationSelect
     refused every level but none. Now static/js/desktop-notifications.js
@@ -6638,7 +6659,7 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     chat's desktop notifications and their sound (chat-audio's
     registerDesktopNotificationHandler over /chat/notification-alert,
     ChatNotificationManager, chat-alert-dedup; core's desktop
-    notifications are 296's, without the handler registry), the title
+    notifications are 297's, without the handler registry), the title
     counter
     (addDocumentTitleCounter, getDocumentTitleCount; core's document
     title service isn't ported), the help modal's chat section (the

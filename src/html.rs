@@ -250,6 +250,11 @@ pub struct Chrome {
     /// The header avatar's badge (crate::header_badge), empty for a
     /// visitor or while nothing applies.
     pub avatar_badge: String,
+    /// `Badge::count_attrs` on the avatar, for the tab title's count.
+    pub avatar_counts: String,
+    /// static/js/document-title.js's script attributes: the member's
+    /// title_count_mode and dynamic_favicon options. Empty for a visitor.
+    pub document_title_attrs: String,
     /// UserStatusBubble on the header avatar, for a member with a status.
     pub avatar_status: String,
     /// static/js/user-status.js's script attributes with
@@ -1170,7 +1175,7 @@ impl Site {
                 sqlx::query_as(
                     "SELECT timezone, text_size_key, text_size_seq, default_calendar, \
                        composition_mode, hide_presence, color_scheme_id, dark_scheme_id, \
-                       interface_color_mode \
+                       interface_color_mode, title_count_mode_key, dynamic_favicon \
                      FROM user_options WHERE user_id = $1",
                 )
                 .bind(user.id)
@@ -1229,6 +1234,20 @@ impl Site {
         self.chrome.plugin_stylesheets =
             crate::plugin_api::stylesheet_links(settings, &self.base_path)?;
         if let Some(o) = &options {
+            // UserOption.title_count_modes: notifications 0, contextual 1.
+            self.chrome.document_title_attrs = format!(
+                r#" data-title-count-mode="{}"{}"#,
+                if o.title_count_mode_key == 1 {
+                    "contextual"
+                } else {
+                    "notifications"
+                },
+                if o.dynamic_favicon {
+                    " data-dynamic-favicon"
+                } else {
+                    ""
+                }
+            );
             self.chrome.save_timezone = o.timezone.as_deref().is_none_or(str::is_empty);
             // UserOption.text_sizes
             let sizes = ["normal", "larger", "largest", "smaller", "smallest"];
@@ -1367,10 +1386,9 @@ impl Site {
                     .await?;
             self.chrome.drafts_menu_trigger =
                 drafts_menu_trigger(&state.i18n, i64::from(draft_count.unwrap_or(0)));
-            self.chrome.avatar_badge =
-                crate::header_badge::Badge::load(&mut *conn, settings, guardian)
-                    .await?
-                    .html(&state.i18n);
+            let badge = crate::header_badge::Badge::load(&mut *conn, settings, guardian).await?;
+            self.chrome.avatar_badge = badge.html(&state.i18n);
+            self.chrome.avatar_counts = badge.count_attrs();
             let timezone: Option<String> =
                 sqlx::query_scalar("SELECT timezone FROM user_options WHERE user_id = $1")
                     .bind(user_id)
@@ -1478,6 +1496,8 @@ struct ChromeOptions {
     color_scheme_id: Option<i32>,
     dark_scheme_id: Option<i32>,
     interface_color_mode: i32,
+    title_count_mode_key: i32,
+    dynamic_favicon: bool,
 }
 
 pub struct CategoryBadge {

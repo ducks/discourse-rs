@@ -558,6 +558,7 @@ fn push_badge(live: &mut Live, id: Option<String>) -> Result<(), AppError> {
     .replace("{size}", "48");
     let contents = crate::header_badge::toggle_contents(
         &avatar_url,
+        &live.badge.count_attrs(),
         &live.status_bubble,
         &live.badge.html(&live.state.i18n),
     );
@@ -788,9 +789,13 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
     else {
         return Ok(None);
     };
+    // The topic controller's "created" by someone else: a member's page
+    // hears of it wherever it is in the topic, for
+    // incrementBackgroundContextCount (static/js/document-title.js).
+    let by_other = kind == "created" && created_by_other(live, data).await?;
     // A new post belongs at the end of the topic, not on an earlier page.
     if kind == "created" && !live.tail {
-        return Ok(None);
+        return Ok(by_other.then(|| CREATED_BY_OTHER.to_string()));
     }
     // A change to a post the page doesn't draw (PostStream#findLoadedPost
     // finds none): nothing to redraw. A page at the topic's end draws
@@ -831,7 +836,30 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
             ),
         );
     }
+    if by_other {
+        html.push_str(CREATED_BY_OTHER);
+    }
     Ok(Some(html))
+}
+
+/// Ends a `post` event for a post someone else created.
+const CREATED_BY_OTHER: &str = "<template data-created-by-other></template>";
+
+/// Whether a "created" message counts for the member's tab title: not
+/// their own post (`currentUser.id !== data.user_id`), nor an ignored
+/// user's, which the topic controller drops first.
+async fn created_by_other(live: &Live, data: &Value) -> Result<bool, AppError> {
+    let Some(user) = live.guardian.user() else {
+        return Ok(false);
+    };
+    if data["user_id"].as_i64() == Some(i64::from(user.id)) {
+        return Ok(false);
+    }
+    let mut conn = live.state.pool.acquire().await?;
+    let ignored = crate::html::ignored_usernames(&mut conn, &user.username).await?;
+    Ok(!data["username"]
+        .as_str()
+        .is_some_and(|name| ignored.iter().any(|i| i == name)))
 }
 
 /// The topic's title block as this viewer sees it now, replacing
@@ -1206,8 +1234,9 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
         let n = list.topics.iter().filter(|t| t.bumped_at > since).count();
         let banner = match n {
             0 => String::new(),
-            1 => r#"<a href="">1 new or updated topic. Show</a>"#.to_string(),
-            n => format!(r#"<a href="">{n} new or updated topics. Show</a>"#),
+            // data-count: the incomingCount static/js/document-title.js reads.
+            1 => r#"<a href="" data-count="1">1 new or updated topic. Show</a>"#.to_string(),
+            n => format!(r#"<a href="" data-count="{n}">{n} new or updated topics. Show</a>"#),
         };
         out.push_str(&format!(
             r#"<div id="list-updates" class="list-updates" hx-swap-oob="true">{banner}</div>"#
