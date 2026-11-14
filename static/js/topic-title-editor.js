@@ -311,7 +311,9 @@
         var title = doc.getElementById("topic-title");
         var heading = title && title.querySelector("h1[data-topic-id]");
         var topic = document.getElementById("topic");
-        if (location.href !== url || !heading || !topic || heading.dataset.topicId !== topic.dataset.topicId) {
+        // Still this topic's page; its address may have moved on with the
+        // post being read.
+        if (!heading || !topic || heading.dataset.topicId !== topic.dataset.topicId) {
           return;
         }
         setTitle(title.innerHTML);

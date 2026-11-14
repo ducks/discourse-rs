@@ -57,6 +57,37 @@ test("the author and an admin have the pencil, another member and a visitor do n
   }
 });
 
+test("a save is drawn though the address moved on while the topic was read again", async ({ page, context, session }) => {
+  const t = await setup(session, "Title editor address");
+  await login(context, "user1");
+  await page.goto(t.url);
+  await openEditor(page);
+  let release;
+  const held = new Promise((resolve) => (release = resolve));
+  let reloading;
+  const reload = new Promise((resolve) => (reloading = resolve));
+  await page.route(new RegExp(`/t/[^/]+/${t.id}(/\\d+)?$`), async (route) => {
+    if (route.request().method() !== "GET") {
+      return route.continue();
+    }
+    reloading();
+    await held;
+    await route.continue();
+  });
+  const title = label("Title editor readdressed");
+  await page.locator(INPUT).fill(title);
+  await page.locator(`${EDITOR} .submit-edit`).click();
+  await reload;
+  // The post being read changing the address, as scrolling does.
+  await page.evaluate((id) => {
+    const path = location.pathname.replace(new RegExp(`(/${id})(/\\d+)?$`), "$1/2");
+    history.replaceState(history.state, "", path);
+  }, t.id);
+  release();
+  await expect(page).toHaveTitle(new RegExp(`^${title} - `));
+  await expect(page.locator(TITLE)).toHaveText(title);
+});
+
 test("the editor saves a new title and draws it", async ({ page, context, session }) => {
   const t = await setup(session, "Title editor save");
   await login(context, "user1");
