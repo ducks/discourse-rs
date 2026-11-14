@@ -1730,14 +1730,26 @@
     if (!tpl) {
       return;
     }
-    var script = document.createElement("script");
-    script.src = tpl.dataset.src;
-    script.onload = function () {
-      if (Discourse.flagModal) {
-        show();
-      }
+    var load = function (src, done) {
+      var script = document.createElement("script");
+      script.src = src;
+      script.onload = done;
+      document.head.appendChild(script);
     };
-    document.head.appendChild(script);
+    var modal = function () {
+      load(tpl.dataset.src, function () {
+        if (Discourse.flagModal) {
+          show();
+        }
+      });
+    };
+    // adminTools for staff: the penalty modal, before the flag modal asks
+    // for it.
+    if (tpl.dataset.penalizeSrc && !Discourse.penalizeUser) {
+      load(tpl.dataset.penalizeSrc, modal);
+    } else {
+      modal();
+    }
   }
 
   // ChatMessageInfo's flag mark: the viewer's own flag (self_flagged), or

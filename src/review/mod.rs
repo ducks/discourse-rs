@@ -510,7 +510,7 @@ async fn run(
     match action {
         FlagAction::AgreeAndHide => {
             if let Some((_, _, type_id, _)) = actions.first() {
-                hide(&mut *conn, ctx, &types, post, i64::from(*type_id)).await?;
+                hide(&mut *conn, ctx, &types, post, i64::from(*type_id), false).await?;
             }
         }
         FlagAction::Disagree => {
@@ -696,19 +696,23 @@ pub async fn expire_flags(
 
 /// `Post#hide!(post_action_type_id)` for a reply: hidden with the reason,
 /// the author's post count down, the post_hidden system message, and the
-/// topic's bumped_at reset when it was the last reply. Hiding a first
-/// post, or the last visible one, hides the topic, which is not ported.
+/// topic's bumped_at reset when it was the last reply. `queued_by_staff`
+/// is PostActionCreator's hide of a post queued for review (reason
+/// flag_threshold_reached, `custom_message: :queued_by_staff`). Hiding a
+/// first post, or the last visible one, hides the topic, which is not
+/// ported.
 pub async fn hide_post(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     types: &ActionTypes,
     post_id: i32,
     type_id: i64,
+    queued_by_staff: bool,
 ) -> Result<(), AppError> {
     let post = flagged_post(&mut *conn, post_id)
         .await?
         .ok_or(Unsupported("hiding a missing post"))?;
-    hide(conn, ctx, types, &post, type_id).await
+    hide(conn, ctx, types, &post, type_id, queued_by_staff).await
 }
 
 async fn hide(
@@ -717,12 +721,13 @@ async fn hide(
     types: &ActionTypes,
     post: &FlaggedPost,
     type_id: i64,
+    queued_by_staff: bool,
 ) -> Result<(), AppError> {
     if post.hidden {
         return Ok(());
     }
     let hiding_again = post.hidden_at.is_some();
-    let reason = if hiding_again {
+    let reason = if hiding_again && !queued_by_staff {
         FLAG_THRESHOLD_REACHED_AGAIN
     } else {
         FLAG_THRESHOLD_REACHED
@@ -796,7 +801,13 @@ async fn hide(
             "send_system_message",
             json!({
                 "user_id": user_id,
-                "message_type": if hiding_again { "post_hidden_again" } else { "post_hidden" },
+                "message_type": if queued_by_staff {
+                    "queued_by_staff"
+                } else if hiding_again {
+                    "post_hidden_again"
+                } else {
+                    "post_hidden"
+                },
                 "message_options": {
                     "url": url,
                     "edit_delay": ctx.settings.get("cooldown_minutes_after_hiding_posts")?.to_i(),

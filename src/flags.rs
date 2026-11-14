@@ -12,10 +12,15 @@
 //! when it had been reviewed, unless the same type was reviewed lately
 //! and the post not edited since (cannot_flag_again?).
 //!
-//! Refused: official warnings (is_warning), queueing for review as staff,
-//! flags in messages, and the rules when they would close the topic, hide
-//! on a trusted spam flag or silence the author. The badge queue is not
-//! ported; flags write no user actions or notifications.
+//! A message flagged as any other post is (a message's posts can always be
+//! flagged). An official warning (is_warning, staff only for notify user)
+//! is the message as TopicCreator#create_warning makes it. Staff queueing
+//! a post for review (queue_for_review) hide it at once, its author told
+//! with queued_by_staff.
+//!
+//! Refused: queueing a topic's first post for review (it unlists the
+//! topic), and the rules when they would hide on a trusted spam flag or
+//! silence the author. Flags write no user actions or notifications.
 
 use sqlx::{PgConnection, PgPool};
 
@@ -125,9 +130,6 @@ pub async fn flag(
     let Some(access) = find_post(&mut tx, ctx, guardian, post_id).await? else {
         return Ok(Outcome::NotFound);
     };
-    if access.topic.private_message() {
-        return Err(Unsupported("flags in messages").into());
-    }
     let post = &access.post;
     let types = ActionTypes::load(&mut tx).await?;
     let Some(name) = types.name(req.type_id).map(str::to_string) else {
@@ -151,6 +153,8 @@ pub async fn flag(
             author_missing: post_author.is_none(),
         },
     )?;
+    // no warnings except for staff
+    let can_act = can_act && !(name == "notify_user" && req.is_warning && !staff);
     if !can_act || (req.queue_for_review && !staff) {
         return Ok(Outcome::Forbidden(
             if taken.is_some_and(|t| t.contains_key(&req.type_id)) {
@@ -173,8 +177,10 @@ pub async fn flag(
     {
         return Ok(Outcome::RateLimited(refused));
     }
-    if req.queue_for_review {
-        return Err(Unsupported("queueing a post for review as staff").into());
+    // auto_hide_if_needed for a queued first post: the topic unlisted by
+    // the flagger, then by Post#hide!.
+    if req.queue_for_review && post.post_number == 1 {
+        return Err(Unsupported("queueing a topic's first post for review").into());
     }
     // Reviewable.find_by(target: @post), of any type.
     let reviewable: Option<i64> = sqlx::query_scalar(
@@ -200,10 +206,7 @@ pub async fn flag(
     if let Some(message) = req.message.as_deref().filter(|m| !m.trim().is_empty())
         && (types.requires_message(req.type_id) || name == "spam" || name == "illegal")
     {
-        if req.is_warning {
-            return Err(Unsupported("official warnings (is_warning)").into());
-        }
-        match create_message(pool, ctx, guardian, &access, &name, message).await? {
+        match create_message(pool, ctx, guardian, &access, &name, message, req.is_warning).await? {
             Ok(meta) => meta_post = Some(meta),
             Err(errors) => return Ok(Outcome::Invalid(errors)),
         }
@@ -321,7 +324,10 @@ pub async fn flag(
                 score_type: req.type_id,
                 created_at,
                 take_action,
-                reason: req.reason,
+                // "queued_by_staff" if reason.nil? && @queue_for_review
+                reason: req
+                    .reason
+                    .or(req.queue_for_review.then_some("queued_by_staff")),
                 context: req.context.clone(),
                 meta_topic_id: meta_post.as_ref().map(|m| m.topic_id),
             },
@@ -345,6 +351,7 @@ pub async fn flag(
         &types,
         reviewable_score,
         take_action,
+        req.queue_for_review,
     )
     .await?;
     // notify_subscribers: a flag that goes to review redraws the post.
@@ -439,6 +446,7 @@ async fn create_message(
     access: &crate::posting::revisions::PostAccess,
     name: &str,
     message: &str,
+    is_warning: bool,
 ) -> Result<Result<MetaPost, Vec<String>>, AppError> {
     let s = ctx.settings;
     let mut conn = pool.acquire().await?;
@@ -480,6 +488,7 @@ async fn create_message(
     let mut post = crate::posting::create::NewPost {
         raw,
         title: Some(truncate_at_space(&title, max_title)),
+        is_warning,
         ..Default::default()
     };
     if name == "notify_user" {
@@ -528,9 +537,9 @@ async fn create_message(
     }
 }
 
-/// `enforce_rules`: auto close, auto hide, auto silence. Hiding is ported;
-/// closing the topic, hiding by a trusted spam flagger and silencing are
-/// refused when they would act.
+/// `enforce_rules`: auto close, auto hide (at once for a post staff queue
+/// for review), auto silence. Hiding by a trusted spam flagger and
+/// silencing are refused when they would act.
 #[allow(clippy::too_many_arguments)]
 async fn enforce_rules(
     conn: &mut PgConnection,
@@ -543,6 +552,7 @@ async fn enforce_rules(
     types: &ActionTypes,
     reviewable_score: Option<f64>,
     take_action: bool,
+    queue_for_review: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     // auto_close_if_threshold_reached: closed by system, with an open
@@ -582,7 +592,13 @@ async fn enforce_rules(
     // auto_hide_if_needed
     let flagger_staff = guardian.is_staff();
     let author_staff = post_author.is_some_and(|a| a.staff);
-    if !access.post.hidden && (flagger_staff || !author_staff) && types.is_auto_action(type_id) {
+    if !access.post.hidden && (flagger_staff || !author_staff) && queue_for_review {
+        // Hidden whatever the flag, the author told with queued_by_staff.
+        crate::review::hide_post(&mut *conn, ctx, types, access.post.id, type_id, true).await?;
+    } else if !access.post.hidden
+        && (flagger_staff || !author_staff)
+        && types.is_auto_action(type_id)
+    {
         let trusted_spam_flagger = s.get("high_trust_flaggers_auto_hide_posts")?.truthy()
             && name == "spam"
             && guardian.has_trust_level(3)
@@ -593,7 +609,8 @@ async fn enforce_rules(
         let to_hide =
             reviewables::sensitivity_score(&mut *conn, s, "hide_post_sensitivity", 1.0).await?;
         if reviewable_score.unwrap_or(0.0) >= to_hide || take_action {
-            crate::review::hide_post(&mut *conn, ctx, types, access.post.id, type_id).await?;
+            crate::review::hide_post(&mut *conn, ctx, types, access.post.id, type_id, false)
+                .await?;
         }
     }
 

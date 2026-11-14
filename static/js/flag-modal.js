@@ -9,8 +9,10 @@
 // length counted against min_personal_message_post_length and 500), the
 // illegal flag's confirmation, then Flag Post or Message. For staff on a
 // post: Take Action (hide, or suspend or silence through PenalizeUser in
-// static/js/penalize-user.js with the flag made first), Official Warning
-// for a message, and Delete Spammer for a spam flag on a deletable user.
+// static/js/penalize-user.js with the flag made first), Queue for Review
+// (the post hidden until reviewed), Official Warning for a message, and
+// Delete Spammer for a spam flag on a deletable user, their email looked
+// up first where moderators_view_emails lets staff see it.
 // The flag is POST /post_actions (ActionSummary#act), the modal closed
 // first as Flag#create does; the post is drawn again from the server after,
 // as updateActionsSummary redraws it (its flag button gone, or hidden when
@@ -19,8 +21,10 @@
 //
 // The post's model is fetched when its flag is opened (posts#by_number,
 // render_post_json); the flag types, the topic's actions summary and the
-// strings are the page's #flag-modal-config. Not ported, and saying so:
-// official warnings, queueing for review and flags in messages.
+// strings are the page's #flag-modal-config. A message's posts and the
+// message itself are flagged as a topic's are. Not ported, and saying so:
+// queueing a topic's first post for review (it unlists the topic), and
+// for a chat message official warnings and queueing for review.
 (function () {
   "use strict";
 
@@ -638,10 +642,6 @@
           }
         );
       }
-      if (c.topic.archetype === "private_message") {
-        notPorted("flags in messages");
-        return Promise.resolve(false);
-      }
       return ajax("POST", "/post_actions", {
         id: flagModel.id,
         post_action_type_id: selected.id,
@@ -664,15 +664,38 @@
       );
     }
 
+    // The post drawn again from the server stands in for setHidden.
     function createFlagAndHide(opts) {
       return createFlag(opts);
+    }
+
+    // Flag#createFlagAsWarning
+    function createFlagAsWarning() {
+      if (target.chat) {
+        notPorted("official warnings for chat messages");
+        return;
+      }
+      createFlagAndHide({ isWarning: true });
+    }
+
+    // Flag#flagForReview
+    function flagForReview() {
+      if (target.chat) {
+        notPorted("queueing a chat message for review");
+        return;
+      }
+      if (flagModel.post_number === 1) {
+        notPorted("queueing a topic's first post for review");
+        return;
+      }
+      createFlagAndHide({ queue_for_review: true });
     }
 
     // Flag#penalize through adminTools: the author's AdminUser, the post
     // to act on, and the flag made before the penalty.
     function penalize(type) {
+      // if (!this.adminTools)
       if (!Discourse.penalizeUser) {
-        notPorted("the " + type + " modal");
         return;
       }
       Discourse.penalizeUser
@@ -685,7 +708,8 @@
               return createFlag({ takeAction: true, skipClose: true });
             },
           };
-          if (!target.targetsTopic) {
+          // flagTarget.editable(): not a chat message.
+          if (!target.chat) {
             opts.postId = flagModel.id;
             opts.postEdit = flagModel.cooked;
           }
@@ -708,16 +732,31 @@
       }
     }
 
-    // adminTools#_deleteSpammer
+    // adminTools#_deleteSpammer: the email looked up first where the site
+    // lets staff see it (User#checkEmail).
     function deleteSpammer() {
       var user = state.spammerDetails && state.spammerDetails.user;
       if (!user) {
         return;
       }
-      if (c.moderators_view_emails) {
-        notPorted("revealing the email");
+      if (!c.moderators_view_emails) {
+        confirmDeleteSpammer(user);
         return;
       }
+      ajax(
+        "GET",
+        "/u/" + encodeURIComponent(String(user.username).toLowerCase()) + "/emails.json?" + encode({ context: location.pathname })
+      )
+        .then(function (result) {
+          if (result) {
+            user.email = result.email;
+          }
+          confirmDeleteSpammer(user);
+        })
+        .catch(popupAjaxError);
+    }
+
+    function confirmDeleteSpammer(user) {
       Discourse.dialog.dialog({
         class: "flagging-delete-spammer",
         message: messageFormat("flagging.delete_confirm_MF", {
@@ -801,9 +840,9 @@
           if (btn.classList.contains("flag-modal__create-flag")) {
             createFlag();
           } else if (btn.classList.contains("flag-modal__send-warning")) {
-            notPorted("official warnings");
+            createFlagAsWarning();
           } else if (btn.classList.contains("flag-modal__flag-for-review")) {
-            notPorted("queueing a post for review");
+            flagForReview();
           } else if (btn.classList.contains("flag-modal__delete-spammer")) {
             deleteSpammer();
           }

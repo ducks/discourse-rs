@@ -89,6 +89,9 @@ pub struct NewPost {
     pub no_bump: bool,
     /// `visible` (`unlist_topic`): a new topic created unlisted when false.
     pub visible: Option<bool>,
+    /// `is_warning`: a new message as an official warning to its one
+    /// recipient (TopicCreator#create_warning).
+    pub is_warning: bool,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -165,6 +168,9 @@ struct TopicPlan {
     all_topics_wiki: bool,
     /// A message's subtype.
     subtype: Option<String>,
+    /// `is_warning`: the subtype is moderator_warning, and the topic gets
+    /// its UserWarning.
+    is_warning: bool,
     /// The topic's custom fields (`topic_opts[:custom_fields]`).
     custom_fields: Vec<(String, String)>,
     /// TopicCreator#setup_tags: the tags asked for, the category the topic
@@ -234,6 +240,7 @@ async fn regular_topic_plan(
         slow_mode_seconds: slow_mode,
         all_topics_wiki,
         subtype: None,
+        is_warning: false,
         custom_fields: Vec::new(),
         tags: None,
         tag_category_id: None,
@@ -547,6 +554,7 @@ pub async fn create(
                 slow_mode_seconds: None,
                 all_topics_wiki: false,
                 subtype: args.subtype.clone(),
+                is_warning: false,
                 custom_fields: args.topic_custom_fields.clone(),
                 tags: None,
                 tag_category_id: None,
@@ -561,6 +569,7 @@ pub async fn create(
             plan = Some(regular);
         }
         if let Some(plan) = plan.as_mut() {
+            plan.is_warning = args.is_warning;
             plan.tags = args.tags.clone().filter(|t| !t.is_empty());
             plan.tag_category_id = category_id;
             plan.tag_text = format!("{} {}", args.title.as_deref().unwrap_or(""), args.raw);
@@ -1930,6 +1939,12 @@ async fn create_topic(
         return Err(Unsupported("slug_generation_method other than ascii").into());
     }
     let pm = plan.pm_recipients.is_some();
+    // setup_topic_params: a warning's subtype, whatever was asked for.
+    let subtype = if plan.is_warning {
+        Some("moderator_warning")
+    } else {
+        plan.subtype.as_deref()
+    };
     // setup_tags, before the topic is saved.
     let tagging = match setup_tags(conn, ctx, tag_guardian, plan, pm, skip_validations).await? {
         Ok(tagging) => tagging,
@@ -1979,9 +1994,9 @@ async fn create_topic(
     .bind(plan.slow_mode_seconds)
     .bind(if pm { "private_message" } else { "regular" })
     .bind(if pm {
-        Some(plan.subtype.as_deref().unwrap_or("user_to_user"))
+        Some(subtype.unwrap_or("user_to_user"))
     } else {
-        plan.subtype.as_deref()
+        subtype
     })
     .bind(plan.visible)
     .fetch_one(&mut *conn)
@@ -2023,7 +2038,7 @@ async fn create_topic(
             s,
             poster,
             pm,
-            pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")),
+            pm.then(|| subtype.unwrap_or("user_to_user")),
         )?)
         .await?
     {
@@ -2079,6 +2094,30 @@ async fn create_topic(
     }
     if advance_draft {
         next_draft_sequence(conn, user_id, &format!("topic_{topic_id}")).await?;
+    }
+    // create_warning: only on a message, to the one user added; the
+    // UserWarning row.
+    if plan.is_warning {
+        let base = "activerecord.errors.models.topic.attributes.base";
+        let Some(added) = recipients.as_deref() else {
+            return Ok(Err(TopicRefused::Invalid(vec![
+                ctx.t(&format!("{base}.warning_requires_pm")),
+            ])));
+        };
+        let [warned] = added else {
+            return Ok(Err(TopicRefused::Invalid(vec![
+                ctx.t(&format!("{base}.too_many_users")),
+            ])));
+        };
+        sqlx::query(
+            "INSERT INTO user_warnings (topic_id, user_id, created_by_id, created_at, updated_at) \
+             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(topic_id)
+        .bind(warned)
+        .bind(user_id)
+        .execute(&mut *conn)
+        .await?;
     }
     // set_author_notification_level: watch it.
     change_topic_user(

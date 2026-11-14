@@ -340,12 +340,36 @@ impl Context<'_> {
             out.push_str(&actions);
             out.push_str(&self.staged_templates(&view).await?);
             // The flag modal ChatMessageFlag opens (static/js/flag-modal.js,
-            // which chat.js loads from data-src when a flag is asked for).
+            // which chat.js loads from data-src when a flag is asked for);
+            // for staff the penalty modal its take action opens and its
+            // spammer check (adminTools; static/js/penalize-user.js).
             if channel_json["meta"]["can_flag"] == true {
+                let staff = self.guardian.is_staff();
                 out.push_str(&format!(
-                    "<template class=\"chat-flag-modal\" data-src=\"{}\"></template>",
-                    escape(&crate::assets::url(self.base_path, "flag-modal.js"))
+                    "<template class=\"chat-flag-modal\" data-src=\"{}\"{}></template>",
+                    escape(&crate::assets::url(self.base_path, "flag-modal.js")),
+                    if staff {
+                        format!(
+                            " data-penalize-src=\"{}\"",
+                            escape(&crate::assets::url(self.base_path, "penalize-user.js"))
+                        )
+                    } else {
+                        String::new()
+                    }
                 ));
+                if staff {
+                    let timezone =
+                        crate::penalize_view::viewer_timezone(&mut *self.conn, viewer_id).await?;
+                    out.push_str(&crate::penalize_view::config(
+                        self.i18n,
+                        self.settings,
+                        &crate::penalize_view::Assets {
+                            base_path: self.base_path,
+                        },
+                        timezone.as_deref(),
+                        None,
+                    ));
+                }
                 out.push_str(
                     &crate::flag_modal_view::chat_config(
                         &mut *self.conn,
