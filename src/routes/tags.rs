@@ -14,7 +14,6 @@ use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::tags::{Tag, visible_tags_where};
-use crate::topic_query::Options;
 use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
@@ -135,56 +134,6 @@ fn query_tags(raw_query: Option<&str>) -> Result<Vec<String>, Unsupported> {
     Ok(out)
 }
 
-/// `construct_url_with(:next, list_opts)`: the request's tag route with
-/// the list options as query params, sorted, `.json` dropped.
-pub(super) fn next_url(
-    list_path: &str,
-    params: &ListParams,
-    options: &Options,
-    request: &TagListRequest,
-) -> String {
-    let mut pairs: Vec<String> = Vec::new();
-    if let Some(a) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
-        pairs.push(format!("ascending={a}"));
-    }
-    if !request.no_tags {
-        pairs.push("match_all_tags=true".to_string());
-    } else {
-        pairs.push("no_tags=true".to_string());
-    }
-    if options.no_subcategories {
-        pairs.push("no_subcategories=true".to_string());
-    }
-    if let Some(o) = &options.order {
-        pairs.push(format!("order={}", crate::ruby::cgi_escape(o)));
-    }
-    if let Some(state) = &options.state {
-        pairs.push(format!("state={}", crate::ruby::cgi_escape(state)));
-    }
-    if let Some(subset) = &options.subset {
-        pairs.push(format!("subset={}", crate::ruby::cgi_escape(subset)));
-    }
-    pairs.push(format!("page={}", options.page + 1));
-    if let Some(p) = options.per_page {
-        pairs.push(format!("per_page={p}"));
-    }
-    if !request.tags.is_empty() {
-        let tags: Vec<String> = request
-            .tags
-            .iter()
-            .map(|t| {
-                format!(
-                    "tags%5B%5D={}",
-                    form_urlencoded::byte_serialize(t.as_bytes()).collect::<String>()
-                )
-            })
-            .collect();
-        pairs.push(tags.join("&"));
-    }
-    pairs.sort();
-    format!("{list_path}?{}", pairs.join("&"))
-}
-
 /// GET /tag/{*path}
 #[allow(clippy::too_many_arguments)]
 pub async fn show(
@@ -302,8 +251,49 @@ async fn show_list(
     }
     let base_path = state.config.globals.relative_url_root().to_string();
 
-    // set_category: missing or unreadable -> 404; no slug check.
+    // set_category: missing or unreadable -> 404; no slug check. Off the
+    // category routes the `category` param names one, a top-level slug or
+    // id (Category.query_category), blank or not.
     let mut category = None;
+    let mut param_category = None;
+    let category_param = match &path.category_path {
+        Some(_) => None,
+        None => super::list::rack_params(&params.pairs)?.remove("category"),
+    };
+    if let Some(param) = category_param {
+        let super::list::Param::Str(slug_or_id) = param else {
+            return Err(Unsupported("a tag list's category param that is not a string").into());
+        };
+        let slug = if settings.get("slug_generation_method")?.to_s() == "encoded" {
+            crate::ruby::cgi_escape(&slug_or_id)
+        } else {
+            slug_or_id.clone()
+        };
+        let id: Option<i32> = sqlx::query_scalar(
+            "SELECT id FROM categories WHERE parent_category_id IS NULL \
+             AND (slug = $1 OR id = $2) ORDER BY slug = $1 DESC, id LIMIT 1",
+        )
+        .bind(&slug)
+        .bind(crate::ruby::to_i(&slug_or_id))
+        .fetch_optional(&mut *conn)
+        .await?;
+        let found = match id {
+            Some(id) => Category::find(&mut conn, id).await?,
+            None => None,
+        };
+        let Some(c) = found else {
+            return Ok(not_found());
+        };
+        if c.read_restricted
+            && !guardian
+                .secure_category_ids(&mut conn, &settings)
+                .await?
+                .contains(&c.id)
+        {
+            return Ok(not_found());
+        }
+        param_category = Some(c);
+    }
     if let Some(slug_path) = &path.category_path {
         let max_nesting = settings.get("max_category_nesting")?.to_i();
         let found = Category::find_by_slug_path_with_id(&mut conn, slug_path, max_nesting).await?;
@@ -376,7 +366,8 @@ async fn show_list(
         if target.is_some() || should_redirect {
             let t = target.as_ref().unwrap_or(t);
             let filter = path.filter.as_deref().filter(|f| *f != "latest");
-            let mut url = match &category {
+            // `if @filter_on_category`, however set_category found it.
+            let mut url = match category.as_ref().or(param_category.as_ref()) {
                 Some(c) => {
                     let category_path = c.full_slug(&mut conn).await?;
                     let mode = if path.no_subcategories { "none/" } else { "" };
@@ -415,16 +406,12 @@ async fn show_list(
         tags.insert(0, tag_name.clone());
         tags.dedup();
     }
-    let request = if tag_name == "none" {
-        TagListRequest {
-            tags: Vec::new(),
-            no_tags: true,
-        }
-    } else {
-        TagListRequest {
-            tags,
-            no_tags: false,
-        }
+    let no_tags = tag_name == "none";
+    let request = TagListRequest {
+        tags: if no_tags { Vec::new() } else { tags },
+        no_tags,
+        name_route: matches!(path.tag, TagRef::Name(_)),
+        category_param: param_category.as_ref().map(|c| c.slug_for_url()),
     };
     let action = path
         .filter
@@ -449,14 +436,13 @@ async fn show_list(
         },
     };
     drop(conn);
-    super::list::refuse_unported_tag_list_params(&params)?;
 
     let (doc, settings) = match list_document_for(
         &state,
         &guardian,
         &params,
         ListScope {
-            category: category.as_ref(),
+            category: category.as_ref().or(param_category.as_ref()),
             no_subcategories: path.no_subcategories,
             kind,
             list_path: &list_path,
@@ -834,22 +820,5 @@ mod tests {
         let p = parse_path("general/sub-general/34/howto", true).unwrap();
         assert_eq!(p.category_path.as_deref(), Some("general/sub-general/34"));
         assert!(matches!(p.tag, TagRef::Name(ref n) if n == "howto"));
-    }
-
-    #[test]
-    fn next_url_carries_the_tag_params() {
-        let request = TagListRequest {
-            tags: vec!["howto".into()],
-            no_tags: false,
-        };
-        let params = ListParams::from(vec![("per_page".to_string(), "1".to_string())]);
-        let options = Options {
-            per_page: Some(1),
-            ..Options::default()
-        };
-        assert_eq!(
-            next_url("/tag/howto", &params, &options, &request),
-            "/tag/howto?match_all_tags=true&page=1&per_page=1&tags%5B%5D=howto"
-        );
     }
 }
