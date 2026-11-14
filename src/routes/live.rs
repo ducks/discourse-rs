@@ -1838,6 +1838,7 @@ pub async fn posts(
         1,
         pm_counts,
         None,
+        &[],
     )
     .await?;
     let mut html = page.posts.concat();

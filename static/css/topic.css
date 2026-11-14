@@ -3399,3 +3399,124 @@ nav.post-controls .actions > [hidden] {
   padding: .5em 0;
 }
 
+/* topic.scss:384 */
+.has-pending-posts {
+  display: flex;
+  justify-content: space-between;
+  padding: .5em;
+  background-color: var(--highlight-bg);
+  margin-top: 1em;
+  max-width: 757px;
+}
+/* topic.scss:475 */
+.topic-area .pending-posts {
+  max-width: calc(var(--topic-body-width) + var(--topic-body-width-padding)*2 + var(--topic-avatar-width));
+}
+/* topic.scss:482 */
+.topic-area .pending-posts .reviewable-item .post-body {
+  max-height: unset;
+}
+/* reviewables.scss:329, the legacy .reviewable-item as the topic's pending
+   posts use it (the review queue draws .review-item, review.css) */
+.reviewable-item {
+  background: var(--primary-very-low);
+  padding: 1.5rem;
+  margin-block: 3rem;
+  padding-bottom: 1em;
+}
+/* reviewables.scss:335 */
+.reviewable-item:first-of-type {
+  margin-top: var(--space-4);
+}
+/* reviewables.scss:348 */
+.reviewable-item .created-by {
+  margin-right: 1em;
+  padding-top: .35em;
+}
+@media (width < 40rem) {
+  /* reviewables.scss:352 */
+  .reviewable-item .created-by {
+    float: left;
+    margin-bottom: 1em;
+  }
+}
+/* reviewables.scss:358 */
+.reviewable-item .post-contents-wrapper {
+  width: 100%;
+  margin-top: 1em;
+  min-width: 275px;
+  word-break: break-word;
+}
+@media (width >= 40rem) {
+  /* reviewables.scss:364 */
+  .reviewable-item .post-contents-wrapper {
+    display: flex;
+  }
+}
+/* reviewables.scss:369 */
+.reviewable-item .post-contents {
+  width: 100%;
+  min-width: 0;
+}
+/* reviewables.scss:374 */
+.reviewable-item .post-body {
+  position: relative;
+  margin-top: .5em;
+}
+/* reviewables.scss:397 */
+.reviewable-item .post-body p {
+  margin-bottom: 0;
+}
+/* reviewables.scss:424 */
+.reviewable-item .post-body aside {
+  margin: 0 0 1em 0;
+}
+/* reviewables.scss:428 */
+.reviewable-item .post-body img {
+  max-width: 100%;
+  height: auto;
+}
+/* reviewables.scss:433 */
+.reviewable-item .post-body pre,
+.reviewable-item .post-body code {
+  word-break: break-all;
+}
+/* reviewables.scss:470 */
+.reviewable-item .reviewable-meta-data {
+  color: var(--primary-med-or-secondary-med);
+  display: flex;
+  width: 100%;
+  margin-bottom: .5em;
+  font-size: var(--font-down-1);
+  align-items: baseline;
+}
+/* reviewables.scss:478 */
+.reviewable-item .reviewable-meta-data .reviewable-type {
+  margin-right: .25em;
+  padding: .25em .5em;
+  text-transform: uppercase;
+  font-size: var(--font-down-2);
+  color: var(--secondary);
+  border-radius: 8px;
+  background-color: var(--secondary-high);
+}
+/* reviewables.scss:492 */
+.reviewable-item .reviewable-meta-data .created-at {
+  margin-left: 1em;
+  margin-right: auto;
+}
+/* reviewables.scss:496 */
+.reviewable-item .reviewable-meta-data .created-at a {
+  color: var(--primary-med-or-secondary-med);
+}
+/* reviewables.scss:510 */
+.reviewable-item .reviewable-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  width: 100%;
+}
+/* reviewables.scss:516 */
+.reviewable-item .reviewable-actions button {
+  white-space: nowrap;
+}

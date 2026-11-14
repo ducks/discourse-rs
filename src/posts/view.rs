@@ -3816,6 +3816,66 @@ pub fn slow_mode_info(cx: &PostContext, view: &Value) -> String {
     )
 }
 
+/// The viewer's own queued posts under the posts (templates/topic.gjs's
+/// `pending-posts`, from TopicPendingPostSerializer): each awaiting
+/// approval with its age, the viewer's avatar and name
+/// (ReviewableCreatedBy, ReviewableCreatedByName), the raw cooked
+/// (DCookText; `cooked` is the raws cooked, in order) and deletePending's
+/// button (static/js/topic.js). Empty as Ember leaves it without any.
+pub fn pending_posts(
+    cx: &PostContext,
+    view: &Value,
+    cooked: &[String],
+    avatar_url: &str,
+) -> String {
+    let l = cx.list;
+    let (Some(username), Some(pending)) = (cx.viewer, view["pending_posts"].as_array()) else {
+        return String::new();
+    };
+    if pending.is_empty() {
+        return String::new();
+    }
+    let attrs = user_link_attrs(cx, username, false);
+    let avatar = avatar_img(avatar_url, 48, &format!(" title=\"{}\"", escape(username)));
+    let mut out = String::from("<div class=\"pending-posts\">");
+    for (i, p) in pending.iter().enumerate() {
+        let age = date(&p["created_at"])
+            .map(|at| crate::viewer_dates::tiny_span(l, at))
+            .unwrap_or_default();
+        out.push_str(&format!(
+            "<div class=\"reviewable-item\" data-reviewable-id=\"{}\"><div class=\"reviewable-meta-data\"><span class=\"reviewable-type\">{}</span><span class=\"created-at\">{age}</span></div><div class=\"post-contents-wrapper\"><div class=\"created-by\"><a{attrs}>{avatar}</a></div><div class=\"post-contents\"><div class=\"names\"><span class=\"username\"><a{attrs}>{}</a></span></div><div class=\"post-body\"><div>{}</div></div></div></div><div class=\"reviewable-actions\"><button class=\"btn btn-icon-text btn-danger\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button></div></div>",
+            p["id"].as_i64().unwrap_or(0),
+            escape(&t(l, "review.awaiting_approval")),
+            escape(username),
+            cooked.get(i).map(String::as_str).unwrap_or(""),
+            d_icon("trash-can", None),
+            escape(&t(l, "review.delete")),
+        ));
+    }
+    out.push_str("</div>");
+    out
+}
+
+/// `has-pending-posts` under the viewer's own queued posts: how many of
+/// the topic's posts wait for approval (queued_posts_count, for staff)
+/// and the link to them in the review queue (the route's query, less
+/// `status`, which pending is the default of).
+pub fn queued_posts_notice(cx: &PostContext, view: &Value) -> String {
+    let l = cx.list;
+    let count = view["queued_posts_count"].as_i64().unwrap_or(0);
+    if count <= 0 {
+        return String::new();
+    }
+    // trustHTML: the count is in the translation's own <b>.
+    format!(
+        "<div class=\"has-pending-posts\"><div>{}</div><a href=\"{}/review?type=ReviewableQueuedPost&amp;topic_id={}\">{}</a></div>",
+        t_count(l, "review.topic_has_pending", count, &[]),
+        l.base_path,
+        cx.topic.id,
+        escape(&t(l, "review.view_pending")),
+    )
+}
+
 /// TopicTimerInfo (components/topic-timer-info.gjs) under the posts: the
 /// public timer's notice, its title the time in full, and for who may set
 /// timers the edit and remove buttons (static/js/topic-admin-menu.js).

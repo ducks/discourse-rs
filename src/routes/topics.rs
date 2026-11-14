@@ -732,6 +732,24 @@ async fn show(
     } else {
         None
     };
+    // DCookText on each of the viewer's queued posts.
+    let mut pending_cooked = Vec::new();
+    if let Some(pending) = rendered.json["pending_posts"]
+        .as_array()
+        .filter(|p| !p.is_empty())
+    {
+        let host = crate::pretty_text::Host::from_state(state);
+        for p in pending {
+            pending_cooked.push(
+                crate::pretty_text::cook(
+                    &host,
+                    p["raw"].as_str().unwrap_or(""),
+                    &crate::pretty_text::MarkdownOptions::default(),
+                )
+                .await?,
+            );
+        }
+    }
     let mut page = crate::html::topic_page(
         &mut conn,
         &state.i18n,
@@ -741,6 +759,7 @@ async fn show(
         page,
         pm_counts,
         params.filter.as_deref(),
+        &pending_cooked,
     )
     .await?;
     page.crawler = topic_crawler(
