@@ -4731,9 +4731,20 @@ route table has been made, so this list may be short.
     (calculatePosition), so a short one-post message keeps its scroll
     area as Ember's does. Found by the screenshot run (/t/90 as admin and
     as user1, parity/screens/pages). Left, split into 262a.
-    262a. `feat/pm-topic-view-rest` S: the browse more line is drawn once with the
+    262a. `feat/pm-topic-view-rest` S: ~~the browse more line is drawn once with the
     page's own message read through the posts shown, not kept live from
-    the pmTopicTrackingState bus messages; ~~the title's edit pencil and
+    the pmTopicTrackingState bus messages~~ (done in
+    `feat/pm-browse-more-live`: on a message's page GET /live hears the
+    member's own and their groups' with messages
+    /private-message-topic-tracking-state channels, as
+    pmTopicTrackingState#startTracking does, and after a message that
+    changes its states (a new message not their own, a reply, a read;
+    not a group's archiving) counts the line again from their report and
+    swaps it in as a `more-topics` event, the reader's own reading coming
+    back as the read their timings publish. Counted from the database's
+    report each time, not from states merged in the page as Ember keeps
+    them; a dismissal on a message list shows when the page is next
+    drawn, as it publishes nothing); ~~the title's edit pencil and
     title editing (TopicTitleEditor, the edit-title glyph's styles) are
     not drawn for any topic~~ (done in `feat/topic-title-editor`: for
     details.can_edit the pencil in the title's link and
