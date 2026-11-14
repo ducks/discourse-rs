@@ -34,6 +34,14 @@ pub struct ChatChrome {
     /// chatChannelsManager.hasStarredChannels, for the drawer's
     /// lastKnownChatURL.
     pub starred: bool,
+    /// ChatTrackingStateManager's totals over every channel, for
+    /// chat-drawer.js (the tab title's count): `#chat-tracking-state`,
+    /// kept current by the live stream as the header icon is.
+    pub tracking_state: String,
+    /// chat-drawer.js's attributes for chat-audio's handler: the member's
+    /// chat_sound (currentUser.chat_sound, absent without one) and
+    /// chat_header_indicator_preference.
+    pub notify_attrs: String,
 }
 
 /// A direct message channel's part of its sidebar link.
@@ -371,11 +379,29 @@ impl Context<'_> {
             Some(id) => unread_indicator(&channels, &dms, &options, Some(id)),
             None => String::new(),
         };
+        let totals = Totals::of(&channels, &dms, None);
+        let tracking_state = format!(
+            "<span id=\"chat-tracking-state\" hidden data-urgent-count=\"{}\" data-mention-count=\"{}\" data-unread-count=\"{}\"></span>",
+            totals.urgent, totals.mentions, totals.unread
+        );
+        let mut notify_attrs = format!(
+            " data-indicator-preference=\"{}\"",
+            indicator_preference(&options)
+        );
+        if let Some(sound) = options
+            .chat_sound
+            .as_deref()
+            .filter(|s| !s.trim().is_empty())
+        {
+            notify_attrs.push_str(&format!(" data-chat-sound=\"{}\"", escape(sound)));
+        }
         Ok(Some(ChatChrome {
             header_icon,
             sidebar_sections,
             back_indicator,
             starred: channels.iter().chain(&dms).any(|c| c.starred),
+            tracking_state,
+            notify_attrs,
         }))
     }
 
@@ -1734,43 +1760,71 @@ fn raw_avatar_size(settings: &crate::site_settings::SiteSettings, size: i64) -> 
 /// `DIRECT_MESSAGE_CHANNELS_LIMIT`
 const DIRECT_MESSAGE_CHANNELS_LIMIT: usize = 50;
 
-/// ChatHeaderIconUnreadIndicator: a DM's unread messages are urgent; the
-/// unread dot counts public channels' messages and any channel's unread
-/// threads (hasUnreadThreads). `exclude` leaves a channel out (the channel
-/// route's back button counts the other channels).
+/// ChatTrackingStateManager's totals: allChannelUrgentCount (a DM's
+/// unread messages are urgent), allChannelMentionCount,
+/// publicChannelUnreadCount and hasUnreadThreads. `exclude` leaves a
+/// channel out.
+struct Totals {
+    urgent: i64,
+    mentions: i64,
+    unread: i64,
+    unread_threads: bool,
+}
+
+impl Totals {
+    fn of(channels: &[SidebarChannel], dms: &[SidebarChannel], exclude: Option<i64>) -> Self {
+        let others = |c: &&SidebarChannel| Some(c.id) != exclude;
+        Totals {
+            urgent: channels
+                .iter()
+                .filter(others)
+                .map(SidebarChannel::urgent)
+                .sum::<i64>()
+                + dms
+                    .iter()
+                    .filter(others)
+                    .map(|c| c.urgent() + c.unread)
+                    .sum::<i64>(),
+            mentions: channels
+                .iter()
+                .chain(dms)
+                .filter(others)
+                .map(|c| c.mentions)
+                .sum(),
+            unread: channels.iter().filter(others).map(|c| c.unread).sum(),
+            unread_threads: channels
+                .iter()
+                .chain(dms)
+                .filter(others)
+                .any(|c| c.unread_threads > 0),
+        }
+    }
+}
+
+/// The member's chat_header_indicator_preference, by name.
+fn indicator_preference(options: &super::ChatOptions) -> &'static str {
+    super::HEADER_INDICATORS
+        .get(usize::try_from(options.chat_header_indicator_preference).unwrap_or(0))
+        .copied()
+        .unwrap_or("all_new")
+}
+
+/// ChatHeaderIconUnreadIndicator: the unread dot counts public channels'
+/// messages and any channel's unread threads. `exclude` leaves a channel
+/// out (the channel route's back button counts the other channels).
 fn unread_indicator(
     channels: &[SidebarChannel],
     dms: &[SidebarChannel],
     options: &super::ChatOptions,
     exclude: Option<i64>,
 ) -> String {
-    let others = |c: &&SidebarChannel| Some(c.id) != exclude;
-    let preference = super::HEADER_INDICATORS
-        .get(usize::try_from(options.chat_header_indicator_preference).unwrap_or(0))
-        .copied()
-        .unwrap_or("all_new");
-    let urgent: i64 = channels
-        .iter()
-        .filter(others)
-        .map(SidebarChannel::urgent)
-        .sum::<i64>()
-        + dms
-            .iter()
-            .filter(others)
-            .map(|c| c.urgent() + c.unread)
-            .sum::<i64>();
-    let mentions: i64 = channels
-        .iter()
-        .chain(dms)
-        .filter(others)
-        .map(|c| c.mentions)
-        .sum();
-    let unread: i64 = channels.iter().filter(others).map(|c| c.unread).sum();
-    let unread_threads = channels
-        .iter()
-        .chain(dms)
-        .filter(others)
-        .any(|c| c.unread_threads > 0);
+    let preference = indicator_preference(options);
+    let Totals {
+        urgent,
+        mentions,
+        unread,
+        unread_threads,
+    } = Totals::of(channels, dms, exclude);
     let label = |n: i64| {
         if n > 99 {
             "99+".to_string()

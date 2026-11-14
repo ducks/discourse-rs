@@ -2977,8 +2977,9 @@ have handlers now.
     starred_channels_empty), chat's notification sounds (the preferences'
     preview done, feat/chat-rest: chat-audio-manager's sounds synthesized
     with Web Audio in static/js/preferences.js, played on choosing one and
-    by the preview button; left: playing them on a new message or mention,
-    over core's desktop notification handler, 297, with 225b). Tests:
+    by the preview button; ~~playing them on a mention's or a message's
+    alert~~ (done in `feat/chat-notify-client-rest`, 225b); left:
+    ChatNewMessageAnnouncer's for an active reader, 225b). Tests:
     tests/chat_rest.rs
 163. `feat/solved-rest` S: discourse-solved's crawler schema markup and
     lists by solved status (its auto close timers, web hooks and search
@@ -5954,9 +5955,11 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     prefix goes back on whatever writes <title> (each page, the title
     editor) and readers ask Discourse.documentTitle.getTitle()
     (local-dates). Tests: browser document-title-counts (6), live_page.
-    Left: chat's addDocumentTitleCounter and its forced updates,
-    /favicon/proxied for a favicon on another origin, the banner on
-    lists other than the front page's latest, and
+    Left: ~~chat's addDocumentTitleCounter and its forced updates~~
+    (done in `feat/chat-notify-client-rest`, 225b: nothing in core or
+    chat passes forced, the option is ported), /favicon/proxied for a
+    favicon on another origin, the banner on lists other than the front
+    page's latest, and
     discourse:focus-changed's other listeners
 297. ~~`feat/desktop-notifications`~~ (done) M: a member's alerts
     (/notification-alert/:id) only filled the header's
@@ -5988,8 +5991,9 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     instead and desktop is disabled for it. Tests: browser
     desktop-notifications (8), sessions
     members_hear_their_notifications_on_every_page and
-    the_user_menu_pauses_notifications. Left: the handler registry
-    (registerDesktopNotificationHandler, 225b), the
+    the_user_menu_pauses_notifications. Left: ~~the handler registry
+    (registerDesktopNotificationHandler, 225b)~~ (done in
+    `feat/chat-notify-client-rest`), the
     desktop-notification-opened app event, Mobile.mobileForced in
     isMobileDevice, isEnabledPush and the push half (186); the
     header's #notification-alert, which Ember has not, still drawn
@@ -6655,20 +6659,40 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     the page (the mobile view) the switch does nothing. Tests in
     tests/chat_client.rs; the keys themselves are browser behavior,
     not compared against the reference.
-    225b. `feat/chat-notify-client-rest` M: what waits on core's client:
-    chat's desktop notifications and their sound (chat-audio's
-    registerDesktopNotificationHandler over /chat/notification-alert,
-    ChatNotificationManager, chat-alert-dedup; core's desktop
-    notifications are 297's, without the handler registry), the title
-    counter
-    (addDocumentTitleCounter, getDocumentTitleCount; core's document
-    title service isn't ported), the help modal's chat section (the
-    keyboard shortcuts help is refused, static/js/sidebar.js:144), and
+    225b. `feat/chat-notify-client-rest` M: what waited on core's
+    client. ~~Chat's desktop notifications and their sound~~ (done in
+    `feat/chat-notify-client-rest`: the stream passes
+    /chat/notification-alert on as a `chat-notification-alert` event
+    to pages with chat, none in do not disturb; in
+    static/js/chat-drawer.js ChatNotificationManager's onMessage, which
+    claims an alert for the channel in sight and hands the others to
+    core's onNotification, off mobile devices; the chat-audio
+    initializer's handler on Discourse.desktopNotifications'
+    registerDesktopNotificationHandler, playing the member's chat_sound
+    for a chat_mention or chat_message alert unless in do not disturb,
+    the indicator preference is never, only_mentions and it is no
+    mention, or dm_and_mentions and it is neither; ChatAudioManager's
+    play with its incoming and mention sequences, its 3s throttle and
+    a suspended context's refusal, which browsers give until the page
+    is interacted with; chat-alert-dedup's claims in localStorage. No
+    service worker answers isPrimaryTab, so every tab is asked and the
+    claim decides, as Ember's without one) and ~~the title counter~~
+    (done in `feat/chat-notify-client-rest`: addDocumentTitleCounter
+    and notificationsChanged, with forced, on Discourse.documentTitle;
+    getDocumentTitleCount's allChannelUrgentCount in the notifications
+    mode, whatever the indicator preference, read off
+    `#chat-tracking-state`, the totals the header icon is drawn from,
+    kept current by the stream; the contextual mode's pending count
+    never shows in Ember either, the sum being the notifications
+    mode's). Tests: browser chat-notify-client (5), sessions
+    chat_alerts_and_totals_reach_the_page. Left: registerChatSound (a
+    theme's own sounds), the help modal's chat section (the keyboard
+    shortcuts help is refused, static/js/sidebar.js:144), and
     Ctrl/Cmd+L's insert link modal; and in chat.js the new message
-    sound (ChatAudioManager's oscillator sequences,
-    ChatNewMessageAnnouncer under chat_new_message_sound for an active
-    reader) and the announcement of new messages under
-    chat_announce_new_messages (a11y.announce's live region)
+    sound (ChatNewMessageAnnouncer under chat_new_message_sound for an
+    active reader, with chatAlertPlayed) and the announcement of new
+    messages under chat_announce_new_messages (a11y.announce's live
+    region)
 226. ~~`feat/chat-site-integration`~~ (done) M: chat's keys on core.
     /site.json's markdown_additional_options.chat (MARKDOWN_FEATURES,
     MARKDOWN_IT_RULES and the hashtag contexts, always there as Rails

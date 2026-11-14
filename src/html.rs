@@ -403,6 +403,9 @@ pub struct Chrome {
     /// chat-drawer.js's attributes, empty when the viewer can't chat (no
     /// drawer opens).
     pub chat_drawer: String,
+    /// `#chat-tracking-state` (plugins::chat::view), chat's unread totals
+    /// for chat-drawer.js, empty when the viewer can't chat.
+    pub chat_tracking_state: String,
     /// chat-new-message.js's attributes (the new message modal), empty when
     /// the viewer can't chat.
     pub chat_new_message: String,
@@ -1360,7 +1363,9 @@ impl Site {
                 &self.base_path,
                 chat.starred,
             )
-            .await?;
+            .await?
+                + &chat.notify_attrs;
+            self.chrome.chat_tracking_state = chat.tracking_state;
             self.chrome.chat_new_message = crate::plugins::chat::new_message::script_attrs(
                 settings,
                 guardian,

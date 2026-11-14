@@ -14,6 +14,12 @@
 // loaded or focused since, and no other tab focused after it) and the
 // keyValueStore's notifications-disabled isn't "disabled".
 //
+// registerDesktopNotificationHandler's handlers are called with each
+// alert before any of that is asked, as Ember's are, with (data,
+// siteSettings, user): the settings shown here read (title) and a user
+// answering isInDoNotDisturb. A plugin with alerts of its own (chat's
+// /chat/notification-alert) hands them to onNotification.
+//
 // Push (isPushNotificationsPreferred, isEnabledPush, the service worker)
 // is 186's: no worker controls the page, so isPushNotificationsSupported
 // is false and enable takes the browser branch for everyone.
@@ -251,12 +257,28 @@
     link.click();
   }
 
-  // canUserReceiveNotifications, but for do not disturb: the stream's.
+  // User#isInDoNotDisturb, as the header avatar carries it.
+  function isInDoNotDisturb() {
+    var avatar = document.querySelector("#toggle-current-user > img.avatar");
+    return !!avatar && "doNotDisturb" in avatar.dataset;
+  }
+
   function canUserReceiveNotifications() {
-    return primaryTab && getItem(CONTEXT, DISABLED_KEY) !== "disabled";
+    return primaryTab && !isInDoNotDisturb() && getItem(CONTEXT, DISABLED_KEY) !== "disabled";
+  }
+
+  var desktopNotificationHandlers = [];
+
+  function registerDesktopNotificationHandler(handler) {
+    desktopNotificationHandlers.push(handler);
   }
 
   function onNotification(data) {
+    // handlers run first: the permission request below can reject, or
+    // stay pending until a background tab is shown again
+    desktopNotificationHandlers.forEach(function (handler) {
+      handler(data, { title: c.title }, { isInDoNotDisturb: isInDoNotDisturb });
+    });
     if (!canUserReceiveNotifications() || !liveEnabled) {
       return;
     }
@@ -383,6 +405,9 @@
     isSubscribed: isEnabledBrowser,
     enable: enable,
     disable: disable,
+    registerDesktopNotificationHandler: registerDesktopNotificationHandler,
+    onNotification: onNotification,
+    isMobileDevice: isMobileDevice,
   };
 
   document.addEventListener("DOMContentLoaded", function () {
