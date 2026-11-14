@@ -212,6 +212,14 @@ pub async fn apply(
                 > 0
         }
     };
+    // CategoryFeaturedTopic.where(topic_id:).delete_all, for a topic
+    // closed, archived or unlisted.
+    let unfeature = (enabled
+        && matches!(
+            status,
+            Status::Closed | Status::Archived | Status::Autoclosed
+        ))
+        || (!enabled && status == Status::Visible);
     if status == Status::Visible && !enabled {
         // UserProfile.remove_featured_topic_from_all_profiles
         sqlx::query(
@@ -234,6 +242,12 @@ pub async fn apply(
             .bind(if enabled { 1 } else { -1 })
             .execute(&mut *conn)
             .await?;
+        }
+        // The featured rows (below in Rails) go while only the category's
+        // row is locked, before the author's user_stats: a new topic's
+        // order (see small_action::add_unfeaturing).
+        if unfeature {
+            unfeature_topic(&mut *conn, topic.id).await?;
         }
         // UserStatCountUpdater on the first post: its author's topic count,
         // not below zero.
@@ -289,18 +303,11 @@ pub async fn apply(
             .await?;
         }
     }
-    // Featured topics go when a topic is closed, archived or unlisted.
-    if (enabled
-        && matches!(
-            status,
-            Status::Closed | Status::Archived | Status::Autoclosed
-        ))
-        || (!enabled && status == Status::Visible)
-    {
-        sqlx::query("DELETE FROM category_featured_topics WHERE topic_id = $1")
-            .bind(topic.id)
-            .execute(&mut *conn)
-            .await?;
+    // Featured topics go when a topic is closed, archived or unlisted:
+    // here when nothing changed, else once the category's row is locked
+    // (above for an unlisting, in the small action otherwise).
+    if unfeature && !updated {
+        unfeature_topic(&mut *conn, topic.id).await?;
     }
     if status == Status::Visible && !enabled {
         sqlx::query("DELETE FROM topic_hot_scores WHERE topic_id = $1")
@@ -325,20 +332,32 @@ pub async fn apply(
             ),
             _ => None,
         };
-        small_action::add_with_message(
-            &mut *conn,
-            ctx,
-            &SmallAction {
-                user_id,
-                topic_id: topic.id,
-                action_code: &action_code,
-                bump: matches!(status, Status::Closed | Status::Autoclosed) && !enabled,
-                who: None,
-            },
-            message.as_deref(),
-            opts.silent,
-        )
-        .await?;
+        let action = SmallAction {
+            user_id,
+            topic_id: topic.id,
+            action_code: &action_code,
+            bump: matches!(status, Status::Closed | Status::Autoclosed) && !enabled,
+            who: None,
+        };
+        if unfeature && status != Status::Visible {
+            small_action::add_unfeaturing(
+                &mut *conn,
+                ctx,
+                &action,
+                message.as_deref(),
+                opts.silent,
+            )
+            .await?;
+        } else {
+            small_action::add_with_message(
+                &mut *conn,
+                ctx,
+                &action,
+                message.as_deref(),
+                opts.silent,
+            )
+            .await?;
+        }
     }
     // DiscourseEvent :topic_status_updated when it changed (a pin compares
     // the pin; unpinning names the pin it was): the web hooks first.
@@ -484,6 +503,15 @@ pub fn parse_time(s: &str, param: &'static str) -> Result<NaiveDateTime, AppErro
         return Err(InvalidParameters(param).into());
     }
     Err(Unsupported("a time Time.parse reads that isn't the pin form's").into())
+}
+
+/// `CategoryFeaturedTopic.where(topic_id:).delete_all`
+async fn unfeature_topic(conn: &mut PgConnection, topic_id: i32) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM category_featured_topics WHERE topic_id = $1")
+        .bind(topic_id)
+        .execute(&mut *conn)
+        .await?;
+    Ok(())
 }
 
 /// `Topic#update_pinned(status, global, pinned_until)`: the columns, then
