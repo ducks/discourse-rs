@@ -6,4 +6,4 @@ pub mod preview;
 pub mod rich_editor;
 pub mod view;
 
-pub(crate) use load::{Options, load};
+pub(crate) use load::{Options, chooser_scope, load};

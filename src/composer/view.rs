@@ -77,6 +77,27 @@ pub(crate) fn badge_span(list: &ListContext, category: &ListCategory, inside: &s
 }
 
 pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCategory) -> String {
+    row_with(list, c, category, false)
+}
+
+/// The row of the chooser's readOnlyCategoryId: a category the member
+/// can't create topics in, listed but not to be chosen (category-row's
+/// isReadOnly: the read_only_description as its title, and
+/// categoryBadgeHTML's readOnly after the topic count).
+pub(crate) fn read_only_row(
+    list: &ListContext,
+    c: &ChooserCategory,
+    category: &ListCategory,
+) -> String {
+    row_with(list, c, category, true)
+}
+
+fn row_with(
+    list: &ListContext,
+    c: &ChooserCategory,
+    category: &ListCategory,
+    read_only: bool,
+) -> String {
     let parent = category
         .parent_id
         .and_then(|p| list.categories.get(&p))
@@ -108,8 +129,18 @@ pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCatego
             )
         })
         .unwrap_or_default();
+    let (title, inside, read_only_data) = if read_only {
+        let label = escape(&t(list, "category_row.read_only"));
+        (
+            escape(&t(list, "category_row.read_only_description")),
+            format!("{count}<span class=\"read-only\" aria-label=\"{label}\">{label}</span>"),
+            " data-read-only=\"true\"",
+        )
+    } else {
+        (escape(&category.name), count, "")
+    };
     format!(
-        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{n}\" data-value=\"{}\" data-url=\"{}\"{}{} role=\"menuitemradio\" tabindex=\"-1\" title=\"{n}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
+        "<div class=\"category-row select-kit-row\" data-name=\"{n}\" data-title=\"{title}\" data-value=\"{}\" data-url=\"{}\"{}{}{read_only_data} role=\"menuitemradio\" tabindex=\"-1\" title=\"{title}\"><div class=\"category-status\">{parent}{}</div>{desc}</div>",
         c.id,
         // Category#url, for EditTopicTimer's notice (topic-admin-modals.js).
         escape(&crate::topic_list_view::category_url(list, category)),
@@ -133,7 +164,7 @@ pub(crate) fn row(list: &ListContext, c: &ChooserCategory, category: &ListCatego
                     .join(",")
             )
         },
-        badge_span(list, category, &count),
+        badge_span(list, category, &inside),
         n = escape(&category.name)
     )
 }

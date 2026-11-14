@@ -4906,13 +4906,49 @@ route table has been made, so this list may be short.
     form back to the composer, and in-place links from a topic. Found by
     the screenshot run. Left, split into 269a.
     269a. `feat/new-topic-route-rest` S: creating a shared draft
-    (CREATE_SHARED_DRAFT, :917) and a category the composer shows
-    read-only (readOnlyCategoryId, :921); lazy-loaded categories
-    (Category.asyncFindById and asyncFindBySlugPath,
-    routes/new_topic.rs:323); a custom or blank homepage under it (:172);
-    array params (`tags[]=`, :218), which Ember collects into arrays the
-    composer trips over; asked for as JSON (:101); formTemplateInitialValues
-    waits on the composer's form templates. Around it, not the route's:
+    (CREATE_SHARED_DRAFT, static/js/composer.js:2370) ~~and a category
+    the composer shows read-only (readOnlyCategoryId)~~ (done in
+    `feat/new-topic-route-params`: a category of the site's the member
+    can't create topics in, its `permission` not full, is where the
+    route goes all the same, and composer.openNewTopic hands it to the
+    chooser as readOnlyCategoryId instead of setting it as the topic's:
+    nothing is chosen, the header `category.choose` whatever
+    default_composer_category is, and the chooser lists the category
+    with categoryBadgeHTML's read-only pill and the
+    read_only_description as its title, a row that a click does not
+    choose. composer/load.rs chooser_scope draws that row and, as
+    prioritizedCategoryId orders them for any category asked for, the
+    rows' order, the category's parent or itself and that one's
+    subcategories first; `#composer-open` carries both as `chooser`,
+    and the next open puts the rows back. The row is in a list
+    chooser_order sorts by topic count, not Category.listByActivity or
+    fixed_category_positions_on_create, and the single-category site
+    whose one category Composer#open sets regardless is not looked
+    at); lazy-loaded categories (Category.asyncFindById and
+    asyncFindBySlugPath, routes/new_topic.rs:405); a custom homepage
+    under it (:200: discovery.custom at /custom keeping `q`, the
+    theme's custom-homepage outlet, which list::front_page refuses too,
+    so it waits on that page; the blank homepage is only an anonymous
+    visitor's, who gets the login page first, so nothing is left of
+    it); ~~array params (`tags[]=`), which Ember collects into arrays
+    the composer trips over~~ (done in `feat/new-topic-route-params`:
+    read as route-recognizer's parseQueryString reads them, on the
+    server and for a link followed in place: `name[]=` values collect
+    under `name`, replacing an empty string read before them, and a
+    plain pair after them replaces the array. The discovery list's
+    params go into the URL joined with commas, as `_serializeQueryParam`
+    writes a param whose default is no array. The composer gets the
+    arrays: for a member who is not staff composer.filterTags throws on
+    `tags[]`, so no composer opens, on either route; staff's go on as
+    given, joined. `category_id[]` finds no category and keeps
+    `category` from being read. Refused where Ember throws or breaks
+    drawing: an array after a plain pair of its name that is not empty,
+    where parseQueryString itself throws (:280; /password-reset's
+    homepage reads its params the same way), `category[]` (:410), and,
+    in the composer, an array title, body, username or groupname
+    (composer.js arrayParam)); asked for as JSON (:101);
+    formTemplateInitialValues waits on the composer's form templates.
+    Around it, not the route's:
     the lists under it ignore the discovery params they are handed
     (tags, status, q and the rest; routes/list.rs:62 reads page,
     per_page, order, ascending, state and subset), and the list pages

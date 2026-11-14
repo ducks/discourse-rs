@@ -268,6 +268,15 @@
 .select-kit .select-kit-row.category-row .topic-count {
   white-space: nowrap;
 }
+/* category-row.scss:28 */
+.select-kit .select-kit-row.category-row .read-only {
+  padding: .1em .5em;
+  margin: 0 0 .25em .5em;
+  border-radius: 8px;
+  color: var(--secondary);
+  font-size: var(--font-down-1);
+  background: var(--primary-low-mid);
+}
 
 /* common/select-kit/category-chooser.scss */
 
