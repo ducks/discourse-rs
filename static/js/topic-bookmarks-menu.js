@@ -605,11 +605,14 @@
         arrow: false,
         content: content,
         // onCloseMenu, then what changed drawn again: the post, the footer.
+        // Closed while the bookmark is still being made, it waits for it.
         onClose: function () {
           bookmarkMenu = null;
-          if (changed) {
-            again();
-          }
+          Promise.resolve(creating).then(function () {
+            if (changed) {
+              again();
+            }
+          });
         },
       });
       bookmarkMenu = instance;
