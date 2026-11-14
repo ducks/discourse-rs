@@ -591,3 +591,146 @@ async fn the_header_avatar_badge_follows_flags_live() {
         "{header}"
     );
 }
+
+// The topic's pending posts (templates/topic.gjs, TopicView#pending_posts
+// and queued_posts_count): the viewer's own queued replies under the
+// posts, each with deletePending's button, and for staff the count of
+// those they may review with the queue's link. DELETE /review/:id
+// (ReviewablesController#destroy) is the author's alone.
+#[tokio::test]
+async fn a_topic_draws_its_pending_posts_and_their_author_deletes_them() {
+    const PATH: &str = "/t/parity-fixture-replies-and-posters/35";
+    const LIST: &str = "<div class=\"pending-posts\">";
+    const NOTICE: &str = "<div class=\"has-pending-posts\">";
+    let (db, st) = setup().await;
+    let author: String = sqlx::query_scalar("SELECT username FROM users WHERE id = 2")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let mut author_client = Client::logged_in(st.clone(), &author).await;
+    let mut moderator = Client::logged_in(st.clone(), "user3").await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let mut visitor = Client {
+        state: st,
+        cookies: Vec::new(),
+        csrf: None,
+    };
+
+    // queued_posts_enabled? is off: nothing in the document or the page.
+    let (_, json) = author_client.json(&format!("{PATH}.json")).await;
+    assert!(json.get("pending_posts").is_none(), "{json}");
+    let (_, html) = author_client.page(PATH).await;
+    assert!(!html.contains(LIST) && !html.contains(NOTICE));
+
+    common::set_setting(&db.pool, "approve_post_count", 3, "1").await;
+    let (status, json) = author_client.json(&format!("{PATH}.json")).await;
+    assert_eq!(status, StatusCode::OK, "{json}");
+    assert_eq!(
+        json["pending_posts"],
+        serde_json::json!([
+            {"id": 9405, "raw": "A queued reply moderators review.", "created_at": "2026-10-02T10:04:00.000Z"},
+            {"id": 9407, "raw": "A queued reply only admins review.", "created_at": "2026-10-02T10:07:00.000Z"},
+        ])
+    );
+    assert!(json.get("queued_posts_count").is_none(), "{json}");
+    let (status, html) = author_client.page(PATH).await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert_eq!(html.matches(LIST).count(), 1);
+    assert!(!html.contains(NOTICE));
+    // First under the posts, before SlowModeInfo and TopicTimerInfo.
+    let list = &html[html.find(LIST).unwrap()..];
+    let list = &list[..list.find("<div class=\"topic-timer-info\"").unwrap()];
+    let first = list.find("data-reviewable-id=\"9405\"").unwrap();
+    let second = list.find("data-reviewable-id=\"9407\"").unwrap();
+    assert!(first < second, "{list}");
+    let item = &list[first..second];
+    assert!(
+        item.contains("<div class=\"reviewable-meta-data\"><span class=\"reviewable-type\">Awaiting Approval</span><span class=\"created-at\"><span class=\"relative-date\""),
+        "{item}"
+    );
+    assert!(
+        item.contains(&format!(
+            "<div class=\"post-contents-wrapper\"><div class=\"created-by\"><a aria-label=\"{author}&#x27;s profile\" data-user-card=\"{author}\" href=\"/u/{author}\""
+        )) || item.contains(&format!(
+            "<div class=\"post-contents-wrapper\"><div class=\"created-by\"><a aria-label=\"{author}'s profile\" data-user-card=\"{author}\" href=\"/u/{author}\""
+        )),
+        "{item}"
+    );
+    assert!(
+        item.contains("<img alt=\"\" width=\"48\" height=\"48\" src=\""),
+        "{item}"
+    );
+    assert!(
+        item.contains(&format!(
+            ">{author}</a></span></div><div class=\"post-body\"><div><p>A queued reply moderators review.</p></div></div></div></div><div class=\"reviewable-actions\"><button class=\"btn btn-icon-text btn-danger\" type=\"button\"><svg class=\"fa d-icon d-icon-trash-can "
+        )),
+        "{item}"
+    );
+    assert!(
+        item.contains("<span class=\"d-button-label\">Delete</span></button></div></div>"),
+        "{item}"
+    );
+
+    // Staff: none of their own, the count of what they may review.
+    for (client, notice) in [
+        (
+            &mut moderator,
+            "This topic has <b>1</b> post pending approval",
+        ),
+        (&mut admin, "This topic has <b>2</b> posts pending approval"),
+    ] {
+        let (_, json) = client.json(&format!("{PATH}.json")).await;
+        assert_eq!(json["pending_posts"], serde_json::json!([]));
+        let (_, html) = client.page(PATH).await;
+        assert!(!html.contains(LIST));
+        assert!(
+            html.contains(&format!(
+                "{NOTICE}<div>{notice}</div><a href=\"/review?type=ReviewableQueuedPost&amp;topic_id=35\">view pending</a></div>"
+            )),
+            "{html}"
+        );
+    }
+    let (_, html) = visitor.page(PATH).await;
+    assert!(!html.contains(LIST) && !html.contains(NOTICE));
+
+    // find_by_flagger_or_queued_post_creator: not theirs, so not found,
+    // for staff too.
+    for client in [&mut moderator, &mut admin] {
+        let (status, body) = client.send(Method::DELETE, "/review/9405", "", true).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{body}");
+    }
+    let status_of = async |id: i64| -> i32 {
+        sqlx::query_scalar("SELECT status FROM reviewables WHERE id = $1")
+            .bind(id)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap()
+    };
+    assert_eq!(status_of(9405).await, 0);
+    let (status, body) = author_client
+        .send(Method::DELETE, "/review/9405", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert_eq!(
+        serde_json::from_str::<Value>(&body).unwrap(),
+        serde_json::json!({"success": "OK"})
+    );
+    // Reviewable.statuses[:deleted]
+    assert_eq!(status_of(9405).await, 4);
+    assert_eq!(status_of(9407).await, 0);
+    let (_, html) = author_client.page(PATH).await;
+    assert!(!html.contains("data-reviewable-id=\"9405\""));
+    assert!(html.contains("data-reviewable-id=\"9407\""));
+    let (_, json) = admin.json(&format!("{PATH}.json")).await;
+    assert_eq!(json["queued_posts_count"], 1);
+
+    let (status, body) = author_client
+        .send(Method::DELETE, "/review/9407", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert_eq!(status_of(9407).await, 4);
+    let (_, html) = author_client.page(PATH).await;
+    assert!(!html.contains(LIST));
+    let (_, html) = admin.page(PATH).await;
+    assert!(!html.contains(NOTICE));
+}

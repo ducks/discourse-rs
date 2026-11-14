@@ -3473,6 +3473,12 @@
           destroyDraft(s);
           close();
           postEnqueued(json);
+          // The topic's pending_posts gain the reply's pending_post: the
+          // page of the topic replied to draws them again (Ember pushes
+          // onto whichever topic is shown).
+          if (json.pending_post && topicRoute && String(topicRoute.topicId()) === String(s.topicId)) {
+            topicRoute.pendingPostAdded();
+          }
           return;
         }
         var mode = s.mode;

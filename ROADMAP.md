@@ -5015,9 +5015,23 @@ route table has been made, so this list may be short.
     and tabindex after each save matched but where noted below); Ember's
     edit warning for a localized post under content_localization_enabled
     is not asked before the composer opens, as for regular posts
-    (static/js/composer.js:2390). Left from the save jump: the topic's
+    (static/js/composer.js:2390). Left from the save jump: ~~the topic's
     pending posts (TopicPendingPostSerializer, the stream's pending post
-    with its Delete) are not drawn, on load or after a queued reply; a
+    with its Delete) are not drawn, on load or after a queued reply~~
+    (done in `feat/topic-pending-posts`: the viewer's queued replies
+    under the posts once the last one is in, before SlowModeInfo
+    (post_view::pending_posts: awaiting approval, age, avatar, name, the
+    raw cooked by the server where Ember's DCookText cooks it in the
+    browser), then for staff has-pending-posts with queued_posts_count
+    and the queue's link; Delete is deletePending, DELETE /review/:id
+    with no confirmation, the author's alone; after PostEnqueuedModal
+    the page of the topic replied to draws its pending posts again from
+    the server (topic.js pendingPostAdded), where Ember pushes
+    pending_post onto whichever topic is shown. Not done: plugin
+    NewPostManager handlers, which in Rails turn queued_posts_enabled on
+    for every topic with poll or post-voting installed, so the port
+    draws pending posts only under a setting, watched word or category
+    review mode that queues); a
     reply on a page loaded to the end is either left in the window or
     locked under the header by skipIfOnScreen depending on where the
     page stands when the jump runs (Ember varied between runs too: 53px

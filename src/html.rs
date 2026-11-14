@@ -2779,6 +2779,9 @@ pub struct TopicPage {
     pub bottom_map: String,
     pub timeline: String,
     pub footer_buttons: String,
+    /// The viewer's queued posts and the count of the topic's for staff,
+    /// under the posts (post_view::pending_posts, queued_posts_notice).
+    pub pending_posts: String,
     /// SlowModeInfo, under the posts (post_view::slow_mode_info).
     pub slow_mode_info: String,
     /// TopicTimerInfo, under the posts (post_view::topic_timer_info).
@@ -3375,6 +3378,8 @@ async fn quote_button_config(
 /// The topic page from the /t/:id.json document; `pm_counts` for a
 /// message's browse more line (pm_tracking_state::browse_more_counts).
 /// `filter` is the request's (discourse-post-voting's sort by activity).
+/// `pending_cooked` is the viewer's queued posts' raws cooked, in the
+/// order of the document's pending_posts.
 #[allow(clippy::too_many_arguments)]
 pub async fn topic_page(
     conn: &mut PgConnection,
@@ -3385,6 +3390,7 @@ pub async fn topic_page(
     page: i64,
     pm_counts: Option<crate::post_view::PmCounts>,
     filter: Option<&str>,
+    pending_cooked: &[String],
 ) -> Result<TopicPage, HtmlError> {
     let base = site.base_path.clone();
     let slug = s(&view["slug"]);
@@ -3546,6 +3552,16 @@ pub async fn topic_page(
         String::new()
     };
     let footer_buttons = crate::post_view::footer_buttons(&cx, view);
+    let pending_posts = format!(
+        "{}{}",
+        crate::post_view::pending_posts(
+            &cx,
+            view,
+            pending_cooked,
+            site.viewer.as_ref().map_or("", |v| v.avatar_url.as_str()),
+        ),
+        crate::post_view::queued_posts_notice(&cx, view)
+    );
     let slow_mode_info = crate::post_view::slow_mode_info(&cx, view);
     let timer_info = crate::post_view::topic_timer_info(&cx, view);
     let topic_admin_menu = crate::post_view::topic_admin_menu(&cx, view);
@@ -3730,6 +3746,7 @@ pub async fn topic_page(
         bottom_map,
         timeline,
         footer_buttons,
+        pending_posts,
         slow_mode_info,
         timer_info,
         more_topics,

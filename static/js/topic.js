@@ -384,6 +384,7 @@
     topicId: function () {
       return document.getElementById("topic") ? topicIdOf(location.pathname) : null;
     },
+    pendingPostAdded: drawPendingPosts,
   };
 
   // PostMenu#showMoreActions: the collapsed buttons shown, show more gone.
@@ -720,6 +721,82 @@
   function baseUri() {
     return (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
   }
+
+  // Where the topic's pending posts are drawn (templates/topic.gjs,
+  // first under loadedAllPosts): in the page, or until the last post is
+  // in, in what the page draws then.
+  function pendingHost(root) {
+    var container = root.querySelector("#topic-bottom ~ .loading-container");
+    var waiting = container && container.querySelector(":scope > template.loaded-all-posts");
+    return waiting ? waiting.content : container;
+  }
+
+  // A reply sent for review joins the topic's pending_posts
+  // (Composer#save). The server cooks them where Ember's DCookText does,
+  // so they are drawn again as the topic's page has them now.
+  function drawPendingPosts() {
+    if (!pendingHost(document)) {
+      return Promise.resolve();
+    }
+    var url = location.href;
+    var topicId = topicIdOf(location.pathname);
+    return fetch(url, { credentials: "same-origin", headers: { Accept: "text/html" } })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(url + ": " + r.status);
+        }
+        return r.text();
+      })
+      .then(function (html) {
+        var host = pendingHost(document);
+        // Another page by now; a topic's own address moves with the
+        // post being read.
+        if (!host || topicIdOf(location.pathname) !== topicId) {
+          return;
+        }
+        var theirs = pendingHost(new DOMParser().parseFromString(html, "text/html"));
+        var fresh = theirs && theirs.querySelector(".pending-posts");
+        var mine = host.querySelector(".pending-posts");
+        if (mine) {
+          mine.remove();
+        }
+        if (fresh) {
+          host.prepend(document.importNode(fresh, true));
+        }
+      })
+      .catch(function (e) {
+        console.error(e);
+      });
+  }
+
+  // deletePending: DELETE /review/:id, then the post gone from the
+  // topic's pending_posts (the last one takes their container with it).
+  // popupAjaxError on a failure.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("#topic .pending-posts .reviewable-actions button.btn-danger");
+    if (!button) {
+      return;
+    }
+    var item = button.closest(".reviewable-item");
+    fetch(baseUri() + "/review/" + encodeURIComponent(item.dataset.reviewableId), {
+      method: "DELETE",
+      headers: memberHeaders(),
+      credentials: "same-origin",
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return popupError(r);
+        }
+        var list = item.parentNode;
+        item.remove();
+        if (list && !list.querySelector(".reviewable-item")) {
+          list.remove();
+        }
+      })
+      .catch(function (e) {
+        console.error(e);
+      });
+  });
 
   // Post.deleteMany: DELETE /posts/destroy_many with post_ids[] as jQuery
   // sends them, then each of the posts the page draws again as the
