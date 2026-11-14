@@ -53,9 +53,37 @@ pub async fn add_with_message(
         ctx,
         action,
         message,
-        silent,
-        false,
-        post_types::SMALL_ACTION,
+        Variant {
+            silent,
+            ..Variant::SMALL_ACTION
+        },
+    )
+    .await
+}
+
+/// [`add_with_message`] by TopicStatusUpdater closing or archiving the
+/// topic, which first takes it off the featured lists
+/// (`CategoryFeaturedTopic.where(topic_id:).delete_all`). The rows go here
+/// instead, between the category's row and the author's user_stats: the
+/// order a new topic locks the three in (Topic's after_create counts the
+/// category and runs feature_topics_for, then track_topic).
+pub async fn add_unfeaturing(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    action: &SmallAction<'_>,
+    message: Option<&str>,
+    silent: bool,
+) -> Result<i32, AppError> {
+    add_inner(
+        conn,
+        ctx,
+        action,
+        message,
+        Variant {
+            silent,
+            unfeature: true,
+            ..Variant::SMALL_ACTION
+        },
     )
     .await
 }
@@ -74,9 +102,10 @@ pub async fn add_to_new_message(
         ctx,
         action,
         None,
-        false,
-        true,
-        post_types::SMALL_ACTION,
+        Variant {
+            allowed_by_user: true,
+            ..Variant::SMALL_ACTION
+        },
     )
     .await
 }
@@ -95,11 +124,29 @@ pub async fn add_whisper(
         ctx,
         action,
         Some(message),
-        false,
-        false,
-        post_types::WHISPER,
+        Variant {
+            post_type: post_types::WHISPER,
+            ..Variant::SMALL_ACTION
+        },
     )
     .await
+}
+
+/// How the callers' posts differ.
+struct Variant {
+    silent: bool,
+    allowed_by_user: bool,
+    post_type: i32,
+    unfeature: bool,
+}
+
+impl Variant {
+    const SMALL_ACTION: Variant = Variant {
+        silent: false,
+        allowed_by_user: false,
+        post_type: post_types::SMALL_ACTION,
+        unfeature: false,
+    };
 }
 
 async fn add_inner(
@@ -107,10 +154,14 @@ async fn add_inner(
     ctx: &Ctx<'_>,
     action: &SmallAction<'_>,
     message: Option<&str>,
-    silent: bool,
-    allowed_by_user: bool,
-    post_type: i32,
+    variant: Variant,
 ) -> Result<i32, AppError> {
+    let Variant {
+        silent,
+        allowed_by_user,
+        post_type,
+        unfeature,
+    } = variant;
     let (topic_id, user_id) = (action.topic_id, action.user_id);
     let raw = message.unwrap_or("").trim_end().to_string();
     let cooked = if raw.is_empty() {
@@ -289,6 +340,12 @@ async fn add_inner(
         sqlx::query("UPDATE categories SET latest_post_id = $2 WHERE id = $1")
             .bind(category_id)
             .bind(post_id)
+            .execute(&mut *conn)
+            .await?;
+    }
+    if unfeature {
+        sqlx::query("DELETE FROM category_featured_topics WHERE topic_id = $1")
+            .bind(topic_id)
             .execute(&mut *conn)
             .await?;
     }
