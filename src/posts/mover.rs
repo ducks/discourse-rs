@@ -423,6 +423,7 @@ impl Mover<'_, '_> {
             crate::topic_timer::types::CLOSE,
         )
         .await?;
+        self.lock_categories(&mut *conn, Some(category_id)).await?;
         // after_create: changed_to_category(category).
         let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
         let exists: bool =
@@ -439,6 +440,24 @@ impl Mover<'_, '_> {
             crate::posting::create::feature_topics_for(&mut *conn, s, category_id, None).await?;
         }
         Ok(Ok(topic_id))
+    }
+
+    /// The destination's category and the original topic's, locked in id
+    /// order before the first of them is written: the destination's for
+    /// its count and latest post, the original's for the small action's.
+    /// Rails writes them as they come, and two moves between the same
+    /// categories in opposite directions deadlock.
+    async fn lock_categories(
+        &self,
+        conn: &mut PgConnection,
+        destination: Option<i32>,
+    ) -> Result<(), sqlx::Error> {
+        match (destination, self.original_category_id) {
+            (Some(to), Some(from)) if to != from => {
+                crate::posting::create::lock_categories(conn, &[to, from]).await
+            }
+            _ => Ok(()),
+        }
     }
 
     /// `PostMover#move_posts_to(topic)`. Some when the move is refused.
@@ -1189,6 +1208,7 @@ impl Mover<'_, '_> {
         // transaction. The mover's is still open, so the category's row is
         // locked before track_topic locks the author's user_stats, as a
         // new topic does (see posting::small_action).
+        self.lock_categories(&mut *conn, dest.category_id).await?;
         if let Some(category_id) = dest.category_id {
             if post_number == 1 {
                 sqlx::query(
@@ -1682,6 +1702,7 @@ impl Mover<'_, '_> {
             bump: false,
             who: None,
         };
+        self.lock_categories(&mut *conn, dest.category_id).await?;
         let post_id = if self.move_to_pm {
             small_action::add_whisper(&mut *conn, ctx, &action, &message).await?
         } else {

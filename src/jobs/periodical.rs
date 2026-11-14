@@ -36,49 +36,7 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
 
     let mut conn = state.pool.acquire().await?;
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-
-    // CategoryFeaturedTopic.feature_topics(batched: true): each category's
-    // list rewritten unless it came out the same.
-    let rows: Vec<(i32, i32)> =
-        sqlx::query_as("SELECT topic_id, category_id FROM category_featured_topics ORDER BY rank")
-            .fetch_all(&mut *conn)
-            .await?;
-    let mut current: HashMap<i32, Vec<i32>> = HashMap::new();
-    for (topic_id, category_id) in rows {
-        current.entry(category_id).or_default().push(topic_id);
-    }
-    let next = state
-        .site
-        .periodical
-        .next_category_id
-        .load(Ordering::SeqCst);
-    let batch: Vec<i32> =
-        sqlx::query_scalar("SELECT id FROM categories WHERE id >= $1 ORDER BY id ASC LIMIT $2")
-            .bind(next as i32)
-            .bind(FEATURE_BATCH)
-            .fetch_all(&mut *conn)
-            .await?;
-    let following = match batch.last() {
-        Some(last) if batch.len() as i64 == FEATURE_BATCH => {
-            sqlx::query_scalar::<_, i32>(
-                "SELECT id FROM categories WHERE id > $1 ORDER BY id LIMIT 1",
-            )
-            .bind(last)
-            .fetch_optional(&mut *conn)
-            .await?
-        }
-        _ => None,
-    };
-    state
-        .site
-        .periodical
-        .next_category_id
-        .store(following.map_or(0, i64::from), Ordering::SeqCst);
-    for category_id in batch {
-        let existing = current.remove(&category_id).unwrap_or_default();
-        crate::posting::create::feature_topics_for(&mut conn, &s, category_id, Some(&existing))
-            .await?;
-    }
+    feature_topics(state, &mut conn, &s).await?;
 
     // ScoreCalculator over topics bumped in the last day (short ones but
     // every 24th run).
@@ -358,6 +316,69 @@ async fn rebake_old_posts(
                 .await?;
             }
         }
+    }
+    Ok(())
+}
+
+/// `CategoryFeaturedTopic.feature_topics(batched: true)`: each category's
+/// list rewritten unless it came out the same.
+pub async fn feature_topics(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    s: &SiteSettings,
+) -> Result<(), AppError> {
+    let rows: Vec<(i32, i32)> =
+        sqlx::query_as("SELECT topic_id, category_id FROM category_featured_topics ORDER BY rank")
+            .fetch_all(&mut *conn)
+            .await?;
+    let mut current: HashMap<i32, Vec<i32>> = HashMap::new();
+    for (topic_id, category_id) in rows {
+        current.entry(category_id).or_default().push(topic_id);
+    }
+    let next = state
+        .site
+        .periodical
+        .next_category_id
+        .load(Ordering::SeqCst);
+    let batch: Vec<i32> =
+        sqlx::query_scalar("SELECT id FROM categories WHERE id >= $1 ORDER BY id ASC LIMIT $2")
+            .bind(next as i32)
+            .bind(FEATURE_BATCH)
+            .fetch_all(&mut *conn)
+            .await?;
+    let following = match batch.last() {
+        Some(last) if batch.len() as i64 == FEATURE_BATCH => {
+            sqlx::query_scalar::<_, i32>(
+                "SELECT id FROM categories WHERE id > $1 ORDER BY id LIMIT 1",
+            )
+            .bind(last)
+            .fetch_optional(&mut *conn)
+            .await?
+        }
+        _ => None,
+    };
+    state
+        .site
+        .periodical
+        .next_category_id
+        .store(following.map_or(0, i64::from), Ordering::SeqCst);
+    for category_id in batch {
+        let existing = current.remove(&category_id).unwrap_or_default();
+        // CategoryFeaturedTopic.transaction, behind the category's row: a
+        // topic created in or moved to the category holds that row while
+        // it rewrites the same list, and the two otherwise meet on
+        // cat_featured_threads.
+        let mut tx = sqlx::Connection::begin(&mut *conn).await?;
+        let locked: Option<i32> =
+            sqlx::query_scalar("SELECT id FROM categories WHERE id = $1 FOR NO KEY UPDATE")
+                .bind(category_id)
+                .fetch_optional(&mut *tx)
+                .await?;
+        if locked.is_some() {
+            crate::posting::create::feature_topics_for(&mut tx, s, category_id, Some(&existing))
+                .await?;
+        }
+        tx.commit().await?;
     }
     Ok(())
 }

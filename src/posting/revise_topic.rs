@@ -1476,6 +1476,11 @@ async fn change_category_to_id(
     if !errors.is_empty() {
         return Ok(Err(errors));
     }
+    // Rails counts the old category down, then the new one up, and two
+    // opposite moves deadlock: both rows first, in one order.
+    if let Some(old) = old_category {
+        super::create::lock_categories(&mut *conn, &[old, category_id]).await?;
+    }
     if let Some(old) = old_category {
         sqlx::query("UPDATE categories SET topic_count = topic_count - 1 WHERE id = $1")
             .bind(old)
