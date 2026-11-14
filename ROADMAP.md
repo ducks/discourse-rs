@@ -4556,7 +4556,7 @@ route table has been made, so this list may be short.
     one dropped it). Refused: over XHR or JSON, a custom or blank
     homepage, an array query param.
     261b. `feat/login-pages-rest` S: the login code steps after the email
-    step (static/js/login.js:1375) wait on 250's /session/login-code;
+    step (static/js/login.js:1382) wait on 250's /session/login-code;
     ~~resending and changing the activation email (users#send_activation_email,
     users#update_activation_email, ActivationEdit; login.js:1054,1060,
     2490,2496)~~ (done in `feat/activation-email-controls`: POST
@@ -4585,14 +4585,46 @@ route table has been made, so this list may be short.
     tests/browser/activation-email.spec.js). Left: a username that is not
     ASCII, one sent without a password (Rails' NoMethodError), an account
     without an address);
-    a password reset code's second factor step (:1443); the
+    a password reset code's second factor step (:1450); the
     login and signup routes in read-only mode, whose alert shows on the
-    homepage (routes/login_required.rs:688,925); the signup page's user
-    fields (UserField, :946); the static login page's dark logo
-    (application_logo_dark_url, :835, with 258a); account_created's
-    DiscourseConnect provider payload (:1240). A reset with a password
-    the server refuses (the same as the current one, a common one) is
-    154's (routes/accounts.rs:728)
+    homepage (routes/login_required.rs:692,929); ~~the signup page's user
+    fields (UserField, :946)~~ (done in `feat/signup-user-fields`: the
+    create-account form draws site.user_fields shown on signup by
+    position, each a UserField in its input group with Ember's markup
+    (text, confirm, dropdown, multiselect, textarea, date; the label's
+    optional mark, the description as HTML, a nameless required
+    confirm's asterisk), the same component preferences/profile draws
+    (preferences_view::profile::user_field_component), also in the form
+    an external login's data draws over the code signup. login.js is
+    UserFieldsValidationHelper: nothing shows until a submit, then each
+    required empty field's tip takes its instructions' place
+    (user_fields.required for text and date, required_checkbox for a
+    confirm, required_select for the rest), a text field repeating the
+    password is refused, the first that fails takes the focus and the
+    tips follow the values until a submit passes; value-entered; the
+    values go as jQuery sends them (null empty, a confirm true or false,
+    a multiselect as user_fields[id][], an empty list not at all). The
+    dropdown is preferences' ComboBox, its code moved to
+    static/js/combo-box.js for both pages; the multiselect is
+    prefs-choosers.js's MultiSelect with a new kind over static options.
+    users#create already read user_fields (signup.rs over
+    user_fields::signup_values: every UserField, "false" as nil, a
+    dropdown value that is no option and a multiselect's that are not
+    dropped, 2048 characters, a blank required one
+    login.missing_user_field) and is the recorded
+    parity/writes/user_fields/signup; the other branches and the markup
+    are source-derived (tests/signup_user_fields.rs,
+    tests/browser/signup-user-fields.spec.js, whose required and
+    multiselect paths patch the page rather than add a site-wide row).
+    Left: the code signup's own user-fields step (with the code steps
+    above), the invite page's fields (templates/invites/show.gjs, a
+    surface of its own; invite_redeem.rs:596 refuses values), a
+    multiselect in preferences (196), plugins' custom field validation
+    callbacks, user_fields that is not a hash); the static login page's
+    dark logo (application_logo_dark_url, :839, with 258a);
+    account_created's DiscourseConnect provider payload (:1304). A reset
+    with a password the server refuses (the same as the current one, a
+    common one) is 154's (routes/accounts.rs:728)
 
 263. ~~`fix/faq-guidelines`~~ (done) S: GET /faq and /guidelines answered
     404, so the sidebar's FAQ link (sidebar.rs:779) was dead. Now

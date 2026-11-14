@@ -1,8 +1,10 @@
 // The multi-select choosers of the preferences (select-kit's
 // MultiSelect): CategorySelector (rows from #prefs-category-rows, the
 // categories selected under any level left out), TagChooser
-// (/tags/filter/search, the tags of every level left out) and UserChooser
-// (/u/search/users, ranked as lib/user-search ranks them). What a chooser
+// (/tags/filter/search, the tags of every level left out), UserChooser
+// (/u/search/users, ranked as lib/user-search ranks them) and a plain
+// MultiSelect over its data-options (a multiselect user field, whose
+// name and value are the option itself). What a chooser
 // holds is its data-items, [value, name] pairs, which preferences.js
 // saves. Also IgnoredUserList and the IgnoreDurationModal it opens
 // (EmailGroupUserChooser and DFutureDateInput's time shortcuts), which the
@@ -255,6 +257,43 @@
     return out.join("");
   }
 
+  // The options not chosen yet.
+  function optionRows(chooser, term) {
+    var options = [];
+    try {
+      options = JSON.parse(chooser.dataset.options || "[]");
+    } catch (e) {
+      options = [];
+    }
+    var chosen = items(chooser).map(function (i) {
+      return String(i[0]);
+    });
+    var needle = term.toLowerCase();
+    return options
+      .filter(function (o) {
+        return chosen.indexOf(String(o)) === -1 && (!needle || String(o).toLowerCase().indexOf(needle) !== -1);
+      })
+      .map(function (o, i) {
+        var n = escapeHtml(o);
+        return (
+          '<li aria-checked="false" role="menuitemradio" data-index="' +
+          i +
+          '" data-name="' +
+          n +
+          '" data-value="' +
+          n +
+          '" title="' +
+          n +
+          '" tabindex="0" class="select-kit-row' +
+          (needle && i === 0 ? " is-highlighted" : "") +
+          '"><span class="name">' +
+          n +
+          "</span></li>"
+        );
+      })
+      .join("");
+  }
+
   function tagRows(chooser, term) {
     var s = strings();
     var params = new URLSearchParams({ q: term, limit: String(s.max_tag_search_results || 5) });
@@ -429,6 +468,10 @@
       render(chooser, categoryRows(chooser, term), term !== "");
       return;
     }
+    if (kind === "options") {
+      render(chooser, optionRows(chooser, term), term !== "");
+      return;
+    }
     clearTimeout(searchTimer);
     searchTimer = setTimeout(
       function () {
@@ -479,7 +522,8 @@
         body.removeAttribute("style");
         return;
       }
-      render(chooser, chooser.dataset.chooser === "category" ? categoryRows(chooser, "") : null, false);
+      var kind = chooser.dataset.chooser;
+      render(chooser, kind === "category" ? categoryRows(chooser, "") : kind === "options" ? optionRows(chooser, "") : null, false);
       if (chooser.dataset.chooser === "tag") {
         refresh(chooser);
       }

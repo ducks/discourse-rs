@@ -35,8 +35,24 @@ fn custom_field_class(name: &str) -> String {
     }
 }
 
-/// UserField: the component its field_type names.
+/// UserField in the profile tab's control group.
 fn user_field(cx: &ListContext, field: &Value, value: &Value) -> Result<String, AppError> {
+    Ok(format!(
+        "<div class=\"control-group\" data-setting-name=\"user-user-fields\">{}</div>",
+        user_field_component(cx, field, value, false)?
+    ))
+}
+
+/// UserField: the component its field_type names. `signup` is the
+/// signup form's (templates/signup.gjs), which passes a validation: the
+/// confirm's tip, hidden without a reason, and the multiselect, which
+/// static/js/prefs-choosers.js opens over the field's options.
+pub(crate) fn user_field_component(
+    cx: &ListContext,
+    field: &Value,
+    value: &Value,
+    signup: bool,
+) -> Result<String, AppError> {
     let id = field["id"].as_i64().unwrap_or_default();
     let name = field["name"].as_str().unwrap_or_default();
     let kind = field["field_type"].as_str().unwrap_or_default();
@@ -79,10 +95,15 @@ fn user_field(cx: &ListContext, field: &Value, value: &Value) -> Result<String, 
                 ));
             }
             out.push_str(&format!(
-                "<div class=\"controls\"><label class=\"control-label checkbox-label\"><input id=\"{input_id}\" class=\"ember-checkbox\" type=\"checkbox\"{} data-user-field=\"{id}\"> <span>{description}{}</span></label></div>",
+                "<div class=\"controls\"><label class=\"control-label checkbox-label\"><input id=\"{input_id}\" class=\"ember-checkbox\" type=\"checkbox\"{} data-user-field=\"{id}\"> <span>{description}{}</span></label>{}</div>",
                 if checked { " checked" } else { "" },
                 if name.is_empty() && required {
                     "<span class=\"required\">*</span>"
+                } else {
+                    ""
+                },
+                if signup {
+                    "<div class=\"tip good hidden\"></div>"
                 } else {
                     ""
                 }
@@ -115,6 +136,41 @@ fn user_field(cx: &ListContext, field: &Value, value: &Value) -> Result<String, 
                 "<label class=\"control-label alt-placeholder\" for=\"{input_id}\">{label_text}</label><div class=\"controls\">{select}{instructions}</div>"
             )
         }
+        "multiselect" if signup => {
+            let options: Vec<&str> = field["options"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|o| o.as_str())
+                .collect();
+            // MultiSelect with `none`: the header says it while nothing
+            // is chosen.
+            let select = super::tracking::multi_select(cx, "", "options", "", &[])
+                .replacen("multi-select \"", "multi-select\"", 1)
+                .replacen(" data-pref=\"\"", "", 1)
+                .replacen(
+                    "<details",
+                    &format!(
+                        "<details id=\"{input_id}\" data-user-field=\"{id}\" data-options=\"{}\"",
+                        escape(&json!(options).to_string())
+                    ),
+                    1,
+                )
+                .replacen(
+                    &format!(
+                        "<span class=\"formatted-selection\">{}</span>",
+                        escape(&t(cx, "select_kit.default_header_text"))
+                    ),
+                    &format!(
+                        "<span class=\"formatted-selection\">{}</span>",
+                        escape(&t(cx, "user_fields.none"))
+                    ),
+                    1,
+                );
+            format!(
+                "<label class=\"control-label alt-placeholder\" for=\"{input_id}\">{label_text}</label><div class=\"controls\">{select}{instructions}</div>"
+            )
+        }
         "multiselect" => {
             return Err(
                 Unsupported("a multiselect user field in preferences (MultiSelect, 196)").into(),
@@ -123,7 +179,7 @@ fn user_field(cx: &ListContext, field: &Value, value: &Value) -> Result<String, 
         _ => return Err(Unsupported("a user field of an unknown type").into()),
     };
     Ok(format!(
-        "<div class=\"control-group\" data-setting-name=\"user-user-fields\"><div class=\"user-field {kind}{}\">{inner}</div></div>",
+        "<div class=\"user-field {kind}{}\">{inner}</div>",
         custom_field_class(name)
     ))
 }

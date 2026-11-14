@@ -440,8 +440,34 @@ pub struct SignupView<'a> {
     /// create_account.disclaimer, when the site has both a ToS and a
     /// privacy policy.
     pub disclaimer: Option<String>,
+    /// `userFields`, drawn (`signup_user_fields`).
+    pub user_fields: String,
     /// The create-account-after-user-fields plugin outlet's connectors.
     pub after_user_fields: String,
+}
+
+/// The signup form's `userFields`: the site's fields shown on signup, by
+/// position, each a UserField in its input group, without a value.
+pub fn signup_user_fields(
+    cx: &crate::topic_list_view::ListContext,
+    fields: &[serde_json::Value],
+) -> Result<String, crate::AppError> {
+    if fields.is_empty() {
+        return Ok(String::new());
+    }
+    let mut out = String::from("<div class=\"user-fields\">");
+    for field in fields {
+        out.push_str("<div class=\"input-group\">");
+        out.push_str(&crate::preferences_view::profile::user_field_component(
+            cx,
+            field,
+            &serde_json::Value::Null,
+            true,
+        )?);
+        out.push_str("</div>");
+    }
+    out.push_str("</div>");
+    Ok(out)
 }
 
 /// SignupProgressBar at `step`.
@@ -551,6 +577,7 @@ pub fn create_account_form(v: &SignupView) -> String {
     if v.full_name_visible && !v.full_name_required {
         out.push_str(&fullname_input(v, false));
     }
+    out.push_str(&v.user_fields);
     out.push_str(&v.after_user_fields);
     out.push_str("</form>");
     // SignupPageCta
@@ -970,6 +997,7 @@ mod tests {
             show_full_name_instructions: false,
             min_password_length: 10,
             disclaimer: None,
+            user_fields: String::new(),
             after_user_fields: String::new(),
         };
         let html = signup_page(&v, "");

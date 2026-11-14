@@ -413,6 +413,10 @@ const STRINGS: &[&str] = &[
     "user.password.same_as_username",
     "user.password.same_as_name",
     "user.password.same_as_email",
+    "user_fields.required",
+    "user_fields.required_checkbox",
+    "user_fields.required_select",
+    "user_fields.same_as_password",
     "user.password.ok",
     "user.password.common",
     "user.change_password.title",
@@ -936,15 +940,59 @@ pub async fn show_signup(
     let local = settings.get("enable_local_logins")?.truthy();
     let code_signup = code_logins(&state, &settings, &guardian).await?;
     let buttons = auth_buttons(&state, &settings)?;
-    let user_fields: i64 = {
+    // userFieldsValidationHelper's getUserFields: site.user_fields shown
+    // on signup, by position.
+    let user_fields = {
         let mut conn = state.pool.acquire().await?;
-        sqlx::query_scalar("SELECT count(*) FROM user_fields WHERE show_on_signup")
-            .fetch_one(&mut *conn)
-            .await?
+        let mut out = Vec::new();
+        for field in crate::user_fields::all(&mut conn).await? {
+            if field.show_on_signup {
+                out.push(crate::user_fields::serialize(&mut conn, &field).await?);
+            }
+        }
+        out
     };
-    if user_fields > 0 {
-        return Err(Unsupported("the signup page's user fields (UserField)").into());
-    }
+    let (user_fields_html, user_field_scripts) = if user_fields.is_empty() {
+        (String::new(), String::new())
+    } else {
+        let categories = std::collections::HashMap::new();
+        let cx = crate::topic_list_view::ListContext {
+            i18n: &state.i18n,
+            base_path: &site.base_path,
+            now: crate::clock::now(),
+            categories: &categories,
+            expand_all_pinned: false,
+            hide_category: false,
+            member_trust_level: None,
+            settings: crate::topic_list_view::ListSettings::load(&settings)?,
+        };
+        let html = crate::login_page_view::signup_user_fields(&cx, &user_fields)?;
+        // The dropdowns are combo-box.js's, the multiselects
+        // prefs-choosers.js's with select-kit's strings.
+        let mut scripts = String::new();
+        if user_fields.iter().any(|f| f["field_type"] == "dropdown") {
+            scripts.push_str(&format!(
+                "<script src=\"{}\"></script>",
+                crate::assets::url(&site.base_path, "combo-box.js")
+            ));
+        }
+        if user_fields.iter().any(|f| f["field_type"] == "multiselect") {
+            let t = |key: &str| site.chrome.t(key);
+            let strings = json!({
+                "default_header": t("user_fields.none"),
+                "filter_placeholder": t("select_kit.filter_placeholder"),
+                "results_one": t("select_kit.results_count.one"),
+                "results_other": t("select_kit.results_count.other"),
+                "delete_item": t("select_kit.delete_item"),
+            });
+            scripts.push_str(&format!(
+                "<script type=\"application/json\" id=\"prefs-choosers-strings\">{}</script><script src=\"{}\"></script>",
+                strings.to_string().replace('<', "\\u003c"),
+                crate::assets::url(&site.base_path, "prefs-choosers.js")
+            ));
+        }
+        (html, scripts)
+    };
     let disclaimer = {
         let mut conn = state.pool.acquire().await?;
         let base = state.config.globals.relative_url_root();
@@ -1006,10 +1054,11 @@ pub async fn show_signup(
                 .truthy(),
             min_password_length: settings.get("min_password_length")?.to_i(),
             disclaimer,
+            user_fields: user_fields_html,
             after_user_fields: crate::plugins::captcha::signup_connector(&settings, &t)?,
         },
         &site.base_path,
-    );
+    ) + &user_field_scripts;
     let mut extra = serde_json::Map::new();
     extra.insert("code_login".into(), json!(code_signup));
     extra.insert(
@@ -1035,6 +1084,21 @@ pub async fn show_signup(
         })
         .collect();
     extra.insert("provider_names".into(), json!(pretty));
+    // What UserFieldsValidationHelper reads of each field.
+    extra.insert(
+        "user_fields".into(),
+        json!(
+            user_fields
+                .iter()
+                .map(|f| json!({
+                    "id": f["id"],
+                    "name": f["name"],
+                    "field_type": f["field_type"],
+                    "required": f["required"],
+                }))
+                .collect::<Vec<_>>()
+        ),
+    );
     let data = login_data(&state, &settings, "signup", &csrf_token, extra)?;
     let head = crate::plugins::captcha::signup_script(&settings, &site.base_path)?;
     if let Some(cookie) = email_cookie(&uri) {

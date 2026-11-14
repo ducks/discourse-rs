@@ -111,6 +111,7 @@ mod schema;
 mod search;
 mod sessions;
 mod sidebar;
+mod signup_user_fields;
 mod similar_topics;
 mod site_basic_info;
 mod site_icons;
