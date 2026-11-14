@@ -148,6 +148,10 @@
     {%- if !chrome.bookmark_modal_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "bookmark-modal.js") }}"{{ chrome.bookmark_modal_attrs|safe }} defer></script>
     {%- endif %}
+    {#- Ember's document-title service: a member's tab title and favicon counts. -#}
+    {%- if viewer.is_some() %}
+    <script src="{{ crate::assets::url(base_path, "document-title.js") }}"{{ chrome.document_title_attrs|safe }} defer></script>
+    {%- endif %}
     {%- if !chrome.user_status_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "user-status.js") }}"{{ chrome.user_status_attrs|safe }} defer></script>
     {%- endif %}
@@ -285,7 +289,7 @@
                         open. Its badge (crate::header_badge) is kept
                         current live, the button's contents swapped. -#}
                     <li class="header-dropdown-toggle current-user user-menu-panel" id="current-user">
-                      <button aria-label="{{ chrome.t("user.avatar.header_title") }}" class="btn no-text icon btn-flat" id="toggle-current-user" title="{{ chrome.t("user.avatar.header_title") }}" aria-haspopup="true" type="button">{{ crate::header_badge::toggle_contents(v.avatar_url, chrome.avatar_status, chrome.avatar_badge)|safe }}</button>
+                      <button aria-label="{{ chrome.t("user.avatar.header_title") }}" class="btn no-text icon btn-flat" id="toggle-current-user" title="{{ chrome.t("user.avatar.header_title") }}" aria-haspopup="true" type="button">{{ crate::header_badge::toggle_contents(v.avatar_url, chrome.avatar_counts, chrome.avatar_status, chrome.avatar_badge)|safe }}</button>
                     </li>
                   </ul>
                   <script src="{{ crate::assets::url(base_path, "user-menu.js") }}" data-user-menu="{{ base_path }}/user-menu" data-username="{{ v.username }}"></script>

@@ -1545,6 +1545,13 @@ async fn members_hear_their_notifications_on_every_page() {
         "{header}"
     );
     assert!(header.ends_with(&badge), "{header}");
+    // The counts static/js/document-title.js sums for the tab title.
+    assert!(
+        header.contains(&format!(
+            r#"class="avatar" data-all-unread="{unread}" data-unseen-reviewables="0">"#
+        )),
+        "{header}"
+    );
 
     // An alert, its user content escaped.
     let mut tx = db.pool.begin().await.unwrap();
@@ -1583,7 +1590,12 @@ async fn members_hear_their_notifications_on_every_page() {
         .await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
-    assert!(header.ends_with(r#"class="avatar"></button>"#), "{header}");
+    assert!(
+        header.ends_with(
+            r#"class="avatar" data-all-unread="0" data-unseen-reviewables="0"></button>"#
+        ),
+        "{header}"
+    );
 }
 
 /// A member likes a post from the topic page as its button does, and the
@@ -1655,6 +1667,81 @@ async fn members_like_from_the_topic_page() {
         html.contains("post-action-menu__like toggle-like btn-icon has-like btn-flat"),
         "{html}"
     );
+}
+
+/// The topic controller's "created" for the tab title
+/// (incrementBackgroundContextCount): a post by someone else ends its
+/// `post` event with a marker, and is the whole event on a page that does
+/// not draw the topic's end; the member's own post has none.
+#[tokio::test(flavor = "multi_thread")]
+async fn posts_by_others_are_marked_for_the_tab_title() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(st.clone());
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let posts: Vec<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE topic_id = 35 AND post_number > 1 AND post_type = 1 \
+           AND deleted_at IS NULL \
+           AND user_id <> (SELECT id FROM users WHERE username = 'user1') \
+         ORDER BY post_number LIMIT 2",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    let (own, others) = (posts[0], posts[1]);
+    sqlx::query(
+        "UPDATE posts SET user_id = (SELECT id FROM users WHERE username = 'user1') WHERE id = $1",
+    )
+    .bind(own)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut db.pool.acquire().await.unwrap(),
+        &st.site_setting_defs,
+        &st.config.globals,
+    )
+    .await
+    .unwrap();
+    let host = discourse_rs::pretty_text::Host::from_state(&st);
+    let ctx = discourse_rs::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &st.config,
+        i18n: &st.i18n,
+        bus: &st.bus,
+    };
+    let marker = "<template data-created-by-other></template>";
+    for (tail, whole) in [("", true), ("&tail=1", false)] {
+        let from = st.bus.now().await.unwrap();
+        let mut body = client
+            .open(&format!("/live?topic=35{tail}&position={from}"))
+            .await;
+        let mut buffer = String::new();
+        for id in [own, others] {
+            let mut tx = db.pool.begin().await.unwrap();
+            discourse_rs::bus::publish_post_change(
+                &ctx,
+                &mut tx,
+                id,
+                "created",
+                Default::default(),
+                true,
+            )
+            .await
+            .unwrap();
+            tx.commit().await.unwrap();
+        }
+        let mut html = common::next_sse_event(&mut body, &mut buffer, "post").await;
+        if !whole {
+            // The end of the topic draws the member's own post, unmarked.
+            assert!(!html.contains(marker), "{html}");
+            html = common::next_sse_event(&mut body, &mut buffer, "post").await;
+        }
+        assert!(html.ends_with(marker), "{html}");
+        assert_eq!(html == marker, whole, "{html}");
+    }
 }
 
 /// A member bookmarks a post from the topic page as its button does: the
@@ -2007,7 +2094,9 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
     assert!(menu.body.contains(r#"title="Replies - 2 unread replies""#));
     let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
     assert!(
-        header.ends_with(r#"class="avatar"></button>"#),
+        header.ends_with(
+            r#"class="avatar" data-all-unread="0" data-unseen-reviewables="0"></button>"#
+        ),
         "seen now: {header}"
     );
 }

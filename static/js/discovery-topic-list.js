@@ -107,6 +107,10 @@
       if (loading || gone || !url) {
         return;
       }
+      // Discovery::Topics#loadMore
+      if (Discourse.documentTitle) {
+        Discourse.documentTitle.updateContextCount(0);
+      }
       loading = true;
       // DLoadMore's isLoading: no observer while the page loads.
       if (observer) {
