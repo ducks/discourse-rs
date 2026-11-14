@@ -20,6 +20,13 @@ const { test, expect, login, api, sql, member, label } = require("./helpers");
 const STORE = "discourse_desktop_notifications_notifications-disabled";
 const ALERTS = "discourse_chat_alerts_handled";
 
+// A message that is not a mention is alerted by NotifyWatching, which
+// chat enqueues 5 seconds after the message: its alert is waited for
+// longer than the default, and the tests that wait for several get the
+// time for them.
+const ALERT_TIMEOUT = 30_000;
+test.describe.configure({ timeout: 120_000 });
+
 // ChatAudioManager's sequences, as the stub records them.
 const SOFT_INCOMING = "sine:349.23,sine:466.16";
 const SOFT_MENTION = "sine:349.23,sine:440,sine:523.25";
@@ -133,12 +140,15 @@ function sounds(page) {
 async function shownWith(page, text) {
   let found;
   await expect
-    .poll(async () => {
-      found = (await page.evaluate(() => window.__shown.map((n) => ({ title: n.title, body: n.options.body, tag: n.options.tag })))).find((n) =>
-        (n.body || "").includes(text),
-      );
-      return !!found;
-    })
+    .poll(
+      async () => {
+        found = (await page.evaluate(() => window.__shown.map((n) => ({ title: n.title, body: n.options.body, tag: n.options.tag })))).find((n) =>
+          (n.body || "").includes(text),
+        );
+        return !!found;
+      },
+      { timeout: ALERT_TIMEOUT },
+    )
     .toBe(true);
   return found;
 }
@@ -171,6 +181,7 @@ async function alerted(m, message) {
           m.id,
           message,
         )[0][0],
+      { timeout: ALERT_TIMEOUT },
     )
     .toBe("1");
 }
