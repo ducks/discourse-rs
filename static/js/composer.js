@@ -2398,12 +2398,36 @@
           opts.title = params.title;
         }
         if (tags && tagChooser) {
-          opts.tags = escapeExpression(tags)
-            .split(",")
-            .slice(0, tagOpts.maximum)
-            .map(function (tag) {
-              return tag.substring(0, tagOpts.maxLength);
-            });
+          opts.tags = topicTags(tags);
+        }
+        open(opts);
+      });
+  }
+
+  // The composer service's topicTags: escaped, the first
+  // max_tags_per_topic, each cut to max_tag_length.
+  function topicTags(tags) {
+    return escapeExpression(tags)
+      .split(",")
+      .slice(0, tagOpts.maximum)
+      .map(function (tag) {
+        return tag.substring(0, tagOpts.maxLength);
+      });
+  }
+
+  // DiscoveryListController#createTopic on a tag's list: the list's tags
+  // (the button's `data-tags`) through composer.openNewTopic's filterTags,
+  // so a member gets none of the staff-only ones, and none at all where
+  // they may not tag topics.
+  function openTaggedTopic(category, names) {
+    filterTags(names)
+      .catch(function () {
+        return null;
+      })
+      .then(function (tags) {
+        var opts = { mode: "create-topic", category: category };
+        if (tags && tagChooser) {
+          opts.tags = topicTags(tags);
         }
         open(opts);
       });
@@ -2504,12 +2528,7 @@
           opts.title = params.title;
         }
         if (tags && data.canTagPms && tagChooser) {
-          opts.tags = escapeExpression(tags)
-            .split(",")
-            .slice(0, tagOpts.maximum)
-            .map(function (tag) {
-              return tag.substring(0, tagOpts.maxLength);
-            });
+          opts.tags = topicTags(tags);
         }
         open(opts);
       });
@@ -4912,7 +4931,11 @@
     }
     var create = event.target.closest("#create-topic");
     if (create) {
-      open({ mode: "create-topic", category: create.dataset.category });
+      if (create.dataset.tags) {
+        openTaggedTopic(create.dataset.category, create.dataset.tags);
+      } else {
+        open({ mode: "create-topic", category: create.dataset.category });
+      }
       return;
     }
     // composePrivateMessage: the profile's Message button, to the user the

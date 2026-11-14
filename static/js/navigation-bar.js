@@ -84,7 +84,26 @@
       body.appendChild(list);
       var categoryId = selectedCategory(breadcrumb);
       var tag = breadcrumb.querySelector(".tag-drop > summary");
-      var tagPath = tag?.dataset.value ? encodeURIComponent(tag.dataset.name) + "/" + tag.dataset.value : null;
+      // CategoryDrop's `@tag` (getCategoryAndTagUrl): the list's tag with
+      // its id, `none` on the untagged list, and an intersection's main
+      // tag alone (by its name where it has no record).
+      var tagPath = null;
+      var intersection = breadcrumb.querySelector("details.tags-intersection-chooser");
+      if (tag?.dataset.value) {
+        tagPath = encodeURIComponent(tag.dataset.name) + "/" + tag.dataset.value;
+      } else if (tag?.parentElement.classList.contains("tag-none")) {
+        tagPath = "none";
+      } else if (intersection) {
+        var main = null;
+        try {
+          main = JSON.parse(intersection.dataset.tags || "[]")[0];
+        } catch (_) {}
+        if (main?.id) {
+          tagPath = encodeURIComponent(main.slug || main.name) + "/" + main.id;
+        } else if (main) {
+          tagPath = encodeURIComponent(main.name);
+        }
+      }
       function add(label, href, searchable) {
         var item = document.createElement("li");
         var link = document.createElement("a");

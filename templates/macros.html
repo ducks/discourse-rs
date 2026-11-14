@@ -23,14 +23,15 @@
 {% endmacro %}
 
 {#- The list controls (discovery navigation): the breadcrumbs, the nav pills and
-    the new topic button; category_id preselects the composer category.
+    the new topic button; category_id preselects the composer category,
+    topic_tags (comma separated) its tags.
     On a category's list (`category_nav`), `category_controls` is the
     member's notification level in it. In the mobile view the nav items are
     a menu (NavigationBar#showDropdown, opened by navigation-bar.js), bulk
     select moves here from the list's header (`bulk_select`,
     showBulkSelectInNavControls) and New Topic is an icon. `dismiss_top`
     is TopicDismissButtons' top row (html::dismiss_buttons). -#}
-{% macro list_controls(nav, breadcrumbs, chrome, category_id, admin_controls, category_controls, category_nav, bulk_select, dismiss_top) %}
+{% macro list_controls(nav, breadcrumbs, chrome, category_id, topic_tags, admin_controls, category_controls, category_nav, bulk_select, dismiss_top) %}
 {%- let mobile = crate::mobile::mobile_view() %}
 <div class="list-controls">
   <div class="container">
@@ -71,9 +72,9 @@
         {%- if chrome.can_create_topic %}
         <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="{{ chrome.t("topic.create_group") }}">
           {%- if mobile %}
-          <button class="btn no-text btn-icon d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg></button>{{ chrome.drafts_menu_trigger|safe }}
+          <button class="btn no-text btn-icon d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}{% if !topic_tags.is_empty() %} data-tags="{{ topic_tags }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg></button>{{ chrome.drafts_menu_trigger|safe }}
           {%- else %}
-          <button aria-label="{{ chrome.t("topic.create") }}" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">{{ chrome.t("topic.create") }}</span></button>{{ chrome.drafts_menu_trigger|safe }}
+          <button aria-label="{{ chrome.t("topic.create") }}" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}{% if !topic_tags.is_empty() %} data-tags="{{ topic_tags }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">{{ chrome.t("topic.create") }}</span></button>{{ chrome.drafts_menu_trigger|safe }}
           {%- endif %}
         </div>
         {%- endif %}
