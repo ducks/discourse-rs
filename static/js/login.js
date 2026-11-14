@@ -11,6 +11,8 @@
 //   login's new account, the code signup's email step;
 // - the login-required front page and login-preferences: their buttons;
 // - the forgot-password route over the homepage: its URL and the modal;
+// - a member's security preferences: the ForgotPassword modal alone
+//   (Discourse.login.forgotPassword), at its code step;
 // - password reset (PasswordResetController).
 //
 // #login-data names the page and carries its token, settings and strings.
@@ -154,7 +156,7 @@
       headers: {
         Accept: "application/json, text/javascript, */*; q=0.01",
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "X-CSRF-Token": D.csrf || "",
+        "X-CSRF-Token": D.csrf || pageCsrf(),
         "X-Requested-With": "XMLHttpRequest",
       },
       body: get ? undefined : body.toString(),
@@ -169,6 +171,12 @@
         return { ok: response.ok, status: response.status, body: json || {}, text: text };
       });
     });
+  }
+
+  // A member's page carries its token in the head.
+  function pageCsrf() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return (meta && meta.content) || "";
   }
 
   // applyBehaviorTransformer: the plugins' transformers for `name`
@@ -1386,10 +1394,13 @@
 
   // ---- ForgotPassword -------------------------------------------------
 
-  function forgotPassword(loginName) {
-    if (!Discourse.modal) {
+  // `model`: the modal's ({ codeSent, emailOrUsername }), as the security
+  // preferences open it on a password reset code.
+  function forgotPassword(loginName, model) {
+    if (!Discourse.modal || !D.settings) {
       return;
     }
+    model = model || {};
     var hideTaken = D.settings.hide_email_address_taken;
     // handleForgotPassword: what looks like an email carries over, or
     // anything when taken addresses aren't hidden.
@@ -1397,10 +1408,10 @@
     if (hideTaken && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((filled || "").trim())) {
       filled = null;
     }
-    var value = filled || readCookie("email") || "";
+    var value = model.emailOrUsername || filled || readCookie("email") || "";
     var offerHelp = null;
     var helpSeen = false;
-    var codeSent = false;
+    var codeSent = !!model.codeSent;
     var disabled = false;
     var close = null;
     var bodyEl = null;
@@ -2562,7 +2573,7 @@
       if (location.pathname + location.search !== D.url) {
         history.replaceState(history.state, "", D.url);
       }
-    } else {
+    } else if (D.page !== "forgot-password-modal") {
       staticPages();
     }
     if (D.forgot_password) {

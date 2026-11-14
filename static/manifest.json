@@ -407,6 +407,13 @@
       ]
     },
     {
+      "name": "avatar-selector.js",
+      "content_type": "js",
+      "files": [
+        "js/avatar-selector.js"
+      ]
+    },
+    {
       "name": "invite.js",
       "content_type": "js",
       "files": [

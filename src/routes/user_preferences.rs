@@ -701,20 +701,8 @@ pub async fn page(
                 }
             }
             unique.sort();
-            // selectable_avatars as the client setting holds it: the
-            // uploads' urls, in the setting's order.
-            let mut selectable_avatars = Vec::new();
-            for id in settings.get("selectable_avatars")?.to_s().split('|') {
-                let id = i32::try_from(crate::ruby::to_i(id)).unwrap_or(0);
-                if let Some(url) =
-                    sqlx::query_scalar::<_, String>("SELECT url FROM uploads WHERE id = $1")
-                        .bind(id)
-                        .fetch_optional(&mut *conn)
-                        .await?
-                {
-                    selectable_avatars.push(url);
-                }
-            }
+            let selectable_avatars =
+                crate::avatar::selectable_avatar_urls(&mut conn, &settings).await?;
             let site_logo_small_url =
                 crate::admin::users::logo_small_url(&mut conn, &settings).await?;
             view::account(
@@ -911,8 +899,10 @@ pub async fn page(
         PrefTab::Security | PrefTab::Apps | PrefTab::CalendarSubscriptions | PrefTab::SecondFactor
     ) {
         let viewer_username = current_user["username"].as_str().unwrap_or_default();
+        // And the ForgotPassword modal's, which a password reset code
+        // opens from the change password button and ConfirmSession.
         format!(
-            "{content}{}",
+            "{content}{}{}",
             view::security::strings(
                 &cx,
                 viewer_username,
@@ -920,7 +910,8 @@ pub async fn page(
                 guardian.is_me(user.id)
                     && settings.get("enable_passkeys")?.truthy()
                     && u["user_passkeys"].as_array().is_some_and(|a| !a.is_empty()),
-            )
+            ),
+            super::login_required::forgot_password_modal_data(&state.i18n, &settings)?,
         )
     } else {
         content

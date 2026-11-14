@@ -182,12 +182,20 @@ pub async fn create(
             return Ok(refused.into_response(&state.i18n));
         }
     }
-    let upload_type = match form.get("upload_type").filter(|t| !t.trim().is_empty()) {
-        Some(t) => t,
-        None if form.get("type").is_some_and(|t| !t.trim().is_empty()) => {
-            return Err(Unsupported("the deprecated type param").into());
+    let upload_type = match (
+        form.get("upload_type").filter(|t| !t.trim().is_empty()),
+        form.get("type").filter(|t| !t.trim().is_empty()),
+    ) {
+        (Some(t), _) => t,
+        (None, Some(t)) => {
+            // Discourse.deprecate: the notice, logged (each time, where
+            // Rails logs it once an hour).
+            tracing::warn!(
+                "DEPRECATION NOTICE: the :type param of `POST /uploads` is deprecated, use the :upload_type param instead (deprecated since Discourse 3.4) (removal in Discourse 3.5)"
+            );
+            t
         }
-        None => return Ok(super::accounts::param_missing("upload_type")),
+        (None, None) => return Ok(super::accounts::param_missing("upload_type")),
     };
     let upload_type: String = parameterize(upload_type).chars().take(51).collect();
     if upload_type == "avatar" {

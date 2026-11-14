@@ -334,7 +334,76 @@
       startCooldown();
     }
 
-    function signupDetailsStep(suggested) {
+    // The new account's avatar (pendingAvatar): null for the system one,
+    // { url } a selectable avatar, { file } an upload, saved once the
+    // account exists.
+    var pendingAvatar = null;
+    var pendingAvatarUrl = null;
+
+    function clearPendingAvatarUrl() {
+      if (pendingAvatarUrl) {
+        URL.revokeObjectURL(pendingAvatarUrl);
+        pendingAvatarUrl = null;
+      }
+    }
+
+    // allowsImages(false, siteSettings)
+    function allowsImages(authorized) {
+      return (
+        authorized.indexOf("*") !== -1 ||
+        authorized
+          .toLowerCase()
+          .replace(/[\s.]+/g, "")
+          .split("|")
+          .some(function (ext) {
+            return /^(png|webp|jpe?g|gif|svg|ico|heic|heif|avif|jxl)$/.test(ext);
+          })
+      );
+    }
+
+    // #savePendingAvatar: with the new session's token, the upload then
+    // its pick, or the selectable avatar's select. Its failure doesn't
+    // hold up the account.
+    function savePendingAvatar(result) {
+      var selection = pendingAvatar;
+      var user = result.user;
+      if (!selection || !user) {
+        return Promise.resolve();
+      }
+      var path = "/u/" + encodeURIComponent(String(user.username).toLowerCase()) + "/preferences/avatar/";
+      return request("GET", "/session/csrf.json")
+        .then(function (token) {
+          csrf = token.body.csrf;
+          if (selection.file && result.can_upload_avatar) {
+            var data = new FormData();
+            data.append("type", "avatar");
+            data.append("user_id", user.id);
+            data.append("files[]", selection.file);
+            return fetch(base + "/uploads.json", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { Accept: "application/json", "X-CSRF-Token": csrf, "X-Requested-With": "XMLHttpRequest" },
+              body: data,
+            })
+              .then(function (response) {
+                return response.ok ? response.json() : null;
+              })
+              .then(function (upload) {
+                if (upload && upload.id) {
+                  return request("PUT", path + "pick", { upload_id: upload.id, type: "custom" });
+                }
+              });
+          } else if (selection.url) {
+            return request("PUT", path + "select", { url: selection.url });
+          }
+        })
+        .catch(function () {});
+    }
+
+    function signupDetailsStep(details) {
+      var suggested = details.username;
+      var avatarTemplate = details.avatar_template;
+      var selector = S.avatar_selector;
       leaveIntroduction("login");
       form.innerHTML =
         '<input aria-hidden="true" autocomplete="username" class="code-login-form__hidden-email sr-only" name="email" readonly="" tabindex="-1" type="email" value="' +
@@ -360,13 +429,43 @@
         "</div>";
       var input = form.querySelector("#code-login-username");
       input.focus();
-      // AvatarSelectorModal is not ported.
-      form.querySelector(".code-login-form__avatar").addEventListener("click", function () {
-        var error = document.getElementById("page-error");
-        if (error) {
-          error.textContent = "Not ported yet: choosing an avatar while signing up.";
-          error.hidden = false;
-        }
+      var avatarButton = form.querySelector(".code-login-form__avatar");
+      // previewAvatarTemplate, at dBoundAvatarTemplate's "huge".
+      function drawAvatar() {
+        var template =
+          pendingAvatarUrl || (pendingAvatar && pendingAvatar.url) || (input.value.trim() ? avatarTemplate : null);
+        var shown = avatarButton.querySelector(".avatar, .code-login-form__avatar-placeholder");
+        shown.outerHTML = template
+          ? Discourse.boundAvatar(template, 144)
+          : '<span class="code-login-form__avatar-placeholder">' + icon("user") + "</span>";
+      }
+      drawAvatar();
+      // usernameChanged
+      input.addEventListener("input", function () {
+        avatarTemplate = null;
+        drawAvatar();
+      });
+      // changeAvatar: AvatarSelectorModal with deferSave.
+      avatarButton.addEventListener("click", function () {
+        Discourse.avatarSelector({
+          deferSave: true,
+          avatarTemplate: avatarTemplate,
+          canUploadAvatar: !!details.can_upload_avatar && allowsImages(selector.authorized_extensions),
+          trustLevel: details.trust_level || 0,
+          selection: pendingAvatar,
+          onSelect: function (selection) {
+            clearPendingAvatarUrl();
+            pendingAvatar = selection;
+            if (selection && selection.file) {
+              pendingAvatarUrl = URL.createObjectURL(selection.file);
+            }
+            drawAvatar();
+          },
+          selectable_avatars_mode: selector.selectable_avatars_mode,
+          selectable_avatars: selector.selectable_avatars,
+          authorized_extensions: selector.authorized_extensions,
+          labels: selector.labels,
+        });
       });
       form.querySelector(".code-login-form__continue-to-site").addEventListener("click", function () {
         verify(input.value.trim());
@@ -386,14 +485,16 @@
       return request("POST", "/session/login-code/verify.json", data).then(function (result) {
         var b = result.body || {};
         if (b.username_required) {
-          signupDetailsStep(b.username);
+          signupDetailsStep(b);
         } else if (b.username_errors && b.username_errors.length) {
           var el = form.querySelector("#code-login-username-error");
           if (el) {
             el.textContent = b.username_errors[0];
           }
         } else if (b.success && (b.redirect_url || b.account_created)) {
-          window.location.href = b.redirect_url || base + "/";
+          return (b.account_created ? savePendingAvatar(b) : Promise.resolve()).then(function () {
+            window.location.href = b.redirect_url || base + "/";
+          });
         } else {
           setError(errorOf(result));
         }

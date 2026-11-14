@@ -191,7 +191,7 @@
         .then(function (result) {
           if (result && result.email_code) {
             Discourse.dialog.close();
-            forgotPasswordCode();
+            forgotPasswordCode(s.viewer_username);
           } else if (result && result.success) {
             error(null);
             if (!sent) {
@@ -239,10 +239,10 @@
     }
   }
 
-  // The ForgotPassword modal a reset code opens is the login modals'
-  // (196).
-  function forgotPasswordCode() {
-    Discourse.dialog.alert(escape("Not ported yet: the forgot password modal (196)."));
+  // The ForgotPassword modal a reset code opens, at its code step
+  // (codeSent): login.js's, with #login-data's strings.
+  function forgotPasswordCode(emailOrUsername) {
+    Discourse.login.forgotPassword("", { codeSent: true, emailOrUsername: emailOrUsername });
   }
 
   // model.trustedSession(), then the action or ConfirmSession first.
@@ -269,7 +269,7 @@
       .then(function (result) {
         if (result && result.email_code) {
           progress.textContent = "";
-          forgotPasswordCode();
+          forgotPasswordCode(button.dataset.login);
         } else {
           progress.textContent = s.success;
         }
