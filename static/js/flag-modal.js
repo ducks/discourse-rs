@@ -23,7 +23,6 @@
 // render_post_json); the flag types, the topic's actions summary and the
 // strings are the page's #flag-modal-config. A message's posts and the
 // message itself are flagged as a topic's are. Not ported, and saying so:
-// queueing a topic's first post for review (it unlists the topic), and
 // for a chat message official warnings and queueing for review.
 (function () {
   "use strict";
@@ -682,10 +681,6 @@
     function flagForReview() {
       if (target.chat) {
         notPorted("queueing a chat message for review");
-        return;
-      }
-      if (flagModel.post_number === 1) {
-        notPorted("queueing a topic's first post for review");
         return;
       }
       createFlagAndHide({ queue_for_review: true });

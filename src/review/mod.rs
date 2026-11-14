@@ -3,11 +3,14 @@
 //! ignore, and agreeing as the client edits the post or penalizes its
 //! author: agree_and_edit, agree_and_silence, agree_and_suspend), with
 //! the flag actions it settles, the transition, the flaggers' stats, and
-//! `Post#hide!`; ReviewableUser's delete actions
-//! (user.rs) and the queued and reviewed posts' actions (posts.rs).
+//! `Post#hide!`; on a hidden post, agree_and_keep_hidden and
+//! disagree_and_restore (the post shown again with `Post#unhide!`, its
+//! author told and unsilenced when silenced for it); ReviewableUser's
+//! delete actions (user.rs) and the queued and reviewed posts' actions
+//! (posts.rs).
 //!
-//! Refused for flagged posts: posts that are deleted or hidden (restoring
-//! and unhiding), deleting posts, unsilencing, deleting users, flags with
+//! Refused for flagged posts: posts that are deleted (restoring),
+//! deleting posts, unsilencing, deleting users, flags with
 //! a message (their moderator replies); for every type, category group
 //! moderation. The claim check (claim_error?) and the manual claim
 //! released at the transition are claims.rs's.
@@ -43,6 +46,8 @@ const SCORE_IGNORED: i32 = 3;
 /// `Post.hidden_reasons`
 const FLAG_THRESHOLD_REACHED: i32 = 1;
 const FLAG_THRESHOLD_REACHED_AGAIN: i32 = 2;
+/// `Topic.visibility_reasons`
+pub(crate) const OP_FLAG_THRESHOLD_REACHED: i32 = 0;
 /// `Post.types`
 const REGULAR: i32 = 1;
 const WHISPER: i32 = 4;
@@ -86,25 +91,33 @@ pub struct ExtraArgs<'a> {
 
 /// The perform method an action id runs, given whether the post is
 /// hidden, as `validate_action!` finds it among the built actions and
-/// their aliases. None for an action that isn't built.
-fn flag_action(action_id: &str, hidden: bool) -> Result<Option<FlagAction>, Unsupported> {
+/// their aliases. None for an action that isn't built. A hidden post's
+/// disagree bundle is built for who `can_delete` the post or its topic
+/// (can_delete_post_or_topic?), with disagree_and_restore in place of
+/// disagree, and ignore_and_do_nothing for the system user alone
+/// (can_ignore).
+fn flag_action(
+    action_id: &str,
+    hidden: bool,
+    can_delete: bool,
+    system: bool,
+) -> Result<Option<FlagAction>, Unsupported> {
+    let can_ignore = !hidden || system;
     Ok(match action_id {
         "agree_and_keep" => Some(FlagAction::AgreeAndKeep),
         "agree_and_keep_hidden" => hidden.then_some(FlagAction::AgreeAndKeep),
         "agree_and_hide" => (!hidden).then_some(FlagAction::AgreeAndHide),
-        "disagree" | "ignore_and_do_nothing" | "ignore" if hidden => {
-            return Err(Unsupported(
-                "disagreeing with or ignoring flags on hidden posts",
-            ));
+        // disagree_and_restore aliases disagree, which is valid by it.
+        "disagree" => (can_delete || can_ignore).then_some(FlagAction::Disagree),
+        "disagree_and_restore" => {
+            (hidden && (can_delete || can_ignore)).then_some(FlagAction::Disagree)
         }
-        "disagree" => Some(FlagAction::Disagree),
-        "ignore_and_do_nothing" | "ignore" => Some(FlagAction::Ignore),
+        "ignore_and_do_nothing" | "ignore" => can_ignore.then_some(FlagAction::Ignore),
         // The client edits the post (the composer) before this, and the
         // penalty modal penalizes after it: both alias agree_and_keep.
         "agree_and_edit" => (!hidden).then_some(FlagAction::AgreeAndKeep),
         "agree_and_restore"
         | "agree_and_keep_deleted"
-        | "disagree_and_restore"
         | "disagree_and_keep_deleted"
         | "delete_and_agree"
         | "delete_and_agree_replies"
@@ -323,7 +336,24 @@ pub async fn perform(
             });
             built.then_some(FlagAction::AgreeAndKeep)
         }
-        _ => flag_action(action_id, post.hidden)?,
+        _ => {
+            // can_delete_post_or_topic?(post): the topic for a first
+            // post. Only a hidden post's actions turn on it.
+            let can_delete = if post.hidden {
+                let access = crate::posting::revisions::find_post_with_deleted_in(
+                    &mut *conn, s, guardian, post.id,
+                )
+                .await?;
+                match &access {
+                    Some(a) if post.post_number == 1 => guardian.can_delete_topic(s, &a.topic)?,
+                    Some(a) => guardian.can_delete_post(s, &a.topic, &a.post, a.can_see_post)?,
+                    None => false,
+                }
+            } else {
+                false
+            };
+            flag_action(action_id, post.hidden, can_delete, user.id == -1)?
+        }
     };
     let Some(action) = action else {
         return Ok(Outcome::Forbidden);
@@ -480,9 +510,19 @@ async fn run(
     .bind(post.id)
     .fetch_all(&mut *conn)
     .await?;
+    // perform_disagree as the system user (the automatic clear) settles
+    // the flags that may hide a post, auto_action_flag_types.
+    let system_clear = action == FlagAction::Disagree && performer_id == -1;
+    let settles = |id: i64| {
+        if system_clear {
+            types.is_auto_action(id)
+        } else {
+            types.is_notify_flag(id)
+        }
+    };
     let actions: Vec<_> = actions
         .into_iter()
-        .filter(|(_, _, t, _)| types.is_notify_flag(i64::from(*t)))
+        .filter(|(_, _, t, _)| settles(i64::from(*t)))
         .collect();
     // An expired ignore (AutoQueueHandler) adds no moderator reply.
     if !expired && actions.iter().any(|(_, _, _, related)| related.is_some()) {
@@ -514,20 +554,35 @@ async fn run(
             }
         }
         FlagAction::Disagree => {
-            // The post's counts of every flag that goes to review, zeroed.
+            // The post's counts of every flag settled here, zeroed: the
+            // types with a posts column of their own (a custom flag has
+            // none).
+            let columns: Vec<String> = sqlx::query_scalar(
+                "SELECT attname::text FROM pg_attribute \
+                 WHERE attrelid = 'posts'::regclass AND attnum > 0 AND NOT attisdropped",
+            )
+            .fetch_all(&mut *conn)
+            .await?;
             let zeroed: Vec<String> = types
                 .types
                 .iter()
-                .filter(|(_, id)| types.is_notify_flag(*id))
+                .filter(|(key, id)| settles(*id) && columns.contains(&format!("{key}_count")))
                 .map(|(key, _)| format!("{key}_count = 0"))
                 .collect();
-            sqlx::query(&format!(
-                "UPDATE posts SET {} WHERE id = $1",
-                zeroed.join(", ")
-            ))
-            .bind(post.id)
-            .execute(&mut *conn)
-            .await?;
+            if !zeroed.is_empty() {
+                sqlx::query(&format!(
+                    "UPDATE posts SET {} WHERE id = $1",
+                    zeroed.join(", ")
+                ))
+                .bind(post.id)
+                .execute(&mut *conn)
+                .await?;
+            }
+            // Undo hide/silence if applicable (a trashed post is refused
+            // before).
+            if post.hidden {
+                restore_hidden(&mut *conn, ctx, performer_id, reviewable.id, post).await?;
+            }
         }
         FlagAction::AgreeAndKeep | FlagAction::Ignore => {}
     }
@@ -673,9 +728,7 @@ pub async fn expire_flags(
     if post.deleted_at.is_some() || post.user_deleted {
         return Err(Unsupported("reviewing flags on deleted posts").into());
     }
-    if post.hidden {
-        return Err(Unsupported("disagreeing with or ignoring flags on hidden posts").into());
-    }
+    // A hidden post stays hidden: the system user can_ignore it.
     let system: String = sqlx::query_scalar("SELECT username FROM users WHERE id = -1")
         .fetch_one(&mut *conn)
         .await?;
@@ -694,13 +747,108 @@ pub async fn expire_flags(
     Ok(())
 }
 
-/// `Post#hide!(post_action_type_id)` for a reply: hidden with the reason,
-/// the author's post count down, the post_hidden system message, and the
-/// topic's bumped_at reset when it was the last reply. `queued_by_staff`
-/// is PostActionCreator's hide of a post queued for review (reason
-/// flag_threshold_reached, `custom_message: :queued_by_staff`). Hiding a
-/// first post, or the last visible one, hides the topic, which is not
-/// ported.
+/// `Post#url`: the topic's path at the post, without the base path (the
+/// system messages' templates put base_url before it).
+async fn post_url(conn: &mut PgConnection, post: &FlaggedPost) -> Result<String, sqlx::Error> {
+    let slug: Option<String> = sqlx::query_scalar("SELECT slug FROM topics WHERE id = $1")
+        .bind(post.topic_id)
+        .fetch_one(conn)
+        .await?;
+    Ok(format!(
+        "/t/{}/{}/{}",
+        slug.as_deref().filter(|s| !s.is_empty()).unwrap_or("topic"),
+        post.topic_id,
+        post.post_number
+    ))
+}
+
+/// `perform_disagree`'s undo of a hide: notify_poster (the
+/// flags_disagreed system message, from a human staff member),
+/// `Post#unhide!`, and `UserSilencer.unsilence` for an author silenced
+/// for this post. The unsilencing writes outside this transaction (its
+/// system message is PostCreator's), so it runs before the unhide, while
+/// the transaction holds no row it writes; Rails unsilences after.
+async fn restore_hidden(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    performer_id: i32,
+    reviewable_id: i64,
+    post: &FlaggedPost,
+) -> Result<(), AppError> {
+    // Post#topic is nil for a trashed topic, which unhide! raises on.
+    let topic_trashed: bool =
+        sqlx::query_scalar("SELECT deleted_at IS NOT NULL FROM topics WHERE id = $1")
+            .bind(post.topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    if topic_trashed {
+        return Err(Unsupported("restoring a hidden post of a deleted topic").into());
+    }
+    let silenced_till = if list::was_silenced_for(&mut *conn, post.id).await? {
+        let author = post
+            .user_id
+            .ok_or(Unsupported("unsilencing an author who is gone"))?;
+        let till: Option<Option<NaiveDateTime>> =
+            sqlx::query_scalar("SELECT silenced_till FROM users WHERE id = $1")
+                .bind(author)
+                .fetch_optional(&mut *conn)
+                .await?;
+        let till = till.ok_or(Unsupported("unsilencing an author who is gone"))?;
+        till.map(|_| author)
+    } else {
+        None
+    };
+    // notify_poster: performed_by.human? && performed_by.staff?
+    let staff: bool = sqlx::query_scalar("SELECT admin OR moderator FROM users WHERE id = $1")
+        .bind(performer_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    // Without an author Rails enqueues a job that raises
+    // InvalidParameters: nothing is sent either way.
+    if performer_id > 0
+        && staff
+        && let Some(user_id) = post.user_id
+    {
+        let raw: String = sqlx::query_scalar("SELECT raw FROM posts WHERE id = $1")
+            .bind(post.id)
+            .fetch_one(&mut *conn)
+            .await?;
+        let url = post_url(&mut *conn, post).await?;
+        crate::jobs::enqueue(
+            &mut *conn,
+            "send_system_message",
+            json!({
+                "user_id": user_id,
+                "message_type": "flags_disagreed",
+                "message_options": {
+                    "flagged_post_raw_content": raw,
+                    "url": url,
+                },
+            }),
+        )
+        .await?;
+    }
+    // UserSilencer#unsilence: nothing for a silence already lifted.
+    if let Some(author) = silenced_till {
+        crate::user_penalties::lift_silence_for_reviewable(
+            &mut *conn,
+            ctx,
+            performer_id,
+            author,
+            reviewable_id,
+        )
+        .await?;
+    }
+    crate::posts::admin::unhide(&mut *conn, ctx, post.id).await
+}
+
+/// `Post#hide!(post_action_type_id)`: hidden with the reason, the
+/// author's post count down, the post_hidden system message, and the
+/// topic's bumped_at reset when it was the last reply. A first post, or
+/// the topic's last visible regular one, unlists the topic
+/// (op_flag_threshold_reached). `queued_by_staff` is PostActionCreator's
+/// hide of a post queued for review (reason flag_threshold_reached,
+/// `custom_message: :queued_by_staff`).
 pub async fn hide_post(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -732,11 +880,10 @@ async fn hide(
     } else {
         FLAG_THRESHOLD_REACHED
     };
-    let (highest, slug): (i32, Option<String>) =
-        sqlx::query_as("SELECT highest_post_number, slug FROM topics WHERE id = $1")
-            .bind(post.topic_id)
-            .fetch_one(&mut *conn)
-            .await?;
+    let highest: i32 = sqlx::query_scalar("SELECT highest_post_number FROM topics WHERE id = $1")
+        .bind(post.topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
     // is_last_reply? && !whisper?
     let reset_bumped_at =
         highest == post.post_number && post.post_number != 1 && post.post_type != WHISPER;
@@ -756,15 +903,29 @@ async fn hide(
     .bind(REGULAR)
     .fetch_one(&mut *conn)
     .await?;
-    if post.post_number == 1 || !any_visible {
-        return Err(Unsupported(
-            "hiding a topic's first or last visible post (unlisting the topic)",
+    // A first post, or the topic's last visible regular post: the topic
+    // unlisted by the system user, which takes the first post's author's
+    // topic count itself (TopicStatusUpdater).
+    let unlists = post.post_number == 1 || !any_visible;
+    if unlists {
+        crate::topics::status::apply(
+            &mut *conn,
+            ctx,
+            post.topic_id,
+            -1,
+            crate::topics::status::Status::Visible,
+            false,
+            &crate::topics::status::StatusOpts {
+                visibility_reason_id: Some(OP_FLAG_THRESHOLD_REACHED),
+                ..Default::default()
+            },
         )
-        .into());
+        .await?;
     }
     // UserStatCountUpdater.decrement!: a regular reply's post count, not
     // below zero.
-    if let Some(user_id) = post.user_id
+    if !unlists
+        && let Some(user_id) = post.user_id
         && post.post_type == REGULAR
     {
         sqlx::query("UPDATE user_stats SET post_count = post_count - 1 WHERE user_id = $1 AND post_count >= 1")
@@ -789,12 +950,7 @@ async fn hide(
             .i18n
             .t_with(&format!("flag_reasons.{key}"), &[("base_path", base_path)])
             .ok_or(Unsupported("flag reasons without a translation"))?;
-        let url = format!(
-            "{base_path}/t/{}/{}/{}",
-            slug.as_deref().filter(|s| !s.is_empty()).unwrap_or("topic"),
-            post.topic_id,
-            post.post_number
-        );
+        let url = post_url(&mut *conn, post).await?;
         crate::jobs::enqueue_in(
             &mut *conn,
             5,
@@ -818,14 +974,19 @@ async fn hide(
         .await?;
     }
     if reset_bumped_at {
-        // Topic#reset_bumped_at: the last visible regular post's date (one
-        // exists, checked above); saved without validation when it changed.
+        // Topic#reset_bumped_at: the last visible regular post's date, the
+        // first post's without one; saved without validation when it
+        // changed.
         sqlx::query(
             "UPDATE topics t SET bumped_at = p.created_at, updated_at = clock_timestamp() \
-             FROM (SELECT created_at FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
-                     AND NOT user_deleted AND NOT hidden AND post_type = $2 \
-                   ORDER BY sort_order DESC LIMIT 1) p \
-             WHERE t.id = $1 AND t.bumped_at IS DISTINCT FROM p.created_at",
+             FROM (SELECT COALESCE( \
+                     (SELECT created_at FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
+                        AND NOT user_deleted AND NOT hidden AND post_type = $2 \
+                      ORDER BY post_number DESC LIMIT 1), \
+                     (SELECT created_at FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
+                        AND post_number = 1 ORDER BY id LIMIT 1)) AS created_at) p \
+             WHERE t.id = $1 AND p.created_at IS NOT NULL \
+               AND t.bumped_at IS DISTINCT FROM p.created_at",
         )
         .bind(post.topic_id)
         .bind(REGULAR)

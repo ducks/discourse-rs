@@ -104,6 +104,7 @@ mod reply_trimmer;
 mod request_cancellation;
 mod request_tracker;
 mod request_tracking;
+mod review_hidden_posts;
 mod review_pages;
 mod schema;
 mod search;
