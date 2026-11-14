@@ -1097,3 +1097,86 @@ async fn assigning_races_the_assigners_new_topics_without_deadlock() {
     .unwrap();
     assert_eq!((small_actions, topics), (ROUNDS as i64, ROUNDS as i64));
 }
+
+/// TopicStatusUpdater takes a closed topic off the featured lists and its
+/// small action locks the category's row; a new topic locks the category's
+/// row and rewrites its featured list (feature_topics_for). Racing them in
+/// one category deadlocks unless both take them in the same order.
+#[tokio::test]
+async fn closing_races_new_topics_in_the_category_without_deadlock() {
+    const ROUNDS: usize = 30;
+    // A 500's cause is only logged: show it with the failure.
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::ERROR)
+        .with_test_writer()
+        .try_init();
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let category: i32 = sqlx::query_scalar("SELECT category_id FROM topics WHERE id = $1")
+        .bind(TOPIC)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let mut staff = Client::login(st.clone(), "admin").await;
+    let mut author = Client::login(st.clone(), "user0").await;
+    let mut other = Client::login(st.clone(), "user1").await;
+    let mut failed = Vec::new();
+    let mut check = |round: usize, what: &str, (status, body): (u16, Value)| {
+        if status != 200 {
+            failed.push(format!("round {round} {what}: {status} {body}"));
+        }
+    };
+    let new_topic = |round: usize, step: &str| {
+        json!({
+            "title": format!("Racing the topic's closing in the category, {step} {round}"),
+            "raw": format!("A new topic while the featured topic closes, {step} {round}."),
+            "category": category,
+        })
+    };
+    let status_path = format!("/t/{TOPIC}/status");
+    for round in 0..ROUNDS {
+        // Opening bumps the topic and the next new topic features it, so
+        // closing it has a featured row to take.
+        if round > 0 {
+            let opened = staff
+                .put(
+                    &status_path,
+                    json!({"status": "closed", "enabled": "false"}),
+                )
+                .await;
+            check(round, "open", opened);
+        }
+        let featuring = author
+            .send(
+                Method::POST,
+                "/posts.json",
+                Some(&new_topic(round, "featuring")),
+            )
+            .await;
+        check(round, "featuring topic", featuring);
+        let (first, second) = (new_topic(round, "first"), new_topic(round, "second"));
+        let (closed, created, also_created) = tokio::join!(
+            staff.put(&status_path, json!({"status": "closed", "enabled": "true"})),
+            author.send(Method::POST, "/posts.json", Some(&first)),
+            other.send(Method::POST, "/posts.json", Some(&second)),
+        );
+        check(round, "close", closed);
+        check(round, "first topic", created);
+        check(round, "second topic", also_created);
+    }
+    assert!(
+        failed.is_empty(),
+        "{} requests of {ROUNDS} rounds failed:\n{}",
+        failed.len(),
+        failed.join("\n")
+    );
+    let (closings, topics): (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM posts WHERE topic_id = $1 AND action_code = 'closed.enabled'), \
+                (SELECT COUNT(*) FROM topics WHERE title LIKE 'Racing the topic''s closing in the category, %')",
+    )
+    .bind(TOPIC)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!((closings, topics), (ROUNDS as i64, 3 * ROUNDS as i64));
+}
