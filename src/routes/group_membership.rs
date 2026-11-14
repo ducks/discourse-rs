@@ -230,7 +230,8 @@ pub async fn request_membership(
     else {
         return Ok(super::topics::not_found_response(&state));
     };
-    if !group.allow_membership_requests || membership.is_some() {
+    // GroupMembershipRequester#request's guards.
+    if guardian.is_silenced() || !group.allow_membership_requests || membership.is_some() {
         return Ok(super::search::invalid_access(&state));
     }
     let inserted = sqlx::query(

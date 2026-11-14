@@ -5859,6 +5859,25 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     word that a message follows and only Close. Tests: browser
     bulk-invite-modal (1, the invite the job makes checked in the
     database)
+295. ~~`feat/group-request-membership`~~ (done) S: a group page's
+    Request and Message buttons had no handler (the endpoint was 82e's).
+    Now groups.js: Request opens RequestGroupMembershipForm
+    (components/modal/request-group-membership-form.gjs: the title with
+    the group's name, the reason starting as the group's
+    membership_request_template within 5000 characters in
+    DExpandingTextArea, Submit disabled while it is empty or the request
+    is out), POSTs /groups/:name/request_membership.json and goes to the
+    message it answers with, errors in popupAjaxError's dialog (loaded
+    with its strings on a page without one); a visitor's goes to the
+    login. Also on the directory's cards, and exported as
+    Discourse.groupMembership.request({ name,
+    membership_request_template }) for the group card. Message is
+    messageGroup: the composer for a message to the group. The endpoint
+    now refuses a silenced member as GroupMembershipRequester does.
+    Tests: browser group-request-membership (5), groups_pages. Left:
+    the group card's two buttons, the composer marking the recipient as
+    a group (hasGroups), and Join and Leave still reporting errors with
+    window.alert
 214. `feat/csp` M: the content_security_policy settings and header with a
     per-request nonce (only the problem check reads the setting,
     problem_checks.rs:227), and discourse-lti's resubmit page script

@@ -1550,6 +1550,7 @@ pub async fn index_page(
             filter: &filter,
             kind: kind.as_deref(),
             can_create_group,
+            current_user: guardian.user().is_some(),
         },
     );
     let page_title = crate::topic_list_view::t(&cx, "groups.index.title");

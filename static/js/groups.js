@@ -4,7 +4,9 @@
 // by type; on /g/:name the group menu goes to the chosen group, the
 // username filter reloads the members after 500ms and a column header
 // sorts by it (DTableHeaderToggle). Join and Leave call the group's
-// join and leave, then draw the page again.
+// join and leave, then draw the page again; Request opens
+// RequestGroupMembershipForm (also Discourse.groupMembership.request)
+// and Message the composer for a message to the group.
 (function () {
   "use strict";
 
@@ -181,6 +183,192 @@
       });
   }
 
+  // The page's #group-membership-strings (groups::view), a member's.
+  function membershipStrings() {
+    var el = document.getElementById("group-membership-strings");
+    try {
+      return el ? JSON.parse(el.textContent) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // popupAjaxError: the response's errors in the dialog, which a page
+  // without one loads first (as composer.js does).
+  var dialogLoading = null;
+  function popupError(message, strings) {
+    if (Discourse.dialog) {
+      Discourse.dialog.popupAjaxError(message);
+      return;
+    }
+    if (!dialogLoading) {
+      dialogLoading = new Promise(function (resolve, reject) {
+        if (!document.getElementById("dialog-strings")) {
+          var block = document.createElement("script");
+          block.type = "application/json";
+          block.id = "dialog-strings";
+          block.textContent = strings.dialogStrings || "{}";
+          document.head.appendChild(block);
+        }
+        var script = document.createElement("script");
+        script.src = strings.dialogSrc;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    dialogLoading.then(
+      function () {
+        Discourse.dialog.popupAjaxError(message);
+      },
+      function () {
+        dialogLoading = null;
+        window.alert(message);
+      }
+    );
+  }
+
+  function loggedIn() {
+    return !!document.body.getAttribute("hx-headers");
+  }
+
+  // GroupMembershipButton#showRequestMembershipForm: the login for a
+  // visitor, else RequestGroupMembershipForm
+  // (modal/request-group-membership-form.gjs) for the group ({ name,
+  // membership_request_template }): the reason starts as the group's
+  // template, Submit is disabled while it is empty or the request is out,
+  // and Group#requestMembership's answer is the message's topic, which it
+  // goes to.
+  function requestMembership(group) {
+    if (!loggedIn()) {
+      go(basePath() + "/login");
+      return;
+    }
+    var strings = membershipStrings();
+    var reason = group.membership_request_template;
+    var loading = false;
+    var textarea, submit, spinner;
+
+    function sync() {
+      submit.disabled = loading || !reason;
+      spinner.className = "loading-container" + (loading ? " visible" : "") + " inline-spinner";
+      spinner.innerHTML = loading ? '<div class="spinner small"></div>' : "";
+      if (loading) {
+        spinner.setAttribute("data-loading", "");
+      } else {
+        spinner.removeAttribute("data-loading");
+      }
+    }
+
+    var close = Discourse.modal.show({
+      className: "request-group-membership-form",
+      title: (strings.title || "").split("%{group_name}").join(group.name),
+      body: function (body) {
+        var control = document.createElement("div");
+        control.className = "control-group";
+        var label = document.createElement("label");
+        label.textContent = strings.reason || "";
+        var wrap = document.createElement("div");
+        wrap.className = "expanding-text-area";
+        textarea = document.createElement("textarea");
+        textarea.className = "--expandable";
+        textarea.setAttribute("maxlength", "5000");
+        if (reason !== null && reason !== undefined) {
+          textarea.value = reason;
+          wrap.setAttribute("data-replicated-value", reason);
+        }
+        textarea.addEventListener("input", function () {
+          reason = textarea.value;
+          wrap.setAttribute("data-replicated-value", reason);
+          sync();
+        });
+        wrap.appendChild(textarea);
+        control.appendChild(label);
+        control.appendChild(wrap);
+        body.appendChild(control);
+      },
+      footer: function (footer, closeModal) {
+        submit = document.createElement("button");
+        submit.type = "button";
+        submit.className = "btn btn-text btn-primary";
+        submit.innerHTML = '<span class="d-button-label"></span>';
+        submit.firstChild.textContent = strings.submit || "";
+        var cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "btn btn-text btn-flat d-modal-cancel";
+        cancel.innerHTML = '<span class="d-button-label"></span>';
+        cancel.firstChild.textContent = strings.cancel || "";
+        cancel.addEventListener("click", function () {
+          closeModal();
+        });
+        spinner = document.createElement("div");
+        submit.addEventListener("click", send);
+        footer.appendChild(submit);
+        footer.appendChild(cancel);
+        footer.appendChild(spinner);
+        sync();
+      },
+    });
+
+    function send() {
+      if (submit.disabled) {
+        return;
+      }
+      loading = true;
+      sync();
+      var headers = csrfHeaders();
+      headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+      fetch(basePath() + "/groups/" + encodeURIComponent(group.name) + "/request_membership.json", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: headers,
+        body: "reason=" + encodeURIComponent(reason),
+      })
+        .then(function (r) {
+          return r
+            .json()
+            .catch(function () {
+              return {};
+            })
+            .then(function (json) {
+              if (r.ok) {
+                // DiscourseURL.routeTo(result.relative_url); the modal
+                // goes as the route changes.
+                close();
+                go(json.relative_url);
+                return;
+              }
+              // extractError
+              var message =
+                json.errors && json.errors.length
+                  ? json.errors.join("\n")
+                  : json.error || strings.generic_error || r.statusText;
+              popupError(message, strings);
+            });
+        })
+        .catch(function () {
+          popupError(strings.generic_error || "", strings);
+        })
+        .finally(function () {
+          loading = false;
+          sync();
+        });
+    }
+  }
+
+  // For the group card (GroupCardContents has the same button).
+  Discourse.groupMembership = { request: requestMembership };
+
+  // GroupController#messageGroup: composer.openNewMessage to the group.
+  // Only a member is shown the button, and a member's page has the
+  // composer.
+  function messageGroup(name) {
+    if (!window.composer) {
+      return;
+    }
+    window.composer.open({ mode: "private-message", recipients: [name], hasGroups: true });
+  }
+
   document.addEventListener("click", function (event) {
     var typeRow = event.target.closest(".groups-header-filters-type .select-kit-row");
     if (typeRow) {
@@ -211,6 +399,21 @@
     if (leave) {
       event.preventDefault();
       membership(leave, "DELETE", "/leave.json");
+      return;
+    }
+    var request = event.target.closest(".group-index-request");
+    if (request) {
+      event.preventDefault();
+      requestMembership({
+        name: request.dataset.groupName,
+        membership_request_template: request.dataset.membershipRequestTemplate,
+      });
+      return;
+    }
+    var message = event.target.closest(".group-details-button .group-message-button");
+    if (message) {
+      event.preventDefault();
+      messageGroup(message.dataset.groupName);
       return;
     }
     // DTableHeaderToggle#toggleProperties: ascending only when it was
