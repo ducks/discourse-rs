@@ -704,6 +704,7 @@
       "name": "navigation-bar.js",
       "content_type": "js",
       "files": [
+        "js/mini-tag-chooser.js",
         "js/navigation-bar.js"
       ]
     },

@@ -72,17 +72,7 @@ pub(crate) async fn load(
     }
     // composer.canEditTags for a new topic: site.can_tag_topics.
     let tag_chooser = if guardian.can_tag_topics(settings)? {
-        Some(super::view::TagChooser {
-            can_create: guardian.can_create_tag(settings)?,
-            staff: guardian.is_staff(),
-            max_tags_per_topic: settings.get("max_tags_per_topic")?.to_i(),
-            max_tag_search_results: settings.get("max_tag_search_results")?.to_i(),
-            max_tag_length: settings.get("max_tag_length")?.to_i(),
-            force_lowercase: settings.get("force_lowercase_tags")?.truthy(),
-            sort_alphabetically: settings.get("tags_sort_alphabetically")?.truthy(),
-            prioritize_recent: settings.get("prioritize_recently_used_tags")?.truthy(),
-            style: settings.get("tag_style")?.to_s(),
-        })
+        Some(super::view::TagChooser::load(settings, guardian)?)
     } else {
         None
     };

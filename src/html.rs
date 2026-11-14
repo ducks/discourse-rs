@@ -2168,6 +2168,75 @@ pub fn tag_breadcrumbs(i18n: &I18n, tag_name: &str, tag_id: i32) -> String {
     out
 }
 
+/// A tag of an intersection: the first is the tag's record, the others the
+/// names alone (TagShowRoute's `additionalTags`).
+pub struct IntersectionTag {
+    pub id: Option<i32>,
+    pub name: String,
+    pub slug: Option<String>,
+}
+
+/// BreadCrumbs on a tag intersection: the category drop, closed, then
+/// TagsIntersectionChooser with the tags selected, closed (`options` is
+/// TagChooser::options; navigation-bar.js binds it).
+pub fn tags_intersection_breadcrumbs(
+    i18n: &I18n,
+    options: &serde_json::Value,
+    tags: &[IntersectionTag],
+) -> String {
+    use crate::topic_list_view::{escape, icon};
+    let categories = i18n
+        .t("js.categories.categories_label")
+        .unwrap_or_default()
+        .to_string();
+    let mut out = String::from(if crate::mobile::mobile_view() {
+        "<ol class=\"category-breadcrumb hidden\">"
+    } else {
+        "<ol class=\"category-breadcrumb\">"
+    });
+    out.push_str(&breadcrumb_drop(
+        i18n,
+        "category",
+        " category-breadcrumb__category-selector",
+        &categories,
+        &escape(&categories),
+        None,
+        None,
+    ));
+    let names: Vec<&str> = tags.iter().map(|t| t.name.as_str()).collect();
+    let values: Vec<String> = tags
+        .iter()
+        .map(|t| t.id.map_or_else(|| t.name.clone(), |id| id.to_string()))
+        .collect();
+    let selected: Vec<serde_json::Value> = tags
+        .iter()
+        .map(|t| match t.id {
+            Some(id) => serde_json::json!({"id": id, "name": t.name, "slug": t.slug}),
+            None => serde_json::json!({"name": t.name}),
+        })
+        .collect();
+    // MiniTagChooser#caretIcon: none once the maximum is selected.
+    let maximum = options["maximum"].as_u64().unwrap_or(0) as usize;
+    let caret = if maximum > 0 && tags.len() >= maximum {
+        String::new()
+    } else {
+        icon("plus", Some("angle-icon"))
+    };
+    out.push_str(&format!(
+        "<li><details class=\"select-kit multi-select mini-tag-chooser tags-intersection-chooser has-selection\" \
+         data-options=\"{}\" data-tags=\"{}\"><summary data-name=\"{}\" data-value=\"{}\" tabindex=\"0\" \
+         class=\"select-kit-header multi-select-header\"><div class=\"select-kit-header-wrapper\">\
+         <span class=\"formatted-selection\">{}</span>{caret}</div></summary>\
+         <div class=\"select-kit-body\"></div></details></li></ol>",
+        escape(&options.to_string()),
+        escape(&serde_json::Value::Array(selected).to_string()),
+        escape(&names.join(",")),
+        escape(&values.join(",")),
+        escape(&names.join(", ")),
+    ));
+    out
+}
+
 /// What BreadCrumbs' TagDrop shows.
 #[derive(Clone, Copy)]
 pub enum TagCrumb<'a> {

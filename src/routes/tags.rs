@@ -689,23 +689,46 @@ async fn show_list(
             .chrome
             .discovery_body_classes(&[&tag_class, "tags-page"]),
     }
-    // DNavigation draws no pills for an intersection and the port not its
-    // TagsIntersectionChooser, so the heading names the tags.
-    page.tag = Some(crate::html::TagHeading {
-        name: if intersection {
-            request.tags.join(" & ")
-        } else {
-            tag_name.clone()
-        },
-        url: match &tag {
-            _ if intersection => format!(
-                "{base_path}/tags/intersection/{tag_name}/{}",
-                path.additional.join("/")
-            ),
-            Some(t) => t.url(&base_path),
-            None => format!("{base_path}/tag/{tag_name}"),
-        },
-    });
+    if intersection {
+        // DNavigation on an intersection: the breadcrumbs with
+        // TagsIntersectionChooser and no pills. The other tags are named as
+        // the list names them (TagShowRoute#model), else as given.
+        let listed = doc["topic_list"]["tags"].as_array();
+        let mut tags = vec![crate::html::IntersectionTag {
+            id: tag.as_ref().map(|t| t.id),
+            name: tag.as_ref().map_or(tag_name.clone(), |t| t.name.clone()),
+            slug: tag.as_ref().map(|t| t.slug_for_url()),
+        }];
+        tags.extend(path.additional.iter().map(|given| {
+            let name = listed
+                .into_iter()
+                .flatten()
+                .find(|t| {
+                    t["name"]
+                        .as_str()
+                        .is_some_and(|n| n.to_lowercase() == given.to_lowercase())
+                        || t["slug"].as_str() == Some(given)
+                })
+                .and_then(|t| t["name"].as_str())
+                .unwrap_or(given);
+            crate::html::IntersectionTag {
+                id: None,
+                name: name.to_string(),
+                slug: None,
+            }
+        }));
+        let options =
+            crate::composer::view::TagChooser::load(&settings, &guardian)?.options(&state.i18n);
+        page.breadcrumbs = crate::html::tags_intersection_breadcrumbs(&state.i18n, &options, &tags);
+    } else {
+        page.tag = Some(crate::html::TagHeading {
+            name: tag_name.clone(),
+            url: match &tag {
+                Some(t) => t.url(&base_path),
+                None => format!("{base_path}/tag/{tag_name}"),
+            },
+        });
+    }
     // The tag's own page: its info and edit buttons, the TagInfo panel and
     // a member's notification level in it.
     if category.is_none()

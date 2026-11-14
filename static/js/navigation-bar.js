@@ -12,8 +12,9 @@
   var open = null;
 
   // Discovery's CategoryDrop and TagDrop navigate using the viewer-filtered
-  // API lists. Keep this separate from the composer's editing controls.
-  var breadcrumbSelector = ".category-breadcrumb details.select-kit";
+  // API lists. Keep this separate from the composer's editing controls
+  // and from TagsIntersectionChooser, a multi select (below).
+  var breadcrumbSelector = ".category-breadcrumb details.select-kit.single-select";
 
   function closeBreadcrumb(drop, focus) {
     drop.open = false;
@@ -173,6 +174,68 @@
       index = event.key === "ArrowDown" ? (index + 1) % links.length : (index <= 0 ? links.length : index) - 1;
       links[index].focus();
     }
+  });
+
+  // DiscourseURL.routeTo: the page swapped in as a link's (hx-boost).
+  function routeTo(path) {
+    var base = (document.querySelector('meta[name="discourse-base-uri"]') || {}).content || "";
+    var outlet = document.getElementById("main-outlet");
+    if (!window.htmx || !outlet) {
+      window.location.assign(base + path);
+      return;
+    }
+    var link = document.createElement("a");
+    link.href = base + path;
+    link.hidden = true;
+    outlet.appendChild(link);
+    window.htmx.process(link);
+    link.click();
+  }
+
+  // BreadCrumbs' TagsIntersectionChooser on a tag intersection: the
+  // MiniTagChooser (mini-tag-chooser.js, shipped in front of this file)
+  // holding the page's tags, the first its main tag. Each change goes to
+  // the page of what is left (onChange): the intersection led by the main
+  // tag while it stays, its own list once it is alone, else the others'.
+  Discourse.onPage(function () {
+    var el = document.querySelector(".category-breadcrumb details.tags-intersection-chooser");
+    if (!el) {
+      return;
+    }
+    var tags = [];
+    try {
+      tags = JSON.parse(el.dataset.tags || "[]");
+    } catch (_) {}
+    var main = tags[0];
+    var chooser = Discourse.miniTagChooser(el, {
+      changed: function () {
+        var names = chooser.selected().map(function (t) {
+          return t.name;
+        });
+        var path = function (list) {
+          return list.map(encodeURIComponent).join("/");
+        };
+        if (main && names.indexOf(main.name) >= 0) {
+          var rest = names.filter(function (name) {
+            return name !== main.name;
+          });
+          if (rest.length) {
+            routeTo("/tags/intersection/" + path([main.name].concat(rest)));
+          } else if (main.id) {
+            routeTo("/tag/" + path([main.slug || main.id + "-tag", main.id]));
+          } else {
+            routeTo("/tag/" + path([main.name]));
+          }
+        } else if (names.length >= 2) {
+          routeTo("/tags/intersection/" + path(names));
+        } else if (names.length === 1) {
+          routeTo("/tag/" + path(names));
+        } else {
+          routeTo("/tags");
+        }
+      },
+    });
+    chooser.set(tags);
   });
 
   // DNavigation's New Category button (createCategory): the new category
