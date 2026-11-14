@@ -5,5 +5,7 @@
     the steps static/js/invite.js draws after the first. -#}
 {{ section|safe }}
 <script type="application/json" id="invite-strings">{{ strings|safe }}</script>
+{#- The new account's avatar: AvatarSelectorModal and its dialogs. -#}
+{% if strings.contains("\"avatar_selector\"") %}<script type="application/json" id="dialog-strings">{{ dialog_strings|safe }}</script><script src="{{ crate::assets::url(base_path, "dialog.js") }}" defer></script><script src="{{ crate::assets::url(base_path, "avatar-selector.js") }}" defer></script>{% endif %}
 <script src="{{ crate::assets::url(base_path, "invite.js") }}" defer></script>
 {% endblock %}

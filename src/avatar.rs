@@ -73,6 +73,26 @@ pub fn avatar_template(
 }
 
 /// `Discourse.avatar_sizes`: the avatar_sizes setting as a set.
+/// selectable_avatars as the client setting holds it: the uploads' urls,
+/// in the setting's order.
+pub async fn selectable_avatar_urls(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+) -> Result<Vec<String>, crate::AppError> {
+    let mut urls = Vec::new();
+    for id in settings.get("selectable_avatars")?.to_s().split('|') {
+        let id = i32::try_from(crate::ruby::to_i(id)).unwrap_or(0);
+        if let Some(url) = sqlx::query_scalar::<_, String>("SELECT url FROM uploads WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&mut *conn)
+            .await?
+        {
+            urls.push(url);
+        }
+    }
+    Ok(urls)
+}
+
 pub fn avatar_sizes(settings: &SiteSettings) -> Result<Vec<u32>, SettingError> {
     let mut sizes: Vec<u32> = Vec::new();
     for size in settings.get("avatar_sizes")?.to_s().split('|') {

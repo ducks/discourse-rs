@@ -669,7 +669,7 @@ pub struct Account {
 }
 
 /// What the avatar selector modal (modal/avatar-selector.gjs) reads, for
-/// static/js/preferences.js to draw it: the user's templates and upload
+/// static/js/avatar-selector.js to draw it: the user's templates and upload
 /// ids, what the viewer may choose and the strings.
 fn avatar_selector(p: &Prefs, a: &Account) -> Result<Value, AppError> {
     let cx = p.cx;
@@ -734,6 +734,7 @@ fn avatar_selector(p: &Prefs, a: &Account) -> Result<Value, AppError> {
             "save": t(cx, "save"),
             "cancel": t(cx, "cancel"),
             "close": t(cx, "modal.close"),
+            "generic_error": t(cx, "generic_error"),
         },
     }))
 }

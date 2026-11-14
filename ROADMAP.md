@@ -3598,7 +3598,12 @@ route table has been made, so this list may be short.
     markup with common.css's rules (static/css/invites.css),
     static/js/invite.js and user-invited.js; a staff member redeeming
     refreshes the staff groups (the modals are 291, 292 and 294). Left:
-    the avatar picker while signing up, which says it is not ported; invites past the first page (DLoadMore)
+    ~~the avatar picker while signing up, which says it is not ported~~
+    (done in `feat/account-leftovers`: AvatarSelectorModal with
+    deferSave from static/js/avatar-selector.js, which the preferences
+    share, the upload or selectable avatar saved once the account
+    exists); the username step's availability check with its avatar
+    preview; invites past the first page (DLoadMore)
     192e. ~~`feat/invites-bulk`~~ (done) S: POST /invites/upload_csv
     (the header row or the email, groups, topic_id columns,
     max_bulk_invites), Jobs::BulkInvite (groups by name the admin may
@@ -3765,8 +3770,9 @@ route table has been made, so this list may be short.
     custom reactions' emoji pickers), and the second factor page behind a
     confirmed session (users#list_second_factors). Refused, naming their
     items: managing second factors and passkeys and confirming a session
-    with a passkey (155), the ForgotPassword modal a reset code opens
-    (196), the MCP authorizations list
+    with a passkey (155), ~~the ForgotPassword modal a reset code opens
+    (196)~~ (done in `feat/account-leftovers`), the MCP authorizations
+    list
     193f. ~~`feat/user-pages-rest-routes`~~ (done) S: view_user_route's
     other values (badges drawn in place as activity is, deletedPosts
     going to its page, a route the app lacks falling back to the
@@ -4003,8 +4009,10 @@ route table has been made, so this list may be short.
     buttons, the sidebar's header actions and Customize (milestone 4.5),
     the login, signup and logout dialogs (79c), the Edit Directory
     Columns modal (74), ~~BookmarkModal (editing a bookmark from the
-    bookmarks tab, 193c)~~ (done, 289), the ForgotPassword modal a password
-    reset code opens (from the security tab, 193e), discourse-poll's
+    bookmarks tab, 193c)~~ (done, 289), ~~the ForgotPassword modal a
+    password reset code opens (from the security tab, 193e)~~ (done in
+    `feat/account-leftovers`: login.js's modal at its code step, from
+    the change password button and ConfirmSession), discourse-poll's
     rich editor node view (PollNodeView and the builder's Edit poll mode
     over it, from 229). Split when started
     196a. ~~`feat/composer-actions-menu`~~ (done): the composer's actions

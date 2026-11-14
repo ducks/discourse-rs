@@ -509,18 +509,14 @@ fn auth_buttons(
     Ok(out)
 }
 
-/// What the script needs besides the page: the route, the token its
-/// requests carry, settings, and the strings.
-fn login_data(
-    state: &AppState,
-    settings: &SiteSettings,
-    page: &str,
-    csrf_token: &str,
-    extra: serde_json::Map<String, serde_json::Value>,
-) -> Result<String, AppError> {
-    let t = |k: &str| state.i18n.t(&format!("js.{k}")).map(str::to_string);
+/// `keys` translated for the script.
+fn client_strings<'a>(
+    i18n: &crate::i18n::I18n,
+    keys: impl Iterator<Item = &'a str>,
+) -> serde_json::Map<String, serde_json::Value> {
+    let t = |k: &str| i18n.t(&format!("js.{k}")).map(str::to_string);
     let mut strings = serde_json::Map::new();
-    for k in STRINGS {
+    for k in keys {
         // A pluralized string goes as its forms, which the script picks
         // by count.
         match (t(k), t(&format!("{k}.one")), t(&format!("{k}.other"))) {
@@ -536,6 +532,48 @@ fn login_data(
             }
         }
     }
+    strings
+}
+
+/// #login-data for a member's page that opens the ForgotPassword modal
+/// (the security preferences' change password button and ConfirmSession):
+/// the modal's strings and setting. The script's requests carry the
+/// page's own token.
+pub fn forgot_password_modal_data(
+    i18n: &crate::i18n::I18n,
+    settings: &SiteSettings,
+) -> Result<String, AppError> {
+    let keys = STRINGS.iter().copied().filter(|k| {
+        k.starts_with("forgot_password.")
+            || k.starts_with("code_login.")
+            || matches!(
+                *k,
+                "email" | "login.email_placeholder" | "login.error" | "d_otp.screen_reader"
+            )
+    });
+    let data = json!({
+        "page": "forgot-password-modal",
+        "strings": client_strings(i18n, keys),
+        "settings": {
+            "hide_email_address_taken": settings.get("hide_email_address_taken")?.truthy(),
+        },
+    });
+    Ok(format!(
+        "<script type=\"application/json\" id=\"login-data\">{}</script>",
+        data.to_string().replace('<', "\\u003c")
+    ))
+}
+
+/// What the script needs besides the page: the route, the token its
+/// requests carry, settings, and the strings.
+fn login_data(
+    state: &AppState,
+    settings: &SiteSettings,
+    page: &str,
+    csrf_token: &str,
+    extra: serde_json::Map<String, serde_json::Value>,
+) -> Result<String, AppError> {
+    let strings = client_strings(&state.i18n, STRINGS.iter().copied());
     let mut data = json!({
         "page": page,
         "csrf": csrf_token,

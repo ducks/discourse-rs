@@ -158,6 +158,12 @@ async fn an_invite_link_asks_a_visitor_for_their_email() {
     assert!(!html.contains("login-button"));
     assert!(!html.contains("id=\"d-sidebar\""));
     assert!(html.contains("/assets/invite.js"));
+    // The new account's avatar: AvatarSelectorModal's settings and strings.
+    assert!(html.contains("/assets/avatar-selector.js"));
+    assert!(html.contains("\"avatar_selector\":{"), "{html}");
+    assert!(html.contains("\"selectable_avatars_mode\":\"disabled\""));
+    assert!(html.contains("\"letter_based\":\"System assigned profile picture\""));
+    assert!(html.contains("id=\"dialog-strings\""));
 }
 
 #[tokio::test]
@@ -188,6 +194,8 @@ async fn without_login_codes_the_signup_form_shows() {
     assert!(html.contains("id=\"new-account-username\""));
     assert!(html.contains("id=\"new-account-password\""));
     assert!(html.contains("invitation-cta__accept"));
+    assert!(!html.contains("/assets/avatar-selector.js"));
+    assert!(!html.contains("avatar_selector"));
 }
 
 #[tokio::test]

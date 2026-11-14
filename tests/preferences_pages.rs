@@ -148,6 +148,9 @@ async fn the_account_tab_draws_ones_account() {
         html.contains("<title>Account - Preferences - user1 - "),
         "{html}"
     );
+    // The avatar selector's script, ahead of the tab's.
+    assert!(html.contains("data-avatar-selector="));
+    assert!(html.contains("/assets/avatar-selector.js"));
     assert!(html.contains("user-preferences-page"));
     // The Preferences tab, then the preferences' own navigation.
     assert!(html.contains(
@@ -339,6 +342,16 @@ async fn the_security_apps_calendar_and_chat_tabs_draw() {
     assert!(html.contains("<span class=\"active\">"));
     assert!(html.contains("<div class=\"user-api-key__name\">Some App</div>"));
     assert!(html.contains("id=\"prefs-security-strings\""));
+    // The ForgotPassword modal a reset code opens: login.js with the
+    // modal's strings and setting, and no token of its own.
+    assert!(html.contains(
+        "<script type=\"application/json\" id=\"login-data\">{\"page\":\"forgot-password-modal\","
+    ));
+    assert!(html.contains("\"settings\":{\"hide_email_address_taken\":true}"));
+    assert!(html.contains("\"forgot_password.code_instructions\":"));
+    assert!(!html.contains("\"csrf\":"));
+    assert!(!html.contains("\"login.logging_in\":"));
+    assert!(html.contains("/assets/login.js"));
 
     let html = user1.page("/u/user1/preferences/apps").await.html;
     assert!(html.contains("<title>Preferences - user1 - "));

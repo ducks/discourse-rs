@@ -723,6 +723,13 @@ async fn chooses_an_avatar() {
         )
         .await;
     ok("POST /uploads.json avatar", &upload);
+    // The deprecated :type param names the type too, as a new account's
+    // avatar from the invite page sends it.
+    let deprecated = user1
+        .upload("/uploads.json", &[("type", "avatar")], "small.png")
+        .await;
+    ok("POST /uploads.json with :type", &deprecated);
+    assert_eq!(deprecated.json()["id"], upload.json()["id"]);
     let id = upload.json()["id"].as_i64().unwrap().to_string();
     let custom = user1
         .put(

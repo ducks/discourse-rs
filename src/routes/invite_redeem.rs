@@ -1439,6 +1439,8 @@ struct InvitePage {
     title: String,
     section: String,
     strings: String,
+    /// #dialog-strings
+    dialog_strings: String,
 }
 
 /// `Discourse.tos_url` / `privacy_policy_url` (Site's, the static pages'
@@ -1594,6 +1596,32 @@ async fn accept_page(
         "otp_label".into(),
         json!(t("d_otp.screen_reader.other").replace("%{count}", "6")),
     );
+    // AvatarSelectorModal with deferSave (CodeLoginForm#changeAvatar):
+    // the settings and strings static/js/avatar-selector.js reads.
+    if code_form {
+        strings.insert(
+            "avatar_selector".into(),
+            json!({
+                "selectable_avatars_mode": s.get("selectable_avatars_mode")?.to_s(),
+                "selectable_avatars": crate::avatar::selectable_avatar_urls(&mut conn, s).await?,
+                "authorized_extensions": s.get("authorized_extensions")?.to_s(),
+                "labels": {
+                    "title": t("user.change_avatar.title"),
+                    "use_custom": t("user.change_avatar.use_custom"),
+                    "letter_based": t("user.change_avatar.letter_based"),
+                    "uploaded_avatar": t("user.change_avatar.uploaded_avatar"),
+                    "uploaded_avatar_empty": t("user.change_avatar.uploaded_avatar_empty"),
+                    "upload": t("upload"),
+                    "save": t("save"),
+                    "cancel": t("cancel"),
+                    "upload_not_authorized": t("post.errors.upload_not_authorized"),
+                    "no_uploads_authorized": t("post.errors.no_uploads_authorized"),
+                    "file_size_zero": t("post.errors.file_size_zero"),
+                    "unsupported_file_picked": t("pick_files_button.unsupported_file_picked"),
+                },
+            }),
+        );
+    }
     let strings = Value::Object(strings).to_string().replace("</", "<\\/");
     let urls = crate::url::Urls {
         config: &state.config,
@@ -1611,6 +1639,7 @@ async fn accept_page(
         chrome: site.chrome.clone(),
         section,
         strings,
+        dialog_strings: crate::html::dialog_strings(&state.i18n),
     };
     let html = page.render().map_err(crate::html::HtmlError::from)?;
     let response = (
