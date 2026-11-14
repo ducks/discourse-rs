@@ -320,9 +320,10 @@ feat/flag-and-penalty-modals:
   flag_spam_with_message, flag_topic_*). ~~Still refused, saying so in
   the modal: official warnings, queueing for review, flags in messages
   (147).~~ (done in `feat/flag-modal-rest`: all three, Delete Spammer's
-  email lookup and the penalty modal over a chat message; left, named:
-  queueing a topic's first post, and for a chat message official
-  warnings and queueing for review)
+  email lookup and the penalty modal over a chat message; ~~queueing a
+  topic's first post~~ (done in `feat/review-hidden-posts`, with
+  restoring a queued post from /review: disagree_and_restore); left,
+  named: for a chat message official warnings and queueing for review)
 - [x] Admin silence and suspend answered "Not ported yet: the silence modal"
   on the admin user page (step 23): PenalizeUser ported
   (static/js/penalize-user.js, src/penalize_view.rs) with DFutureDateInput's
@@ -2462,8 +2463,9 @@ have handlers now.
     (routes/post_actions.rs), ~~flags in messages (flags.rs:129), staff
     queueing a post for review (:177)~~ (done in `feat/flag-modal-rest`:
     a message's posts flagged as any other; queue_for_review hides a
-    reply at once with reason queued_by_staff and its system message,
-    refused for a topic's first post, which unlists the topic, 148),
+    reply at once with reason queued_by_staff and its system message;
+    a topic's first post, which unlists the topic, in
+    `feat/review-hidden-posts`),
     hiding on a trusted user's spam flag (flags.rs), silencing new
     users on spam flags and the scoring behind it (flags.rs;
     guardian.rs:392; current_user.rs:909). Flags that
@@ -2473,9 +2475,24 @@ have handlers now.
     (the reviewable's new score, reopening a reviewed one, and
     cannot_flag_again?'s refusal) are ported (fix/flags-on-reviewed-posts).
 148. `feat/review-actions-rest` L: review actions that delete, edit,
-    restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
-    or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
-    first or last post (:698), claims and notes (review_posts.rs:257;
+    restore or penalize (review.rs:107; user_penalties.rs:509), on
+    ~~hidden or~~ deleted posts (review/mod.rs), ~~hiding a topic's
+    first or last post (:698)~~ (done in `feat/review-hidden-posts`: a
+    hidden post's disagree_and_restore, and disagree by its alias, run
+    perform_disagree's undo: the flags_disagreed message from human
+    staff, Post#unhide! as the post admin menu's, the author unsilenced
+    when silenced for the post, before the unhide as the unsilencing
+    writes outside the perform's transaction; its ignore is the system
+    user's, so AutoQueueHandler expires it and it stays hidden; the
+    system user's disagree settles auto_action_flag_types; Post#hide!
+    unlists the topic of a first or last visible regular post as the
+    system user, and queue_for_review unlists a first post's as the
+    flagger first; left: the delete_and_* actions on a hidden post as
+    on any, a hidden post in a deleted topic, DSA statements and appeal
+    instructions, dsa_reporting_enabled, and a first post's hidden
+    styling and its topic's unlisted status drawn live, which /live/post
+    leaves to the next page load),
+    claims and notes (review_posts.rs:257;
     reviewable_user.rs:195,272,446), the other reviewable types
     (review.rs:247; review_posts.rs:211), user reviewables in
     the list (review_list.rs:594,599: ReviewableUserSerializer, the

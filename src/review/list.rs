@@ -2313,7 +2313,10 @@ impl FlagPenaltyEffects {
 }
 
 /// `UserSilencer.was_silenced_for?(post)`
-async fn was_silenced_for(conn: &mut PgConnection, post_id: i32) -> Result<bool, sqlx::Error> {
+pub(super) async fn was_silenced_for(
+    conn: &mut PgConnection,
+    post_id: i32,
+) -> Result<bool, sqlx::Error> {
     sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM user_histories WHERE action = $1 AND post_id = $2)",
     )

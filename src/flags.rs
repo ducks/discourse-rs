@@ -16,10 +16,9 @@
 //! flagged). An official warning (is_warning, staff only for notify user)
 //! is the message as TopicCreator#create_warning makes it. Staff queueing
 //! a post for review (queue_for_review) hide it at once, its author told
-//! with queued_by_staff.
+//! with queued_by_staff; a first post's topic is unlisted by them first.
 //!
-//! Refused: queueing a topic's first post for review (it unlists the
-//! topic), and the rules when they would hide on a trusted spam flag or
+//! Refused: the rules when they would hide on a trusted spam flag or
 //! silence the author. Flags write no user actions or notifications.
 
 use sqlx::{PgConnection, PgPool};
@@ -176,11 +175,6 @@ pub async fn flag(
     .await?
     {
         return Ok(Outcome::RateLimited(refused));
-    }
-    // auto_hide_if_needed for a queued first post: the topic unlisted by
-    // the flagger, then by Post#hide!.
-    if req.queue_for_review && post.post_number == 1 {
-        return Err(Unsupported("queueing a topic's first post for review").into());
     }
     // Reviewable.find_by(target: @post), of any type.
     let reviewable: Option<i64> = sqlx::query_scalar(
@@ -593,6 +587,26 @@ async fn enforce_rules(
     let flagger_staff = guardian.is_staff();
     let author_staff = post_author.is_some_and(|a| a.staff);
     if !access.post.hidden && (flagger_staff || !author_staff) && queue_for_review {
+        // A first post's topic unlisted by the flagger (Post#hide! then
+        // finds it unlisted).
+        if access.post.post_number == 1 {
+            let flagger = guardian
+                .user_id()
+                .ok_or(Unsupported("flagging anonymously"))?;
+            crate::topic_status::apply(
+                &mut *conn,
+                ctx,
+                access.topic_id,
+                flagger,
+                crate::topic_status::Status::Visible,
+                false,
+                &crate::topic_status::StatusOpts {
+                    visibility_reason_id: Some(crate::review::OP_FLAG_THRESHOLD_REACHED),
+                    ..Default::default()
+                },
+            )
+            .await?;
+        }
         // Hidden whatever the flag, the author told with queued_by_staff.
         crate::review::hide_post(&mut *conn, ctx, types, access.post.id, type_id, true).await?;
     } else if !access.post.hidden

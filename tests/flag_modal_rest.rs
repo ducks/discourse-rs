@@ -415,20 +415,18 @@ async fn queueing_a_post_for_review() {
         .await;
     assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
 
-    // A topic's first post would unlist the topic: refused, nothing kept.
+    // A topic's first post unlists the topic (review_hidden_posts.rs).
     let (status, body) = admin
         .flag("id=35&post_action_type_id=4&queue_for_review=true&flag_topic=false")
         .await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
-    assert_eq!(
-        count(&db, "SELECT COUNT(*) FROM post_actions WHERE post_id = 35").await,
-        0
-    );
-    let hidden: bool = sqlx::query_scalar("SELECT hidden FROM posts WHERE id = 35")
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-    assert!(!hidden);
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let hidden: (bool, bool) = sqlx::query_as(
+        "SELECT p.hidden, t.visible FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = 35",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(hidden, (true, false));
 }
 
 /// Staff on a chat channel get the penalty modal the flag modal's take

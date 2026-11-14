@@ -1,5 +1,6 @@
 // The flag modal's other buttons (flag-modal.js): an official warning,
-// queueing a reply for review, a flag inside a message, Delete Spammer
+// queueing a post for review (restored from /review; a first post's
+// topic unlisted meanwhile), a flag inside a message, Delete Spammer
 // with the email looked up (moderators_view_emails) and, over a chat
 // message, take action through the penalty modal. Each test writes in a
 // topic, message or channel of its own and flags members of its own
@@ -96,8 +97,26 @@ test("a member is offered no warning, take action or queue for review", async ({
   expect(sql("SELECT count(*) FROM post_actions WHERE post_id = :'p1'", reply)).toEqual([["0"]]);
 });
 
-test("staff queue a reply for review; a first post is refused, named", async ({ page, context, session }) => {
-  const { t, reply } = await repliedTopic(session, "queueing for review");
+// The topic's queue in /review, and the item of the post with this text.
+async function reviewItem(page, t, text) {
+  await page.goto(`/review?topic_id=${t.id}`);
+  const item = page.locator(".review-item.reviewable-flagged-post", { hasText: text });
+  await expect(item).toBeVisible();
+  return item;
+}
+
+// The No bundle's Restore post, then the item drawn again as rejected.
+async function restoreFromReview(page, item) {
+  await item.locator("details summary", { hasText: /^\s*No/ }).first().click();
+  const row = page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Restore post/ });
+  // A hidden post's No bundle: restore or delete, no keeping or ignoring.
+  await expect(page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Keep post|Ignore/ })).toHaveCount(0);
+  await row.first().click();
+  await expect(item.locator("*", { hasText: /^\s*Flag rejected\s*$/ }).first()).toBeVisible();
+}
+
+test("staff queue a reply for review and restore it from /review", async ({ page, context, session }) => {
+  const { author, t, reply } = await repliedTopic(session, "queueing for review");
   await login(context, "admin");
   await page.goto(t.url);
   let modal = await openFlag(page, reply);
@@ -120,12 +139,82 @@ test("staff queue a reply for review; a first post is refused, named", async ({ 
   expect(sql("SELECT visible FROM topics WHERE id = :'p1'", t.id)).toEqual([["t"]]);
   await expect(article(page, reply).locator("xpath=..")).toHaveClass(/post-hidden/);
 
-  // The first post would unlist the topic.
-  modal = await openFlag(page, t.posts[0]);
+  // /review: the hidden post is restored (disagree_and_restore).
+  const item = await reviewItem(page, t, "A reply for queueing for review");
+  await restoreFromReview(page, item);
+  expect(
+    sql(
+      "SELECT p.hidden, p.inappropriate_count, r.status, s.status, a.disagreed_by_id, a.disagreed_at IS NOT NULL \
+       FROM posts p JOIN reviewables r ON r.target_type = 'Post' AND r.target_id = p.id \
+       JOIN reviewable_scores s ON s.reviewable_id = r.id JOIN post_actions a ON a.post_id = p.id \
+       WHERE p.id = :'p1'",
+      reply,
+    ),
+  ).toEqual([["f", "0", "2", "2", "1", "t"]]);
+  // Its author is told (flags_disagreed, once the job has run), and
+  // anyone reads it on the topic again.
+  await expect
+    .poll(
+      () =>
+        sql(
+          "SELECT count(*) FROM topics t JOIN topic_allowed_users a ON a.topic_id = t.id \
+           WHERE t.subtype = 'system_message' AND t.title = 'Flagged post restored by staff' AND a.user_id = :'p1'",
+          author.id,
+        ),
+      { timeout: 20000 },
+    )
+    .toEqual([["1"]]);
+  await page.goto(t.url);
+  await expect(article(page, reply)).toBeVisible();
+  await expect(article(page, reply).locator("xpath=..")).not.toHaveClass(/post-hidden/);
+  await expect(article(page, reply).locator(".cooked")).toContainText("A reply for queueing for review");
+});
+
+test("staff queue a first post for review: the topic unlisted, listed again when restored", async ({ page, context, session }) => {
+  const { t } = await repliedTopic(session, "queueing a first post");
+  const first = t.posts[0];
+  await login(context, "admin");
+  await page.goto(t.url);
+  const modal = await openFlag(page, first);
   await modal.locator("#radio_inappropriate").check();
   await modal.locator(".flag-modal__flag-for-review").click();
-  await expect(page.locator(".dialog-body")).toHaveText("Not ported yet: queueing a topic's first post for review.");
-  expect(sql("SELECT count(*) FROM post_actions WHERE post_id = :'p1'", t.posts[0])).toEqual([["0"]]);
+  await expect(modal).toHaveCount(0);
+  // A first post's row is drawn again, not its wrapper (the topic map's):
+  // it shows as hidden once the page is loaded again.
+  await expect(article(page, first)).toContainText("You flagged this as inappropriate");
+  await page.goto(t.url);
+  await expect(article(page, first).locator("xpath=..")).toHaveClass(/post-hidden/);
+
+  // Hidden, its topic unlisted by the flagger (op_flag_threshold_reached).
+  expect(
+    sql(
+      "SELECT p.hidden, t.visible, t.visibility_reason_id FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = :'p1'",
+      first,
+    ),
+  ).toEqual([["t", "f", "0"]]);
+  expect(
+    sql("SELECT user_id, action_code FROM posts WHERE topic_id = :'p1' AND post_type = 3 ORDER BY id", t.id),
+  ).toEqual([["1", "visible.disabled"]]);
+
+  const item = await reviewItem(page, t, "A topic for queueing a first post");
+  await restoreFromReview(page, item);
+  // Listed again by the system user (op_unhidden).
+  expect(
+    sql(
+      "SELECT p.hidden, t.visible, t.visibility_reason_id, r.status FROM posts p JOIN topics t ON t.id = p.topic_id \
+       JOIN reviewables r ON r.target_type = 'Post' AND r.target_id = p.id WHERE p.id = :'p1'",
+      first,
+    ),
+  ).toEqual([["f", "t", "1", "2"]]);
+  expect(
+    sql("SELECT user_id, action_code FROM posts WHERE topic_id = :'p1' AND post_type = 3 ORDER BY id", t.id),
+  ).toEqual([
+    ["1", "visible.disabled"],
+    ["-1", "visible.enabled"],
+  ]);
+  await page.goto(t.url);
+  await expect(article(page, first).locator("xpath=..")).not.toHaveClass(/post-hidden/);
+  await expect(article(page, first).locator(".cooked")).toContainText("A topic for queueing a first post");
 });
 
 test("a post in a message is flagged", async ({ page, context, session }) => {
