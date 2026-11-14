@@ -589,8 +589,9 @@
 
   // chat-audio-manager.js: chat's sounds, synthesized with Web Audio (no
   // files), each an "incoming" and a "mention" sequence. Only the
-  // preferences' preview plays them here: the notification alerts that
-  // would play them on a new message have no handler in the port.
+  // preferences' preview plays them here (a member without chat can
+  // open another's preferences); a chat alert's is
+  // static/js/chat-drawer.js's.
   var CHAT_SOUNDS = ["classic", "soft", "retro", "bubble", "ethereal"];
   var MIN_GAIN = 0.001;
   var audioContext = null;

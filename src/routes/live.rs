@@ -217,6 +217,8 @@ pub async fn page(
             chat_channels.extend(followed_chat_channels(channel));
         }
         chat_channels.push(format!("/chat/user-tracking-state/{id}"));
+        // ChatNotificationManager's messageBusChannel.
+        channels.push(format!("/chat/notification-alert/{id}"));
         // ChatSubscriptionsManager's global subscriptions.
         chat_channels.extend(CHAT_GLOBAL_CHANNELS.iter().map(|c| c.to_string()));
         channels.extend(chat_channels.iter().cloned());
@@ -434,6 +436,9 @@ async fn handle_batch(
 ) -> Result<(), AppError> {
     let notification = live.user_id.map(crate::bus::notification_channel);
     let alert = live.user_id.map(|id| format!("/notification-alert/{id}"));
+    let chat_alert = live
+        .user_id
+        .map(|id| format!("/chat/notification-alert/{id}"));
     let reviewable_counts = live.user_id.map(|id| format!("/reviewable_counts/{id}"));
     let do_not_disturb = live.user_id.map(|id| format!("/do-not-disturb/{id}"));
     let mut tracking: Option<Position> = None;
@@ -509,6 +514,19 @@ async fn handle_batch(
             live.pending.push_back(
                 Event::default()
                     .event("notification-alert")
+                    .id(id)
+                    .data(message.data.to_string()),
+            );
+        } else if chat_alert.as_ref() == Some(&message.channel) {
+            // ChatNotificationManager#onMessage, for static/js/chat-drawer.js:
+            // neither chat-audio's handler nor canUserReceiveNotifications
+            // does anything in do not disturb.
+            if live.badge.in_do_not_disturb() {
+                continue;
+            }
+            live.pending.push_back(
+                Event::default()
+                    .event("chat-notification-alert")
                     .id(id)
                     .data(message.data.to_string()),
             );
@@ -2061,10 +2079,15 @@ async fn chat_chrome(live: &mut Live, id: Option<Position>) -> Result<(), AppErr
         String::new()
     };
     let html = format!(
-        "{}{sections}",
+        "{}{}{sections}",
         chat.header_icon.replacen(
             "<li class=\"header-dropdown-toggle chat-header-icon\">",
             "<li hx-swap-oob=\"outerHTML:.chat-header-icon\" class=\"header-dropdown-toggle chat-header-icon\">",
+            1
+        ),
+        chat.tracking_state.replacen(
+            "<span id=\"chat-tracking-state\"",
+            "<span id=\"chat-tracking-state\" hx-swap-oob=\"true\"",
             1
         ),
     );

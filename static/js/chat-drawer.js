@@ -1091,4 +1091,384 @@
     updateIcon();
     markSidebar();
   });
+
+  // Chat's notifications, on every page with chat: the alert's sound
+  // (the chat-audio initializer over ChatAudioManager, chat-alert-dedup),
+  // its desktop notification (ChatNotificationManager) and the tab
+  // title's count (chat-setup's addDocumentTitleCounter).
+
+  // chat-audio-manager.js: chat's sounds, synthesized with Web Audio (no
+  // files), each an "incoming" and a "mention" sequence. registerChatSound
+  // (a theme's own sounds) isn't ported.
+  var THROTTLE_TIME = 3000;
+  var RESUME_TIMEOUT = 500;
+  var MIN_GAIN = 0.001;
+  var sharedAudioContext = null;
+
+  function getAudioContext() {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!sharedAudioContext || sharedAudioContext.state === "closed") {
+      sharedAudioContext = new AudioContext();
+    }
+    var ctx = sharedAudioContext;
+    if (ctx.state !== "suspended") {
+      return Promise.resolve(ctx);
+    }
+    // browsers keep resume() pending until the user interacts with the
+    // page; racing a timeout keeps sounds from queuing up and bursting
+    // all at once on the next interaction
+    var timer;
+    return Promise.race([
+      ctx.resume().catch(function () {}),
+      new Promise(function (resolve) {
+        timer = setTimeout(resolve, RESUME_TIMEOUT);
+      }),
+    ]).then(function () {
+      clearTimeout(timer);
+      if (ctx.state === "suspended") {
+        throw new Error("audio context is suspended");
+      }
+      return ctx;
+    });
+  }
+
+  function playOscillator(ctx, type, frequency, startTime, duration, maxGain) {
+    var oscillator = ctx.createOscillator();
+    var gain = ctx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(maxGain, startTime);
+    gain.gain.exponentialRampToValueAtTime(MIN_GAIN, startTime + duration);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration);
+  }
+
+  function playSweep(ctx, o) {
+    var oscillator = ctx.createOscillator();
+    var gain = ctx.createGain();
+    if (o.type) {
+      oscillator.type = o.type;
+    }
+    oscillator.frequency.setValueAtTime(o.from, o.startTime);
+    if (o.ramp === "linear") {
+      oscillator.frequency.linearRampToValueAtTime(o.to, o.rampEndTime);
+    } else {
+      oscillator.frequency.exponentialRampToValueAtTime(o.to, o.rampEndTime);
+    }
+    gain.gain.setValueAtTime(o.gain, o.startTime);
+    gain.gain.exponentialRampToValueAtTime(MIN_GAIN, o.endTime);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(o.startTime);
+    oscillator.stop(o.endTime);
+  }
+
+  var BUILT_IN_SOUNDS = {
+    classic: {
+      incoming: function (ctx, now) {
+        playOscillator(ctx, "sine", 587.33, now, 0.1, 0.15);
+        playOscillator(ctx, "sine", 783.99, now + 0.1, 0.3, 0.15);
+      },
+      mention: function (ctx, now) {
+        playOscillator(ctx, "sine", 523.25, now, 0.1, 0.12);
+        playOscillator(ctx, "sine", 659.25, now + 0.08, 0.15, 0.12);
+        playOscillator(ctx, "sine", 1046.5, now + 0.16, 0.4, 0.15);
+      },
+    },
+    soft: {
+      incoming: function (ctx, now) {
+        playOscillator(ctx, "sine", 349.23, now, 0.15, 0.2);
+        playOscillator(ctx, "sine", 466.16, now + 0.1, 0.25, 0.2);
+      },
+      mention: function (ctx, now) {
+        playOscillator(ctx, "sine", 349.23, now, 0.15, 0.2);
+        playOscillator(ctx, "sine", 440, now + 0.08, 0.15, 0.2);
+        playOscillator(ctx, "sine", 523.25, now + 0.16, 0.3, 0.2);
+      },
+    },
+    retro: {
+      incoming: function (ctx, now) {
+        playOscillator(ctx, "square", 392, now, 0.08, 0.04);
+        playOscillator(ctx, "square", 493.88, now + 0.08, 0.15, 0.04);
+      },
+      mention: function (ctx, now) {
+        [523.25, 659.25, 783.99, 1046.5].forEach(function (frequency, index) {
+          playOscillator(ctx, "square", frequency, now + index * 0.06, 0.1, 0.03);
+        });
+      },
+    },
+    bubble: {
+      incoming: function (ctx, now) {
+        playSweep(ctx, { from: 300, to: 700, startTime: now, rampEndTime: now + 0.1, endTime: now + 0.15, gain: 0.2 });
+      },
+      mention: function (ctx, now) {
+        playSweep(ctx, { from: 400, to: 800, startTime: now, rampEndTime: now + 0.08, endTime: now + 0.12, gain: 0.15 });
+        playSweep(ctx, {
+          from: 500,
+          to: 1000,
+          startTime: now + 0.1,
+          rampEndTime: now + 0.18,
+          endTime: now + 0.25,
+          gain: 0.15,
+        });
+      },
+    },
+    ethereal: {
+      incoming: function (ctx, now) {
+        [523.25, 659.25, 783.99].forEach(function (frequency) {
+          playOscillator(ctx, "sine", frequency, now, 1.2, 0.05);
+        });
+      },
+      mention: function (ctx, now) {
+        playSweep(ctx, {
+          type: "sine",
+          ramp: "linear",
+          from: 440,
+          to: 880,
+          startTime: now,
+          rampEndTime: now + 0.15,
+          endTime: now + 1,
+          gain: 0.1,
+        });
+        playOscillator(ctx, "sine", 1320, now + 0.15, 0.8, 0.03);
+      },
+    },
+  };
+
+  // #tryPlay: an unknown name (a removed theme's sound) is the default's.
+  function tryPlaySound(name, type) {
+    var sound = BUILT_IN_SOUNDS.hasOwnProperty(name) ? BUILT_IN_SOUNDS[name] : BUILT_IN_SOUNDS.classic;
+    var source = sound[type] || sound.incoming;
+    return Promise.resolve()
+      .then(getAudioContext)
+      .then(function (ctx) {
+        source(ctx, ctx.currentTime);
+        return true;
+      })
+      .catch(function () {
+        // eslint-disable-next-line no-console
+        console.info("[chat] User needs to interact with page before we can play notification sounds.");
+        return false;
+      });
+  }
+
+  var canPlay = true;
+  var throttleTimer = null;
+
+  // ChatAudioManager#play: false only when no sound could be made in this
+  // tab (a suspended context); a rate-limited drop still counts as
+  // handled.
+  function playSound(name, options) {
+    var throttle = !options || options.throttle !== false;
+    var type = (options && options.type) || "incoming";
+    if (throttle) {
+      if (!canPlay) {
+        return Promise.resolve(true);
+      }
+      canPlay = false;
+      throttleTimer = setTimeout(function () {
+        canPlay = true;
+      }, THROTTLE_TIME);
+    }
+    return tryPlaySound(name, type).then(function (played) {
+      if (throttle && !played) {
+        // a failed attempt played nothing, so it shouldn't burn the window
+        clearTimeout(throttleTimer);
+        canPlay = true;
+      }
+      return played;
+    });
+  }
+
+  // chat-alert-dedup.js: tabs receive the same alert, so the first to
+  // handle one records it (a KeyValueStore object) to keep the others
+  // from replaying its sound.
+  var ALERTS_KEY = "discourse_chat_alerts_handled";
+  var ALERT_EXPIRY_MS = 5 * 60 * 1000;
+  var ALERT_MAX_ENTRIES = 100;
+  var TAB_ID = Math.random().toString(36).slice(2);
+
+  function readAlerts() {
+    var entries = [];
+    try {
+      entries = JSON.parse(localStorage.getItem(ALERTS_KEY)) || [];
+    } catch (e) {
+      // local storage disabled
+    }
+    var now = Date.now();
+    return entries.filter(function (entry) {
+      return now - entry.at < ALERT_EXPIRY_MS;
+    });
+  }
+
+  function writeAlerts(entries) {
+    try {
+      localStorage.setItem(ALERTS_KEY, JSON.stringify(entries.slice(-ALERT_MAX_ENTRIES)));
+    } catch (e) {
+      // local storage disabled
+    }
+  }
+
+  function claimChatAlert(key) {
+    if (!key) {
+      return true;
+    }
+    var entries = readAlerts();
+    if (
+      entries.some(function (entry) {
+        return entry.key === key;
+      })
+    ) {
+      return false;
+    }
+    entries.push({ key: key, at: Date.now(), tab: TAB_ID });
+    writeAlerts(entries);
+    return true;
+  }
+
+  function confirmChatAlert(key) {
+    if (!key) {
+      return;
+    }
+    var entries = readAlerts().filter(function (entry) {
+      return entry.key !== key;
+    });
+    entries.push({ key: key, at: Date.now(), tab: TAB_ID, played: true });
+    writeAlerts(entries);
+  }
+
+  function releaseChatAlert(key) {
+    if (!key) {
+      return;
+    }
+    writeAlerts(
+      readAlerts().filter(function (entry) {
+        return entry.key !== key || entry.tab !== TAB_ID;
+      })
+    );
+  }
+
+  // Notification.types' chat_mention and chat_message.
+  var MENTION = 29;
+  var MESSAGE = 30;
+
+  // The chat-audio initializer's handler: the member's sound for a chat
+  // alert the header indicator preference lets through, once across the
+  // tabs. canPlaySound's isPrimaryTab asks the service worker, and with
+  // none answering says yes: every tab is asked here, the claim deciding.
+  function chatAudioHandler(data, siteSettings, user) {
+    var indicatorType = config().indicatorPreference;
+    var chatSound = config().chatSound;
+    var isMention = data.notification_type === MENTION;
+    if (user.isInDoNotDisturb()) {
+      return;
+    }
+    if (!chatSound || indicatorType === "never") {
+      return;
+    }
+    if (indicatorType === "only_mentions" && !isMention) {
+      return;
+    }
+    if (indicatorType === "dm_and_mentions" && !data.is_direct_message_channel && !isMention) {
+      return;
+    }
+    if (data.notification_type !== MENTION && data.notification_type !== MESSAGE) {
+      return;
+    }
+    if (!claimChatAlert(data.chat_message_id)) {
+      return;
+    }
+    return playSound(chatSound, { type: isMention ? "mention" : "incoming" }).then(function (handled) {
+      if (handled) {
+        confirmChatAlert(data.chat_message_id);
+      } else {
+        // audio is unavailable in this tab, let another tab play it
+        releaseChatAlert(data.chat_message_id);
+      }
+    });
+  }
+
+  if (Discourse.desktopNotifications) {
+    Discourse.desktopNotifications.registerDesktopNotificationHandler(chatAudioHandler);
+  }
+
+  // chat.activeChannel: the channel open in full-page chat or the drawer.
+  function activeChannelId() {
+    var pane = document.querySelector(".chat-channel[data-id]");
+    return pane ? pane.dataset.id : state.channelId ? String(state.channelId) : null;
+  }
+
+  // ChatNotificationManager#onMessage: /chat/notification-alert, the
+  // stream's `chat-notification-alert` event (none in do not disturb,
+  // src/routes/live.rs).
+  document.addEventListener("htmx:sseBeforeMessage", function (event) {
+    var message = event.detail;
+    if (!message || message.type !== "chat-notification-alert") {
+      return;
+    }
+    event.preventDefault();
+    var notifications = Discourse.desktopNotifications;
+    if (!notifications || notifications.isMobileDevice()) {
+      return;
+    }
+    var data;
+    try {
+      data = JSON.parse(message.data);
+    } catch (e) {
+      return;
+    }
+    if (!data) {
+      return;
+    }
+    // if the user is currently focused on this tab and channel, we don't
+    // want to show a desktop notification; claim the alert so a
+    // backgrounded tab catching up later doesn't replay its sound
+    var hasFocus = Discourse.documentTitle ? Discourse.documentTitle.hasFocus() : !document.hidden;
+    if (hasFocus && String(data.channel_id) === activeChannelId()) {
+      if (!document.hidden) {
+        claimChatAlert(data.chat_message_id);
+      }
+      return;
+    }
+    notifications.onNotification(data);
+  });
+
+  // ChatTrackingStateManager's totals, as the server counts them for the
+  // header icon (`#chat-tracking-state`, kept current by the stream).
+  function trackingState() {
+    var element = document.getElementById("chat-tracking-state");
+    var data = element ? element.dataset : {};
+    return {
+      urgent: parseInt(data.urgentCount, 10) || 0,
+      mentions: parseInt(data.mentionCount, 10) || 0,
+      unread: parseInt(data.unreadCount, 10) || 0,
+    };
+  }
+
+  // Chat#getDocumentTitleCount. The contextual mode's is
+  // chatPanePendingManager.totalPendingMessageCount, which never shows:
+  // the sum is the notifications mode's count (document-title.js).
+  function getDocumentTitleCount() {
+    if (Discourse.documentTitle.titleCountMode() === "notifications") {
+      return trackingState().urgent;
+    }
+    return 0;
+  }
+
+  if (Discourse.documentTitle) {
+    Discourse.documentTitle.addDocumentTitleCounter(getDocumentTitleCount);
+  }
+
+  // triggerNotificationsChanged: as a channel's tracking changes.
+  var tracked = null;
+  function trackingChanged() {
+    var now = trackingState();
+    var key = now.urgent + "." + now.mentions + "." + now.unread;
+    if (tracked !== null && tracked !== key && Discourse.documentTitle) {
+      Discourse.documentTitle.notificationsChanged();
+    }
+    tracked = key;
+  }
+  document.addEventListener("htmx:oobAfterSwap", trackingChanged);
+  Discourse.onPage(trackingChanged);
 })();

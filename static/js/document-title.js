@@ -23,6 +23,16 @@
 //
 //   Discourse.documentTitle.getTitle()            without the count
 //   Discourse.documentTitle.updateContextCount(n)
+//
+// The plugin API's addDocumentTitleCounter (d-document's
+// addPluginDocumentTitleCounter): a function whose count is added to the
+// notifications'. As Ember's, the sum is the notifications mode's count
+// alone, so a counter shows nothing in the contextual mode.
+//
+//   Discourse.documentTitle.addDocumentTitleCounter(fn)
+//   Discourse.documentTitle.notificationsChanged(opts)
+//     appEvents' "notifications:changed", for a counter whose count
+//     changed; { forced: true } counts in a shown tab too
 (function () {
   "use strict";
 
@@ -157,8 +167,8 @@
     renderTitle();
   }
 
-  function updateNotificationCount(count) {
-    if (!hasFocus) {
+  function updateNotificationCount(count, opts) {
+    if (!hasFocus || (opts && opts.forced)) {
       notificationCount = count;
       renderFavicon();
       renderTitle();
@@ -185,6 +195,22 @@
     }
     renderFavicon();
     renderTitle();
+  }
+
+  var pluginCounterFunctions = [];
+
+  function addDocumentTitleCounter(counterFunction) {
+    pluginCounterFunctions.push(counterFunction);
+  }
+
+  // d-document's _updateNotifications.
+  function updateNotifications(opts) {
+    var user = currentUser();
+    var count = pluginCounterFunctions.reduce(function (sum, fn) {
+      return sum + fn();
+    }, 0);
+    count += user.allUnread + user.unseenReviewables;
+    updateNotificationCount(count, { forced: !!(opts && opts.forced) });
   }
 
   // d-document's _focusChanged.
@@ -217,7 +243,7 @@
     var user = currentUser();
     if (user.allUnread !== allUnread) {
       allUnread = user.allUnread;
-      updateNotificationCount(user.allUnread + user.unseenReviewables);
+      updateNotifications();
     }
     var banner = document.querySelector("#list-updates > a[data-count]");
     var count = banner ? parseInt(banner.dataset.count, 10) || 0 : 0;
@@ -249,5 +275,14 @@
   Discourse.documentTitle = {
     getTitle: getTitle,
     updateContextCount: updateContextCount,
+    addDocumentTitleCounter: addDocumentTitleCounter,
+    notificationsChanged: updateNotifications,
+    // session.hasFocus
+    hasFocus: function () {
+      return hasFocus;
+    },
+    titleCountMode: function () {
+      return contextual ? "contextual" : "notifications";
+    },
   };
 })();

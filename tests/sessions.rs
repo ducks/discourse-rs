@@ -3131,6 +3131,171 @@ async fn chat_sections_stay_off_admin_pages() {
     assert!(!html.contains(".sidebar-section"), "{html}");
 }
 
+/// Chat's client notifications (static/js/chat-drawer.js): the page
+/// carries ChatTrackingStateManager's totals and the member's chat_sound
+/// and header indicator preference, the stream keeps the totals current
+/// and passes /chat/notification-alert on (ChatNotificationManager), none
+/// in do not disturb.
+#[tokio::test(flavor = "multi_thread")]
+async fn chat_alerts_and_totals_reach_the_page() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let user_id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'user1'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE users SET last_seen_at = now() WHERE id = $1")
+        .bind(user_id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let totals = |unread: i32| {
+        format!(
+            r#" hidden data-urgent-count="0" data-mention-count="0" data-unread-count="{unread}"></span>"#
+        )
+    };
+    sqlx::query("UPDATE user_options SET chat_sound = NULL WHERE user_id = $1")
+        .bind(user_id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let page = client.get("/latest").await.body;
+    assert!(
+        page.contains(&format!(r#"<span id="chat-tracking-state"{}"#, totals(0))),
+        "{page}"
+    );
+    let script = |page: &str| {
+        let at = page.find("/assets/chat-drawer").expect("chat-drawer.js");
+        page[at..page[at..].find('>').unwrap() + at].to_string()
+    };
+    assert!(
+        script(&page).ends_with(r#" data-indicator-preference="all_new" defer"#),
+        "{}",
+        script(&page)
+    );
+    sqlx::query(
+        "UPDATE user_options SET chat_sound = 'soft', chat_header_indicator_preference = 3 WHERE user_id = $1",
+    )
+    .bind(user_id)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let page = client.get("/latest").await.body;
+    assert!(
+        script(&page).ends_with(
+            r#" data-indicator-preference="only_mentions" data-chat-sound="soft" defer"#
+        ),
+        "{}",
+        script(&page)
+    );
+
+    // Paused before the stream opens.
+    let xhr = [("x-requested-with", "XMLHttpRequest")];
+    let reply = client
+        .send(Method::POST, "/do-not-disturb.json", &xhr, "duration=30")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let from = app_state.bus.now().await.unwrap();
+    let mut body = client
+        .open(&format!("/live?chat=discovery&position={from}"))
+        .await;
+    let mut buffer = String::new();
+    let alert = |excerpt: &'static str| {
+        let (pool, st) = (db.pool.clone(), app_state.clone());
+        async move {
+            let mut conn = pool.acquire().await.unwrap();
+            st.bus
+                .publish(
+                    &mut conn,
+                    &format!("/chat/notification-alert/{user_id}"),
+                    &json!({
+                        "notification_type": 30,
+                        "chat_message_id": 1,
+                        "channel_id": 2,
+                        "is_direct_message_channel": false,
+                        "excerpt": excerpt,
+                    }),
+                    Some(&[discourse_rs::bus::user_tag(user_id)]),
+                )
+                .await
+                .unwrap();
+        }
+    };
+    // The stream starts as it is first read: paused.
+    let header = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(header.contains("do-not-disturb-background"), "{header}");
+    alert("paused").await;
+    let reply = client
+        .send(Method::DELETE, "/do-not-disturb.json", &xhr, "")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    common::next_sse_event(&mut body, &mut buffer, "header").await;
+    alert("heard").await;
+    // The payload as published; the paused one was never sent.
+    let event = common::next_sse_event(&mut body, &mut buffer, "chat-notification-alert").await;
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&event).unwrap(),
+        json!({
+            "notification_type": 30,
+            "chat_message_id": 1,
+            "channel_id": 2,
+            "is_direct_message_channel": false,
+            "excerpt": "heard",
+        }),
+    );
+
+    // user0 writes in General, which user1 follows: the totals follow.
+    sqlx::query(
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
+         VALUES (1, 2, 2, now(), now(), 'hi', '<p>hi</p>', 1, 2)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE chat_channels SET last_message_id = 1 WHERE id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut conn = db.pool.acquire().await.unwrap();
+    app_state
+        .bus
+        .publish(
+            &mut conn,
+            "/chat/2/new-messages",
+            &json!({ "type": "channel", "channel_id": 2 }),
+            Some(&[discourse_rs::bus::group_tag(10)]),
+        )
+        .await
+        .unwrap();
+    let html = common::next_sse_event(&mut body, &mut buffer, "chat").await;
+    assert!(
+        html.contains(&format!(
+            r#"<span id="chat-tracking-state" hx-swap-oob="true"{}"#,
+            totals(1)
+        )),
+        "{html}"
+    );
+
+    // A page without chat hears no chat alerts.
+    let mut body = client.open(&format!("/live?position={from}")).await;
+    let mut buffer = String::new();
+    alert("not for this page").await;
+    let mut tx = db.pool.begin().await.unwrap();
+    discourse_rs::bus::publish_notification_alert(
+        &app_state.bus,
+        &mut tx,
+        user_id,
+        &json!({ "notification_type": 2, "username": "user2", "topic_title": "A topic", "excerpt": "core's", "post_url": "/t/a-topic/35/2" }),
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    common::next_sse_event(&mut body, &mut buffer, "notification-alert").await;
+    assert!(!buffer.contains("chat-notification-alert"), "{buffer}");
+}
+
 #[tokio::test]
 async fn tokens_that_find_no_user_are_limited_per_ip() {
     let db = TestDb::new().await;
