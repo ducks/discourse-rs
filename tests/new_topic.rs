@@ -197,6 +197,7 @@ async fn a_member_gets_the_homepage_with_the_composer_to_open() {
             "category": null,
             "sharedDraft": false,
             "open": true,
+            "chooser": null,
         })
     );
     // What composer.js prefills it within.
@@ -358,6 +359,7 @@ async fn new_message_goes_to_the_homepage() {
             "category": null,
             "sharedDraft": false,
             "open": true,
+            "chooser": null,
         })
     );
 }
@@ -385,4 +387,172 @@ async fn the_categories_homepage_keeps_only_filter() {
         instruction(&reply.body)["url"],
         "/categories?filter=tracked"
     );
+}
+
+#[tokio::test]
+async fn array_params_go_on_as_arrays() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let member = logged_in(&st, "user1").await;
+    // Collected under the bare name; the discovery list's are joined
+    // with commas in the URL the route goes to.
+    let reply = page(
+        &st,
+        "/new-topic?tags[]=howto&title=T&tags%5B%5D=guide&order[]=views&x[]=1&body[]=B",
+        Some(&member),
+    )
+    .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        instruction(&reply.body),
+        json!({
+            "route": "new-topic",
+            "url": "/latest?order=views&tags=howto%2Cguide",
+            "params": {
+                "tags": ["howto", "guide"],
+                "title": "T",
+                "order": ["views"],
+                "x": ["1"],
+                "body": ["B"],
+            },
+            "category": null,
+            "sharedDraft": false,
+            "open": true,
+            "chooser": null,
+        })
+    );
+    // An empty string before the array gives way to it, and a plain pair
+    // after it replaces it.
+    for (path, tags) in [
+        ("/new-topic?tags=&tags[]=howto", json!(["howto"])),
+        ("/new-topic?tags[]=howto&tags=guide", json!("guide")),
+        ("/new-topic?tags[]=", json!([""])),
+    ] {
+        let html = page(&st, path, Some(&member)).await.body;
+        assert_eq!(instruction(&html)["params"]["tags"], tags, "{path}");
+    }
+    // An array after a plain pair that isn't empty: route-recognizer
+    // throws before the route is reached (refused, a 500).
+    for path in [
+        "/new-topic?tags=howto&tags[]=guide",
+        "/new-message?username=user2&username[]=user3",
+    ] {
+        let reply = page(&st, path, Some(&member)).await;
+        assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
+        assert!(!reply.body.contains("composer-open"), "{path}");
+    }
+    // No category has an array for an id, and `category` is not read
+    // while `category_id` is given.
+    let html = page(
+        &st,
+        "/new-topic?category_id[]=4&category=general",
+        Some(&member),
+    )
+    .await
+    .body;
+    let open = instruction(&html);
+    assert_eq!(open["url"], "/latest");
+    assert_eq!(open["category"], Value::Null);
+    // The route throws on an array `category` (its `split`).
+    let reply = page(&st, "/new-topic?category[]=general", Some(&member)).await;
+    assert_eq!(
+        reply.status,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "{}",
+        reply.body
+    );
+    // The message route's too.
+    let html = page(
+        &st,
+        "/new-message?username[]=user2&username[]=user3&group_name[]=admins",
+        Some(&member),
+    )
+    .await
+    .body;
+    let open = instruction(&html);
+    assert_eq!(open["url"], "/latest?group_name=admins");
+    assert_eq!(open["params"]["username"], json!(["user2", "user3"]));
+}
+
+#[tokio::test]
+async fn a_category_the_member_cannot_post_in_is_read_only_in_the_chooser() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    // Site Feedback: everyone may read, only staff create topics.
+    sqlx::query(
+        "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) \
+         VALUES (2, 0, 3, now(), now()), (2, 3, 1, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let member = logged_in(&st, "user1").await;
+    let reply = page(
+        &st,
+        "/new-topic?category=site-feedback&title=T",
+        Some(&member),
+    )
+    .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let html = &reply.body;
+    // The page's own chooser lists only where the member may post.
+    assert!(
+        html.contains("<title>Latest Site Feedback topics - "),
+        "{html}"
+    );
+    let open = instruction(html);
+    assert_eq!(open["url"], "/c/2");
+    assert_eq!(open["category"], 2);
+    assert_eq!(open["open"], true);
+    // prioritizedCategoryId: its row first, then the others as listed
+    // (uncategorized, empty, last).
+    assert_eq!(open["chooser"]["order"], json!([2, 4, 34, 1]));
+    assert_eq!(open["chooser"]["choose"], "Category…");
+    let row = open["chooser"]["readOnlyRow"].as_str().unwrap();
+    assert!(
+        row.starts_with(
+            "<div class=\"category-row select-kit-row\" data-name=\"Site Feedback\" \
+             data-title=\"This category is read-only so you cannot choose it for this topic\" \
+             data-value=\"2\" data-url=\"/c/site-feedback/2\" data-read-only=\"true\" \
+             role=\"menuitemradio\" tabindex=\"-1\" \
+             title=\"This category is read-only so you cannot choose it for this topic\">\
+             <div class=\"category-status\"><span "
+        ),
+        "{row}"
+    );
+    assert!(
+        row.contains(
+            "<span class=\"topic-count\" aria-label=\"1 topic in this category\">× 1</span>\
+             <span class=\"read-only\" aria-label=\"read-only\">read-only</span></span></div>"
+        ),
+        "{row}"
+    );
+
+    // A category the member may post in: no read-only row, its family
+    // (the parent and the parent's subcategories) first.
+    let html = page(&st, "/new-topic?category_id=34", Some(&member))
+        .await
+        .body;
+    let open = instruction(&html);
+    assert_eq!(open["chooser"]["order"], json!([4, 34, 1]));
+    assert_eq!(open["chooser"]["readOnlyRow"], Value::Null);
+
+    // Staff may post there.
+    let admin = logged_in(&st, "admin").await;
+    let html = page(&st, "/new-topic?category_id=2", Some(&admin))
+        .await
+        .body;
+    let open = instruction(&html);
+    assert_eq!(open["chooser"]["readOnlyRow"], Value::Null);
+    assert_eq!(open["chooser"]["order"][0], 2);
+
+    // The chooser is the composer's, which only opens for who may
+    // create topics.
+    set_setting(&db.pool, "create_topic_allowed_groups", GROUP_LIST, "1|2|3").await;
+    let html = page(&st, "/new-topic?category_id=2", Some(&member))
+        .await
+        .body;
+    let open = instruction(&html);
+    assert_eq!(open["open"], false);
+    assert_eq!(open["chooser"], Value::Null);
 }

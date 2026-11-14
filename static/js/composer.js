@@ -652,8 +652,15 @@
     showError("");
     showDraftStatus("");
     lastDraftSaved = null;
+    scopeChooser(opts.mode === "create-topic" ? opts.chooser : null);
     if (opts.mode === "create-topic") {
-      selectCategory(opts.category || data.defaultCategory);
+      // A read-only category is listed and never set as the topic's
+      // (Composer#open sets categoryId only without readOnlyCategoryId).
+      if (opts.chooser && opts.chooser.readOnlyRow) {
+        clearCategory(opts.chooser.choose);
+      } else {
+        selectCategory(opts.category || data.defaultCategory);
+      }
       // The new-topic route's topicTitle and topicTags.
       title.value = opts.title || "";
       setTags(opts.tags || []);
@@ -2340,15 +2347,38 @@
     });
   }
 
-  function openNewTopic(params, category, sharedDraft) {
-    // CREATE_SHARED_DRAFT, and a category the member can't create topics
-    // in, which Ember's chooser shows read-only (readOnlyCategoryId).
+  // What an array param (`title[]=`) does to the composer: Ember sets
+  // the array where the model reads a string and the composer breaks
+  // drawing it.
+  function arrayParam(params, names) {
+    var name = names.find(function (n) {
+      return Array.isArray(params[n]);
+    });
+    if (name) {
+      unported("an array `" + name + "` param");
+    }
+    return !!name;
+  }
+
+  // `scope` is the chooser the server drew for the category
+  // (src/composer/load.rs chooser_scope): its rows' order, and the row
+  // and header of a category the member can't create topics in, which
+  // Ember's chooser shows read-only (readOnlyCategoryId).
+  function openNewTopic(params, category, sharedDraft, scope) {
+    // CREATE_SHARED_DRAFT
     if (sharedDraft) {
       unported("creating a shared draft");
       return;
     }
-    if (category && !chooser.querySelector('.category-row[data-value="' + category + '"]')) {
-      unported("a category the composer shows read-only");
+    // filterTags reads `tags.content` of anything but a string and
+    // throws: an array (`tags[]=`) opens no composer, except for staff,
+    // whose tags go on as given.
+    if (Array.isArray(params.tags) && !actionsOpts.staff) {
+      return;
+    }
+    var readOnly = !!(scope && scope.readOnlyRow);
+    if (category && !readOnly && !chooser.querySelector('.category-row[data-value="' + category + '"]')) {
+      unported("a category the composer's chooser doesn't list");
       return;
     }
     filterTags(params.tags)
@@ -2356,7 +2386,10 @@
         return null;
       })
       .then(function (tags) {
-        var opts = { mode: "create-topic", category: category || null, body: params.body };
+        if (arrayParam(params, ["title", "body"])) {
+          return;
+        }
+        var opts = { mode: "create-topic", category: category || null, body: params.body, chooser: scope || null };
         // The composer service: a title within max_topic_title_length, and
         // tags (escaped, the first max_tags_per_topic, each cut to
         // max_tag_length) when the member may tag topics.
@@ -2453,11 +2486,18 @@
   // max_topic_title_length, its body, and its tags (as a new topic takes
   // them) where messages take tags.
   function openMessageComposer(params, to) {
+    // openNewMessage filters the tags whether or not messages take them.
+    if (Array.isArray(params.tags) && !actionsOpts.staff) {
+      return;
+    }
     filterTags(data.canTagPms && tagChooser ? params.tags : null)
       .catch(function () {
         return null;
       })
       .then(function (tags) {
+        if (arrayParam(params, ["title", "body", "username", "groupname", "group_name"])) {
+          return;
+        }
         var opts = { mode: "private-message", recipients: to || "", body: params.body };
         var max = parseInt(data.maxTitleLength, 10);
         if (params.title && params.title.length <= max) {
@@ -2530,7 +2570,7 @@
       return;
     }
     if (go.route === "new-topic") {
-      openNewTopic(go.params, go.category, go.sharedDraft);
+      openNewTopic(go.params, go.category, go.sharedDraft, go.chooser);
     } else {
       openNewMessage(go.params);
     }
@@ -2538,8 +2578,10 @@
 
   // route-recognizer's parseQueryString, as the router reads a link's
   // query: only the first two parts of a pair, "true" without `=`, the
-  // last of a name. Null for an array param (`tags[]=`), which the
-  // composer trips over: the server refuses those.
+  // last of a name, and an array param's values (`tags[]=`) collected
+  // under the name without the `[]`. Null where it throws, an array
+  // param after a plain one of its name that isn't empty (`push` on a
+  // string): the server refuses those.
   function parseQueryString(query) {
     var params = {};
     if (!query) {
@@ -2556,12 +2598,19 @@
     for (var i = 0; i < pairs.length; i++) {
       var pair = pairs[i].split("=");
       var key = decode(pair[0]);
+      var value = pair[1] ? decode(pair[1]) : "";
       if (pair.length === 1) {
         params[key] = "true";
       } else if (key.length > 2 && key.slice(-2) === "[]") {
-        return null;
+        key = key.slice(0, -2);
+        if (!params[key]) {
+          params[key] = [];
+        } else if (!Array.isArray(params[key])) {
+          return null;
+        }
+        params[key].push(value);
       } else {
-        params[key] = pair[1] ? decode(pair[1]) : "";
+        params[key] = value;
       }
     }
     return params;
@@ -2597,7 +2646,7 @@
         }
         event.preventDefault();
         event.stopPropagation();
-        openNewTopic(params, null, false);
+        openNewTopic(params, null, false, null);
       } else if (url.pathname === base + "/new-message") {
         event.preventDefault();
         event.stopPropagation();
@@ -2650,6 +2699,64 @@
     }
   }
 
+  // No category chosen: the header's `category.choose`.
+  function clearCategory(label) {
+    var header = chooser.querySelector(".select-kit-selected-name");
+    var summary = chooser.querySelector("summary");
+    header.innerHTML = "";
+    var name = document.createElement("span");
+    name.className = "name";
+    name.textContent = label;
+    header.appendChild(name);
+    delete header.dataset.value;
+    delete header.dataset.name;
+    header.removeAttribute("title");
+    summary.dataset.value = "";
+    chooser.classList.remove("has-selection");
+    if (tagChooser) {
+      tagChooser.removeAttribute("category-id");
+      tagHeader();
+      validateTags(false);
+    }
+    chooser.querySelectorAll(".category-row").forEach(function (r) {
+      r.classList.remove("is-selected");
+    });
+  }
+
+  // The chooser of a composer the new-topic route opens with a category
+  // (prioritizedCategoryId and readOnlyCategoryId): its rows in the
+  // order the server gives, with the read-only category's row. The next
+  // open puts the rows back as the page drew them, as composer.open
+  // resets both.
+  var chooserRows = null;
+  function scopeChooser(scope) {
+    var list = chooser.querySelector(".select-kit-collection");
+    if (chooserRows) {
+      list.querySelectorAll(".category-row[data-read-only]").forEach(function (r) {
+        r.remove();
+      });
+      chooserRows.forEach(function (r) {
+        list.appendChild(r);
+      });
+      chooserRows = null;
+    }
+    if (!scope) {
+      return;
+    }
+    chooserRows = Array.prototype.slice.call(list.querySelectorAll(".category-row"));
+    if (scope.readOnlyRow) {
+      var template = document.createElement("template");
+      template.innerHTML = scope.readOnlyRow;
+      list.appendChild(template.content.firstElementChild);
+    }
+    scope.order.forEach(function (id) {
+      var row = list.querySelector('.category-row[data-value="' + id + '"]');
+      if (row) {
+        list.appendChild(row);
+      }
+    });
+  }
+
   // A topic's category that isn't among those the chooser lists (one
   // the editor can't post in) stays selected, shown with the topic
   // title's badge, as Ember's chooser shows its value.
@@ -2689,6 +2796,11 @@
   });
   chooser.addEventListener("click", function (e) {
     var row = e.target.closest(".category-row");
+    // category-row's handleClick: a read-only row is not chosen.
+    if (row && row.dataset.readOnly) {
+      e.preventDefault();
+      return;
+    }
     if (row) {
       selectCategory(row.dataset.value);
       chooser.open = false;

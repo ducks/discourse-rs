@@ -1649,8 +1649,9 @@ async fn forgot_password_over_homepage(
     if homepage == "custom" || homepage == "blank" {
         return Err(Unsupported("/password-reset over a custom or blank homepage").into());
     }
-    let params = super::new_topic::query_params(uri.query())
-        .map_err(|_| Unsupported("an array query param on /password-reset"))?;
+    let params = super::new_topic::query_params(uri.query()).map_err(|_| {
+        Unsupported("an array query param after a plain one of its name on /password-reset")
+    })?;
     let known = super::new_topic::known_query_params(&homepage, settings)?;
     let query = super::new_topic::carried_query(&params, &known);
     let base_path = state.config.globals.relative_url_root().to_string();

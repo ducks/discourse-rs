@@ -25,15 +25,13 @@ pub(crate) struct Loaded {
     pub categories: HashMap<i64, ListCategory>,
 }
 
-pub(crate) async fn load(
+/// The categories the member may create topics in, as the chooser lists
+/// them: uncategorized only where topics may go there.
+async fn allowed_category_ids(
     conn: &mut PgConnection,
-    state: &AppState,
     settings: &SiteSettings,
     guardian: &Guardian,
-    base_path: &str,
-    options: Option<&Options>,
-    can_create_topic: bool,
-) -> Result<Loaded, AppError> {
+) -> Result<Vec<i32>, AppError> {
     let mut allowed = guardian
         .topic_create_allowed_category_ids(&mut *conn, settings)
         .await?;
@@ -42,6 +40,14 @@ pub(crate) async fn load(
         let uncategorized = settings.get("uncategorized_category_id")?.to_i() as i32;
         allowed.retain(|id| *id != uncategorized);
     }
+    Ok(allowed)
+}
+
+/// What the chooser lists of these categories.
+async fn chooser_categories(
+    conn: &mut PgConnection,
+    ids: &[i32],
+) -> Result<Vec<super::view::ChooserCategory>, AppError> {
     // Category#minimumRequiredTags: with required tag groups, the
     // larger of their counts' sum and the minimum; else the minimum.
     // id, topic_count, description, minimum required tags, form template ids
@@ -56,8 +62,8 @@ pub(crate) async fn load(
                  WHERE f.category_id = c.id ORDER BY f.form_template_id) \
          FROM categories c WHERE c.id = ANY($1)",
     )
-    .bind(&allowed)
-    .fetch_all(&mut *conn)
+    .bind(ids)
+    .fetch_all(conn)
     .await?;
     let mut chooser = Vec::with_capacity(rows.len());
     for (id, topic_count, description, minimum_required_tags, form_template_ids) in rows {
@@ -70,6 +76,85 @@ pub(crate) async fn load(
             form_template_ids,
         });
     }
+    Ok(chooser)
+}
+
+/// The chooser of a composer the new-topic route opens with a category
+/// (composer.openNewTopic).
+pub(crate) struct ChooserScope {
+    /// The rows' order under `prioritizedCategoryId`
+    /// (categoriesByScope): the category's parent, or itself without one,
+    /// and that one's subcategories first.
+    pub order: Vec<i64>,
+    /// `readOnlyCategoryId`'s row, for a category the member can't
+    /// create topics in.
+    pub read_only_row: Option<String>,
+    /// The header without a selection (modifyNoSelection).
+    pub choose: String,
+}
+
+pub(crate) async fn chooser_scope(
+    conn: &mut PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    base_path: &str,
+    category: i64,
+    read_only: bool,
+) -> Result<ChooserScope, AppError> {
+    let mut ids = allowed_category_ids(&mut *conn, settings, guardian).await?;
+    // The chooser keeps the read-only category whatever its permission.
+    if read_only && !ids.contains(&(category as i32)) {
+        ids.push(category as i32);
+    }
+    let chooser = chooser_categories(&mut *conn, &ids).await?;
+    let categories = crate::topic_list_view::categories(&mut *conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path,
+        now: chrono::Utc::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let parent = |id: &i64| categories.get(id).and_then(|c| c.parent_id);
+    let prioritized = parent(&category).unwrap_or(category);
+    let (mut first, rest): (Vec<i64>, Vec<i64>) = super::view::chooser_order(&categories, &chooser)
+        .into_iter()
+        .partition(|id| *id == prioritized || parent(id) == Some(prioritized));
+    // chooser_order leaves out a subcategory whose parent it doesn't list.
+    if read_only && !first.contains(&category) {
+        first.push(category);
+    }
+    let read_only_row = if read_only {
+        chooser
+            .iter()
+            .find(|c| c.id == category)
+            .zip(categories.get(&category))
+            .map(|(c, listed)| super::view::read_only_row(&list, c, listed))
+    } else {
+        None
+    };
+    Ok(ChooserScope {
+        order: first.into_iter().chain(rest).collect(),
+        read_only_row,
+        choose: crate::topic_list_view::t(&list, "category.choose").replace("&hellip;", "…"),
+    })
+}
+
+pub(crate) async fn load(
+    conn: &mut PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    base_path: &str,
+    options: Option<&Options>,
+    can_create_topic: bool,
+) -> Result<Loaded, AppError> {
+    let allowed = allowed_category_ids(&mut *conn, settings, guardian).await?;
+    let chooser = chooser_categories(&mut *conn, &allowed).await?;
     // composer.canEditTags for a new topic: site.can_tag_topics.
     let tag_chooser = if guardian.can_tag_topics(settings)? {
         Some(super::view::TagChooser {

@@ -120,16 +120,35 @@ async fn show(
             find_category(&mut conn, &state, &settings, &guardian, &base_path, &params).await?
         };
         if let Some(category) = category {
-            let (slug_path, shared_draft, open) = {
+            let (category, can_create_in) = category;
+            let (slug_path, shared_draft, open, scope) = {
                 let mut conn = state.pool.acquire().await?;
                 let found = crate::category::Category::find(&mut conn, category as i32)
                     .await?
                     .ok_or(Unsupported("a site category gone from the database"))?;
-                (
-                    found.full_slug(&mut conn).await?,
-                    shared_drafts_category(&settings, &guardian)? == Some(category),
-                    guardian.can_create_topic(&mut conn, &settings).await?,
-                )
+                let shared_draft = shared_drafts_category(&settings, &guardian)? == Some(category);
+                let open = guardian.can_create_topic(&mut conn, &settings).await?;
+                // composer.openNewTopic: the chooser lists the category's
+                // family first (prioritizedCategoryId), and a category
+                // the member can't create topics in is listed read-only
+                // and not selected (readOnlyCategoryId).
+                let scope = if open && !shared_draft {
+                    Some(
+                        crate::composer::chooser_scope(
+                            &mut conn,
+                            &state,
+                            &settings,
+                            &guardian,
+                            &base_path,
+                            category,
+                            !can_create_in,
+                        )
+                        .await?,
+                    )
+                } else {
+                    None
+                };
+                (found.full_slug(&mut conn).await?, shared_draft, open, scope)
             };
             let page_uri: Uri = format!("{base_path}/c/{slug_path}")
                 .parse()
@@ -152,6 +171,11 @@ async fn show(
                 "category": category,
                 "sharedDraft": shared_draft,
                 "open": open,
+                "chooser": scope.map(|s| json!({
+                    "order": s.order,
+                    "readOnlyRow": s.read_only_row,
+                    "choose": s.choose,
+                })),
             });
             return with_instruction(page, &instruction).await;
         }
@@ -168,6 +192,10 @@ async fn show(
         };
         (homepage, open)
     };
+    // A theme's custom homepage is discovery.custom (the custom-homepage
+    // outlet, at /custom keeping `q`), which list::front_page refuses.
+    // The blank homepage is only an anonymous visitor's, who got the
+    // login page above.
     if homepage == "custom" || homepage == "blank" {
         return Err(Unsupported("/new-topic over a custom or blank homepage").into());
     }
@@ -194,39 +222,76 @@ async fn show(
         "category": Value::Null,
         "sharedDraft": false,
         "open": open,
+        "chooser": Value::Null,
     });
     with_instruction(page, &instruction).await
 }
 
+/// A query param as route-recognizer reads it: a string, or the values
+/// of an array param (`name[]=`).
+#[derive(Clone, Debug, PartialEq)]
+pub(super) enum ParamValue {
+    One(String),
+    Many(Vec<String>),
+}
+
+impl ParamValue {
+    /// The string, when it is one and JavaScript counts it true.
+    fn present(&self) -> Option<&str> {
+        match self {
+            ParamValue::One(v) if !v.is_empty() => Some(v),
+            _ => None,
+        }
+    }
+}
+
+pub(super) type Params = Vec<(String, ParamValue)>;
+
 /// `transition.to.queryParams`, as route-recognizer's parseQueryString
 /// reads the query: pairs split on `&`, each on `=` with only its first
 /// two parts kept, a pair without `=` meaning "true", the last of a
-/// repeated name winning. An array param (`tags[]=`) is refused:
-/// route-recognizer collects those into arrays, which the composer then
-/// trips over.
-pub(super) fn query_params(query: Option<&str>) -> Result<Vec<(String, String)>, Unsupported> {
-    let mut out: Vec<(String, String)> = Vec::new();
+/// repeated name winning. A name ending in `[]` (and longer) with a `=`
+/// is an array param: its values are collected under the name without
+/// the `[]`, replacing an empty string read before it; a plain pair of
+/// the name after it replaces the array. After a plain pair that is not
+/// empty, parseQueryString calls `push` on the string and throws, so the
+/// router never reaches the route: refused.
+pub(super) fn query_params(query: Option<&str>) -> Result<Params, Unsupported> {
+    let mut out: Params = Vec::new();
     let Some(query) = query.filter(|q| !q.is_empty()) else {
         return Ok(out);
     };
     for pair in query.split('&') {
         let mut parts = pair.split('=');
         let key = decode_query_param_part(parts.next().unwrap_or_default());
-        let value = match parts.next() {
-            None => "true".to_string(),
-            Some(_) if key.len() > 2 && key.ends_with("[]") => {
+        let Some(value) = parts.next() else {
+            set_param(&mut out, key, ParamValue::One("true".to_string()));
+            continue;
+        };
+        let value = decode_query_param_part(value);
+        let Some(name) = key.strip_suffix("[]").filter(|_| key.len() > 2) else {
+            set_param(&mut out, key, ParamValue::One(value));
+            continue;
+        };
+        match out.iter_mut().find(|(k, _)| k == name) {
+            Some((_, ParamValue::Many(values))) => values.push(value),
+            Some((_, ParamValue::One(plain))) if !plain.is_empty() => {
                 return Err(Unsupported(
-                    "an array query param on /new-topic or /new-message",
+                    "an array query param after a plain one of its name, where route-recognizer throws",
                 ));
             }
-            Some(value) => decode_query_param_part(value),
-        };
-        match out.iter_mut().find(|(k, _)| *k == key) {
-            Some(entry) => entry.1 = value,
-            None => out.push((key, value)),
+            Some(entry) => entry.1 = ParamValue::Many(vec![value]),
+            None => out.push((name.to_string(), ParamValue::Many(vec![value]))),
         }
     }
     Ok(out)
+}
+
+fn set_param(params: &mut Params, key: String, value: ParamValue) {
+    match params.iter_mut().find(|(k, _)| *k == key) {
+        Some(entry) => entry.1 = value,
+        None => params.push((key, value)),
+    }
 }
 
 /// route-recognizer's decodeQueryParamPart: `+` is a space, then
@@ -249,18 +314,21 @@ fn decode_query_param_part(part: &str) -> String {
         .unwrap_or_default()
 }
 
-fn param<'a>(params: &'a [(String, String)], name: &str) -> Option<&'a str> {
-    params
-        .iter()
-        .find(|(k, _)| k == name)
-        .map(|(_, v)| v.as_str())
+fn param<'a>(params: &'a [(String, ParamValue)], name: &str) -> Option<&'a ParamValue> {
+    params.iter().find(|(k, _)| k == name).map(|(_, v)| v)
 }
 
-fn params_json(params: &[(String, String)]) -> Value {
+fn params_json(params: &[(String, ParamValue)]) -> Value {
     Value::Object(
         params
             .iter()
-            .map(|(k, v)| (k.clone(), Value::String(v.clone())))
+            .map(|(k, v)| {
+                let value = match v {
+                    ParamValue::One(v) => json!(v),
+                    ParamValue::Many(values) => json!(values),
+                };
+                (k.clone(), value)
+            })
             .collect::<Map<String, Value>>(),
     )
 }
@@ -283,19 +351,26 @@ pub(super) fn known_query_params(
 }
 
 /// The kept params as route-recognizer writes them: sorted by name, each
-/// key and value through encodeURIComponent.
-pub(super) fn carried_query(params: &[(String, String)], known: &[&str]) -> String {
-    let mut kept: Vec<&(String, String)> = params
+/// key and value through encodeURIComponent. An array is one value by
+/// then, its values joined with commas: the router serializes a query
+/// param the target route knows by its default's type
+/// (`_serializeQueryParam`), and none of these defaults to an array.
+pub(super) fn carried_query(params: &[(String, ParamValue)], known: &[&str]) -> String {
+    let mut kept: Vec<&(String, ParamValue)> = params
         .iter()
         .filter(|(k, _)| known.contains(&k.as_str()))
         .collect();
     kept.sort_by(|a, b| a.0.cmp(&b.0));
     kept.iter()
         .map(|(k, v)| {
+            let value = match v {
+                ParamValue::One(v) => v.clone(),
+                ParamValue::Many(values) => values.join(","),
+            };
             format!(
                 "{}={}",
                 crate::directory_view::encode_uri_component(k),
-                crate::directory_view::encode_uri_component(v)
+                crate::directory_view::encode_uri_component(&value)
             )
         })
         .collect::<Vec<_>>()
@@ -304,24 +379,41 @@ pub(super) fn carried_query(params: &[(String, String)], known: &[&str]) -> Stri
 
 /// `#loadCategoryFromTransition`: `category_id` by id, else `category`
 /// by name then by slug (`parent/child` under the parent), among the
-/// site's categories. Lazy-loaded categories (Category.asyncFindById and
-/// asyncFindBySlugPath) are refused.
+/// site's categories, with whether the member may create topics in it
+/// (Category#canCreateTopic). Lazy-loaded categories
+/// (Category.asyncFindById and asyncFindBySlugPath) are refused. An
+/// array `category_id[]` finds nothing (no id is an array) and still
+/// keeps `category` from being read; an array `category[]` is refused,
+/// the route throwing on its `split`.
 async fn find_category(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
     settings: &SiteSettings,
     guardian: &crate::guardian::Guardian,
     base_path: &str,
-    params: &[(String, String)],
-) -> Result<Option<i64>, AppError> {
-    let by_id = param(params, "category_id").filter(|v| !v.is_empty());
-    let by_name = param(params, "category").filter(|v| !v.is_empty());
-    if by_id.is_none() && by_name.is_none() {
+    params: &[(String, ParamValue)],
+) -> Result<Option<(i64, bool)>, AppError> {
+    // What JavaScript counts true: an array, or a string that isn't empty.
+    let asked = |name: &str| {
+        param(params, name).filter(|v| !matches!(v, ParamValue::One(s) if s.is_empty()))
+    };
+    let (id, name) = (asked("category_id"), asked("category"));
+    if id.is_none() && name.is_none() {
         return Ok(None);
     }
     if guardian.can_lazy_load_categories(settings)? {
         return Err(Unsupported("/new-topic's category with lazy-loaded categories").into());
     }
+    let (by_id, by_name) = match (id, name) {
+        (Some(ParamValue::Many(_)), _) => return Ok(None),
+        (None, Some(ParamValue::Many(_))) => {
+            return Err(Unsupported("an array `category` param on /new-topic").into());
+        }
+        (id, name) => (
+            id.and_then(ParamValue::present),
+            name.and_then(ParamValue::present),
+        ),
+    };
     let categories = crate::categories::Categories {
         conn,
         settings,
@@ -332,14 +424,21 @@ async fn find_category(
     }
     .for_site()
     .await?;
-    Ok(match by_id {
+    let found = match by_id {
         // Category.findById: the id map's key, as the param spells it.
         Some(id) => categories
             .iter()
             .filter_map(|c| c["id"].as_i64())
             .find(|c| c.to_string() == id),
         None => category_by_path(&categories, by_name.unwrap_or_default()),
-    })
+    };
+    // PermissionType.FULL
+    Ok(found.map(|id| {
+        let full = categories
+            .iter()
+            .any(|c| c["id"].as_i64() == Some(id) && c["permission"] == 1);
+        (id, full)
+    }))
 }
 
 /// `#getCategory` by "nameLower", then by "slug". Only the first two
@@ -417,30 +516,57 @@ async fn with_instruction(page: Response, instruction: &Value) -> Result<Respons
 mod tests {
     use super::*;
 
-    fn params(q: &str) -> Vec<(String, String)> {
+    fn params(q: &str) -> Params {
         query_params(Some(q)).unwrap()
+    }
+
+    fn one(v: &str) -> ParamValue {
+        ParamValue::One(v.into())
+    }
+
+    fn many(v: &[&str]) -> ParamValue {
+        ParamValue::Many(v.iter().map(|s| s.to_string()).collect())
     }
 
     #[test]
     fn last_value_wins_and_plus_is_a_space() {
         assert_eq!(
             params("f=1&q=x+y&f=2"),
-            [("f".into(), "2".into()), ("q".into(), "x y".into())]
+            [("f".into(), one("2")), ("q".into(), one("x y"))]
         );
         // Only the first two parts of a pair; no `=` is "true"; a bad
         // escape is "".
         assert_eq!(
             params("tags=a,b=c&flag&x=%zz&y=%E2%9C%93"),
             [
-                ("tags".into(), "a,b".into()),
-                ("flag".into(), "true".into()),
-                ("x".into(), String::new()),
-                ("y".into(), "\u{2713}".into()),
+                ("tags".into(), one("a,b")),
+                ("flag".into(), one("true")),
+                ("x".into(), one("")),
+                ("y".into(), one("\u{2713}")),
             ]
         );
-        assert!(query_params(Some("tags[]=a")).is_err());
-        assert_eq!(params("tags[]"), [("tags[]".into(), "true".into())]);
+        assert_eq!(params("tags[]"), [("tags[]".into(), one("true"))]);
         assert!(params("").is_empty());
+    }
+
+    #[test]
+    fn array_params_collect_under_the_bare_name() {
+        assert_eq!(
+            params("tags[]=a&x=1&tags%5B%5D=b+c&tags[]=&tags[]=d=e"),
+            [
+                ("tags".into(), many(&["a", "b c", "", "d"])),
+                ("x".into(), one("1")),
+            ]
+        );
+        // An empty string before it gives way; a plain pair after it wins.
+        assert_eq!(params("tags=&tags[]=a"), [("tags".into(), many(&["a"]))]);
+        assert_eq!(params("tags[]=a&tags=b,c"), [("tags".into(), one("b,c"))]);
+        assert_eq!(params("tags[]=a&tags=b&tags="), [("tags".into(), one(""))]);
+        // `"a,b".push` throws in parseQueryString.
+        assert!(query_params(Some("tags=a,b&tags[]=c")).is_err());
+        assert!(query_params(Some("tags&tags[]=c")).is_err());
+        // `[]` alone is a name.
+        assert_eq!(params("[]=a"), [("[]".into(), one("a"))]);
     }
 
     #[test]
@@ -458,6 +584,10 @@ mod tests {
         assert_eq!(
             carried_query(&params("ascending=false&filter=tracked"), &["filter"]),
             "filter=tracked"
+        );
+        assert_eq!(
+            carried_query(&params("tags[]=a+b&tags[]=c&order[]=views&x[]=1"), &known),
+            "order=views&tags=a%20b%2Cc"
         );
     }
 
