@@ -142,7 +142,15 @@ pub async fn login(
             .fetch_optional(&mut *conn)
             .await?;
     if !super::session::email_confirmed(&mut conn, user.id, email.as_deref()).await? {
-        return Ok(super::session::not_activated(&state, email.as_deref()));
+        return super::session::not_activated(
+            &state,
+            &settings,
+            &mut conn,
+            &mut session,
+            user.id,
+            email.as_deref(),
+        )
+        .await;
     }
     let timezone = params::string(&p, "timezone");
     let response = super::session::complete_login(

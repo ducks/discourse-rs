@@ -4556,15 +4556,41 @@ route table has been made, so this list may be short.
     one dropped it). Refused: over XHR or JSON, a custom or blank
     homepage, an array query param.
     261b. `feat/login-pages-rest` S: the login code steps after the email
-    step (static/js/login.js:1254) wait on 250's /session/login-code;
-    resending and changing the activation email (users#send_activation_email,
+    step (static/js/login.js:1375) wait on 250's /session/login-code;
+    ~~resending and changing the activation email (users#send_activation_email,
     users#update_activation_email, ActivationEdit; login.js:1054,1060,
-    2490,2496); a password reset code's second factor step (:1322); the
+    2490,2496)~~ (done in `feat/activation-email-controls`: POST
+    /u/action/send_activation_email and PUT /u/update-activation-email
+    under both roots (routes/accounts.rs), every branch: the limits
+    (activate-hr and activate-min per address unless staff;
+    activate-edit-email-hr per address, username and session account) as
+    429s, must_approve_users, the session's `activate_user` (which a
+    resend forgets and a change keeps) or a username with its password,
+    404 for no account, 409 for an activated one, 403 for an active,
+    staged or logged in one; UserEmail's errors as a 422 (presence,
+    EmailValidator with the screened address's match counted, the address
+    or its normalized form taken); the old address's tokens destroyed with
+    it, approval revoked where the confirmed address of an approved
+    account changes; the email is the signup's job with `to_address`.
+    session#create's not_activated now puts the account in the session
+    and answers `sent_to_email` from the last signup email's log, without
+    which the modal's controls were refused. account-created has its
+    resent and edit-email routes, drawn by the server on a page load and
+    by login.js in place from the accountCreated preload, the address bar
+    following; NotActivated's controls open ActivationResent and
+    ActivationEdit, the server's error its flash. As Ember, a refused
+    resend still moves on to the resent notice behind its error
+    (resendActivationEmail's catch settles it). Source-derived: no
+    recording covers either endpoint (tests/activation_email.rs,
+    tests/browser/activation-email.spec.js). Left: a username that is not
+    ASCII, one sent without a password (Rails' NoMethodError), an account
+    without an address);
+    a password reset code's second factor step (:1443); the
     login and signup routes in read-only mode, whose alert shows on the
-    homepage (routes/login_required.rs:627,864); the signup page's user
-    fields (UserField, :885); the static login page's dark logo
-    (application_logo_dark_url, :774, with 258a); account_created's
-    DiscourseConnect provider payload (:1177). A reset with a password
+    homepage (routes/login_required.rs:688,925); the signup page's user
+    fields (UserField, :946); the static login page's dark logo
+    (application_logo_dark_url, :835, with 258a); account_created's
+    DiscourseConnect provider payload (:1240). A reset with a password
     the server refuses (the same as the current one, a common one) is
     154's (routes/accounts.rs:728)
 

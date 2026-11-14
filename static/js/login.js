@@ -5,7 +5,10 @@
 //   LoginButtons): the flash, logging in and the hidden login form, the
 //   password mask and caps lock warning, the second factor and security
 //   key forms, passkeys, the email login link, the one-time code form,
-//   external logins, the ForgotPassword modal, NotActivated;
+//   external logins, the ForgotPassword modal, NotActivated with its
+//   ActivationResent and ActivationEdit;
+// - account-created with its resent and edit-email routes: sending the
+//   activation email again and changing its address;
 // - signup (SignupPageController): the validations as the fields change,
 //   the username and email checks, creating the account, an external
 //   login's new account, the code signup's email step;
@@ -78,8 +81,7 @@
       (opts.loading ? "is-loading " : "") +
       "btn" +
       content +
-      " " +
-      classes +
+      (classes ? " " + classes : "") +
       '"' +
       (opts.loading || opts.disabled ? ' disabled=""' : "") +
       (opts.attrs || "") +
@@ -223,6 +225,90 @@
     if (Discourse.dialog) {
       Discourse.dialog.alert(message);
     }
+  }
+
+  // lib/user-activation's resendActivationEmail: its `.catch(popupAjaxError)`
+  // settles a refusal too, so what follows runs either way, behind the
+  // error's dialog.
+  function resendActivationEmail(username) {
+    return request("POST", "/u/action/send_activation_email", { username: username }).then(function (r) {
+      if (!r.ok) {
+        popupAjaxError(r);
+      }
+    });
+  }
+
+  // lib/user-activation's changeEmail
+  function changeActivationEmail(data) {
+    return request("PUT", "/u/update-activation-email", data).then(function (r) {
+      if (!r.ok) {
+        throw r;
+      }
+      return r;
+    });
+  }
+
+  // ActivationEmailForm
+  function activationEmailForm(email) {
+    return (
+      "<p>" +
+      escape(t("login.provide_new_email")) +
+      '</p><input class="activate-new-email" type="text" value="' +
+      escape(email) +
+      '">'
+    );
+  }
+
+  // The ActivationResent modal
+  function showActivationResent(currentEmail) {
+    Discourse.modal.show({
+      title: t("log_in"),
+      body: function (body) {
+        body.innerHTML = t("login.sent_activation_email_again", { currentEmail: currentEmail });
+      },
+    });
+  }
+
+  // The ActivationEdit modal: the session's account given another
+  // address (the login service carries no name or password to send).
+  function showActivationEdit(currentEmail) {
+    var newEmail = currentEmail;
+    Discourse.modal.show({
+      title: t("login.change_email"),
+      body: function (body) {
+        body.innerHTML = activationEmailForm("");
+        body.querySelector(".activate-new-email").value = currentEmail;
+      },
+      footer: function (footer, close) {
+        footer.innerHTML =
+          dButton("btn-primary", t("login.submit_new_email"), { disabled: true }) + dButton("", t("close"));
+        var submit = footer.querySelector(".btn-primary");
+        var body = footer.parentNode.querySelector(".d-modal__body");
+        var input = body.querySelector(".activate-new-email");
+        input.addEventListener("input", function () {
+          newEmail = input.value;
+          submit.disabled = newEmail === currentEmail;
+        });
+        submit.addEventListener("click", function () {
+          changeActivationEmail({ email: newEmail })
+            .then(function () {
+              showActivationResent(escape(newEmail));
+            })
+            .catch(function (e) {
+              var old = footer.parentNode.querySelector("#modal-alert");
+              if (old) {
+                old.remove();
+              }
+              var alert = fromHtml('<div id="modal-alert" role="alert" class="alert alert-error"></div>');
+              alert.textContent = extractError(e);
+              body.before(alert);
+            });
+        });
+        footer.querySelector(".btn:not(.btn-primary)").addEventListener("click", function () {
+          close();
+        });
+      },
+    });
   }
 
   // What the port refuses rather than guess at, on the page's error line.
@@ -1059,11 +1145,13 @@
         });
     }
 
-    // NotActivatedModal
+    // NotActivatedModal, the page's address escaped as the login
+    // controller hands it over.
     function showNotActivated(result) {
       if (!Discourse.modal) {
         return;
       }
+      var currentEmail = escape(result.current_email);
       Discourse.modal.show({
         className: "not-activated-modal",
         title: t("log_in"),
@@ -1082,13 +1170,15 @@
           var resend = footer.querySelector(".resend");
           if (resend) {
             resend.addEventListener("click", function () {
-              refuse("resending the activation email (users#send_activation_email)");
+              resendActivationEmail(currentEmail).then(function () {
+                showActivationResent(currentEmail);
+              });
             });
           }
           var edit = footer.querySelector(".edit-email");
           if (edit) {
             edit.addEventListener("click", function () {
-              refuse("changing the activation email (ActivationEdit)");
+              showActivationEdit(currentEmail);
             });
           }
         },
@@ -2503,6 +2593,125 @@
     }
   }
 
+  // ---- account-created and its resent and edit-email routes ----------
+
+  // The route's templates under the progress bar, drawn from the
+  // accountCreated preload as the server draws them, the address bar
+  // following (AccountCreatedIndexController, AccountCreatedEditEmailController).
+  function accountCreatedPage() {
+    var root = document.querySelector(".account-created");
+    var created = D.account_created;
+    if (!root || !created) {
+      return;
+    }
+    var path = base() + "/u/account-created";
+
+    function stepOf(pathname) {
+      var rest = pathname.replace(/\/+$/, "").split("/account-created")[1] || "";
+      return rest === "/resent" ? "resent" : rest === "/edit-email" ? "edit-email" : "index";
+    }
+
+    function transitionTo(step) {
+      history.pushState(null, "", path + (step === "index" ? "" : "/" + step));
+      draw(step);
+    }
+
+    function draw(step) {
+      var bar = root.querySelector(".signup-progress-bar");
+      var html = "";
+      if (step === "resent") {
+        html =
+          '<div class="ac-message">' +
+          (created.email
+            ? t("login.sent_activation_email_again", { currentEmail: escape(created.email) })
+            : escape(t("login.sent_activation_email_again_generic"))) +
+          "</div>";
+      } else if (step === "edit-email") {
+        html =
+          '<div class="ac-message">' +
+          activationEmailForm(created.email) +
+          '</div><div class="activation-controls">' +
+          dButton("btn-primary", t("login.submit_new_email"), { disabled: true }) +
+          dButton("edit-cancel", t("cancel")) +
+          "</div>";
+      } else {
+        html =
+          '<div class="login-welcome-header"><h1 class="login-title">' +
+          escape(t("invites.welcome_to", { site_name: D.settings.title })) +
+          '</h1></div><div class="success-info">' +
+          created.message +
+          "</div>";
+        if (created.show_controls) {
+          html += '<div class="activation-controls">';
+          if (!D.settings.must_approve_users) {
+            html += dButton("btn-primary resend", t("login.resend_title"), { icon: "envelope" });
+          }
+          if (D.settings.enable_local_logins || D.settings.email_editable) {
+            html += dButton("btn-default edit-email", t("login.change_email"), { icon: "pencil" });
+          }
+          html += "</div>";
+        }
+      }
+      while (bar.nextSibling) {
+        bar.nextSibling.remove();
+      }
+      bar.insertAdjacentHTML("afterend", html);
+      bind(step);
+    }
+
+    function bind(step) {
+      if (step === "edit-email") {
+        var input = root.querySelector(".activate-new-email");
+        var submit = root.querySelector(".activation-controls .btn-primary");
+        input.addEventListener("input", function () {
+          submit.disabled = input.value === (created.email || "");
+        });
+        submit.addEventListener("click", function () {
+          var newEmail = input.value;
+          changeActivationEmail({ email: newEmail })
+            .then(function () {
+              created.email = newEmail;
+              transitionTo("resent");
+            })
+            .catch(popupAjaxError);
+        });
+        root.querySelector(".edit-cancel").addEventListener("click", function () {
+          transitionTo("index");
+        });
+        return;
+      }
+      var resend = root.querySelector(".activation-controls .resend");
+      if (resend) {
+        resend.addEventListener("click", function () {
+          resendActivationEmail(created.username).then(function () {
+            transitionTo("resent");
+          });
+        });
+      }
+      var editEmail = root.querySelector(".activation-controls .edit-email");
+      if (editEmail) {
+        editEmail.addEventListener("click", function () {
+          transitionTo("edit-email");
+        });
+      }
+    }
+
+    bind(stepOf(location.pathname));
+    window.addEventListener("popstate", function onPop(event) {
+      if (!document.contains(root)) {
+        window.removeEventListener("popstate", onPop);
+        return;
+      }
+      // A page htmx keeps in its history comes back from there.
+      if (event.state && event.state.htmx) {
+        return;
+      }
+      if (location.pathname.indexOf("/account-created") !== -1) {
+        draw(stepOf(location.pathname));
+      }
+    });
+  }
+
   // ---- The login-required front page, login-preferences --------------
 
   function staticPages() {
@@ -2518,20 +2727,7 @@
         window.location = base() + "/login";
       });
     }
-    // account-created's ActivationControls, whose routes wait on
-    // users#send_activation_email and users#update_activation_email.
-    var resend = document.querySelector(".account-created .activation-controls .resend");
-    if (resend) {
-      resend.addEventListener("click", function () {
-        refuse("resending the activation email (users#send_activation_email)");
-      });
-    }
-    var editEmail = document.querySelector(".account-created .activation-controls .edit-email");
-    if (editEmail) {
-      editEmail.addEventListener("click", function () {
-        refuse("changing the activation email (account-created.edit-email)");
-      });
-    }
+    accountCreatedPage();
     if (D.page === "login-preferences") {
       var button = document.querySelector("#main-outlet > .container .btn-primary");
       if (button) {
