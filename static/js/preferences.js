@@ -1038,22 +1038,35 @@
     }
   }
 
-  // PushNotificationSelect: DesktopNotifications' support and permission.
+  // PushNotificationSelect over the desktop-notifications service
+  // (static/js/desktop-notifications.js): the not-supported or denied
+  // button, else the select showing the saved level only while this
+  // browser is subscribed.
+  var pushSilent = false;
+
   function pushSetup() {
     var config = document.querySelector(".push-notification-config");
     if (!config) {
       return;
     }
+    var service = Discourse.desktopNotifications;
+    if (!service) {
+      // Its script is deferred; this one runs with the markup.
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", pushSetup, { once: true });
+      }
+      return;
+    }
     var l = JSON.parse(config.dataset.labels || "{}");
-    var supported = "Notification" in window && "serviceWorker" in navigator;
-    if (!supported) {
+    var chooser = config.querySelector(".push-notification-select");
+    if (service.isNotSupported()) {
       config.innerHTML =
         '<button class="btn btn-icon-text btn-default" disabled type="button">' +
         icon("bell-slash") +
         '<span class="d-button-label">' +
         escape(l.not_supported) +
         "</span></button>";
-    } else if (Notification.permission === "denied") {
+    } else if (service.isDeniedPermission()) {
       config.innerHTML =
         '<button class="btn btn-icon-text btn-default" disabled type="button">' +
         icon("bell-slash") +
@@ -1062,6 +1075,10 @@
         "</span></button> <span>" +
         escape(l.perm_denied_expl) +
         "</span>";
+    } else if (chooser && service.isSubscribed()) {
+      // `value`: chat_only without chat (no such row) reads as all.
+      var level = config.dataset.level || "all";
+      pushShow(chooser, chooser.querySelector('.select-kit-row[data-value="' + level + '"]') ? level : "all");
     }
     // The control group's children as the component leaves them.
     while (config.firstChild) {
@@ -1070,15 +1087,51 @@
     config.remove();
   }
 
+  // The select showing a value that isn't the member's choosing.
+  function pushShow(chooser, value) {
+    pushSilent = true;
+    setValue(chooser, value);
+    pushSilent = false;
+    delete chooser.dataset.dirty;
+  }
+
+  // persistLevel: the model's too, which Save Changes sends again.
+  function pushPersist(value) {
+    var f = form();
+    var attrs = JSON.parse(f.dataset.saveAttrs || "{}");
+    if ("push_notification_level" in attrs) {
+      attrs.push_notification_level = value;
+      f.dataset.saveAttrs = JSON.stringify(attrs);
+    }
+    return ajax("PUT", form().dataset.saveUrl.replace(base(), ""), { push_notification_level: value }).catch(
+      popupAjaxError
+    );
+  }
+
+  // PushNotificationSelect#onChange
   function pushLevelChanged(chooser, value) {
-    if (value === "none") {
-      ajax("PUT", form().dataset.saveUrl.replace(base(), ""), { push_notification_level: "none" }).catch(
-        popupAjaxError
-      );
+    if (pushSilent) {
       return;
     }
-    setValue(chooser, "none");
-    unported("subscribing to push notifications (186)");
+    delete chooser.dataset.dirty;
+    var service = Discourse.desktopNotifications;
+    if (value === "none") {
+      service.disable().then(function () {
+        pushPersist("none");
+      });
+      return;
+    }
+    if (service.isSubscribed()) {
+      pushPersist(value);
+      return;
+    }
+    service.enable().then(function () {
+      if (!service.isSubscribed()) {
+        pushShow(chooser, "none");
+        return;
+      }
+      pushPersist(value);
+    });
   }
 
   // UsernamePreference

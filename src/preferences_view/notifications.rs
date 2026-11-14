@@ -111,7 +111,9 @@ pub fn render(p: &Prefs, n: &Notifications) -> Result<(String, Map<String, Value
 
     // PushNotificationSelect: the push levels; static/js/preferences.js
     // swaps in the not-supported or denied button from the browser's
-    // permission, and subscribing (DesktopNotifications#enable) is 186's.
+    // permission and picks the saved level (data-level) once the browser
+    // is subscribed (static/js/desktop-notifications.js). Subscribing to
+    // push (DesktopNotifications#enable's other branch) is 186's.
     let mut levels = vec![
         (
             "none".to_string(),
@@ -130,7 +132,7 @@ pub fn render(p: &Prefs, n: &Notifications) -> Result<(String, Map<String, Value
         ));
     }
     out.push_str(&format!(
-        "<div class=\"control-group desktop-notifications\" data-setting-name=\"user-desktop-notifications\"><div class=\"push-notification-config\" data-labels=\"{}\" data-unported=\"subscribing to push notifications (186)\"><label class=\"sr-only\">{}</label>{}</div><div class=\"instructions\">{}</div><span></span></div>",
+        "<div class=\"control-group desktop-notifications\" data-setting-name=\"user-desktop-notifications\"><div class=\"push-notification-config\" data-labels=\"{}\" data-level=\"{}\"><label class=\"sr-only\">{}</label>{}</div><div class=\"instructions\">{}</div><span></span></div>",
         escape(
             &serde_json::json!({
                 "not_supported": t(cx, "user.desktop_notifications.not_supported"),
@@ -139,6 +141,7 @@ pub fn render(p: &Prefs, n: &Notifications) -> Result<(String, Map<String, Value
             })
             .to_string()
         ),
+        escape(p.option("push_notification_level").as_str().unwrap_or("all")),
         escape(&t(cx, "user.desktop_notifications.push_level.title")),
         combo(
             cx,

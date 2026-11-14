@@ -264,6 +264,9 @@ pub struct Chrome {
     /// The emoji picker's template for UserStatusModal's picker, for a
     /// member with enable_user_status.
     pub user_status_picker: String,
+    /// static/js/desktop-notifications.js's script attributes
+    /// (crate::notifications::desktop::script_attrs), for a member.
+    pub desktop_notifications_attrs: String,
     /// static/js/bookmark-modal.js's script attributes
     /// (crate::bookmarks::modal_script_attrs), for a member.
     pub bookmark_modal_attrs: String,
@@ -1392,6 +1395,14 @@ impl Site {
                     .fetch_optional(&mut *conn)
                     .await?
                     .flatten();
+            self.chrome.desktop_notifications_attrs = crate::notifications::desktop::script_attrs(
+                &state.i18n,
+                &self.base_path,
+                &settings.get("title")?.to_s(),
+                &self.chrome.logo_small_url,
+                &self.chrome.logo_url,
+                settings.get("push_notifications_prompt")?.truthy(),
+            );
             self.chrome.bookmark_modal_attrs = crate::bookmarks::modal_script_attrs(
                 &state.i18n,
                 &self.base_path,

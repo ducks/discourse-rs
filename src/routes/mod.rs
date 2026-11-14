@@ -3301,6 +3301,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/messages-dropdown.js", get(asset))
         .route("/assets/users-directory.js", get(asset))
+        .route("/assets/desktop-notifications.js", get(asset))
         .route("/assets/user-menu.js", get(asset))
         .route("/assets/user-status.js", get(asset))
         .route("/assets/user-notifications.js", get(asset))
