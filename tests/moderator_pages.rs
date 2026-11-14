@@ -402,7 +402,7 @@ async fn the_header_avatar_badge_shows_the_first_that_applies() {
     let (_, html) = moderator.page("/latest").await;
     assert!(
         toggle_button(&html).ends_with(
-            r##"class="avatar"><a aria-label="3 new reviewables" class="badge-notification with-icon new-reviewables" href="#" title="3 new reviewables"><svg class="fa d-icon d-icon-flag svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#flag"></use></svg></a>"##
+            r##"class="avatar" data-all-unread="0" data-unseen-reviewables="3"><a aria-label="3 new reviewables" class="badge-notification with-icon new-reviewables" href="#" title="3 new reviewables"><svg class="fa d-icon d-icon-flag svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#flag"></use></svg></a>"##
         ),
         "{}",
         toggle_button(&html)
@@ -428,7 +428,7 @@ async fn the_header_avatar_badge_shows_the_first_that_applies() {
     let (_, html) = moderator.page("/latest").await;
     assert!(
         toggle_button(&html).ends_with(
-            r##"class="avatar"><a aria-label="1 new message notification" class="badge-notification with-icon new-pms" href="#" title="1 new message notification"><svg class="fa d-icon d-icon-envelope svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#envelope"></use></svg></a>"##
+            r##""><a aria-label="1 new message notification" class="badge-notification with-icon new-pms" href="#" title="1 new message notification"><svg class="fa d-icon d-icon-envelope svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#envelope"></use></svg></a>"##
         ),
         "{}",
         toggle_button(&html)
@@ -445,7 +445,7 @@ async fn the_header_avatar_badge_shows_the_first_that_applies() {
     let (_, html) = moderator.page("/latest").await;
     assert!(
         toggle_button(&html).ends_with(
-            r##"class="avatar"><div class="do-not-disturb-background" title="Notifications paused"><svg class="fa d-icon d-icon-discourse-dnd svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#discourse-dnd"></use></svg></div>"##
+            r##"" data-do-not-disturb><div class="do-not-disturb-background" title="Notifications paused"><svg class="fa d-icon d-icon-discourse-dnd svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#discourse-dnd"></use></svg></div>"##
         ),
         "{}",
         toggle_button(&html)
@@ -477,7 +477,7 @@ async fn the_header_avatar_badge_shows_the_first_that_applies() {
     let (_, html) = moderator.page("/latest").await;
     assert!(
         toggle_button(&html).ends_with(
-            r##"class="avatar"><a aria-label="Notifications" class="badge-notification unread-notifications" href="#" title="2 unseen notifications">2</a>"##
+            r##"class="avatar" data-all-unread="2" data-unseen-reviewables="0"><a aria-label="Notifications" class="badge-notification unread-notifications" href="#" title="2 unseen notifications">2</a>"##
         ),
         "{}",
         toggle_button(&html)
@@ -490,7 +490,8 @@ async fn the_header_avatar_badge_shows_the_first_that_applies() {
         .unwrap();
     let (_, html) = moderator.page("/latest").await;
     assert!(
-        toggle_button(&html).ends_with(r#"class="avatar">"#),
+        toggle_button(&html)
+            .ends_with(r#"class="avatar" data-all-unread="0" data-unseen-reviewables="0">"#),
         "{}",
         toggle_button(&html)
     );

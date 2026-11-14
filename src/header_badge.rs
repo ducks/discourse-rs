@@ -75,6 +75,22 @@ impl Badge {
             .is_some_and(|until| until >= crate::clock::now_naive())
     }
 
+    /// The counts d-document sums for the tab title (`_updateNotifications`)
+    /// and `isInDoNotDisturb`, as the avatar's attributes for
+    /// static/js/document-title.js.
+    pub fn count_attrs(&self) -> String {
+        format!(
+            r#" data-all-unread="{}" data-unseen-reviewables="{}"{}"#,
+            self.all_unread,
+            self.unseen_reviewables,
+            if self.in_do_not_disturb() {
+                " data-do-not-disturb"
+            } else {
+                ""
+            }
+        )
+    }
+
     /// The badge's markup, empty when nothing applies.
     pub fn html(&self, i18n: &I18n) -> String {
         let t_count = |key: &str, count: i64| {
@@ -131,11 +147,11 @@ impl Badge {
     }
 }
 
-/// What the toggle-current-user button holds: the member's avatar, their
-/// status (UserStatusBubble), then the badge.
-pub fn toggle_contents(avatar_url: &str, status: &str, badge: &str) -> String {
+/// What the toggle-current-user button holds: the member's avatar (with
+/// `Badge::count_attrs`), their status (UserStatusBubble), then the badge.
+pub fn toggle_contents(avatar_url: &str, counts: &str, status: &str, badge: &str) -> String {
     format!(
-        r#"<img alt="" width="48" height="48" src="{}" class="avatar">{status}{badge}"#,
+        r#"<img alt="" width="48" height="48" src="{}" class="avatar"{counts}>{status}{badge}"#,
         attr(avatar_url)
     )
 }

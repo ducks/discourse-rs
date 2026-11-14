@@ -1023,6 +1023,13 @@
       ]
     },
     {
+      "name": "document-title.js",
+      "content_type": "js",
+      "files": [
+        "js/document-title.js"
+      ]
+    },
+    {
       "name": "user-status.js",
       "content_type": "js",
       "files": [
