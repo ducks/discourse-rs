@@ -689,6 +689,10 @@ async fn show_list(
             .chrome
             .discovery_body_classes(&[&tag_class, "tags-page"]),
     }
+    // DiscoveryListController#createTopic: the new topic starts with the
+    // list's tags, `none` and `all` aside (composer.js filters them as
+    // composer.openNewTopic does).
+    let mut create_tags = vec![tag.as_ref().map_or(tag_name.clone(), |t| t.name.clone())];
     if intersection {
         // DNavigation on an intersection: the breadcrumbs with
         // TagsIntersectionChooser and no pills. The other tags are named as
@@ -720,6 +724,7 @@ async fn show_list(
         let options =
             crate::composer::view::TagChooser::load(&settings, &guardian)?.options(&state.i18n);
         page.breadcrumbs = crate::html::tags_intersection_breadcrumbs(&state.i18n, &options, &tags);
+        create_tags.extend(tags.into_iter().skip(1).map(|t| t.name));
     } else {
         page.tag = Some(crate::html::TagHeading {
             name: tag_name.clone(),
@@ -729,6 +734,8 @@ async fn show_list(
             },
         });
     }
+    create_tags.retain(|t| t != "none" && t != "all");
+    page.create_tags = create_tags.join(",");
     // The tag's own page: its info and edit buttons, the TagInfo panel and
     // a member's notification level in it.
     if category.is_none()
@@ -741,13 +748,34 @@ async fn show_list(
         page.tag_info = controls.info;
         page.category_controls = controls.notifications;
         // The tag's navigation: its breadcrumbs and filter pills.
-        page.breadcrumbs = crate::html::tag_breadcrumbs(&state.i18n, &t.name, t.id);
+        page.breadcrumbs = crate::html::tag_breadcrumbs(
+            &state.i18n,
+            crate::html::TagCrumb::Tag {
+                name: &t.name,
+                id: t.id,
+            },
+        );
         page.nav = crate::html::tag_nav_items(
             &state.i18n,
             &settings,
             &base_path,
             &t.url(&base_path),
-            t.id,
+            Some(t.id),
+            kind.name(),
+            page.chrome.tracking.as_ref(),
+        )?;
+    }
+    // The untagged list: TagDrop's "no tags" and NavItem.pathFor's
+    // `/tag/none/l/<filter>` pills, counted as the site's (no tag id).
+    if category.is_none() && !intersection && tag.is_none() && no_tags {
+        page.breadcrumbs =
+            crate::html::tag_breadcrumbs(&state.i18n, crate::html::TagCrumb::Untagged);
+        page.nav = crate::html::tag_nav_items(
+            &state.i18n,
+            &settings,
+            &base_path,
+            &format!("{base_path}/tag/none"),
+            None,
             kind.name(),
             page.chrome.tracking.as_ref(),
         )?;

@@ -646,3 +646,100 @@ async fn tag_intersections_list_the_topics_with_every_tag() {
     let (status, _, _) = get(&db.pool, "/tags/intersection/howto/guide.json").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+/// DiscoveryListController#createTopic: New Topic on a tag's list carries
+/// the list's tags (`none` aside) for composer.js, with the category on a
+/// tag's list in one. Source-derived (the chrome is Ember's).
+#[tokio::test]
+async fn new_topic_on_a_tag_list_carries_its_tags() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut member = common::chat_client::Client::logged_in(app_state, "user1").await;
+    let button = |html: &str| {
+        html.split(r#"id="create-topic" type="button""#)
+            .nth(1)
+            .expect("the new topic button")
+            .split('>')
+            .next()
+            .unwrap()
+            .to_string()
+    };
+    for (path, attrs) in [
+        ("/tag/howto/1", r#" data-tags="howto""#),
+        ("/tag/howto/1/l/top", r#" data-tags="howto""#),
+        (
+            "/tags/c/general/4/howto/1",
+            r#" data-category="4" data-tags="howto""#,
+        ),
+        (
+            "/tags/intersection/howto/guide",
+            r#" data-tags="howto,guide""#,
+        ),
+        // A tag nothing has is named as given (TagShowRoute's additionalTags).
+        (
+            "/tags/intersection/howto/nope",
+            r#" data-tags="howto,nope""#,
+        ),
+        // The untagged lists start with no tag.
+        ("/tag/none", ""),
+        ("/tags/c/general/4/none", r#" data-category="4""#),
+        ("/latest", ""),
+        ("/c/general/4", r#" data-category="4""#),
+    ] {
+        let (status, html) = member.page(path).await;
+        assert_eq!(status, 200, "{path}");
+        assert_eq!(button(&html), attrs, "{path}");
+    }
+}
+
+/// DNavigation on the untagged list without a category (`/tag/none`):
+/// BreadCrumbs' category drop with nothing selected and TagDrop's "no
+/// tags", and NavItem.pathFor's `/tag/none/l/<filter>` pills, categories
+/// at /categories. Source-derived (the chrome is Ember's).
+#[tokio::test]
+async fn the_untagged_list_draws_its_navigation() {
+    let db = TestDb::new().await;
+    let (status, _, html) = get(&db.pool, "/tag/none").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(!html.contains(r#"class="tag-heading""#));
+    assert!(html.contains(r#"<section class="navigation-container">"#));
+    assert!(html.contains(r#"<ol class="category-breadcrumb"><li><details class="select-kit single-select combobox combo-box category-drop category-breadcrumb__category-selector">"#));
+    assert!(html.contains(
+        r#"<details class="select-kit single-select combobox combo-box tag-drop tag-none">"#
+    ));
+    assert!(html.contains(r#"data-name="no tags" data-value="""#));
+    assert!(
+        html.contains(
+            r#"<a aria-current="page" class="active" href="/tag/none/l/latest">Latest</a>"#
+        )
+    );
+    assert!(html.contains(r#"href="/tag/none/l/hot""#));
+    assert!(html.contains(r#"href="/categories""#));
+    assert!(html.contains("nav-item_categories"));
+    // No tag, so none of a tag's own controls.
+    assert!(!html.contains(r#"id="show-tag-info""#));
+
+    // The pills' lists, the filter's pill the active one.
+    let (status, _, html) = get(&db.pool, "/tag/none/l/hot").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        html.contains(r#"<a aria-current="page" class="active" href="/tag/none/l/hot">Hot</a>"#)
+    );
+
+    // What navigation-bar.js links from the category drop there and on a
+    // tag's list, an intersection's main tag by its name where it has no id.
+    for path in [
+        "/tags/c/general/4/none",
+        "/tags/c/general/4/howto/1",
+        "/tags/c/site-feedback/2/none",
+    ] {
+        let (status, _, _) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}");
+    }
+    let (status, location, _) = get(&db.pool, "/tags/c/general/4/howto").await;
+    assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    assert_eq!(
+        location.as_deref(),
+        Some("http://test.localhost/tags/c/general/4/howto/1")
+    );
+}

@@ -1545,6 +1545,9 @@ pub struct LatestPage {
     pub heading: Option<CategoryHeading>,
     /// Set on tag pages (list.erb's tag breadcrumb).
     pub tag: Option<TagHeading>,
+    /// The tags the new topic button starts with, comma separated: a
+    /// tag list's own (DiscoveryListController#createTopic).
+    pub create_tags: String,
     /// A tag's page: the TagInfo panel its info button shows, hidden.
     pub tag_info: String,
     /// The list kept live (`latest`, `new`, `unread`), empty for none.
@@ -2138,8 +2141,8 @@ fn breadcrumb_drop(
 }
 
 /// BreadCrumbs on a tag's list: the category drop, closed, then the tag
-/// drop with the tag selected.
-pub fn tag_breadcrumbs(i18n: &I18n, tag_name: &str, tag_id: i32) -> String {
+/// drop with the tag selected (`no tags` on the untagged list).
+pub fn tag_breadcrumbs(i18n: &I18n, tag: TagCrumb<'_>) -> String {
     use crate::topic_list_view::escape;
     let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
     let categories = t("categories.categories_label");
@@ -2157,13 +2160,7 @@ pub fn tag_breadcrumbs(i18n: &I18n, tag_name: &str, tag_id: i32) -> String {
         None,
         None,
     ));
-    out.push_str(&tag_drop(
-        i18n,
-        TagCrumb::Tag {
-            name: tag_name,
-            id: tag_id,
-        },
-    ));
+    out.push_str(&tag_drop(i18n, tag));
     out.push_str("</ol>");
     out
 }
@@ -2282,13 +2279,14 @@ fn tag_drop(i18n: &I18n, tag: TagCrumb<'_>) -> String {
 }
 
 /// The navigation pills on a tag's list: the top menu's filters under
-/// the tag (`/tag/:slug/:id/l/:filter`), categories to /categories.
+/// the tag (`/tag/:slug/:id/l/:filter`), categories to /categories. The
+/// untagged list (`/tag/none`) has no `tag_id` and keeps the site's counts.
 pub fn tag_nav_items(
     i18n: &I18n,
     settings: &SiteSettings,
     base_path: &str,
     tag_url: &str,
-    tag_id: i32,
+    tag_id: Option<i32>,
     active: &str,
     tracking: Option<&crate::topic_tracking_report::Tracking>,
 ) -> Result<Vec<NavItem>, SettingError> {
@@ -2297,6 +2295,10 @@ pub fn tag_nav_items(
         .map(|mut item| {
             if item.name != "categories" {
                 item.href = format!("{tag_url}/l/{}", item.name);
+            }
+            if item.name != "categories"
+                && let Some(tag_id) = tag_id
+            {
                 // lookupCount within the tag.
                 let count = match tracking {
                     Some(_) if item.name == "latest" && !crate::mobile::mobile_view() => 0,
@@ -3221,6 +3223,7 @@ pub async fn latest_page(
         rows,
         heading: None,
         tag: None,
+        create_tags: String::new(),
         tag_info: String::new(),
         live_filter: String::new(),
         live_since: String::new(),
@@ -4440,6 +4443,11 @@ impl LatestPage {
         self.heading.as_ref().map(|h| h.id)
     }
 
+    /// The tags the new topic button starts with, on a tag's list.
+    pub fn heading_tags(&self) -> &str {
+        &self.create_tags
+    }
+
     /// The footer draws EmptyTopicFilter, whose button needs its script.
     pub fn empty_filter(&self) -> bool {
         self.list_bottom.contains("--empty-topic-filter")
@@ -4450,6 +4458,11 @@ impl CategoriesPage {
     /// No category preselected on the categories page.
     pub fn heading_id(&self) -> Option<i32> {
         None
+    }
+
+    /// No tags preselected on the categories page.
+    pub fn heading_tags(&self) -> &str {
+        ""
     }
 
     /// TopicDismissButtons' top row: the categories page has no list to

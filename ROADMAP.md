@@ -5358,7 +5358,20 @@ route table has been made, so this list may be short.
     headings go. A plain tag list with a `category` param stays the
     tag's own page, as Rails redirects only a wrong slug or a name to
     the /tags/c form. Left: the category and tag edit buttons
-    (TagCategoryAdminDropdown) and the composer's tag there); the
+    (TagCategoryAdminDropdown) and ~~the composer's tag there~~ (done in
+    `feat/tag-page-chrome-rest`: DiscoveryListController#createTopic,
+    the New Topic button's `data-tags` beside its `data-category` on a
+    tag's list, a tag's in a category and an intersection (all its
+    tags, the others as the list names them), `none` and `all` never;
+    composer.js sends them through composer.openNewTopic's filterTags
+    and topicTags, so a member gets none of the staff-only ones and
+    nobody who may not tag topics any. The untagged list without a
+    category, /tag/none, drew no navigation at all: it has BreadCrumbs'
+    category drop and TagDrop's `no tags` now and NavItem.pathFor's
+    `/tag/none/l/<filter>` pills with the site's counts, and so its New
+    Topic button. Left: a category the member can't create topics in
+    is not listed read-only from the button, as it is from the
+    new-topic route)); the
     welcome banner and its classes on a
     category's or a tag's list under welcome_banner_page_visibility
     discovery or all_pages (only latest, the filters and categories ask
@@ -5380,8 +5393,17 @@ route table has been made, so this list may be short.
     change goes where onChange does: `/tags/intersection/<main>/...`
     while the main tag stays, `/tag/<slug>/<id>` once it is alone, the
     others' intersection or `/tag/<name>` when it goes, `/tags` for
-    none; the port's heading goes. Left: New Topic there opens without
-    the tags, the category drop's rows go to the category alone), the
+    none; the port's heading goes. Left: ~~New Topic there opens without
+    the tags, the category drop's rows go to the category alone~~ (done
+    in `feat/tag-page-chrome-rest`: the tags with the button above;
+    navigation-bar.js's category rows keep CategoryDrop's `@tag` as
+    getCategoryAndTagUrl does, an intersection's main tag alone at
+    `/tags/c/<category>/<slug>/<id>` (its name where it has no record),
+    `none` on the untagged lists, a tag's list as before, and All
+    categories goes back to `/tag/<slug>/<id>` or `/tag/none`. Left: the
+    drop itself is still the port's plain list (its shortcuts, a
+    `default_list_filter` category's `/all` and the no subcategories
+    row are not CategoryDrop's))), the
     category drop from its `category` param, the
     tagIntersection search context and the .rss feed); /filter's
     `navigation-filter` comes with item 197
