@@ -170,10 +170,9 @@ test("the contextual count is the latest list's new or updated topics", async ({
   option(m, "title_count_mode_key", 1);
   await login(context, m.name);
   await page.goto("/latest");
-  const plain = await page.title();
-  await expect(page.locator("#list-updates")).toBeEmpty();
-
-  // Other specs' topics count too: the title says what the banner does.
+  // Other specs' topics count too, and may already have by now: the
+  // title says what the banner does.
+  const plain = (await page.title()).replace(/^\(\d+\) /, "");
   const author = await session("user1");
   await topic(author, label("Title list count"), label("A topic the latest list's banner counts"));
   const banner = page.locator("#list-updates > a[data-count]");
