@@ -246,6 +246,10 @@ impl Mover<'_, '_> {
             return Ok(Moved::InvalidParameters("Discourse::InvalidParameters"));
         };
         let mut tx = pool.begin().await?;
+        // The original's row before the new topic's category is counted
+        // (move_posts_to locks it after): a topic's row goes before its
+        // category's everywhere else, as when the original closes.
+        lock_topics(&mut tx, &[self.original_id]).await?;
         let topic_id = match self
             .create_topic(&mut tx, title, category_id, author_id, created_at)
             .await?
@@ -314,6 +318,15 @@ impl Mover<'_, '_> {
         .await?;
         Ok(Moved::Done(topic_id))
     }
+}
+
+/// The topics' rows locked in id order, as `Topic#lock!` locks one.
+async fn lock_topics(conn: &mut PgConnection, ids: &[i32]) -> Result<(), sqlx::Error> {
+    sqlx::query("SELECT id FROM topics WHERE id = ANY($1) ORDER BY id FOR UPDATE")
+        .bind(ids)
+        .execute(&mut *conn)
+        .await?;
+    Ok(())
 }
 
 async fn load_dest(conn: &mut PgConnection, topic_id: i32) -> Result<Dest, sqlx::Error> {
@@ -475,10 +488,11 @@ impl Mover<'_, '_> {
         if !self.guardian.can_see_topic(s, &topic_ctx, true, &secure)? {
             return Ok(Some(Moved::Forbidden));
         }
-        sqlx::query("SELECT id FROM topics WHERE id = $1 FOR UPDATE")
-            .bind(self.original_id)
-            .execute(&mut *conn)
-            .await?;
+        // @original_topic.lock!, and the destination's row with it in id
+        // order: its statistics are written last, and two moves between
+        // the same topics in opposite directions deadlock, each on the
+        // other's original.
+        lock_topics(&mut *conn, &[self.original_id, dest.id]).await?;
         self.ensure_acting_user_is_allowed_in_destination(conn, dest.id)
             .await?;
         // posts: by the given ids, no small actions, no empty raw, by
