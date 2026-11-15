@@ -7,12 +7,20 @@
 //   chat-new-message.js, and the section's filter and sort submenus
 //   (ChatChannelListFilterMenu, ChatChannelListSortMenu), saved as the
 //   member's chat_channel_list_* options (PUT /u/:username.json) and the
-//   page drawn again. ChatChannelListFilterToggle and toggleChannelFilter
-//   go back to all.
-// - A sidebar channel link's hover button opens
+//   page drawn again. ChatChannelListFilterToggle, the sidebar headers'
+//   toggleChannelFilter and the filtered empty state's button set the
+//   section's filter aside or apply it again (ChatChannelListPreferences'
+//   bypassed filters), kept in the chat_list_filter_bypass session cookie
+//   the server draws the lists by (plugins/chat/list_bypass.rs).
+// - A sidebar channel link's hover button and a long press on a list's
+//   ChatChannelRow (ChatOnLongPress, on a touch device) open
 //   ChatChannelSidebarContextMenu: the notification submenu (levels and
 //   mute, PUT notifications-settings/me), the channel's settings, star
 //   and unstar (PUT memberships/me), and leaving.
+// - In the mobile view on a touch device, swiping a row left past a third
+//   of the window leaves a DM (DELETE memberships/me/follows) or marks a
+//   channel with unreads read (PUT channels/:id/read), ChatChannelRow's
+//   handleSwipe.
 // - The browse page's New channel button and the menu's New channel open
 //   ChatModalCreateChannel: name, slug (POST /slugs.json), description,
 //   the category with the security hint (GET
@@ -144,6 +152,18 @@
     go(path);
   }
 
+  // The lists drawn again for a bypassed or applied filter: the open
+  // drawer's route with the sidebar's chat sections (the page under it
+  // stays), else the page.
+  function redrawLists() {
+    var drawer = Discourse.chatDrawer;
+    if (drawer && drawer.isActive && drawer.isActive() && Discourse.chat && Discourse.chat.refresh) {
+      Discourse.chat.refresh().catch(popupError);
+      return;
+    }
+    go(location.pathname.slice(basePath().length) + location.search);
+  }
+
   function item(inner, cls) {
     return '<li class="dropdown-menu__item' + (cls ? " " + cls : "") + '" role="none">' + inner + "</li>";
   }
@@ -187,10 +207,44 @@
     return prefs[kind] || (kind === "filter" ? "all" : "alphabetical");
   }
 
+  // The sections whose filter is bypassed (_bypassedFilters).
+  var BYPASS_COOKIE = "chat_list_filter_bypass";
+
+  function bypassedSections() {
+    var match = new RegExp("(?:^|; )" + BYPASS_COOKIE + "=([^;]*)").exec(document.cookie);
+    return (match ? match[1] : "").split(".").filter(function (name) {
+      return FIELDS[name];
+    });
+  }
+
+  function isBypassed(section) {
+    return bypassedSections().indexOf(section) !== -1;
+  }
+
+  // showAllChannels and applyFilter
+  function setBypassed(section, on) {
+    var sections = bypassedSections().filter(function (name) {
+      return name !== section;
+    });
+    if (on) {
+      sections.push(section);
+    }
+    var path = "; path=" + (basePath() || "/") + "; SameSite=Lax";
+    document.cookie = sections.length
+      ? BYPASS_COOKIE + "=" + sections.join(".") + path
+      : BYPASS_COOKIE + "=" + path + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+
+  // setFilter applies the section's filter before it saves, and sets it
+  // aside again when the save fails.
   function savePreference(section, kind, value) {
     var field = FIELDS[section][kind];
     var data = {};
     data[field] = value;
+    var bypassed = kind === "filter" && isBypassed(section);
+    if (bypassed) {
+      setBypassed(section, false);
+    }
     return request("PUT", "/u/" + encodeURIComponent(cfg.username || "") + ".json", data)
       .then(function () {
         cfg.prefs = cfg.prefs || {};
@@ -198,7 +252,12 @@
         cfg.prefs[section][kind] = value;
         reload();
       })
-      .catch(popupError);
+      .catch(function (error) {
+        if (bypassed) {
+          setBypassed(section, true);
+        }
+        popupError(error);
+      });
   }
 
   // ChatChannelListFilterMenu and ChatChannelListSortMenu.
@@ -314,14 +373,16 @@
 
   // ChatChannelSidebarContextMenu, from the channel as the API serializes
   // it for the member.
-  function contextMenu(trigger) {
+  function sidebarContextMenu(trigger) {
     var link = trigger.closest(".sidebar-section-link-wrapper");
     var anchor = link && link.querySelector("[class*='channel-']");
     var match = anchor && /(?:^|\s)channel-(\d+)/.exec(anchor.className);
-    if (!match) {
-      return;
+    if (match) {
+      contextMenu(trigger, match[1]);
     }
-    var id = match[1];
+  }
+
+  function contextMenu(trigger, id) {
     request("GET", "/chat/api/channels/" + id)
       .then(function (body) {
         var c = body.channel;
@@ -819,14 +880,16 @@
       event.preventDefault();
       optionsMenu(trigger);
     } else if (
-      // The invites tab's empty state has the same identifier
-      // (user-invited/show.gjs); its button is the invite modal's.
-      (trigger = target.closest(
-        ".chat-channel-list-filter-toggle, [data-sidebar-action-id='toggleChannelFilter'], .--empty-channels-list .empty-state__cta button:not([data-href]):not(.invite-button)"
-      ))
+      (trigger = target.closest(".chat-channel-list-filter-toggle, [data-sidebar-action-id='toggleChannelFilter']"))
     ) {
+      // toggleFilter
       event.preventDefault();
-      savePreference(sectionOf(trigger), "filter", "all");
+      setBypassed(sectionOf(trigger), !isBypassed(sectionOf(trigger)));
+      redrawLists();
+    } else if ((trigger = target.closest(".--empty-channels-list .empty-state__cta button[data-action='showAllChannels']"))) {
+      event.preventDefault();
+      setBypassed(sectionOf(trigger), true);
+      redrawLists();
     } else if ((trigger = target.closest(".c-navbar__new-channel-button"))) {
       event.preventDefault();
       createChannel();
@@ -837,8 +900,193 @@
     ) {
       event.preventDefault();
       event.stopPropagation();
-      contextMenu(trigger);
+      sidebarContextMenu(trigger);
     }
+  });
+
+  // ChatOnLongPress on a ChatChannelRow: the row shows pressed after
+  // 125ms and the menu opens at 400ms, unless the touch moves or ends
+  // first; the release then clicks nothing (not the row's link, nor the
+  // mobile menu's backdrop now under the finger).
+  var LONG_PRESS_MS = 400;
+  var press = null;
+
+  function suppress(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function cancelPress() {
+    if (!press) {
+      return;
+    }
+    var row = press.row;
+    clearTimeout(press.activation);
+    clearTimeout(press.timeout);
+    row.classList.remove("is-long-pressed");
+    row.removeEventListener("contextmenu", suppress);
+    if (press.fired) {
+      setTimeout(function () {
+        document.removeEventListener("click", suppress, true);
+      }, 200);
+    }
+    press = null;
+  }
+
+  function touchDevice() {
+    return document.documentElement.classList.contains("discourse-touch");
+  }
+
+  function mobileView() {
+    return document.documentElement.classList.contains("mobile-view");
+  }
+
+  // ChatChannelRow's swipe, on a DM or a channel with unreads.
+  var swipe = null;
+
+  function swipeStart(row, touch) {
+    var content = row.querySelector(".chat-channel-row__content");
+    var dm = content && content.classList.contains("is-dm");
+    if (!content || !mobileView() || !(dm || row.classList.contains("has-unread"))) {
+      return;
+    }
+    swipe = { row: row, content: content, dm: dm, x: touch.clientX, atThreshold: false };
+  }
+
+  function swipeMove(touch) {
+    var threshold = window.innerWidth / 3;
+    var diff = swipe.x - touch.clientX;
+    swipe.atThreshold = diff >= threshold;
+    swipe.content.classList.remove("-animate-reset");
+    var button = swipe.row.querySelector(".chat-channel-row__action-btn");
+    if (!button) {
+      button = document.createElement("div");
+      button.innerHTML = icon(swipe.dm ? "circle-xmark" : "circle-check");
+      swipe.row.appendChild(button);
+    }
+    button.className =
+      "chat-channel-row__action-btn " +
+      (swipe.dm ? "--remove" : "--clear") +
+      (swipe.atThreshold ? " -at-threshold" : " -not-at-threshold");
+    // Back to the start when swiping very fast.
+    if (diff > 25) {
+      if (swipe.atThreshold) {
+        diff = threshold + (diff - threshold) * 0.1;
+      }
+      swipe.content.style.marginRight = diff + "px";
+    } else {
+      swipe.content.style.marginRight = "0px";
+    }
+  }
+
+  function resetSwipe(s) {
+    var done = function () {
+      s.content.style.marginRight = "0px";
+      s.content.classList.remove("-animate-reset");
+      var button = s.row.querySelector(".chat-channel-row__action-btn");
+      if (button) {
+        button.remove();
+      }
+    };
+    // No transition runs from a row that hasn't moved.
+    if (getComputedStyle(s.content).marginRight === "0px") {
+      done();
+      return;
+    }
+    s.content.addEventListener("transitionend", done, { once: true });
+    s.content.classList.add("-animate-reset");
+  }
+
+  function swipeEnd() {
+    var s = swipe;
+    swipe = null;
+    if (!s.atThreshold) {
+      resetSwipe(s);
+      return;
+    }
+    var id = s.row.dataset.chatChannelId;
+    if (!s.dm) {
+      // #clearNotifications: the row's unreads go at once, then the
+      // channel is read up to its last message.
+      s.row.classList.remove("has-unread");
+      var indicator = s.row.querySelector(".chat-channel-unread-indicator");
+      if (indicator) {
+        indicator.remove();
+      }
+      resetSwipe(s);
+      request("GET", "/chat/api/channels/" + id)
+        .then(function (body) {
+          var last = body.channel.last_message && body.channel.last_message.id;
+          if (last) {
+            return request("PUT", "/chat/api/channels/" + id + "/read?message_id=" + last);
+          }
+        })
+        .catch(popupError);
+      return;
+    }
+    // onRemoveChannel: the row fades out, then the DM is left.
+    s.content.style.marginRight = "0px";
+    s.row.addEventListener(
+      "transitionend",
+      function () {
+        request("DELETE", "/chat/api/channels/" + id + "/memberships/me/follows")
+          .then(reload)
+          .catch(popupError);
+      },
+      { once: true }
+    );
+    s.row.classList.add("-fade-out");
+  }
+
+  document.addEventListener(
+    "touchstart",
+    function (event) {
+      var row = event.target.closest && event.target.closest(".chat-channel-row[data-chat-channel-id]");
+      if (!row || !touchDevice()) {
+        return;
+      }
+      swipe = null;
+      swipeStart(row, event.changedTouches[0]);
+      cancelPress();
+      if (event.touches.length > 1) {
+        return;
+      }
+      press = { row: row, fired: false };
+      row.addEventListener("contextmenu", suppress);
+      press.activation = setTimeout(function () {
+        row.classList.add("is-long-pressed");
+      }, 125);
+      press.timeout = setTimeout(function () {
+        var current = press;
+        clearTimeout(current.activation);
+        current.fired = true;
+        row.classList.remove("is-long-pressed");
+        document.addEventListener("click", suppress, true);
+        if (document.activeElement) {
+          document.activeElement.blur();
+        }
+        contextMenu(row, row.dataset.chatChannelId);
+      }, LONG_PRESS_MS);
+    },
+    { passive: true }
+  );
+  document.addEventListener(
+    "touchmove",
+    function (event) {
+      cancelPress();
+      if (swipe) {
+        swipeMove(event.changedTouches[0]);
+      }
+    },
+    { passive: true }
+  );
+  ["touchend", "touchcancel"].forEach(function (type) {
+    document.addEventListener(type, function () {
+      cancelPress();
+      if (swipe) {
+        swipeEnd();
+      }
+    });
   });
 
   Discourse.chatChannelMenus = { createChannel: createChannel };

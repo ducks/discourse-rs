@@ -1808,8 +1808,11 @@ with the viewport, guessing from the user agent without it
     the mobile composer's layout, /chat as the channels list with the
     chat footer. Left: the footer's ~~DMs~~ (done, 280), search, ~~starred~~
     (done, 162) and ~~threads~~ (done, 280; its threads with 160)
-    routes, the channel list options menu (desktop's too), swipe and long
-    press on a row, the list's filtered empty states (the unfiltered one done, 162)
+    routes, ~~the channel list options menu (desktop's too)~~ (found done
+    in `feat/chat-channel-create`, 216), ~~swipe and long press on a
+    row~~ (done in `feat/chat-list-filter`, 280a), ~~the list's filtered
+    empty states~~ (done in `feat/chat-list-filter`, 280a; the
+    unfiltered one done, 162)
 101. ~~`feat/header-search-menu`~~ (done) M: the desktop header's search
     button (not while the welcome banner's field is in view, nor on the
     full-page search and login) and the search menu it opens
@@ -5746,12 +5749,47 @@ route table has been made, so this list may be short.
     data-href hooks, the channel page's messages too (the line on the
     last message on both). Write cases parity/writes/chat/me_threads*;
     tests in tests/plugin_pages.rs. Left, split into 280a.
-    280a. `fix/chat-dm-thread-pages-rest` S: ~~the threads list with
+    280a. ~~`fix/chat-dm-thread-pages-rest`~~ (done) S: ~~the threads list with
     threads~~ (done with 160: UserThreads' rows and ThreadPreview; its
-    load more is 160a's), the DM list's filtered empty state
-    (ChatSidebarChannelListFilterEmptyState, refused), long press and
-    swipe on a row (99), the filter toggle's and list options' menus
-    (99). On rs-ref-a's headless Chromium `(hover: none)` matches on
+    load more is 160a's), ~~the DM list's filtered empty state
+    (ChatSidebarChannelListFilterEmptyState, refused)~~ (done in
+    `feat/chat-list-filter`: no longer refused since
+    `feat/chat-channel-create` drew it, but its Show all saved the
+    filter as all; now ChatChannelListPreferences' bypassed filters:
+    the empty state's Show all channels, ChatChannelListFilterToggle
+    and the sidebar's toggleChannelFilter set the section's filter aside
+    without saving it (the toggle and the sidebar header button then
+    "Apply filters to channels" with the filter icon, the sidebar
+    header's shown while bypassed too, channelListActions), the toggle
+    applies it again, and choosing a filter from the menu applies it
+    (setFilter), per section (channels, starred, dms), on the sidebar,
+    the full-page and drawer lists and the mobile navbars (the mobile
+    channels route's navbar gains the toggle,
+    ChatNavbarChannelListOptionsButton); the empty state's button no
+    longer opens the new message modal on the DM list. Ember keeps the
+    bypass in the service until the app reloads; the port keeps it in
+    a session cookie (chat_list_filter_bypass, plugins/chat/
+    list_bypass.rs) the server draws the lists by, so it lasts the
+    browser session. tests/chat_channel_create.rs,
+    tests/browser/chat-list-filter.spec.js), ~~long press and swipe on
+    a row (99)~~ (done in `feat/chat-list-filter`: ChatOnLongPress on
+    any list's ChatChannelRow on a touch device, is-long-pressed at
+    125ms, ChatChannelSidebarContextMenu at 400ms with the release's
+    click suppressed; in the mobile view handleSwipe on a DM or a
+    channel with unreads, the action button past 25px, a third of the
+    window to leave the DM (fade out, DELETE memberships/me/follows) or
+    mark the channel read (PUT channels/:id/read with its last message,
+    read from GET channels/:id as rows don't carry it), else the
+    animated reset; static/js/chat-channel-menus.js,
+    tests/browser/chat-list-gestures.spec.js. Deviations: marking read
+    updates the row, not the sidebar or footer counts, until the next
+    draw; the swipe measures clientX (Ember screenX, the same distance);
+    the release's click is suppressed page-wide for 200ms, not on the
+    row only, as the mobile menu's backdrop is then under the finger),
+    ~~the filter toggle's and list options' menus (99)~~ (found done in
+    `feat/chat-channel-create`: static/js/chat-channel-menus.js draws
+    ChatChannelListSidebarMenu with the filter and sort submenus and
+    the toggle; see 216). On rs-ref-a's headless Chromium `(hover: none)` matches on
     Discourse's pages (not on about:blank or the port's), so the
     reference shows the leave button without a hover; the CSS is the
     same and the port shows it on hover, as on a desktop with a mouse.
@@ -6305,8 +6343,9 @@ wait on come first (211-214). 39 items: 16 S, 1 S/M, 18 M, 4 L.
     record_invalid with the DM and channel kept, as Rails' service has no
     transaction (dm_create.rs). Tests: tests/chat_channel_create.rs.
     Deviations: the category chooser is a native select over /site.json's
-    categories (CategoryChooser is select-kit), the empty state's Show
-    all saves the filter as all (Ember bypasses it for the session), the
+    categories (CategoryChooser is select-kit), ~~the empty state's Show
+    all saves the filter as all (Ember bypasses it for the session)~~
+    (bypassed in `feat/chat-list-filter`, 280a), the
     context menu reads the channel from GET /chat/api/channels/:id.
     Left, as 216a.
     216a. ~~`feat/chat-channel-archive`~~ (done) M: archiving answered

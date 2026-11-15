@@ -1245,8 +1245,9 @@
         }
         return;
       }
-      // ChannelsListDirect's and BrowseChannels' empty state buttons.
-      if (target.closest("#direct-message-channels .empty-state__cta button, .chat-browse-view .empty-state__cta button")) {
+      // ChannelsListDirect's and BrowseChannels' empty state buttons (not
+      // the filtered list's, which shows all channels).
+      if (target.closest("#direct-message-channels .empty-state__cta button:not([data-action]), .chat-browse-view .empty-state__cta button")) {
         event.preventDefault();
         event.stopPropagation();
         showModal();
