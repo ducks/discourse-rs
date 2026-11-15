@@ -616,3 +616,165 @@ async fn featuring_topics_races_new_topics_in_the_categories() {
     .unwrap();
     assert_eq!(topics, (ROUNDS * 3) as i64);
 }
+
+async fn reply_in(client: &mut Client, topic: i32, round: usize, what: &str) -> i64 {
+    let (status, body) = client
+        .request(
+            "POST",
+            "/posts.json",
+            &format!("topic_id={topic}&raw=A+reply+to+{what}+out+of+topic+{topic},+round+{round}."),
+        )
+        .await;
+    assert_eq!(status, 200, "round {round} reply in {topic}: {body}");
+    body["id"].as_i64().unwrap()
+}
+
+/// PostMover locks the original topic's row and writes the destination's
+/// statistics last: posts moved from one topic into another and others
+/// moved the other way each hold the row the other writes, unless both
+/// rows are taken in one order first.
+#[tokio::test]
+async fn opposite_moves_between_topics_race_without_deadlock() {
+    const ROUNDS: usize = 20;
+    const TOPICS: [i32; 2] = [BY_USER0, BY_USER1];
+    show_errors();
+    let db = TestDb::new().await;
+    let st = site(&db).await;
+    let mut one = Client::logged_in(st.clone(), "admin").await;
+    sqlx::query("UPDATE users SET moderator = TRUE WHERE username = 'user1'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut other = Client::logged_in(st.clone(), "user1").await;
+    let posts = "SELECT t.id, t.posts_count, t.highest_post_number, \
+                        (SELECT COUNT(*) FROM posts p WHERE p.topic_id = t.id AND p.deleted_at IS NULL) AS posts, \
+                        (SELECT MAX(post_number) FROM posts p WHERE p.topic_id = t.id AND p.deleted_at IS NULL \
+                           AND p.post_type NOT IN (3, 4)) AS highest, \
+                        (SELECT COUNT(DISTINCT post_number) FROM posts p WHERE p.topic_id = t.id \
+                           AND p.deleted_at IS NULL) AS numbers \
+                 FROM topics t WHERE t.id = ANY($1) ORDER BY t.id";
+    type Counts = (i32, i32, i32, i64, i32, i64);
+    let before: Vec<Counts> = sqlx::query_as(posts)
+        .bind(&TOPICS[..])
+        .fetch_all(&db.pool)
+        .await
+        .unwrap();
+    let from = TOPICS.map(|id| format!("/t/{id}/move-posts.json"));
+    let mut failed = Vec::new();
+    for round in 0..ROUNDS {
+        let mut replies = Vec::new();
+        for topic in TOPICS {
+            replies.push(reply_in(&mut one, topic, round, "move").await);
+        }
+        let to =
+            |reply: i64, topic: i32| format!("post_ids[]={reply}&destination_topic_id={topic}");
+        let (out, back) = (to(replies[0], TOPICS[1]), to(replies[1], TOPICS[0]));
+        let (moved_out, moved_back) = tokio::join!(
+            one.request("POST", &from[0], &out),
+            other.request("POST", &from[1], &back),
+        );
+        for (from, (status, body)) in [(TOPICS[0], moved_out), (TOPICS[1], moved_back)] {
+            if status != 200 || body["success"] != json!(true) {
+                failed.push(format!("round {round} from {from}: {status} {body}"));
+            }
+        }
+    }
+    assert!(
+        failed.is_empty(),
+        "{} failures in {ROUNDS} rounds:\n{}",
+        failed.len(),
+        failed.join("\n")
+    );
+    // Each round a topic's reply leaves, the other's comes in and a small
+    // action stays behind: two more posts, numbered apart, one of them
+    // counted.
+    let after: Vec<Counts> = sqlx::query_as(posts)
+        .bind(&TOPICS[..])
+        .fetch_all(&db.pool)
+        .await
+        .unwrap();
+    let grown = ROUNDS as i32;
+    for (was, now) in before.iter().zip(&after) {
+        assert_eq!(now.1, was.1 + grown, "posts_count of {}", now.0);
+        assert_eq!(now.3, was.3 + 2 * i64::from(grown), "posts of {}", now.0);
+        assert_eq!(now.3, now.5, "post numbers of {}", now.0);
+        assert_eq!(now.2, now.4, "highest_post_number of {}", now.0);
+    }
+    let moved: Vec<(i32, i64, i64)> = sqlx::query_as(
+        "SELECT topic_id, COUNT(*) FILTER (WHERE raw LIKE 'A reply to move out of topic ' || $2 || ',%'), \
+                COUNT(*) FILTER (WHERE action_code = 'split_topic') \
+         FROM posts WHERE topic_id = ANY($1) AND deleted_at IS NULL GROUP BY topic_id ORDER BY topic_id",
+    )
+    .bind(&TOPICS[..])
+    .bind(TOPICS[1].to_string())
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    // The replies written in the second topic are all in the first, and
+    // none of them in the second.
+    assert_eq!(
+        moved,
+        [
+            (TOPICS[0], ROUNDS as i64, ROUNDS as i64),
+            (TOPICS[1], 0, ROUNDS as i64)
+        ]
+    );
+}
+
+/// A split counts its new topic into the category before PostMover locks
+/// the original topic; closing a topic writes its row, then its small
+/// action the category's. Posts split out of a topic into its own category
+/// while it closes hold the two rows in opposite orders, unless the split
+/// takes the original first.
+#[tokio::test]
+async fn splitting_races_the_topics_closing_without_deadlock() {
+    const ROUNDS: usize = 20;
+    show_errors();
+    let db = TestDb::new().await;
+    let st = site(&db).await;
+    let mut one = Client::logged_in(st.clone(), "admin").await;
+    sqlx::query("UPDATE users SET moderator = TRUE WHERE username = 'user1'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut other = Client::logged_in(st.clone(), "user1").await;
+    let from = format!("/t/{BY_USER0}/move-posts.json");
+    let status_path = format!("/t/{BY_USER0}/status");
+    let mut failed = Vec::new();
+    for round in 0..ROUNDS {
+        sqlx::query("UPDATE topics SET closed = FALSE WHERE id = $1")
+            .bind(BY_USER0)
+            .execute(&db.pool)
+            .await
+            .unwrap();
+        let reply = reply_in(&mut one, BY_USER0, round, "split").await;
+        let split = format!(
+            "post_ids[]={reply}&title=Split+while+the+topic+closes+in+round+{round}\
+             &category_id={GENERAL}"
+        );
+        let (split, closed) = tokio::join!(
+            one.request("POST", &from, &split),
+            other.request("PUT", &status_path, "status=closed&enabled=true"),
+        );
+        for (what, (status, body)) in [("split", split), ("close", closed)] {
+            if status != 200 {
+                failed.push(format!("round {round} {what}: {status} {body}"));
+            }
+        }
+    }
+    assert!(
+        failed.is_empty(),
+        "{} failures in {ROUNDS} rounds:\n{}",
+        failed.len(),
+        failed.join("\n")
+    );
+    let (split, closes): (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT COUNT(*) FROM topics WHERE title LIKE 'Split while the topic closes %'), \
+                (SELECT COUNT(*) FROM posts WHERE topic_id = $1 AND action_code = 'closed.enabled')",
+    )
+    .bind(BY_USER0)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!((split, closes), (ROUNDS as i64, ROUNDS as i64));
+}
