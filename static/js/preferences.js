@@ -381,8 +381,14 @@
     // empty as null.
     if (data.user_fields && typeof data.user_fields === "object") {
       f.querySelectorAll("[data-user-field]").forEach(function (el) {
-        var v = controlValue(el);
-        data.user_fields[el.dataset.userField] = v === "" || v === null ? null : v;
+        // A multiselect's choices as a list, which an empty one is not.
+        var v =
+          el.dataset.chooser === "options"
+            ? JSON.parse(el.dataset.items || "[]").map(function (i) {
+                return i[0];
+              })
+            : controlValue(el);
+        data.user_fields[el.dataset.userField] = v === "" || v === null || v.length === 0 ? null : v;
       });
     }
     // The interface's text size: the default on every device, or this

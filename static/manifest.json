@@ -417,6 +417,7 @@
       "name": "invite.js",
       "content_type": "js",
       "files": [
+        "js/user-fields.js",
         "js/invite.js"
       ]
     },
@@ -431,6 +432,7 @@
       "name": "login.js",
       "content_type": "js",
       "files": [
+        "js/user-fields.js",
         "js/login.js"
       ]
     },

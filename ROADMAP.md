@@ -3737,8 +3737,23 @@ route table has been made, so this list may be short.
     subscribing to push notifications (186), chat's notification sounds
     (162), choosing a theme (258a; a color palette since 169), hiding composer
     toolbar buttons and the bio's rich editor (196, drawn in markdown
-    mode), content languages (168), a multiselect user field (196's
-    MultiSelect)
+    mode), content languages (168), ~~a multiselect user field (196's
+    MultiSelect)~~ (done in `feat/user-fields-rest`: the profile tab
+    draws a multiselect field as UserFieldMultiselect, the shared
+    component's MultiSelect over the field's options
+    (prefs-choosers.js's `options` kind, loaded with the choosers'
+    strings where the tab has one), with the stored choices (one row a
+    string, several a list) and `none` in the header while there are
+    none; preferences.js sends the choices as user_fields[id][] and an
+    emptied field as null, as _updateUserFields does. users#update
+    already took the list (user_fields::update_values: the options
+    among it, a row each, a required one emptied
+    login.missing_user_field, a field only staff edit ignored for a
+    member), the recorded parity/writes/user_fields/profile_update; the
+    markup is source-derived (tests/user_fields_rest.rs,
+    tests/browser/user-fields-rest.spec.js with an optional row of its
+    own). The user card already drew a list's items; the profile page
+    draws no public user fields yet (156))
     193b. ~~`feat/user-pages-notifications`~~ (done) S:
     /u/:username/notifications and its filters (responses,
     likes-received, mentions, edits, links, reactions), the Filter By
@@ -4617,10 +4632,36 @@ route table has been made, so this list may be short.
     tests/browser/signup-user-fields.spec.js, whose required and
     multiselect paths patch the page rather than add a site-wide row).
     Left: the code signup's own user-fields step (with the code steps
-    above), the invite page's fields (templates/invites/show.gjs, a
+    above), ~~the invite page's fields (templates/invites/show.gjs, a
     surface of its own; invite_redeem.rs:596 refuses values), a
-    multiselect in preferences (196), plugins' custom field validation
-    callbacks, user_fields that is not a hash); the static login page's
+    multiselect in preferences (196)~~ (done in `feat/user-fields-rest`:
+    the multiselect under 193a. The invite form (the one login codes
+    replace) draws the fields shown on signup after its own inputs,
+    with the signup form's markup (login_page_view::signup_user_fields)
+    and scripts. UserFieldsValidationHelper moved out of login.js into
+    static/js/user-fields.js, which the manifest puts ahead of login.js
+    and invite.js: the signup form shows nothing until a submit and
+    draws the tips, the invite form validates from the start and passes
+    the components no validation, so a required field left empty or a
+    text field repeating the password only keeps Accept Invitation
+    disabled. The values go under user_custom_fields as jQuery sends
+    them. InviteRedeemer.create_user_from_invite
+    (user_fields::invite_values) stores every UserField's value as
+    given: "false" and blank ones not at all, a list a row each, cut to
+    2048, nothing cleaned against the options and no field required;
+    User's watched words over the public text fields
+    (user_fields::apply_watched_words: a blocked word a 412 with the
+    record's message, censored and replaced otherwise,
+    disable_watched_word_checking_in_user_fields). Source-derived: no
+    recording redeems with fields (tests/user_fields_rest.rs); the
+    browser spec puts the form in the page and answers its PUT, as the
+    suite's site redeems by code. Left: the code steps' fields
+    (routes/invite_redeem.rs:2274 refuses them: the service's
+    required_fields_provided), user_custom_fields that is not a hash, a
+    blocked word with a taken email (:630), watched words in the user
+    fields of a signup or a profile update), plugins' custom field
+    validation callbacks, user_fields that is not a hash); the static
+    login page's
     dark logo (application_logo_dark_url, :839, with 258a);
     account_created's DiscourseConnect provider payload (:1304). A reset
     with a password the server refuses (the same as the current one, a
@@ -7370,8 +7411,10 @@ S/M, 2 M.
     a signed-in user asking for a code (:1726), a suspended user
     verifying one (:2053), DiscourseConnect provider handoffs (:2225).
     The invite's login code is done (192b)
-251. `feat/invites-rest` M: what 192a-g left: user fields on redemption
-    and in bulk invites (routes/invite_redeem.rs:596; bulk_invite.rs:166),
+251. `feat/invites-rest` M: what 192a-g left: ~~user fields on
+    redemption~~ (done in `feat/user-fields-rest`, under 261b; a login
+    code's redemption still refuses them, routes/invite_redeem.rs:2274)
+    and in bulk invites (bulk_invite.rs:166),
     staged users (redeeming as one, an invite to one's email, their
     usernames: routes/invite_redeem.rs:578,1337,505,507), auto-approved
     email domains (:582), a verified invitee's username and the one

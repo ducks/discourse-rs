@@ -583,19 +583,12 @@ async fn create_user_from_invite(
     }
     let approved = !must_approve && s.get("invite_only")?.truthy();
     // user_custom_fields: only with fields defined.
-    let has_fields = match &args.user_custom_fields {
-        Some(Value::Object(m)) => !m.is_empty(),
-        Some(Value::Null) | None => false,
-        Some(_) => true,
-    };
-    if has_fields {
-        let defined: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_fields)")
-            .fetch_one(&mut *conn)
-            .await?;
-        if defined {
-            return Err(Unsupported("user fields on invite redemption").into());
-        }
-    }
+    let mut custom_fields =
+        crate::user_fields::invite_values(&mut *conn, args.user_custom_fields.as_ref()).await?;
+    let blocked_words =
+        crate::user_fields::apply_watched_words(&mut *conn, s, &state.i18n, &mut custom_fields)
+            .await?
+            .err();
     let password = args.password.clone().filter(|p| !p.is_empty());
     let name = args
         .name
@@ -622,7 +615,8 @@ async fn create_user_from_invite(
     if !s.get("enable_local_logins")?.truthy() {
         return Ok(Err(t(state, "login.incorrect_username_email_or_password")));
     }
-    // user.save!: a taken email is the one validation error ported.
+    // user.save!: a taken email and a blocked word in a public user
+    // field are the validation errors ported.
     let normalized = crate::signup::normalize_email(&email);
     let taken: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM user_emails WHERE lower(email) = $1 OR ($3 AND lower(normalized_email) = $2))",
@@ -632,6 +626,19 @@ async fn create_user_from_invite(
     .bind(s.get("normalize_emails")?.truthy())
     .fetch_one(&mut *conn)
     .await?;
+    if taken && blocked_words.is_some() {
+        return Err(Unsupported("invite redemption failing several validations").into());
+    }
+    if let Some(blocked) = blocked_words {
+        let message = state
+            .i18n
+            .t_with(
+                "activerecord.errors.messages.record_invalid",
+                &[("errors", blocked.as_str())],
+            )
+            .unwrap_or_else(|| format!("Validation failed: {blocked}"));
+        return Ok(Err(message));
+    }
     if taken {
         let message = state
             .i18n
@@ -680,7 +687,7 @@ async fn create_user_from_invite(
             approved,
             moderator,
             staged: false,
-            custom_fields: &[],
+            custom_fields: &custom_fields,
         },
     )
     .await?;
@@ -1551,7 +1558,10 @@ async fn accept_page(
         .into());
     }
     let full_name = s.get("full_name_requirement")?.to_s();
-    let section = crate::invite_page_view::render(&crate::invite_page_view::InviteView {
+    // userFieldsValidationHelper's getUserFields.
+    let user_fields = crate::user_fields::shown_on_signup(&mut conn).await?;
+    let user_fields_html = crate::login_page_view::signup_user_fields(&cx, &user_fields)?;
+    let mut section = crate::invite_page_view::render(&crate::invite_page_view::InviteView {
         t: &t,
         cx: &cx,
         info,
@@ -1565,10 +1575,21 @@ async fn accept_page(
         full_name_required: full_name == "required_at_signup",
         max_username_length: s.get("max_username_length")?.to_i(),
         disclaimer,
+        user_fields: &user_fields_html,
         base_path,
         csrf_token: csrf,
     });
     let mut strings = Map::new();
+    // The form that draws the fields: what static/js/invite.js validates
+    // them from, and their choosers' scripts.
+    if section.contains("<div class=\"user-fields\">") {
+        section.push_str(&crate::login_page_view::user_field_scripts(
+            base_path,
+            &t,
+            &user_fields,
+        ));
+        strings.insert("user_fields".into(), json!(user_fields));
+    }
     for (name, key) in [
         ("success", "invites.success"),
         ("check_your_email", "code_login.check_your_email"),
@@ -2237,6 +2258,20 @@ pub async fn verify_login_code(
                 Json(json!({"username_errors": [t(&state, "login.reserved_username")]}))
                     .into_response(),
             );
+        }
+        // Not ported: the service's user_fields (anything but a hash as
+        // none, required_fields_provided), with the code steps' form.
+        let given = match p.get("user_fields") {
+            Some(Value::Object(m)) => !m.is_empty(),
+            Some(Value::Null) | None => false,
+            Some(_) => true,
+        };
+        if given
+            && sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_fields)")
+                .fetch_one(&mut *tx)
+                .await?
+        {
+            return Err(Unsupported("user fields on a login code invite redemption").into());
         }
     }
     // consume_code

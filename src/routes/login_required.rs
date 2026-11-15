@@ -944,13 +944,7 @@ pub async fn show_signup(
     // on signup, by position.
     let user_fields = {
         let mut conn = state.pool.acquire().await?;
-        let mut out = Vec::new();
-        for field in crate::user_fields::all(&mut conn).await? {
-            if field.show_on_signup {
-                out.push(crate::user_fields::serialize(&mut conn, &field).await?);
-            }
-        }
-        out
+        crate::user_fields::shown_on_signup(&mut conn).await?
     };
     let (user_fields_html, user_field_scripts) = if user_fields.is_empty() {
         (String::new(), String::new())
@@ -967,30 +961,11 @@ pub async fn show_signup(
             settings: crate::topic_list_view::ListSettings::load(&settings)?,
         };
         let html = crate::login_page_view::signup_user_fields(&cx, &user_fields)?;
-        // The dropdowns are combo-box.js's, the multiselects
-        // prefs-choosers.js's with select-kit's strings.
-        let mut scripts = String::new();
-        if user_fields.iter().any(|f| f["field_type"] == "dropdown") {
-            scripts.push_str(&format!(
-                "<script src=\"{}\"></script>",
-                crate::assets::url(&site.base_path, "combo-box.js")
-            ));
-        }
-        if user_fields.iter().any(|f| f["field_type"] == "multiselect") {
-            let t = |key: &str| site.chrome.t(key);
-            let strings = json!({
-                "default_header": t("user_fields.none"),
-                "filter_placeholder": t("select_kit.filter_placeholder"),
-                "results_one": t("select_kit.results_count.one"),
-                "results_other": t("select_kit.results_count.other"),
-                "delete_item": t("select_kit.delete_item"),
-            });
-            scripts.push_str(&format!(
-                "<script type=\"application/json\" id=\"prefs-choosers-strings\">{}</script><script src=\"{}\"></script>",
-                strings.to_string().replace('<', "\\u003c"),
-                crate::assets::url(&site.base_path, "prefs-choosers.js")
-            ));
-        }
+        let scripts = crate::login_page_view::user_field_scripts(
+            &site.base_path,
+            &|key| site.chrome.t(key),
+            &user_fields,
+        );
         (html, scripts)
     };
     let disclaimer = {

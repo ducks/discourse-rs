@@ -917,7 +917,9 @@ pub async fn page(
         content
     };
     // The choosers' strings, where there are choosers.
-    let content = if matches!(tab, PrefTab::Tracking | PrefTab::Tags | PrefTab::Users) {
+    let content = if matches!(tab, PrefTab::Tracking | PrefTab::Tags | PrefTab::Users)
+        || content.contains("data-chooser=\"options\"")
+    {
         let moment = (
             crate::assets::url(&base_path, "moment.min.js"),
             crate::assets::url(&base_path, "moment-timezone-with-data-10-year-range.min.js"),

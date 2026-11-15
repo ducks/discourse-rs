@@ -470,6 +470,38 @@ pub fn signup_user_fields(
     Ok(out)
 }
 
+/// The scripts `signup_user_fields` needs beside its page's own: the
+/// dropdowns are combo-box.js's, the multiselects prefs-choosers.js's
+/// with select-kit's strings.
+pub fn user_field_scripts(
+    base_path: &str,
+    t: &dyn Fn(&str) -> String,
+    fields: &[serde_json::Value],
+) -> String {
+    let mut scripts = String::new();
+    if fields.iter().any(|f| f["field_type"] == "dropdown") {
+        scripts.push_str(&format!(
+            "<script src=\"{}\"></script>",
+            crate::assets::url(base_path, "combo-box.js")
+        ));
+    }
+    if fields.iter().any(|f| f["field_type"] == "multiselect") {
+        let strings = serde_json::json!({
+            "default_header": t("user_fields.none"),
+            "filter_placeholder": t("select_kit.filter_placeholder"),
+            "results_one": t("select_kit.results_count.one"),
+            "results_other": t("select_kit.results_count.other"),
+            "delete_item": t("select_kit.delete_item"),
+        });
+        scripts.push_str(&format!(
+            "<script type=\"application/json\" id=\"prefs-choosers-strings\">{}</script><script src=\"{}\"></script>",
+            strings.to_string().replace('<', "\\u003c"),
+            crate::assets::url(base_path, "prefs-choosers.js")
+        ));
+    }
+    scripts
+}
+
 /// SignupProgressBar at `step`.
 pub fn progress_bar(must_approve: bool, step: &str) -> String {
     let steps: &[&str] = if must_approve {
