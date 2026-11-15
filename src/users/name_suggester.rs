@@ -226,7 +226,7 @@ pub fn fix_username(
 }
 
 /// `UserNameSuggester.suggest(*input, current_username:,
-/// allow_generic_fallback:)`
+/// allow_generic_fallback:, skip_watched_words:)`
 pub async fn suggest(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -234,6 +234,7 @@ pub async fn suggest(
     input: &[Option<&str>],
     current_username: Option<&str>,
     allow_generic_fallback: bool,
+    skip_watched_words: bool,
 ) -> Result<Option<String>, AppError> {
     let use_email = settings
         .get("use_email_for_username_and_name_suggestions")?
@@ -257,7 +258,15 @@ pub async fn suggest(
         return Ok(None);
     }
     Ok(Some(
-        find_available_username_based_on(conn, settings, &name, current_username).await?,
+        find_available_username_based_on(
+            conn,
+            settings,
+            i18n,
+            &name,
+            current_username,
+            skip_watched_words,
+        )
+        .await?,
     ))
 }
 
@@ -281,12 +290,32 @@ async fn username_available(
     Ok(!taken)
 }
 
-/// `find_available_username_based_on`
+/// `valid_and_available`: UsernameValidator's format, then
+/// `User.username_available?`.
+pub(crate) async fn valid_and_available(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    name: &str,
+    skip_watched_words: bool,
+) -> Result<bool, AppError> {
+    Ok(
+        crate::signup::username_format_error(&mut *conn, settings, i18n, name, skip_watched_words)
+            .await?
+            .is_none()
+            && username_available(conn, settings, name).await?,
+    )
+}
+
+/// `find_available_username_based_on(name, current_username,
+/// skip_watched_words:)`
 pub async fn find_available_username_based_on(
     conn: &mut PgConnection,
     settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
     name: &str,
     current_username: Option<&str>,
+    skip_watched_words: bool,
 ) -> Result<String, AppError> {
     let max = settings.get("max_username_length")?.to_i() as usize;
     let current = match current_username {
@@ -298,7 +327,7 @@ pub async fn find_available_username_based_on(
     let mut attempt = name.to_string();
     let mut normalized_attempt = crate::accounts::normalize_username(&attempt)?;
     while !(current.as_deref() == Some(normalized_attempt.as_str())
-        || username_available(conn, settings, &attempt).await?
+        || valid_and_available(conn, settings, i18n, &attempt, skip_watched_words).await?
         || i > 100)
     {
         let offset = match offset {
@@ -338,7 +367,7 @@ pub async fn find_available_username_based_on(
         i += 1;
     }
     if !(current.as_deref() == Some(normalized_attempt.as_str())
-        || username_available(conn, settings, &attempt).await?)
+        || valid_and_available(conn, settings, i18n, &attempt, skip_watched_words).await?)
     {
         return Err(Unsupported("random username suggestions").into());
     }

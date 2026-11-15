@@ -417,10 +417,11 @@ pub(crate) async fn username_available_for(
 }
 
 /// `UserNameSuggester.suggest(name)` for a name that passed the format
-/// check: numbered after the name, from the first free number.
+/// check: numbered after the name, from the first valid and free number.
 pub(crate) async fn suggest_username(
     conn: &mut PgConnection,
     settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
     name: &str,
 ) -> Result<String, AppError> {
     let max = settings.get("max_username_length")?.to_i() as usize;
@@ -436,7 +437,9 @@ pub(crate) async fn suggest_username(
     let mut attempt = name.clone();
     let mut offset: Option<i64> = None;
     let mut i = 1i64;
-    while !username_available(conn, settings, &attempt).await? {
+    while !crate::user_name_suggester::valid_and_available(conn, settings, i18n, &attempt, false)
+        .await?
+    {
         if i > 100 {
             return Err(Unsupported("random username suggestions").into());
         }
@@ -495,7 +498,12 @@ pub async fn check_name(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    if let Some(error) = crate::signup::username_format_error(&settings, &state.i18n, &name)? {
+    // UsernameCheckerService: the watched words count here, unlike a
+    // group's save.
+    if let Some(error) =
+        crate::signup::username_format_error(&mut conn, &settings, &state.i18n, &name, false)
+            .await?
+    {
         return Ok(Json(json!({"errors": [error]})).into_response());
     }
     let lower = crate::accounts::normalize_username(&name)?;
@@ -504,7 +512,7 @@ pub async fn check_name(
     if available {
         return Ok(Json(json!({"available": true, "is_developer": false})).into_response());
     }
-    let suggestion = suggest_username(&mut conn, &settings, &name).await?;
+    let suggestion = suggest_username(&mut conn, &settings, &state.i18n, &name).await?;
     Ok(Json(json!({"available": false, "suggestion": suggestion})).into_response())
 }
 

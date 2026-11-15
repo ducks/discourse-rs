@@ -213,7 +213,17 @@ pub async fn make_anonymous(
         .await?;
 
     let username = anon_username(&mut *conn).await?;
-    match username_changer::change(&mut *conn, ctx, user_id, &username, None, Update::Skip).await? {
+    match username_changer::change(
+        &mut *conn,
+        ctx,
+        user_id,
+        &username,
+        None,
+        Update::Skip,
+        false,
+    )
+    .await?
+    {
         Changed::Changed => {}
         _ => return Err(std::io::Error::other("Failed to change username").into()),
     }

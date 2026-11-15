@@ -268,7 +268,8 @@ impl AuthResult {
         {
             input.push(email.as_deref());
         }
-        crate::user_name_suggester::suggest(conn, s, i18n, &input, current_username, false).await
+        crate::user_name_suggester::suggest(conn, s, i18n, &input, current_username, false, false)
+            .await
     }
 
     /// `to_client_hash`: what the browser's authentication_data cookie

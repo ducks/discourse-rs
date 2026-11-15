@@ -204,24 +204,6 @@ pub async fn update(
             };
         }
     };
-    if let Err(mut messages) = updated {
-        // json_result's render_json_error(user): the user's errors, or
-        // with none on it, its profile or options, the generic one. What
-        // the updater wrote before failing stays.
-        tx.commit().await?;
-        if messages.is_empty() {
-            let message = state
-                .i18n
-                .t("js.generic_error")
-                .unwrap_or("Sorry, an error has occurred.");
-            messages.push(message.to_string());
-        }
-        return Ok((
-            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
-            axum::Json(serde_json::json!({ "errors": messages })),
-        )
-            .into_response());
-    }
 
     // update_discourse_connect: the record's external id (and a payload
     // naming it), or the record removed.
@@ -292,6 +274,26 @@ pub async fn update(
                 .await?;
             }
         }
+    }
+
+    if let Err(mut messages) = updated {
+        // json_result's render_json_error: the profile's errors, or the
+        // user's, or with none on either, the generic one. What the
+        // updater wrote before failing stays, the external ids too (set
+        // in its transaction before the saves).
+        tx.commit().await?;
+        if messages.is_empty() {
+            let message = state
+                .i18n
+                .t("js.generic_error")
+                .unwrap_or("Sorry, an error has occurred.");
+            messages.push(message.to_string());
+        }
+        return Ok((
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            axum::Json(serde_json::json!({ "errors": messages })),
+        )
+            .into_response());
     }
 
     // json_result(user, serializer: UserSerializer)
@@ -576,6 +578,7 @@ pub async fn username(
         &new_username,
         guardian.user_id(),
         Update::Enqueue,
+        false,
     )
     .await?;
     let response = match changed {

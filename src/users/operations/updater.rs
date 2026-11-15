@@ -8,8 +8,8 @@
 //! change logged, the display name job, the title's badge, the profile's
 //! upload references and the schedule's do not disturb timings).
 //!
-//! Refused: what failing validations would answer (the errors JSON),
-//! external ids and uploads in the bio.
+//! Refused: what a failing name or option validation would answer (the
+//! errors JSON), external ids and uploads in the bio.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -685,6 +685,12 @@ pub async fn update(
         )
         .await?;
     }
+    update_sidebar(&mut *conn, s, user, &attrs).await?;
+    if s.get("enable_user_status")?.truthy()
+        && let Some(status) = attrs.get("status")
+    {
+        update_user_status(&mut *conn, ctx, user.id, status).await?;
+    }
 
     // user_option.save: update_tracked_topics
     if let Some(Some(threshold)) = options {
@@ -710,12 +716,10 @@ pub async fn update(
         }
         _ => None,
     };
-    update_profile(&mut *conn, ctx, actor, user, &attrs).await?;
-    update_sidebar(&mut *conn, s, user, &attrs).await?;
-    if s.get("enable_user_status")?.truthy()
-        && let Some(status) = attrs.get("status")
-    {
-        update_user_status(&mut *conn, ctx, user.id, status).await?;
+    // user_profile.save: invalid, it fails the update with the profile's
+    // errors; what was written before stays and the user isn't saved.
+    if let Err(errors) = update_profile(&mut *conn, ctx, actor, user, &attrs).await? {
+        return Ok(Err(errors));
     }
 
     // user.save
@@ -1650,7 +1654,7 @@ async fn update_profile(
     actor: &Guardian,
     user: &Target,
     attrs: &Map<String, Value>,
-) -> Result<(), AppError> {
+) -> Result<Result<(), Vec<String>>, AppError> {
     let s = ctx.settings;
     #[derive(sqlx::FromRow)]
     struct Profile {
@@ -1744,34 +1748,64 @@ async fn update_profile(
     }
     let [profile_background, card_background] = backgrounds;
 
-    // validations
-    let invalid = || Err(Unsupported("an invalid profile (the errors JSON)").into());
+    // The validations in UserProfile's order, every one's full message.
+    let mut errors = Vec::new();
     let too_long = |v: &Option<String>| v.as_ref().is_some_and(|v| v.chars().count() > 3000);
-    if too_long(&bio_raw) || too_long(&location) {
-        return invalid();
+    let too_long_message = |attribute: &str| {
+        format!(
+            "{attribute} {}",
+            ctx.t_count("errors.messages.too_long", 3000)
+        )
+    };
+    // validate_website?: a changed website, blank ones allowed.
+    let changed_website = website
+        .as_deref()
+        .filter(|w| website != before.website && !blank(Some(w)));
+    if too_long(&bio_raw) {
+        errors.push(too_long_message(
+            &ctx.t("activerecord.attributes.user_profile.bio_raw"),
+        ));
     }
-    // watched_words: true on bio_raw and location.
-    for v in [&bio_raw, &location].into_iter().flatten() {
-        if crate::word_watcher::block_error(&mut *conn, s, ctx.i18n, v)
-            .await?
-            .is_some()
-        {
-            return invalid();
-        }
-    }
-    if website != before.website
-        && let Some(w) = website.as_deref().filter(|w| !blank(Some(w)))
+    // watched_words: true (on :base)
+    if let Some(bio) = &bio_raw
+        && let Some(message) =
+            crate::word_watcher::block_error(&mut *conn, s, ctx.i18n, bio).await?
     {
-        if w.chars().count() > 3000 || !valid_url(w) {
-            return invalid();
+        errors.push(message);
+    }
+    if let Some(w) = changed_website {
+        if !valid_url(w) {
+            errors.push(format!("Website {}", ctx.t("errors.messages.invalid")));
         }
-        let allowed = s.get("allowed_user_website_domains")?.to_s();
-        if !allowed.is_empty() {
-            let host = http_host(w);
-            if !allowed.split('|').any(|d| Some(d) == host.as_deref()) {
-                return invalid();
-            }
+        if w.chars().count() > 3000 {
+            errors.push(too_long_message("Website"));
         }
+    }
+    if too_long(&location) {
+        errors.push(too_long_message("Location"));
+    }
+    if let Some(l) = &location
+        && let Some(message) = crate::word_watcher::block_error(&mut *conn, s, ctx.i18n, l).await?
+    {
+        errors.push(message);
+    }
+    // website_domain_validator
+    let allowed = s.get("allowed_user_website_domains")?.to_s();
+    if let Some(w) = changed_website
+        && !allowed.is_empty()
+        && !allowed
+            .split('|')
+            .any(|d| Some(d) == http_host(w).as_deref())
+    {
+        let domains = allowed.split('|').collect::<Vec<_>>().join(", ");
+        errors.push(
+            ctx.i18n
+                .t_with("user.website.domain_not_allowed", &[("domains", &domains)])
+                .unwrap_or_default(),
+        );
+    }
+    if !errors.is_empty() {
+        return Ok(Err(errors));
     }
 
     // before_save :apply_watched_words, if: :location?
@@ -1857,5 +1891,5 @@ async fn update_profile(
         )
         .await?;
     }
-    Ok(())
+    Ok(Ok(()))
 }

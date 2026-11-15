@@ -197,8 +197,14 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
                         .i18n
                         .t("activerecord.attributes.user.username")
                         .unwrap_or("Username");
-                    if let Some(e) =
-                        crate::signup::username_format_error(&settings, &state.i18n, wanted)?
+                    if let Some(e) = crate::signup::username_format_error(
+                        &mut tx,
+                        &settings,
+                        &state.i18n,
+                        wanted,
+                        false,
+                    )
+                    .await?
                     {
                         errors.push(format!("{label} {e}"));
                     } else {
@@ -228,6 +234,7 @@ pub async fn create(state: &AppState, admin: &NewAdmin<'_>) -> Result<Outcome, A
                     &[Some(&email)],
                     None,
                     true,
+                    false,
                 )
                 .await?
                 .ok_or_else(|| {

@@ -278,7 +278,10 @@ pub async fn check_username(
     {
         return available_true(Some(&username));
     }
-    if let Some(error) = crate::signup::username_format_error(&settings, &state.i18n, &username)? {
+    if let Some(error) =
+        crate::signup::username_format_error(&mut conn, &settings, &state.i18n, &username, false)
+            .await?
+    {
         return Ok(Json(json!({ "errors": [error] })).into_response());
     }
     let email = match target_row.and_then(|(_, e)| e) {
@@ -305,7 +308,8 @@ pub async fn check_username(
         }))
         .into_response());
     }
-    let suggestion = super::groups::suggest_username(&mut conn, &settings, &username).await?;
+    let suggestion =
+        super::groups::suggest_username(&mut conn, &settings, &state.i18n, &username).await?;
     Ok(Json(json!({ "available": false, "suggestion": suggestion })).into_response())
 }
 

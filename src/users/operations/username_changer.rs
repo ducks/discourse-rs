@@ -87,6 +87,7 @@ async fn validate(
     i18n: &I18n,
     user_id: i32,
     username: &str,
+    skip_watched_words: bool,
 ) -> Result<Vec<String>, AppError> {
     if !username.is_ascii() {
         return Err(Unsupported("non-ASCII usernames").into());
@@ -103,7 +104,10 @@ async fn validate(
         return Err(Unsupported("saving a user without a primary email").into());
     }
     let mut messages = Vec::new();
-    if let Some(e) = crate::signup::username_format_error(s, i18n, username)? {
+    if let Some(e) =
+        crate::signup::username_format_error(&mut *conn, s, i18n, username, skip_watched_words)
+            .await?
+    {
         messages.push(e);
     } else {
         let rows: Vec<(i32, bool)> = sqlx::query_as(
@@ -191,7 +195,8 @@ pub enum Update {
     Skip,
 }
 
-/// `UsernameChanger.new(user, new_username, actor).change`
+/// `UsernameChanger.new(user, new_username, actor).change`, with the
+/// user's `skip_username_watched_words_validation`.
 pub async fn change(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -199,6 +204,7 @@ pub async fn change(
     new_username: &str,
     actor: Option<i32>,
     update: Update,
+    skip_watched_words: bool,
 ) -> Result<Changed, AppError> {
     let user = load_user(&mut *conn, user_id)
         .await?
@@ -206,7 +212,15 @@ pub async fn change(
     if user.username == new_username {
         return Ok(Changed::Same);
     }
-    let errors = validate(&mut *conn, ctx.settings, ctx.i18n, user.id, new_username).await?;
+    let errors = validate(
+        &mut *conn,
+        ctx.settings,
+        ctx.i18n,
+        user.id,
+        new_username,
+        skip_watched_words,
+    )
+    .await?;
     if !errors.is_empty() {
         return Ok(Changed::Invalid(errors));
     }
@@ -917,7 +931,7 @@ pub async fn fix_clash(state: &AppState) -> Result<(), AppError> {
         let candidate = loop {
             let candidate = format!("{username}{suffix}");
             suffix += 1;
-            if validate(&mut tx, &s, &state.i18n, user_id, &candidate)
+            if validate(&mut tx, &s, &state.i18n, user_id, &candidate, false)
                 .await?
                 .is_empty()
             {
@@ -927,7 +941,16 @@ pub async fn fix_clash(state: &AppState) -> Result<(), AppError> {
                 return Err(Unsupported("a clashing username with no free suffix").into());
             }
         };
-        change(&mut tx, &ctx, user_id, &candidate, None, Update::Inline).await?;
+        change(
+            &mut tx,
+            &ctx,
+            user_id,
+            &candidate,
+            None,
+            Update::Inline,
+            false,
+        )
+        .await?;
         tx.commit().await?;
     }
     Ok(())

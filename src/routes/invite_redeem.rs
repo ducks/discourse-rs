@@ -476,7 +476,7 @@ pub(crate) async fn suggest_username(
         }
     }
     Ok(Some(
-        super::groups::suggest_username(&mut *conn, s, &name).await?,
+        super::groups::suggest_username(&mut *conn, s, i18n, &name).await?,
     ))
 }
 
@@ -551,7 +551,9 @@ async fn create_user_from_invite(
     let available = match &username {
         Some(u) if args.email_verified => u.clone(),
         Some(u)
-            if crate::signup::username_format_error(s, &state.i18n, u)?.is_none()
+            if crate::signup::username_format_error(&mut *conn, s, &state.i18n, u, false)
+                .await?
+                .is_none()
                 && super::groups::username_available_for(&mut *conn, s, u, Some(&email), false)
                     .await? =>
         {
@@ -562,7 +564,9 @@ async fn create_user_from_invite(
             .ok_or(Unsupported("an invitee without a username"))?,
     };
     if args.email_verified
-        && (crate::signup::username_format_error(s, &state.i18n, &available)?.is_some()
+        && (crate::signup::username_format_error(&mut *conn, s, &state.i18n, &available, false)
+            .await?
+            .is_some()
             || !super::groups::username_available(&mut *conn, s, &available).await?)
     {
         return Err(Unsupported("a verified invitee's username that is taken or invalid").into());

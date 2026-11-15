@@ -132,6 +132,7 @@ mod user_comm_screener;
 mod user_fields_rest;
 mod user_notes;
 mod user_pages;
+mod username_watched_words;
 mod users_pages;
 mod web_hooks;
 mod webauthn;
