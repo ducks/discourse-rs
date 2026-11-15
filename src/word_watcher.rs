@@ -481,6 +481,24 @@ pub async fn block_error(
     Ok(blocked_message(i18n, &matches(text, &compiled, true)?))
 }
 
+/// `word_matches_across_actions(actions)`: every action's matches in
+/// `text`, unique and sorted.
+pub async fn matches_across_actions(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    text: &str,
+    actions: &[i32],
+) -> Result<Vec<String>, AppError> {
+    let mut found = Vec::new();
+    for &action in actions {
+        let compiled = compiled_for_action(&mut *conn, s, action).await?;
+        found.extend(matches(text, &compiled, true)?);
+    }
+    found.sort();
+    found.dedup();
+    Ok(found)
+}
+
 /// `CensoredWordsValidator`: the censored words in `value` (each regexp's
 /// scan, stripped, unique, then downcased and unique again), joined, or
 /// None.

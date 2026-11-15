@@ -434,7 +434,10 @@ pub async fn register(
         password: Some(password.clone()),
         ..Form::default()
     };
-    if let Some(e) = crate::signup::username_format_error(&settings, &state.i18n, &username)? {
+    if let Some(e) =
+        crate::signup::username_format_error(&mut tx, &settings, &state.i18n, &username, false)
+            .await?
+    {
         form.username_errors.push(e);
     } else {
         let lower = crate::accounts::normalize_username(&username)?;

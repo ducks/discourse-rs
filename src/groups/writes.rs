@@ -208,7 +208,8 @@ pub async fn validate(
         let format_error = if automatic {
             None
         } else {
-            crate::signup::username_format_error(v.settings, v.i18n, &name)?
+            crate::signup::username_format_error(&mut *conn, v.settings, v.i18n, &name, true)
+                .await?
         };
         match format_error {
             Some(e) => errors.push(format!("Name {e}")),

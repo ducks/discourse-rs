@@ -81,8 +81,63 @@ pub fn reserved_by_settings(settings: &SiteSettings, username: &str) -> Result<b
     Ok(false)
 }
 
+/// `UsernameValidator::WATCHED_WORD_ACTIONS`
+const USERNAME_WATCHED_WORD_ACTIONS: [i32; 5] = [
+    crate::word_watcher::BLOCK,
+    crate::word_watcher::CENSOR,
+    crate::word_watcher::REQUIRE_APPROVAL,
+    crate::word_watcher::FLAG,
+    crate::word_watcher::SILENCE,
+];
+
 /// `UsernameValidator#valid_format?` for ASCII usernames: the first error.
-pub(crate) fn username_format_error(
+/// `skip_watched_words` as groups' names and DiscourseConnect's users
+/// (`skip_username_watched_words_validation`) pass it.
+pub(crate) async fn username_format_error(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    i18n: &I18n,
+    username: &str,
+    skip_watched_words: bool,
+) -> Result<Option<String>, AppError> {
+    if let Some(e) = username_shape_error(settings, i18n, username)? {
+        return Ok(Some(e));
+    }
+    if skip_watched_words {
+        return Ok(None);
+    }
+    let matches = crate::word_watcher::matches_across_actions(
+        conn,
+        settings,
+        username,
+        &USERNAME_WATCHED_WORD_ACTIONS,
+    )
+    .await?;
+    if matches.is_empty() {
+        return Ok(None);
+    }
+    let words = matches.join(", ");
+    let one = matches.len() == 1;
+    let key = if one { "one" } else { "other" };
+    // The key is newer than the vendored server.en.yml: Rails' English
+    // until the locales are vendored again.
+    Ok(Some(
+        i18n.t_with(
+            &format!("user.username.contains_blocked_words.{key}"),
+            &[("count", &matches.len().to_string()), ("words", &words)],
+        )
+        .unwrap_or_else(|| {
+            if one {
+                format!("contains the blocked word '{words}'")
+            } else {
+                format!("contains blocked words: {words}")
+            }
+        }),
+    ))
+}
+
+/// `valid_format?` up to the watched words.
+fn username_shape_error(
     settings: &SiteSettings,
     i18n: &I18n,
     username: &str,
@@ -302,7 +357,7 @@ pub async fn create(
 
     // user.save: the validations, in User's order.
     let mut errors: Vec<(&str, String)> = Vec::new();
-    if let Some(e) = username_format_error(settings, i18n, s.username)? {
+    if let Some(e) = username_format_error(&mut *conn, settings, i18n, s.username, false).await? {
         errors.push(("username", e));
     } else {
         let lower = accounts::normalize_username(s.username)?;

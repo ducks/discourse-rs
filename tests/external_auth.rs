@@ -381,6 +381,28 @@ async fn oidc_login_of_a_new_user_leaves_signup_data() {
     assert_eq!(info["nickname"], "oidcperson");
 }
 
+// Auth::Result#resolve_username: UserNameSuggester's candidates go
+// through UsernameValidator, watched words included (Rails a3c292a9b97).
+#[tokio::test]
+async fn oidc_suggests_a_username_past_a_watched_word() {
+    let db = TestDb::new().await;
+    sqlx::query(
+        "INSERT INTO watched_words (word, action, case_sensitive, created_at, updated_at) \
+         VALUES ('oidcperson', 1, false, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (state, provider) = oidc_site(&db, "Oidc.Person@Example.com").await;
+    let mut browser = Browser {
+        state: state.clone(),
+        cookies: Vec::new(),
+    };
+    let back = round_trip(&mut browser, &provider, "/auth/oidc", "good-code").await;
+    assert_eq!(back.status, StatusCode::FOUND, "{}", back.body);
+    assert_eq!(browser.authentication_data()["username"], "oidcperson1");
+}
+
 #[tokio::test]
 async fn oidc_signup_creates_an_active_account_without_a_password() {
     let db = TestDb::new().await;

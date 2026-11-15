@@ -1129,6 +1129,7 @@ async fn override_username(
             new_username,
             Some(user.id),
             crate::username_changer::Update::Enqueue,
+            true,
         )
         .await?;
         return Ok(());
@@ -1143,6 +1144,7 @@ async fn override_username(
             &[Some(new_username)],
             Some(&user.username),
             true,
+            true,
         )
         .await?
         .unwrap_or_default();
@@ -1153,6 +1155,7 @@ async fn override_username(
             &suggested,
             Some(user.id),
             crate::username_changer::Update::Enqueue,
+            true,
         )
         .await?;
     }
@@ -1367,7 +1370,7 @@ async fn resolve_username(
         input.push(sso.get("email"));
     }
     Ok(
-        crate::user_name_suggester::suggest(conn, s, cx.i18n, &input, None, true)
+        crate::user_name_suggester::suggest(conn, s, cx.i18n, &input, None, true, true)
             .await?
             .unwrap_or_default(),
     )
