@@ -5721,6 +5721,9 @@
     // browser's cook of a staged message.
     redraw: redraw,
     cook: cookStaged,
+    // For chat-channel-menus.js: the drawer's route and the sidebar's
+    // chat sections drawn again.
+    refresh: refresh,
     // A thread pane's deleted run expanded, and its collapsed runs.
     collapseRuns: collapseRuns,
     expand: expand,

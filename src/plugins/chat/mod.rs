@@ -28,6 +28,7 @@ pub mod flags;
 pub mod incoming_webhooks;
 pub mod info;
 pub mod interact;
+pub mod list_bypass;
 pub mod membership;
 pub mod mentions;
 pub mod messages;

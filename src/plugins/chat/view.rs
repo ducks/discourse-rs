@@ -213,6 +213,15 @@ fn dm_activity(a: &SidebarChannel, b: &SidebarChannel) -> Ordering {
 struct ListPrefs {
     filter: &'static str,
     sort: &'static str,
+    /// isFilterBypassedFor: the filter set aside to show all channels.
+    bypassed: bool,
+}
+
+impl ListPrefs {
+    /// effectiveFilterFor
+    fn effective_filter(&self) -> &'static str {
+        if self.bypassed { "all" } else { self.filter }
+    }
 }
 
 /// ChannelsListStarred's list, with what the routes around it read.
@@ -223,16 +232,21 @@ struct StarredList {
     dms: Vec<SidebarChannel>,
 }
 
-fn prefs(filter: i32, sort: i32) -> ListPrefs {
+/// `section` is ChatChannelListPreferences' `channels`, `starred` or `dms`.
+fn prefs(section: &str, filter: i32, sort: i32) -> ListPrefs {
     let pick = |names: &[&'static str], v: i32, default: &'static str| {
         usize::try_from(v)
             .ok()
             .and_then(|i| names.get(i).copied())
             .unwrap_or(default)
     };
+    let filter = pick(&super::LIST_FILTERS, filter, "all");
     ListPrefs {
-        filter: pick(&super::LIST_FILTERS, filter, "all"),
+        filter,
         sort: pick(&super::LIST_SORTS, sort, "alphabetical"),
+        // Only a filter other than all is ever bypassed: choosing one
+        // from the menu applies it (setFilter).
+        bypassed: filter != "all" && super::list_bypass::bypassed(section),
     }
 }
 
@@ -265,7 +279,7 @@ fn filter(
     let cutoff = crate::clock::now() - chrono::Duration::days(30);
     channels.retain(|c| {
         Some(c.id) == active
-            || match p.filter {
+            || match p.effective_filter() {
                 "all" => true,
                 "active" => c
                     .last_activity
@@ -413,11 +427,15 @@ impl Context<'_> {
     /// row has them.
     async fn channels_list_viewer(&mut self) -> Result<(bool, ListPrefs, Value), AppError> {
         let Some(user_id) = self.guardian.user_id() else {
-            return Ok((false, prefs(0, 0), Value::Null));
+            return Ok((false, prefs("channels", 0, 0), Value::Null));
         };
         let channel_prefs = match super::options(&mut *self.conn, user_id).await? {
-            Some(o) => prefs(o.chat_channel_list_filter, o.chat_channel_list_sort),
-            None => prefs(0, 0),
+            Some(o) => prefs(
+                "channels",
+                o.chat_channel_list_filter,
+                o.chat_channel_list_sort,
+            ),
+            None => prefs("channels", 0, 0),
         };
         Ok((true, channel_prefs, self.me_channels().await?))
     }
@@ -444,9 +462,8 @@ impl Context<'_> {
 
         let title = escape(&self.t("chat.chat_channels"));
         let mut out = format!(
-            "<div class=\"c-routes --channels\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{title}</span></div><nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></nav></nav></div><div class=\"channels-list-container public-channels\" id=\"public-channels\">",
-            escape(&self.t("chat.channel_list.options.title")),
-            d_icon("ellipsis-vertical", None)
+            "<div class=\"c-routes --channels\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{title}</span></div><nav class=\"c-navbar__actions\">{}</nav></nav></div><div class=\"channels-list-container public-channels\" id=\"public-channels\">",
+            self.list_option_buttons(channel_prefs)
         );
         if channels.is_empty() {
             // publicMessageChannelsEmpty: DEmptyState, its button to the
@@ -660,25 +677,40 @@ impl Context<'_> {
     }
 
     /// ChatSidebarChannelListFilterEmptyState: the section's filter leaves
-    /// nothing, with the way back to all (chat-channel-menus.js).
+    /// nothing, with the button that shows all channels (showAllChannels
+    /// in chat-channel-menus.js, which finds it by its data-action).
     fn filtered_empty_state(&self) -> String {
         format!(
-            "<div class=\"empty-state__container --empty-channels-list --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div></div>",
+            "<div class=\"empty-state__container --empty-channels-list --with-image\"><div class=\"empty-state\"><div class=\"empty-state__image\">{}</div><div class=\"empty-state__title\" data-test-title=\"\">{}</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\" data-action=\"showAllChannels\"><span class=\"d-button-label\">{}</span></button></div></div></div>",
             super::page::CHAT_ZERO,
             escape(&self.t("chat.channel_list.empty.filtered")),
             escape(&self.t("chat.channel_list.empty.show_all"))
         )
     }
 
+    /// The filter toggle's title and icon (toggleFilter's two ways).
+    fn filter_toggle(&self, p: ListPrefs) -> (String, &'static str) {
+        if p.bypassed {
+            (self.t("chat.channel_list.apply_filters"), "filter")
+        } else {
+            (
+                self.t("chat.channel_list.empty.show_all"),
+                "filter-circle-xmark",
+            )
+        }
+    }
+
     /// ChatChannelListFilterToggle (shown while the section's filter isn't
-    /// all) and ChatChannelListOptionsButton.
+    /// all: to show all channels, or bypassed to apply the filter again)
+    /// and ChatChannelListOptionsButton.
     fn list_option_buttons(&self, p: ListPrefs) -> String {
         let mut out = String::new();
         if p.filter != "all" {
+            let (title, icon) = self.filter_toggle(p);
             out.push_str(&format!(
                 "<button class=\"btn no-text btn-icon btn-transparent chat-channel-list-filter-toggle title-action\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
-                escape(&self.t("chat.channel_list.empty.show_all")),
-                d_icon("filter-circle-xmark", None)
+                escape(&title),
+                d_icon(icon, None)
             ));
         }
         out.push_str(&format!(
@@ -721,6 +753,7 @@ impl Context<'_> {
                 || super::has_joinable_public_channels(&mut *self.conn, settings, self.guardian)
                     .await?);
         let dm_prefs = prefs(
+            "dms",
             options.chat_channel_list_filter_dms,
             options.chat_channel_list_sort_dms,
         );
@@ -999,6 +1032,7 @@ impl Context<'_> {
             .map(|c| SidebarChannel::from_json(c, tracking, &me["unread_thread_overview"]))
             .collect::<Result<Vec<_>, _>>()?;
         let starred_prefs = prefs(
+            "starred",
             options.chat_channel_list_filter_starred,
             options.chat_channel_list_sort_starred,
         );
@@ -1412,6 +1446,7 @@ impl Context<'_> {
         starred_dms.sort_by(|a, b| a.title.cmp(&b.title));
         starred.extend(starred_dms);
         let starred_prefs = prefs(
+            "starred",
             options.chat_channel_list_filter_starred,
             options.chat_channel_list_sort_starred,
         );
@@ -1434,6 +1469,7 @@ impl Context<'_> {
         if settings.get("enable_public_channels")?.truthy() {
             let unstarred: Vec<&SidebarChannel> = channels.iter().filter(|c| !c.starred).collect();
             let channel_prefs = prefs(
+                "channels",
                 options.chat_channel_list_filter,
                 options.chat_channel_list_sort,
             );
@@ -1461,6 +1497,7 @@ impl Context<'_> {
             let mut unstarred: Vec<&SidebarChannel> = dms.iter().filter(|c| !c.starred).collect();
             unstarred.sort_by(|a, b| dm_activity(a, b));
             let dm_prefs = prefs(
+                "dms",
                 options.chat_channel_list_filter_dms,
                 options.chat_channel_list_sort_dms,
             );
@@ -1525,8 +1562,9 @@ impl Context<'_> {
         Ok(out)
     }
 
-    /// A section of channel links with its list options button (and the
-    /// show-all toggle when a filter leaves it empty).
+    /// A section of channel links with its list options button and, when
+    /// a filter leaves it empty or is bypassed, the filter toggle
+    /// (channelListActions).
     #[allow(clippy::too_many_arguments)]
     fn channels_section(
         &self,
@@ -1539,11 +1577,11 @@ impl Context<'_> {
         cx: &crate::sidebar::Context<'_>,
     ) -> String {
         let mut buttons = String::new();
-        if p.filter != "all" && channels.is_empty() {
-            let title = self.t("chat.channel_list.empty.show_all");
+        if p.bypassed || (p.filter != "all" && channels.is_empty()) {
+            let (title, icon) = self.filter_toggle(p);
             buttons.push_str(&format!(
                 "<button aria-label=\"{t}\" class=\"sidebar-section-header-button btn-icon btn-flat\" data-sidebar-action-id=\"toggleChannelFilter\" title=\"{t}\" type=\"button\">{}</button>",
-                d_icon("filter-circle-xmark", None),
+                d_icon(icon, None),
                 t = escape(&title)
             ));
         }

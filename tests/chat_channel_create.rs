@@ -375,15 +375,119 @@ async fn a_filter_that_leaves_nothing_offers_to_show_all() {
         )
         .await;
     assert_eq!(status, 200, "{body}");
+    let id = body["channel"]["id"].as_i64().unwrap();
+    let row = format!("data-chat-channel-id=\"{id}\"");
+    let sidebar_link = format!("sidebar-section-link sidebar-row channel-{id}\"");
     // ChatChannelListFilters' unread (2): the DM has nothing unread.
     sqlx::query("UPDATE user_options SET chat_channel_list_filter_dms = 2 WHERE user_id = 3")
         .execute(&db.pool)
         .await
         .unwrap();
+    let empty_state = "<div class=\"empty-state__title\" data-test-title=\"\">No channels match this filter.</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\" data-action=\"showAllChannels\"><span class=\"d-button-label\">Show all channels</span></button></div>";
+    let show_all = "chat-channel-list-filter-toggle title-action\" title=\"Show all channels\" type=\"button\"><svg class=\"fa d-icon d-icon-filter-circle-xmark ";
+    let apply = "chat-channel-list-filter-toggle title-action\" title=\"Apply filters to channels\" type=\"button\"><svg class=\"fa d-icon d-icon-filter ";
+    let sidebar_show_all =
+        "data-sidebar-action-id=\"toggleChannelFilter\" title=\"Show all channels\"";
+    let sidebar_apply =
+        "data-sidebar-action-id=\"toggleChannelFilter\" title=\"Apply filters to channels\"";
+
     let (status, _, html) = user1.page("/chat/direct-messages").await;
     assert_eq!(status, 200, "{html}");
+    assert!(html.contains(empty_state), "{html}");
+    assert!(html.contains(show_all), "{html}");
+    assert!(html.contains(sidebar_show_all), "{html}");
+    assert!(!html.contains(&row), "{html}");
+    assert!(!html.contains(&sidebar_link), "{html}");
+
+    // Another section's bypass leaves this one filtered.
+    user1
+        .cookies
+        .push(("chat_list_filter_bypass".into(), "starred.channels".into()));
+    let (_, _, html) = user1.page("/chat/direct-messages").await;
+    assert!(html.contains(empty_state), "{html}");
+    assert!(!html.contains(&row), "{html}");
+
+    // Bypassed (showAllChannels): every DM, in the list and the sidebar,
+    // and the toggles apply the filter again. The saved filter stays.
+    user1.cookies.pop();
+    user1
+        .cookies
+        .push(("chat_list_filter_bypass".into(), "starred.dms".into()));
+    let (status, _, html) = user1.page("/chat/direct-messages").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(!html.contains("No channels match this filter."), "{html}");
+    assert!(html.contains(&row), "{html}");
+    assert!(html.contains(&sidebar_link), "{html}");
+    assert!(html.contains(apply), "{html}");
+    assert!(!html.contains(show_all), "{html}");
+    assert!(html.contains(sidebar_apply), "{html}");
+    assert!(!html.contains(sidebar_show_all), "{html}");
+    let (_, _, latest) = user1.page("/latest").await;
+    assert!(latest.contains(&sidebar_link), "{latest}");
+    assert!(latest.contains(
+        "&quot;dms&quot;:{&quot;filter&quot;:&quot;unread&quot;,&quot;sort&quot;:&quot;priority&quot;}"
+    ), "{latest}");
+
+    // The mobile view's navbar holds the toggle
+    // (ChatNavbarChannelListOptionsButton).
+    user1.cookies.push(("mobile_view".into(), "1".into()));
+    let (_, _, html) = user1.page("/chat/direct-messages").await;
     assert!(
-        html.contains("<div class=\"empty-state__title\" data-test-title=\"\">No channels match this filter.</div><div class=\"empty-state__cta\"><button class=\"btn btn-primary\" type=\"button\"><span class=\"d-button-label\">"),
+        html.contains(&format!("<nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent {apply}")),
         "{html}"
     );
+    assert!(html.contains(&row), "{html}");
+    user1.cookies.pop();
+
+    // Nothing is bypassed once the filter is all (setFilter applies it).
+    sqlx::query("UPDATE user_options SET chat_channel_list_filter_dms = 0 WHERE user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, _, html) = user1.page("/chat/direct-messages").await;
+    assert!(html.contains(&row), "{html}");
+    assert!(!html.contains("chat-channel-list-filter-toggle"), "{html}");
+    assert!(!html.contains("toggleChannelFilter"), "{html}");
+}
+
+#[tokio::test]
+async fn the_mobile_channels_list_has_the_filter_toggle() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, body) = admin
+        .json(
+            Method::POST,
+            "/chat/api/channels",
+            Some(json!({"channel": {"name": "Filtered away", "chatable_id": 2}})),
+        )
+        .await;
+    assert_eq!(status, 200, "{body}");
+    let id = body["channel"]["id"].as_i64().unwrap();
+    let row = format!("data-chat-channel-id=\"{id}\"");
+    // ChatChannelListFilters' mentions (3): the channel has none.
+    sqlx::query("UPDATE user_options SET chat_channel_list_filter = 3 WHERE user_id = 1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    admin.cookies.push(("mobile_view".into(), "1".into()));
+    let (status, _, html) = admin.page("/chat/channels").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(
+        html.contains("<nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-filter-toggle title-action\" title=\"Show all channels\""),
+        "{html}"
+    );
+    assert!(html.contains("data-action=\"showAllChannels\""), "{html}");
+    assert!(!html.contains(&row), "{html}");
+
+    admin
+        .cookies
+        .push(("chat_list_filter_bypass".into(), "channels".into()));
+    let (_, _, html) = admin.page("/chat/channels").await;
+    assert!(
+        html.contains("<nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-filter-toggle title-action\" title=\"Apply filters to channels\""),
+        "{html}"
+    );
+    assert!(!html.contains("No channels match this filter."), "{html}");
+    assert!(html.contains(&row), "{html}");
 }

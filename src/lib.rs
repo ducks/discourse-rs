@@ -266,6 +266,7 @@ pub fn app(state: AppState) -> Router {
         ))
         .layer(axum::middleware::from_fn(mobile::layer))
         .layer(axum::middleware::from_fn(color_mode::layer))
+        .layer(axum::middleware::from_fn(plugins::chat::list_bypass::layer))
         .layer(axum::middleware::from_fn(routes::method_override))
         .layer(axum::middleware::from_fn(routes::request_format))
         .layer(axum::middleware::from_fn_with_state(
