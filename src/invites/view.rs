@@ -28,6 +28,9 @@ pub struct InviteView<'a> {
     /// create_account.disclaimer, when the site has both a ToS and a
     /// privacy policy.
     pub disclaimer: Option<String>,
+    /// `userFields`, drawn (login_page_view::signup_user_fields): the
+    /// site's fields shown on signup.
+    pub user_fields: &'a str,
     /// The path the forms post to (`/invites/show/<key>.json`) and the
     /// login code routes, under the base path.
     pub base_path: &'a str,
@@ -181,7 +184,7 @@ fn code_form_email_step(v: &InviteView<'_>, is_link: bool, email: &str) -> Strin
 }
 
 /// The signup form login codes replace: email (for invite links),
-/// username, password and name.
+/// username, password, name and the user fields.
 fn classic_form(v: &InviteView<'_>, is_link: bool) -> String {
     let t = v.t;
     let info = v.info;
@@ -226,6 +229,7 @@ fn classic_form(v: &InviteView<'_>, is_link: bool) -> String {
     if v.full_name_visible && !v.full_name_required {
         out.push_str(&name_input(false));
     }
+    out.push_str(v.user_fields);
     out.push_str(&format!(
         "<div class=\"invitation-cta\">{}<div class=\"invitation-cta__info\"><span class=\"invitation-cta__signed-up\">{}</span><a class=\"btn btn-flat invitation-cta__sign-in\" href=\"{}/login\"><span class=\"d-button-label\">{}</span></a></div></div>",
         button(

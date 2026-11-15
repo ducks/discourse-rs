@@ -45,8 +45,8 @@ fn user_field(cx: &ListContext, field: &Value, value: &Value) -> Result<String, 
 
 /// UserField: the component its field_type names. `signup` is the
 /// signup form's (templates/signup.gjs), which passes a validation: the
-/// confirm's tip, hidden without a reason, and the multiselect, which
-/// static/js/prefs-choosers.js opens over the field's options.
+/// confirm's tip, hidden without a reason. The multiselect is
+/// static/js/prefs-choosers.js's, opened over the field's options.
 pub(crate) fn user_field_component(
     cx: &ListContext,
     field: &Value,
@@ -136,22 +136,34 @@ pub(crate) fn user_field_component(
                 "<label class=\"control-label alt-placeholder\" for=\"{input_id}\">{label_text}</label><div class=\"controls\">{select}{instructions}</div>"
             )
         }
-        "multiselect" if signup => {
+        "multiselect" => {
             let options: Vec<&str> = field["options"]
                 .as_array()
                 .into_iter()
                 .flatten()
                 .filter_map(|o| o.as_str())
                 .collect();
+            // The stored value: one row is a string, several a list.
+            let chosen: Vec<(String, String)> = match value {
+                Value::String(s) if !s.is_empty() => vec![(s.clone(), s.clone())],
+                Value::Array(items) => items
+                    .iter()
+                    .filter_map(|i| i.as_str())
+                    .map(|i| (i.to_string(), i.to_string()))
+                    .collect(),
+                _ => Vec::new(),
+            };
             // MultiSelect with `none`: the header says it while nothing
-            // is chosen.
-            let select = super::tracking::multi_select(cx, "", "options", "", &[])
+            // is chosen (data-none, once the choices are removed again).
+            let none = escape(&t(cx, "user_fields.none"));
+            let select = super::tracking::multi_select(cx, "", "options", "", &chosen)
                 .replacen("multi-select \"", "multi-select\"", 1)
+                .replacen("multi-select  has-selection", "multi-select has-selection", 1)
                 .replacen(" data-pref=\"\"", "", 1)
                 .replacen(
                     "<details",
                     &format!(
-                        "<details id=\"{input_id}\" data-user-field=\"{id}\" data-options=\"{}\"",
+                        "<details id=\"{input_id}\" data-user-field=\"{id}\" data-none=\"{none}\" data-options=\"{}\"",
                         escape(&json!(options).to_string())
                     ),
                     1,
@@ -161,20 +173,12 @@ pub(crate) fn user_field_component(
                         "<span class=\"formatted-selection\">{}</span>",
                         escape(&t(cx, "select_kit.default_header_text"))
                     ),
-                    &format!(
-                        "<span class=\"formatted-selection\">{}</span>",
-                        escape(&t(cx, "user_fields.none"))
-                    ),
+                    &format!("<span class=\"formatted-selection\">{none}</span>"),
                     1,
                 );
             format!(
                 "<label class=\"control-label alt-placeholder\" for=\"{input_id}\">{label_text}</label><div class=\"controls\">{select}{instructions}</div>"
             )
-        }
-        "multiselect" => {
-            return Err(
-                Unsupported("a multiselect user field in preferences (MultiSelect, 196)").into(),
-            );
         }
         _ => return Err(Unsupported("a user field of an unknown type").into()),
     };

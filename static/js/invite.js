@@ -70,14 +70,32 @@
     var isLink = root.dataset.inviteLink === "true";
 
     function request(method, url, data) {
-      var body = Object.keys(data || {})
-        .filter(function (k) {
-          return data[k] !== undefined && data[k] !== null;
-        })
-        .map(function (k) {
-          return encodeURIComponent(k) + "=" + encodeURIComponent(data[k]);
-        })
-        .join("&");
+      // jQuery.param for what the page sends: a hash's values under
+      // key[name], null empty, a list's items each under key[name][].
+      var pairs = [];
+      var pair = function (k, v) {
+        pairs.push(encodeURIComponent(k) + "=" + encodeURIComponent(v === null ? "" : v));
+      };
+      Object.keys(data || {}).forEach(function (k) {
+        var v = data[k];
+        if (v === undefined || v === null) {
+          return;
+        }
+        if (typeof v !== "object") {
+          pair(k, v);
+          return;
+        }
+        Object.keys(v).forEach(function (name) {
+          if (Array.isArray(v[name])) {
+            v[name].forEach(function (item) {
+              pair(k + "[" + name + "][]", item);
+            });
+          } else {
+            pair(k + "[" + name + "]", v[name]);
+          }
+        });
+      });
+      var body = pairs.join("&");
       // A GET carries its data in the query.
       if (method === "GET" && body) {
         url += "?" + body;
@@ -163,8 +181,38 @@
           passwordInput.type = passwordInput.type === "password" ? "text" : "password";
         });
       }
+      // userFieldsValidationHelper (static/js/user-fields.js), showing
+      // from the start: the components are passed no validation, a field
+      // that fails only keeps the button disabled (submitDisabled).
+      var submit = signup.querySelector(".invitation-cta__accept");
+      var fields = Discourse.userFields(signup, S.user_fields, {
+        password: function () {
+          return passwordInput ? passwordInput.value : "";
+        },
+        tips: false,
+        changed: submitDisabled,
+      });
+      fields.visible = true;
+      function submitDisabled() {
+        submit.disabled = !!fields.validation().failed;
+      }
+      if (fields.fields.length) {
+        submitDisabled();
+        if (passwordInput) {
+          passwordInput.addEventListener("input", submitDisabled);
+        }
+        // scrollInputIntoView
+        signup.querySelector(".user-fields").addEventListener("focusin", function (event) {
+          if (event.target.scrollIntoView) {
+            event.target.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      }
       signup.addEventListener("submit", function (event) {
         event.preventDefault();
+        if (fields.validation().failed) {
+          return;
+        }
         var value = function (selector) {
           var el = signup.querySelector(selector);
           return el ? el.value : undefined;
@@ -173,6 +221,7 @@
           username: value("#new-account-username"),
           name: value("#new-account-name"),
           password: value("#new-account-password"),
+          user_custom_fields: fields.values(),
         };
         if (isLink) {
           data.email = value("#new-account-email");

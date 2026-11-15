@@ -129,6 +129,7 @@ mod tracking_report;
 mod user_activity_pages;
 mod user_avatars;
 mod user_comm_screener;
+mod user_fields_rest;
 mod user_notes;
 mod user_pages;
 mod users_pages;

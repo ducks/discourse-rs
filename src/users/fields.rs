@@ -122,6 +122,18 @@ pub async fn serialize(conn: &mut PgConnection, f: &UserField) -> Result<Value, 
     Ok(Value::Object(out))
 }
 
+/// userFieldsValidationHelper's getUserFields on the signup and invite
+/// forms: site.user_fields shown on signup, by position.
+pub async fn shown_on_signup(conn: &mut PgConnection) -> Result<Vec<Value>, sqlx::Error> {
+    let mut out = Vec::new();
+    for field in all(&mut *conn).await? {
+        if field.show_on_signup {
+            out.push(serialize(&mut *conn, &field).await?);
+        }
+    }
+    Ok(out)
+}
+
 /// `user.custom_fields["user_field_<id>"]`: no row is nil, one row its
 /// value, several (a multiselect) an array in id order, the way
 /// `FieldDescriptor#append_field` folds untyped fields.
@@ -721,6 +733,124 @@ pub async fn signup_values(
         out.push((format!("user_field_{}", field.id), value));
     }
     Ok(Ok(out))
+}
+
+/// InviteRedeemer.create_user_from_invite's `user_custom_fields`: each
+/// field's value as given ("false" as nil), cut to `UserField.max_length`,
+/// the blank ones left out. Nothing is cleaned against the options and no
+/// field is required here.
+pub async fn invite_values(
+    conn: &mut PgConnection,
+    given: Option<&Value>,
+) -> Result<Vec<(String, Value)>, AppError> {
+    let given = match given {
+        None | Some(Value::Null) => return Ok(Vec::new()),
+        Some(Value::String(s)) if crate::ruby::is_blank(s) => return Ok(Vec::new()),
+        Some(Value::Array(a)) if a.is_empty() => return Ok(Vec::new()),
+        Some(Value::Object(m)) if m.is_empty() => return Ok(Vec::new()),
+        Some(given) => given,
+    };
+    let fields = unordered(&mut *conn).await?;
+    if fields.is_empty() {
+        return Ok(Vec::new());
+    }
+    let Value::Object(given) = given else {
+        return Err(Unsupported("user_custom_fields that isn't a hash").into());
+    };
+    let mut out = Vec::new();
+    for field in fields {
+        let value = match given.get(&field.id.to_string()) {
+            None | Some(Value::Null) => continue,
+            Some(Value::String(s)) if s == "false" || crate::ruby::is_blank(s) => continue,
+            Some(Value::String(s)) => json!(s.chars().take(MAX_LENGTH).collect::<String>()),
+            Some(Value::Array(items)) if items.is_empty() => continue,
+            Some(Value::Array(items)) => {
+                if items.iter().any(|i| !i.is_string()) {
+                    return Err(Unsupported("user field values that aren't strings").into());
+                }
+                Value::Array(items.iter().take(MAX_LENGTH).cloned().collect())
+            }
+            // Parameters#[] with a range is nil: nothing is stored.
+            Some(Value::Object(_)) => continue,
+            Some(_) => return Err(Unsupported("a user field value that isn't a string").into()),
+        };
+        out.push((format!("user_field_{}", field.id), value));
+    }
+    Ok(out)
+}
+
+/// User's watched words over the user fields being saved (skipped with
+/// none, or disable_watched_word_checking_in_user_fields): the public
+/// text and textarea ones' values. Err is WatchedWordsValidator's message
+/// for a blocked word; otherwise apply_watched_words censors and replaces
+/// each in place.
+pub async fn apply_watched_words(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    i18n: &crate::i18n::I18n,
+    values: &mut [(String, Value)],
+) -> Result<Result<(), String>, AppError> {
+    if values.is_empty()
+        || s.get("disable_watched_word_checking_in_user_fields")?
+            .truthy()
+    {
+        return Ok(Ok(()));
+    }
+    let public: Vec<String> = unordered(&mut *conn)
+        .await?
+        .into_iter()
+        .filter(|f| {
+            (f.show_on_profile || f.show_on_user_card)
+                && matches!(f.field_type(), "text" | "textarea")
+        })
+        .map(|f| format!("user_field_{}", f.id))
+        .collect();
+    let mut texts = Vec::new();
+    for (key, value) in values.iter() {
+        if !public.contains(key) {
+            continue;
+        }
+        match value {
+            Value::String(v) => texts.push(v.clone()),
+            Value::Array(items) => {
+                texts.extend(items.iter().filter_map(|i| i.as_str().map(str::to_string)));
+            }
+            _ => {}
+        }
+    }
+    if texts.is_empty() {
+        return Ok(Ok(()));
+    }
+    if let Some(message) =
+        crate::word_watcher::block_error(&mut *conn, s, i18n, &texts.join(" ")).await?
+    {
+        return Ok(Err(message));
+    }
+    let censor =
+        crate::word_watcher::compiled_for_action(&mut *conn, s, crate::word_watcher::CENSOR)
+            .await?;
+    let replace =
+        crate::word_watcher::words_for_action(&mut *conn, s, crate::word_watcher::REPLACE).await?;
+    if censor.is_empty() && replace.is_empty() {
+        return Ok(Ok(()));
+    }
+    for (key, value) in values.iter_mut() {
+        if !public.contains(key) {
+            continue;
+        }
+        match value {
+            Value::String(v) => {
+                let censored = crate::word_watcher::censor_text(v, &censor)?;
+                *v = crate::word_watcher::replace_text(&censored, &replace)?;
+            }
+            _ => {
+                return Err(
+                    Unsupported("watched words over a text user field holding a list").into(),
+                );
+            }
+        }
+    }
+    Ok(Ok(()))
 }
 
 /// `UserRequiredFieldsVersion.current`

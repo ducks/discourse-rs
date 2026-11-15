@@ -102,7 +102,7 @@
         })
         .join(",");
     }
-    chooser.querySelector(".formatted-selection").textContent = names.length ? names.join(", ") : s.default_header;
+    chooser.querySelector(".formatted-selection").textContent = names.length ? names.join(", ") : chooser.dataset.none || s.default_header;
     chooser.classList.toggle("has-selection", names.length > 0);
     chooser.dataset.dirty = "true";
     chooser.dispatchEvent(new Event("change", { bubbles: true }));

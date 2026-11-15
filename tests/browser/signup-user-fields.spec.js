@@ -12,9 +12,10 @@
 // meets them, and are removed at the end. A required field would refuse
 // every other spec's signup: the required paths run on these rows with
 // `required` set in the page's data only (the server's refusals are
-// tests/signup_user_fields.rs). The multiselect is not a row at all (a
-// staff member's profile preferences refuse one): its markup is put in the
-// page as the server draws it, and the test reads what the form sends.
+// tests/signup_user_fields.rs). The multiselect is not a row at all (from
+// when a staff member's profile preferences refused one): its markup is
+// put in the page as the server draws it, and the test reads what the
+// form sends.
 const { test, expect, sql, label } = require("./helpers");
 
 const PASSWORD = "a-long-enough-pass-phrase";
@@ -94,7 +95,7 @@ function required(html) {
 // A multiselect field as the server draws one, after the site's fields.
 function withMultiselect(isRequired) {
   return (html) => {
-    const field = `<div class="input-group"><div class="user-field multiselect user-field-langs"><label class="control-label alt-placeholder" for="user-field-${MULTI}-input">Langs${isRequired ? "" : "(optional)"}</label><div class="controls"><details id="user-field-${MULTI}-input" data-user-field="${MULTI}" data-options="[&quot;rust&quot;,&quot;ruby&quot;,&quot;go&quot;]" class="select-kit multi-select" data-chooser="options" data-items="[]"><summary data-name="" data-value="" tabindex="0" class="select-kit-header multi-select-header"><div class="select-kit-header-wrapper"><span class="formatted-selection">(select an option)</span></div></summary><div class="select-kit-body"></div></details><div class="instructions">Languages</div></div></div></div>`;
+    const field = `<div class="input-group"><div class="user-field multiselect user-field-langs"><label class="control-label alt-placeholder" for="user-field-${MULTI}-input">Langs${isRequired ? "" : "(optional)"}</label><div class="controls"><details id="user-field-${MULTI}-input" data-user-field="${MULTI}" data-none="(select an option)" data-options="[&quot;rust&quot;,&quot;ruby&quot;,&quot;go&quot;]" class="select-kit multi-select" data-chooser="options" data-items="[]"><summary data-name="" data-value="" tabindex="0" class="select-kit-header multi-select-header"><div class="select-kit-header-wrapper"><span class="formatted-selection">(select an option)</span></div></summary><div class="select-kit-body"></div></details><div class="instructions">Languages</div></div></div></div>`;
     const strings = {
       default_header: "(select an option)",
       filter_placeholder: "Search…",
