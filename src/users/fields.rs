@@ -142,18 +142,30 @@ pub async fn custom_field_value(
     user_id: i32,
     field_id: i32,
 ) -> Result<Value, sqlx::Error> {
-    let values: Vec<Option<String>> = sqlx::query_scalar(
+    let name = format!("user_field_{field_id}");
+    Ok(fold(custom_field_rows(conn, user_id, &name).await?))
+}
+
+async fn custom_field_rows(
+    conn: &mut PgConnection,
+    user_id: i32,
+    name: &str,
+) -> Result<Vec<Option<String>>, sqlx::Error> {
+    sqlx::query_scalar(
         "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = $2 ORDER BY id",
     )
     .bind(user_id)
-    .bind(format!("user_field_{field_id}"))
+    .bind(name)
     .fetch_all(conn)
-    .await?;
-    Ok(match values.len() {
+    .await
+}
+
+fn fold(values: Vec<Option<String>>) -> Value {
+    match values.len() {
         0 => Value::Null,
         1 => json!(values[0]),
         _ => json!(values),
-    })
+    }
 }
 
 /// Ruby's `present?` on a custom field value.
@@ -779,11 +791,12 @@ pub async fn invite_values(
     Ok(out)
 }
 
-/// User's watched words over the user fields being saved (skipped with
-/// none, or disable_watched_word_checking_in_user_fields): the public
-/// text and textarea ones' values. Err is WatchedWordsValidator's message
-/// for a blocked word; otherwise apply_watched_words censors and replaces
-/// each in place.
+/// User's watched words over the custom fields being saved (skipped with
+/// none, or disable_watched_word_checking_in_user_fields; nobody is
+/// exempt, staff included): the values of the public (on the profile or
+/// the card) text and textarea fields, in the fields' order. Err is
+/// WatchedWordsValidator's message for a blocked word in them joined;
+/// otherwise apply_watched_words censors and replaces each in place.
 pub async fn apply_watched_words(
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
@@ -796,23 +809,13 @@ pub async fn apply_watched_words(
     {
         return Ok(Ok(()));
     }
-    let public: Vec<String> = unordered(&mut *conn)
-        .await?
-        .into_iter()
-        .filter(|f| {
-            (f.show_on_profile || f.show_on_user_card)
-                && matches!(f.field_type(), "text" | "textarea")
-        })
-        .map(|f| format!("user_field_{}", f.id))
-        .collect();
+    let public = public_text_keys(&mut *conn).await?;
     let mut texts = Vec::new();
-    for (key, value) in values.iter() {
-        if !public.contains(key) {
-            continue;
-        }
-        match value {
-            Value::String(v) => texts.push(v.clone()),
-            Value::Array(items) => {
+    for key in &public {
+        match values.iter().find(|(k, _)| k == key).map(|(_, v)| v) {
+            Some(Value::String(v)) => texts.push(v.clone()),
+            // Array#join flattens.
+            Some(Value::Array(items)) => {
                 texts.extend(items.iter().filter_map(|i| i.as_str().map(str::to_string)));
             }
             _ => {}
@@ -839,10 +842,16 @@ pub async fn apply_watched_words(
             continue;
         }
         match value {
+            // censor_text and replace_text hand a nil back.
+            Value::Null => {}
             Value::String(v) => {
                 let censored = crate::word_watcher::censor_text(v, &censor)?;
                 *v = crate::word_watcher::replace_text(&censored, &replace)?;
             }
+            // `user_fields[1][]=a` reaches a text field as the list
+            // (clean_custom_field_values only cleans the option types);
+            // with a censor or replace word Rails calls gsub on the
+            // Array, a NoMethodError.
             _ => {
                 return Err(
                     Unsupported("watched words over a text user field holding a list").into(),
@@ -850,6 +859,77 @@ pub async fn apply_watched_words(
             }
         }
     }
+    Ok(Ok(()))
+}
+
+/// `UserField.public_fields.user_editable_text_fields`, as custom field
+/// names.
+async fn public_text_keys(conn: &mut PgConnection) -> Result<Vec<String>, sqlx::Error> {
+    Ok(unordered(conn)
+        .await?
+        .into_iter()
+        .filter(|f| {
+            (f.show_on_profile || f.show_on_user_card)
+                && matches!(f.field_type(), "text" | "textarea")
+        })
+        .map(|f| format!("user_field_{}", f.id))
+        .collect())
+}
+
+/// `apply_watched_words` for a saved user's update, `values` being merged
+/// into the custom fields it has. Nothing runs when the merge changes
+/// none (`custom_fields_clean?`: the values given are the ones stored).
+/// Otherwise every public text field of the user counts, the ones not
+/// given too: a blocked word in a stored one refuses the save, and the
+/// stored ones a censor or replace word changes join `values`.
+pub async fn apply_watched_words_on_update(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    i18n: &crate::i18n::I18n,
+    user_id: i32,
+    values: &mut Vec<(String, Value)>,
+) -> Result<Result<(), String>, AppError> {
+    if values.is_empty()
+        || s.get("disable_watched_word_checking_in_user_fields")?
+            .truthy()
+    {
+        return Ok(Ok(()));
+    }
+    let mut dirty = false;
+    for (key, value) in values.iter() {
+        // A key the user doesn't have changes the hash, nil included.
+        let was = custom_field_rows(&mut *conn, user_id, key).await?;
+        if was.is_empty() || fold(was) != *value {
+            dirty = true;
+            break;
+        }
+    }
+    if !dirty {
+        return Ok(Ok(()));
+    }
+    let given = values.len();
+    let mut merged = values.clone();
+    for key in public_text_keys(&mut *conn).await? {
+        if merged.iter().any(|(k, _)| *k == key) {
+            continue;
+        }
+        let was = custom_field_rows(&mut *conn, user_id, &key).await?;
+        if !was.is_empty() {
+            merged.push((key, fold(was)));
+        }
+    }
+    let stored = merged[given..].to_vec();
+    if let Err(message) = apply_watched_words(&mut *conn, s, i18n, &mut merged).await? {
+        return Ok(Err(message));
+    }
+    let changed: Vec<(String, Value)> = merged
+        .drain(given..)
+        .zip(stored)
+        .filter(|(now, was)| now != was)
+        .map(|(now, _)| now)
+        .collect();
+    *values = merged;
+    values.extend(changed);
     Ok(Ok(()))
 }
 

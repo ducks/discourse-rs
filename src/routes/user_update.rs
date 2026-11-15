@@ -204,18 +204,21 @@ pub async fn update(
             };
         }
     };
-    if !updated {
-        // json_result's render_json_error(user): no errors on the user,
-        // its profile or options, so the generic one. What the updater
-        // wrote before failing stays.
+    if let Err(mut messages) = updated {
+        // json_result's render_json_error(user): the user's errors, or
+        // with none on it, its profile or options, the generic one. What
+        // the updater wrote before failing stays.
         tx.commit().await?;
-        let message = state
-            .i18n
-            .t("js.generic_error")
-            .unwrap_or("Sorry, an error has occurred.");
+        if messages.is_empty() {
+            let message = state
+                .i18n
+                .t("js.generic_error")
+                .unwrap_or("Sorry, an error has occurred.");
+            messages.push(message.to_string());
+        }
         return Ok((
             axum::http::StatusCode::UNPROCESSABLE_ENTITY,
-            axum::Json(serde_json::json!({ "errors": [message] })),
+            axum::Json(serde_json::json!({ "errors": messages })),
         )
             .into_response());
     }

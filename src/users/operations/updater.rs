@@ -596,9 +596,10 @@ async fn titles_and_groups(
     })
 }
 
-/// `UserUpdater#update(attributes)`: whether it saved. `custom_fields`
-/// is `attributes[:custom_fields]` as the controller builds it from
-/// `user_fields` (None when that param wasn't given).
+/// `UserUpdater#update(attributes)`: whether it saved, Err being the
+/// user's `errors.full_messages` (none when the failure leaves none on
+/// it). `custom_fields` is `attributes[:custom_fields]` as the controller
+/// builds it from `user_fields` (None when that param wasn't given).
 pub async fn update(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -606,7 +607,7 @@ pub async fn update(
     user: &Target,
     attrs: &Map<String, Value>,
     custom_fields: Option<&[(String, Value)]>,
-) -> Result<bool, AppError> {
+) -> Result<Result<(), Vec<String>>, AppError> {
     let s = ctx.settings;
     for (key, what) in REFUSED {
         if attrs.contains_key(*key) {
@@ -702,7 +703,7 @@ pub async fn update(
                 .unwrap_or_else(crate::notification_schedule::Schedule::new_record);
             schedule.assign(params)?;
             if !schedule.valid() {
-                return Ok(false);
+                return Ok(Err(Vec::new()));
             }
             schedule.save(&mut *conn, user.id, before.as_ref()).await?;
             Some(schedule)
@@ -738,6 +739,21 @@ pub async fn update(
     let name_changed = name != user.name;
     if name_changed {
         validate_name(&mut *conn, s, user.id, name.as_deref()).await?;
+    }
+    // validates :validatable_user_fields_values, watched_words: true, then
+    // before_save :apply_watched_words. Invalid, the user isn't saved;
+    // the options and profile written before stay (no rollback).
+    let mut custom_fields = custom_fields.map(<[_]>::to_vec).unwrap_or_default();
+    if let Err(message) = crate::user_fields::apply_watched_words_on_update(
+        &mut *conn,
+        s,
+        ctx.i18n,
+        user.id,
+        &mut custom_fields,
+    )
+    .await?
+    {
+        return Ok(Err(vec![message]));
     }
     let title_changed = groups.title != user.title;
     if title_changed {
@@ -781,7 +797,7 @@ pub async fn update(
         .await?;
     }
     // after_save :save_custom_fields
-    for (key, value) in custom_fields.into_iter().flatten() {
+    for (key, value) in &custom_fields {
         crate::user_fields::save_custom_field(&mut *conn, user.id, key, value).await?;
     }
     user_after_save(&mut *conn, s, user, name.as_deref()).await?;
@@ -827,7 +843,7 @@ pub async fn update(
         user.id,
     )
     .await?;
-    if custom_fields.is_some_and(|c| !c.is_empty())
+    if !custom_fields.is_empty()
         && crate::user_fields::needs_required_fields_check(&mut *conn, user.id).await?
     {
         sqlx::query(
@@ -839,7 +855,7 @@ pub async fn update(
         .execute(&mut *conn)
         .await?;
     }
-    Ok(true)
+    Ok(Ok(()))
 }
 
 /// `update_user_status`: a blank status clears it, else

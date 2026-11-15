@@ -7,7 +7,8 @@
 //! What a plain local signup does not reach is refused: invite codes, user
 //! fields, staged users, OAuth sessions, approval (must_approve_users and
 //! auto-approved domains), random avatars, screened emails, unicode
-//! usernames, and validation errors other than the username's.
+//! usernames, and validation errors other than the username's and the user
+//! fields' watched words.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -255,7 +256,7 @@ pub async fn create(
         Some(Value::String(v)) if v.is_empty() => None,
         Some(_) => return Err(Unsupported("user_fields that isn't a hash (TypeError)").into()),
     };
-    let custom_fields = match crate::user_fields::signup_values(&mut *conn, given).await? {
+    let mut custom_fields = match crate::user_fields::signup_values(&mut *conn, given).await? {
         Ok(values) => values,
         Err(()) => return Ok(fail_with(i18n, "login.missing_user_field")),
     };
@@ -379,10 +380,22 @@ pub async fn create(
     if password_error.is_some() {
         return Err(Unsupported("signup validation errors other than the username").into());
     }
+    // validates :validatable_user_fields_values, watched_words: true (an
+    // error on the base), then before_save :apply_watched_words.
+    if let Err(message) =
+        crate::user_fields::apply_watched_words(&mut *conn, settings, i18n, &mut custom_fields)
+            .await?
+    {
+        errors.push(("base", message));
+    }
     if !errors.is_empty() {
         let full: Vec<String> = errors
             .iter()
             .map(|(attr, message)| {
+                // A base error's full message is the message.
+                if *attr == "base" {
+                    return message.clone();
+                }
                 let label = i18n
                     .t(&format!("activerecord.attributes.user.{attr}"))
                     .map(str::to_string)

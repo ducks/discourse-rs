@@ -992,3 +992,346 @@ async fn watched_words_apply_to_the_public_text_fields() {
         rows(&[("user_field_1", "a forbidden darn colour")])
     );
 }
+
+/// Motto (1, text, on the profile), Note (2, text, not public), Pet (3,
+/// dropdown, on the profile), Story (4, textarea, on the card) and Rank
+/// (5, text, on the profile, only staff edit), with a blocked, a second
+/// blocked, a censored, a replaced and a linked word.
+async fn watched(pool: &PgPool) {
+    for (id, name, kind, public, editable, options) in [
+        (1, "Motto", TEXT, true, true, &[][..]),
+        (2, "Note", TEXT, false, true, &[][..]),
+        (3, "Pet", DROPDOWN, true, true, &["forbidden"][..]),
+        (4, "Story", TEXTAREA, false, true, &[][..]),
+        (5, "Rank", TEXT, true, false, &[][..]),
+    ] {
+        field(
+            pool,
+            Field {
+                id,
+                name,
+                kind,
+                editable,
+                position: id,
+                show_on_profile: public,
+                options,
+                ..Field::default()
+            },
+        )
+        .await;
+    }
+    sqlx::query("UPDATE user_fields SET show_on_user_card = true WHERE id = 4")
+        .execute(pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO watched_words (word, action, replacement, case_sensitive, created_at, updated_at) VALUES \
+         ('forbidden', 1, NULL, false, now(), now()), \
+         ('banned', 1, NULL, false, now(), now()), \
+         ('darn', 2, NULL, false, now(), now()), \
+         ('colour', 5, 'color', false, now(), now()), \
+         ('wiki', 8, 'https://example.com/wiki', false, now(), now())",
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+fn blocked(reply: &Reply, message: &str) {
+    assert_eq!(
+        reply.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{}",
+        reply.body
+    );
+    assert_eq!(reply.json(), json!({ "errors": [message] }));
+}
+
+const FORBIDDEN: &str = "Sorry, you can't post the word 'forbidden'; it's not allowed.";
+
+// No recording updates a user field holding a watched word: the tests
+// below are read from User's `validates :validatable_user_fields_values,
+// watched_words: true`, `before_save :apply_watched_words` and
+// `should_skip_user_fields_validation?`, UserUpdater#update and
+// users#update's json_result, against spec/models/user_spec.rb
+// "#user_fields".
+#[tokio::test]
+async fn a_blocked_word_in_a_public_text_field_refuses_the_update() {
+    let (db, st) = app().await;
+    watched(&db.pool).await;
+    let mut user1 = Client::logged_in(&st, "user1").await;
+
+    // The user isn't saved; the profile, saved before it, is (no
+    // rollback).
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[
+                ("user_fields[1]", "a forbidden motto"),
+                ("location", "Somewhere"),
+            ],
+        )
+        .await;
+    blocked(&reply, FORBIDDEN);
+    assert_eq!(stored(&db.pool, "user1").await, vec![]);
+    let location: Option<String> = sqlx::query_scalar(
+        "SELECT p.location FROM user_profiles p JOIN users u ON u.id = p.user_id \
+         WHERE u.username = 'user1'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(location.as_deref(), Some("Somewhere"));
+
+    // The textarea on the card too, the values checked joined.
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[
+                ("user_fields[1]", "forbidden"),
+                ("user_fields[4]", "a Banned\nstory"),
+            ],
+        )
+        .await;
+    blocked(
+        &reply,
+        "Sorry, you can't post that. Not allowed: Banned, forbidden.",
+    );
+    assert_eq!(stored(&db.pool, "user1").await, vec![]);
+
+    // Not in a field that isn't public, nor in a dropdown's option.
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[
+                ("user_fields[2]", "forbidden and banned"),
+                ("user_fields[3]", "forbidden"),
+            ],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        stored(&db.pool, "user1").await,
+        rows(&[
+            ("user_field_2", "forbidden and banned"),
+            ("user_field_3", "forbidden"),
+        ])
+    );
+
+    // Staff are not exempt, for another user or for themselves.
+    let mut admin = Client::logged_in(&st, "admin").await;
+    let reply = admin
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[("user_fields[5]", "forbidden")],
+        )
+        .await;
+    blocked(&reply, FORBIDDEN);
+    let reply = admin
+        .send(
+            Method::PUT,
+            "/u/admin.json",
+            &[("user_fields[1]", "forbidden")],
+        )
+        .await;
+    blocked(&reply, FORBIDDEN);
+    assert_eq!(stored(&db.pool, "admin").await, vec![]);
+
+    // disable_watched_word_checking_in_user_fields: no validation.
+    set_setting(
+        &db.pool,
+        "disable_watched_word_checking_in_user_fields",
+        BOOL,
+        "t",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user2 = Client::logged_in(&st, "user2").await;
+    let reply = user2
+        .send(
+            Method::PUT,
+            "/u/user2.json",
+            &[("user_fields[1]", "a forbidden motto")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        stored(&db.pool, "user2").await,
+        rows(&[("user_field_1", "a forbidden motto")])
+    );
+}
+
+#[tokio::test]
+async fn an_update_censors_and_replaces_in_the_public_text_fields() {
+    let (db, st) = app().await;
+    watched(&db.pool).await;
+    let mut user1 = Client::logged_in(&st, "user1").await;
+
+    // The link words replace nothing; the fields that are not public, or
+    // not text, are left alone.
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[
+                ("user_fields[1]", "a Darn fine colour, see the wiki"),
+                ("user_fields[2]", "darn colour"),
+                ("user_fields[4]", "darn\ncolour"),
+            ],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        reply.json()["user"]["user_fields"]["1"],
+        json!("a ■■■■ fine color, see the wiki")
+    );
+    let mut got = stored(&db.pool, "user1").await;
+    got.sort();
+    assert_eq!(
+        got,
+        rows(&[
+            ("user_field_1", "a ■■■■ fine color, see the wiki"),
+            ("user_field_2", "darn colour"),
+            ("user_field_4", "■■■■\ncolor"),
+        ])
+    );
+
+    // A field emptied alongside is stored empty.
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[("user_fields[1]", ""), ("user_fields[4]", "oh darn")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let mut got = stored(&db.pool, "user1").await;
+    got.sort();
+    assert_eq!(
+        got,
+        rows(&[
+            ("user_field_1", ""),
+            ("user_field_2", "darn colour"),
+            ("user_field_4", "oh ■■■■"),
+        ])
+    );
+
+    // Staff are not exempt: the field only they edit is censored too.
+    let mut admin = Client::logged_in(&st, "admin").await;
+    let reply = admin
+        .send(
+            Method::PUT,
+            "/u/user2.json",
+            &[("user_fields[5]", "darn colour sergeant")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        stored(&db.pool, "user2").await,
+        rows(&[("user_field_5", "■■■■ color sergeant")])
+    );
+
+    set_setting(
+        &db.pool,
+        "disable_watched_word_checking_in_user_fields",
+        BOOL,
+        "t",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user2 = Client::logged_in(&st, "user2").await;
+    let reply = user2
+        .send(
+            Method::PUT,
+            "/u/user2.json",
+            &[("user_fields[1]", "a darn fine colour")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let mut got = stored(&db.pool, "user2").await;
+    got.sort();
+    assert_eq!(
+        got,
+        rows(&[
+            ("user_field_1", "a darn fine colour"),
+            ("user_field_5", "■■■■ color sergeant"),
+        ])
+    );
+}
+
+// `custom_fields_clean?`: the check runs when the merged custom fields
+// differ from the stored ones, and then over every public text field the
+// user has (`validatable_user_fields`), given or not.
+#[tokio::test]
+async fn an_update_checks_the_stored_public_fields_once_any_changes() {
+    let (db, st) = app().await;
+    watched(&db.pool).await;
+    // Stored before the words were watched.
+    set_field(&db.pool, "user1", 1, &["a forbidden motto"]).await;
+    set_field(&db.pool, "user2", 1, &["a darn fine colour"]).await;
+    set_field(&db.pool, "user2", 2, &["a note"]).await;
+
+    // The same value again changes nothing: no validation.
+    let mut user1 = Client::logged_in(&st, "user1").await;
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[("user_fields[1]", "a forbidden motto")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    // Another field changing validates the stored one too.
+    let reply = user1
+        .send(
+            Method::PUT,
+            "/u/user1.json",
+            &[("user_fields[2]", "a note")],
+        )
+        .await;
+    blocked(&reply, FORBIDDEN);
+    assert_eq!(
+        stored(&db.pool, "user1").await,
+        rows(&[("user_field_1", "a forbidden motto")])
+    );
+
+    // Nor is anything censored without a change; with one, the stored
+    // public field is, too.
+    let mut user2 = Client::logged_in(&st, "user2").await;
+    let reply = user2
+        .send(
+            Method::PUT,
+            "/u/user2.json",
+            &[("user_fields[2]", "a note")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        stored(&db.pool, "user2").await,
+        rows(&[
+            ("user_field_1", "a darn fine colour"),
+            ("user_field_2", "a note"),
+        ])
+    );
+    let reply = user2
+        .send(
+            Method::PUT,
+            "/u/user2.json",
+            &[("user_fields[2]", "another note")],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let mut got = stored(&db.pool, "user2").await;
+    got.sort();
+    assert_eq!(
+        got,
+        rows(&[
+            ("user_field_1", "a ■■■■ fine color"),
+            ("user_field_2", "another note"),
+        ])
+    );
+}
