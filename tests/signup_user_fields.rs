@@ -667,3 +667,228 @@ async fn a_required_field_left_blank_refuses_the_signup() {
     missing(&client.sign_up("refusedhidden", &fields).await);
     assert!(!exists(&db.pool, "refusedhidden").await);
 }
+
+/// Motto (1, text, on the profile), Story (2, textarea, on the card),
+/// Note (3, text, not public), Pet (4, dropdown, on the profile) and
+/// Langs (5, multiselect, on the profile), with a blocked, a second
+/// blocked, a censored, a replaced and a linked word.
+async fn watched(pool: &PgPool) {
+    for (id, name, kind, options) in [
+        (1, "Motto", TEXT, &[][..]),
+        (2, "Story", TEXTAREA, &[][..]),
+        (3, "Note", TEXT, &[][..]),
+        (4, "Pet", DROPDOWN, &["forbidden"][..]),
+        (5, "Langs", MULTISELECT, &["forbidden", "darn"][..]),
+    ] {
+        field(
+            pool,
+            Field {
+                id,
+                name,
+                kind,
+                position: id,
+                options,
+                ..Field::default()
+            },
+        )
+        .await;
+    }
+    sqlx::query(
+        "UPDATE user_fields SET show_on_profile = id IN (1, 4, 5), show_on_user_card = id = 2",
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO watched_words (word, action, replacement, case_sensitive, created_at, updated_at) VALUES \
+         ('forbidden', 1, NULL, false, now(), now()), \
+         ('banned', 1, NULL, false, now(), now()), \
+         ('darn', 2, NULL, false, now(), now()), \
+         ('colour', 5, 'color', false, now(), now()), \
+         ('wiki', 8, 'https://example.com/wiki', false, now(), now())",
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+// No recording signs up with a watched word in a user field: read from
+// User's `validates :validatable_user_fields_values, watched_words: true`
+// and users#create's failure rendering, against spec/models/user_spec.rb
+// "#user_fields" (block: public invalid, private valid, the setting).
+#[tokio::test]
+async fn a_blocked_word_in_a_public_text_field_refuses_the_signup() {
+    let (db, st) = app().await;
+    watched(&db.pool).await;
+
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up("blockedone", &[("user_fields[1]", "a Forbidden motto")])
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let message = "Sorry, you can't post the word 'Forbidden'; it's not allowed.";
+    assert_eq!(
+        reply.json(),
+        json!({
+            "success": false,
+            "message": message,
+            "errors": {"base": [message]},
+            "values": {
+                "name": "New Member",
+                "username": "blockedone",
+                "email": "blockedone@example.com",
+            },
+            "is_developer": false,
+        })
+    );
+    assert!(!exists(&db.pool, "blockedone").await);
+
+    // The textarea on the card counts too; the values are checked joined,
+    // every blocked word named.
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up(
+            "blockedtwo",
+            &[
+                ("user_fields[1]", "forbidden"),
+                ("user_fields[2]", "a banned\nstory"),
+            ],
+        )
+        .await;
+    assert_eq!(
+        reply.json()["errors"],
+        json!({"base": ["Sorry, you can't post that. Not allowed: banned, forbidden."]}),
+        "{}",
+        reply.body
+    );
+    assert!(!exists(&db.pool, "blockedtwo").await);
+
+    // After the username's error, each on its line of the message.
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up("trust_level_0", &[("user_fields[2]", "banned")])
+        .await;
+    let body = reply.json();
+    let blocked = "Sorry, you can't post the word 'banned'; it's not allowed.";
+    assert_eq!(
+        body["errors"],
+        json!({"username": ["must be unique"], "base": [blocked]}),
+        "{}",
+        reply.body
+    );
+    assert_eq!(
+        body["message"],
+        json!(format!("Username must be unique\n{blocked}"))
+    );
+    assert_eq!(
+        serde_json::to_string(&body["errors"])
+            .unwrap()
+            .find("username"),
+        Some(2),
+        "the username's error comes first: {}",
+        reply.body
+    );
+
+    // Not in a field that isn't public, nor in an option of a dropdown
+    // or a multiselect.
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up(
+            "notpublic",
+            &[
+                ("user_fields[3]", "forbidden and banned"),
+                ("user_fields[4]", "forbidden"),
+                ("user_fields[5][]", "forbidden"),
+            ],
+        )
+        .await;
+    assert_eq!(reply.json()["success"], true, "{}", reply.body);
+    let mut got = stored(&db.pool, "notpublic").await;
+    got.sort();
+    let s = |v: &str| Some(v.to_string());
+    assert_eq!(
+        got,
+        vec![
+            ("user_field_3".to_string(), s("forbidden and banned")),
+            ("user_field_4".to_string(), s("forbidden")),
+            ("user_field_5".to_string(), s("forbidden")),
+        ]
+    );
+
+    // disable_watched_word_checking_in_user_fields: no validation.
+    set_setting(
+        &db.pool,
+        "disable_watched_word_checking_in_user_fields",
+        BOOL,
+        "t",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up("unchecked", &[("user_fields[1]", "a forbidden motto")])
+        .await;
+    assert_eq!(reply.json()["success"], true, "{}", reply.body);
+    assert_eq!(
+        stored(&db.pool, "unchecked").await,
+        vec![("user_field_1".to_string(), s("a forbidden motto"))]
+    );
+}
+
+// Read from User's `before_save :apply_watched_words`, against
+// spec/models/user_spec.rb "#user_fields" (censor and replace: public
+// changed, private and the setting not; link: nothing replaced; a
+// multiselect isn't user-generated content).
+#[tokio::test]
+async fn a_signup_censors_and_replaces_in_the_public_text_fields() {
+    let (db, st) = app().await;
+    watched(&db.pool).await;
+    let s = |v: &str| Some(v.to_string());
+
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up(
+            "censored",
+            &[
+                ("user_fields[1]", "a Darn fine colour, see the wiki"),
+                ("user_fields[2]", "darn\ncolour"),
+                ("user_fields[3]", "darn colour"),
+                ("user_fields[5][]", "darn"),
+            ],
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.json()["success"], true, "{}", reply.body);
+    let mut got = stored(&db.pool, "censored").await;
+    got.sort();
+    assert_eq!(
+        got,
+        vec![
+            (
+                "user_field_1".to_string(),
+                s("a ■■■■ fine color, see the wiki")
+            ),
+            ("user_field_2".to_string(), s("■■■■\ncolor")),
+            ("user_field_3".to_string(), s("darn colour")),
+            ("user_field_5".to_string(), s("darn")),
+        ]
+    );
+
+    set_setting(
+        &db.pool,
+        "disable_watched_word_checking_in_user_fields",
+        BOOL,
+        "t",
+    )
+    .await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(&st).await;
+    let reply = client
+        .sign_up("uncensored", &[("user_fields[1]", "a darn fine colour")])
+        .await;
+    assert_eq!(reply.json()["success"], true, "{}", reply.body);
+    assert_eq!(
+        stored(&db.pool, "uncensored").await,
+        vec![("user_field_1".to_string(), s("a darn fine colour"))]
+    );
+}
