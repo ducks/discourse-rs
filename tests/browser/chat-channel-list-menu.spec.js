@@ -81,7 +81,7 @@ test("add member on a direct message's members adds the chosen members and opens
   const route = page.locator(".c-routes.--channel-info-members");
   const list = route.locator(".c-channel-members");
   const add = list.locator(".c-channel-members__list-item.-add-member");
-  await expect(add).toHaveText("Add Member");
+  await expect(add).toHaveText("Add member");
   await expect(list.locator(".c-channel-members__list-item.-member")).toHaveCount(2);
 
   // The item stays through the filter's results, which are the members'.
