@@ -29,6 +29,15 @@ FILES=(
   lib/onebox/templates/amazon.mustache
   lib/onebox/templates/discoursetopic.mustache
   lib/onebox/templates/github/github_body.mustache
+  lib/onebox/templates/github/repository.mustache
+  lib/onebox/templates/githubactions_header.mustache
+  lib/onebox/templates/githubblob_header.mustache
+  lib/onebox/templates/githubcommit_header.mustache
+  lib/onebox/templates/githubfolder_header.mustache
+  lib/onebox/templates/githubgist_header.mustache
+  lib/onebox/templates/githubissue_header.mustache
+  lib/onebox/templates/githubpullrequest_header.mustache
+  lib/onebox/templates/githubrepo_header.mustache
   lib/onebox/templates/githubactions.mustache
   lib/onebox/templates/githubblob.mustache
   lib/onebox/templates/githubcommit.mustache
@@ -247,9 +256,23 @@ for f in emojis.json aliases.json tonable_emojis.json translations.json groups.j
   search_aliases.json locale_search_aliases/en.json; do
   cp "$gem_dist/$f" "$dest/../discourse-emojis/dist/$f"
 done
+# Emoji.animated_emojis: the names with an animation (emoji/noto_animated/
+# <name>.avif, Discourse f72218bc9f1), the images themselves not needed.
+ls "$gem_dist/emoji/noto_animated" | sed -n 's/\.avif$//p' | LC_ALL=C sort \
+  | jq -R . | jq -s -c . > "$dest/../discourse-emojis/dist/animated_emojis.json"
 echo "discourse_emojis=$gem_version" >> "$dest/DISCOURSE_REF"
-# The `?v=` on emoji image URLs (frontend/pretty-text/addon/emoji/version.js).
-image_version="$(git -C "$src" show "$commit:frontend/pretty-text/addon/emoji/version.js" \
+# The `?v=` on emoji image URLs: frontend/discourse/pretty-text/emoji/
+# version.ts, frontend/pretty-text/addon/emoji/version.js before Discourse
+# 7da749532c4 moved it.
+version_file=frontend/discourse/pretty-text/emoji/version.ts
+if ! git -C "$src" cat-file -e "$commit:$version_file" 2>/dev/null; then
+  version_file=frontend/pretty-text/addon/emoji/version.js
+fi
+image_version="$(git -C "$src" show "$commit:$version_file" \
   | sed -n 's/^export const IMAGE_VERSION = "\(.*\)";$/\1/p')"
+if [ -z "$image_version" ]; then
+  echo "no IMAGE_VERSION in $version_file at $commit" >&2
+  exit 1
+fi
 echo "emoji_image_version=$image_version" >> "$dest/DISCOURSE_REF"
 echo "vendored discourse-emojis $gem_version"

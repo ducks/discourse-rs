@@ -132,10 +132,15 @@
       "admin_onboarding_completed": 129,
       "admin_onboarding_dismissed": 130,
       "removed_avatar": 131,
-      "create_group": 132
+      "create_group": 132,
+      "add_access_control_list_owner": 133,
+      "remove_access_control_list_owner": 134,
+      "assume_access_control_ownership": 135,
+      "create_bot": 136
     },
     "staff_actions": [
       "delete_user",
+      "create_bot",
       "change_trust_level",
       "change_site_setting",
       "change_theme",
@@ -264,7 +269,10 @@
       "admin_onboarding_completed",
       "admin_onboarding_dismissed",
       "removed_avatar",
-      "create_group"
+      "create_group",
+      "add_access_control_list_owner",
+      "remove_access_control_list_owner",
+      "assume_access_control_ownership"
     ],
     "moderator_visible_actions": [
       "approve_user",

@@ -495,6 +495,362 @@ en:
             label: Updated by
           enable_toggle_disabled: "You can enable this automation once all required fields are complete."
 
+--- # plugins/blog/config/locales/client.en.yml
+en:
+  admin_js:
+    admin:
+      logs:
+        staff_actions:
+          actions:
+            blog_submit: Submit blog revision
+            blog_approve: Approve blog revision
+            blog_schedule: Schedule blog publication
+            blog_review_create: Create draft review link
+            blog_review_revoke: Revoke draft review link
+            blog_theme_save: Save blog theme draft
+            blog_theme_activate: Activate blog theme
+            blog_theme_delete: Delete blog theme
+      site_settings:
+        categories:
+          blog: Blog
+    blog:
+      admin:
+        title: Blog
+        go_to_editor: Go to editor
+        view_blog: View blog
+        open_blog: Open blog
+        safe_mode: Open without custom code
+        identity: Blog identity
+        blog_title: Blog name
+        tagline: Tagline
+        accent: Accent color
+        paper: Paper color
+        ink: Ink color
+        about: About page
+        authoring_design: Design
+        authoring_sections: Theme editor sections
+        template_builtin_state: Built-in template. Customize it to make changes.
+        template_custom_state: Custom template. Restore the default to discard your changes.
+        overridden: Custom
+        customize_template: Customize this template
+        restore_default: Restore default
+        restore_confirm: Discard this template override and use the built-in template? Save the theme to keep this change.
+        variable_reference: Variables and examples
+        find_variable: Find a variable
+        no_variables: No variables match that search.
+        insert: Insert
+        sample_article: Sample published article
+        no_published_articles: No published articles
+        array_value: List
+        trusted_html: Trusted HTML
+        escaped_text: Escaped value
+        layout_content: The rendered page and discussion. Use once inside the layout’s main element.
+        insert_hint: Examples use public content only. Insert appends the Liquid snippet to this template. Ordinary values are escaped; trusted HTML fragments render as markup.
+        retry_reference: Reload authoring reference
+        working_preview_hint: Preview your unsaved changes without saving or activating them. Changing the page or sample article updates the preview.
+        preview_article_unavailable: Article previews need a published article.
+        preview_page: Page to preview
+        preview_home: Homepage
+        preview_archive: Archive
+        preview_article: Article
+        preview_size: Preview size
+        desktop: Desktop
+        mobile: Mobile
+        open_working_preview: Open preview in a new tab
+        template_layout: Site layout
+        template_index: Homepage and archive
+        template_article: Article
+        template_about: About page
+        template_not_found: Not found page
+        code_warning:
+          "Add only code you trust: it runs with the blog origin's privileges and is
+          publicly downloadable. It never runs in authenticated previews in the community."
+        css: Custom CSS
+        css_description: Plain CSS, up to 65,536 bytes. Loads after the base stylesheet.
+        js: Custom JavaScript
+        js_description:
+          Plain JavaScript, up to 65,536 bytes. Script tags are not parsed — load
+          another script by appending a script element (document.createElement("script")).
+        save: Save
+        saved: Blog settings saved. Reload the blog to see your changes.
+        identity_tab: Identity
+        identity_description: The name, introduction, About content, and article addresses shared by all blog themes.
+        article_urls: Article URLs
+        path_format: Address format
+        path_format_description: Applies to new articles. Until an article is first published, its address follows its title and the day it goes live. Published articles keep their addresses.
+        path_format_sample_slug: my-article
+        path_formats:
+          slug: Article name
+          year_month_slug: Month and name
+          year_month_day_slug: Date and name
+          custom: Custom
+        custom_path_format: Custom format
+        custom_path_format_description: "Use {year}, {month}, {day}, {slug} and {id}, and include {slug} or {id} so every address is unique."
+        custom_path_format_invalid: "Start with / and include {slug} or {id}. Only {year}, {month}, {day}, {slug} and {id} can be used."
+        themes_index_description: Choose the design readers see. Customize an included theme or edit your own; changes stay private until you activate them.
+        thumbnail:
+          journal: The journal
+          headline: Stay curious.
+          excerpt: Notes on making things, staying curious, and finding meaning in the everyday.
+          palette: Theme palette
+        back_to_themes: Back to themes
+        editor_description: Edit this theme, save a draft, then preview or activate it.
+        preview_short: Preview draft
+        new_theme_short: New theme
+        git_source: Git source
+        themes: Themes
+        themes_description: Keep multiple designs and iterate without changing the live blog. Readers see the last activated snapshot, not your draft edits or Git updates.
+        theme_name: Theme name
+        edit: Edit
+        activate: Activate
+        preview: Preview
+        theme_actions: Theme actions
+        local_edits_badge: Local edits
+        preset_description: Included with the blog
+        customize: Customize
+        customized_theme_name: "%{name} (custom)"
+        new_theme_name: New blog theme
+        start_from: Start from
+        start_from_included: Included themes
+        start_from_drafts: Saved drafts
+        start_from_confirm: "Start over from %{name}? Your changes on this page will be lost."
+        import: Import
+        import_description: "Import a theme from a Git repository or ZIP file. Imports create new drafts without changing the active theme."
+        import_source: Import from
+        import_file: ZIP file
+        theme_file: Theme file
+        choose_theme_file: Choose ZIP file
+        import_file_description: "Choose an exported blog theme ZIP (up to 2 MB). Discourse forum theme exports are not supported."
+        export: Export
+        export_description: "Download the last saved version as a ZIP file. Save any changes before exporting."
+        import_git: Git repository
+        git_description: "Import a public HTTPS repository containing blog-theme.json (version, name, accent_color, paper_color, ink_color), optional blog.css and blog.js, and, for version 2, optional templates/*.liquid overrides at its root. Files are plain, without a build step. Imports create drafts only."
+        repository: Public Git repository URL
+        branch: Branch (leave blank for the default)
+        active_theme: "Active design: %{name} · revision %{revision}"
+        active: Active
+        revision: Draft revision
+        save_draft: Save draft
+        draft_saved: Theme draft saved. The live blog is unchanged.
+        save_before_activate: Save your changes before activating this draft.
+        activate_theme: Activate saved draft
+        activate_confirm: "Activate %{name}? This replaces the design readers see. Your other saved themes remain available."
+        activated: Theme activated. Readers now see this design.
+        pull_git: Pull latest from Git
+        pull_confirm: Pull the latest commit? This replaces the saved draft, including local edits. The active design will not change.
+        local_edits: This draft has local edits since its last Git import.
+        delete_theme: Delete theme
+        delete_confirm: "Delete %{name} and its saved draft? This cannot be undone."
+  js:
+    blog:
+      homepage_option: Blog
+      panel:
+        aria_label: Blog publication
+        badge:
+          draft: Draft
+          live: Live
+          changes_pending: Changes pending
+          scheduled: Scheduled
+          unpublished: Unpublished
+        headline:
+          draft: Not on the blog yet
+          live: Live on the blog
+          changes_pending: Live article is out of date
+          scheduled: "Publishes %{date}"
+          unpublished: Removed from the blog
+        will_publish_to: "Will publish to %{url}"
+        last_updated: "Last updated %{age}"
+        published_as: "Published on %{date}"
+        view_live: View live ↗
+        edits_since:
+          one: "%{count} edit since"
+          other: "%{count} edits since"
+        scheduled_revision: "Approved by %{user}"
+        scheduled_notice: Edits you make now are not included unless you reschedule
+        last_published: "Last published %{date}"
+        unpublished_notice: The public discussion stays open
+        preview: Preview
+        preview_scheduled: Preview scheduled version
+        share_for_review: Create preview link
+        share_for_review_hint: Collect private feedback on the draft
+        publish_changes: Publish changes
+        publish_now: Publish now
+        more_options: More publishing options
+        schedule: Schedule…
+        schedule_hint: Pick a date and time
+        schedule_title: Schedule publication
+        schedule_notice: Schedules the article as it is now. Later edits are not included unless you reschedule.
+        schedule_time: Publish at
+        schedule_time_hint: Uses your local timezone. Choose a time at least one minute ahead.
+        schedule_submit: Schedule
+        submit: Submit for approval
+        submit_hint: Ask another publisher to sign off first
+        needs_approval: Needs approval
+        unpublish_hint: Remove from the blog; the discussion stays public
+        cancel_schedule: Cancel schedule
+        published: Published — the article is live on the blog.
+        published_closed_links:
+          one: Published — the article is live on the blog. Its preview link was closed.
+          other: Published — the article is live on the blog. Its %{count} preview links were closed.
+        publish_confirm: "Publish “%{title}” to the blog now? Only the article is copied; this topic and its replies stay private."
+        publish_correction_confirm: "Replace the live article with the current draft? The article keeps its URL and public discussion."
+        changes_title: What changed on the blog
+        changed: "Changed: %{fields}"
+        change:
+          title: title
+          body: body
+          path: path
+          excerpt: excerpt
+          meta_description: meta description
+          canonical_url: canonical URL
+          cover: cover image
+          co_authors: co-authors
+          featured: featured flag
+          tags: tags
+          published_at: publication date
+        show_diff: Show diff
+        hide_diff: Hide diff
+        diff_error: The change is too large to show as a diff. Use Preview instead.
+        settings: Article settings
+        settings_hint: Path, excerpt, cover, search, co-authors, date, featured
+        feedback:
+          none: No private feedback yet
+          show: Show feedback
+          hide: Hide feedback
+          show_older:
+            one: Show %{count} earlier response
+            other: Show %{count} earlier responses
+          hide_older: Hide earlier responses
+          no_new: No new feedback since the last publish.
+          manage_links: Review links
+        discussion:
+          live: Live on the blog
+          not_live: Not on the blog
+          intro: This is the public discussion, replies here will appear on the blog.
+          intro_not_live: This topic is not on the blog.
+          no_working_copy: Edit privately to prepare changes in a private working copy without touching this topic.
+          edit_privately: Edit privately
+      review:
+        anonymous: Anonymous reviewer
+        page_title: Draft review
+        expires: "Expires %{date}"
+        manage: Share for review and feedback
+        discard_metadata: Discard unsaved publication settings and share the saved article?
+        intro: Anyone with the link can read the draft and leave private feedback.
+        label: Label
+        label_placeholder: For example, editorial round
+        create: Create link
+        untitled: Untitled review link
+        copy: Copy
+        copied: Review link copied
+        copy_failed: "Copying was blocked by your browser. Copy this link instead: %{url}"
+        open: Open
+        links: Review links
+        status:
+          active: Active
+          expired: Expired
+          revoked: Revoked
+          published: Closed when published
+          inactive: Inactive
+        expired_on: "Expired %{date}"
+        revoked_on: "Revoked %{date}"
+        closed_on: "Closed %{date}"
+        revoke: Revoke
+        revoke_confirm: Revoke this review link? It will immediately stop accepting new views and feedback. Existing feedback stays private and available here.
+        feedback_count: "Read feedback (%{count})"
+        no_links: No review links yet.
+        unverified: Private to editors. Names and emails aren't verified.
+        no_feedback: No feedback yet
+        unavailable: This review link has expired, was revoked, or is no longer available.
+        published_title: This draft has been published
+        published_body: The preview link was closed when the article went live.
+        read_article: Read the article
+        reader_badge: "Draft version %{version} for review"
+        leave_feedback: Leave feedback
+        feedback_privacy: Your feedback is private to the article editors. No account is required. Your name and email are optional; add an email if you would like the editor to contact you.
+        message: Feedback
+        name: Your name
+        email: Your email
+        send_feedback: Send private feedback
+        thanks: Thank you. Your feedback has been saved privately for the editors.
+      article_summary:
+        from_blog: "From the %{blog} blog"
+        read: Read the article
+        expand: Expand article here
+        collapse: Collapse article
+      editor_search_hint: Search by title or article path
+      editor_no_results: No matching articles
+      editor_no_results_hint: Try another search or status filter, or start a new draft.
+      editor_title: Blog editor
+      editor_description: Drafts stay private until you publish them. Edit an article to publish, schedule, or correct it.
+      editor_table:
+        article: Article
+        edit: Edit
+        status: Status
+        published: Published
+        replies: Replies
+        edits_pending: Edits pending
+        edits_need_approval: Edits need approval
+        more_actions: More actions
+        preview_changes: Preview changes
+        view_on_blog: View on blog
+      new_draft: New draft
+      settings: Configure blog settings
+      all: All articles
+      drafts: Drafts
+      published: Published
+      visit_blog: Visit blog
+      public_discussion: Public discussion
+      not_published: Not on the blog
+      preview: Preview
+      load_more: Load more
+      unpublish_confirm:
+        Remove this article from the blog? The topic and its replies
+        will remain public in the community. Existing copies in feeds and search engines
+        cannot be recalled.
+      path: Article path
+      path_hint:
+        Start with / and use lowercase letters, numbers, hyphens, and optional
+        path segments. Until the article is first published, a path you haven't
+        edited follows its title. Old paths redirect automatically after a change.
+      path_hint_dated:
+        Start with / and use lowercase letters, numbers, hyphens, and optional
+        path segments. Until the article is first published, a path you haven't
+        edited follows its title and publication date. Old paths redirect
+        automatically after a change.
+      excerpt: Excerpt
+      excerpt_hint:
+        A short introduction for article cards and search previews. Leave
+        blank to generate an excerpt from the article.
+      cover: Cover image
+      cover_hint:
+        Shown above the article and used for its card and link previews. Leave
+        blank to use the first image in the article.
+      cover_alt: Cover image alt text
+      cover_alt_hint:
+        Describes the cover image for people who can't see it.
+      co_authors: Co-authors
+      co_authors_hint:
+        Credited beside the author in the byline, and listed on their own
+        author pages.
+      meta_description: Meta description
+      meta_description_hint:
+        The summary search engines and link previews show. Leave blank to use
+        the excerpt.
+      canonical_url: Canonical URL
+      canonical_url_hint:
+        For an article first published elsewhere, the original's full URL, so
+        search engines credit that page instead. Leave blank for this article's
+        own URL.
+      date: Publication date
+      date_hint:
+        Leave blank to use the first publication time. For imported articles,
+        choose a date in the past. Dates use UTC.
+      featured: Feature on the homepage
+      save: Save settings
+      unpublish: Unpublish
+      appearance_link: Appearance
+
 --- # plugins/boards/config/locales/client.en.yml
 en:
   js:
@@ -625,7 +981,9 @@ en:
         constraint_fix_tags: "Add a board tag"
         constraint_fix_confirm: "Move and update"
         constraint_tooltip: "Only topics with these categories and tags are allowed on this board."
-        created_by: "Created by"
+        owners:
+          one: "Owner"
+          other: "Owners"
         show_older_cards: "Show %{count} older cards"
         errors:
           category_unavailable: "The destination category is no longer available. Update the board or column settings before creating a topic."
@@ -732,6 +1090,7 @@ en:
       logs:
         staff_actions:
           actions:
+            chat_bot_discoverability_change: "Chat bot discoverability changed"
             chat_channel_status_change: "Chat channel status changed"
             chat_channel_delete: "Chat channel deleted"
             chat_auto_remove_membership: "Memberships automatically removed from channels"
@@ -757,6 +1116,7 @@ en:
           other: "%{formatted_number} chat messages"
 
     chat:
+      homepage_option: "Chat channel"
       edit_category:
         tab_title: "Chat"
         channel: "Channel"
@@ -813,8 +1173,7 @@ en:
           other: "Are you sure you want to delete these %{count} messages?"
       channel_settings:
         title: "Channel settings"
-        edit: "Edit"
-        add: "Add"
+        page_title: "%{channel} settings"
         star_channel: "Star channel"
         unstar_channel: "Unstar channel"
         close_channel: "Close channel"
@@ -823,10 +1182,21 @@ en:
         open_channel_disabled_read_only: "Read-only channels cannot be reopened."
         archive_channel: "Archive channel"
         delete_channel: "Delete channel"
+        danger_zone:
+          title: "Danger zone"
+          archive_title: "Archive this channel"
+          archive_description: "Move this channel’s messages into a topic and make the channel read-only."
+          close_title: "Close this channel"
+          close_description: "Stop members from sending new messages. You can reopen the channel at any time."
+          open_title: "Reopen this channel"
+          open_description: "Let members send messages in this channel again."
+          delete_title: "Delete this channel"
+          delete_description: "Once deleted, this channel and all of its messages cannot be recovered."
+          leave_title: "Leave this channel"
+          leave_description: "You will stop receiving messages and notifications from this channel. You can rejoin at any time."
         join_channel: "Join channel"
         leave_channel: "Leave channel"
         leave_groupchat_info: "By leaving this group chat, you will no longer have access to it and won’t receive notifications related to it. To rejoin, you will need to be re-invited by a member of the group chat."
-        notification_settings: "Notification settings"
         notification_settings_context: "Notifications"
         join: "Join"
         leave: "Leave"
@@ -1030,6 +1400,7 @@ en:
         read_only: "Channel is read only, you cannot send new messages right now."
       placeholder_silenced: "You cannot send messages at this time."
       remove_upload: "Remove file"
+      preview_upload: "Preview %{filename}"
       react: "React with emoji"
       reply: "Reply"
       message_actions: "Message actions"
@@ -1123,24 +1494,26 @@ en:
 
       members_view:
         filter_placeholder: Find members
-        add_member: Add Member
-        back_to_settings: "Back to settings"
+        add_member: Add member
 
       about_view:
         associated_topic: Linked topic
         associated_category: Linked category
-        title: Title
         name: Name
         description: Description
 
       channel_info:
         back_to_all_channels: "All channels"
         back_to_channel: "Back"
+        nav_label: "Channel info"
         tabs:
           members: Members
+          preferences: Preferences
           settings: Settings
           search: Search
         remove_member: "Remove"
+        members_title: "%{channel} members"
+        preferences_title: "%{channel} preferences"
 
       new_message_modal:
         title: Send message
@@ -1162,7 +1535,6 @@ en:
         group_with_too_many_members: "has too many members (%{membersCount})"
 
       channel_edit_name_slug_modal:
-        title: Edit channel
         input_placeholder: Add a name
         slug_description: A channel slug is used in the URL instead of the channel name
         name: Channel name
@@ -1171,9 +1543,7 @@ en:
         reset_emoji: Reset emoji
 
       channel_edit_description_modal:
-        title: Edit description
         input_placeholder: Add a description
-        description: Tell people what this channel is all about
 
       direct_message_creator:
         add_to_channel: "Add to channel"
@@ -1296,6 +1666,8 @@ en:
         original_channel: 'Originally sent in <a href="%{channelLink}">%{channel}</a>'
         copy_success: "Chat quote copied to clipboard"
         default_thread_title: "Thread"
+        transcript_label: "Transcript"
+        transcript_region: "Transcript from %{channel}"
 
       notification_levels:
         never: "Never"
@@ -1304,7 +1676,6 @@ en:
 
       settings:
         channel_wide_mentions_label: "Allow @all and @here mentions"
-        channel_wide_mentions_description: "Allow users to notify all members of #%{channel} with @all or only those who are active in the moment with @here"
         channel_threading_label: "Threading"
         channel_threading_description: "When threading is enabled, replies to a chat message will create a separate conversation, which will exist alongside the main channel."
         auto_join_users_label: "Automatically add users"
@@ -1316,6 +1687,15 @@ en:
         followed: "Joined"
         mute: "Mute channel"
         unmute: "Unmute channel"
+        muted_until_hint: "until %{until}"
+        mute_options:
+          "off": "Off"
+          15_minutes: "For 15 minutes"
+          1_hour: "For 1 hour"
+          8_hours: "For 8 hours"
+          24_hours: "For 24 hours"
+          until_unmuted: "Until I turn it back on"
+          current: "Until %{until}"
         threading_enabled: "Enabled"
         threading_disabled: "Disabled"
         muted_on: "On"
@@ -1325,14 +1705,14 @@ en:
         save: "Save"
         saved: "Saved"
         unfollow: "Leave"
-        admin_title: "Admin"
-        settings_title: "Settings"
-        info_title: "Channel info"
         category_label: "Category"
         history_label: "History"
         members_label: "Members"
 
       admin:
+        bot_discoverability:
+          label: "Show in chat"
+          description: "Let people find this bot when starting a chat direct message"
         title: "Chat"
         export_messages:
           title: "Export chat messages"
@@ -1386,7 +1766,8 @@ en:
           alphabetical: "Alphabetically"
           recent_activity: "Recent activity"
           priority: "Priority"
-          priority_description: "Mentions, then unreads, then recent activity"
+          priority_description: "Mentions, then unreads, then recent activity, each sorted alphabetically"
+          priority_description_dms: "Mentions, then unreads, then recent activity"
         empty:
           filtered: "No channels match this filter."
           show_all: "Show all channels"
@@ -1476,6 +1857,9 @@ en:
 
       flagging:
         action: "Flag message"
+
+      anonymous_flagging:
+        description: "To report illegal content, please contact <a href='mailto:%{email}?subject=Illegal content: %{channel_title}&body=This chat message %{url} contains illegal content.'>%{email}</a>"
 
       emoji_picker:
         favorites: "Frequently used"
@@ -1650,15 +2034,26 @@ en:
         "action:chat_approval": "Chat approval"
         "trigger:chat_message_created": "Chat message created"
       node_descriptions:
-        "action:send_chat_message": "Send a message to a chat channel"
+        "action:send_chat_message": "Send a message to a chat channel, or a direct message to one or more users"
         "action:chat_approval": "Send an approval request to a chat channel and wait for a response"
         "trigger:chat_message_created": "Fires when a new chat message is created"
       chat_message_created:
         channel_id: "Channel"
         channel_id_description: "Leave blank to trigger for all chat channels."
       send_chat_message:
+        target: "Send to"
+        targets:
+          channel: "Channel"
+          user: "Users (a direct message each)"
+          group: "Group (one direct message with everyone)"
         channel_id: "Channel"
+        thread_id: "Thread ID"
+        thread_id_description: "Reply in this thread instead of the main channel. Leave blank to post in the channel."
+        target_usernames: "Recipients"
+        target_usernames_description: "Users to message. Use an expression such as $trigger.user.username to pick them from each item."
         message: "Message"
+        actor_username: "Sender"
+        actor_username_description: "Messages are sent as this user, and everyone sees them as written by them. When posting to a channel, the user must be a member of it."
       chat_approval:
         message: "Message"
         buttons: "Buttons"
@@ -1838,12 +2233,13 @@ en:
             questions_failed: "Questions could not be loaded."
             more_questions: "Show more questions"
             no_questions: "The original asks are no longer available."
+            no_valid_questions: "No valid questions were linked to this subject."
             loading: "Loading reports…"
             queued: "Queued"
             running: "Generating…"
             failed: "Failed — generate again to retry. If this keeps happening, consider reducing <a href='%{max_asks_url}' target='_blank' rel='noopener noreferrer'>max asks</a>."
-            view_pm: "View full report"
-            view_pm_new_tab: "View full report (opens in a new tab)"
+            view_pm: "View report PM"
+            view_pm_new_tab: "View report PM (opens in a new tab)"
             load_failed: "Reports could not be loaded."
             reload: "Reload reports"
             coverage: "%{count} of %{total} questions analyzed"
@@ -1871,7 +2267,7 @@ en:
           fetch_error: "Ask AI metrics could not be loaded."
         emotion:
           title: "Emotion"
-          description: "The table lists a count of posts classified with a determined emotion. Depending on the selected emotion classification method, posts are classified with either the configured emotion classification model ('SamLowe/roberta-base-go_emotions') or the configured emotion classification agent."
+          description: "The table counts posts classified with each emotion using the selected emotion classification backend."
         reports:
           filters:
             group_by:
@@ -1895,6 +2291,9 @@ en:
             create_ai_embedding: "Create AI embedding"
             update_ai_embedding: "Update AI embedding"
             delete_ai_embedding: "Delete AI embedding"
+            create_ai_decision_model: "Create AI decision model"
+            update_ai_decision_model: "Update AI decision model"
+            delete_ai_decision_model: "Delete AI decision model"
             create_ai_secret: "Create AI secret"
             update_ai_secret: "Update AI secret"
             delete_ai_secret: "Delete AI secret"
@@ -1910,10 +2309,16 @@ en:
     discourse_workflows:
       node_unavailable:
         requires_ai: "Requires the AI plugin to be enabled"
+        requires_decision_model: "Requires a decision model"
+        requires_ai_translation: "Requires AI translation to be configured"
       nodes:
         "action:ai_agent": "AI Agent"
+        "action:classify": "Classify"
+        "trigger:post_locale_detected": "Post language detected"
       node_descriptions:
         "action:ai_agent": "Run an AI agent to process data or generate content"
+        "action:classify": "Ask a decision model questions about each item"
+        "trigger:post_locale_detected": "Fires when the language of a new or edited post is detected"
     discourse_automation:
       scriptables:
         llm_report:
@@ -2093,6 +2498,10 @@ en:
 
     discourse_ai:
       title: "AI"
+      dsa_classification:
+        suggest: "Suggest with AI"
+        updated: "Classification updated"
+        no_suggestion: "The AI could not suggest a classification"
       copied: "Copied"
       view_raw: "View raw"
       view_decoded: "View decoded"
@@ -2131,6 +2540,24 @@ en:
           upload_ids_tooltip: "Optional upload IDs to attach to the prompt. Every upload must reach the model or the node fails: images need vision on the agent and the LLM, documents need their file type enabled on the LLM."
           upload_ids_placeholder: "={{ $json.post.upload_ids }}"
           select_agent: "Select an agent..."
+        classify:
+          decision_model_id: "Decision model"
+          text: "Text"
+          text_description: "What the decision model reads for each item."
+          upload_ids: "Images"
+          upload_ids_description: "Upload IDs of images the decision model looks at, such as the post's upload_ids. Other uploads are skipped. Needs a decision model that reads images."
+          questions: "Questions"
+          questions_description: "Each answer is added to the item as classification.NAME, where NAME is the question name."
+          add_question: "Add question"
+          name: "Name"
+          type: "Type"
+          type_yes_no: "Yes/no"
+          type_choice: "Choice"
+          type_score: "Score"
+          instructions: "Question"
+          choices: "Choices"
+          levels: "Levels"
+          levels_description: "From lowest to highest. The answer has the most likely level and a weighted score from 0 (first level) upwards."
 
       bot_chats:
         tab_label: "Bot chats"
@@ -2148,34 +2575,85 @@ en:
         awaiting_staff: "Awaiting staff approval"
 
       default_llm:
-        title: "Default LLM model"
-        description: "The default LLM model to use for all AI features. This will be used if no LLM is specified in the feature configuration or agent. If no default LLM is specified, the last created LLM will be used."
+        title: "Default language model"
+        description: "Used by any AI feature or agent that doesn't specify its own language model. If none is set, the most recently added language model is used."
 
       llm_selector:
         none: "None"
-        saved: "Default LLM model updated successfully"
+        saved: "Default language model saved"
 
       features:
         short_title: "Features"
-        description: "These are the AI features available to visitors on your site. These can be configured to use specific agents and LLMs, and can be access controlled by groups."
+        description: "Configure AI features for your site, including their agents, models, and access permissions where supported."
         back: "Back to AI features"
         settings_save_error: "Some settings could not be saved."
-        disabled: "(disabled)"
-        agent:
-          one: "Agent:"
-          other: "Agents:"
-        groups: "Groups:"
-        llm:
-          one: "LLM:"
-          other: "LLMs:"
+        table:
+          module: "Module"
+          status: "Status"
+          enabled: "Enabled"
+          feature: "Feature"
+          agent: "Agent"
+          llm: "LLM"
+          groups: "Groups"
+          who_can_use: "Who can use"
+        who_can_use:
+          edit: "Edit who can use %{name}"
+          no_one: "No one"
+          no_one_warning: "With no groups, no one can use this feature."
+          shared: "Also changes who can use: %{features}"
+        status:
+          "on": "On"
+          "off": "Off"
+          needs_setup: "Needs setup"
+          on_with_features:
+            one: "On · %{enabled} of %{count} feature"
+            other: "On · %{enabled} of %{count} features"
+          on_with_languages:
+            one: "On · %{count} language"
+            other: "On · %{count} languages"
+          on_with_chatbot_agents:
+            one: "On · %{count} chatbot agent"
+            other: "On · %{count} chatbot agents"
+        chatbot:
+          available_in: "Available in"
+          column: "Chatbot"
+          toggle: "Use %{name} as a chatbot"
+          any_llm: "Chosen by the user"
+          new_agent: "New agent"
+          manage_agents: "Manage agents"
+          places:
+            personal_messages: "Personal messages"
+            topic_mentions: "Topic @mentions"
+            chat_direct_messages: "Chat messages"
+            chat_channel_mentions: "Chat @mentions"
+            none: "Not available"
+        status_notes:
+          no_languages: "No languages selected"
+          no_llm: "No language model available"
+          hidden_from_readers: "Hidden from readers"
+          no_image_generation_tool: "Add tool"
+          no_embedding_model: "Add model"
+          no_embedding_model_selected: "No model selected"
+          missing: "Missing: %{items}"
+        setup_items:
+          app_id: "application ID"
+          public_key: "public key"
+          allowed_servers: "allowed servers"
+          agent: "an agent with a bot user"
+        agentless_notes:
+          forum_search: "Forum search, no AI model"
+        toggle: "Enable %{name}"
+        set_up: "Set up"
         no_llm: "No LLM selected"
         no_agent: "Not set"
         no_groups: "None"
+        backends:
+          agent: "LLM agent"
+          decision_model: "Decision model"
+          classification_model: "Dedicated classification endpoint"
+        not_configured: "Not configured"
+        decision_model: "Decision model"
         edit: "Settings"
-        expand_list:
-          one: "(%{count} more)"
-          other: "(%{count} more)"
-        collapse_list: "(show less)"
         bot:
           bot: "Chatbot"
           name: "Bot"
@@ -2189,13 +2667,35 @@ en:
           enabled: "Enabled"
           not_enabled: "Not enabled"
         filters:
-          all: "All"
-          text: "Search features, agents, LLMs, or groups..."
+          all: "Any status"
+          text: "Search features, agents, models, or groups..."
           no_results: "No features found matching your filters."
           reset: "Reset"
 
         no_automations: "There are no automations yet"
 
+        sentiment:
+          name: "Sentiment and emotion"
+          description: "Classifies the sentiment and emotion of posts in the background"
+          sentiment: "Sentiment"
+          emotion: "Emotion"
+          backend: "Backend"
+          enabled: "Enabled"
+          agent: "Agent"
+          decision_model: "Decision model"
+          posts_per_hour: "Posts per hour"
+          post_age_limit: "Post age limit (days)"
+          posts_per_hour_description: "Approximate rate. 0 stops the scan, including new posts. Edited posts are checked separately."
+          background_description: "Checks unclassified posts every 5 minutes, within these shared limits. Each enabled classifier may incur a request per post. Refusals may be retried."
+          emotion_scores: "Scores are distributed across 28 emotions."
+          model_change_warning: "Changing the selected model does not reclassify existing results."
+          dedicated_description: "Dedicated classification endpoints are configured in site settings."
+          configure_dedicated: "Configure dedicated classification endpoints"
+          manage_decision_models: "Manage decision models"
+          setting_groups:
+            sentiment: "Sentiment"
+            emotion: "Emotion"
+            background_processing: "Background processing"
         summarization:
           name: "Summaries"
           description: "Makes a summarization button available that allows visitors to summarize topics"
@@ -2217,8 +2717,13 @@ en:
             ask_ai_reports: "Ask AI reports"
         embeddings:
           name: "Embeddings"
-          description: "Powers features like Related Topics and AI Search by generating semantic representations of text"
-          hyde: "HyDE"
+          description: "Finds content by meaning. Powers related topics and AI search."
+          related_topics: "Related topics"
+          semantic_search: "AI search results"
+          quick_search: "AI results in quick search"
+          hyde: "Better search queries (HyDE)"
+          add_model: "Add embedding model"
+          no_models: "You need an embedding model first."
           setting_groups:
             model_settings: "Model Settings"
             related_topics: "Related Topics"
@@ -2231,7 +2736,7 @@ en:
             settings: "Basic Settings"
         discord:
           name: "Discord integration"
-          description: "Adds the ability to search Discord channels"
+          description: "Lets people search this forum from Discord"
           search: "Discord search"
           setting_groups:
             settings: "Basic Settings"
@@ -2289,10 +2794,6 @@ en:
             one: "Scheduled translation for %{count} untranslated post."
             other: "Scheduled translation for %{count} untranslated posts."
           schedule_topic_error: "Failed to schedule translations. Please try again."
-          setting_groups:
-            settings: "Basic Settings"
-            agents: "Agents"
-            backfill_and_limits: "Backfill & Limits"
 
         spam:
           name: "Spam"
@@ -2317,11 +2818,85 @@ en:
       translations:
         title: "Translations"
         description: "Automatically translate all content on your forum to the user's preferred language"
-        supported_locales: "Supported languages"
+        sections:
+          languages: "Languages"
+          scope: "What to translate"
+          backfill: "Existing content"
+          readers: "Readers"
+          agents: "Agents and models"
+          advanced: "Advanced"
+        hidden_from_readers: 'Translations are being generated but are hidden from readers. Update the <a href="#ai-translations-readers">Readers settings</a> to make them visible.'
+        more_language_settings: "More language settings"
+        waiting_for_languages: "Translation is on, but nothing is translated until you select at least one language."
+        settings:
+          content_localization_supported_locales:
+            label: "Translate into"
+            description: "Content is translated into these languages. Your site's default language is always included."
+          ai_translation_category_scope:
+            label: "Categories"
+            description: "Which categories to translate. Personal messages are set separately."
+          ai_translation_categories:
+            label: "Selected categories"
+            description: "The categories included or excluded above."
+          ai_translation_personal_messages:
+            label: "Personal messages"
+            description: "Which personal messages to translate."
+            choices:
+              none: "None"
+              group: "Group messages only"
+              all: "All"
+          ai_translation_include_bot_content:
+            label: "Translate content written by bots"
+            description: "Also translate posts by bot accounts."
+          ai_translation_backfill_start_date:
+            label: "Translate existing content since"
+            description: "Posts and topics created on or after this date (UTC) are translated in the background. Leave blank to translate only new content."
+          ai_translation_backfill_hourly_rate:
+            label: "Existing content per hour"
+            description: "How many existing posts and topics to translate each hour. Set to 0 to pause."
+          content_localization_enabled:
+            label: "Show translations to readers"
+            description: "Readers see content in their preferred language when a translation exists."
+          content_localization_language_switcher:
+            label: "Language switcher"
+            description: "Who can pick a language from the header."
+            choices:
+              none: "Nobody"
+              anonymous: "Anonymous visitors"
+              all: "Everyone"
+          allow_user_locale:
+            label: "Let users choose their language"
+            description: "Signed-in users can set their preferred language. Required for the language switcher and language links."
+          set_locale_from_param:
+            label: "Language links"
+            description: "Anyone can open a page in a language by adding it to the address, for example ?tl=es."
+          content_localization_crawler_param:
+            label: "Let search engines index translations"
+            description: "Serve translated content to search engines that follow language links."
+          content_localization_use_default_locale_when_unsupported:
+            label: "Fall back to the default language"
+            description: "Readers whose language is not selected above see content in your site's default language."
+          ai_translation_locale_detector_agent:
+            label: "Language detection agent"
+            description: "Detects which language content is written in."
+          ai_translation_locale_detector_decision_model:
+            label: "Language detection decision model"
+            description: "Detects languages it can place confidently before the language detection agent is asked. Leave blank to use only the agent."
+          ai_translation_post_raw_translator_agent:
+            label: "Post translation agent"
+            description: "Translates posts."
+          ai_translation_topic_title_translator_agent:
+            label: "Topic title translation agent"
+            description: "Translates topic titles."
+          ai_translation_short_text_translator_agent:
+            label: "Short text translation agent"
+            description: "Translates categories, tags and other short text."
+          ai_translation_verbose_logs:
+            label: "Verbose logs"
+            description: "Writes detailed translation job logs for troubleshooting."
+        settings_save_error: "Some settings could not be saved. Please check the errors below."
         max_locales_reached: "You can only select up to %{max} languages."
         locale_count: "%{count}/%{max} selected"
-        category_scope: "Categories"
-        category_scope_description: "Choose whether automatic translations apply to content in all categories, public categories, or selected categories."
         cached_results_notice: "Showing cached results from %{relative_time}."
         model_progress:
           loading: "Loading translation progress"
@@ -2399,12 +2974,8 @@ en:
                 one: "The tag is fully translated."
                 other: "All %{count} tags are fully translated."
         admin_actions:
-          translation_settings: "AI settings"
-          localization_settings: "App language settings"
-          enable_translations: "Enable automatic translations"
+          enabled: "Enabled"
           enable_translations_disabled: "You must add a supported language to enable translations"
-          show_language_switcher: "Show a language switcher in the header"
-          show_language_switcher_description: "Lets everyone pick a language and see your site in it."
         stats:
           title: "Translation statistics"
           backfill_disabled: "Backfilling is disabled, only new posts will be translated."
@@ -2447,6 +3018,10 @@ en:
         short_title: "Spam"
         title: "Configure spam handling"
         select_llm: "Select LLM"
+        no_llm_selected: "None"
+        select_decision_model: "Select decision model"
+        no_decision_model_selected: "None"
+        decision_model_help: "A decision model rates every post on its own when it is confident and leaves unsure posts to the LLM. Without an LLM, the decision model decides every post."
         select_agent: "Select agent"
         custom_instructions: "Custom instructions"
         custom_instructions_help: "Custom instructions specific to your site to help guide the AI in identifying spam, e.g. 'Be more aggressive about scanning posts not in English'."
@@ -2471,6 +3046,8 @@ en:
           result: "Result"
           reason: "Reasoning"
           llm: "LLM"
+          decision_model: "Decision model"
+          spam_probability: "Spam probability"
           scan_history: "Scan History"
           sent_message: "Sent Message"
           system_prompt: "System Prompt"
@@ -2565,6 +3142,11 @@ en:
         tokens: "Tokens"
         tokens_pair: "%{request} → %{response}"
         tokens_aria: "%{request} input tokens and %{response} output tokens"
+        reasoning_tokens: "Reasoning tokens"
+        stop_reason: "Stop reason"
+        empty: "Empty response"
+        truncated: "Truncated"
+        truncated_description: "Truncated at output limit"
         tokens_unavailable: "Token counts unavailable"
         cache_read_tokens: "Cache read"
         cache_write_tokens: "Cache write"
@@ -2634,6 +3216,11 @@ en:
             finite: "Payloads kept %{detailed} days, summaries %{summary} days, then deleted"
 
       ai_agent:
+        automatic_image_tools: "Automatically uses all enabled image-generation tools"
+        no_image_tools: "No enabled image-generation tools."
+        new_bot_option:
+          label: "AI agent"
+          description: "Creates the bot together with its language model, prompt, tools, and permissions."
         ai_tools: "Tools"
         native_tools_help: "Provider-native tools, such as web search or page fetch, appear when \"Always use default language model\" is enabled and the selected default language model supports them."
         mcp_servers: "MCP servers"
@@ -2678,8 +3265,8 @@ en:
         description: "Description"
         no_llm_selected: "No language model selected"
         use_parent_llm: "Use agent's language model"
-        max_turn_tokens: "Max turn tokens"
-        max_turn_tokens_help: "Maximum total tokens (input + output) consumed across all LLM calls during a single bot reply. Leave empty to default to half of the model's context window."
+        max_turn_tokens: "Turn work allowance"
+        max_turn_tokens_help: "Limits new output and tool results per reply, shared with child agents. Previous conversation does not count. This is not a spending limit. Leave empty to use 500,000 tokens."
         compression_threshold: "Compression threshold"
         compression_threshold_help: "Percentage of context usage (20–99) at which automatic compression kicks in. Lower values trigger compression earlier, preserving more headroom."
         vision_enabled: Include image uploads
@@ -2905,7 +3492,7 @@ en:
 
       secrets:
         short_title: "Credentials"
-        description: "Manage authentication credentials shared across LLMs, embeddings, and tools."
+        description: "Manage authentication credentials shared across LLMs, embeddings, decision models, and tools."
         name: "Name"
         secret: "Value"
         select_secret: "Select a credential..."
@@ -2928,8 +3515,48 @@ en:
         tool: "Tool"
         mcp_server: "MCP server"
         mcp_server_oauth_client_secret: "MCP server OAuth client secret"
+        decision_model: "Decision model"
         modal:
           title: "Create new credential"
+
+      decision_models:
+        seeded_description: "Pre-configured model"
+        manage: "Manage decision models"
+        start_from: "Start from"
+        no_preset: "None"
+        preset_descriptions:
+          none: "Settings for any compatible decision model endpoint"
+          jev-latest: "TypeSafe's hosted decision model, text only"
+          jev-latest-vision: "TypeSafe's hosted decision model with experimental image support"
+          vllm-sr-d3: "Open-source multimodal decision model, self-hosted with vLLM"
+          cloudflare-clef: "Cloudflare's open-source multimodal decision model on Workers AI"
+          cloudflare-clef-flash: "Smaller, faster version of Clef on Workers AI"
+          gpt-6-luna: "OpenAI's decision model on the Decisions API, with image support"
+          gemini-decision-1: "Google's decision model on the Gemini Decisions API, with image support"
+        display_name: "Name"
+        model: "Model"
+        provider: "Provider"
+        url: "Endpoint URL"
+        api_key: "Credential"
+        vision_enabled: "Supports image input"
+        custom_headers:
+          title: "Custom headers"
+          name: "Header name"
+          value: "Header value"
+          add: "Add header"
+          remove: "Remove header"
+        edit: "Edit"
+        delete: "Delete"
+        confirm_delete: "Are you sure you want to delete this decision model? Features and workflows that use it will stop working."
+        saved: "Decision model saved"
+        test: "Run test"
+        test_success: "The decision model answered the test question (yes: %{percentage}%)."
+        providers:
+          system_one: "System One"
+          typesafe: "TypeSafe"
+          open_ai: "OpenAI Decisions"
+          CDCK: "CDCK"
+          gemini: "Gemini Decisions"
 
       mcp_servers:
         short_title: "MCP servers"
@@ -3013,6 +3640,45 @@ en:
           one: "Discovered %{count} tool using protocol %{version}."
           other: "Discovered %{count} tools using protocol %{version}."
 
+      models:
+        short_title: "Models"
+        description: "Connect the models that power AI features and workflows."
+        new: "New model"
+        back: "Back to models"
+        back_to_types: "Back to model types"
+        empty: "You haven't set up any models yet"
+        name: "Name"
+        type: "Type"
+        provider: "Provider"
+        edit: "Edit"
+        seeded_warning: "This is pre-configured on your site and cannot be edited."
+        choose_type: "What kind of model do you want to add?"
+        select_type: "Select"
+        types:
+          llm: "Large language"
+          embedding: "Embedding"
+          decision: "Decision"
+        type_titles:
+          llm: "Large language model"
+          embedding: "Embedding model"
+          decision: "Decision model"
+        type_descriptions:
+          llm: "Generates text for features like the AI bot, summaries, and the AI helper"
+          embedding: "Turns content into vectors for semantic search and related topics"
+          decision: "Answers typed questions about content (yes/no, choice, score) with probabilities, for use in AI features and workflows"
+        type_filters:
+          llm: "Large language models"
+          embedding: "Embedding models"
+          decision: "Decision models"
+        templates:
+          llm: "Choose a language model template"
+          embedding: "Choose an embedding template"
+          decision: "Choose a decision model template"
+        filters:
+          all: "All types"
+          text: "Filter by name or provider"
+          no_results: "No models match your filters"
+          reset: "Reset filters"
       llms:
         short_title: "LLMs"
         no_llms: "No LLMs yet"
@@ -3287,8 +3953,17 @@ en:
         empty: "You haven't setup embeddings yet"
         presets: "Select a preset..."
         configure_manually: "Configure manually"
+        preset_descriptions:
+          manual: "Settings for any embedding service, including self-hosted ones"
+          bge-large-en: "Open-source English-only model, self-hosted"
+          bge-m3: "Open-source multilingual model for longer content, self-hosted"
+          multilingual-e5-large: "Open-source multilingual model, self-hosted"
+          cohere-embed-v4: "Cohere's multilingual model, hosted on AWS Bedrock"
+          gemini-embedding-001: "Google's hosted multilingual model"
+          text-embedding-3-large: "OpenAI's most accurate embedding model"
+          text-embedding-3-small: "OpenAI's faster, lower-cost embedding model"
+          text-embedding-ada-002: "OpenAI's previous-generation model, superseded by text-embedding-3-small"
         edit: "Edit"
-        seeded_warning: "This is pre-configured on your site and cannot be edited."
         tests:
           title: "Run test"
           running: "Running test..."
@@ -3296,6 +3971,7 @@ en:
           failure: "Attempting to generate an embedding resulted in: %{error}"
         hints:
           dimensions_warning: "Once saved, this value can't be changed."
+          bedrock_api_key: "A Bedrock API key, or the secret access key when an access key ID is set. Leave empty to use an IAM role or the server's AWS credentials."
           matryoshka_dimensions: "Defines the size of nested embeddings used for hierarchical or multi-layered representation of data, similar to how nested dolls fit within each other."
           embed_prompt: "Task instruction prefix when generating embeddings of forum content. ONLY for embeddings models that require prefixes, like nomic-embed or stella. Not needed for most models."
           search_prompt: "Task instruction prefix when generating embeddings of search queries. ONLY for embeddings models that require prefixes, like nomic-embed or stella. Not needed for most models."
@@ -3321,10 +3997,15 @@ en:
           open_ai: "OpenAI"
           google: "Google"
           cloudflare: "Cloudflare"
+          aws_bedrock: "AWS Bedrock"
           CDCK: "CDCK"
           fake: "Custom"
         provider_fields:
           model_name: "Model name"
+          model_id: "Model ID or inference profile"
+          region: "AWS region"
+          access_key_id: "AWS access key ID"
+          role_arn: "IAM role ARN"
 
         semantic_search: "Topics (Semantic)"
         semantic_search_results:
@@ -3347,9 +4028,75 @@ en:
           suffix: "in all topics and posts with AI"
 
       ai_artifact:
+        editor:
+          title: "AI artifact"
+          edit_options: "Edit options"
+          reference: "Reference"
+          share_reference_description: "Share key or a shared artifact link from this site."
+          source_reference_description: "Source artifact ID."
+          version: "Version"
+          version_description: "Leave blank for the base artifact."
+          autorun: "Run automatically"
+          autorun_default_description: "Only applies when artifact security is set to hybrid mode."
+          autorun_strict: "This site requires a click to run."
+          autorun_lax: "This site runs artifacts automatically."
+          height: "Height (px)"
+          height_description: "1–2000 pixels. Leave blank for the default height."
+          seamless: "Seamless display"
+          seamless_description: "Hide the footer when the artifact runs."
+          summary_autorun: "Run automatically: %{value}"
+          summary_height: "Height: %{value}"
+          summary_height_value: "%{height} px"
+          summary_seamless: "Seamless: %{value}"
+          default: "Default"
+          option_on: "On"
+          option_off: "Off"
+          apply: "Apply"
+          invalid_share: "Enter a valid share key or a link to a shared artifact on this site."
+          invalid_source: "Enter a positive source artifact ID (up to 19 digits)."
+          invalid_version: "Enter a positive version number (up to 19 digits), or leave blank."
+          invalid_height: "Enter a height from 1 to 2000 pixels, or leave blank."
         expand_view_label: "Expand view"
         collapse_view_label: "Exit Fullscreen (ESC or Back button)"
         click_to_run_label: "Run Artifact"
+        share: "Share"
+        privacy_notice: "Anyone with the link can view this version. Your conversation stays private."
+        privacy_notice_login_required: "Signed-in users with the link can view this version. Your conversation stays private."
+        create_link: "Create link"
+        version_label: "Version %{version}"
+        copied: "Copied to clipboard"
+        copy_link: "Copy link"
+        copy_embed: "Copy embed"
+        embed_post: "Embed in post"
+        embed_post_title: "Copy the code to embed this artifact in a post"
+        embed_website: "Embed on website"
+        embed_website_title: "Copy the HTML to embed this artifact on a website"
+        new_tab: "Show in new tab"
+        update_pin: "Update pinned version"
+        pin_updated: "Shared version updated"
+        revoke: "Revoke link"
+        revoke_conversation: "Revoke conversation share"
+        confirm_revoke_standalone_title: "Revoke link?"
+        confirm_revoke_standalone_message: "This link and its embeds will stop working. This cannot be undone."
+        confirm_revoke_conversation_title: "Revoke conversation share?"
+        confirm_revoke_conversation_message: "This permanently stops the shared conversation and its artifact embeds. Standalone links are not revoked."
+        shared_artifacts: "Shared AI artifacts"
+        filter_shares: "Filter shares"
+        filter_all: "All"
+        filter_standalone: "Standalone"
+        filter_conversation: "Conversation"
+        standalone: "Standalone share"
+        conversation: "Shared with conversation"
+        empty_shares: "No shared AI artifacts yet."
+        unavailable: "This link is no longer available. You can still revoke it."
+        retry_loading: "Retry loading"
+        newest_first: "Newest first"
+        oldest_first: "Oldest first"
+
+      shared_ai_conversations:
+        title: "Shared AI conversations"
+        empty: "No shared AI conversations yet."
+        unavailable: "This conversation link is no longer available. You can still revoke it."
 
       ai_bot:
         title: "AI bot"
@@ -3455,10 +4202,7 @@ en:
           streaming_below: "New content below"
           editing_post: "Editing post"
       sentiments:
-        dashboard:
-          title: "Sentiment"
         sidebar:
-          overview: "Sentiment overview"
           analysis: "Sentiment analysis"
         sentiment_analysis:
           share_chart: "Copy link to chart"
@@ -3504,6 +4248,31 @@ en:
             expanded: "Expanded"
             expanded_description: "with AI summaries"
 
+      ai_search:
+        related_topics: "Related topics"
+        related_replies:
+          one: "%{count} reply"
+          other: "%{count} replies"
+        answer_label: "AI answer"
+        follow_up_label: "Ask a follow-up question"
+        follow_up_placeholder: "Ask a follow-up…"
+        ask: "Ask"
+        references_title: "Cited topics"
+        references_empty: "Topics the answers cite appear here."
+        tabs:
+          label: "Search results"
+          ask: "Ask AI"
+          topics: "Topics"
+          this_topic: "This topic"
+          messages: "Messages"
+          no_answer: "No AI answer found"
+        no_keyword_matches: "No keyword matches found."
+        no_answer: "AI couldn’t find a clear answer. %{askLink}"
+        ask_community: "Ask the community."
+        scope:
+          this_topic: "this topic"
+          messages: "your messages"
+          fallback: "Nothing found in %{name}, so this answer is from the whole site."
       discobot_discoveries:
         main_title: "Ask AI"
         loading_convo: "Loading conversation"
@@ -3879,6 +4648,18 @@ en:
 en:
   js:
     discourse_captcha:
+      title: "Captcha"
+      configuration_test:
+        tab_title: "Test"
+        title: "Configuration test"
+        description: "Test your saved CAPTCHA keys."
+        start: "Test configuration"
+        retry: "Test again"
+        complete_challenge: "Complete the challenge to verify your saved keys."
+        verifying: "Verifying with your CAPTCHA provider…"
+        not_configured: "Select a CAPTCHA provider and save both the site key and secret key in Settings before testing."
+        challenge_failed: "Could not load CAPTCHA. Check your keys and provider settings."
+        expired: "The challenge expired. Start a new test and complete it again."
       missing_token: "Please complete the captcha challenge."
       verification_failed: "Captcha verification failed. Please try again."
       placeholder: placeholder
@@ -4256,6 +5037,8 @@ en:
       default_query_notice: "This is a default query, the SQL cannot be edited. To edit the SQL, create a new query."
       view_query: "View"
       queries: "Queries"
+      back_to_queries: "Back to queries"
+      query_details: "Query details"
       query_created: "Query created!"
       mode:
         label: "Query authoring mode"
@@ -4266,7 +5049,8 @@ en:
       hidden_relation: "You do not have access to this content."
       allow_groups: "Allow groups to access this query"
       title: "Data Explorer"
-      create: "Create"
+      create: "Create query"
+      new_query: "New query"
       create_placeholder: "Query name..."
       description_placeholder: "Enter a description here"
       ai:
@@ -4284,9 +5068,8 @@ en:
         save_query: "Save query"
         write_manually: "Write SQL manually"
         sql_label: "SQL"
-        optional: "optional"
       import:
-        label: "Import"
+        label: "Import query"
         unparseable_json: "Unparseable JSON file."
         wrong_json: "Wrong JSON file. A JSON file should contain a 'query' object, which should at least have an 'sql' property."
       help:
@@ -4295,8 +5078,8 @@ en:
         auto_resolution: "<h2>Automatic entity resolution</h2>
           <p>When your query returns an entity id, Data Explorer may automatically substitute it with
           the entity name and other useful information in query results. Automatic resolution is available for
-          <i><b>user_id</b></i>, <i><b>group_id</b></i>, <i><b>topic_id</b></i>, <i><b>category_id</b></i>
-          and <i><b>badge_id</b></i>. To try this out run this query:</p>
+          <i><b>user_id</b></i>, <i><b>group_id</b></i>, <i><b>topic_id</b></i>, <i><b>category_id</b></i>,
+          <i><b>badge_id</b></i> and <i><b>reviewable_id</b></i>. To try this out run this query:</p>
           <pre><code>SELECT user_id\nFROM posts</code></pre>"
         custom_params: "<h2>Creating custom parameters</h2>
           <p>To create custom parameters for your queries, put this at the top of your query and follow the format:</p>
@@ -4337,7 +5120,14 @@ en:
       run: "Run"
       undo: "Discard changes"
       delete: "Delete"
+      delete_confirm: "Are you sure you want to delete this query?"
       recover: "Undelete query"
+      dashboard:
+        add: "Add to dashboard"
+        remove: "Remove from dashboard"
+        added: "Query added to dashboard"
+        removed: "Query removed from dashboard"
+        unmountable: "Queries with required parameters that have no default value can't be shown on the dashboard"
       sql_label: "SQL"
       run_with_explain: "Run with query plan"
       run_options: "More run options"
@@ -4364,7 +5154,6 @@ en:
         results_json: "Results (JSON)"
         results_csv: "Results (CSV)"
         query_json: "Query definition (JSON)"
-      others_dirty: "A query has unsaved changes that will be lost if you navigate away."
       run_time: "Query completed in %{value} ms."
       cached_result_notice: "Showing cached results from %{relative_time}."
       result_count:
@@ -4373,10 +5162,10 @@ en:
       max_result_count:
         one: "Showing top %{count} result."
         other: "Showing top %{count} results."
-      query_name: "Query"
+      name: "Name"
       query_groups: "Groups"
       query_tags: "Tags"
-      default_tag_mandatory: "The default tag cannot be removed from bundled queries."
+      automatic_tag_mandatory: "This tag is added automatically and cannot be removed."
       link: "Link for"
       report_name: "Report"
       query_description: "Description"
@@ -4385,7 +5174,7 @@ en:
       column: "Column %{number}"
       save_params: "Set defaults"
       reset_params: "Reset"
-      search_placeholder: "Search..."
+      search_placeholder: "Search queries…"
       filter_by_tag: "Filter by tag"
       filter_by_this_tag: "Filter the list by this tag"
       no_search_results: "Sorry, we couldn't find any results matching your text."
@@ -4507,10 +5296,19 @@ en:
           join: "Join Zoom"
           frame_title: "Zoom webinar"
           open_in_zoom: "Open in Zoom"
+          pause_notifications:
+            paused: "Notifications are paused until you leave the webinar."
+            resume: "Resume notifications"
           load_error: "You left the webinar or we are unable to load Zoom in this page."
           too_early: "You can join the webinar closer to the event start time"
           view_topic: "View topic for the event"
+          guest_prompt:
+            title: "Join the webinar"
+            message: "You’ll need to register for this site to participate in the livestream chat. Would you like to register or skip?"
+            register: "Register"
+            skip: "Skip"
         chat:
+          sign_up_to_chat: "Sign up to join the chat"
           rsvp_to_event: "RSVP to the event to start chatting"
           rsvp_to_event_with_link: "RSVP to <a href='%{url}'>the event</a> to start chatting"
           rsvp_body: "Connect with other attendees before, during, and after the event."
@@ -4844,6 +5642,9 @@ en:
         topic_id_description: "Only trigger for events in this topic. Leave empty to match all events."
     discourse_post_event:
       new_event: "New Event"
+      onebox:
+        all_day: "All day"
+        all_day_range: "All day · %{start} → %{end}"
       notifications:
         before_event_reminder: "An event is about to start"
         after_event_reminder: "An event has ended"
@@ -4887,11 +5688,13 @@ en:
       open_event: "Open event"
       destroy_event: "Destroy event"
       invitees_modal:
-        title_invited: "Event Participation"
+        title_invited: "Event participation"
         title_participated: "List of users who participated"
         filter_placeholder: "Filter users"
         remove_invitee: "Remove invitee from list"
         add_invitee: "Add invitee to list"
+        this_event: "This event"
+        first_event_only: "First event only"
       bulk_invite_modal:
         confirm: "confirm"
         text: "Upload CSV file"
@@ -4907,6 +5710,7 @@ en:
         group_selector_placeholder: "Choose a group..."
         user_selector_placeholder: "Choose user..."
         attendance_label: "Attendance"
+        recurring: "Apply attendance to this event and all following events"
         inline_title: "Inline bulk invite"
         csv_title: "CSV bulk invite"
       upcoming_events:
@@ -4953,7 +5757,7 @@ en:
               one: "%{count} user invited"
               other: "%{count} users invited"
         event:
-          expired: "Expired"
+          expired: "Ended"
           closed: "Closed"
           full: "Full"
           status:
@@ -4966,12 +5770,25 @@ en:
             private:
               title: "Private"
               description: "A private event can only be joined by invited users."
+      allow_anonymous_livestream: "Enable anonymous visitors to watch this livestream"
+      recording:
+        watch: "Watch recording"
+        add: "Add recording link"
+      recording_modal:
+        add_title: "Add recording"
+        edit_title: "Edit recording"
+        label: "Recording link"
+        save: "Save"
+        remove: "Remove recording"
+        edit_reason: "Recording link updated"
+        no_event: "The event could not be found in its post."
       composer:
         name_placeholder: "Event name"
         end_date_placeholder: "End date"
         location_or_url_placeholder: "Add location or URL"
         location_placeholder: "Add location"
         url_placeholder: "Add URL"
+        recording_placeholder: "Add a link to the recording"
         max_attendees_placeholder: "Unlimited attendees"
         max_attendees_display:
           one: "Max %{count} attendee"
@@ -5083,6 +5900,9 @@ en:
         livestream:
           label: "Livestream"
           checkbox_label: "Embed the URL as a video and open livestream chat for attendees"
+        recording:
+          label: "Recording"
+          placeholder: "Add a link to the recording"
         location:
           label: "Location"
           label_or_url: "Location or URL"
@@ -5122,6 +5942,13 @@ en:
 en:
   admin_js:
     admin:
+      api:
+        scopes:
+          descriptions:
+            gamification:
+              read_score_events: "Read gamification score events."
+              create_score_events: "Create gamification score events to award or deduct points."
+              update_score_events: "Update existing gamification score events."
       site_settings:
         categories:
           discourse_gamification: "Discourse Gamification"
@@ -5142,6 +5969,8 @@ en:
         name: "Name"
         name_placeholder: "Name..."
         new: "New leaderboard"
+        edit: "Edit leaderboard"
+        view: "View leaderboard"
         create_success: "Leaderboard created"
         delete_success: "Leaderboard deleted"
         save_success: "Leaderboard saved"
@@ -5170,7 +5999,7 @@ en:
         scoring_configuration: "Scoring configuration"
         scoring_configuration_description: "Override the global scoring rules for this leaderboard. Leave fields empty to use the global defaults."
         scorable_categories: "Scorable categories"
-        scorable_categories_help: "Categories to include in scoring. Leave empty to use the global setting."
+        scorable_categories_help: "Select categories to count only category-based activity. Visits, reading, invitations, flags, and chat are excluded, and manual score adjustments count only when assigned to one of these categories. Leave empty to use the global scoring settings."
         score_overrides: "Score weights"
         score_overrides_help: "Override the point values for each action. Leave empty to use the global default. Set to 0 to disable."
         weight:
@@ -5190,7 +6019,7 @@ en:
           chat_reaction_given: "Chat reaction given"
           chat_reaction_received: "Chat reaction received"
         period:
-          all_time: "All Time"
+          all_time: "All time"
           yearly: "Yearly"
           quarterly: "Quarterly"
           monthly: "Monthly"
@@ -5202,9 +6031,8 @@ en:
       close: "Close"
       delete: "Delete"
       edit: "Edit"
-      back: "Back"
+      back_to_leaderboards: "Back to leaderboards"
       save: "Save"
-      apply: "Apply"
       recalculate: "Recalculate scores"
       recalculating: "Recalculating scores..."
       completed: "Done! The scores have been successfully recalculated."
@@ -5214,7 +6042,7 @@ en:
         last_30_days: "Last 30 days"
         last_90_days: "Last 90 days"
         last_year: "Last year"
-        all_time: "All Time"
+        all_time: "All time"
         custom_date_range: "Custom range"
       custom_range_from: "From"
       daily_update_scores_availability:
@@ -5223,6 +6051,7 @@ en:
       admin:
         title: "Gamification"
         name: "Name"
+        created_by: "Created by"
         period: "Period"
     discourse_workflows:
       node_unavailable:
@@ -5239,6 +6068,8 @@ en:
         date_description: "Date the points apply to (YYYY-MM-DD). Defaults to today."
         description: "Description"
         description_description: "Optional note shown alongside the score event."
+        category_id: "Category"
+        category_id_description: "Optional. Points assigned to a category also count on leaderboards scoped to that category."
 
 --- # plugins/discourse-github/config/locales/client.en.yml
 en:
@@ -5728,6 +6559,31 @@ en:
         remove: "Remove this like"
         cant_remove: "You can no longer remove your like"
         unauthenticated: "Please sign up or log in to like this post"
+    discourse_workflows:
+      node_unavailable:
+        requires_reactions: "Requires the Reactions plugin to be enabled"
+      nodes:
+        "action:post_reaction": "React to post"
+        "trigger:post_reaction_changed": "Post reaction changed"
+      node_descriptions:
+        "action:post_reaction": "Add or remove a reaction on a post"
+        "trigger:post_reaction_changed": "Fires when a reaction on a post is added, replaced or removed. The user is the author; the actor is whoever reacted."
+        "trigger:post_reaction_changed_v1": "Fires when a reaction on a post is added, replaced or removed. The user is whoever reacted, not the author."
+      post_reaction:
+        operations:
+          add: "Add reaction"
+          remove: "Remove reaction"
+        reaction: "Reaction"
+        if_exists: "If the user already reacted"
+        if_exists_description: "Users can only have one reaction per post"
+        if_exists_keep: "Keep their reaction"
+        if_exists_replace: "Replace their reaction"
+      post_reaction_changed:
+        changes_added: "Added"
+        changes_replaced: "Replaced"
+        changes_removed: "Removed"
+        reaction: "Reaction"
+        reaction_description: "Only trigger when this reaction is added, replaced or removed. Leave empty to match any reaction."
     notifications:
       reaction_1_user_multiple_posts:
         one: "reacted to %{count} of your post"
@@ -5871,6 +6727,23 @@ en:
           message_4: "Your average message length was <strong>%{length}</strong> characters"
           message_5: "Your favorite channels:"
           dancing_baby_alt: "Dancing baby"
+        live_usage:
+          title: Phone bill
+          subtitle: Your voice call statement
+          subtitle_others: "%{username}'s voice call statement"
+          total_airtime: Total airtime
+          call_count:
+            one: "across %{count} call"
+            other: "across %{count} calls"
+          top_contacts: Most talked with
+          top_rooms: Favorite rooms
+          hours:
+            one: "%{count} hr"
+            other: "%{count} hrs"
+          minutes:
+            one: "%{count} min"
+            other: "%{count} mins"
+          amount_due: "Amount due: nothing, calls are on the house"
         invites:
           guest_book_title: Guest Book
           guest_book_subtitle: Your Community Invitations
@@ -6865,6 +7738,10 @@ en:
             discourse_workflows_workflow_created: "Create workflow"
             discourse_workflows_workflow_destroyed: "Delete workflow"
   js:
+    review:
+      types:
+        discourse_workflows_workflow:
+          title: "Workflows"
     discourse_ai:
       features:
         discourse_workflows:
@@ -6872,6 +7749,24 @@ en:
           description: "AI-assisted workflow authoring"
           workflow_authoring: "Workflow authoring"
     discourse_workflows:
+      admin_assistant:
+        preview:
+          label: "Workflow preview"
+          exact_configuration: "Exact configuration"
+          shortened_configuration: "Shortened configuration"
+          shortened: "Some long settings are shortened here to fit in chat. Approving saves the full workflow unpublished, so you can review every setting before publishing it."
+          read_only: "Read-only preview"
+          script_validation_warning: "Some Code nodes failed syntax or mode checks. Review the errors in Exact configuration before approving."
+          connects_to: "Connects to %{nodes}"
+          branch: "Branch %{number}"
+          node_count:
+            one: "%{count} node"
+            other: "%{count} nodes"
+          connection_count:
+            one: "%{count} connection"
+            other: "%{count} connections"
+          cycle: "Includes a cycle"
+          unavailable: "This workflow is too complex to draw safely here. Review the exact configuration before approving."
       actor:
         system: "System user"
         anonymous: "Anonymous user"
@@ -6879,6 +7774,12 @@ en:
       node_unavailable:
         default: "This node is currently unavailable"
         short: "Unavailable"
+      node_deprecated:
+        notice: "A newer version of this node is available. Its output changes: %{changes}. Expressions using the old keys must be updated after upgrading."
+        upgrade: "Upgrade"
+        user_is_post_author: "In the newer version, user is the post author instead of whoever acted."
+        user_is_topic_author: "In the newer version, user is the topic author instead of whoever acted."
+        topic_v1: "Posts now use a smaller shape: author details such as trust_level, name, avatar_template, admin and staff moved to user, and fields such as topic_archetype, wiki, hidden, edit_reason and reads were removed."
       node_issues:
         title: "Configuration issues"
         required: "%{label} is required"
@@ -6894,14 +7795,13 @@ en:
       ai:
         button: "Build with AI"
         title: "Workflow assistant"
-        subtitle: "Create automatic drafts. Publishing stays manual."
         close: "Close workflow assistant"
-        description: "Describe a change, then generate a draft to review. Publishing stays manual."
-        review_description: "Review this draft, then apply it when it looks right."
         prompt_label: "What should change?"
         prompt_placeholder: "Example: When a new support topic is created, tag it needs-review and reply with a checklist."
         generate: "Generate draft"
         apply: "Apply draft"
+        fix: "Ask assistant to fix"
+        fix_message: "The syntax or mode checks failed for a Code node script in your last proposal. Fix the scripts and propose the change again."
         back_to_prompt: "Edit request"
         start_over: "Start over"
         applied: "AI workflow proposal applied to the draft. Publish when you're ready."
@@ -6925,8 +7825,8 @@ en:
         code_node: "Code node"
         script_preview: "Code script preview"
         script_mode: "Mode: %{mode}"
-        script_validation_passed: "Script validation passed"
-        script_validation_failed: "Script validation failed"
+        script_validation_passed: "Syntax and mode checks passed"
+        script_validation_failed: "Syntax or mode checks failed"
         progress_title: "Progress"
         progress:
           queued: "Workflow authoring request queued"
@@ -6943,7 +7843,12 @@ en:
       title: "Workflows"
       templates:
         title: "Templates"
-        description: "Start with a pre-built workflow template"
+        requires_plugin: "Requires the %{plugin} to be enabled"
+        plugin_link: "%{plugin} plugin"
+        missing_node: "Requires the %{node_type} node, which is not installed"
+        use_template: "Use template"
+        filter: "Filter by name or description"
+        no_results: "No templates match your filter"
       new_workflow: "New workflow"
       default_workflow_name: "My workflow"
       delete: "Delete"
@@ -6963,9 +7868,8 @@ en:
       unpublished_changes_message_detail: "Publish to make them live"
       unpublished_changes_confirmation: "This workflow has unpublished changes. If you leave now, those changes will stay in draft and won't run until you publish them."
       keep_editing: "Keep editing"
-      workflow_name: "Workflow name"
+      name: "Name"
       creator: "Creator"
-      last_editor: "Last editor"
       last_update: "Last update"
       last_run: "Last run"
       status: "Status"
@@ -6989,6 +7893,7 @@ en:
         workflow: "Workflow"
         executions: "Executions"
         settings: "Settings"
+        workflow_variables: "Variables"
         versions: "Versions"
         data_tables: "Data tables"
         templates: "Templates"
@@ -7005,6 +7910,40 @@ en:
         timezone_description: "Schedule triggers, time conditions, and date values without a timezone offset use this timezone. If unset, they use the site timezone."
         danger_zone: "Danger zone"
         delete_description: "Permanently delete this workflow and all its executions. This action cannot be undone."
+      workflow_variables:
+        title: "Variables"
+        description_will_publish: "Values used by this workflow's nodes. A change publishes immediately."
+        description_will_draft: "Values used by this workflow's nodes. Changes are saved as a draft until you publish."
+        back: "Back to variables"
+        back_to_manage: "Back to manage variables"
+        add_variable: "Add variable"
+        edit_variable: "Edit variable"
+        manage_variables: "Manage variables"
+        definitions_description: "Add, edit, or remove the variables this workflow's nodes read values from."
+        delete_confirm: "Are you sure you want to delete the variable \"%{label}\"?"
+        value_published: "Value published"
+        no_variables: "This workflow has no variables yet."
+        key: "Key"
+        key_description: "How nodes reference this variable's value, e.g. <code>$workflow_vars.my_key</code>."
+        key_format_error: "Must start with a letter or underscore, and contain only letters, numbers, and underscores."
+        key_duplicate_error: "A variable with this key already exists."
+        description: "Description"
+        description_description: "Optional help text shown to admins next to this variable's value."
+        type: "Type"
+        type_description: "The kind of value this variable accepts."
+        types:
+          string: "String"
+          integer: "Integer"
+          boolean: "Boolean"
+          enum: "Enum"
+          category: "Category"
+          category_list: "Category list"
+          group: "Group"
+          group_list: "Group list"
+          tag_list: "Tag list"
+          simple_list: "Simple list"
+        choices: "Choices"
+        choices_description: "The options an admin can choose from when setting this variable's value."
       versions:
         title: "Versions"
         version: "Version"
@@ -7042,6 +7981,8 @@ en:
         description_placeholder: "Add a note about this step..."
         always_output_data: "Always output data"
         always_output_data_help: "If on, this node emits an empty item when it would otherwise produce no items, so the next node still runs."
+        continue_on_error: "Continue on error"
+        continue_on_error_help: "If on, the workflow keeps going when this node fails instead of stopping. The execution shows what went wrong."
         tabs:
           parameters: "Parameters"
           settings: "Settings"
@@ -7081,6 +8022,7 @@ en:
         "trigger:post_moved": "Post moved"
         "trigger:post_destroyed": "Post deleted"
         "trigger:post_recovered": "Post recovered"
+        "trigger:post_like_changed": "Post liked"
         "trigger:topic_created": "Topic created"
         "trigger:topic_category_changed": "Topic category changed"
         "trigger:topic_tag_changed": "Topic tag changed"
@@ -7111,6 +8053,7 @@ en:
         "action:topic": "Topic"
         "action:post": "Post"
         "action:flag_post": "Flag post"
+        "action:post_like": "Like post"
         "action:send_personal_message": "Send personal message"
         "action:set_fields": "Set fields"
         "trigger:stale_topic": "Stale topic"
@@ -7135,9 +8078,11 @@ en:
         "action:respond_to_webhook": "Respond to webhook"
         "trigger:topic_admin_button": "Topic admin button"
         "trigger:post_button": "Post button"
+        "trigger:composer_paused": "Composer paused"
         "trigger:error": "Error trigger"
         "flow:wait": "Wait"
         "action:modal": "Modal"
+        "action:composer_message": "Composer message"
         "action:topic_category": "Topic category"
         "action:topic_pin": "Topic pinning"
         "action:topic_moderation": "Topic moderation"
@@ -7163,8 +8108,12 @@ en:
         "trigger:post_created": "Fires when a new post or reply is created"
         "trigger:post_edited": "Fires after the first post in a topic is edited and cooked"
         "trigger:post_moved": "Fires when a post is moved to another topic"
-        "trigger:post_destroyed": "Fires when a post is deleted. The user is whoever deleted it, not the author."
-        "trigger:post_recovered": "Fires when a deleted post is restored. The user is whoever restored it, not the author."
+        "trigger:post_destroyed": "Fires when a post is deleted. The user is the author; the actor is whoever deleted it."
+        "trigger:post_destroyed_v1": "Fires when a post is deleted. The user is whoever deleted it, not the author."
+        "trigger:post_recovered": "Fires when a deleted post is restored. The user is the author; the actor is whoever restored it."
+        "trigger:post_recovered_v1": "Fires when a deleted post is restored. The user is whoever restored it, not the author."
+        "trigger:post_like_changed": "Fires when a post is liked or unliked. The user is the author; the actor is whoever liked it."
+        "trigger:post_like_changed_v1": "Fires when a post is liked or unliked. The user is whoever liked it, not the author."
         "trigger:topic_created": "Fires when a new topic is created"
         "trigger:topic_category_changed": "Fires when a topic is moved to a different category"
         "trigger:topic_tag_changed": "Fires when tags are added to or removed from a topic"
@@ -7195,6 +8144,7 @@ en:
         "action:topic": "Create, retrieve, list, close, archive, or set custom fields on topics"
         "action:post": "Create, edit, delete, recover, retrieve, or list posts"
         "action:flag_post": "Flag a post as spam or add it to the review queue, optionally hiding or deleting the post and silencing its author"
+        "action:post_like": "Like or unlike a post"
         "action:send_personal_message": "Send a personal message to users or groups"
         "action:set_fields": "Set or modify data fields in the workflow context"
         "trigger:stale_topic": "Fires when a topic has had no activity for a period"
@@ -7219,9 +8169,11 @@ en:
         "action:respond_to_webhook": "Send a custom HTTP response to the webhook caller"
         "trigger:topic_admin_button": "Adds a button to the topic admin menu that triggers this workflow"
         "trigger:post_button": "Adds a button to the post actions menu that triggers this workflow"
+        "trigger:composer_paused": "Fires while a user writes a topic or reply"
         "trigger:error": "Fires when another workflow fails"
         "flow:wait": "Pause workflow execution and resume after a delay or webhook callback"
         "action:modal": "Shows a modal to a user and waits for them to choose an option"
+        "action:composer_message": "Shows a tip above the user's composer"
         "action:topic_category": "Set or clear the category of a topic"
         "action:topic_pin": "Pin or unpin a topic in its category, globally, or as a banner"
         "action:topic_moderation": "Perform moderation actions on a topic"
@@ -7266,6 +8218,24 @@ en:
         confirmation_message: "Confirmation message"
         confirmation_message_placeholder: "Are you sure?"
         confirmation_default_message: "Are you sure?"
+      composer_paused:
+        fire_on: "Fire on"
+        fire_on_pause: "Typing pause"
+        fire_on_draft_saved: "Draft save"
+        fire_on_description: "Typing pause shows instantly but sends the phrases to the browser. Draft save keeps them hidden but fires a few seconds later."
+        phrases: "Phrases"
+        phrases_description: "Watched word syntax, once per post each. Leave empty to fire on every pause."
+        phrases_placeholder: "Add phrases"
+        composer_actions: "Fire for"
+        composer_actions_create_topic: "New topic"
+        composer_actions_reply: "Reply"
+        composer_actions_description: "Never fires for messages or edits"
+        group_ids_description: "Leave empty for all users."
+      composer_message:
+        title: "Title"
+        title_placeholder: "Message title"
+        body: "Body"
+        body_placeholder: "Message body"
       modal:
         target_user: "Target user"
         target_user_placeholder: "Defaults to the user who triggered the workflow"
@@ -7517,6 +8487,13 @@ en:
           spam_silence: "Flag as spam, hide post and silence user"
         reason: "Reason"
         actor_username: "Performed by user"
+      post_like:
+        operations:
+          like: "Like post"
+          unlike: "Unlike post"
+      post_like_changed:
+        changes_liked: "Liked"
+        changes_unliked: "Unliked"
       flag_user:
         username: "User"
         reason: "Reason"
@@ -7588,6 +8565,9 @@ en:
         fixed: "Fixed"
         plain: "Plain"
         dynamic: "Dynamic"
+        empty_expression: "Enter an expression or switch back to %{plain}"
+      topic_control:
+        unavailable_topic: "Topic #%{id}"
       expression_preview:
         result: "Result"
         empty: "Empty"
@@ -7601,6 +8581,7 @@ en:
           trigger: "Trigger"
           item_index: "Item index"
           variable: "Variable"
+          workflow_variable: "Workflow variable"
           current_user: "Current user"
           site_setting: "Site setting"
           execution: "Execution"
@@ -7619,7 +8600,8 @@ en:
           trigger: "The trigger node's output data. Example: $trigger.topic.id"
           site_settings: "Access Discourse site settings. Example: $site_settings.title"
           current_user: "The user who triggered the workflow. Properties: id, username"
-          workflow_vars: "Workflow variables defined in the admin panel."
+          global_vars: "Global variables shared across all workflows, defined in the admin panel."
+          workflow_vars: "This workflow's local variables."
           execution: "Execution metadata: id, workflow_id, workflow_name"
           node_ref: "Reference a previous node's output. Example: $('Node Name').item.json"
           helpers: "Utility functions. Currently: $helpers.absoluteUrl(path)."
@@ -7659,6 +8641,7 @@ en:
           array: "Array"
           object: "Object"
         fields:
+          actor_username: "Performed by user"
           category_ids: "Categories"
           category_ids_description: "Only trigger for topics in these categories. Leave empty to match all categories."
           category_ids_placeholder: "All categories"
@@ -7674,6 +8657,9 @@ en:
           changed_fields_location: "Location"
           changed_fields_title: "Title"
           changed_fields_profile_images: "Profile and card backgrounds"
+          changes: "Changes"
+          changes_description: "Leave empty to match any change."
+          changes_placeholder: "Any change"
           combinator: "Match mode"
           combinator_and: "All conditions must pass"
           combinator_or: "Any condition can pass"
@@ -7683,14 +8669,22 @@ en:
           group_ids_description: "Only trigger for users in at least one of these groups"
           group_ids_placeholder: "All groups"
           include_subcategories: "Include subcategories"
+          operation: "Operation"
+          post_id: "Post ID"
           reviewable_types: "Reviewable types"
           reviewable_types_description: "Only trigger for these reviewable types"
           reviewable_types_placeholder: "All types"
+          tag_names: "Tags"
+          tag_names_description: "Only trigger for topics that have at least one of these tags"
+          topic_ids: "Topics"
+          topic_ids_description: "Only trigger for these topics. Leave empty to match all topics."
+          topic_ids_placeholder: "All topics"
         dynamic_values:
           badge_id: "a badge ID"
           boolean: "true or false"
           category_id: "a category ID"
           chat_channel_id: "a chat channel ID"
+          chat_integration_channel_id: "a chat integration channel ID"
           column_name: "a column name"
           data_table_id: "a data table ID"
           group_id: "a group ID"
@@ -7700,6 +8694,7 @@ en:
           option_value: "an option value"
           query_id: "a query ID"
           tag_names: "tag names"
+          topic_ids: "topic IDs"
           username: "a username"
           usernames: "usernames"
           user_or_group_name: "a username or group name"
@@ -7825,6 +8820,7 @@ en:
         category_ids_description: "Only trigger for posts in these categories. Leave empty to match all categories."
         tag_names: "Tags"
         tag_names_description: "Only trigger for posts in topics that have at least one of these tags"
+        topic_ids_description: "Only trigger for posts in these topics. Leave empty to match all topics."
       post_lifecycle:
         topic_type: "Topic type"
         topic_type_description: "Choose whether topics, personal messages, or both should trigger the workflow"
@@ -7834,10 +8830,12 @@ en:
         category_ids_description: "Only trigger for posts in these categories. Leave empty to match all categories."
         tag_names: "Tags"
         tag_names_description: "Only trigger for posts in topics that have at least one of these tags"
+        topic_ids_description: "Only trigger for posts in these topics. Leave empty to match all topics."
       post_edited:
         category_ids_description: "Only trigger for posts in these categories. Leave empty to match all categories."
         tag_names: "Tags"
         tag_names_description: "Only trigger for posts in topics that have at least one of these tags"
+        topic_ids_description: "Only trigger for posts in these topics. Leave empty to match all topics."
         post_scope: "Post scope"
         post_scope_description: "Choose which posts should trigger the workflow"
         post_scope_first_post: "First post"
@@ -7850,6 +8848,8 @@ en:
         category_ids_description: "Only trigger for posts moved into these categories. Leave empty to match all categories."
         tag_names: "Destination tags"
         tag_names_description: "Only trigger for posts moved into topics that have at least one of these tags"
+        topic_ids: "Destination topics"
+        topic_ids_description: "Only trigger for posts moved into these topics. Leave empty to match all topics."
       topic_created:
         topic_type: "Topic type"
         topic_type_description: "Choose whether topics, personal messages, or both should trigger the workflow"
@@ -8195,6 +9195,10 @@ en:
         mapping_mode_auto: "Map automatically"
         columns_case_sensitive_hint_description: "Column mappings must match the data table column names exactly (case sensitive)"
         columns: "Columns"
+        add_column: "Add column"
+        add_all_columns: "All columns"
+        empty_column_placeholder: "Empty (NULL)"
+        missing_column: "Column %{name} can’t be written to this data table. Remove it, or the node fails when it runs."
         filter_combinator: "Match mode"
         filter_combinator_and: "All conditions must match"
         filter_combinator_or: "Any condition can match"
@@ -8216,6 +9220,10 @@ en:
         finished_at: "Finished"
         run_time: "Run time"
         id: "ID"
+        execution: "Execution"
+        modes:
+          manual: "Manual"
+          error_mode: "Error workflow"
         expand: "Details"
         collapse: "Hide"
         details: "Details"
@@ -8225,7 +9233,6 @@ en:
         delete_selected: "Delete selected"
         select: "Select"
         cancel_select: "Cancel"
-        show: "Show"
         delete_confirm:
           one: "Are you sure you want to delete %{count} execution?"
           other: "Are you sure you want to delete %{count} executions?"
@@ -8233,6 +9240,10 @@ en:
         output: "Output"
         no_output_data: "This node produced no output data, so the execution stopped and no items were passed to connected nodes. To continue the execution with an empty item, turn on Always output data in this node's Settings tab."
         items: "items"
+        handled_error: "The node failed but the workflow continued because of its error settings: %{message}"
+        item_error:
+          one: "An item failed but the workflow continued because of its error settings: %{message}"
+          other: "%{count} items failed but the workflow continued because of its error settings: %{message}"
         logs: "Console"
         workflow_call: "Workflow call"
         workflow_call_called_by: "Called by"
@@ -8336,6 +9347,12 @@ en:
           boolean: "Boolean"
           date: "Date"
         add_column: "Add column"
+        column_options: "Column options"
+        rename_column: "Rename"
+        move_column_left: "Move left"
+        move_column_right: "Move right"
+        delete_column: "Delete column"
+        delete_column_confirm: "Are you sure you want to delete the “%{name}” column and all its data? Workflows using this column will fail on their next run."
         add_row: "Add row"
         edit_row: "Edit row"
         no_rows: "No rows yet"
@@ -8368,6 +9385,7 @@ en:
         import_nodes: "Import"
         import_error: "Failed to import: invalid file format"
         import_version_error: "Failed to import: unsupported format version"
+        import_variables_skipped: "Skipped %{count} variable(s) already on this workflow: %{keys}"
         max_nodes_reached: "Workflows are limited to %{max} nodes"
         sync_error: "Failed to sync canvas changes. Please reload the page."
       sticky_note:
@@ -8399,7 +9417,6 @@ en:
         empty_title: "No output yet"
         no_data_yet: "No output yet. Add sample data to test this node manually."
         no_data_no_edit: "No output data."
-        loading_editor: "Loading editor…"
         invalid_json: "Invalid JSON"
         invalid_json_empty: "JSON cannot be empty."
         invalid_shape_not_array: "Pinned data must be an array of items."
@@ -8426,6 +9443,7 @@ en:
       create_zendesk_issue: "Create Zendesk Ticket"
       view_zendesk_issue: "View on Zendesk"
     zendesk:
+      ticket_created: "Zendesk ticket created"
       credentials_not_setup: You haven't setup your Zendesk credentials.
       url_not_set: Your Zendesk URL is not currently set.
       general_error: Something went wrong.
@@ -8454,6 +9472,551 @@ en:
       title: "Footnotes"
       add: "Add footnote"
 
+
+--- # plugins/live/config/locales/client.en.yml
+en:
+  js:
+    live:
+      about:
+        participants:
+          one: "%{formatted_number} person joined voice chats"
+          other: "%{formatted_number} people joined voice chats"
+      onebox:
+        here_now:
+          one: "%{count} person here now"
+          other: "%{count} people here now"
+      sidebar:
+        title: "Live rooms"
+        create: "Create room"
+        empty: "No live rooms yet."
+      reactions:
+        title: "Send a reaction"
+        rate_limited: "You're sending reactions too quickly. Try again in a moment."
+        more: "React with any emoji"
+      room:
+        join: "Join live room"
+        leave: "Leave room"
+        info: "Room info"
+        edit: "Edit room"
+        delete: "Delete room"
+        delete_confirm: "Are you sure you want to delete '%{name}'? Everyone in it will be disconnected and its members removed."
+        deleted: "Room deleted."
+        copy_link: "Copy link"
+        link_copied: "Link copied to clipboard"
+        menu_title: "Room options"
+        created: "Room created successfully."
+        updated: "Room updated successfully."
+        save: "Save"
+        connecting: "Connecting to peers…"
+        disconnected: "You left the room."
+        participants: "Listeners"
+        mic_on: "Mute microphone"
+        mic_off: "Unmute microphone"
+        noise_suppression_active: "Noise suppression active"
+        connection_error: "We couldn't start a WebRTC session. Please ensure your browser has microphone permissions."
+        mic_unavailable: "We couldn't access your microphone. Check that it is connected and not in use by another app, then try again."
+        deafen_on: "Deafen"
+        deafen_off: "Undeafen"
+        type_open: "Open"
+        type_open_description: "Everyone can speak"
+        type_stage: "Stage"
+        type_stage_description: "Only speakers and moderators can unmute"
+        type_stage_hint: "Participants join as listeners. Moderators can promote listeners to speakers."
+        listeners_cannot_unmute: "Only speakers can unmute in this room."
+        open_page: "Show full room view"
+        widget_mode: "Picture-in-picture"
+        settings: "Call settings"
+        more: "More options"
+        audio_options: "Audio options"
+        video_options: "Video options"
+        layout: "Layout"
+        recording_start: "Start recording"
+        recording_stop: "Stop recording"
+        recording_confirm: "Start recording this call? Every participant will see a recording indicator."
+        recording_stop_confirm: "Stop recording this call?"
+        recording_indicator: "Recording"
+        recording_indicator_title: "Recording started by %{username}"
+        recording_started_toast: "This call is now being recorded."
+        recording_stopped_toast: "The recording has stopped."
+      room_page:
+        empty: "No one is here yet — join to get things started."
+        participant_count:
+          one: "%{count} in room"
+          other: "%{count} in room"
+      widget:
+        title: "Active live room: %{room}"
+        open_chat: "Open room chat"
+        expand: "Expand picture-in-picture"
+        hide: "Hide picture-in-picture"
+        show: "Show picture-in-picture"
+        overflow_tile:
+          one: "Show %{count} more participant"
+          other: "Show %{count} more participants"
+        overflow_count: "+%{count}"
+      chat:
+        title: "Chat"
+        open: "Open chat"
+        close: "Close chat"
+        unavailable_title: "Zoinks!"
+        unavailable: "Chat is unavailable right now."
+        empty_title: "No chat yet"
+        empty_body: "Send a message to get the conversation started."
+        composer_placeholder: "Message the room…"
+        send: "Send"
+        open_in_chat: "Open in chat"
+        back_to_live_room: "Back to live room"
+      video:
+        camera_on: "Turn on camera"
+        camera_off: "Turn off camera"
+        screen_share_start: "Share your screen"
+        screen_share_stop: "Stop sharing your screen"
+        publisher_limit: "The maximum number of simultaneous video streams has been reached."
+        capture_failed: "We couldn't start your camera or screen share. Check your browser permissions."
+        camera_switch_denied: "We couldn't switch cameras. Check your browser's camera permissions."
+        camera_switch_failed: "We couldn't start that camera. It may be in use by another app or unavailable."
+        room_disabled: "Video was turned off in this room."
+        fullscreen: "Full screen"
+        exit_fullscreen: "Exit full screen"
+        fullscreen_all: "Full-screen all videos"
+        layout: "Video layout"
+        layout_auto: "Auto layout"
+        layout_presentation: "Presentation layout"
+        layout_tiled: "Tiled layout"
+      ptt:
+        enable: "Push to Talk"
+        disable: "Disable Push to Talk"
+        configure_key: "PTT Key: %{key}"
+        press_key: "Press a key…"
+        reserved_key: "This key is reserved."
+        controlled_by_ptt: "Controlled by Push to Talk"
+        badge: "PTT: %{key}"
+      idle:
+        auto_muted: "You were auto-muted after being idle."
+        click_to_unmute: "Click to unmute."
+        disconnected: "You were disconnected from %{room} due to inactivity."
+      livekit:
+        browser_unsupported: "Your browser can't connect to this site's live server. Try updating it or using a different browser."
+        connect_failed: "Your network cannot reach the live server. Check your connection or contact your administrator."
+        reconnect_failed: "The connection to the live server was lost, so you left the call. Rejoin to reconnect."
+        room_ended: "The call ended while you were disconnected. Rejoin to start a new one."
+        duplicate_tab: "This call continued in another tab or window, so this one was disconnected."
+      mic_permission:
+        title: "Your microphone is blocked"
+        body: "Live rooms need microphone access, but your browser is blocking it for this site — usually because access was denied here before and the browser recorded that choice."
+        instructions: "To fix it, open the site permissions in your browser (the lock or settings icon next to the address bar), allow the microphone, and try joining again."
+        ok: "Got it"
+      mesh_privacy_warning:
+        title: "Before you join this room"
+        body: "This room connects participants directly to each other, so while you are in the call other participants may be able to see your IP address. This is how peer-to-peer calls work and is usually harmless, but join only if you are comfortable with it."
+        join: "Join room"
+        cancel: "Cancel"
+        dont_show_again: "Don't show this again"
+      status:
+        auto_update_on: "Auto-update status"
+        auto_update_off: "Auto-update status"
+      devices:
+        system_default: "System default"
+        unknown_device: "Device %{index}"
+      quality:
+        standard: "Standard"
+        high: "High"
+        maximum: "Maximum"
+      video_settings:
+        title: "Video settings"
+        camera: "Camera"
+        background_blur: "Blur my background"
+        blur_amount: "Blur amount"
+        blur_failed: "Background blur couldn't be started, so it was turned off."
+        camera_error: "We couldn't access your camera. Check your browser permissions."
+        not_supported: "Background blur isn't supported by this browser."
+        camera_quality: "Camera quality"
+        camera_quality_hint: "Higher settings send sharper video but use more bandwidth and CPU, especially with several viewers. Maximum keeps full quality no matter how many people are watching."
+        screen_quality: "Screen share quality"
+        screen_quality_hint: "Higher settings allow sharper, smoother screen shares at the cost of bandwidth. Maximum suits fast, stable connections sharing high-resolution screens."
+        screen_content: "Optimize screen share for"
+        screen_content_text: "Text sharpness"
+        screen_content_motion: "Smooth motion"
+        screen_content_hint: "Text keeps the image crisp and lets the frame rate drop; motion keeps playback smooth and lets sharpness drop."
+      voice_settings:
+        title: "Voice settings"
+        open: "Voice settings"
+        input_audio: "Input"
+        output_audio: "Output"
+        audio_settings: "Audio settings"
+        input_device: "Input device"
+        output_device: "Output device"
+        mic_test: "Microphone test"
+        mic_test_hint: "Speak into your microphone — the bar shows your input level."
+        mic_error: "We couldn't access your microphone. Check your browser permissions and device selection."
+        input_sensitivity: "Input sensitivity"
+        input_sensitivity_hint: "Sound below this level won't be transmitted. Set to zero to always transmit."
+        noise_suppression: "Noise suppression"
+        noise_suppression_hint: "Filters noise like fans and keyboard clicks from your microphone. AI noise cancellation is stronger but uses more resources."
+        noise_suppression_modes:
+          none: "None"
+          standard: "Standard"
+          ai_rnnoise: "AI — RNNoise (lightweight)"
+          ai_dtln: "AI — DTLN (balanced)"
+          ai_dfn3: "AI — DeepFilterNet (best quality)"
+        noise_suppression_failed: "AI noise cancellation couldn't run, so it was switched off."
+        echo_cancellation: "Echo cancellation"
+        echo_cancellation_hint: "Prevents others from hearing their own audio through your microphone."
+        auto_gain_control: "Automatic gain control"
+        auto_gain_control_hint: "Keeps your volume steady by adjusting the microphone level automatically."
+        subtitles: "Show live subtitles"
+        subtitles_hint: "Generates captions for what others say, on your device — nothing is sent anywhere. Requires a GPU-capable browser and downloads the subtitles model once."
+        subtitles_model: "Subtitles model"
+        subtitles_model_hint: "Best quality is the most accurate. Smaller downloads about half as much, but makes more mistakes in noisy rooms and in some languages."
+        subtitles_models:
+          ultra: "Best quality (~410 MB)"
+          redux: "Smaller (~210 MB)"
+        subtitles_failed: "Subtitles couldn't be started, so they were turned off."
+        test_output: "Test"
+        choose_output: "Choose output device"
+        quality: "Audio quality"
+        quality_hint: "Higher settings improve fidelity for good microphones at a small bandwidth cost. Standard is tuned for speech."
+      subtitles:
+        loading: "Preparing subtitles…"
+        downloading: "Downloading subtitles model… %{percent}%"
+      local_recording:
+        start: "Record to this device"
+        stop: "Stop recording and save"
+        audio_only_confirm: "The call video couldn't be captured. Record audio only instead?"
+        start_failed: "The recording couldn't be started."
+        saved: "Recording saved to your downloads."
+        save_failed: "The recording couldn't be saved."
+        started_toast: "%{username} started recording this call."
+        indicator_title_self: "You're recording this call to your device"
+        indicator_title:
+          one: "%{usernames} is recording this call to their device"
+          other: "%{usernames} are recording this call to their devices"
+      transcript:
+        start: "Record transcript"
+        stop: "Stop transcript recording"
+        indicator: "Transcribing"
+        indicator_tooltip:
+          one: "%{usernames} is transcribing"
+          other: "%{usernames} are transcribing"
+        indicator_tooltip_self: "You are transcribing"
+        transcriber_you: "You"
+        draft_topic: "Open transcript draft"
+        stop_and_open: "Stop recording and open draft"
+        draft_title: "Call transcript: %{room}"
+        reaction_count: "%{emoji} ×%{count}"
+        source_label: "Call transcript"
+        unknown_speaker: "unknown speaker"
+      stage:
+        promoted_to_speaker: "You've been made a speaker."
+        demoted_to_listener: "You've been moved to listeners."
+        speakers: "Speakers"
+        listeners: "Listeners"
+        more_listeners: "+%{count} more"
+        make_speaker: "Make speaker"
+        move_to_listeners: "Move to listeners"
+        room_now_open: "This room is now open — you can speak."
+        raise_hand: "Raise hand"
+        lower_hand: "Lower hand"
+        hand_raised_toast: "%{username} raised their hand to speak."
+        request_dismissed: "Your request to speak was dismissed."
+        queue_title: "Requests to speak"
+        queue_empty: "No pending requests."
+        queue_position: "You're #%{position} in line."
+        approve_request: "Approve"
+        dismiss_request: "Dismiss"
+        dismiss_request_menu: "Dismiss request to speak"
+      participant:
+        spotlight: "Spotlight for me"
+        remove_spotlight: "Remove from spotlight"
+        menu_title: "Participant options"
+        volume: "Volume"
+        mute: "Mute"
+        unmute: "Unmute"
+        kick: "Kick from room"
+        flag: "Flag"
+        status_speaking: "Speaking"
+        status_muted: "Muted"
+        status_deafened: "Deafened"
+        status_screen_sharing: "Sharing screen"
+        status_video: "Camera on"
+        status_ptt: "Push to talk enabled"
+        status_hand_raised: "Wants to speak"
+      flagging:
+        notify_moderators_description: "This participant requires staff attention for a reason not listed above."
+      review:
+        flagged_in: "Flagged in"
+      reviewables:
+        actions:
+          agree_and_keep:
+            title: "Agree"
+            description: "Agree with the flag."
+          agree_and_suspend:
+            title: "Suspend user"
+            description: "Agree with the flag and suspend the user."
+          agree_and_silence:
+            title: "Silence user"
+            description: "Agree with the flag and silence the user."
+          disagree:
+            title: "Disagree"
+            description: "Disagree with the flag."
+          ignore:
+            title: "Ignore flag"
+            description: "Remove the flag from the queue without taking action."
+      connection_diagnostics:
+        menu: "Connection diagnostics"
+        title: "Connection diagnostics"
+        summary: "Connected to %{connected} of %{total} peers."
+        relay_only: "This site only allows relayed (TURN) connections."
+        peers: "Peers"
+        servers: "STUN/TURN servers"
+        this_device: "This device"
+        no_peers: "No one else is in this room."
+        no_servers: "No STUN/TURN servers are configured."
+        probing: "Checking servers…"
+        not_in_roster: "Not in room roster"
+        unknown_user: "User %{id}"
+        local_candidate: "Your side"
+        remote_candidate: "Their side"
+        via_server: "Through server"
+        relay_address: "Relay address"
+        public_address: "Public address"
+        no_public_address: "None. STUN requests got no answer, so direct connections can't be set up and calls will be relayed."
+        rtt: "Round-trip time"
+        bitrate: "Available upload"
+        candidate_pairs: "Candidate pairs"
+        candidate_pairs_value: "%{total} total, %{succeeded} succeeded, %{failed} failed"
+        local_candidates: "Your candidates"
+        remote_candidates: "Their candidates"
+        pairs_by_type: "By candidate type"
+        pairs_by_type_value: "%{types}: %{succeeded} succeeded, %{failed} failed"
+        harmless_errors:
+          one: "%{count} harmless error: the server was reached from another address"
+          other: "%{count} harmless errors: the server was reached from another address"
+        multiple_public_ipv4: "This device reaches the internet through more than one public IPv4 address (%{addresses}). This usually means more than one internet connection, which can make direct connections unreliable."
+        unexpected_local_address: "Your traffic to this peer left from a public address no server reported, so direct connections likely failed and the call was relayed. This usually means more than one internet connection or a strict NAT."
+        restarts: "Reconnect attempts"
+        restarts_value: "%{count} of %{max}"
+        gave_up: "Stopped retrying"
+        incoming_audio: "Incoming audio"
+        incoming_audio_value: "%{packets} packets, %{lost} lost, average level %{level}"
+        receiving_silence: "Audio from this peer arrives but is silent. Their microphone is likely muted or set to the wrong input device."
+        playback: "Playback"
+        playback_ok: "Playing at %{volume}% volume"
+        playback_problems:
+          deafened: "You are deafened"
+          muted_by_you: "You muted this person"
+          volume_zero: "Volume is set to 0"
+          no_element: "No audio player is attached for this person"
+          paused: "The audio player is paused, possibly blocked by the browser's autoplay rules"
+          element_muted: "The audio player is muted"
+          no_track: "The audio player has no audio track"
+          track_ended: "Their audio track has ended"
+        relay_over: "relay over %{protocol}"
+        copy_report: "Copy report"
+        privacy_note: "This report includes your IP addresses and those of other participants. Only share it with staff."
+        copied: "Diagnostics report copied to clipboard"
+        refresh: "Refresh"
+        answer_yes: "Yes"
+        answer_no: "No"
+        disabled: "disabled"
+        no_signal: "no signal"
+        status:
+          connected: "Connected"
+          connecting: "Connecting"
+          failed: "Failed"
+          missing: "No connection"
+          not_needed: "Not needed"
+        route:
+          host: "Direct (same network)"
+          stun: "Direct (through NAT via STUN)"
+          relay-local: "Relayed through TURN (your side)"
+          relay-remote: "Relayed through TURN (their side)"
+          relay-both: "Relayed through TURN (both sides)"
+          unknown: "Not established"
+        states:
+          connection: "Connection"
+          ice: "ICE"
+          gathering: "ICE gathering"
+          signaling: "Signaling"
+        probe:
+          ok: "Reachable (%{ms} ms)"
+          timeout: "No response"
+          failed: "Unreachable"
+        local:
+          browser: "Browser"
+          platform: "Platform"
+          online: "Online"
+          cpu_cores: "CPU cores"
+          network: "Network"
+          microphone: "Microphone"
+          camera: "Camera"
+      room_info:
+        title: "Room Info"
+        status: "Status"
+        public: "Public"
+        private: "Private"
+        member_count: "Members"
+        max_participants: "Max participants"
+        members:
+          title: "Manage Members"
+          add: "Add member"
+          add_placeholder: "Enter username..."
+          add_button: "Add"
+          role: "Role"
+          moderator: "Moderator"
+          speaker: "Speaker"
+          participant: "Participant"
+          remove: "Remove"
+          creator: "Creator"
+      call:
+        button: "Call"
+        calling: "Calling %{username}…"
+        incoming_title: "Incoming call"
+        incoming_state: "is calling you…"
+        answer: "Answer"
+        decline: "Decline"
+      invite:
+        title: "Invite to %{room_name}"
+        menu: "Invite people"
+        search_label: "Invite by name"
+        search_placeholder: "Search users..."
+        send: "Send invite"
+        invite: "Invite"
+        invited: "Invited"
+        suggestions_title: "People you've shared this room with"
+        time_together: "%{duration} together recently"
+        link_label: "Or share an invite link"
+        copy: "Copy"
+        sent:
+          one: "Invite sent."
+          other: "%{count} invites sent."
+        skipped: "%{usernames} can't be invited because they don't have access to live rooms."
+      memberships:
+        add_user: "Add participant"
+        remove_user: "Remove participant"
+      agent:
+        invite: "Invite LiveKit agent"
+        name: "Agent name"
+        type_name: "Type a name instead"
+        pick_name: "Choose from the list instead"
+        refresh: "Refresh the agent list"
+        deploy_hint: "Ensure your agent is deployed before adding it to this call."
+        invited: "Agent invited. It will appear when LiveKit connects it. This can take about a minute."
+      admin:
+        title: "Live"
+        dashboard_title: "Dashboard"
+        recordings_title: "Recordings"
+        recordings:
+          webhook_config_hint: "No LiveKit webhooks have been received recently. Configure a webhook in LiveKit pointing to %{webhook_url}. Use the same API key configured in the live livekit api key site setting and include egress_ended events so recording statuses and download notifications update when recordings finish."
+          description: "Call recordings produced by the LiveKit egress service. Files stay on the storage configured on the recording server; completed recordings link to that location when it is a URL."
+          room: "Room"
+          requested_by: "Requested by"
+          status: "Status"
+          started_at: "Started"
+          duration: "Duration"
+          file: "File"
+          download: "Download"
+          load_more: "Load more"
+          empty: "No recordings yet. Room moderators can record calls that run on the LiveKit media server."
+          status_recording: "Recording"
+          status_completed: "Completed"
+          status_failed: "Failed"
+        dashboard:
+          overview: "Overview"
+          total_sessions: "Total sessions"
+          unique_users: "Unique users"
+          avg_duration: "Avg. session duration"
+          top_rooms: "Top rooms"
+          room_name: "Room"
+          deleted_room: "(deleted room)"
+          deleted_user: "(deleted user)"
+          top_users: "Top users"
+          user: "User"
+          sessions: "Sessions"
+          total_time: "Total time"
+          no_data: "No voice activity in this period."
+          livekit:
+            title: "LiveKit media server"
+            refresh: "Refresh"
+            load_failed: "Could not load the LiveKit status. Try refreshing."
+            config_ok: "Configured — room policy: %{policy}"
+            config_missing: "Not configured — missing settings: %{settings}"
+            token_ok: "Access tokens can be signed with the configured key pair"
+            token_error: "Access token signing failed: %{error}"
+            server_ok:
+              one: "Server reachable in %{latency} ms — %{count} active room"
+              other: "Server reachable in %{latency} ms — %{count} active rooms"
+            server_error: "Server unreachable: %{error}"
+            probe_ok: "Last connectivity check passed"
+            probe_failed: "Last connectivity check failed"
+            probe_never: "No automatic connectivity check has run yet — one runs whenever a LiveKit setting is saved."
+            webhook_received: "Last webhook received"
+            webhook_never: "No webhooks received yet — optional, but they speed up presence cleanup after abrupt disconnects and recording delivery."
+            webhook_config_hint: "To enable webhooks, add this to the LiveKit server's configuration file (livekit.yaml) and restart it:"
+            rooms_title: "Live calls on LiveKit"
+            room: "Room"
+            discourse_participants: "In the roster"
+            livekit_participants: "Connected to LiveKit"
+            room_status: "Status"
+            in_sync: "In sync"
+            missing_on_livekit: "In the roster but not connected: %{users}"
+            missing_in_presence: "Connected but not in the roster: %{users}"
+            room_error: "Could not list participants: %{error}"
+            no_rooms: "No live calls are using LiveKit right now."
+        rooms_title: "Live rooms"
+        create_room: "New room"
+        edit: "Edit"
+        update: "Update"
+        create: "Create"
+        back: "Back"
+        no_rooms_yet: "No live rooms configured yet."
+        room_created: "Room created successfully."
+        room_updated: "Room updated successfully."
+        destroy_room:
+          confirm: "Are you sure you want to delete '%{name}'?"
+        end_call:
+          title: "End live call"
+          confirm: "End the live call in '%{name}'? Everyone in the call will be disconnected."
+        room:
+          name: "Name"
+          name_placeholder: "Room name"
+          slug: "Slug"
+          slug_placeholder: "room-slug"
+          slug_help: "Used in the room's URL. Leave empty to generate one from the name."
+          description: "Description"
+          public: "Public"
+          public_help: "Public rooms are visible to all users."
+          manage_members: "Manage members"
+          room_type: "Room type"
+          max_participants: "Max participants"
+          max_participants_help: "Maximum participants allowed (2-50, or 2-200 for Stage rooms)."
+          video_enabled: "Video"
+          video_enabled_help: "Allow participants to share their camera and screen in this room, if the site settings allow their groups to."
+          video_enabled_stage_help: "Allow speakers and moderators to share their camera and screen in this room, if the site settings allow their groups to. Listeners can only watch."
+          livekit_enabled: "Use media server (SFU)"
+          livekit_enabled_help: "Route this room's calls through the site's LiveKit media server instead of the peer-to-peer mesh. A call already in progress is not affected — the room switches when its next call starts."
+          chat_channel: "Chat channel"
+          chat_channel_help: "Each session opens a thread here. Only channels with threading enabled are listed."
+          chat_channel_none: "No channels with threading enabled. Turn it on in a channel's settings first."
+          chat_idle_minutes: "New thread after idle (minutes)"
+          chat_idle_minutes_help: "Minutes of inactivity before the next message starts a fresh thread."
+          chat_thread_hint: "The first message someone sends starts the thread, titled after the room."
+          quality_section: "Quality"
+          max_quality_profile: "Maximum quality"
+          max_quality_profile_help: "Caps the voice, camera and screen share quality participants can pick in this room. Site default applies no room-level cap; site settings always apply."
+          quality_site_default: "Site default"
+          member_count: "Members"
+          creator: "Created by"
+          created_at: "Created"
+    notifications:
+      live_invitation: "invited you to join %{room_name}"
+      live_call: "is calling you"
+      titles:
+        live_invitation: "Live room invite"
+        live_call: "Incoming live call"
+    review:
+      types:
+        reviewable_live_user:
+          title: "Flagged live room participant"
 
 --- # plugins/poll/config/locales/client.en.yml
 en:
@@ -8734,6 +10297,62 @@ en:
             declined: "Last right-click: declined, the browser took it"
         multi_select:
           title: "Multi select"
+          choose_item: "Choose an item"
+          create_item: "Create an item"
+          footer_empty_title: "Footer with no results"
+          footer_empty_description: "The footer action remains available when there are no matching results."
+          footer_empty_try_this: "Open the menu and search for an item. The footer stays visible."
+          footer_scroll_title: "Footer with a long result list"
+          footer_scroll_description: "The result list scrolls independently from the footer action."
+          footer_scroll_try_this: "Open the menu and scroll the results. The footer remains in place."
+        reorderable_list:
+          title: "Reorderable list"
+          groups:
+            aria_label: "Reorderable list example groups"
+            start:
+              title: "Start here"
+              description: "The default shell: one handle per row that drags, opens the move menu, and takes the keyboard."
+            policies:
+              title: "Row policies"
+              description: "Which rows may move and which may go: pinned rows that keep their slot, and protected rows that offer no way out."
+            content:
+              title: "Interactive row content"
+              description: "Rows carrying their own live controls — toggles and inputs. They keep their normal focus and clicks; the list only claims the handle."
+            layouts:
+              title: "Cell layouts"
+              description: "Manual placement for table-shaped rows: the list renders the rows, and the pre-wired controls go wherever a cell needs them."
+            groups:
+              title: "Multiple lists"
+              description: "Lists registered under one group accept each other's rows, by drag or from the move menu."
+          description: "Interactive examples of DReorderableList: dragging, the move menu behind each handle, the keyboard accelerators, pinned rows, cross-list groups, removal, and inline creation."
+          basic_example: "Default list"
+          basic_description: "The out-of-the-box shell. Each row has one control, the handle: it is the drag grip, and it opens a menu of move destinations. Tab reaches every handle in document order alongside the rows' own controls, and the arrow keys walk between handles as a shortcut. Every real move announces the new position, and a move refused at either end says so rather than doing nothing."
+          basic_try_this: "Tab to a handle and press Enter for the move menu, or press the arrow keys to walk the list. Alt with an arrow moves the row itself; Alt with Home or End sends it to an end."
+          policies_example: "Pinned and required rows"
+          policies_description: "Two predicates, two policies, both subtractive. A row the movable predicate excludes renders no handle and keeps its exact slot, wherever it sits — this list pins its first and last rows, and the rows around them move within the slots that are left. A row the removable predicate excludes renders no remove control, so a protected row offers nothing that cannot be acted on."
+          policies_try_this: "Send the first movable row to the bottom from its menu: neither pinned row shifts. The required row has no remove control at all."
+          policies_pinned: "Pinned"
+          policies_required: "Required"
+          toggles_example: "Rows with toggles"
+          toggles_description: "The admin-dashboard pattern: rows carry their own interactive controls, which keep their normal focus and clicks. Rows toggled off stay in the list but stop being movable — they keep their slot and lose their handle, rather than disappearing into a separate block."
+          toggles_try_this: "Turn a toggle off and the row keeps its place but can no longer be moved. Reorder the rows around it and watch it stay put."
+          editable_example: "Editable rows"
+          editable_description: "The settings value-list pattern with stable identity: an input per row, the handle leading and the list's own remove control trailing. Typing stays in the input, and Tab moves through the row's own controls the way it does anywhere else."
+          editable_try_this: "Edit a value, then remove a row — the removal is announced and focus lands on the row that took its place."
+          table_example: "Native table rows, manual placement"
+          table_description: "Manual placement for cell layouts: the list renders the table body and its rows, and yields pre-wired controls for the row to place — here the handle occupies the first column."
+          table_try_this: "Drag a handle, or press Enter on one: the reorder control lives in the first cell and the whole row moves."
+          table_field: "Field"
+          table_type: "Type"
+          cross_list_example: "Cross-list moves"
+          cross_list_description: "Lists registered under one group accept each other's rows. Dragging carries a row across, and each handle's menu lists the sibling lists by name, so the move is reachable without a pointer. An emptied list keeps accepting drops."
+          cross_list_try_this: "Drag a row from Primary into Secondary, or open a row's menu and choose the other list by name."
+          cross_list_empty: "Drop a row here"
+          cross_list_primary: "Primary"
+          cross_list_secondary: "Secondary"
+          create_example: "Create affordance"
+          create_description: "With create enabled the list renders an input after the rows, so appending belongs to the same component that reorders."
+          create_try_this: "Type a fruit name and press Enter."
         toasts:
           title: "Toasts"
         font_scale:
@@ -9124,426 +10743,4 @@ en:
           title: "Tabs"
         overflow_controls:
           title: "Overflow controls"
-
---- # plugins/voice/config/locales/client.en.yml
-en:
-  js:
-    voice:
-      about:
-        participants:
-          one: "%{formatted_number} person joined voice chats"
-          other: "%{formatted_number} people joined voice chats"
-      sidebar:
-        title: "Voice rooms"
-        create: "Create room"
-        empty: "No voice rooms yet."
-      room:
-        join: "Join voice room"
-        leave: "Leave room"
-        info: "Room info"
-        edit: "Edit room"
-        copy_link: "Copy link"
-        link_copied: "Link copied to clipboard"
-        menu_title: "Room options"
-        created: "Room created successfully."
-        updated: "Room updated successfully."
-        save: "Save"
-        connecting: "Connecting to peers…"
-        disconnected: "You left the room."
-        participants: "Listeners"
-        mic_on: "Mute microphone"
-        mic_off: "Unmute microphone"
-        noise_suppression_active: "Noise suppression active"
-        connection_error: "We couldn't start a WebRTC session. Please ensure your browser has microphone permissions."
-        mic_unavailable: "We couldn't access your microphone. Check that it is connected and not in use by another app, then try again."
-        deafen_on: "Deafen"
-        deafen_off: "Undeafen"
-        type_open: "Open"
-        type_open_description: "Everyone can speak"
-        type_stage: "Stage"
-        type_stage_description: "Only speakers and moderators can unmute"
-        type_stage_hint: "Participants join as listeners. Moderators can promote listeners to speakers."
-        listeners_cannot_unmute: "Only speakers can unmute in this room."
-        open_page: "Show full room view"
-        widget_mode: "Widget view"
-        settings: "Call settings"
-        more: "More options"
-        audio_options: "Audio options"
-        video_options: "Video options"
-        layout: "Layout"
-        recording_start: "Start recording"
-        recording_stop: "Stop recording"
-        recording_confirm: "Start recording this call? Every participant will see a recording indicator."
-        recording_stop_confirm: "Stop recording this call?"
-        recording_indicator: "Recording"
-        recording_indicator_title: "Recording started by %{username}"
-        recording_started_toast: "This call is now being recorded."
-        recording_stopped_toast: "The recording has stopped."
-      room_page:
-        empty: "No one is here yet — join to get things started."
-      widget:
-        title: "Active voice room: %{room}"
-        open_chat: "Open room chat"
-        expand: "Expand call widget"
-        hide: "Hide call widget"
-        show: "Show call widget"
-        overflow_tile:
-          one: "Show %{count} more participant"
-          other: "Show %{count} more participants"
-        overflow_count: "+%{count}"
-      chat:
-        title: "Chat"
-        open: "Open chat"
-        close: "Close chat"
-        unavailable: "Chat is unavailable right now."
-        empty_title: "No chat yet"
-        empty_body: "Send a message to get the conversation started."
-        composer_placeholder: "Message the room…"
-        send: "Send"
-        open_in_chat: "Open in chat"
-        back_to_voice_room: "Back to voice room"
-      video:
-        camera_on: "Turn on camera"
-        camera_off: "Turn off camera"
-        screen_share_start: "Share your screen"
-        screen_share_stop: "Stop sharing your screen"
-        publisher_limit: "The maximum number of simultaneous video streams has been reached."
-        capture_failed: "We couldn't start your camera or screen share. Check your browser permissions."
-        camera_switch_denied: "We couldn't switch cameras. Check your browser's camera permissions."
-        camera_switch_failed: "We couldn't start that camera. It may be in use by another app or unavailable."
-        room_disabled: "Video was turned off in this room."
-        fullscreen: "Full screen"
-        exit_fullscreen: "Exit full screen"
-        fullscreen_all: "Full-screen all videos"
-        layout: "Video layout"
-        layout_presentation: "Presentation layout"
-        layout_tiled: "Tiled layout"
-      ptt:
-        enable: "Push to Talk"
-        disable: "Disable Push to Talk"
-        configure_key: "PTT Key: %{key}"
-        press_key: "Press a key…"
-        reserved_key: "This key is reserved."
-        controlled_by_ptt: "Controlled by Push to Talk"
-        badge: "PTT: %{key}"
-      idle:
-        auto_muted: "You were auto-muted after being idle."
-        click_to_unmute: "Click to unmute."
-        disconnected: "You were disconnected from %{room} due to inactivity."
-      livekit:
-        browser_unsupported: "Your browser can't connect to this site's voice server. Try updating it or using a different browser."
-        connect_failed: "Your network cannot reach the voice server. Check your connection or contact your administrator."
-        reconnect_failed: "The connection to the voice server was lost, so you left the call. Rejoin to reconnect."
-        room_ended: "The call ended while you were disconnected. Rejoin to start a new one."
-        duplicate_tab: "This call continued in another tab or window, so this one was disconnected."
-      mic_permission:
-        title: "Your microphone is blocked"
-        body: "Voice rooms need microphone access, but your browser is blocking it for this site — usually because access was denied here before and the browser recorded that choice."
-        instructions: "To fix it, open the site permissions in your browser (the lock or settings icon next to the address bar), allow the microphone, and try joining again."
-        ok: "Got it"
-      mesh_privacy_warning:
-        title: "Before you join this room"
-        body: "This room connects participants directly to each other, so while you are in the call other participants may be able to see your IP address. This is how peer-to-peer calls work and is usually harmless, but join only if you are comfortable with it."
-        join: "Join room"
-        cancel: "Cancel"
-        dont_show_again: "Don't show this again"
-      status:
-        auto_update_on: "Auto-update status"
-        auto_update_off: "Auto-update status"
-      devices:
-        system_default: "System default"
-        unknown_device: "Device %{index}"
-      quality:
-        standard: "Standard"
-        high: "High"
-        maximum: "Maximum"
-      video_settings:
-        title: "Video settings"
-        camera: "Camera"
-        background_blur: "Blur my background"
-        blur_amount: "Blur amount"
-        blur_failed: "Background blur couldn't be started, so it was turned off."
-        camera_error: "We couldn't access your camera. Check your browser permissions."
-        not_supported: "Background blur isn't supported by this browser."
-        camera_quality: "Camera quality"
-        camera_quality_hint: "Higher settings send sharper video but use more bandwidth and CPU, especially with several viewers. Maximum keeps full quality no matter how many people are watching."
-        screen_quality: "Screen share quality"
-        screen_quality_hint: "Higher settings allow sharper, smoother screen shares at the cost of bandwidth. Maximum suits fast, stable connections sharing high-resolution screens."
-        screen_content: "Optimize screen share for"
-        screen_content_text: "Text sharpness"
-        screen_content_motion: "Smooth motion"
-        screen_content_hint: "Text keeps the image crisp and lets the frame rate drop; motion keeps playback smooth and lets sharpness drop."
-      voice_settings:
-        title: "Voice settings"
-        open: "Voice settings"
-        input_audio: "Input"
-        output_audio: "Output"
-        audio_settings: "Audio settings"
-        input_device: "Input device"
-        output_device: "Output device"
-        mic_test: "Microphone test"
-        mic_test_hint: "Speak into your microphone — the bar shows your input level."
-        mic_error: "We couldn't access your microphone. Check your browser permissions and device selection."
-        input_sensitivity: "Input sensitivity"
-        input_sensitivity_hint: "Sound below this level won't be transmitted. Set to zero to always transmit."
-        noise_suppression: "Noise suppression"
-        noise_suppression_hint: "Filters noise like fans and keyboard clicks from your microphone. AI noise cancellation is stronger but uses more resources."
-        noise_suppression_modes:
-          none: "None"
-          standard: "Standard"
-          ai_rnnoise: "AI — RNNoise (lightweight)"
-          ai_dtln: "AI — DTLN (balanced)"
-          ai_dfn3: "AI — DeepFilterNet (best quality)"
-        noise_suppression_failed: "AI noise cancellation couldn't run, so it was switched off."
-        echo_cancellation: "Echo cancellation"
-        echo_cancellation_hint: "Prevents others from hearing their own audio through your microphone."
-        auto_gain_control: "Automatic gain control"
-        auto_gain_control_hint: "Keeps your volume steady by adjusting the microphone level automatically."
-        subtitles: "Show live subtitles"
-        subtitles_hint: "Generates captions for what others say, on your device — nothing is sent anywhere. Requires a GPU-capable browser and downloads a ~2.5 GB model once."
-        subtitles_failed: "Subtitles couldn't be started, so they were turned off."
-        test_output: "Test"
-        choose_output: "Choose output device"
-        quality: "Audio quality"
-        quality_hint: "Higher settings improve fidelity for good microphones at a small bandwidth cost. Standard is tuned for speech."
-      subtitles:
-        loading: "Preparing subtitles…"
-        downloading: "Downloading subtitles model… %{percent}%"
-      transcript:
-        start: "Record transcript"
-        stop: "Stop transcript recording"
-        indicator: "Transcribing"
-        indicator_tooltip:
-          one: "%{usernames} is transcribing"
-          other: "%{usernames} are transcribing"
-        indicator_tooltip_self: "You are transcribing"
-        transcriber_you: "You"
-        draft_topic: "Open transcript draft"
-        stop_and_open: "Stop recording and open draft"
-        draft_title: "Call transcript: %{room}"
-        unknown_speaker: "unknown speaker"
-      stage:
-        promoted_to_speaker: "You've been made a speaker."
-        demoted_to_listener: "You've been moved to listeners."
-        speakers: "Speakers"
-        listeners: "Listeners"
-        more_listeners: "+%{count} more"
-        make_speaker: "Make speaker"
-        move_to_listeners: "Move to listeners"
-        room_now_open: "This room is now open — you can speak."
-        raise_hand: "Raise hand"
-        lower_hand: "Lower hand"
-        hand_raised_toast: "%{username} raised their hand to speak."
-        request_dismissed: "Your request to speak was dismissed."
-        queue_title: "Requests to speak"
-        queue_empty: "No pending requests."
-        queue_position: "You're #%{position} in line."
-        approve_request: "Approve"
-        dismiss_request: "Dismiss"
-        dismiss_request_menu: "Dismiss request to speak"
-      participant:
-        spotlight: "Spotlight for me"
-        remove_spotlight: "Remove from spotlight"
-        menu_title: "Participant options"
-        volume: "Volume"
-        mute: "Mute"
-        unmute: "Unmute"
-        kick: "Kick from room"
-        flag: "Flag"
-        status_speaking: "Speaking"
-        status_muted: "Muted"
-        status_deafened: "Deafened"
-        status_screen_sharing: "Sharing screen"
-        status_video: "Camera on"
-        status_ptt: "Push to talk enabled"
-        status_hand_raised: "Wants to speak"
-      flagging:
-        notify_moderators_description: "This participant requires staff attention for a reason not listed above."
-      review:
-        flagged_in: "Flagged in"
-      reviewables:
-        actions:
-          agree_and_keep:
-            title: "Agree"
-            description: "Agree with the flag."
-          agree_and_suspend:
-            title: "Suspend user"
-            description: "Agree with the flag and suspend the user."
-          agree_and_silence:
-            title: "Silence user"
-            description: "Agree with the flag and silence the user."
-          disagree:
-            title: "Disagree"
-            description: "Disagree with the flag."
-          ignore:
-            title: "Ignore flag"
-            description: "Remove the flag from the queue without taking action."
-      room_info:
-        title: "Room Info"
-        status: "Status"
-        public: "Public"
-        private: "Private"
-        member_count: "Members"
-        max_participants: "Max participants"
-        members:
-          title: "Manage Members"
-          add: "Add member"
-          add_placeholder: "Enter username..."
-          add_button: "Add"
-          role: "Role"
-          moderator: "Moderator"
-          speaker: "Speaker"
-          participant: "Participant"
-          remove: "Remove"
-          creator: "Creator"
-      call:
-        button: "Call"
-        calling: "Calling %{username}…"
-        incoming_title: "Incoming call"
-        incoming_state: "is calling you…"
-        answer: "Answer"
-        decline: "Decline"
-      invite:
-        title: "Invite to %{room_name}"
-        menu: "Invite people"
-        search_label: "Invite by name"
-        search_placeholder: "Search users..."
-        send: "Send invite"
-        invite: "Invite"
-        invited: "Invited"
-        suggestions_title: "People you've shared this room with"
-        time_together: "%{duration} together recently"
-        link_label: "Or share an invite link"
-        copy: "Copy"
-        sent:
-          one: "Invite sent."
-          other: "%{count} invites sent."
-        skipped: "%{usernames} can't be invited because they don't have access to voice rooms."
-      memberships:
-        add_user: "Add participant"
-        remove_user: "Remove participant"
-      agent:
-        invite: "Invite LiveKit agent"
-        name: "Agent name"
-        type_name: "Type a name instead"
-        pick_name: "Choose from the list instead"
-        refresh: "Refresh the agent list"
-        deploy_hint: "Ensure your agent is deployed before adding it to this call."
-        invited: "Agent invited. It will appear when LiveKit connects it. This can take about a minute."
-      admin:
-        title: "Voice"
-        dashboard_title: "Dashboard"
-        recordings_title: "Recordings"
-        recordings:
-          webhook_config_hint: "No LiveKit webhooks have been received recently. Configure a webhook in LiveKit pointing to %{webhook_url}. Use the same API key configured in the voice livekit api key site setting and include egress_ended events so recording statuses and download notifications update when recordings finish."
-          description: "Call recordings produced by the LiveKit egress service. Files stay on the storage configured on the recording server; completed recordings link to that location when it is a URL."
-          room: "Room"
-          requested_by: "Requested by"
-          status: "Status"
-          started_at: "Started"
-          duration: "Duration"
-          file: "File"
-          download: "Download"
-          load_more: "Load more"
-          empty: "No recordings yet. Room moderators can record calls that run on the LiveKit media server."
-          status_recording: "Recording"
-          status_completed: "Completed"
-          status_failed: "Failed"
-        dashboard:
-          overview: "Overview"
-          total_sessions: "Total sessions"
-          unique_users: "Unique users"
-          avg_duration: "Avg. session duration"
-          top_rooms: "Top rooms"
-          room_name: "Room"
-          deleted_room: "(deleted room)"
-          deleted_user: "(deleted user)"
-          top_users: "Top users"
-          user: "User"
-          sessions: "Sessions"
-          total_time: "Total time"
-          no_data: "No voice activity in this period."
-          livekit:
-            title: "LiveKit media server"
-            refresh: "Refresh"
-            load_failed: "Could not load the LiveKit status. Try refreshing."
-            config_ok: "Configured — room policy: %{policy}"
-            config_missing: "Not configured — missing settings: %{settings}"
-            token_ok: "Access tokens can be signed with the configured key pair"
-            token_error: "Access token signing failed: %{error}"
-            server_ok:
-              one: "Server reachable in %{latency} ms — %{count} active room"
-              other: "Server reachable in %{latency} ms — %{count} active rooms"
-            server_error: "Server unreachable: %{error}"
-            probe_ok: "Last connectivity check passed"
-            probe_failed: "Last connectivity check failed"
-            probe_never: "No automatic connectivity check has run yet — one runs whenever a LiveKit setting is saved."
-            webhook_received: "Last webhook received"
-            webhook_never: "No webhooks received yet — optional, but they speed up presence cleanup after abrupt disconnects and recording delivery."
-            webhook_config_hint: "To enable webhooks, add this to the LiveKit server's configuration file (livekit.yaml) and restart it:"
-            rooms_title: "Live calls on LiveKit"
-            room: "Room"
-            discourse_participants: "In the roster"
-            livekit_participants: "Connected to LiveKit"
-            room_status: "Status"
-            in_sync: "In sync"
-            missing_on_livekit: "In the roster but not connected: %{users}"
-            missing_in_presence: "Connected but not in the roster: %{users}"
-            room_error: "Could not list participants: %{error}"
-            no_rooms: "No live calls are using LiveKit right now."
-        rooms_title: "Voice rooms"
-        create_room: "Add room"
-        edit: "Edit"
-        update: "Update"
-        create: "Create"
-        back: "Back"
-        no_rooms_yet: "No voice rooms configured yet."
-        room_created: "Room created successfully."
-        room_updated: "Room updated successfully."
-        destroy_room:
-          confirm: "Are you sure you want to delete '%{name}'?"
-        end_call:
-          title: "End live call"
-          confirm: "End the live call in '%{name}'? Everyone in the call will be disconnected."
-        room:
-          name: "Name"
-          name_placeholder: "Room name"
-          slug: "Slug"
-          slug_placeholder: "room-slug"
-          slug_help: "Used in the room's URL. Leave empty to generate one from the name."
-          description: "Description"
-          public: "Public"
-          public_help: "Public rooms are visible to all users."
-          manage_members: "Manage members"
-          room_type: "Room type"
-          max_participants: "Max participants"
-          max_participants_help: "Maximum participants allowed (2-50, or 2-200 for Stage rooms)."
-          video_enabled: "Video"
-          video_enabled_help: "Allow participants to share their camera and screen in this room."
-          video_enabled_stage_help: "Allow speakers and moderators to share their camera and screen in this room. Listeners can only watch."
-          livekit_enabled: "Use media server (SFU)"
-          livekit_enabled_help: "Route this room's calls through the site's LiveKit media server instead of the peer-to-peer mesh. A call already in progress is not affected — the room switches when its next call starts."
-          chat_channel: "Chat channel"
-          chat_channel_help: "Each session opens a thread here. Only channels with threading enabled are listed."
-          chat_channel_none: "No channels with threading enabled. Turn it on in a channel's settings first."
-          chat_idle_minutes: "New thread after idle (minutes)"
-          chat_idle_minutes_help: "Minutes of inactivity before the next message starts a fresh thread."
-          chat_thread_hint: "The first message someone sends starts the thread, titled after the room."
-          quality_section: "Quality"
-          max_quality_profile: "Maximum quality"
-          max_quality_profile_help: "Caps the voice, camera and screen share quality participants can pick in this room. Site default applies no room-level cap; site settings always apply."
-          quality_site_default: "Site default"
-          member_count: "Members"
-          creator: "Created by"
-          created_at: "Created"
-    notifications:
-      voice_invitation: "invited you to join %{room_name}"
-      voice_call: "is calling you"
-      titles:
-        voice_invitation: "Voice room invite"
-        voice_call: "Incoming voice call"
-    review:
-      types:
-        reviewable_voice_user:
-          title: "Flagged voice room participant"
 

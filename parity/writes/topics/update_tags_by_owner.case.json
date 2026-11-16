@@ -21,5 +21,8 @@
         "original_title": "Parity fixture: replies and posters"
       }
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/tags"
   ]
 }

@@ -38,10 +38,14 @@ fn without_whitespace(s: &str) -> String {
 }
 
 /// `post_process_quotes`: a quote of a post that is gone, or whose text
-/// that post no longer has, is marked.
+/// that post no longer has, is marked. A post the quoting post's author
+/// cannot see counts as gone, as does any post without an author
+/// (46fa46dc532).
 async fn mark_quotes(
     conn: &mut PgConnection,
+    settings: &SiteSettings,
     html: &str,
+    post_id: Option<i32>,
 ) -> Result<Vec<(usize, &'static str)>, CookError> {
     // Collected first: the document cannot be held across a query.
     let quotes: Vec<(usize, i32, i32, String)> = {
@@ -74,15 +78,50 @@ async fn mark_quotes(
             .collect()
     };
     let mut marks = Vec::new();
+    if quotes.is_empty() {
+        return Ok(marks);
+    }
+    let author: Option<i32> = match post_id {
+        Some(id) => sqlx::query_scalar::<_, Option<i32>>("SELECT user_id FROM posts WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten(),
+        None => None,
+    };
+    let quoter = match author {
+        Some(id) => match crate::session::current::SessionUser::load(&mut *conn, id).await? {
+            Some(user) => Some(
+                crate::guardian::Guardian::for_user(&mut *conn, &user)
+                    .await
+                    .map_err(|e| CookError::App(e.into()))?,
+            ),
+            None => None,
+        },
+        None => None,
+    };
     for (index, topic_id, post_number, quoted) in quotes {
-        let parent: Option<String> = sqlx::query_scalar(
-            "SELECT cooked FROM posts WHERE topic_id = $1 AND post_number = $2 \
+        let found: Option<(i32, String)> = sqlx::query_as(
+            "SELECT id, cooked FROM posts WHERE topic_id = $1 AND post_number = $2 \
              AND deleted_at IS NULL ORDER BY id LIMIT 1",
         )
         .bind(topic_id)
         .bind(post_number)
         .fetch_optional(&mut *conn)
         .await?;
+        // visible_parent_post
+        let parent = match (found, &quoter) {
+            (Some((id, cooked)), Some(guardian)) => {
+                crate::posting::revisions::find_post_with_deleted_in(
+                    &mut *conn, settings, guardian, id,
+                )
+                .await
+                .map_err(CookError::App)?
+                .filter(|access| access.can_see_post)
+                .map(|_| cooked)
+            }
+            _ => None,
+        };
         match parent {
             None => marks.push((index, "quote-post-not-found")),
             Some(cooked) => {
@@ -976,7 +1015,7 @@ pub(crate) async fn post_process(
         size_cache: Default::default(),
     };
     let image_edits = post_process_images(conn, &steps, html, post_id).await?;
-    let marks = mark_quotes(conn, html).await?;
+    let marks = mark_quotes(conn, settings, html, post_id).await?;
 
     let urls = Urls { config, settings };
     let hostname = urls.current_hostname()?;

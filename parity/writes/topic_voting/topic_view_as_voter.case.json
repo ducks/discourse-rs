@@ -11,5 +11,8 @@
       "path": "/t/35.json",
       "params": {}
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks"
   ]
 }

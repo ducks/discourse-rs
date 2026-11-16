@@ -1129,15 +1129,21 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
             ));
         }
     } else {
-        // The name links (blank without one), then the username unless
-        // show_username_on_post finds it says nothing more.
+        // The display name links (the username with names off or without
+        // a name), then with names on the username unless
+        // show_username_on_post finds it says nothing more (fbce98a62ec).
+        let enable_names = s.get("enable_names")?.truthy();
+        let display_name = match name {
+            Some(n) if enable_names => n,
+            _ => p.username,
+        };
         out.push_str(&format!(
             "          <a rel='nofollow' class=\"username username-link\" href=\"{}/u/{}\" target=\"_blank\">{}</a>\n",
             html_escape(p.base_url),
             html_escape(p.username_lower),
-            html_escape(p.name.unwrap_or_default())
+            html_escape(display_name)
         ));
-        if !names || name.is_none() || distinct_name {
+        if enable_names && (!names || name.is_none() || distinct_name) {
             out.push_str(&format!(
                 "            <span class='username username-title'>{}</span>\n",
                 html_escape(p.username)

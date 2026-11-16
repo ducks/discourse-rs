@@ -75,7 +75,7 @@ pub(crate) const NOTIFICATION_TYPES: &[(&str, i64)] = &[
     ("following_created_topic", 801),
     ("following_replied", 802),
     ("circles_activity", 900),
-    ("voice_invitation", 1000),
+    ("live_invitation", 1000),
 ];
 
 /// `Post.types`

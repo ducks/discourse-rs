@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-21T03:49:22.294217",
-  "transaction_started_at": "2026-10-21T03:49:19.93018",
+  "started_at": "2026-11-15T22:00:26.766423",
+  "transaction_started_at": "2026-11-15T22:00:22.172886",
   "responses": [
     {
       "status": 200,
@@ -22,7 +22,7 @@
           "suspend_reason": "Spamming",
           "full_suspend_reason": "Spamming\n\nPlease stop",
           "suspended_till": "2027-03-04T09:30:00.000Z",
-          "suspended_at": "2026-10-21T03:49:22.342Z",
+          "suspended_at": "2026-11-15T22:00:27.024Z",
           "suspended_by": {
             "id": 1,
             "username": "admin",
@@ -44,11 +44,11 @@
           "user_id": 4,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-10-21T03:49:22.45627",
+          "created_at": "2026-11-15T22:00:27.349611",
           "email_type": "account_suspended",
-          "message_id": "99abd393-c484-496e-8cf4-f1affc5d4ed6@localhost",
+          "message_id": "8719ed7a-8b34-476a-9c75-2ad8d9f5b6f1@localhost",
           "to_address": "user2@example.com",
-          "updated_at": "2026-10-21T03:49:22.45627",
+          "updated_at": "2026-11-15T22:00:27.349611",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -66,33 +66,33 @@
       "updated": [
         {
           "before": {
-            "id": 466,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "UdCzliHAboFG+6NBz6RqYyqGj1U=",
-            "created_at": "2026-10-21T03:49:21.084149",
-            "rotated_at": "2026-10-21T03:49:21.082297",
-            "updated_at": "2026-10-21T03:49:21.084149",
+            "auth_token": "EaEPwFi98iyN+OJKGYD+P8m3fmQ=",
+            "created_at": "2026-11-15T22:00:23.950977",
+            "rotated_at": "2026-11-15T22:00:23.94538",
+            "updated_at": "2026-11-15T22:00:23.950977",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "UdCzliHAboFG+6NBz6RqYyqGj1U=",
+            "prev_auth_token": "EaEPwFi98iyN+OJKGYD+P8m3fmQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 466,
-            "seen_at": "2026-10-21T03:49:22.304645",
+            "id": 14,
+            "seen_at": "2026-11-15T22:00:26.792288",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "UdCzliHAboFG+6NBz6RqYyqGj1U=",
-            "created_at": "2026-10-21T03:49:21.084149",
-            "rotated_at": "2026-10-21T03:49:21.082297",
-            "updated_at": "2026-10-21T03:49:21.084149",
+            "auth_token": "EaEPwFi98iyN+OJKGYD+P8m3fmQ=",
+            "created_at": "2026-11-15T22:00:23.950977",
+            "rotated_at": "2026-11-15T22:00:23.94538",
+            "updated_at": "2026-11-15T22:00:23.950977",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "UdCzliHAboFG+6NBz6RqYyqGj1U=",
+            "prev_auth_token": "EaEPwFi98iyN+OJKGYD+P8m3fmQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -103,7 +103,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 10,
           "context": null,
@@ -113,9 +113,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-10-21T03:49:22.364909",
+          "created_at": "2026-11-15T22:00:27.090637",
+          "expires_at": "2027-03-04T09:30:00",
           "ip_address": null,
-          "updated_at": "2026-10-21T03:49:22.364909",
+          "updated_at": "2026-11-15T22:00:27.090637",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -144,10 +145,10 @@
             "approved": false,
             "username": "user2",
             "moderator": false,
-            "created_at": "2026-07-25T05:59:16.733827",
+            "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-09-30T07:28:29.889848",
+            "updated_at": "2026-11-15T19:40:02.142369",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -157,7 +158,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "last_posted_at": "2026-11-15T19:19:54.208081",
             "suspended_till": null,
             "username_lower": "user2",
             "last_emailed_at": null,
@@ -184,23 +185,23 @@
             "approved": false,
             "username": "user2",
             "moderator": false,
-            "created_at": "2026-07-25T05:59:16.733827",
+            "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-10-21T03:49:22.351101",
+            "updated_at": "2026-11-15T22:00:27.052326",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
-            "suspended_at": "2026-10-21T03:49:22.342491",
+            "suspended_at": "2026-11-15T22:00:27.024374",
             "date_of_birth": null,
             "first_seen_at": null,
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "last_posted_at": "2026-11-15T19:19:54.208081",
             "suspended_till": "2027-03-04T09:30:00",
             "username_lower": "user2",
-            "last_emailed_at": "2026-10-21T03:49:19.93018",
+            "last_emailed_at": "2026-11-15T22:00:22.172886",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -221,7 +222,7 @@
       "user_suspension_expired at",
       {
         "user_id": 4,
-        "suspended_at": "2026-10-21T03:49:22.342491Z",
+        "suspended_at": "2026-11-15T22:00:27.024374Z",
         "suspended_till": "2027-03-04T09:30:00.000000Z"
       }
     ],
@@ -230,13 +231,13 @@
       {
         "type": "account_suspended",
         "user_id": 4,
-        "user_history_id": 74
+        "user_history_id": 68
       }
     ]
   ],
   "next_ids": {
     "email_logs": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "jobs_from_jobs": [],
   "emails": [
@@ -256,7 +257,7 @@
         ],
         [
           "Message-ID",
-          "<99abd393-c484-496e-8cf4-f1affc5d4ed6@localhost>"
+          "<8719ed7a-8b34-476a-9c75-2ad8d9f5b6f1@localhost>"
         ],
         [
           "Subject",
@@ -268,7 +269,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6ad836426ddc0_83cf2875157"
+          "multipart/alternative; boundary=--==_mimepart_6afa2b7b524ec_b6b6f3805b"
         ],
         [
           "Content-Transfer-Encoding",
@@ -287,13 +288,13 @@
           "auto-generated"
         ]
       ],
-      "text": "You have been suspended from the forum until March 4, 2027,  9:30am.\n\nReason - Spamming\n\nPlease stop\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>You have been suspended from the forum until March 4, 2027,  9:30am.</p>\n<p>Reason - Spamming</p>\n<p>Please stop</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Hello,\n\nThis is an automated message from Discourse to let you know that your account has been suspended until March 4, 2027,  9:30am (UTC+00:00).\n\nReason - Spamming\n\nPlease stop\n\nFor additional guidance, refer to our [community guidelines](http://localhost:3042/guidelines).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Hello,</p>\n<p>This is an automated message from Discourse to let you know that your account has been suspended until March 4, 2027,  9:30am (UTC+00:00).</p>\n<p>Reason - Spamming</p>\n<p>Please stop</p>\n<p>For additional guidance, refer to our <a href=\"http://localhost:3042/guidelines\" style=\"text-decoration:none;font-weight:bold;color:#006699\">community guidelines</a>.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "9ee0beef43f4e510e48bff1ac1057587c1a0b1edb6993fe61f782391c80ef468",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

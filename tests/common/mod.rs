@@ -274,6 +274,21 @@ pub async fn other_site(first: &AppState, pool: PgPool, config: Config) -> AppSt
     discourse_rs::multisite::Shared::of(first).site(pool, bus, config, Default::default())
 }
 
+/// The seeded Uncategorized category (id 1) a site from before Discourse
+/// a9f8c119c71 keeps, which the seed no longer has, with
+/// uncategorized_category_id pointing at it.
+pub async fn restore_uncategorized(pool: &PgPool) {
+    sqlx::query(
+        "INSERT INTO categories (id, name, name_lower, slug, color, text_color, user_id, \
+         read_restricted, position, created_at, updated_at) VALUES (1, 'Uncategorized', \
+         'uncategorized', 'uncategorized', '0088CC', 'FFFFFF', -1, false, 0, now(), now())",
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+    set_setting(pool, "uncategorized_category_id", 3, "1").await;
+}
+
 /// `SiteSetting.<name> = value`, as the row add_override! writes.
 pub async fn set_setting(pool: &PgPool, name: &str, data_type: i32, value: &str) {
     sqlx::query("DELETE FROM site_settings WHERE name = $1")

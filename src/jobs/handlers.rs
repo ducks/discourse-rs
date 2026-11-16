@@ -411,12 +411,18 @@ async fn notify_users_added_to_group(state: &AppState, args: &Value) -> Result<(
     let preferred = full_name
         .filter(|f| !f.trim().is_empty())
         .unwrap_or_else(|| name.clone());
+    // Group#notify_added_to_group(user, owner:)
+    let message = if args["owner"] == json!(true) {
+        "user_added_to_group_as_owner"
+    } else {
+        "user_added_to_group_as_member"
+    };
     for user_id in users {
         crate::system_message::create_from_system_user(
             &state.pool,
             &ctx,
             user_id,
-            "user_added_to_group_as_member",
+            message,
             &[
                 ("group_name".to_string(), preferred.clone()),
                 ("group_path".to_string(), format!("/g/{name}")),

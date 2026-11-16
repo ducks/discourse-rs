@@ -363,7 +363,7 @@ async fn the_installed_plugins_pages() {
     assert_eq!(
         html.matches("class=\"d-table__row admin-plugins-list__row\"")
             .count(),
-        46
+        47
     );
     assert!(html.contains("data-plugin-setting-button=\"poll\" href=\"/admin/plugins/poll\""));
     // Only an enabled setting: the name unlinked, Settings disabled.

@@ -87,7 +87,7 @@ async fn start(
 }
 
 /// `user.in_any_groups?(group_ids)` for a user other than the viewer.
-async fn user_in_any_groups(
+pub(crate) async fn user_in_any_groups(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     user_id: i32,

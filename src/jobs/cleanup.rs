@@ -412,7 +412,7 @@ pub async fn clean_up_unmatched_ips(state: &AppState) -> Result<(), AppError> {
                 "SELECT id, host(network(ip_address)) FROM screened_ip_addresses \
                  WHERE action_type = $1 AND ip_address << $2::inet \
                    AND family(ip_address) = $3 AND masklen(ip_address) = ANY($4) \
-                 ORDER BY ip_address",
+                 ORDER BY ctid",
             )
             .bind(BLOCK)
             .bind(&subnet)
@@ -433,7 +433,10 @@ pub async fn clean_up_unmatched_ips(state: &AppState) -> Result<(), AppError> {
             .execute(&mut *tx)
             .await?;
             // StaffActionLogger#log_roll_up (admin only), each IPAddr
-            // printed as its network address, in the unique index's order.
+            // printed as its network address, joined in the order
+            // `old_ips.map` reads them without an ORDER BY: Postgres 18 scans
+            // the table (heap order). The order is inside one string, which
+            // no comparison marker can loosen.
             let ips = old
                 .iter()
                 .map(|(_, ip)| ip.as_str())

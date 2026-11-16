@@ -23,8 +23,8 @@
       "path": "/chat/api/channels/2/memberships.json"
     }
   ],
-  "started_at": "2026-11-07T01:30:28.601387",
-  "transaction_started_at": "2026-11-07T01:30:25.698053",
+  "started_at": "2026-11-16T04:54:59.725589",
+  "transaction_started_at": "2026-11-16T04:54:58.974889",
   "responses": [
     {
       "status": 200,
@@ -34,7 +34,7 @@
             "id": 1,
             "message": "Hello **world**",
             "cooked": "<p>Hello <strong>world</strong></p>",
-            "created_at": "2026-11-07T00:40:25Z",
+            "created_at": "2026-11-16T04:04:58Z",
             "excerpt": "Hello world",
             "thread_id": 1,
             "chat_channel_id": 2,
@@ -85,7 +85,7 @@
                 "thread_title_prompt_seen": false
               },
               "preview": {
-                "last_reply_created_at": "2026-11-07T00:55:25Z",
+                "last_reply_created_at": "2026-11-16T04:19:58Z",
                 "last_reply_excerpt": "thread reply two",
                 "last_reply_id": 3,
                 "participant_count": 3,
@@ -123,7 +123,7 @@
                 "id": 1,
                 "message": "Hello **world**",
                 "cooked": "<p>Hello <strong>world</strong></p>",
-                "created_at": "2026-11-07T00:40:25.698Z",
+                "created_at": "2026-11-16T04:04:58.974Z",
                 "excerpt": "Hello world",
                 "chat_channel_id": 2,
                 "deleted_at": null,
@@ -154,7 +154,7 @@
             "id": 4,
             "message": "@user1 @user0 ping",
             "cooked": "<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>",
-            "created_at": "2026-11-07T01:00:25Z",
+            "created_at": "2026-11-16T04:24:58Z",
             "excerpt": "@user1 @user0 ping",
             "thread_id": null,
             "chat_channel_id": 2,
@@ -262,7 +262,7 @@
                 "emoji": "blue_book",
                 "slug": "general",
                 "topic_count": 3,
-                "post_count": 6,
+                "post_count": 1,
                 "position": 3,
                 "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
                 "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -320,7 +320,7 @@
                 "id": 4,
                 "message": "@user1 @user0 ping",
                 "cooked": "<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>",
-                "created_at": "2026-11-07T01:00:25Z",
+                "created_at": "2026-11-16T04:24:58Z",
                 "excerpt": "@user1 @user0 ping",
                 "deleted_at": null,
                 "deleted_by_id": null,
@@ -342,7 +342,7 @@
               "thread_title_prompt_seen": false
             },
             "preview": {
-              "last_reply_created_at": "2026-11-07T00:55:25Z",
+              "last_reply_created_at": "2026-11-16T04:19:58Z",
               "last_reply_excerpt": "thread reply two",
               "last_reply_id": 3,
               "participant_count": 3,
@@ -380,7 +380,7 @@
               "id": 1,
               "message": "Hello **world**",
               "cooked": "<p>Hello <strong>world</strong></p>",
-              "created_at": "2026-11-07T00:40:25.698Z",
+              "created_at": "2026-11-16T04:04:58.974Z",
               "excerpt": "Hello world",
               "chat_channel_id": 2,
               "deleted_at": null,
@@ -433,7 +433,7 @@
             "thread_title_prompt_seen": false
           },
           "preview": {
-            "last_reply_created_at": "2026-11-07T00:55:25Z",
+            "last_reply_created_at": "2026-11-16T04:19:58Z",
             "last_reply_excerpt": "thread reply two",
             "last_reply_id": 3,
             "participant_count": 3,
@@ -471,7 +471,7 @@
             "id": 1,
             "message": "Hello **world**",
             "cooked": "<p>Hello <strong>world</strong></p>",
-            "created_at": "2026-11-07T00:40:25.698Z",
+            "created_at": "2026-11-16T04:04:58.974Z",
             "excerpt": "Hello world",
             "chat_channel_id": 2,
             "deleted_at": null,
@@ -501,7 +501,7 @@
           {
             "id": 1,
             "chat_message_id": 1,
-            "pinned_at": "2026-11-07T01:25:25.698Z",
+            "pinned_at": "2026-11-16T04:49:58.974Z",
             "excerpt": "Hello world",
             "pinned_by": {
               "id": 2,
@@ -513,7 +513,7 @@
               "id": 1,
               "message": "Hello **world**",
               "cooked": "<p>Hello <strong>world</strong></p>",
-              "created_at": "2026-11-07T00:40:25Z",
+              "created_at": "2026-11-16T04:04:58Z",
               "excerpt": "Hello world",
               "thread_id": 1,
               "chat_channel_id": 2,
@@ -558,7 +558,7 @@
                 },
                 "reply_count": 2,
                 "preview": {
-                  "last_reply_created_at": "2026-11-07T00:55:25Z",
+                  "last_reply_created_at": "2026-11-16T04:19:58Z",
                   "last_reply_excerpt": "thread reply two",
                   "last_reply_id": 3,
                   "reply_count": 2,
@@ -575,7 +575,7 @@
                   "id": 1,
                   "message": "Hello **world**",
                   "cooked": "<p>Hello <strong>world</strong></p>",
-                  "created_at": "2026-11-07T00:40:25.698Z",
+                  "created_at": "2026-11-16T04:04:58.974Z",
                   "excerpt": "Hello world",
                   "chat_channel_id": 2,
                   "deleted_at": null,
@@ -606,7 +606,7 @@
           {
             "id": 2,
             "chat_message_id": 4,
-            "pinned_at": "2026-11-07T01:26:25.698Z",
+            "pinned_at": "2026-11-16T04:50:58.974Z",
             "excerpt": "<a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping",
             "pinned_by": {
               "id": 2,
@@ -618,7 +618,7 @@
               "id": 4,
               "message": "@user1 @user0 ping",
               "cooked": "<p><a class=\"mention\" href=\"/u/user1\">@user1</a> <a class=\"mention\" href=\"/u/user0\">@user0</a> ping</p>",
-              "created_at": "2026-11-07T01:00:25Z",
+              "created_at": "2026-11-16T04:24:58Z",
               "excerpt": "@user1 @user0 ping",
               "thread_id": null,
               "chat_channel_id": 2,
@@ -685,10 +685,11 @@
         "membership": {
           "following": true,
           "muted": false,
+          "muted_until": null,
           "notification_level": "mention",
           "chat_channel_id": 2,
           "last_read_message_id": 4,
-          "last_viewed_at": "2026-11-07T01:30:28.729Z",
+          "last_viewed_at": "2026-11-16T04:54:59.795Z",
           "last_viewed_pins_at": null,
           "starred": false,
           "has_unseen_pins": true,
@@ -748,33 +749,33 @@
       "updated": [
         {
           "before": {
-            "id": 687,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
-            "created_at": "2026-11-07T01:30:26.913701",
-            "rotated_at": "2026-11-07T01:30:26.909602",
-            "updated_at": "2026-11-07T01:30:26.913701",
+            "auth_token": "V1FscS76WIBRmcezLAxq4Xexyf4=",
+            "created_at": "2026-11-16T04:54:59.255642",
+            "rotated_at": "2026-11-16T04:54:59.25486",
+            "updated_at": "2026-11-16T04:54:59.255642",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
+            "prev_auth_token": "V1FscS76WIBRmcezLAxq4Xexyf4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 687,
-            "seen_at": "2026-11-07T01:30:28.624776",
+            "id": 14,
+            "seen_at": "2026-11-16T04:54:59.733932",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
-            "created_at": "2026-11-07T01:30:26.913701",
-            "rotated_at": "2026-11-07T01:30:26.909602",
-            "updated_at": "2026-11-07T01:30:26.913701",
+            "auth_token": "V1FscS76WIBRmcezLAxq4Xexyf4=",
+            "created_at": "2026-11-16T04:54:59.255642",
+            "rotated_at": "2026-11-16T04:54:59.25486",
+            "updated_at": "2026-11-16T04:54:59.255642",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "F8RcalasFcH8HORpsP8vlSIouNE=",
+            "prev_auth_token": "V1FscS76WIBRmcezLAxq4Xexyf4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -788,15 +789,16 @@
       "updated": [
         {
           "before": {
-            "id": 3,
+            "id": 4,
             "muted": false,
             "starred": false,
             "user_id": 1,
             "following": true,
             "join_mode": 1,
-            "created_at": "2026-10-01T15:42:53.424176",
-            "updated_at": "2026-10-01T15:42:53.424176",
-            "last_viewed_at": "2026-10-01T15:42:53.42449",
+            "created_at": "2026-11-15T19:40:02.335959",
+            "updated_at": "2026-11-15T19:40:02.335959",
+            "muted_until": null,
+            "last_viewed_at": "2026-11-15T19:40:02.336159",
             "chat_channel_id": 2,
             "notification_level": 1,
             "last_viewed_pins_at": null,
@@ -806,15 +808,16 @@
             "last_unread_mention_when_emailed_id": null
           },
           "after": {
-            "id": 3,
+            "id": 4,
             "muted": false,
             "starred": false,
             "user_id": 1,
             "following": true,
             "join_mode": 1,
-            "created_at": "2026-10-01T15:42:53.424176",
-            "updated_at": "2026-11-07T01:30:28.730033",
-            "last_viewed_at": "2026-11-07T01:30:28.729506",
+            "created_at": "2026-11-15T19:40:02.335959",
+            "updated_at": "2026-11-16T04:54:59.796086",
+            "muted_until": null,
+            "last_viewed_at": "2026-11-16T04:54:59.795512",
             "chat_channel_id": 2,
             "notification_level": 1,
             "last_viewed_pins_at": null,
@@ -833,8 +836,8 @@
           "name": "last_chat_channel_id",
           "value": "2",
           "user_id": 1,
-          "created_at": "2026-11-07T01:30:28.734419",
-          "updated_at": "2026-11-07T01:30:28.734419"
+          "created_at": "2026-11-16T04:54:59.800119",
+          "updated_at": "2026-11-16T04:54:59.800119"
         }
       ],
       "deleted": [],
@@ -870,7 +873,7 @@
   ],
   "recorded_from": {
     "case": "2f48900e502b166b0db8664aa3414661bea6297ee1cb5d37fbe243a2ae9e6a40",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

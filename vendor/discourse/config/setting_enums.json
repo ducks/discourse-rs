@@ -372,6 +372,14 @@
       "strict"
     ]
   },
+  "ai_ask_ai_external_sources": {
+    "valid_values": [],
+    "translate_names": false
+  },
+  "ai_ask_ai_search_intent_decision_model": {
+    "valid_values": [],
+    "translate_names": false
+  },
   "ai_ask_ai_summary_detail": {
     "valid_values": [
       {
@@ -405,6 +413,10 @@
       "search",
       "agent"
     ]
+  },
+  "ai_dsa_classification_decision_model": {
+    "valid_values": [],
+    "translate_names": false
   },
   "ai_embeddings_model": {
     "valid_values": [
@@ -468,13 +480,22 @@
       {
         "name": "agent",
         "value": "agent"
+      },
+      {
+        "name": "decision_model",
+        "value": "decision_model"
       }
     ],
     "translate_names": false,
     "choices": [
       "classification_model",
-      "agent"
+      "agent",
+      "decision_model"
     ]
+  },
+  "ai_sentiment_emotion_decision_model": {
+    "valid_values": [],
+    "translate_names": false
   },
   "ai_sentiment_model_configs": {
     "json_schema": {
@@ -519,13 +540,22 @@
       {
         "name": "agent",
         "value": "agent"
+      },
+      {
+        "name": "decision_model",
+        "value": "decision_model"
       }
     ],
     "translate_names": false,
     "choices": [
       "classification_model",
-      "agent"
+      "agent",
+      "decision_model"
     ]
+  },
+  "ai_sentiment_sentiment_decision_model": {
+    "valid_values": [],
+    "translate_names": false
   },
   "ai_spam_detection_max_trust_level": {
     "valid_values": [
@@ -587,6 +617,10 @@
       }
     ],
     "translate_names": true
+  },
+  "ai_translation_locale_detector_decision_model": {
+    "valid_values": [],
+    "translate_names": false
   },
   "ai_translation_personal_messages": {
     "valid_values": [
@@ -983,6 +1017,19 @@
       "open",
       "closed"
     ]
+  },
+  "chat_homepage_channel": {
+    "valid_values": [
+      {
+        "name": "Staff",
+        "value": 1
+      },
+      {
+        "name": "General",
+        "value": 2
+      }
+    ],
+    "translate_names": false
   },
   "chat_preferred_index": {
     "valid_values": [
@@ -1385,25 +1432,6 @@
       "top",
       "categories",
       "hot"
-    ]
-  },
-  "dashboard_general_tab_activity_metrics": {
-    "choices": [
-      "page_view_total_reqs",
-      "visits",
-      "time_to_first_response",
-      "likes",
-      "flags",
-      "user_to_user_private_messages_with_replies",
-      "signups"
-    ]
-  },
-  "dashboard_visible_tabs": {
-    "choices": [
-      "moderation",
-      "security",
-      "reports",
-      "features"
     ]
   },
   "default_composition_mode": {
@@ -2211,8 +2239,12 @@
         "value": "hcaptcha"
       },
       {
-        "name": "recaptcha",
-        "value": "recaptcha"
+        "name": "recaptcha_v2",
+        "value": "recaptcha_v2"
+      },
+      {
+        "name": "recaptcha_v3",
+        "value": "recaptcha_v3"
       },
       {
         "name": "none",
@@ -2222,7 +2254,8 @@
     "translate_names": false,
     "choices": [
       "hcaptcha",
-      "recaptcha",
+      "recaptcha_v2",
+      "recaptcha_v3",
       "none"
     ]
   },
@@ -3020,6 +3053,94 @@
     "choices": [
       "webp",
       "gif"
+    ]
+  },
+  "live_livekit_room_policy": {
+    "valid_values": [
+      {
+        "name": "disabled",
+        "value": "disabled"
+      },
+      {
+        "name": "per_room",
+        "value": "per_room"
+      },
+      {
+        "name": "all_rooms",
+        "value": "all_rooms"
+      }
+    ],
+    "translate_names": false,
+    "choices": [
+      "disabled",
+      "per_room",
+      "all_rooms"
+    ]
+  },
+  "live_max_camera_quality": {
+    "valid_values": [
+      {
+        "name": "standard",
+        "value": "standard"
+      },
+      {
+        "name": "high",
+        "value": "high"
+      },
+      {
+        "name": "maximum",
+        "value": "maximum"
+      }
+    ],
+    "translate_names": false,
+    "choices": [
+      "standard",
+      "high",
+      "maximum"
+    ]
+  },
+  "live_max_screen_share_quality": {
+    "valid_values": [
+      {
+        "name": "standard",
+        "value": "standard"
+      },
+      {
+        "name": "high",
+        "value": "high"
+      },
+      {
+        "name": "maximum",
+        "value": "maximum"
+      }
+    ],
+    "translate_names": false,
+    "choices": [
+      "standard",
+      "high",
+      "maximum"
+    ]
+  },
+  "live_max_voice_quality": {
+    "valid_values": [
+      {
+        "name": "standard",
+        "value": "standard"
+      },
+      {
+        "name": "high",
+        "value": "high"
+      },
+      {
+        "name": "maximum",
+        "value": "maximum"
+      }
+    ],
+    "translate_names": false,
+    "choices": [
+      "standard",
+      "high",
+      "maximum"
     ]
   },
   "map_events_title": {
@@ -4133,94 +4254,6 @@
       "aws_mediaconvert"
     ]
   },
-  "voice_livekit_room_policy": {
-    "valid_values": [
-      {
-        "name": "disabled",
-        "value": "disabled"
-      },
-      {
-        "name": "per_room",
-        "value": "per_room"
-      },
-      {
-        "name": "all_rooms",
-        "value": "all_rooms"
-      }
-    ],
-    "translate_names": false,
-    "choices": [
-      "disabled",
-      "per_room",
-      "all_rooms"
-    ]
-  },
-  "voice_max_camera_quality": {
-    "valid_values": [
-      {
-        "name": "standard",
-        "value": "standard"
-      },
-      {
-        "name": "high",
-        "value": "high"
-      },
-      {
-        "name": "maximum",
-        "value": "maximum"
-      }
-    ],
-    "translate_names": false,
-    "choices": [
-      "standard",
-      "high",
-      "maximum"
-    ]
-  },
-  "voice_max_screen_share_quality": {
-    "valid_values": [
-      {
-        "name": "standard",
-        "value": "standard"
-      },
-      {
-        "name": "high",
-        "value": "high"
-      },
-      {
-        "name": "maximum",
-        "value": "maximum"
-      }
-    ],
-    "translate_names": false,
-    "choices": [
-      "standard",
-      "high",
-      "maximum"
-    ]
-  },
-  "voice_max_voice_quality": {
-    "valid_values": [
-      {
-        "name": "standard",
-        "value": "standard"
-      },
-      {
-        "name": "high",
-        "value": "high"
-      },
-      {
-        "name": "maximum",
-        "value": "maximum"
-      }
-    ],
-    "translate_names": false,
-    "choices": [
-      "standard",
-      "high",
-      "maximum"
-    ]
-  },
   "welcome_banner_location": {
     "valid_values": [
       {
@@ -4377,20 +4410,10 @@
       806,
       730
     ],
-    "enable_new_chat_reactions_popup": [
-      "plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
-      826,
-      1368
-    ],
     "enable_new_checkbox_style": [
       "images/upcoming_changes/enable_new_checkbox_style.png",
       758,
       396
-    ],
-    "enable_new_post_reactions_menu": [
-      "images/upcoming_changes/enable_new_post_reactions_menu.png",
-      269,
-      343
     ],
     "enable_new_post_reply_count_position": [
       "plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
@@ -4402,11 +4425,6 @@
       1113,
       653
     ],
-    "enable_solved_shared_issues": [
-      "plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
-      1200,
-      330
-    ],
     "enable_support_category_type_setup": [
       "plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
       1031,
@@ -4417,13 +4435,18 @@
       1112,
       436
     ],
+    "enable_user_menu_mentions_tab": [
+      "images/upcoming_changes/enable_user_menu_mentions_tab.png",
+      391,
+      442
+    ],
     "floating_dismiss_topics_on_mobile": [
       "images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
       486,
       1077
     ],
-    "voice_enabled": [
-      "plugins/voice/images/upcoming_changes/voice_enabled.png",
+    "live_enabled": [
+      "plugins/live/images/upcoming_changes/live_enabled.png",
       752,
       407
     ]

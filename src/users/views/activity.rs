@@ -665,7 +665,8 @@ fn bookmark_row(cx: &ListContext, b: &Value, zone: Option<chrono_tz::Tz>, mobile
         main.push_str(&format!(
             "<a aria-level=\"2\" class=\"title\" href=\"{}\" role=\"heading\">{}</a>",
             escape(b["bookmarkable_url"].as_str().unwrap_or_default()),
-            escape(b["fancy_title"].as_str().unwrap_or_default())
+            // `{{bookmark.title}}`: the raw title, escaped once.
+            escape(b["title"].as_str().unwrap_or_default())
         ));
     }
     main.push_str("</div></span>");

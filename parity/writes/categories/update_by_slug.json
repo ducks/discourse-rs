@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-16T02:43:06.922941",
-  "transaction_started_at": "2026-10-16T02:43:01.331847",
+  "started_at": "2026-11-15T22:29:50.834259",
+  "transaction_started_at": "2026-11-15T22:29:49.918994",
   "responses": [
     {
       "status": 200,
@@ -27,7 +27,7 @@
           "emoji": "thought_balloon",
           "slug": "site-feedback",
           "topic_count": 1,
-          "post_count": 1,
+          "post_count": 0,
           "position": 1,
           "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
           "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
@@ -63,6 +63,7 @@
               "title": "discussion",
               "description": "A standard category with all the essentials for conversation.",
               "icon": "memo",
+              "svg_icon": "comment",
               "available": true,
               "visible": true,
               "configuration_schema": {}
@@ -81,6 +82,48 @@
             "trust_level_3",
             "trust_level_4"
           ],
+          "permission_groups": [
+            {
+              "id": 1,
+              "name": "admins"
+            },
+            {
+              "id": 0,
+              "name": "everyone"
+            },
+            {
+              "id": 5,
+              "name": "logged_in_users"
+            },
+            {
+              "id": 2,
+              "name": "moderators"
+            },
+            {
+              "id": 3,
+              "name": "staff"
+            },
+            {
+              "id": 10,
+              "name": "trust_level_0"
+            },
+            {
+              "id": 11,
+              "name": "trust_level_1"
+            },
+            {
+              "id": 12,
+              "name": "trust_level_2"
+            },
+            {
+              "id": 13,
+              "name": "trust_level_3"
+            },
+            {
+              "id": 14,
+              "name": "trust_level_4"
+            }
+          ],
           "allowed_tags": [],
           "allowed_tag_groups": [],
           "auto_close_hours": null,
@@ -97,7 +140,7 @@
           "mailinglist_mirror": false,
           "all_topics_wiki": false,
           "allow_unlimited_owner_edits_on_first_post": false,
-          "cannot_delete_reason": "Can't delete this category because it has 1 topic. Oldest topic is <a href=\"http://localhost:3048/t/parity-fixture-pinned-and-closed/37\">Parity fixture: pinned and closed</a>.",
+          "cannot_delete_reason": "Can't delete this category because it has 1 topic. Oldest topic is <a href=\"http://localhost:3042/t/parity-fixture-pinned-and-closed/37\">Parity fixture: pinned and closed</a>.",
           "is_special": true,
           "allow_badges": true,
           "topic_featured_link_allowed": true,
@@ -113,6 +156,7 @@
               "title": "discussion",
               "description": "A standard category with all the essentials for conversation.",
               "icon": "memo",
+              "svg_icon": "comment",
               "available": true,
               "visible": true,
               "configuration_schema": {}
@@ -123,6 +167,7 @@
               "title": "events",
               "description": "Where members can find and discuss upcoming events on a shared calendar.",
               "icon": "spiral_calendar",
+              "svg_icon": "calendar-days",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -279,6 +324,7 @@
               "title": "support",
               "description": "Where members can ask questions and mark replies as solutions.",
               "icon": "person_raising_hand",
+              "svg_icon": "circle-question",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -434,6 +480,7 @@
               "title": "ideas",
               "description": "Where members can submit ideas and vote on the ones they want most.",
               "icon": "bulb",
+              "svg_icon": "lightbulb",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -639,25 +686,25 @@
             "email_in": null,
             "position": 1,
             "topic_id": 1,
-            "posts_day": 1,
-            "created_at": "2026-07-25T05:58:08.494443",
+            "posts_day": 0,
+            "created_at": "2026-11-03T05:07:10.823929",
             "name_lower": "site feedback",
-            "post_count": 1,
-            "posts_week": 1,
-            "posts_year": 1,
+            "post_count": 0,
+            "posts_week": 0,
+            "posts_year": 0,
             "sort_order": null,
             "style_type": 2,
             "text_color": "FFFFFF",
-            "topics_day": 1,
-            "updated_at": "2026-10-01T07:04:33.490822",
+            "topics_day": 0,
+            "updated_at": "2026-11-03T05:07:10.823929",
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
-            "posts_month": 1,
+            "posts_month": 0,
             "topic_count": 1,
-            "topics_week": 1,
-            "topics_year": 1,
+            "topics_week": 0,
+            "topics_year": 0,
             "allow_badges": true,
             "default_view": null,
-            "topics_month": 1,
+            "topics_month": 0,
             "latest_post_id": 41,
             "sort_ascending": null,
             "topic_template": null,
@@ -702,25 +749,25 @@
             "email_in": null,
             "position": 1,
             "topic_id": 1,
-            "posts_day": 1,
-            "created_at": "2026-07-25T05:58:08.494443",
+            "posts_day": 0,
+            "created_at": "2026-11-03T05:07:10.823929",
             "name_lower": "site feedback",
-            "post_count": 1,
-            "posts_week": 1,
-            "posts_year": 1,
+            "post_count": 0,
+            "posts_week": 0,
+            "posts_year": 0,
             "sort_order": null,
             "style_type": 2,
             "text_color": "000000",
-            "topics_day": 1,
-            "updated_at": "2026-10-16T02:43:07.08018",
+            "topics_day": 0,
+            "updated_at": "2026-11-15T22:29:50.880435",
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
-            "posts_month": 1,
+            "posts_month": 0,
             "topic_count": 1,
-            "topics_week": 1,
-            "topics_year": 1,
+            "topics_week": 0,
+            "topics_year": 0,
             "allow_badges": true,
             "default_view": null,
-            "topics_month": 1,
+            "topics_month": 0,
             "latest_post_id": 41,
             "sort_ascending": null,
             "topic_template": null,
@@ -762,33 +809,33 @@
       "updated": [
         {
           "before": {
-            "id": 257,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "VuRzwm86hicXP2a9kxtsSjRM5nc=",
-            "created_at": "2026-10-16T02:43:03.66043",
-            "rotated_at": "2026-10-16T02:43:03.652537",
-            "updated_at": "2026-10-16T02:43:03.66043",
+            "auth_token": "HGvl54+pi1YnUaw8svb1GOVYxBU=",
+            "created_at": "2026-11-15T22:29:50.309928",
+            "rotated_at": "2026-11-15T22:29:50.307511",
+            "updated_at": "2026-11-15T22:29:50.309928",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "VuRzwm86hicXP2a9kxtsSjRM5nc=",
+            "prev_auth_token": "HGvl54+pi1YnUaw8svb1GOVYxBU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 257,
-            "seen_at": "2026-10-16T02:43:06.963226",
+            "id": 14,
+            "seen_at": "2026-11-15T22:29:50.839989",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "VuRzwm86hicXP2a9kxtsSjRM5nc=",
-            "created_at": "2026-10-16T02:43:03.66043",
-            "rotated_at": "2026-10-16T02:43:03.652537",
-            "updated_at": "2026-10-16T02:43:03.66043",
+            "auth_token": "HGvl54+pi1YnUaw8svb1GOVYxBU=",
+            "created_at": "2026-11-15T22:29:50.309928",
+            "rotated_at": "2026-11-15T22:29:50.307511",
+            "updated_at": "2026-11-15T22:29:50.309928",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "VuRzwm86hicXP2a9kxtsSjRM5nc=",
+            "prev_auth_token": "HGvl54+pi1YnUaw8svb1GOVYxBU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -799,7 +846,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 26,
           "context": "/c/site-feedback/2",
@@ -809,9 +856,10 @@
           "topic_id": null,
           "new_value": "000000",
           "admin_only": true,
-          "created_at": "2026-10-16T02:43:07.206789",
+          "created_at": "2026-11-15T22:29:50.904024",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-16T02:43:07.206789",
+          "updated_at": "2026-11-15T22:29:50.904024",
           "category_id": 2,
           "custom_type": null,
           "reviewable_id": null,
@@ -820,7 +868,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 26,
           "context": "/c/site-feedback/2",
@@ -830,9 +878,10 @@
           "topic_id": null,
           "new_value": "null",
           "admin_only": true,
-          "created_at": "2026-10-16T02:43:07.211602",
+          "created_at": "2026-11-15T22:29:50.905746",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-16T02:43:07.211602",
+          "updated_at": "2026-11-15T22:29:50.905746",
           "category_id": 2,
           "custom_type": null,
           "reviewable_id": null,
@@ -855,11 +904,11 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "e15e15ab6d333f78f4f1b6876d7ddd35a916e962cd0ac751b127cb41f3f8f263",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

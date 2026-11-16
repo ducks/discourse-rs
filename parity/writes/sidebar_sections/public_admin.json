@@ -88,8 +88,8 @@
       "path": "/sidebar_sections.json"
     }
   ],
-  "started_at": "2026-10-14T15:28:05.255408",
-  "transaction_started_at": "2026-10-14T15:28:03.670052",
+  "started_at": "2026-11-15T23:33:49.914451",
+  "transaction_started_at": "2026-11-15T23:33:49.127257",
   "responses": [
     {
       "status": 200,
@@ -671,8 +671,8 @@
           "id": 30,
           "user_id": -1,
           "position": 0,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 15,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -681,8 +681,8 @@
           "id": 31,
           "user_id": -1,
           "position": 1,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 16,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -691,8 +691,8 @@
           "id": 32,
           "user_id": -1,
           "position": 2,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 17,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -701,8 +701,8 @@
           "id": 33,
           "user_id": -1,
           "position": 3,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 18,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -711,8 +711,8 @@
           "id": 34,
           "user_id": -1,
           "position": 4,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 19,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -721,8 +721,8 @@
           "id": 35,
           "user_id": -1,
           "position": 5,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 20,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -731,8 +731,8 @@
           "id": 36,
           "user_id": -1,
           "position": 6,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 21,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -741,8 +741,8 @@
           "id": 37,
           "user_id": -1,
           "position": 7,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 22,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -751,8 +751,8 @@
           "id": 38,
           "user_id": -1,
           "position": 8,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 23,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -761,8 +761,8 @@
           "id": 39,
           "user_id": -1,
           "position": 9,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 24,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -771,8 +771,8 @@
           "id": 40,
           "user_id": -1,
           "position": 10,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 25,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -781,8 +781,8 @@
           "id": 41,
           "user_id": -1,
           "position": 11,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052",
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257",
           "linkable_id": 26,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -793,8 +793,8 @@
           "id": 1,
           "user_id": -1,
           "position": 1,
-          "created_at": "2026-07-25T05:58:27.638527",
-          "updated_at": "2026-07-25T05:58:27.638527",
+          "created_at": "2026-11-03T05:07:23.963621",
+          "updated_at": "2026-11-03T05:07:23.963621",
           "linkable_id": 1,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -803,8 +803,8 @@
           "id": 2,
           "user_id": -1,
           "position": 2,
-          "created_at": "2026-07-25T05:58:27.648438",
-          "updated_at": "2026-07-25T05:58:27.648438",
+          "created_at": "2026-11-03T05:07:23.971512",
+          "updated_at": "2026-11-03T05:07:23.971512",
           "linkable_id": 2,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -813,8 +813,8 @@
           "id": 3,
           "user_id": -1,
           "position": 3,
-          "created_at": "2026-07-25T05:58:27.65929",
-          "updated_at": "2026-07-25T05:58:27.65929",
+          "created_at": "2026-11-03T05:07:23.978288",
+          "updated_at": "2026-11-03T05:07:23.978288",
           "linkable_id": 3,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -823,8 +823,8 @@
           "id": 4,
           "user_id": -1,
           "position": 4,
-          "created_at": "2026-07-25T05:58:27.666607",
-          "updated_at": "2026-07-25T05:58:27.666607",
+          "created_at": "2026-11-03T05:07:23.985003",
+          "updated_at": "2026-11-03T05:07:23.985003",
           "linkable_id": 4,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -833,8 +833,8 @@
           "id": 5,
           "user_id": -1,
           "position": 5,
-          "created_at": "2026-07-25T05:58:27.673567",
-          "updated_at": "2026-07-25T05:58:27.673567",
+          "created_at": "2026-11-03T05:07:23.991452",
+          "updated_at": "2026-11-03T05:07:23.991452",
           "linkable_id": 5,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -843,8 +843,8 @@
           "id": 6,
           "user_id": -1,
           "position": 6,
-          "created_at": "2026-07-25T05:58:27.680304",
-          "updated_at": "2026-07-25T05:58:27.680304",
+          "created_at": "2026-11-03T05:07:23.998242",
+          "updated_at": "2026-11-03T05:07:23.998242",
           "linkable_id": 6,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -853,8 +853,8 @@
           "id": 7,
           "user_id": -1,
           "position": 7,
-          "created_at": "2026-07-25T05:58:27.687269",
-          "updated_at": "2026-07-25T05:58:27.687269",
+          "created_at": "2026-11-03T05:07:24.005169",
+          "updated_at": "2026-11-03T05:07:24.005169",
           "linkable_id": 7,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -863,8 +863,8 @@
           "id": 8,
           "user_id": -1,
           "position": 8,
-          "created_at": "2026-07-25T05:58:27.694095",
-          "updated_at": "2026-07-25T05:58:27.694095",
+          "created_at": "2026-11-03T05:07:24.011907",
+          "updated_at": "2026-11-03T05:07:24.011907",
           "linkable_id": 8,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -873,8 +873,8 @@
           "id": 9,
           "user_id": -1,
           "position": 9,
-          "created_at": "2026-07-25T05:58:27.700923",
-          "updated_at": "2026-07-25T05:58:27.700923",
+          "created_at": "2026-11-03T05:07:24.018321",
+          "updated_at": "2026-11-03T05:07:24.018321",
           "linkable_id": 9,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -883,8 +883,8 @@
           "id": 10,
           "user_id": -1,
           "position": 10,
-          "created_at": "2026-07-25T05:58:27.707512",
-          "updated_at": "2026-07-25T05:58:27.707512",
+          "created_at": "2026-11-03T05:07:24.024747",
+          "updated_at": "2026-11-03T05:07:24.024747",
           "linkable_id": 10,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -893,8 +893,8 @@
           "id": 11,
           "user_id": -1,
           "position": 11,
-          "created_at": "2026-07-25T05:58:27.714212",
-          "updated_at": "2026-07-25T05:58:27.714212",
+          "created_at": "2026-11-03T05:07:24.031252",
+          "updated_at": "2026-11-03T05:07:24.031252",
           "linkable_id": 11,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -903,8 +903,8 @@
           "id": 12,
           "user_id": -1,
           "position": 12,
-          "created_at": "2026-07-25T05:58:27.721205",
-          "updated_at": "2026-07-25T05:58:27.721205",
+          "created_at": "2026-11-03T05:07:24.037732",
+          "updated_at": "2026-11-03T05:07:24.037732",
           "linkable_id": 12,
           "linkable_type": "SidebarUrl",
           "sidebar_section_id": 1
@@ -923,8 +923,8 @@
             "locale": null,
             "public": true,
             "user_id": -1,
-            "created_at": "2026-07-25T05:58:27.613991",
-            "updated_at": "2026-07-25T05:58:27.613991",
+            "created_at": "2026-11-03T05:07:23.9488",
+            "updated_at": "2026-11-03T05:07:23.9488",
             "section_type": 0
           },
           "after": {
@@ -933,8 +933,8 @@
             "locale": "en",
             "public": true,
             "user_id": -1,
-            "created_at": "2026-07-25T05:58:27.613991",
-            "updated_at": "2026-10-14T15:28:05.49632",
+            "created_at": "2026-11-03T05:07:23.9488",
+            "updated_at": "2026-11-15T23:33:50.099341",
             "section_type": 0
           }
         }
@@ -950,8 +950,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 16,
@@ -961,8 +961,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 17,
@@ -972,8 +972,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 18,
@@ -983,8 +983,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 19,
@@ -994,8 +994,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 20,
@@ -1005,8 +1005,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 21,
@@ -1016,8 +1016,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 22,
@@ -1027,8 +1027,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 23,
@@ -1038,8 +1038,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 24,
@@ -1049,8 +1049,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 25,
@@ -1060,8 +1060,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         },
         {
           "id": 26,
@@ -1071,8 +1071,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-10-14T15:28:03.670052",
-          "updated_at": "2026-10-14T15:28:03.670052"
+          "created_at": "2026-11-15T23:33:49.127257",
+          "updated_at": "2026-11-15T23:33:49.127257"
         }
       ],
       "deleted": [
@@ -1084,8 +1084,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.627074",
-          "updated_at": "2026-07-25T05:58:27.627074"
+          "created_at": "2026-11-03T05:07:23.956184",
+          "updated_at": "2026-11-03T05:07:23.956184"
         },
         {
           "id": 2,
@@ -1095,8 +1095,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.645195",
-          "updated_at": "2026-07-25T05:58:27.645195"
+          "created_at": "2026-11-03T05:07:23.969279",
+          "updated_at": "2026-11-03T05:07:23.969279"
         },
         {
           "id": 3,
@@ -1106,8 +1106,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.656731",
-          "updated_at": "2026-07-25T05:58:27.656731"
+          "created_at": "2026-11-03T05:07:23.975987",
+          "updated_at": "2026-11-03T05:07:23.975987"
         },
         {
           "id": 4,
@@ -1117,8 +1117,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.663968",
-          "updated_at": "2026-07-25T05:58:27.663968"
+          "created_at": "2026-11-03T05:07:23.982549",
+          "updated_at": "2026-11-03T05:07:23.982549"
         },
         {
           "id": 5,
@@ -1128,8 +1128,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.671101",
-          "updated_at": "2026-07-25T05:58:27.671101"
+          "created_at": "2026-11-03T05:07:23.98913",
+          "updated_at": "2026-11-03T05:07:23.98913"
         },
         {
           "id": 6,
@@ -1139,8 +1139,8 @@
           "locale": null,
           "segment": 0,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.6778",
-          "updated_at": "2026-07-25T05:58:27.6778"
+          "created_at": "2026-11-03T05:07:23.995805",
+          "updated_at": "2026-11-03T05:07:23.995805"
         },
         {
           "id": 7,
@@ -1150,8 +1150,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.684705",
-          "updated_at": "2026-07-25T05:58:27.684705"
+          "created_at": "2026-11-03T05:07:24.00244",
+          "updated_at": "2026-11-03T05:07:24.00244"
         },
         {
           "id": 8,
@@ -1161,8 +1161,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.691764",
-          "updated_at": "2026-07-25T05:58:27.691764"
+          "created_at": "2026-11-03T05:07:24.009492",
+          "updated_at": "2026-11-03T05:07:24.009492"
         },
         {
           "id": 9,
@@ -1172,8 +1172,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.698421",
-          "updated_at": "2026-07-25T05:58:27.698421"
+          "created_at": "2026-11-03T05:07:24.016142",
+          "updated_at": "2026-11-03T05:07:24.016142"
         },
         {
           "id": 10,
@@ -1183,8 +1183,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.705265",
-          "updated_at": "2026-07-25T05:58:27.705265"
+          "created_at": "2026-11-03T05:07:24.022315",
+          "updated_at": "2026-11-03T05:07:24.022315"
         },
         {
           "id": 11,
@@ -1194,8 +1194,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.711741",
-          "updated_at": "2026-07-25T05:58:27.711741"
+          "created_at": "2026-11-03T05:07:24.028956",
+          "updated_at": "2026-11-03T05:07:24.028956"
         },
         {
           "id": 12,
@@ -1205,8 +1205,8 @@
           "locale": null,
           "segment": 1,
           "external": false,
-          "created_at": "2026-07-25T05:58:27.718677",
-          "updated_at": "2026-07-25T05:58:27.718677"
+          "created_at": "2026-11-03T05:07:24.035346",
+          "updated_at": "2026-11-03T05:07:24.035346"
         }
       ],
       "updated": []
@@ -1217,33 +1217,33 @@
       "updated": [
         {
           "before": {
-            "id": 112,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
-            "created_at": "2026-10-14T15:28:04.350058",
-            "rotated_at": "2026-10-14T15:28:04.347931",
-            "updated_at": "2026-10-14T15:28:04.350058",
+            "auth_token": "WRldUXAxk4aqjcDrv6wNeo/6EoQ=",
+            "created_at": "2026-11-15T23:33:49.449868",
+            "rotated_at": "2026-11-15T23:33:49.448876",
+            "updated_at": "2026-11-15T23:33:49.449868",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
+            "prev_auth_token": "WRldUXAxk4aqjcDrv6wNeo/6EoQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 112,
-            "seen_at": "2026-10-14T15:28:05.264851",
+            "id": 14,
+            "seen_at": "2026-11-15T23:33:49.920983",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
-            "created_at": "2026-10-14T15:28:04.350058",
-            "rotated_at": "2026-10-14T15:28:04.347931",
-            "updated_at": "2026-10-14T15:28:04.350058",
+            "auth_token": "WRldUXAxk4aqjcDrv6wNeo/6EoQ=",
+            "created_at": "2026-11-15T23:33:49.449868",
+            "rotated_at": "2026-11-15T23:33:49.448876",
+            "updated_at": "2026-11-15T23:33:49.449868",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
+            "prev_auth_token": "WRldUXAxk4aqjcDrv6wNeo/6EoQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1254,7 +1254,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 101,
           "context": null,
@@ -1264,9 +1264,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T15:28:05.302849",
+          "created_at": "2026-11-15T23:33:49.950539",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T15:28:05.302849",
+          "updated_at": "2026-11-15T23:33:49.950539",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1275,7 +1276,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 102,
           "context": null,
@@ -1285,9 +1286,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T15:28:05.350658",
+          "created_at": "2026-11-15T23:33:49.987244",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T15:28:05.350658",
+          "updated_at": "2026-11-15T23:33:49.987244",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1296,7 +1298,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 70,
           "email": null,
           "action": 102,
           "context": null,
@@ -1306,9 +1308,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T15:28:05.4006",
+          "created_at": "2026-11-15T23:33:50.029055",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T15:28:05.4006",
+          "updated_at": "2026-11-15T23:33:50.029055",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1317,7 +1320,7 @@
           "target_user_id": null
         },
         {
-          "id": 77,
+          "id": 71,
           "email": null,
           "action": 102,
           "context": null,
@@ -1327,9 +1330,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T15:28:05.458736",
+          "created_at": "2026-11-15T23:33:50.06936",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T15:28:05.458736",
+          "updated_at": "2026-11-15T23:33:50.06936",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1338,7 +1342,7 @@
           "target_user_id": null
         },
         {
-          "id": 78,
+          "id": 72,
           "email": null,
           "action": 103,
           "context": null,
@@ -1348,9 +1352,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T15:28:05.759298",
+          "created_at": "2026-11-15T23:33:50.181287",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T15:28:05.759298",
+          "updated_at": "2026-11-15T23:33:50.181287",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1367,11 +1372,11 @@
   "next_ids": {
     "sidebar_section_links": 28,
     "sidebar_urls": 13,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "eb2752a038704a8670c8309903199c188df0e49a274b9f3204a58ad15407837e",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -58,7 +58,8 @@ pub fn onebox_base_config(allowed_iframe_regexes: Option<Vec<Regex>>) -> Config 
             AttrAllow::new(&["aria-hidden", "width", "height", "viewbox"]),
         ),
         ("div", AttrAllow::data()),
-        ("span", AttrAllow::data()),
+        // role and aria-label too (Discourse 60e91171d24).
+        ("span", AttrAllow::new(&["role", "aria-label"]).with_data()),
         ("use", AttrAllow::new(&["href"])),
     ] {
         config.attributes.insert(element.to_string(), allow);

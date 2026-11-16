@@ -1447,7 +1447,8 @@ async fn the_advanced_tutorial_runs_to_its_certificate() {
             &[]
         )
     );
-    reply(&st, user_id, topic_id, "Have a look at #uncategorized").await;
+    // No #uncategorized: Discourse a9f8c119c71 deletes the unused seeded one.
+    reply(&st, user_id, topic_id, "Have a look at #general").await;
     run_bot_jobs(&st).await;
     assert_eq!(
         last_post(&st).await.3,

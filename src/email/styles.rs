@@ -686,8 +686,8 @@ impl Styles {
             append(&a, new_text(&uri.display()));
             let p = new_element("p", &[]);
             append(&p, a);
-            // The fragment's unclosed second `<p>`.
-            replace_with(&iframe, vec![p, new_element("p", &[])]);
+            // A paragraph built as nodes (2879afee791).
+            replace_with(&iframe, vec![p]);
         }
     }
 

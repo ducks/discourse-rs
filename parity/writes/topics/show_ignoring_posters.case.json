@@ -10,11 +10,32 @@
     "UPDATE posts SET like_count = 3 WHERE id = 38"
   ],
   "requests": [
-    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json" },
-    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json?post_number=4" },
-    { "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35" },
-    { "method": "GET", "path": "/posts/by_number/35/4.json" },
-    { "method": "GET", "path": "/u/admin/activity.json" }
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json?post_number=4"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/by_number/35/4.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/admin/activity.json"
+    }
   ],
-  "ignore": ["/responses/2/body"]
+  "ignore": [
+    "/responses/2/body"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks",
+    "/responses/1/body/bookmarks"
+  ]
 }

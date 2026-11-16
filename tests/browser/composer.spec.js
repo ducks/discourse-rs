@@ -424,7 +424,7 @@ test.describe("the rich editor", () => {
     const { writer } = await replyTo(page, context, session, 0);
     await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
     await expect(toggle(page)).toHaveClass(/--markdown/);
-    await expect(toggle(page)).toHaveAttribute("title", "Switch to new rich text editor (Ctrl M)");
+    await expect(toggle(page)).toHaveAttribute("title", "Switch to rich text editor (Ctrl M)");
     await expect(textarea(page)).toBeVisible();
     await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeVisible();
 
@@ -434,7 +434,7 @@ test.describe("the rich editor", () => {
     await expect(textarea(page)).toBeHidden();
     await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
     await expect(toggle(page)).toHaveClass(/--rte/);
-    await expect(toggle(page)).toHaveAttribute("title", "Switch to standard Markdown editor (Ctrl M)");
+    await expect(toggle(page)).toHaveAttribute("title", "Switch to Markdown editor (Ctrl M)");
     await expect(page.locator("#reply-control .d-editor-container")).toHaveClass(/--rich-editor-enabled/);
     await expect(page.locator("#reply-control .d-editor-preview-wrapper")).toBeHidden();
     await expect(rich(page)).toBeFocused();

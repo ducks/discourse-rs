@@ -15,5 +15,8 @@
   "run_jobs": [
     "ensure_db_consistency",
     "publish_group_membership_updates"
+  ],
+  "ignore": [
+    "/changes/category_tag_stats/inserted/0/id"
   ]
 }

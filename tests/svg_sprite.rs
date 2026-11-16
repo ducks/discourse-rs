@@ -138,7 +138,7 @@ async fn the_sprite_follows_what_names_icons() {
         .await
         .unwrap();
         let (_, body) = sprite(&st).await;
-        assert!(body.contains("<symbol id=\\\"my-mark\\\" viewBox=\\\"0 0 1 1\\\">\\n  <path d=\\\"M0 0\\\"/>\\n</symbol>"));
+        assert!(body.contains("<symbol id=\\\"my-mark\\\" viewBox=\\\"0 0 1 1\\\" overflow=\\\"visible\\\">\\n  <path d=\\\"M0 0\\\"/>\\n</symbol>"));
     }
     // A malformed version has no route.
     let (status, _) = get(&st, "/svg-sprite/test.localhost/svg-1-0.js", None).await;
@@ -187,7 +187,7 @@ async fn the_icon_picker_search_and_single_icons() {
     assert!(body.starts_with("\"<symbol id=\\\"house\\\""), "{body}");
     let (status, body) = get(&st, "/svg-sprite/test.localhost/icon/f0a/house.svg", None).await;
     assert_eq!(status, StatusCode::OK);
-    assert!(body.starts_with("<?xml version=\"1.0\"?>\n<svg id=\"house\" viewBox=\"0 0 576 512\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"#ff00aa\">"), "{body}");
+    assert!(body.starts_with("<?xml version=\"1.0\"?>\n<svg id=\"house\" viewBox=\"0 0 512 512\" overflow=\"visible\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"#ff00aa\">"), "{body}");
     let (status, _) = get(&st, "/svg-sprite/test.localhost/icon/no-such.svg", None).await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }

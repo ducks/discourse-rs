@@ -15,8 +15,8 @@
       "path": "/t/parity-fixture-replies-and-posters.json"
     }
   ],
-  "started_at": "2026-10-07T05:11:02.95056",
-  "transaction_started_at": "2026-10-07T05:11:02.265804",
+  "started_at": "2026-11-15T23:49:50.641382",
+  "transaction_started_at": "2026-11-15T23:49:49.985143",
   "responses": [
     {
       "status": 200,
@@ -28,12 +28,12 @@
               "name": "Admin",
               "username": "admin",
               "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-              "created_at": "2026-09-30T07:28:29.674Z",
+              "created_at": "2026-11-15T19:19:54.855Z",
               "cooked": "<p>This topic is unlisted and must not appear in latest for anonymous users.</p>",
               "post_number": 1,
               "post_type": 1,
               "posts_count": 1,
-              "updated_at": "2026-09-30T07:28:29.674Z",
+              "updated_at": "2026-11-15T19:19:54.855Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -89,12 +89,12 @@
               "name": "Admin",
               "username": "admin",
               "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-              "created_at": "2026-09-30T07:28:29.762Z",
+              "created_at": "2026-11-15T19:19:54.929Z",
               "cooked": "",
               "post_number": 2,
               "post_type": 3,
               "posts_count": 1,
-              "updated_at": "2026-09-30T07:28:29.762Z",
+              "updated_at": "2026-11-15T19:19:54.929Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -154,7 +154,7 @@
         "timeline_lookup": [
           [
             1,
-            7
+            0
           ]
         ],
         "suggested_topics": [
@@ -167,10 +167,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-09-30T07:28:28.864Z",
-            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "created_at": "2026-11-15T19:19:53.917Z",
+            "last_posted_at": "2026-11-15T19:20:01.206Z",
             "bumped": true,
-            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "bumped_at": "2026-11-15T19:20:01.206Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -252,10 +252,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-07-25T05:58:28.320Z",
-            "last_posted_at": "2026-07-25T05:58:28.405Z",
+            "created_at": "2026-11-03T05:07:24.494Z",
+            "last_posted_at": "2026-11-03T05:07:24.525Z",
             "bumped": true,
-            "bumped_at": "2026-07-25T05:58:28.405Z",
+            "bumped_at": "2026-11-03T05:07:24.525Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": true,
@@ -300,10 +300,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-09-30T07:28:29.543Z",
-            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "created_at": "2026-11-15T19:19:54.728Z",
+            "last_posted_at": "2026-11-15T19:19:54.764Z",
             "bumped": true,
-            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "bumped_at": "2026-11-15T19:19:54.764Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -348,11 +348,11 @@
         "id": 39,
         "title": "Parity fixture: unlisted topic",
         "posts_count": 1,
-        "created_at": "2026-09-30T07:28:29.645Z",
+        "created_at": "2026-11-15T19:19:54.830Z",
         "views": 0,
         "reply_count": 0,
         "like_count": 0,
-        "last_posted_at": "2026-09-30T07:28:29.674Z",
+        "last_posted_at": "2026-11-15T19:19:54.855Z",
         "visible": false,
         "closed": false,
         "archived": false,
@@ -412,6 +412,7 @@
         "show_read_indicator": false,
         "thumbnails": null,
         "slow_mode_enabled_until": null,
+        "board_memberships": [],
         "valid_reactions": [
           "heart",
           "+1",
@@ -427,8 +428,6 @@
         "can_vote": false,
         "vote_count": 0,
         "user_voted": false,
-        "discourse_zendesk_plugin_zendesk_id": null,
-        "discourse_zendesk_plugin_zendesk_url": "https://your-url.zendesk.com/agent/tickets/",
         "details": {
           "can_edit": false,
           "notification_level": 1,
@@ -477,9 +476,10 @@
   ],
   "changes": {},
   "jobs": [],
+  "next_ids": {},
   "recorded_from": {
     "case": "906c85946b3fef234bab4ce3b51a90f169a7c7661aeb6057403f9cbe348c50c9",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

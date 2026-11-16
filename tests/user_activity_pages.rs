@@ -494,12 +494,19 @@ async fn chat_message_bookmarks_are_listed() {
         .as_array()
         .unwrap()
         .iter()
-        .filter(|b| b["bookmarkable_type"] == "ChatMessage")
+        // UserMenuBookmarkSerializer (Discourse 31f877169b1) leaves out
+        // bookmarkable_type: the chat message is the one linking to chat.
+        .filter(|b| {
+            b["bookmarkable_url"]
+                .as_str()
+                .is_some_and(|u| u.contains("/chat/c/"))
+        })
         .map(|b| (b["id"].clone(), b["fancy_title"].clone()))
         .collect();
+    // fancy_title escaped (Discourse 5ffb25452cb).
     assert_eq!(
         chat,
-        vec![(serde_json::json!(10), serde_json::json!("Tom & Jerry"))]
+        vec![(serde_json::json!(10), serde_json::json!("Tom &amp; Jerry"))]
     );
     let menu = user1.page("/user-menu?tab=bookmarks").await.html;
     assert!(

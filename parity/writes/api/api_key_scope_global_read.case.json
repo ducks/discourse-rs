@@ -21,5 +21,8 @@
         "Api-Username": "user1"
       }
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
   ]
 }

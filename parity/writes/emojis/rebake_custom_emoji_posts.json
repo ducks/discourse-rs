@@ -7,8 +7,8 @@
       "path": "/admin/config/emoji/party_parrot.json"
     }
   ],
-  "started_at": "2026-10-14T05:52:05.740174",
-  "transaction_started_at": "2026-10-14T05:52:03.664261",
+  "started_at": "2026-11-15T22:49:39.160992",
+  "transaction_started_at": "2026-11-15T22:49:38.36357",
   "responses": [
     {
       "status": 200,
@@ -27,8 +27,8 @@
           "group": "party",
           "user_id": 1,
           "upload_id": 34,
-          "created_at": "2026-10-14T05:52:03.664261",
-          "updated_at": "2026-10-14T05:52:03.664261"
+          "created_at": "2026-11-15T22:49:38.36357",
+          "updated_at": "2026-11-15T22:49:38.36357"
         }
       ],
       "updated": []
@@ -49,20 +49,20 @@
             "locale": null,
             "user_id": 3,
             "version": 1,
-            "baked_at": "2026-09-30T07:28:29.079363",
+            "baked_at": "2026-11-15T19:19:54.128389",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-09-30T07:28:29.079439",
+            "created_at": "2026-11-15T19:19:54.128447",
             "deleted_at": null,
             "like_count": 1,
             "like_score": 1,
             "self_edits": 0,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-09-30T07:28:29.079439",
+            "updated_at": "2026-11-15T19:19:54.128447",
             "word_count": 13,
             "action_code": null,
             "cook_method": 1,
@@ -82,7 +82,7 @@
             "last_editor_id": 3,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-09-30T07:28:29.094067",
+            "last_version_at": "2026-11-15T19:19:54.145728",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -104,20 +104,20 @@
             "locale": null,
             "user_id": 3,
             "version": 1,
-            "baked_at": "2026-10-14T05:52:05.826539",
+            "baked_at": "2026-11-15T22:49:40.211343",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-09-30T07:28:29.079439",
+            "created_at": "2026-11-15T19:19:54.128447",
             "deleted_at": null,
             "like_count": 1,
             "like_score": 1,
             "self_edits": 0,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-09-30T07:28:29.079439",
+            "updated_at": "2026-11-15T19:19:54.128447",
             "word_count": 13,
             "action_code": null,
             "cook_method": 1,
@@ -137,7 +137,7 @@
             "last_editor_id": 3,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-09-30T07:28:29.094067",
+            "last_version_at": "2026-11-15T19:19:54.145728",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -157,33 +157,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ESIMXPid5wu6UoALO/YBThmnAq0=",
-            "created_at": "2026-10-14T05:52:04.607294",
-            "rotated_at": "2026-10-14T05:52:04.605668",
-            "updated_at": "2026-10-14T05:52:04.607294",
+            "auth_token": "koKB3XHEb7WjclT7OJs6Qpzz6A0=",
+            "created_at": "2026-11-15T22:49:38.691661",
+            "rotated_at": "2026-11-15T22:49:38.690427",
+            "updated_at": "2026-11-15T22:49:38.691661",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ESIMXPid5wu6UoALO/YBThmnAq0=",
+            "prev_auth_token": "koKB3XHEb7WjclT7OJs6Qpzz6A0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-10-14T05:52:05.749322",
+            "id": 14,
+            "seen_at": "2026-11-15T22:49:39.165846",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ESIMXPid5wu6UoALO/YBThmnAq0=",
-            "created_at": "2026-10-14T05:52:04.607294",
-            "rotated_at": "2026-10-14T05:52:04.605668",
-            "updated_at": "2026-10-14T05:52:04.607294",
+            "auth_token": "koKB3XHEb7WjclT7OJs6Qpzz6A0=",
+            "created_at": "2026-11-15T22:49:38.691661",
+            "rotated_at": "2026-11-15T22:49:38.690427",
+            "updated_at": "2026-11-15T22:49:38.691661",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ESIMXPid5wu6UoALO/YBThmnAq0=",
+            "prev_auth_token": "koKB3XHEb7WjclT7OJs6Qpzz6A0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -194,7 +194,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 113,
           "context": null,
@@ -204,9 +204,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T05:52:05.767345",
+          "created_at": "2026-11-15T22:49:39.174957",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T05:52:05.767345",
+          "updated_at": "2026-11-15T22:49:39.174957",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -228,7 +229,7 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 74
+    "user_histories": 68
   },
   "setup": [
     "INSERT INTO custom_emojis (id, name, upload_id, created_at, updated_at, \"group\", user_id) VALUES (900, 'party_parrot', 34, now(), now(), 'party', 1)",
@@ -248,7 +249,7 @@
   ],
   "recorded_from": {
     "case": "35c75f46a7e517c5fd187af20bfb962ab88272d4b4b53cc3abe876f64ac980d2",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

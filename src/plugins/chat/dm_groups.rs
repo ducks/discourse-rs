@@ -648,7 +648,7 @@ impl Context<'_> {
                 "description": channel.description,
                 "slug": channel.slug,
             }),
-            Some(&audience),
+            audience.as_deref(),
         )
         .await?;
         // auto_join_users_if_needed
@@ -666,7 +666,7 @@ impl Context<'_> {
         }
         let membership: Option<super::channels::MembershipRow> = sqlx::query_as(
             "SELECT chat_channel_id, following, muted, notification_level, last_read_message_id, \
-                    last_viewed_at, last_viewed_pins_at, starred \
+                    last_viewed_at, last_viewed_pins_at, starred, muted_until \
              FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2",
         )
         .bind(self.guardian.user_id())

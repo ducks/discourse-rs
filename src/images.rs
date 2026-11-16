@@ -643,40 +643,150 @@ pub fn fix_orientation(bytes: &[u8]) -> Option<Vec<u8>> {
     encode(&image, Format::Jpeg, quality, None).ok()
 }
 
-/// An image ImageMagick reads as PseudoClass (a palette): GIFs and
-/// indexed PNGs.
-fn has_palette(bytes: &[u8], format: Format) -> bool {
-    match format {
-        Format::Gif => true,
-        // IHDR's colour type, 3 for indexed.
-        Format::Png => bytes.get(25) == Some(&3),
-        _ => false,
-    }
-}
-
-/// `Upload#calculate_dominant_color!`: the whole image squeezed to one
-/// pixel (`-resize 1x1`, the first frame), as `RRGGBB`. ImageMagick's
-/// filter for shrinking is Lanczos, Mitchell for a palette or
-/// transparency. None when it does not decode, which Rails saves as an
-/// empty colour.
+/// `Upload#calculate_dominant_color!` with libvips, the default since
+/// 80c2c3fe7d0 (`dominant_color` in script/discourse_vips_worker), as
+/// `RRGGBB` from the first frame. An image with alpha is its
+/// alpha-weighted mean; any other is `Vips::Image.thumbnail` forced to
+/// 1x1. None when it does not decode, which Rails saves as an empty
+/// colour.
+///
+/// libvips shrinks a JPEG on load in the JPEG library's scaled IDCT,
+/// which differs between libjpeg builds; this decodes the whole JPEG,
+/// which agrees with the reference's jpegli on the fixtures but can be a
+/// step off another build's.
 pub fn dominant_color(bytes: &[u8], format: Format) -> Option<String> {
     let image = decode(bytes, format).ok()?;
-    let filter = if has_palette(bytes, format) || image.color().has_alpha() {
-        FilterType::Mitchell
-    } else {
-        FilterType::Lanczos3
+    let rgba = image.to_rgba8();
+    // vips's GIF loader adds an alpha band when the GIF has a transparent
+    // colour.
+    let alpha = match format {
+        Format::Gif => rgba.pixels().any(|p| p[3] < 255),
+        _ => image.color().has_alpha(),
     };
-    let src = DynamicImage::ImageRgba8(image.to_rgba8());
-    let mut dst = DynamicImage::ImageRgba8(RgbaImage::new(1, 1));
-    Resizer::new()
-        .resize(
-            &src,
-            &mut dst,
-            &ResizeOptions::new().resize_alg(ResizeAlg::Convolution(filter)),
-        )
-        .ok()?;
-    let p = dst.to_rgba8().get_pixel(0, 0).0;
-    Some(format!("{:02X}{:02X}{:02X}", p[0], p[1], p[2]))
+    let [r, g, b] = if alpha {
+        alpha_weighted_mean(&rgba)
+    } else {
+        vips_thumbnail_1x1(&rgba)
+    };
+    Some(format!("{r:02X}{g:02X}{b:02X}"))
+}
+
+/// `alpha_weighted_components`: each colour band times alpha, summed and
+/// divided by the alpha sum, rounded half away from zero as Ruby does.
+fn alpha_weighted_mean(image: &RgbaImage) -> [u8; 3] {
+    let mut alpha_sum = 0f64;
+    let mut sums = [0f64; 3];
+    for p in image.pixels() {
+        let a = f64::from(p[3]);
+        alpha_sum += a;
+        for (sum, c) in sums.iter_mut().zip(p.0) {
+            *sum += f64::from(c) * a;
+        }
+    }
+    if alpha_sum == 0.0 {
+        return [0, 0, 0];
+    }
+    sums.map(|s| (s / alpha_sum).round() as u8)
+}
+
+/// `vips_thumbnail(1, height: 1, size: :force)` on an 8-bit sRGB image:
+/// vips_resize reduces vertically then horizontally, each a box shrink
+/// to about twice the target (its default gap of 2) and a Lanczos3
+/// reduce for the rest, in 12-bit fixed point.
+fn vips_thumbnail_1x1(image: &RgbaImage) -> [u8; 3] {
+    let (width, height) = (image.width() as usize, image.height() as usize);
+    let mut out = [0u8; 3];
+    for (band, out) in out.iter_mut().enumerate() {
+        let row: Vec<i32> = (0..width)
+            .map(|x| {
+                let column: Vec<i32> = (0..height)
+                    .map(|y| i32::from(image.get_pixel(x as u32, y as u32)[band]))
+                    .collect();
+                vips_reduce_to_one(column)
+            })
+            .collect();
+        *out = vips_reduce_to_one(row) as u8;
+    }
+    out
+}
+
+/// One axis of vips_resize to a single pixel: vips_reducev/vips_reduceh
+/// with `gap` 2 and the Lanczos3 kernel, after vips_shrinkv/vips_shrinkh
+/// for the integer part.
+fn vips_reduce_to_one(mut samples: Vec<i32>) -> i32 {
+    let len = samples.len();
+    // vips_thumbnail's shrink is `len / 1`; vips_resize takes its inverse
+    // as the scale and vips_reduce* the inverse of that.
+    let scale = (1.0 / len as f64).max(1.0 / len as f64);
+    if scale >= 1.0 {
+        return samples[0];
+    }
+    let mut shrink = 1.0 / scale;
+    let out = (len as f64 / shrink + 0.5) as usize;
+    let mut extra = out as f64 * shrink - len as f64;
+    let int_shrink = ((len as f64 / out as f64 / 2.0).floor() as usize).max(1);
+    if int_shrink > 1 {
+        // vips_shrink* with `ceil`: the edge copied out to whole boxes,
+        // each box's mean rounded.
+        let boxes = len.div_ceil(int_shrink);
+        let k = int_shrink as i32;
+        samples = (0..boxes)
+            .map(|i| {
+                let sum: i32 = (0..int_shrink)
+                    .map(|j| samples[(i * int_shrink + j).min(len - 1)])
+                    .sum();
+                (sum + k / 2) / k
+            })
+            .collect();
+        shrink /= int_shrink as f64;
+        extra /= int_shrink as f64;
+    }
+    if shrink == 1.0 {
+        return samples[0];
+    }
+    let n_point = 2 * (3.0 * shrink).round_ties_even() as usize + 1;
+    let offset = (1.0 + extra) / 2.0 - 1.0;
+    // The input is padded by copying its edges, ceil(n / 2) - 1 before.
+    let pad = (n_point as f64 / 2.0).ceil() as i64 - 1;
+    let position = 0.5 * shrink - 0.5 - offset;
+    let start = position as i64;
+    let phase = (((position * 128.0) as i32 & 127) + 1) >> 1;
+    let mask = lanczos3_mask(n_point, shrink, f64::from(phase as f32 / 64.0));
+    let last = samples.len() as i64 - 1;
+    let sum: i32 = mask
+        .iter()
+        .enumerate()
+        .map(|(i, &c)| {
+            let at = (start + i as i64 - pad).clamp(0, last) as usize;
+            i32::from(c) * samples[at]
+        })
+        .sum();
+    ((sum + 2048) >> 12).clamp(0, 255)
+}
+
+/// vips_reduce_make_mask for Lanczos3, normalised and scaled to the
+/// 12-bit shorts the integer paths multiply by.
+fn lanczos3_mask(n_point: usize, shrink: f64, x: f64) -> Vec<i16> {
+    fn sinc(x: f64) -> f64 {
+        if x == 0.0 {
+            return 1.0;
+        }
+        let x = x * std::f64::consts::PI;
+        x.sin() / x
+    }
+    let half = x + n_point as f64 / 2.0 - 1.0;
+    let raw: Vec<f64> = (0..n_point)
+        .map(|i| {
+            let xp = (i as f64 - half) / shrink;
+            if (-3.0..=3.0).contains(&xp) {
+                sinc(xp) * sinc(xp / 3.0)
+            } else {
+                0.0
+            }
+        })
+        .collect();
+    let sum: f64 = raw.iter().sum();
+    raw.iter().map(|c| (c / sum * 4096.0) as i16).collect()
 }
 
 #[cfg(test)]
@@ -735,16 +845,19 @@ mod tests {
         }
     }
 
-    /// The colours the reference saved for the upload fixtures
-    /// (parity/writes/upload_*.json).
+    /// The colours libvips gives the upload fixtures (`vips thumbnail
+    /// <file> 1 --height 1 --size force`, as the reference saved them in
+    /// parity/writes/uploads). photo.jpg is the reference's (jpegli);
+    /// libjpeg-turbo's shrink on load gives 3B4D5F.
     #[test]
-    fn dominant_colours_match_the_reference() {
+    fn dominant_colours_match_libvips() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes/files");
         for (name, format, color) in [
             ("static.gif", Format::Gif, "3366CC"),
             ("animated.gif", Format::Gif, "FF0000"),
-            ("photo.jpg", Format::Jpeg, "3C4C5A"),
-            ("small.png", Format::Png, "355258"),
+            ("photo.jpg", Format::Jpeg, "3B4D5E"),
+            ("small.png", Format::Png, "38535B"),
+            ("photo.png", Format::Png, "4E5045"),
         ] {
             let bytes = std::fs::read(dir.join(name)).unwrap();
             assert_eq!(

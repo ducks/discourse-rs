@@ -1,4 +1,5 @@
 {
+  "not_yet": "0e5b6a56a3b, d655da056d0 (Discourse): the design wizard offers chat and Concord homepages per theme (additional_homepages, homepage_settings, restorable_homepages); not ported",
   "user": "admin",
   "requests": [
     {"method": "GET", "path": "/admin/config/design-wizard.json"},

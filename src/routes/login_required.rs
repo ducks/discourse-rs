@@ -58,6 +58,8 @@ fn exempt(path: &str) -> bool {
                 | "/captcha/hcaptcha/create.json"
                 | "/captcha/recaptcha/create"
                 | "/captcha/recaptcha/create.json"
+                | "/captcha/recaptcha_v2/create"
+                | "/captcha/recaptcha_v2/create.json"
         )
         // UserApiKeysController#new, #otp, #activate and the device
         // request and poll (create_otp needs a login of its own).

@@ -1,4 +1,5 @@
 {
+  "not_yet": "3b5b10a4c30 (Discourse): PostgreSQL 18+ required; the reference stems with PG 18 Snowball (add stays add), the nix shell runs PG 16 (add becomes ad); needs the nix postgres bump",
   "user": "admin",
   "requests": [
     {

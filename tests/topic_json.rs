@@ -90,8 +90,8 @@ async fn renders_the_post_stream_in_order() {
     assert_eq!(json["post_stream"]["stream"].as_array().unwrap().len(), 5);
     // [post_number, days ago]: the fixture ages, so only the shape is fixed.
     let lookup = json["timeline_lookup"].as_array().unwrap();
-    // Two days of posts since the mention fixture: one entry per day.
-    assert_eq!(lookup.len(), 2);
+    // The fixtures were all made in one day: one entry.
+    assert_eq!(lookup.len(), 1);
     assert_eq!(lookup[0][0], 1);
     assert!(lookup[0][1].as_i64().unwrap() >= 0);
     assert_eq!(

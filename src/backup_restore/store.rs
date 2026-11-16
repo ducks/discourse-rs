@@ -13,7 +13,7 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use serde_json::{Value, json};
 
 use crate::config::Config;
-use crate::object_storage::{Backend, CorsRule, PutOptions, StorageError, s3};
+use crate::object_storage::{Backend, PutOptions, StorageError, s3};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, ruby};
 
@@ -114,14 +114,9 @@ pub struct ExternalBackupStore {
     presigned_get_expires: u64,
     /// `!s3_disable_cleanup`
     cleanup_allowed: bool,
-    /// `s3_install_cors_rule`
-    install_cors_rule: bool,
     /// `s3_use_acls`
     use_acls: bool,
 }
-
-/// S3BackupStore::UPLOAD_URL_EXPIRES_AFTER_SECONDS (six hours).
-const UPLOAD_URL_EXPIRES_AFTER_SECONDS: u64 = 6 * 3600;
 
 impl ExternalBackupStore {
     fn for_site(config: &Config, settings: &SiteSettings) -> Result<Self, AppError> {
@@ -149,7 +144,6 @@ impl ExternalBackupStore {
                 .to_i()
                 .max(0) as u64,
             cleanup_allowed: !settings.get("s3_disable_cleanup")?.truthy(),
-            install_cors_rule: settings.get("s3_install_cors_rule")?.truthy(),
             use_acls: settings.get("s3_use_acls")?.truthy(),
         })
     }
@@ -273,38 +267,6 @@ impl ExternalBackupStore {
             .await?;
         self.backend.delete(existing_key).await?;
         Ok(())
-    }
-
-    /// `generate_upload_url`: refused for a name taken, the bucket's CORS
-    /// rule for browser uploads made sure of, then a presigned PUT good
-    /// for six hours. Any service error is a StorageError.
-    async fn generate_upload_url(&self, filename: &str) -> Result<String, AppError> {
-        let key = self.key(filename);
-        let generated = async {
-            self.backend.ensure_bucket().await?;
-            if self.backend.head(&key).await?.is_some() {
-                return Ok(None);
-            }
-            if self.install_cors_rule {
-                self.backend
-                    .ensure_cors(&CorsRule::backup_direct_upload())
-                    .await?;
-            }
-            let (url, _) = self.backend.presigned_put(
-                &key,
-                UPLOAD_URL_EXPIRES_AFTER_SECONDS,
-                &PutOptions::default(),
-            )?;
-            Ok::<_, StorageError>(Some(url))
-        };
-        match generated.await {
-            Ok(Some(url)) => Ok(url),
-            Ok(None) => Err(BackupStoreError::FileExists.into()),
-            Err(e) => {
-                tracing::warn!("Failed to generate upload URL for S3: {e}");
-                Err(storage(e))
-            }
-        }
     }
 }
 
@@ -440,16 +402,6 @@ impl BackupStore {
                 s.backend.put_file(&key, source, &opts).await?;
                 Ok(())
             }
-        }
-    }
-
-    /// `generate_upload_url(filename)`: where a browser puts a backup.
-    pub async fn generate_upload_url(&self, filename: &str) -> Result<String, AppError> {
-        match self {
-            BackupStore::Local(_) => {
-                Err(BackupStoreError::NotImplemented("LocalBackupStore#generate_upload_url").into())
-            }
-            BackupStore::External(s) => s.generate_upload_url(filename).await,
         }
     }
 

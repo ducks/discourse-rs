@@ -129,9 +129,10 @@ async fn members_outside_the_pinning_groups_cant_pin() {
     let (status, _) = user.get("/chat/api/channels/abc/pins").await;
     assert_eq!(status, 400);
 
+    // Permanent (Discourse f00f07d6272): a stored opt-out leaves them on.
     set_setting(&db.pool, "chat_pinned_messages", 5, "f").await;
     let (status, _) = user.get("/chat/api/channels/2/pins").await;
-    assert_eq!(status, 404);
+    assert_eq!(status, 200);
 }
 
 #[tokio::test]
@@ -203,7 +204,8 @@ async fn the_pins_route_lists_them_beside_the_channel() {
     // A wrong slug goes to the channel's own, still the pins.
     let (status, _) = admin.page("/chat/c/wrong/2/pins").await;
     assert_eq!(status, 302);
+    // Permanent (Discourse f00f07d6272): a stored opt-out leaves them on.
     set_setting(&db.pool, "chat_pinned_messages", 5, "f").await;
     let (status, _) = admin.page("/chat/c/general/2/pins").await;
-    assert_eq!(status, 404);
+    assert_eq!(status, 200);
 }

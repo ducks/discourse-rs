@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-09T12:25:43.680803",
-  "transaction_started_at": "2026-10-09T12:25:42.574299",
+  "started_at": "2026-11-15T23:19:51.502637",
+  "transaction_started_at": "2026-11-15T23:19:50.521297",
   "responses": [
     {
       "status": 200,
@@ -20,7 +20,7 @@
           "id": 4,
           "user_id": 4,
           "post_id": 35,
-          "created_at": "2026-10-09T12:20:42.574Z",
+          "created_at": "2026-11-15T23:14:50.521Z",
           "user": {
             "id": 4,
             "username": "user2",
@@ -32,7 +32,7 @@
           "post": {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "id": 35,
-            "created_at": "2026-09-30T07:28:28.901Z",
+            "created_at": "2026-11-15T19:19:53.957Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -70,14 +70,14 @@
             "reaction_type": "emoji",
             "reaction_value": "clap",
             "reaction_users_count": 2,
-            "created_at": "2026-10-09T11:25:42.574Z"
+            "created_at": "2026-11-15T22:19:50.521Z"
           }
         },
         {
           "id": 5,
           "user_id": 3,
           "post_id": 52,
-          "created_at": "2026-10-09T12:05:42.574Z",
+          "created_at": "2026-11-15T22:59:50.521Z",
           "user": {
             "id": 3,
             "username": "user1",
@@ -89,7 +89,7 @@
           "post": {
             "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
             "id": 52,
-            "created_at": "2026-10-01T15:39:51.834Z",
+            "created_at": "2026-11-15T19:20:01.206Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -127,14 +127,14 @@
             "reaction_type": "emoji",
             "reaction_value": "hugs",
             "reaction_users_count": 1,
-            "created_at": "2026-10-09T12:05:42.574Z"
+            "created_at": "2026-11-15T22:59:50.521Z"
           }
         },
         {
           "id": 3,
           "user_id": 1,
           "post_id": 35,
-          "created_at": "2026-10-09T11:55:42.574Z",
+          "created_at": "2026-11-15T22:49:50.521Z",
           "user": {
             "id": 1,
             "username": "admin",
@@ -146,7 +146,7 @@
           "post": {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "id": 35,
-            "created_at": "2026-09-30T07:28:28.901Z",
+            "created_at": "2026-11-15T19:19:53.957Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -184,14 +184,14 @@
             "reaction_type": "emoji",
             "reaction_value": "laughing",
             "reaction_users_count": 1,
-            "created_at": "2026-10-09T11:55:42.574Z"
+            "created_at": "2026-11-15T22:49:50.521Z"
           }
         },
         {
           "id": 2,
           "user_id": 5,
           "post_id": 35,
-          "created_at": "2026-10-09T11:45:42.574Z",
+          "created_at": "2026-11-15T22:39:50.521Z",
           "user": {
             "id": 5,
             "username": "user3",
@@ -203,7 +203,7 @@
           "post": {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "id": 35,
-            "created_at": "2026-09-30T07:28:28.901Z",
+            "created_at": "2026-11-15T19:19:53.957Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -241,14 +241,14 @@
             "reaction_type": "emoji",
             "reaction_value": "-1",
             "reaction_users_count": 1,
-            "created_at": "2026-10-09T11:45:42.574Z"
+            "created_at": "2026-11-15T22:39:50.521Z"
           }
         },
         {
           "id": 1,
           "user_id": 3,
           "post_id": 35,
-          "created_at": "2026-10-09T11:25:42.574Z",
+          "created_at": "2026-11-15T22:19:50.521Z",
           "user": {
             "id": 3,
             "username": "user1",
@@ -260,7 +260,7 @@
           "post": {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "id": 35,
-            "created_at": "2026-09-30T07:28:28.901Z",
+            "created_at": "2026-11-15T19:19:53.957Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -298,7 +298,7 @@
             "reaction_type": "emoji",
             "reaction_value": "clap",
             "reaction_users_count": 2,
-            "created_at": "2026-10-09T11:25:42.574Z"
+            "created_at": "2026-11-15T22:19:50.521Z"
           }
         }
       ]
@@ -311,33 +311,33 @@
       "updated": [
         {
           "before": {
-            "id": 317,
+            "id": 14,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "UxmFllKp91yi2fa4SlpVQiEMlTY=",
-            "created_at": "2026-10-09T12:25:42.930629",
-            "rotated_at": "2026-10-09T12:25:42.930347",
-            "updated_at": "2026-10-09T12:25:42.930629",
+            "auth_token": "0MgV0fUuBl46QopLBi5iHlgWZDU=",
+            "created_at": "2026-11-15T23:19:50.862279",
+            "rotated_at": "2026-11-15T23:19:50.861416",
+            "updated_at": "2026-11-15T23:19:50.862279",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "UxmFllKp91yi2fa4SlpVQiEMlTY=",
+            "prev_auth_token": "0MgV0fUuBl46QopLBi5iHlgWZDU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 317,
-            "seen_at": "2026-10-09T12:25:43.692069",
+            "id": 14,
+            "seen_at": "2026-11-15T23:19:51.511439",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "UxmFllKp91yi2fa4SlpVQiEMlTY=",
-            "created_at": "2026-10-09T12:25:42.930629",
-            "rotated_at": "2026-10-09T12:25:42.930347",
-            "updated_at": "2026-10-09T12:25:42.930629",
+            "auth_token": "0MgV0fUuBl46QopLBi5iHlgWZDU=",
+            "created_at": "2026-11-15T23:19:50.862279",
+            "rotated_at": "2026-11-15T23:19:50.861416",
+            "updated_at": "2026-11-15T23:19:50.862279",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "UxmFllKp91yi2fa4SlpVQiEMlTY=",
+            "prev_auth_token": "0MgV0fUuBl46QopLBi5iHlgWZDU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -375,7 +375,7 @@
   ],
   "recorded_from": {
     "case": "23649bf96fb0741f852388fa49a1b3ece274447d2ad9faf01eb78a64fa4d0545",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -15,6 +15,65 @@ settings:
       min: 1
   
 ---
+plugin: blog
+enabled_site_setting: blog_enabled
+settings:
+  blog:
+    blog_enabled:
+      default: false
+      client: true
+      hidden: true
+      upcoming_change:
+        status: "conceptual"
+        impact: "feature,all_members"
+        allow_enabled_for:
+          - "everyone"
+        requires_plugin_enabled: false
+        permanent_warning: false
+    blog_url:
+      default: ""
+      regex: "^$|^https://[a-z0-9.-]+(:[0-9]+)?$"
+    blog_category:
+      type: category
+      default: ""
+      client: true
+    blog_drafts_category:
+      type: category
+      default: ""
+      client: true
+    blog_title:
+      default: "The blog"
+    blog_description:
+      default: "Ideas, stories, and conversations."
+      textarea: true
+    blog_about:
+      default: ""
+      textarea: true
+    blog_path_format:
+      default: "/{slug}"
+      client: true
+      validator: "Blog::PathFormatValidator"
+    blog_posts_per_page:
+      default: 10
+      min: 1
+      max: 30
+    blog_contributor_groups:
+      type: group_list
+      default: "3"
+      disallowed_groups: "0"
+      refresh: true
+    blog_editor_groups:
+      type: group_list
+      default: "3"
+      disallowed_groups: "0"
+      refresh: true
+    blog_publisher_groups:
+      type: group_list
+      default: "3"
+      disallowed_groups: "0"
+      refresh: true
+  
+---
 plugin: boards
 enabled_site_setting: boards_enabled
 settings:
@@ -24,7 +83,7 @@ settings:
       client: true
       hidden: true
       upcoming_change:
-        status: "alpha"
+        status: "stable"
         impact: "feature,all_members"
         allow_enabled_for:
           - "everyone"
@@ -54,24 +113,16 @@ settings:
       hidden: true
       client: true
       upcoming_change:
-        status: "stable"
-        impact: "feature,all_members"
-        learn_more_url: "https://meta.discourse.org/t/-/397571"
-    enable_new_chat_reactions_popup:
-      default: false
-      hidden: true
-      client: true
-      upcoming_change:
         status: "permanent"
         impact: "feature,all_members"
-        learn_more_url: "https://meta.discourse.org/t/-/406004"
+        learn_more_url: "https://meta.discourse.org/t/-/397571"
     enable_public_channels:
       default: true
       client: true
     chat_allowed_groups:
       type: group_list
       list_type: compact
-      default: "1|2|11" # @admins, @moderators, @trust_level_1
+      default: "1|2|4|10" # @admins, @moderators, @anonymous_users, @trust_level_0
       mandatory_values: "1|2" # @admins, @moderators
       allow_any: false
       client: true
@@ -122,6 +173,19 @@ settings:
       default: 60
       min: 0
       area: "flags"
+    chat_homepage_channel:
+      refresh: true
+      type: enum
+      default: ""
+      enum: "Chat::HomepageChannelSiteSetting"
+      area: "interface"
+      depends_on:
+        - default_homepage
+      depends_on_values:
+        default_homepage:
+          - chat
+      depends_behavior: "hidden"
+      dependent_setting_display: "inline"
     chat_allow_archiving_channels:
       default: false
       client: true
@@ -178,9 +242,6 @@ settings:
       allow_any: false
       refresh: true
       area: "group_permissions"
-      depends_on:
-        - "chat_pinned_messages"
-      depends_behavior: "hidden"
     chat_message_flag_allowed_groups:
       default: "1|2|11" # @admins, @moderators, @trust_level_1
       mandatory_values: "1|2" # @admins, @moderators
@@ -936,6 +997,11 @@ settings:
     ai_sentiment_enabled:
       default: false
       client: true
+      area: "ai-features/sentiment"
+    ai_sentiment_emotion_enabled:
+      default: false
+      client: true
+      area: "ai-features/sentiment"
     ai_sentiment_model_configs:
       default: ""
       secret: true
@@ -946,28 +1012,79 @@ settings:
       choices:
         - classification_model
         - agent
+        - decision_model
+      area: "ai-features/sentiment"
+      depends_on:
+        - ai_sentiment_enabled
+      depends_behavior: "hidden"
     ai_sentiment_sentiment_agent:
       default: "-36"
       type: enum
       enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/sentiment"
+      depends_on:
+        - ai_sentiment_enabled
+        - ai_sentiment_sentiment_classification_strategy
+      depends_on_values:
+        ai_sentiment_sentiment_classification_strategy:
+          - agent
+      depends_behavior: "hidden"
+    ai_sentiment_sentiment_decision_model:
+      default: ""
+      type: enum
+      enum: "DiscourseAi::Configuration::DecisionModelEnumerator"
+      area: "ai-features/sentiment"
+      depends_on:
+        - ai_sentiment_enabled
+        - ai_sentiment_sentiment_classification_strategy
+      depends_on_values:
+        ai_sentiment_sentiment_classification_strategy:
+          - decision_model
+      depends_behavior: "hidden"
     ai_sentiment_emotion_classification_strategy:
       default: "classification_model"
       type: enum
       choices:
         - classification_model
         - agent
+        - decision_model
+      area: "ai-features/sentiment"
+      depends_on:
+        - ai_sentiment_emotion_enabled
+      depends_behavior: "hidden"
     ai_sentiment_emotion_agent:
       default: "-37"
       type: enum
       enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/sentiment"
+      depends_on:
+        - ai_sentiment_emotion_enabled
+        - ai_sentiment_emotion_classification_strategy
+      depends_on_values:
+        ai_sentiment_emotion_classification_strategy:
+          - agent
+      depends_behavior: "hidden"
+    ai_sentiment_emotion_decision_model:
+      default: ""
+      type: enum
+      enum: "DiscourseAi::Configuration::DecisionModelEnumerator"
+      area: "ai-features/sentiment"
+      depends_on:
+        - ai_sentiment_emotion_enabled
+        - ai_sentiment_emotion_classification_strategy
+      depends_on_values:
+        ai_sentiment_emotion_classification_strategy:
+          - decision_model
+      depends_behavior: "hidden"
     ai_sentiment_backfill_maximum_posts_per_hour:
-      default: 2500
+      default: 240
       min: 0
       max: 10000
-      hidden: true
+      area: "ai-features/sentiment"
     ai_sentiment_backfill_post_max_age_days:
       default: 60
-      hidden: true
+      min: 0
+      area: "ai-features/sentiment"
   
     ai_openai_embeddings_url:
       hidden: true
@@ -997,6 +1114,8 @@ settings:
       secret: true
     ai_google_custom_search_cx:
       default: ""
+    ai_google_custom_search_url:
+      default: "https://www.googleapis.com/customsearch/v1"
     ai_cloudflare_workers_account_id:
       default: ""
       secret: true
@@ -1262,6 +1381,10 @@ settings:
       type: enum
       enum: "DiscourseAi::Configuration::AgentEnumerator"
       area: "ai-features/summarization"
+    ai_summaries_for_crawlers:
+      default: false
+      validator: "DiscourseAi::Configuration::SummariesForCrawlersValidator"
+      area: "ai-features/summarization"
     ai_pm_summarization_allowed_groups:
       type: group_list
       list_type: compact
@@ -1410,6 +1533,20 @@ settings:
       max: 6
       client: true
       area: "ai-features/search"
+    enable_ai_combined_search:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "experimental"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/415171"
+    ai_ask_ai_search_intent_decision_model:
+      type: enum
+      default: ""
+      client: true
+      enum: "DiscourseAi::Configuration::DecisionModelEnumerator"
+      area: "ai-features/search"
     ai_ask_ai_agent:
       default: "-41"
       type: enum
@@ -1427,6 +1564,38 @@ settings:
       client: true
       enum: "DiscourseAi::Configuration::AgentEnumerator"
       validator: "DiscourseAi::Configuration::AskAiFollowUpAgentValidator"
+      area: "ai-features/search"
+    ai_ask_ai_keyword_search_enabled:
+      default: true
+      area: "ai-features/search"
+    ai_ask_ai_semantic_search_enabled:
+      default: true
+      area: "ai-features/search"
+    ai_ask_ai_search_categories:
+      type: category_list
+      default: ""
+      area: "ai-features/search"
+    ai_ask_ai_search_max_age_days:
+      default: 0
+      min: 0
+      area: "ai-features/search"
+    ai_ask_ai_endorsed_reply_groups:
+      type: group_list
+      list_type: compact
+      default: "3" # 3: @staff
+      allow_any: false
+      area: "ai-features/search"
+    ai_ask_ai_external_sources:
+      type: list
+      list_type: compact
+      default: ""
+      allow_any: false
+      enum: "DiscourseAi::Configuration::AiToolEnumerator"
+      area: "ai-features/search"
+    ai_ask_ai_external_sources_timeout:
+      default: 8
+      min: 1
+      max: 12
       area: "ai-features/search"
     ai_ask_ai_allowed_groups:
       type: group_list
@@ -1493,6 +1662,11 @@ settings:
         - 2
         - 3
         - 4
+    ai_dsa_classification_decision_model:
+      type: enum
+      default: ""
+      client: true
+      enum: "DiscourseAi::Configuration::DecisionModelEnumerator"
     ai_rag_images_enabled:
       default: false
       hidden: true
@@ -1507,6 +1681,11 @@ settings:
       default: "-27"
       type: enum
       enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/translation"
+    ai_translation_locale_detector_decision_model:
+      default: ""
+      type: enum
+      enum: "DiscourseAi::Configuration::DecisionModelEnumerator"
       area: "ai-features/translation"
     ai_translation_post_raw_translator_agent:
       default: "-28"
@@ -1579,7 +1758,6 @@ settings:
     ai_translation_verbose_logs:
       default: false
       client: false
-      hidden: true
       area: "ai-features/translation"
   
     inferred_concepts_enabled:
@@ -1774,7 +1952,8 @@ settings:
       type: enum
       choices:
         - hcaptcha
-        - recaptcha
+        - recaptcha_v2
+        - recaptcha_v3
         - none
     hcaptcha_site_key:
       default: ''
@@ -1783,13 +1962,26 @@ settings:
       default: ''
       client: false
       secret: true
-    recaptcha_site_key:
+    recaptcha_v2_site_key:
       default: ''
       client: true
-    recaptcha_secret_key:
+    recaptcha_v2_secret_key:
       default: ''
       client: false
       secret: true
+    recaptcha_v3_site_key:
+      default: ''
+      client: true
+    recaptcha_v3_secret_key:
+      default: ''
+      client: false
+      secret: true
+    recaptcha_v3_score_threshold:
+      default: 0.5
+      type: float
+      min: 0.0
+      max: 1.0
+      client: false
   
 ---
 plugin: discourse-chat-integration
@@ -2137,6 +2329,10 @@ settings:
       enum: "DiscourseEvents::Configuration::UpcomingEventsDefaultView"
       default: month
       client: true
+    calendar_upcoming_events_default_category:
+      type: category
+      default: ""
+      client: true
     enable_events_category_type_setup:
       default: false
       hidden: true
@@ -2151,7 +2347,7 @@ settings:
       hidden: true
       client: true
       upcoming_change:
-        status: "experimental"
+        status: "alpha"
         impact: "feature,all_members"
         learn_more_url: "https://meta.discourse.org/t/-/412427"
     livestream_allowed_hosts:
@@ -2241,7 +2437,6 @@ settings:
     github_linkback_access_token:
       default: ""
       secret: true
-      validator: "GithubLinkbackAccessTokenSettingValidator"
     github_linkback_maximum_links:
       default: 25
       min: 1
@@ -2658,6 +2853,14 @@ settings:
     openid_connect_match_by_email:
       default: true
       area: "oidc"
+    openid_connect_email_verified_claim_fallback:
+      default: false
+      area: "oidc"
+    openid_connect_email_claim:
+      default: "email"
+      validator: "RegexPresenceValidator"
+      regex_error: "errors.messages.blank"
+      area: "oidc"
     openid_connect_groups_claim:
       default: ""
       area: "oidc"
@@ -2995,14 +3198,8 @@ settings:
         # usable while the plugin is disabled.
         requires_plugin_enabled: false
     enable_solved_shared_issues:
-      default: false
-      hidden: true
+      default: true
       client: true
-      upcoming_change:
-        status: "stable"
-        impact: "feature,all_members"
-        learn_more_url: "https://meta.discourse.org/t/-/402498"
-        permanent_warning: false
     discourse_solved_admin_dashboard_seeded:
       default: false
       hidden: true
@@ -3123,7 +3320,9 @@ settings:
       type: boolean
     discourse_templates_groups_allowed_private_templates:
       default: ""
+      mandatory_values: "1|2"
       type: group_list
+      disallowed_groups: "4"
     discourse_templates_private_templates_tags:
       default: ""
       type: tag_list
@@ -3221,7 +3420,7 @@ settings:
       hidden: true
       upcoming_change:
         status: "beta"
-        impact: "feature,admins"
+        impact: "feature,staff"
         learn_more_url: "https://meta.discourse.org/t/-/407100"
         allow_enabled_for:
           - everyone
@@ -3246,6 +3445,11 @@ settings:
     discourse_workflows_max_executions_per_minute_per_workflow:
       default: 10
       hidden: true
+    discourse_workflows_run_timeout_minutes:
+      default: 60
+      min: 1
+      max: 10080
+      hidden: true
     workflow_executions_retention_days:
       default: 30
       min: 0
@@ -3268,6 +3472,14 @@ settings:
     zendesk_enabled:
       default: false
       client: true
+    zendesk_create_ticket_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1|2"
+    zendesk_view_ticket_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1|2"
     zendesk_jobs_api_token:
       default: ""
       secret: true
@@ -3307,6 +3519,238 @@ settings:
       default: true
       client: true
     display_footnotes_inline:
+      default: true
+      client: true
+  
+---
+plugin: live
+enabled_site_setting: live_enabled
+settings:
+  plugins:
+    live_enabled:
+      default: false
+      client: true
+      hidden: true
+      upcoming_change:
+        status: "experimental"
+        impact: "feature,all_members"
+        group_setting: live_allowed_groups
+        learn_more_url: "https://meta.discourse.org/t/-/411337"
+        requires_plugin_enabled: false
+        permanent_warning: false
+    live_verbose_logging:
+      default: false
+      client: true
+    live_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "4|5" # auto groups anonymous_users, logged_in_users
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0"
+      depends_on:
+        - live_enabled
+    live_create_room_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1|2|12" # auto groups admins, moderators, trust_level_2
+      allow_any: false
+      refresh: true
+      mandatory_values: "1" # auto group admins
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_enabled
+    live_direct_calls_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: ""
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_enabled
+    live_max_rooms_per_user:
+      default: 5
+    live_max_invites_per_day:
+      default: 100
+      min: 1
+      max: 5000
+    live_ephemeral_room_ttl_minutes:
+      default: 30
+      min: 5
+      max: 10080
+    live_participant_ttl_seconds:
+      default: 30
+    live_max_room_participants:
+      default: 50
+      min: 2
+      max: 200
+    live_stun_servers:
+      default: "stun:stun.l.google.com:19302|stun:global.stun.twilio.com:3478"
+    live_turn_servers:
+      default: ""
+    live_turn_username:
+      default: ""
+    live_turn_credential:
+      default: ""
+      secret: true
+    live_turn_secret:
+      default: ""
+      secret: true
+    live_turn_secret_servers:
+      default: ""
+      validator: "LiveTurnSecretServersValidator"
+    live_livekit_url:
+      default: ""
+      validator: "LiveLivekitUrlValidator"
+    live_livekit_api_key:
+      default: ""
+    live_livekit_api_secret:
+      default: ""
+      secret: true
+    live_livekit_room_policy:
+      default: "disabled"
+      type: enum
+      choices:
+        - disabled
+        - per_room
+        - all_rooms
+      validator: "LiveLivekitPolicyValidator"
+    live_livekit_room_prefix:
+      default: ""
+    live_livekit_mesh_fallback:
+      default: false
+    live_livekit_agent_enabled:
+      default: false
+      validator: "LiveLivekitAgentValidator"
+      refresh: true
+    live_livekit_agent_invite_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1" # auto group admins
+      allow_any: false
+      refresh: true
+      mandatory_values: "1" # auto group admins
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_livekit_agent_enabled
+    live_livekit_recording_enabled:
+      default: false
+      client: true
+    live_livekit_recording_filepath:
+      default: "live/{room_name}-{utc}"
+    live_livekit_recording_s3_region:
+      default: "us-east-1"
+    live_livekit_recording_s3_access_key_id:
+      default: ""
+      secret: true
+    live_livekit_recording_s3_secret_access_key:
+      default: ""
+      secret: true
+    live_livekit_recording_s3_endpoint:
+      default: ""
+      regex: '^https://[a-zA-Z0-9.-]+(:[0-9]+)?$'
+    live_livekit_recording_s3_bucket:
+      default: ""
+      regex: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
+      validator: "LiveLivekitRecordingS3BucketValidator"
+    live_video_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "5" # auto group logged_in_users
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_enabled
+    live_screen_share_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "5" # auto group logged_in_users
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_enabled
+    live_local_recording_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: ""
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_enabled
+    live_video_max_publishers:
+      default: 8
+      min: 2
+      max: 16
+      client: true
+    live_video_background_blur_enabled:
+      default: true
+      client: true
+    live_subtitles_enabled:
+      default: false
+      client: true
+    live_stt_model_base_url:
+      default: ""
+      client: true
+    live_max_voice_quality:
+      default: "maximum"
+      type: enum
+      client: true
+      choices:
+        - standard
+        - high
+        - maximum
+    live_max_camera_quality:
+      default: "maximum"
+      type: enum
+      client: true
+      choices:
+        - standard
+        - high
+        - maximum
+    live_max_screen_share_quality:
+      default: "maximum"
+      type: enum
+      client: true
+      choices:
+        - standard
+        - high
+        - maximum
+    live_idle_threshold_minutes:
+      default: 5
+      min: 0
+      max: 60
+      client: true
+    live_afk_auto_mute_threshold_minutes:
+      default: 15
+      min: 0
+      max: 120
+      client: true
+    live_afk_disconnect_threshold_minutes:
+      default: 30
+      min: 0
+      max: 240
+      client: true
+    live_auto_status_enabled:
+      default: true
+      client: true
+    live_mesh_privacy_warning_enabled:
+      default: true
+      client: true
+    live_badges_enabled:
+      default: true
+      depends_on:
+        - live_enabled
+    live_analytics_enabled:
+      default: true
+    live_session_retention_days:
+      default: 1095
+      min: 7
+      max: 3650
+    live_chat_enabled:
       default: true
       client: true
   
@@ -3382,213 +3826,4 @@ settings:
       refresh: true
       validator: "AtLeastOneGroupValidator"
       area: "group_permissions"
-  
----
-plugin: voice
-enabled_site_setting: voice_enabled
-settings:
-  plugins:
-    voice_enabled:
-      default: false
-      client: true
-      hidden: true
-      upcoming_change:
-        status: "experimental"
-        impact: "feature,all_members"
-        allow_enabled_for:
-          - "everyone"
-        learn_more_url: "https://meta.discourse.org/t/-/411337"
-        requires_plugin_enabled: false
-        permanent_warning: false
-    voice_verbose_logging:
-      default: false
-      client: true
-    voice_allowed_groups:
-      type: group_list
-      list_type: compact
-      default: "4|5" # auto groups anonymous_users, logged_in_users
-      allow_any: false
-      refresh: true
-      disallowed_groups: "0"
-      depends_on:
-        - voice_enabled
-    voice_create_room_allowed_groups:
-      type: group_list
-      list_type: compact
-      default: "1|2|12" # auto groups admins, moderators, trust_level_2
-      allow_any: false
-      refresh: true
-      mandatory_values: "1" # auto group admins
-      disallowed_groups: "0|4"
-      depends_on:
-        - voice_enabled
-    voice_direct_calls_allowed_groups:
-      type: group_list
-      list_type: compact
-      default: ""
-      allow_any: false
-      refresh: true
-      disallowed_groups: "0|4"
-      depends_on:
-        - voice_enabled
-    voice_max_rooms_per_user:
-      default: 5
-    voice_max_invites_per_day:
-      default: 100
-      min: 1
-      max: 5000
-    voice_ephemeral_room_ttl_minutes:
-      default: 30
-      min: 5
-      max: 10080
-    voice_participant_ttl_seconds:
-      default: 30
-    voice_max_room_participants:
-      default: 50
-      min: 2
-      max: 200
-    voice_stun_servers:
-      default: "stun:stun.l.google.com:19302|stun:global.stun.twilio.com:3478"
-    voice_turn_servers:
-      default: ""
-    voice_turn_username:
-      default: ""
-    voice_turn_credential:
-      default: ""
-      secret: true
-    voice_turn_secret:
-      default: ""
-      secret: true
-    voice_turn_secret_servers:
-      default: ""
-      validator: "VoiceTurnSecretServersValidator"
-    voice_livekit_url:
-      default: ""
-      validator: "VoiceLivekitUrlValidator"
-    voice_livekit_api_key:
-      default: ""
-    voice_livekit_api_secret:
-      default: ""
-      secret: true
-    voice_livekit_room_policy:
-      default: "disabled"
-      type: enum
-      choices:
-        - disabled
-        - per_room
-        - all_rooms
-      validator: "VoiceLivekitPolicyValidator"
-    voice_livekit_room_prefix:
-      default: ""
-    voice_livekit_mesh_fallback:
-      default: false
-    voice_livekit_agent_enabled:
-      default: false
-      validator: "VoiceLivekitAgentValidator"
-      refresh: true
-    voice_livekit_agent_invite_allowed_groups:
-      type: group_list
-      list_type: compact
-      default: "1" # auto group admins
-      allow_any: false
-      refresh: true
-      mandatory_values: "1" # auto group admins
-      disallowed_groups: "0|4"
-      depends_on:
-        - voice_livekit_agent_enabled
-    voice_livekit_recording_enabled:
-      default: false
-      client: true
-    voice_livekit_recording_filepath:
-      default: "voice/{room_name}-{utc}"
-    voice_livekit_recording_s3_region:
-      default: "us-east-1"
-    voice_livekit_recording_s3_access_key_id:
-      default: ""
-      secret: true
-    voice_livekit_recording_s3_secret_access_key:
-      default: ""
-      secret: true
-    voice_livekit_recording_s3_endpoint:
-      default: ""
-      regex: '^https://[a-zA-Z0-9.-]+(:[0-9]+)?$'
-    voice_livekit_recording_s3_bucket:
-      default: ""
-      regex: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
-      validator: "VoiceLivekitRecordingS3BucketValidator"
-    voice_video_enabled:
-      default: true
-      client: true
-    voice_video_max_publishers:
-      default: 8
-      min: 2
-      max: 16
-      client: true
-    voice_video_background_blur_enabled:
-      default: true
-      client: true
-    voice_subtitles_enabled:
-      default: false
-      client: true
-    voice_stt_model_base_url:
-      default: ""
-      client: true
-    voice_max_voice_quality:
-      default: "maximum"
-      type: enum
-      client: true
-      choices:
-        - standard
-        - high
-        - maximum
-    voice_max_camera_quality:
-      default: "maximum"
-      type: enum
-      client: true
-      choices:
-        - standard
-        - high
-        - maximum
-    voice_max_screen_share_quality:
-      default: "maximum"
-      type: enum
-      client: true
-      choices:
-        - standard
-        - high
-        - maximum
-    voice_idle_threshold_minutes:
-      default: 5
-      min: 0
-      max: 60
-      client: true
-    voice_afk_auto_mute_threshold_minutes:
-      default: 15
-      min: 0
-      max: 120
-      client: true
-    voice_afk_disconnect_threshold_minutes:
-      default: 30
-      min: 0
-      max: 240
-      client: true
-    voice_auto_status_enabled:
-      default: true
-      client: true
-    voice_mesh_privacy_warning_enabled:
-      default: true
-      client: true
-    voice_badges_enabled:
-      default: true
-      depends_on:
-        - voice_enabled
-    voice_analytics_enabled:
-      default: true
-    voice_session_retention_days:
-      default: 1095
-      min: 7
-      max: 3650
-    voice_chat_enabled:
-      default: true
-      client: true
   

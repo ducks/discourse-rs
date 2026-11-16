@@ -6,7 +6,9 @@
     "enable_discourse_connect": true,
     "auth_overrides_name": true
   },
-  "keep_headers": ["Location"],
+  "keep_headers": [
+    "Location"
+  ],
   "requests": [
     {
       "method": "GET",
@@ -34,5 +36,8 @@
   "ignore": [
     "/responses/0/headers/Location",
     "/changes/single_sign_on_records/inserted/*/last_payload"
+  ],
+  "unordered_responses": [
+    "/responses/2/body/current_user/available_notification_types"
   ]
 }

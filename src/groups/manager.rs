@@ -166,7 +166,10 @@ pub async fn remove(
 }
 
 /// `GroupManager#add(user_ids, automatic:)`: the users not yet members
-/// added (in id order), their side effects, the categories update, and
+/// added in the users' heap order (bulk_add_transaction's INSERT ... SELECT
+/// has no ORDER BY, and Postgres scans the small users table), so each
+/// group_users id, which the user_added_to_group web hook payloads carry,
+/// goes to the same user as in Rails; their side effects, the categories update, and
 /// `user_added_to_group` for each.
 pub async fn add_many(
     conn: &mut PgConnection,
@@ -184,7 +187,7 @@ pub async fn add_many(
          SELECT $1, u.id, $3, now(), now() FROM users u \
          WHERE u.id = ANY($2) AND NOT EXISTS (SELECT 1 FROM group_users gu \
            WHERE gu.user_id = u.id AND gu.group_id = $1) \
-         ORDER BY u.id \
+         ORDER BY u.ctid \
          ON CONFLICT (group_id, user_id) DO NOTHING RETURNING user_id",
     )
     .bind(group.id)

@@ -1,5 +1,7 @@
 //! `SvgSprite.symbols_for(name, sprite, strict: false)` for a theme's own
 //! sprite: the `<symbol>`s of an SVG document, each without its `<title>`s
+//! and with `overflow="visible"` (set in place, else added last; Discourse
+//! 0fdc2022492, so browsers don't clip glyphs drawn past the viewBox)
 //! and serialized as Nokogiri's `to_xml` prints a node of a document
 //! parsed with its blank text kept (libxml2 with FORMAT: an element whose
 //! children hold no text puts each child on its own line, indented two
@@ -44,8 +46,13 @@ fn collect(nodes: &[Node], out: &mut Vec<(String, String)>) {
                 && let Some((_, id)) = attrs.iter().find(|(k, _)| k == "id")
                 && !id.trim().is_empty()
             {
+                let mut attrs = attrs.clone();
+                match attrs.iter_mut().find(|(k, _)| k == "overflow") {
+                    Some((_, v)) => *v = "visible".to_string(),
+                    None => attrs.push(("overflow".to_string(), "visible".to_string())),
+                }
                 let mut xml = String::new();
-                serialize(node, 0, &mut xml);
+                serialize_element(name, &attrs, children, 0, &mut xml);
                 out.push((id.clone(), xml));
             }
             collect(children, out);
@@ -65,33 +72,41 @@ fn serialize(node: &Node, level: usize, out: &mut String) {
             name,
             attrs,
             children,
-        } => {
-            out.push('<');
-            out.push_str(name);
-            for (k, v) in attrs {
-                out.push_str(&format!(" {k}=\"{}\"", escape_attr(v)));
-            }
-            let kept: Vec<&Node> = children.iter().filter(|c| !is_title(c)).collect();
-            if kept.is_empty() {
-                out.push_str("/>");
-                return;
-            }
-            out.push('>');
-            let format = !kept.iter().any(|c| matches!(c, Node::Text(_)));
-            for child in &kept {
-                if format {
-                    out.push('\n');
-                    out.push_str(&"  ".repeat(level + 1));
-                }
-                serialize(child, level + 1, out);
-            }
-            if format {
-                out.push('\n');
-                out.push_str(&"  ".repeat(level));
-            }
-            out.push_str(&format!("</{name}>"));
-        }
+        } => serialize_element(name, attrs, children, level, out),
     }
+}
+
+fn serialize_element(
+    name: &str,
+    attrs: &[(String, String)],
+    children: &[Node],
+    level: usize,
+    out: &mut String,
+) {
+    out.push('<');
+    out.push_str(name);
+    for (k, v) in attrs {
+        out.push_str(&format!(" {k}=\"{}\"", escape_attr(v)));
+    }
+    let kept: Vec<&Node> = children.iter().filter(|c| !is_title(c)).collect();
+    if kept.is_empty() {
+        out.push_str("/>");
+        return;
+    }
+    out.push('>');
+    let format = !kept.iter().any(|c| matches!(c, Node::Text(_)));
+    for child in &kept {
+        if format {
+            out.push('\n');
+            out.push_str(&"  ".repeat(level + 1));
+        }
+        serialize(child, level + 1, out);
+    }
+    if format {
+        out.push('\n');
+        out.push_str(&"  ".repeat(level));
+    }
+    out.push_str(&format!("</{name}>"));
 }
 
 fn escape_text(s: &str) -> String {
@@ -262,11 +277,11 @@ mod tests {
         assert_eq!(found[0].0, "a");
         assert_eq!(
             found[0].1,
-            "<symbol id=\"a\" viewBox=\"0 0 1 1\">\n  <path d=\"M0 0\"/>\n  <path d=\"M1&amp;1\"/>\n</symbol>"
+            "<symbol id=\"a\" viewBox=\"0 0 1 1\" overflow=\"visible\">\n  <path d=\"M0 0\"/>\n  <path d=\"M1&amp;1\"/>\n</symbol>"
         );
         assert_eq!(
             found[1].1,
-            "<symbol id=\"b\">\n    <path d=\"x\"/>\n  </symbol>"
+            "<symbol id=\"b\" overflow=\"visible\">\n    <path d=\"x\"/>\n  </symbol>"
         );
         assert!(symbols("<svg><symbol id=\"x\"></svg>").is_none());
     }
@@ -282,11 +297,32 @@ mod tests {
             vec![
                 (
                     "my-one".to_string(),
-                    "<symbol id=\"my-one\" viewBox=\"0 0 10 10\">\n  <path d=\"M0 0L10 10\"/>\n  <g fill=\"red\">\n    <circle cx=\"5\" cy=\"5\" r=\"2\"/>\n  </g>\n</symbol>".to_string()
+                    "<symbol id=\"my-one\" viewBox=\"0 0 10 10\" overflow=\"visible\">\n  <path d=\"M0 0L10 10\"/>\n  <g fill=\"red\">\n    <circle cx=\"5\" cy=\"5\" r=\"2\"/>\n  </g>\n</symbol>".to_string()
                 ),
                 (
                     "my-two".to_string(),
-                    "<symbol id=\"my-two\" viewBox=\"0 0 10 10\">\n      \n      <use xlink:href=\"#my-one\" x=\"1\"/>\n      <!-- a comment -->\n      <text x=\"1\">a &lt; b</text>\n    </symbol>".to_string()
+                    "<symbol id=\"my-two\" viewBox=\"0 0 10 10\" overflow=\"visible\">\n      \n      <use xlink:href=\"#my-one\" x=\"1\"/>\n      <!-- a comment -->\n      <text x=\"1\">a &lt; b</text>\n    </symbol>".to_string()
+                ),
+            ]
+        );
+    }
+
+    /// The reference's symbols_for: an overflow already set is replaced in
+    /// place, and a symbol is printed before the ones inside it are given
+    /// theirs.
+    #[test]
+    fn overflow_is_set_on_each_symbol_as_the_reference_sets_it() {
+        let sprite = "<svg><symbol id=\"out\" overflow=\"hidden\" viewBox=\"0 0 1 1\"><symbol id=\"in\"><path/></symbol></symbol></svg>";
+        assert_eq!(
+            symbols(sprite).unwrap(),
+            vec![
+                (
+                    "out".to_string(),
+                    "<symbol id=\"out\" overflow=\"visible\" viewBox=\"0 0 1 1\">\n  <symbol id=\"in\">\n    <path/>\n  </symbol>\n</symbol>".to_string()
+                ),
+                (
+                    "in".to_string(),
+                    "<symbol id=\"in\" overflow=\"visible\">\n  <path/>\n</symbol>".to_string()
                 ),
             ]
         );

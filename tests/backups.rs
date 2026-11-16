@@ -175,7 +175,7 @@ async fn a_backup_with_uploads_is_the_dump_and_the_uploads() {
     .unwrap();
     assert!(outcome.success, "{:#?}", outcome.logs);
     let name =
-        regex::Regex::new(r"^discourse-\d{4}-\d{2}-\d{2}-\d{6}-v20260925054715\.tar\.gz$").unwrap();
+        regex::Regex::new(r"^discourse-\d{4}-\d{2}-\d{2}-\d{6}-v20261113130002\.tar\.gz$").unwrap();
     assert!(name.is_match(&outcome.filename), "{}", outcome.filename);
     let archive = st
         .config
@@ -211,8 +211,8 @@ async fn a_backup_with_uploads_is_the_dump_and_the_uploads() {
         .unwrap();
     assert_eq!(
         metadata,
-        "7\tbase_url\thttp://localhost:3042\n8\tcdn_url\t\\N\n9\ts3_base_url\t\\N\n\
-         10\ts3_cdn_url\t\\N\n11\tdb_name\tdefault\n12\tmultisite\tf\n"
+        "1\tbase_url\thttp://localhost:3042\n2\tcdn_url\t\\N\n3\ts3_base_url\t\\N\n\
+         4\ts3_cdn_url\t\\N\n5\tdb_name\tdefault\n6\tmultisite\tf\n"
     );
     // nested_hot_post_scores: the table, not its rows.
     assert!(!sql.contains("COPY public.nested_hot_post_scores"));
@@ -314,7 +314,7 @@ async fn a_dump_only_backup_and_one_refused_while_running() {
         .await
         .unwrap();
     assert!(outcome.success, "{:#?}", outcome.logs);
-    assert!(outcome.filename.ends_with("-v20260925054715.sql.gz"));
+    assert!(outcome.filename.ends_with("-v20261113130002.sql.gz"));
     let dump = std::fs::read(
         st.config
             .public_dir

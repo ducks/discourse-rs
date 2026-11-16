@@ -504,9 +504,9 @@ async fn a_category_the_member_cannot_post_in_is_read_only_in_the_chooser() {
     assert_eq!(open["url"], "/c/2");
     assert_eq!(open["category"], 2);
     assert_eq!(open["open"], true);
-    // prioritizedCategoryId: its row first, then the others as listed
-    // (uncategorized, empty, last).
-    assert_eq!(open["chooser"]["order"], json!([2, 4, 34, 1]));
+    // prioritizedCategoryId: its row first, then the others as listed (no
+    // Uncategorized: Discourse a9f8c119c71 deletes the unused seeded one).
+    assert_eq!(open["chooser"]["order"], json!([2, 4, 34]));
     assert_eq!(open["chooser"]["choose"], "Category…");
     let row = open["chooser"]["readOnlyRow"].as_str().unwrap();
     assert!(
@@ -534,7 +534,7 @@ async fn a_category_the_member_cannot_post_in_is_read_only_in_the_chooser() {
         .await
         .body;
     let open = instruction(&html);
-    assert_eq!(open["chooser"]["order"], json!([4, 34, 1]));
+    assert_eq!(open["chooser"]["order"], json!([4, 34]));
     assert_eq!(open["chooser"]["readOnlyRow"], Value::Null);
 
     // Staff may post there.

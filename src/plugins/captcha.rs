@@ -1,10 +1,10 @@
-//! discourse-captcha: hCaptcha or reCAPTCHA on local signups. The browser
+//! discourse-captcha: hCaptcha or reCAPTCHA (v2) on local signups. The browser
 //! solves the provider's widget on the create-account form and hands its
 //! token to POST /captcha/:provider/create, which keeps it in the server
 //! session for two minutes; users#create (CreateUsersControllerPatch's
 //! `check_captcha`, after the honeypot) takes it back out and asks the
 //! provider's siteverify before the account is made, refusing the signup
-//! with `fail_with` otherwise. Two problem checks report a selected
+//! with `fail_with` otherwise. Three problem checks report a selected
 //! provider without its keys.
 //!
 //! Not ported: SessionControllerPatch's gate on login code signups, as
@@ -24,7 +24,9 @@ pub const TOKEN_TTL: i64 = 120;
 /// Net::HTTP's open and read timeouts.
 const TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
 
-/// The captcha providers (`CaptchaProvider::HCAPTCHA`, `RECAPTCHA`).
+/// The captcha providers (`CaptchaProvider::HCAPTCHA`, `RECAPTCHA_V2`).
+/// `RECAPTCHA_V3` (Discourse c237680d280) is not ported: selecting it is
+/// refused.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Provider {
     Hcaptcha,
@@ -32,7 +34,8 @@ pub enum Provider {
 }
 
 impl Provider {
-    /// `discourse_captcha_provider`'s value, and the route's segment.
+    /// The route's segment (`/captcha/recaptcha/create` takes reCAPTCHA v2
+    /// too) and the connector's provider for static/js/discourse-captcha.js.
     pub fn name(self) -> &'static str {
         match self {
             Provider::Hcaptcha => "hcaptcha",
@@ -40,11 +43,13 @@ impl Provider {
         }
     }
 
-    pub fn from_name(name: &str) -> Option<Provider> {
-        match name {
-            "hcaptcha" => Some(Provider::Hcaptcha),
-            "recaptcha" => Some(Provider::Recaptcha),
-            _ => None,
+    /// From `discourse_captcha_provider`'s value.
+    pub fn from_setting(value: &str) -> Result<Option<Provider>, AppError> {
+        match value {
+            "hcaptcha" => Ok(Some(Provider::Hcaptcha)),
+            "recaptcha_v2" => Ok(Some(Provider::Recaptcha)),
+            "recaptcha_v3" => Err(crate::Unsupported("reCAPTCHA v3 (discourse-captcha)").into()),
+            _ => Ok(None),
         }
     }
 
@@ -67,14 +72,14 @@ impl Provider {
     fn site_key_setting(self) -> &'static str {
         match self {
             Provider::Hcaptcha => "hcaptcha_site_key",
-            Provider::Recaptcha => "recaptcha_site_key",
+            Provider::Recaptcha => "recaptcha_v2_site_key",
         }
     }
 
     fn secret_key_setting(self) -> &'static str {
         match self {
             Provider::Hcaptcha => "hcaptcha_secret_key",
-            Provider::Recaptcha => "recaptcha_secret_key",
+            Provider::Recaptcha => "recaptcha_v2_secret_key",
         }
     }
 
@@ -92,9 +97,7 @@ pub fn enabled(s: &SiteSettings) -> Result<bool, AppError> {
 
 /// The selected provider; none for `none`.
 pub fn selected(s: &SiteSettings) -> Result<Option<Provider>, AppError> {
-    Ok(Provider::from_name(
-        &s.get("discourse_captcha_provider")?.to_s(),
-    ))
+    Provider::from_setting(&s.get("discourse_captcha_provider")?.to_s())
 }
 
 /// The plugin on with a provider selected (`captcha_enabled?`, the
@@ -244,21 +247,33 @@ pub async fn create(
     Ok(Created::Kept)
 }
 
-/// ProblemCheck::HcaptchaConfiguration and RecaptchaConfiguration, both
-/// realtime and high priority.
-pub const PROBLEM_CHECKS: [crate::problem_checks::Check; 2] = [
+/// ProblemCheck::HcaptchaConfiguration, RecaptchaConfiguration and
+/// RecaptchaV3Configuration, all realtime and high priority.
+pub const PROBLEM_CHECKS: [crate::problem_checks::Check; 3] = [
     crate::problem_checks::Check::new("hcaptcha_configuration", "high"),
     crate::problem_checks::Check::new("recaptcha_configuration", "high"),
+    crate::problem_checks::Check::new("recaptcha_v3_configuration", "high"),
 ];
 
 /// A check's `call`: a problem when the plugin is on with the check's
 /// provider selected and its keys missing.
 pub fn problem_check(s: &SiteSettings, identifier: &str) -> Result<bool, AppError> {
-    let provider = match identifier {
-        "hcaptcha_configuration" => Provider::Hcaptcha,
-        _ => Provider::Recaptcha,
+    let (value, site_key, secret_key) = match identifier {
+        "hcaptcha_configuration" => ("hcaptcha", "hcaptcha_site_key", "hcaptcha_secret_key"),
+        "recaptcha_v3_configuration" => (
+            "recaptcha_v3",
+            "recaptcha_v3_site_key",
+            "recaptcha_v3_secret_key",
+        ),
+        _ => (
+            "recaptcha_v2",
+            "recaptcha_v2_site_key",
+            "recaptcha_v2_secret_key",
+        ),
     };
-    Ok(enabled(s)? && selected(s)? == Some(provider) && !provider.configured(s)?)
+    Ok(enabled(s)?
+        && s.get("discourse_captcha_provider")?.to_s() == value
+        && (s.get(site_key)?.presence().is_none() || s.get(secret_key)?.presence().is_none()))
 }
 
 /// The create-account-after-user-fields connector: the selected

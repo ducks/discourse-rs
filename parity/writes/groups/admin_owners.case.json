@@ -40,5 +40,11 @@
         "usernames": "user1"
       }
     }
-  ]
+  ],
+  "unordered_responses": [
+    "/responses/0/body/usernames"
+  ],
+  "unordered": {
+    "group_histories": ["id"]
+  }
 }

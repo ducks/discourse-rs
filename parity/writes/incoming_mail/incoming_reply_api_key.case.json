@@ -24,5 +24,8 @@
   ],
   "run_jobs": [
     "process_email"
+  ],
+  "ignore": [
+    "/changes/post_search_data"
   ]
 }

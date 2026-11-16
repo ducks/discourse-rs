@@ -45,8 +45,8 @@
       "path": "/admin/themes/{{responses.0.body.theme.id}}.json"
     }
   ],
-  "started_at": "2026-10-14T19:20:25.523058",
-  "transaction_started_at": "2026-10-14T19:20:24.4211",
+  "started_at": "2026-11-15T23:44:20.286256",
+  "transaction_started_at": "2026-11-15T23:44:19.359239",
   "responses": [
     {
       "status": 201,
@@ -55,8 +55,8 @@
           "id": 1,
           "name": "Fielded",
           "description": "A fielded theme",
-          "created_at": "2026-10-14T19:20:25.539Z",
-          "updated_at": "2026-10-14T19:20:25.539Z",
+          "created_at": "2026-11-15T23:44:20.300Z",
+          "updated_at": "2026-11-15T23:44:20.300Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -92,6 +92,7 @@
               ]
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -192,8 +193,8 @@
           "id": 1,
           "name": "Fielded",
           "description": "A fielded theme",
-          "created_at": "2026-10-14T19:20:25.539Z",
-          "updated_at": "2026-10-14T19:20:25.539Z",
+          "created_at": "2026-11-15T23:44:20.300Z",
+          "updated_at": "2026-11-15T23:44:20.300Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -229,6 +230,7 @@
               ]
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -332,10 +334,10 @@
           "digest": "407880b6030da338605beb491e3683742dee2112",
           "content": "/* Translation data for theme 1 (en)*/\nconst localeData = window._discourse_locale_data ??= {};\nlocaleData.theme ??= {};\nlocaleData.theme[1] = {\"en\":{\"greeting\":\"Hello\"}};\n",
           "theme_id": null,
-          "created_at": "2026-10-14T19:20:25.767891",
+          "created_at": "2026-11-15T23:44:20.458791",
           "source_map": null,
-          "updated_at": "2026-10-14T19:20:25.767891",
-          "theme_field_id": 172,
+          "updated_at": "2026-11-15T23:44:20.458791",
+          "theme_field_id": 166,
           "external_plugin_imports": []
         }
       ],
@@ -345,7 +347,7 @@
     "theme_fields": {
       "inserted": [
         {
-          "id": 173,
+          "id": 167,
           "name": "about",
           "error": null,
           "value": "{\"name\": \"Fielded\"}",
@@ -353,13 +355,13 @@
           "theme_id": 1,
           "target_id": 9,
           "upload_id": null,
-          "created_at": "2026-10-14T19:20:25.551642",
-          "updated_at": "2026-10-14T19:20:25.551642",
+          "created_at": "2026-11-15T23:44:20.312202",
+          "updated_at": "2026-11-15T23:44:20.312202",
           "value_baked": null,
           "compiler_version": "0"
         },
         {
-          "id": 171,
+          "id": 165,
           "name": "yaml",
           "error": null,
           "value": "show_banner: true\nbanner_text:\n  default: Welcome\n  description: The banner's text\nsize:\n  type: enum\n  default: small\n  choices:\n    - small\n    - large\n",
@@ -367,13 +369,13 @@
           "theme_id": 1,
           "target_id": 3,
           "upload_id": null,
-          "created_at": "2026-10-14T19:20:25.543331",
-          "updated_at": "2026-10-14T19:20:25.543331",
+          "created_at": "2026-11-15T23:44:20.304891",
+          "updated_at": "2026-11-15T23:44:20.304891",
           "value_baked": "baked",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
         {
-          "id": 169,
+          "id": 163,
           "name": "header",
           "error": null,
           "value": "<div class=\"banner\">Hello <b>there</b><br></div>",
@@ -381,13 +383,13 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": null,
-          "created_at": "2026-10-14T19:20:25.540624",
-          "updated_at": "2026-10-14T19:20:25.540624",
+          "created_at": "2026-11-15T23:44:20.302245",
+          "updated_at": "2026-11-15T23:44:20.302245",
           "value_baked": "<div class=\"banner\">Hello <b>there</b><br></div>",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
         {
-          "id": 170,
+          "id": 164,
           "name": "footer",
           "error": null,
           "value": "<p>Desktop footer</p>",
@@ -395,13 +397,13 @@
           "theme_id": 1,
           "target_id": 1,
           "upload_id": null,
-          "created_at": "2026-10-14T19:20:25.542135",
-          "updated_at": "2026-10-14T19:20:25.542135",
+          "created_at": "2026-11-15T23:44:20.303721",
+          "updated_at": "2026-11-15T23:44:20.303721",
           "value_baked": "<p>Desktop footer</p>",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
         {
-          "id": 172,
+          "id": 166,
           "name": "en",
           "error": null,
           "value": "en:\n  greeting: Hello\n  theme_metadata:\n    description: A fielded theme\n",
@@ -409,10 +411,10 @@
           "theme_id": 1,
           "target_id": 4,
           "upload_id": null,
-          "created_at": "2026-10-14T19:20:25.548453",
-          "updated_at": "2026-10-14T19:20:25.548453",
+          "created_at": "2026-11-15T23:44:20.309721",
+          "updated_at": "2026-11-15T23:44:20.309721",
           "value_baked": "<script type=\"module\" src=\"/theme-javascripts/407880b6030da338605beb491e3683742dee2112.js?__ws=localhost\" data-theme-id=\"1\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         }
       ],
       "deleted": [],
@@ -447,8 +449,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-10-14T19:20:25.539038",
-          "updated_at": "2026-10-14T19:20:25.539038",
+          "created_at": "2026-11-15T23:44:20.300959",
+          "updated_at": "2026-11-15T23:44:20.300959",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -466,33 +468,33 @@
       "updated": [
         {
           "before": {
-            "id": 128,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yDj5XaJxmLb1M4kfdqNXkeLqnGc=",
-            "created_at": "2026-10-14T19:20:24.915507",
-            "rotated_at": "2026-10-14T19:20:24.914589",
-            "updated_at": "2026-10-14T19:20:24.915507",
+            "auth_token": "dJbEoGGifaKNP+sP/ORJICtdObI=",
+            "created_at": "2026-11-15T23:44:19.711311",
+            "rotated_at": "2026-11-15T23:44:19.71045",
+            "updated_at": "2026-11-15T23:44:19.711311",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "yDj5XaJxmLb1M4kfdqNXkeLqnGc=",
+            "prev_auth_token": "dJbEoGGifaKNP+sP/ORJICtdObI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 128,
-            "seen_at": "2026-10-14T19:20:25.528445",
+            "id": 14,
+            "seen_at": "2026-11-15T23:44:20.291651",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yDj5XaJxmLb1M4kfdqNXkeLqnGc=",
-            "created_at": "2026-10-14T19:20:24.915507",
-            "rotated_at": "2026-10-14T19:20:24.914589",
-            "updated_at": "2026-10-14T19:20:24.915507",
+            "auth_token": "dJbEoGGifaKNP+sP/ORJICtdObI=",
+            "created_at": "2026-11-15T23:44:19.711311",
+            "rotated_at": "2026-11-15T23:44:19.71045",
+            "updated_at": "2026-11-15T23:44:19.711311",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "yDj5XaJxmLb1M4kfdqNXkeLqnGc=",
+            "prev_auth_token": "dJbEoGGifaKNP+sP/ORJICtdObI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -503,7 +505,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 4,
           "context": null,
@@ -511,11 +513,12 @@
           "post_id": null,
           "subject": "Fielded",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Fielded\",\"description\":\"A fielded theme\",\"created_at\":\"2026-10-14T19:20:25.539Z\",\"updated_at\":\"2026-10-14T19:20:25.539Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"description\":\"The banner's text\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"small\",\"valid_values\":[\"small\",\"large\"]}],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"banner\\\"\\u003eHello \\u003cb\\u003ethere\\u003c/b\\u003e\\u003cbr\\u003e\\u003c/div\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"footer\",\"target\":\"desktop\",\"value\":\"\\u003cp\\u003eDesktop footer\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"desktop/footer.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"show_banner: true\\nbanner_text:\\n  default: Welcome\\n  description: The banner's text\\nsize:\\n  type: enum\\n  default: small\\n  choices:\\n    - small\\n    - large\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  greeting: Hello\\n  theme_metadata:\\n    description: A fielded theme\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\\"name\\\": \\\"Fielded\\\"}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"}]}",
+          "new_value": "{\"id\":1,\"name\":\"Fielded\",\"description\":\"A fielded theme\",\"created_at\":\"2026-11-15T23:44:20.300Z\",\"updated_at\":\"2026-11-15T23:44:20.300Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"description\":\"The banner's text\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"small\",\"valid_values\":[\"small\",\"large\"]}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"banner\\\"\\u003eHello \\u003cb\\u003ethere\\u003c/b\\u003e\\u003cbr\\u003e\\u003c/div\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"footer\",\"target\":\"desktop\",\"value\":\"\\u003cp\\u003eDesktop footer\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"desktop/footer.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"show_banner: true\\nbanner_text:\\n  default: Welcome\\n  description: The banner's text\\nsize:\\n  type: enum\\n  default: small\\n  choices:\\n    - small\\n    - large\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  greeting: Hello\\n  theme_metadata:\\n    description: A fielded theme\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\\"name\\\": \\\"Fielded\\\"}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"}]}",
           "admin_only": true,
-          "created_at": "2026-10-14T19:20:25.825787",
+          "created_at": "2026-11-15T23:44:20.500896",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T19:20:25.825787",
+          "updated_at": "2026-11-15T23:44:20.500896",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -531,14 +534,14 @@
   "jobs": [],
   "next_ids": {
     "javascript_caches": 1,
-    "theme_fields": 169,
+    "theme_fields": 163,
     "theme_modifier_sets": 3,
     "themes": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "db78a458fb58a856dc49b1c5123217e89f4603369cc8b2da93bca20725eedf25",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

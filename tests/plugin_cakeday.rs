@@ -451,15 +451,20 @@ async fn posts_carry_the_posters_cakedate_and_birthdate() {
     .await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
 
-    // user0 joined 2026-07-25 05:59 UTC, the 24th in their America/Denver.
+    // user0 joined 2026-11-03 05:08 UTC, the 2nd in America/Denver.
+    exec(
+        &db,
+        "UPDATE user_options SET timezone = 'America/Denver' WHERE user_id = 2",
+    )
+    .await;
     let own = post_35(&st, Some("user0")).await;
-    assert_eq!(own["user_cakedate"], "2026-07-24");
+    assert_eq!(own["user_cakedate"], "2026-11-02");
     assert_eq!(own["user_birthdate"], "2017-04-05");
     let keys: Vec<&String> = own.as_object().unwrap().keys().collect();
     let at = keys.iter().position(|k| *k == "user_cakedate").unwrap();
     assert_eq!(keys[at + 1], "user_birthdate");
     let other = post_35(&st, Some("user1")).await;
-    assert_eq!(other["user_cakedate"], "2026-07-25");
+    assert_eq!(other["user_cakedate"], "2026-11-03");
 
     // Not for anonymous readers.
     let anonymous = post_35(&st, None).await;
@@ -507,7 +512,7 @@ async fn users_and_their_cards_carry_the_cakedate_and_birthdate() {
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut user1 = Client::logged_in(st.clone(), "user1").await;
     let (_, doc) = user1.json("/u/user1.json").await;
-    assert_eq!(doc["user"]["cakedate"], "2026-07-25");
+    assert_eq!(doc["user"]["cakedate"], "2026-11-03");
     assert_eq!(doc["user"]["birthdate"], "2017-04-05");
     let (_, doc) = user1.json("/u/user1/card.json").await;
     let keys: Vec<&String> = doc["user"].as_object().unwrap().keys().collect();
@@ -516,7 +521,7 @@ async fn users_and_their_cards_carry_the_cakedate_and_birthdate() {
     // birthdate is there without a date of birth.
     let (_, doc) = user1.json("/u/user2/card.json").await;
     assert_eq!(doc["user"]["birthdate"], Value::Null);
-    assert_eq!(doc["user"]["cakedate"], "2026-07-25");
+    assert_eq!(doc["user"]["cakedate"], "2026-11-03");
 
     // Nothing for anonymous visitors.
     let (_, doc) = Client::anonymous(st.clone()).json("/u/user1.json").await;
@@ -663,13 +668,13 @@ async fn the_onceoffs_move_the_custom_field_to_the_users_table() {
     assert_eq!(values, ["1904-05-02", "02-05-1904", "02/05/1904", ""]);
 }
 
-/// The day user0 (who joined 2026-07-25) celebrates a year, with their
+/// The day user0 (who joined 2026-11-03) celebrates a year, with their
 /// birthday on it too.
 async fn celebrating(db: &TestDb) -> AppState {
     enable(db).await;
     exec(
         db,
-        "UPDATE users SET date_of_birth = '2000-07-25' WHERE id = 2",
+        "UPDATE users SET date_of_birth = '2000-11-03' WHERE id = 2",
     )
     .await;
     exec(
@@ -681,7 +686,7 @@ async fn celebrating(db: &TestDb) -> AppState {
 }
 
 fn on_the_day() -> chrono::DateTime<Utc> {
-    Utc.with_ymd_and_hms(2027, 7, 25, 12, 0, 0).unwrap()
+    Utc.with_ymd_and_hms(2027, 11, 3, 12, 0, 0).unwrap()
 }
 
 #[tokio::test]

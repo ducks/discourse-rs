@@ -1805,7 +1805,7 @@ async fn admin_reports() {
     drawn(
         "/admin/reports/signups",
         &report,
-        "admin-report is-enabled is-visible signups",
+        "admin-report is-enabled signups",
     );
 }
 

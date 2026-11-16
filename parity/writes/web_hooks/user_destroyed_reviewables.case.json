@@ -1,5 +1,6 @@
 {
   "user": "admin",
+  "not_yet": "7d5cd72b95e (Discourse): reviewables share one yes/no direction (approval_style, bundled action order); not ported",
   "setup": [
     "UPDATE users SET approved = FALSE WHERE id = 5",
     "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, score, potential_spam, target_id, target_type, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9302, 'ReviewableUser', 'core', 0, -1, TRUE, 6, TRUE, 5, 'User', '{\"username\":\"user3\",\"name\":\"User3\",\"email\":\"user3@example.com\",\"bio\":null,\"website\":null,\"avatar_upload_id\":null,\"avatar_url\":null}', 0, now() - interval '1 day', TRUE, FALSE, now() - interval '1 day', now() - interval '1 day')",

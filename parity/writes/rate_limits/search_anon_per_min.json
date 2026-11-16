@@ -11,8 +11,8 @@
       "path": "/search.json?q=fixture"
     }
   ],
-  "started_at": "2026-10-13T05:51:15.736446",
-  "transaction_started_at": "2026-10-13T05:51:14.372431",
+  "started_at": "2026-11-16T03:29:10.665032",
+  "transaction_started_at": "2026-11-16T03:29:10.073558",
   "responses": [
     {
       "status": 200,
@@ -23,7 +23,7 @@
             "name": "User0",
             "username": "user0",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-            "created_at": "2026-09-30T07:28:28.901Z",
+            "created_at": "2026-11-15T19:19:53.957Z",
             "like_count": 0,
             "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "post_number": 1,
@@ -34,7 +34,7 @@
             "name": "User1",
             "username": "user1",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-            "created_at": "2026-09-30T07:28:29.580Z",
+            "created_at": "2026-11-15T19:19:54.764Z",
             "like_count": 0,
             "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
             "post_number": 1,
@@ -45,7 +45,7 @@
             "name": "Admin",
             "username": "admin",
             "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-            "created_at": "2026-09-30T07:28:29.358Z",
+            "created_at": "2026-11-15T19:19:54.472Z",
             "like_count": 0,
             "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
             "post_number": 1,
@@ -56,7 +56,7 @@
             "name": "User0",
             "username": "user0",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-            "created_at": "2026-09-30T07:28:30.163Z",
+            "created_at": "2026-11-15T19:19:55.244Z",
             "like_count": 1,
             "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
             "post_number": 1,
@@ -72,10 +72,10 @@
             "posts_count": 5,
             "reply_count": 0,
             "highest_post_number": 5,
-            "created_at": "2026-09-30T07:28:28.864Z",
-            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "created_at": "2026-11-15T19:19:53.917Z",
+            "last_posted_at": "2026-11-15T19:20:01.206Z",
             "bumped": true,
-            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "bumped_at": "2026-11-15T19:20:01.206Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -104,10 +104,10 @@
             "posts_count": 1,
             "reply_count": 0,
             "highest_post_number": 1,
-            "created_at": "2026-09-30T07:28:29.543Z",
-            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "created_at": "2026-11-15T19:19:54.728Z",
+            "last_posted_at": "2026-11-15T19:19:54.764Z",
             "bumped": true,
-            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "bumped_at": "2026-11-15T19:19:54.764Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -136,10 +136,10 @@
             "posts_count": 1,
             "reply_count": 0,
             "highest_post_number": 1,
-            "created_at": "2026-09-30T07:28:29.325Z",
-            "last_posted_at": "2026-09-30T07:28:29.358Z",
+            "created_at": "2026-11-15T19:19:54.397Z",
+            "last_posted_at": "2026-11-15T19:19:54.472Z",
             "bumped": true,
-            "bumped_at": "2026-09-30T07:28:29.358Z",
+            "bumped_at": "2026-11-15T19:19:54.472Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": true,
@@ -163,10 +163,10 @@
             "posts_count": 1,
             "reply_count": 0,
             "highest_post_number": 1,
-            "created_at": "2026-09-30T07:28:30.067Z",
-            "last_posted_at": "2026-09-30T07:28:30.163Z",
+            "created_at": "2026-11-15T19:19:55.219Z",
+            "last_posted_at": "2026-11-15T19:19:55.244Z",
             "bumped": true,
-            "bumped_at": "2026-09-30T07:28:30.163Z",
+            "bumped_at": "2026-11-15T19:19:55.244Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -202,7 +202,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture",
-          "search_log_id": 220,
+          "search_log_id": 1,
           "more_full_page_results": null,
           "can_create_topic": false,
           "error": null,
@@ -232,11 +232,11 @@
     "search_logs": {
       "inserted": [
         {
-          "id": 220,
+          "id": 1,
           "term": "fixture",
           "crawler": false,
           "user_id": null,
-          "created_at": "2026-10-13T05:51:15.954714",
+          "created_at": "2026-11-16T03:29:10.673326",
           "ip_address": "127.0.0.1",
           "session_id": null,
           "user_agent": null,
@@ -252,7 +252,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "search_logs": 220
+    "search_logs": 1
   },
   "settings": {
     "rate_limit_search_anon_user_per_minute": "1"
@@ -260,7 +260,7 @@
   "rate_limits": true,
   "recorded_from": {
     "case": "61ae98dd93e4a04c02fc10c07cd12dcca19e6ccaf2e4087195a21e07233f0b9b",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

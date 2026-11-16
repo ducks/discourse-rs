@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-15T01:56:22.169053",
-  "transaction_started_at": "2026-10-15T01:56:18.817253",
+  "started_at": "2026-11-15T23:35:34.829506",
+  "transaction_started_at": "2026-11-15T23:35:34.031226",
   "responses": [
     {
       "status": 200,
@@ -42,7 +42,7 @@
           {
             "setting": "allow_all_users_to_flag_illegal_content",
             "humanized_name": "Allow all users to flag illegal content",
-            "description": "Anonymous users will see information that they have to e-mail administrators to report illegal content. This setting takes precedence over <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=flag_post_allowed_groups\" data-setting-name=\"flag_post_allowed_groups\" data-setting-area=\"flags\" data-setting-category=\"trust\">Flag post allowed groups</a>.",
+            "description": "Let anyone report illegal content, including trust level 0 and silenced users. Anonymous users will see information that they have to e-mail administrators to report illegal content. This setting takes precedence over <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=flag_post_allowed_groups\" data-setting-name=\"flag_post_allowed_groups\" data-setting-area=\"flags\" data-setting-category=\"trust\">Flag post allowed groups</a>.",
             "keywords": [],
             "category": "trust",
             "primary_area": "flags",
@@ -380,33 +380,33 @@
       "updated": [
         {
           "before": {
-            "id": 58,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "xN6Mg4urQbUPiOZvuyicwPLBDGA=",
-            "created_at": "2026-10-15T01:56:20.232356",
-            "rotated_at": "2026-10-15T01:56:20.226899",
-            "updated_at": "2026-10-15T01:56:20.232356",
+            "auth_token": "PZSiMIWsm5/FmtBcT261GX2B8B8=",
+            "created_at": "2026-11-15T23:35:34.348834",
+            "rotated_at": "2026-11-15T23:35:34.347898",
+            "updated_at": "2026-11-15T23:35:34.348834",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "xN6Mg4urQbUPiOZvuyicwPLBDGA=",
+            "prev_auth_token": "PZSiMIWsm5/FmtBcT261GX2B8B8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 58,
-            "seen_at": "2026-10-15T01:56:22.179604",
+            "id": 14,
+            "seen_at": "2026-11-15T23:35:34.834715",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "xN6Mg4urQbUPiOZvuyicwPLBDGA=",
-            "created_at": "2026-10-15T01:56:20.232356",
-            "rotated_at": "2026-10-15T01:56:20.226899",
-            "updated_at": "2026-10-15T01:56:20.232356",
+            "auth_token": "PZSiMIWsm5/FmtBcT261GX2B8B8=",
+            "created_at": "2026-11-15T23:35:34.348834",
+            "rotated_at": "2026-11-15T23:35:34.347898",
+            "updated_at": "2026-11-15T23:35:34.348834",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "xN6Mg4urQbUPiOZvuyicwPLBDGA=",
+            "prev_auth_token": "PZSiMIWsm5/FmtBcT261GX2B8B8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -419,7 +419,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "a507f68e54090579137f7323998e84e64dfd638a0137a2da7613aa43cc6a70e8",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

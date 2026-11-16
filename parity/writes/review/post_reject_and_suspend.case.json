@@ -1,4 +1,5 @@
 {
+  "not_yet": "fe97c2951fd (Discourse): review queue penalties applied inside the reviewable action (reason and until validated, 422 before resolving); not ported",
   "user": "admin",
   "setup": [
     "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9321, 'ReviewablePost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, 36, 'Post', 3, NULL, 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",

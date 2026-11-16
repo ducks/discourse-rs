@@ -198,8 +198,8 @@ async fn set_change(
         return Ok(());
     }
     match name {
-        "voice_enabled" => {
-            return Err(Unsupported("toggling voice (its plugin's enable handlers)").into());
+        "live_enabled" => {
+            return Err(Unsupported("toggling live (its plugin's enable handlers)").into());
         }
         "enable_discourse_workflows" if enabled => {
             return Err(Unsupported(

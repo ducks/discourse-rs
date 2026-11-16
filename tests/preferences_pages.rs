@@ -207,7 +207,7 @@ async fn the_bio_editor_opens_in_the_viewers_composition_mode() {
     let bio = &html[html.find("control-group pref-bio").unwrap()..];
     let bio = &bio[..bio.find("</textarea>").unwrap()];
     assert!(bio.contains("<div class=\"d-editor-container --rich-editor-enabled\">"));
-    assert!(bio.contains("data-d-scroll-axis=\"horizontal\"><button aria-checked=\"true\" aria-keyshortcuts=\"Ctrl+M\" aria-label=\"Switch to standard Markdown editor (Ctrl M)\" class=\"composer-toggle-switch --rte\" data-rich-editor=\"true\""));
+    assert!(bio.contains("data-d-scroll-axis=\"horizontal\"><button aria-checked=\"true\" aria-keyshortcuts=\"Ctrl+M\" aria-label=\"Switch to Markdown editor (Ctrl M)\" class=\"composer-toggle-switch --rte\" data-rich-editor=\"true\""));
     assert!(bio.contains("toolbar__button bold"));
 
     sqlx::query(

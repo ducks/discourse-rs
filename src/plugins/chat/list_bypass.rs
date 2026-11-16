@@ -57,6 +57,17 @@ pub fn bypassed(section: &str) -> bool {
     }
 }
 
+/// The request's bypassed sections, to carry into work that outlives the
+/// request's task (the live stream's body, rendered as it is polled).
+pub fn current() -> Bypassed {
+    BYPASSED.try_with(|b| *b).unwrap_or_default()
+}
+
+/// Runs `f` with `bypassed` as the request's sections.
+pub async fn scope<F: std::future::Future>(bypassed: Bypassed, f: F) -> F::Output {
+    BYPASSED.scope(bypassed, f).await
+}
+
 /// Reads the cookie once per request for the lists it renders.
 pub async fn layer(request: Request, next: Next) -> Response {
     let bypassed = Bypassed::from_headers(request.headers());

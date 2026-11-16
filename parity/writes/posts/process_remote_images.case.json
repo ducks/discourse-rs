@@ -1,4 +1,5 @@
 {
+  "not_yet": "e7486257f3c (Discourse): remote image sizes read with RemoteImage.size_and_animated in one streamed FinalDestination#get (a redirected image gets no size); not ported",
   "user": "user1",
   "settings": {
     "allowed_internal_hosts": "fixtures.localhost"

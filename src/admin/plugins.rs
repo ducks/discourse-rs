@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn the_recording_is_the_reference_list() {
         let plugins = recorded();
-        assert_eq!(plugins.len(), 46);
+        assert_eq!(plugins.len(), 47);
         assert_eq!(plugins[0]["id"], "discourse-adplugin");
         assert!(has_config_nav("chat"));
         assert!(!has_config_nav("poll"));

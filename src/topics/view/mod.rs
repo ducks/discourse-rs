@@ -906,6 +906,23 @@ impl TopicView<'_> {
                 }))
                 .collect::<Vec<_>>()),
         );
+        // boards' board_memberships, on by default since Discourse
+        // 7d003898b28: the topic's cards (Boards::TopicBoardMemberships, not
+        // ported), so a topic on a board is refused.
+        if self.settings.get("boards_enabled")?.truthy() {
+            let carded: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM discourse_kanban_cards WHERE topic_id = $1)",
+            )
+            .bind(i64::from(topic.id))
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if carded {
+                return Err(TopicViewError::Unsupported(crate::Unsupported(
+                    "a topic's board memberships (boards)",
+                )));
+            }
+            out.insert("board_memberships".into(), json!([]));
+        }
         if let Some(assign) = crate::plugins::assign::keys::TopicView::load(
             &mut *self.conn,
             self.settings,

@@ -1,5 +1,6 @@
 {
   "user": "admin",
+  "not_yet": "3b804903928 (Discourse): CategorySerializer#permission_groups and logged_in_users category permissions; not ported",
   "setup": [
     "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
     "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, '2026-10-08 00:00:00', '2026-10-08 00:00:00')"

@@ -470,9 +470,7 @@ async fn the_composer_carries_the_message_mode() {
     assert!(c.contains("&quot;deleteItem&quot;:&quot;Delete %{name}&quot;"));
     assert!(!c.contains("add-warning"));
     assert!(c.contains(" data-username=\"user1\""));
-    assert!(c.contains(
-        " data-label-title-message=\"What is this discussion about in one brief sentence?\""
-    ));
+    assert!(c.contains(" data-label-title-message=\"Title\""));
     assert!(c.contains(" data-label-reference-title=\"RE: %{title}\""));
     // The action title and save button: Create message and Send message,
     // with the envelope; a reply in a message names it.

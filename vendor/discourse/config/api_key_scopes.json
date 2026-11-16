@@ -110,7 +110,7 @@
           "list#category_top",
           "list#top"
         ],
-        "params": [
+        "path_params": [
           "category_id"
         ],
         "aliases": {
@@ -190,6 +190,9 @@
         "path_params": [
           "post_id"
         ],
+        "aliases": {
+          "post_id": "id"
+        },
         "urls": [
           "/posts/:post_id/recover (PUT)"
         ]
@@ -213,6 +216,9 @@
         "path_params": [
           "post_id"
         ],
+        "aliases": {
+          "post_id": "id"
+        },
         "urls": [
           "/posts/:post_id/revisions/latest (GET)",
           "/posts/:post_id/revisions/:revision (GET)"
@@ -222,14 +228,21 @@
         "actions": [
           "posts#hide_revision",
           "posts#show_revision",
+          "posts#unlist_revision",
+          "posts#relist_revision",
           "posts#revert"
         ],
         "path_params": [
           "post_id"
         ],
+        "aliases": {
+          "post_id": "id"
+        },
         "urls": [
           "/posts/:post_id/revisions/:revision/hide (PUT)",
           "/posts/:post_id/revisions/:revision/show (PUT)",
+          "/posts/:post_id/revisions/:revision/unlist (PUT)",
+          "/posts/:post_id/revisions/:revision/relist (PUT)",
           "/posts/:post_id/revisions/:revision/revert (PUT)"
         ]
       },
@@ -240,6 +253,9 @@
         "path_params": [
           "post_id"
         ],
+        "aliases": {
+          "post_id": "id"
+        },
         "urls": [
           "/posts/:post_id/revisions/permanently_delete (DELETE)"
         ]
@@ -915,6 +931,517 @@
     },
     {
       "verb": "GET",
+      "path": "/session/csrf(.:format)",
+      "requirements": {},
+      "action": "blog/review_reader#csrf",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/review(.:format)",
+      "requirements": {},
+      "action": "blog/review_reader#show",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/blog/review/feedback(.:format)",
+      "requirements": {},
+      "action": "blog/review_reader#feedback",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/robots.txt",
+      "requirements": {},
+      "action": "blog/articles#robots",
+      "format": "text",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/",
+      "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/archive(.:format)",
+      "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/tag/:tag(.:format)",
+      "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/author/:username",
+      "requirements": {
+        "username": "[^/]+"
+      },
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/about(.:format)",
+      "requirements": {},
+      "action": "blog/articles#about",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-theme.css",
+      "requirements": {},
+      "action": "blog/articles#theme_css",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-highlight/:version.js",
+      "requirements": {},
+      "action": "blog/articles#highlight_js",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-custom.js",
+      "requirements": {},
+      "action": "blog/articles#theme_js",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/feed.xml",
+      "requirements": {},
+      "action": "blog/articles#feed",
+      "format": "rss",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/sitemap.:format",
+      "requirements": {
+        "format": "xml"
+      },
+      "action": "blog/articles#sitemap",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/*path",
+      "requirements": {},
+      "action": "blog/articles#show",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/review(.:format)",
+      "requirements": {},
+      "action": "blog/review_reader#show",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/blog/review/feedback(.:format)",
+      "requirements": {},
+      "action": "blog/review_reader#feedback",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog(.:format)",
+      "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/archive(.:format)",
+      "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/tag/:tag(.:format)",
+      "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/author/:username",
+      "requirements": {
+        "username": "[^/]+"
+      },
+      "action": "blog/articles#index",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/about(.:format)",
+      "requirements": {},
+      "action": "blog/articles#about",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/blog-theme.css",
+      "requirements": {},
+      "action": "blog/articles#theme_css",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/blog-highlight/:version.js",
+      "requirements": {},
+      "action": "blog/articles#highlight_js",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/blog-custom.js",
+      "requirements": {},
+      "action": "blog/articles#theme_js",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/feed.xml",
+      "requirements": {},
+      "action": "blog/articles#feed",
+      "format": "rss",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/sitemap.:format",
+      "requirements": {
+        "format": "xml"
+      },
+      "action": "blog/articles#sitemap",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog/*path",
+      "requirements": {},
+      "action": "blog/articles#show",
+      "constraints": [
+        "proc"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/appearance(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#show",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/identity(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#show",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/themes/new(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#show",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/themes/import/new(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#show",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/themes/:id/edit(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#show",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor/publications/:topic_id/reviews(.:format)",
+      "requirements": {},
+      "action": "blog/reviews#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/reviews(.:format)",
+      "requirements": {},
+      "action": "blog/reviews#create",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/blog-editor/publications/:topic_id/reviews/:id(.:format)",
+      "requirements": {},
+      "action": "blog/reviews#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor/publications/:topic_id/reviews/:id/feedback(.:format)",
+      "requirements": {},
+      "action": "blog/reviews#feedback",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor/publications/:topic_id/feedback(.:format)",
+      "requirements": {},
+      "action": "blog/reviews#topic_feedback",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/themes(.:format)",
+      "requirements": {},
+      "action": "blog/themes#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/blog/themes(.:format)",
+      "requirements": {},
+      "action": "blog/themes#create",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/blog/themes/import(.:format)",
+      "requirements": {},
+      "action": "blog/themes#import",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/theme-authoring(.:format)",
+      "requirements": {},
+      "action": "blog/themes#authoring",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/blog/theme-authoring/preview(.:format)",
+      "requirements": {},
+      "action": "blog/themes#working_preview",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/themes/:id/export(.:format)",
+      "requirements": {},
+      "action": "blog/themes#export",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/blog/themes/:id(.:format)",
+      "requirements": {},
+      "action": "blog/themes#show",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
+      "path": "/admin/plugins/blog/themes/:id(.:format)",
+      "requirements": {},
+      "action": "blog/themes#update",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/admin/plugins/blog/themes/:id(.:format)",
+      "requirements": {},
+      "action": "blog/themes#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/blog/themes/:id/activate(.:format)",
+      "requirements": {},
+      "action": "blog/themes#activate",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/blog/themes/:id/pull(.:format)",
+      "requirements": {},
+      "action": "blog/themes#pull",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor(.:format)",
+      "requirements": {},
+      "action": "blog/editor#index",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor/preview/:topic_id(.:format)",
+      "requirements": {},
+      "action": "blog/editor#preview",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor/publications/:topic_id(.:format)",
+      "requirements": {},
+      "action": "blog/editor#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/blog-editor/publications/:topic_id/changes(.:format)",
+      "requirements": {},
+      "action": "blog/editor#changes",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
+      "path": "/blog-editor/publications/:topic_id(.:format)",
+      "requirements": {},
+      "action": "blog/editor#update",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/prepare(.:format)",
+      "requirements": {},
+      "action": "blog/editor#prepare",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/submit(.:format)",
+      "requirements": {},
+      "action": "blog/editor#submit",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/approve(.:format)",
+      "requirements": {},
+      "action": "blog/editor#approve",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/schedule(.:format)",
+      "requirements": {},
+      "action": "blog/editor#schedule",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/blog-editor/publications/:topic_id/schedule(.:format)",
+      "requirements": {},
+      "action": "blog/editor#cancel_schedule",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/publish(.:format)",
+      "requirements": {},
+      "action": "blog/editor#publish",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/blog-editor/publications/:topic_id/return-to-drafts(.:format)",
+      "requirements": {},
+      "action": "blog/editor#return_to_drafts",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/blog-editor/publications/:topic_id(.:format)",
+      "requirements": {},
+      "action": "blog/editor#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
       "path": "/patreon/rewards(.:format)",
       "requirements": {},
       "action": "patreon/patreon_admin#rewards",
@@ -1336,6 +1863,20 @@
       "constraints": [
         "MarkdownEndpoint::RequestConstraint"
       ]
+    },
+    {
+      "verb": "GET",
+      "path": "/secure-media-uploads/*path",
+      "requirements": {},
+      "action": "uploads#_show_secure_deprecated",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/secure-uploads/*path",
+      "requirements": {},
+      "action": "uploads#show_secure",
+      "constraints": []
     },
     {
       "verb": "GET|POST",
@@ -1920,6 +2461,39 @@
       "action": "admin/groups#destroy",
       "constraints": [
         "StaffConstraint",
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/users/bots/new(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/users#new_bot",
+      "constraints": [
+        "StaffConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/users/bots/username_suggestion(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/users#bot_username_suggestion",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/users/bots(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/users#create_bot",
+      "constraints": [
         "AdminConstraint"
       ]
     },
@@ -3841,50 +4415,6 @@
       ]
     },
     {
-      "verb": "GET",
-      "path": "/admin/dashboard/general(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)"
-      },
-      "action": "admin/dashboard#general",
-      "constraints": [
-        "StaffConstraint"
-      ]
-    },
-    {
-      "verb": "GET",
-      "path": "/admin/dashboard/moderation(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)"
-      },
-      "action": "admin/dashboard#moderation",
-      "constraints": [
-        "StaffConstraint"
-      ]
-    },
-    {
-      "verb": "GET",
-      "path": "/admin/dashboard/security(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)"
-      },
-      "action": "admin/dashboard#security",
-      "constraints": [
-        "StaffConstraint"
-      ]
-    },
-    {
-      "verb": "GET",
-      "path": "/admin/dashboard/reports(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)"
-      },
-      "action": "admin/dashboard#reports",
-      "constraints": [
-        "StaffConstraint"
-      ]
-    },
-    {
       "verb": "POST",
       "path": "/admin/dashboard/reports/bulk(.:format)",
       "requirements": {
@@ -3913,6 +4443,28 @@
         "format": "(json|html|\\*/\\*)"
       },
       "action": "admin/dashboard#update_reports_section",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/dashboard/reports/mount(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/dashboard#mount_report",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "DELETE",
+      "path": "/admin/dashboard/reports/mount(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/dashboard#unmount_report",
       "constraints": [
         "AdminConstraint"
       ]
@@ -4403,18 +4955,6 @@
         "format": "(json|html|\\*/\\*)"
       },
       "action": "admin/backups#upload_backup_chunk",
-      "constraints": [
-        "StaffConstraint",
-        "AdminConstraint"
-      ]
-    },
-    {
-      "verb": "GET",
-      "path": "/admin/backups/upload_url(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)"
-      },
-      "action": "admin/backups#create_upload_url",
       "constraints": [
         "StaffConstraint",
         "AdminConstraint"
@@ -5272,6 +5812,18 @@
       ]
     },
     {
+      "verb": "PUT",
+      "path": "/admin/config/flags/:flag_id/move(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/config/flags#move",
+      "constraints": [
+        "StaffConstraint",
+        "StaffConstraint"
+      ]
+    },
+    {
       "verb": "GET",
       "path": "/admin/config/flags/:id(.:format)",
       "requirements": {
@@ -5963,6 +6515,16 @@
     },
     {
       "verb": "PUT",
+      "path": "/review/:reviewable_id/dsa-classification(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)",
+        "reviewable_id": "\\d+"
+      },
+      "action": "dsa_statements#classify",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
       "path": "/review/:reviewable_id/perform/:action_id(.:format)",
       "requirements": {
         "format": "(json|html|\\*/\\*)",
@@ -6320,6 +6882,42 @@
         "format": "(json|html|\\*/\\*)"
       },
       "action": "static#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/dsa/report-illegal-content(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "dsa_notices#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/dsa/report-illegal-content(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "dsa_notices#create",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/dsa/report-illegal-content/verify-email(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "dsa_notices#verify_email",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/dsa/report-illegal-content/verify-code(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "dsa_notices#verify_code",
       "constraints": []
     },
     {
@@ -8894,28 +9492,6 @@
     },
     {
       "verb": "GET",
-      "path": "/secure-media-uploads/*path(.:extension)(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)",
-        "path": ".+?",
-        "extension": "[a-z0-9\\._]+"
-      },
-      "action": "uploads#_show_secure_deprecated",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/secure-uploads/*path(.:extension)(.:format)",
-      "requirements": {
-        "format": "(json|html|\\*/\\*)",
-        "path": ".+?",
-        "extension": "[a-z0-9\\._]+"
-      },
-      "action": "uploads#show_secure",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
       "path": "/posts(.:format)",
       "requirements": {
         "format": "(json|rss)"
@@ -9996,6 +10572,28 @@
     },
     {
       "verb": "PUT",
+      "path": "/posts/:post_id/revisions/:revision/unlist(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)",
+        "revision": "\\d+"
+      },
+      "action": "posts#unlist_revision",
+      "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
+      "path": "/posts/:post_id/revisions/:revision/relist(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)",
+        "revision": "\\d+"
+      },
+      "action": "posts#relist_revision",
+      "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
       "path": "/posts/:post_id/revisions/:revision/revert(.:format)",
       "requirements": {
         "format": "(json|html|\\*/\\*)",
@@ -10502,6 +11100,15 @@
         "format": "(json|html|\\*/\\*)"
       },
       "action": "categories#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/categories/evaluate_permissions(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "categories#evaluate_permissions",
       "constraints": []
     },
     {
@@ -11517,6 +12124,15 @@
     },
     {
       "verb": "GET",
+      "path": "/embed/status(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "embed#status",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
       "path": "/embed/count(.:format)",
       "requirements": {
         "format": "(json|html|\\*/\\*)"
@@ -12078,6 +12694,15 @@
         "format": "html"
       },
       "action": "invites#show",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/invites/:id/sso(.:format)",
+      "requirements": {
+        "format": "html"
+      },
+      "action": "invites#sso",
       "constraints": []
     },
     {
@@ -13888,6 +14513,24 @@
       "verb": "GET",
       "path": "/",
       "requirements": {},
+      "action": "blog/articles#index",
+      "constraints": [
+        "HomePageConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/",
+      "requirements": {},
+      "action": "chat/chat#respond",
+      "constraints": [
+        "HomePageConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/",
+      "requirements": {},
       "action": "discourse_ai/ai_bot/conversations#index",
       "constraints": [
         "HomePageConstraint"
@@ -14140,6 +14783,17 @@
     },
     {
       "verb": "PUT",
+      "path": "/admin/mcp/clients/:id(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "admin/mcp_clients#update",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "PUT",
       "path": "/admin/mcp/clients/:id/block(.:format)",
       "requirements": {
         "format": "(json|html|\\*/\\*)"
@@ -14382,6 +15036,15 @@
         "format": "(json|html|\\*/\\*)"
       },
       "action": "safe_mode#enter",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/bundle-analysis.json(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "bundle_analysis#index",
       "constraints": []
     },
     {
@@ -14651,6 +15314,15 @@
     },
     {
       "verb": "GET",
+      "path": "/api/groups/:id(.:format)",
+      "requirements": {
+        "format": "(json|html|\\*/\\*)"
+      },
+      "action": "api/groups#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
       "path": "/*url(.:format)",
       "requirements": {
         "format": "(json|html|\\*/\\*)",
@@ -14663,156 +15335,163 @@
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/voice-rooms",
+      "path": "/admin/plugins/live/live-rooms",
       "requirements": {},
-      "action": "voice/admin#index",
+      "action": "live/admin#index",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/voice-rooms/new",
+      "path": "/admin/plugins/live/live-rooms/new",
       "requirements": {},
-      "action": "voice/admin#new",
+      "action": "live/admin#new",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/voice-rooms/:id",
+      "path": "/admin/plugins/live/live-rooms/:id",
       "requirements": {},
-      "action": "voice/admin#edit",
+      "action": "live/admin#edit",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/voice-dashboard",
+      "path": "/admin/plugins/live/live-dashboard",
       "requirements": {},
-      "action": "voice/admin#index",
+      "action": "live/admin#index",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/voice-recordings",
+      "path": "/admin/plugins/live/live-recordings",
       "requirements": {},
-      "action": "voice/admin#index",
+      "action": "live/admin#index",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/rooms(.:format)",
+      "path": "/admin/plugins/live/rooms(.:format)",
       "requirements": {},
-      "action": "voice/admin_rooms#index",
+      "action": "live/admin_rooms#index",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/rooms/:id(.:format)",
+      "path": "/admin/plugins/live/rooms/:id(.:format)",
       "requirements": {},
-      "action": "voice/admin_rooms#show",
+      "action": "live/admin_rooms#show",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "POST",
-      "path": "/admin/plugins/voice/rooms(.:format)",
+      "path": "/admin/plugins/live/rooms(.:format)",
       "requirements": {},
-      "action": "voice/admin_rooms#create",
+      "action": "live/admin_rooms#create",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "PUT",
-      "path": "/admin/plugins/voice/rooms/:id(.:format)",
+      "path": "/admin/plugins/live/rooms/:id(.:format)",
       "requirements": {},
-      "action": "voice/admin_rooms#update",
+      "action": "live/admin_rooms#update",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "DELETE",
-      "path": "/admin/plugins/voice/rooms/:id(.:format)",
+      "path": "/admin/plugins/live/rooms/:id(.:format)",
       "requirements": {},
-      "action": "voice/admin_rooms#destroy",
+      "action": "live/admin_rooms#destroy",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "POST",
-      "path": "/admin/plugins/voice/rooms/:id/end_call(.:format)",
+      "path": "/admin/plugins/live/rooms/:id/end_call(.:format)",
       "requirements": {},
-      "action": "voice/admin_rooms#end_call",
+      "action": "live/admin_rooms#end_call",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/stats/overview(.:format)",
+      "path": "/admin/plugins/live/stats/overview(.:format)",
       "requirements": {},
-      "action": "voice/admin_stats#overview",
+      "action": "live/admin_stats#overview",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/stats/rooms(.:format)",
+      "path": "/admin/plugins/live/stats/rooms(.:format)",
       "requirements": {},
-      "action": "voice/admin_stats#rooms",
+      "action": "live/admin_stats#rooms",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/stats/users(.:format)",
+      "path": "/admin/plugins/live/stats/users(.:format)",
       "requirements": {},
-      "action": "voice/admin_stats#users",
+      "action": "live/admin_stats#users",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/livekit/status(.:format)",
+      "path": "/admin/plugins/live/livekit/status(.:format)",
       "requirements": {},
-      "action": "voice/admin_livekit#status",
+      "action": "live/admin_livekit#status",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "POST",
-      "path": "/admin/plugins/voice/livekit/probe(.:format)",
+      "path": "/admin/plugins/live/livekit/probe(.:format)",
       "requirements": {},
-      "action": "voice/admin_livekit#probe",
+      "action": "live/admin_livekit#probe",
       "constraints": [
         "AdminConstraint"
       ]
     },
     {
       "verb": "GET",
-      "path": "/admin/plugins/voice/recordings(.:format)",
+      "path": "/admin/plugins/live/recordings(.:format)",
       "requirements": {},
-      "action": "voice/admin_recordings#index",
+      "action": "live/admin_recordings#index",
       "constraints": [
         "AdminConstraint"
       ]
+    },
+    {
+      "verb": "POST",
+      "path": "/voice/livekit/webhook(.:format)",
+      "requirements": {},
+      "action": "live/livekit_webhooks#create",
+      "constraints": []
     },
     {
       "verb": "GET",
@@ -14939,6 +15618,51 @@
       "path": "/admin/plugins/discourse-workflows/workflows/:id/settings",
       "requirements": {
         "id": "\\d+"
+      },
+      "action": "discourse_workflows/admin#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-workflows/workflows/:id/variables",
+      "requirements": {
+        "id": "\\d+"
+      },
+      "action": "discourse_workflows/admin#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-workflows/workflows/:id/variables/manage",
+      "requirements": {
+        "id": "\\d+"
+      },
+      "action": "discourse_workflows/admin#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-workflows/workflows/:id/variables/new",
+      "requirements": {
+        "id": "\\d+"
+      },
+      "action": "discourse_workflows/admin#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-workflows/workflows/:id/variables/:variable_id/edit",
+      "requirements": {
+        "id": "\\d+",
+        "variable_id": "\\d+"
       },
       "action": "discourse_workflows/admin#index",
       "constraints": [
@@ -15184,6 +15908,51 @@
       ]
     },
     {
+      "verb": "POST",
+      "path": "/admin/plugins/discourse-workflows/workflows/:workflow_id/variables(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/workflow_variables#create",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/discourse-workflows/workflows/:workflow_id/variables/import(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/workflow_variables#import",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "PUT",
+      "path": "/admin/plugins/discourse-workflows/workflows/:workflow_id/variables/:variable_id(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/workflow_variables#update",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "DELETE",
+      "path": "/admin/plugins/discourse-workflows/workflows/:workflow_id/variables/:variable_id(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/workflow_variables#destroy",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "PUT",
+      "path": "/admin/plugins/discourse-workflows/workflows/:workflow_id/variables/:variable_id/value(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/workflow_variables#update_value",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
       "verb": "DELETE",
       "path": "/admin/plugins/discourse-workflows/executions(.:format)",
       "requirements": {},
@@ -15233,6 +16002,15 @@
       "path": "/admin/plugins/discourse-workflows/node-previews(.:format)",
       "requirements": {},
       "action": "discourse_workflows/node_previews#create",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/discourse-workflows/output-schemas(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/output_schemas#create",
       "constraints": [
         "AdminConstraint"
       ]
@@ -15375,6 +16153,15 @@
       ]
     },
     {
+      "verb": "PUT",
+      "path": "/admin/plugins/discourse-workflows/data-tables/:data_table_id/columns/:column_name/move(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/data_table_columns#move",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
       "verb": "DELETE",
       "path": "/admin/plugins/discourse-workflows/data-tables/:data_table_id/columns/:column_name(.:format)",
       "requirements": {},
@@ -15450,6 +16237,14 @@
       "path": "/discourse-workflows/trigger-post-button(.:format)",
       "requirements": {},
       "action": "discourse_workflows/post_button#create",
+      "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/discourse-workflows/trigger-composer-paused(.:format)",
+      "requirements": {},
+      "action": "discourse_workflows/composer_paused#create",
       "format": "json",
       "constraints": []
     },
@@ -15671,6 +16466,24 @@
     },
     {
       "verb": "GET",
+      "path": "/admin/plugins/discourse-gamification/leaderboards/new(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#index",
+      "constraints": [
+        "StaffConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-gamification/leaderboards/:id/edit(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#index",
+      "constraints": [
+        "StaffConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
       "path": "/admin/plugins/discourse-gamification/leaderboards/:id(.:format)",
       "requirements": {},
       "action": "discourse_gamification/admin_gamification_leaderboard#show",
@@ -15866,6 +16679,20 @@
       "constraints": []
     },
     {
+      "verb": "POST",
+      "path": "/discourse-calendar/livestream/notification-pause(.:format)",
+      "requirements": {},
+      "action": "discourse_events/livestream#pause_notifications",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/discourse-calendar/livestream/notification-pause/:pause_key(.:format)",
+      "requirements": {},
+      "action": "discourse_events/livestream#resume_notifications",
+      "constraints": []
+    },
+    {
       "verb": "GET",
       "path": "/t/:slug/:topic_id/zoom(.:format)",
       "requirements": {
@@ -15940,6 +16767,41 @@
       "path": "/api/data-explorer/queries/:id(.:format)",
       "requirements": {},
       "action": "discourse_data_explorer/queries#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/api/data-explorer/cached_results/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_data_explorer/cached_results#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/api/data-explorer/queries/:id/cached-result(.:format)",
+      "requirements": {},
+      "action": "discourse_data_explorer/query_related_resources#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/api/data-explorer/queries/:id/relationships/cached-result(.:format)",
+      "requirements": {},
+      "action": "discourse_data_explorer/query_relationships#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/api/data-explorer/queries/:id/relationships/groups(.:format)",
+      "requirements": {},
+      "action": "discourse_data_explorer/query_relationships#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/api/data-explorer/queries/:id/groups(.:format)",
+      "requirements": {},
+      "action": "discourse_data_explorer/query_related_resources#index",
       "constraints": []
     },
     {
@@ -16165,6 +17027,38 @@
       "constraints": []
     },
     {
+      "verb": "POST",
+      "path": "/captcha/recaptcha_v2/create(.:format)",
+      "requirements": {},
+      "action": "discourse_captcha/recaptcha#create",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/captcha/recaptcha_v3/create(.:format)",
+      "requirements": {},
+      "action": "discourse_captcha/recaptcha_v3#create",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-captcha/test(.:format)",
+      "requirements": {},
+      "action": "discourse_captcha/admin_captcha#show",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/discourse-captcha/test(.:format)",
+      "requirements": {},
+      "action": "discourse_captcha/admin_captcha#verify",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
       "verb": "PUT",
       "path": "/assign/claim/:topic_id(.:format)",
       "requirements": {},
@@ -16190,6 +17084,13 @@
       "path": "/assign/suggestions(.:format)",
       "requirements": {},
       "action": "discourse_assign/assign#suggestions",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/assign/search(.:format)",
+      "requirements": {},
+      "action": "discourse_assign/assign#search",
       "constraints": []
     },
     {
@@ -16382,6 +17283,14 @@
       "constraints": []
     },
     {
+      "verb": "PUT",
+      "path": "/discourse-ai/discoveries/tabs(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/discover/discoveries#record_tabs",
+      "format": "json",
+      "constraints": []
+    },
+    {
       "verb": "GET",
       "path": "/discourse-ai/discoveries/recent(.:format)",
       "requirements": {},
@@ -16403,6 +17312,13 @@
       "requirements": {},
       "action": "discourse_ai/discover/discoveries#continue_convo",
       "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/shared-ai-conversations(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/shared_ai_conversations#index",
       "constraints": []
     },
     {
@@ -16459,6 +17375,106 @@
       "path": "/discourse-ai/ai-bot/conversations/:topic_id/starred(.:format)",
       "requirements": {},
       "action": "discourse_ai/ai_bot/conversations#update_starred",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifact-shares(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_shares#index",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifact-shares/eligibility/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_shares#eligibility",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/discourse-ai/ai-bot/artifact-shares/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_shares#create",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
+      "path": "/discourse-ai/ai-bot/artifact-shares/:share_key(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_shares#update",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/discourse-ai/ai-bot/artifact-shares/:share_key(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_shares#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifact-shares/:share_key/metadata(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifacts#shared_metadata",
+      "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifact-shares/:share_key/forum(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifacts#forum",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifact-shares/:share_key(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifacts#shared",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifact-share-key-values/:share_key(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_share_key_values#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/discourse-ai/ai-bot/artifact-share-key-values/:share_key(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_share_key_values#set",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/discourse-ai/ai-bot/artifact-share-key-values/:share_key(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifact_share_key_values#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifacts/:id/metadata(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifacts#metadata",
+      "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifacts/:id/embed(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifacts#embed",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/discourse-ai/ai-bot/artifacts/:id/:version/embed(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_bot/artifacts#embed",
       "constraints": []
     },
     {
@@ -16559,6 +17575,14 @@
     },
     {
       "verb": "POST",
+      "path": "/discourse-ai/ai-moderation/dsa-classifications/:reviewable_id/suggest(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/ai_moderation/dsa_classifications#suggest",
+      "format": "json",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
       "path": "/discourse-ai/translate/posts/:post_id(.:format)",
       "requirements": {},
       "action": "discourse_ai/translation/translation#translate",
@@ -16580,15 +17604,6 @@
       "action": "discourse_ai/mcp_oauth#client_metadata",
       "format": "json",
       "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/admin/dashboard/sentiment(.:format)",
-      "requirements": {},
-      "action": "discourse_ai/admin/dashboard#sentiment",
-      "constraints": [
-        "StaffConstraint"
-      ]
     },
     {
       "verb": "GET",
@@ -16623,6 +17638,16 @@
       "path": "/admin/plugins/discourse-ai/ask-ai-reports(.:format)",
       "requirements": {},
       "action": "discourse_ai/admin/ask_ai_reports#create",
+      "format": "json",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-ai/ask-ai-reports/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ask_ai_reports#show",
       "format": "json",
       "constraints": [
         "AdminConstraint"
@@ -17050,6 +18075,24 @@
     },
     {
       "verb": "GET",
+      "path": "/admin/plugins/discourse-ai/ai-models(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-ai/ai-models/new(.:format)",
+      "requirements": {},
+      "action": "admin/plugins#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
       "path": "/admin/plugins/discourse-ai/ai-usage(.:format)",
       "requirements": {},
       "action": "discourse_ai/admin/ai_usage#show",
@@ -17244,6 +18287,78 @@
       "path": "/admin/plugins/discourse-ai/ai-llms/:id(.:format)",
       "requirements": {},
       "action": "discourse_ai/admin/ai_llms#destroy",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models/test(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#test",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#index",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "POST",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#create",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models/new(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#new",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "GET",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models/:id/edit(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#edit",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "PATCH",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#update",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "PUT",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#update",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
+      "verb": "DELETE",
+      "path": "/admin/plugins/discourse-ai/ai-decision-models/:id(.:format)",
+      "requirements": {},
+      "action": "discourse_ai/admin/ai_decision_models#destroy",
       "constraints": [
         "AdminConstraint"
       ]
@@ -17946,9 +19061,7 @@
       "path": "/zendesk-plugin/issues(.:format)",
       "requirements": {},
       "action": "discourse_zendesk_plugin/issues#create",
-      "constraints": [
-        "StaffConstraint"
-      ]
+      "constraints": []
     },
     {
       "verb": "PUT",
@@ -18352,6 +19465,16 @@
       "constraints": []
     },
     {
+      "verb": "PUT",
+      "path": "/chat/admin/bots/:user_id/discoverability(.:format)",
+      "requirements": {},
+      "action": "chat/admin/bot_discoverability#update",
+      "format": "json",
+      "constraints": [
+        "AdminConstraint"
+      ]
+    },
+    {
       "verb": "GET",
       "path": "/chat/direct_messages(.:format)",
       "requirements": {},
@@ -18549,6 +19672,13 @@
     {
       "verb": "GET",
       "path": "/chat/c/:channel_title/:channel_id/info/members(.:format)",
+      "requirements": {},
+      "action": "chat/chat#respond",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/chat/c/:channel_title/:channel_id/info/preferences(.:format)",
       "requirements": {},
       "action": "chat/chat#respond",
       "constraints": []
@@ -18917,6 +20047,13 @@
     },
     {
       "verb": "POST",
+      "path": "/chat-integration/telegram/command/:token(.:format)",
+      "requirements": {},
+      "action": "discourse_chat_integration/provider/telegram_provider/telegram_command#command",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
       "path": "/chat-integration/mattermost/command(.:format)",
       "requirements": {},
       "action": "discourse_chat_integration/provider/mattermost_provider/mattermost_command#command",
@@ -18934,13 +20071,6 @@
       "path": "/chat-integration/slack/interactive(.:format)",
       "requirements": {},
       "action": "discourse_chat_integration/provider/slack_provider/slack_command#interactive",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/chat-integration/telegram/command/:token(.:format)",
-      "requirements": {},
-      "action": "discourse_chat_integration/provider/telegram_provider/telegram_command#command",
       "constraints": []
     },
     {
@@ -19550,6 +20680,297 @@
       "constraints": []
     },
     {
+      "verb": "POST",
+      "path": "/live/rooms/:id/invite_agent(.:format)",
+      "requirements": {},
+      "action": "live/rooms#invite_agent",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/join(.:format)",
+      "requirements": {},
+      "action": "live/rooms#join",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/heartbeat(.:format)",
+      "requirements": {},
+      "action": "live/rooms#heartbeat",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/live/rooms/:id/leave(.:format)",
+      "requirements": {},
+      "action": "live/rooms#leave",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/:id/participants(.:format)",
+      "requirements": {},
+      "action": "live/rooms#participants",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/signal(.:format)",
+      "requirements": {},
+      "action": "live/rooms#signal",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/:id/chat_session(.:format)",
+      "requirements": {},
+      "action": "live/rooms#chat_session",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/chat_session(.:format)",
+      "requirements": {},
+      "action": "live/rooms#ensure_chat_session",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/chat_message(.:format)",
+      "requirements": {},
+      "action": "live/rooms#chat_message",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/toggle_mute(.:format)",
+      "requirements": {},
+      "action": "live/rooms#toggle_mute",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/state(.:format)",
+      "requirements": {},
+      "action": "live/rooms#state",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/livekit_token(.:format)",
+      "requirements": {},
+      "action": "live/rooms#livekit_token",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/recording(.:format)",
+      "requirements": {},
+      "action": "live/rooms#start_recording",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/live/rooms/:id/recording(.:format)",
+      "requirements": {},
+      "action": "live/rooms#stop_recording",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/live/rooms/:id/kick(.:format)",
+      "requirements": {},
+      "action": "live/rooms#kick",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/flag(.:format)",
+      "requirements": {},
+      "action": "live/rooms#flag",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/reaction(.:format)",
+      "requirements": {},
+      "action": "live/rooms#reaction",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:id/request_to_speak(.:format)",
+      "requirements": {},
+      "action": "live/rooms#request_to_speak",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/live/rooms/:id/request_to_speak(.:format)",
+      "requirements": {},
+      "action": "live/rooms#withdraw_request_to_speak",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/:room_id/memberships(.:format)",
+      "requirements": {},
+      "action": "live/room_memberships#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:room_id/memberships(.:format)",
+      "requirements": {},
+      "action": "live/room_memberships#create",
+      "constraints": []
+    },
+    {
+      "verb": "PATCH",
+      "path": "/live/rooms/:room_id/memberships/:id(.:format)",
+      "requirements": {},
+      "action": "live/room_memberships#update",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
+      "path": "/live/rooms/:room_id/memberships/:id(.:format)",
+      "requirements": {},
+      "action": "live/room_memberships#update",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/live/rooms/:room_id/memberships/:id(.:format)",
+      "requirements": {},
+      "action": "live/room_memberships#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/:room_id/invites/suggestions(.:format)",
+      "requirements": {},
+      "action": "live/invites#suggestions",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms/:room_id/invites(.:format)",
+      "requirements": {},
+      "action": "live/invites#create",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms(.:format)",
+      "requirements": {},
+      "action": "live/rooms#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/rooms(.:format)",
+      "requirements": {},
+      "action": "live/rooms#create",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/new(.:format)",
+      "requirements": {},
+      "action": "live/rooms#new",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/:id/edit(.:format)",
+      "requirements": {},
+      "action": "live/rooms#edit",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/rooms/:id(.:format)",
+      "requirements": {},
+      "action": "live/rooms#show",
+      "constraints": []
+    },
+    {
+      "verb": "PATCH",
+      "path": "/live/rooms/:id(.:format)",
+      "requirements": {},
+      "action": "live/rooms#update",
+      "constraints": []
+    },
+    {
+      "verb": "PUT",
+      "path": "/live/rooms/:id(.:format)",
+      "requirements": {},
+      "action": "live/rooms#update",
+      "constraints": []
+    },
+    {
+      "verb": "DELETE",
+      "path": "/live/rooms/:id(.:format)",
+      "requirements": {},
+      "action": "live/rooms#destroy",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/calls(.:format)",
+      "requirements": {},
+      "action": "live/calls#create",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/agents(.:format)",
+      "requirements": {},
+      "action": "live/agents#index",
+      "constraints": []
+    },
+    {
+      "verb": "POST",
+      "path": "/live/livekit/webhook(.:format)",
+      "requirements": {},
+      "action": "live/livekit_webhooks#create",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/contacts(.:format)",
+      "requirements": {},
+      "action": "live/contacts#index",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/chat_threads/:id(.:format)",
+      "requirements": {
+        "id": "\\d+"
+      },
+      "action": "live/chat_threads#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/r/:slug",
+      "requirements": {},
+      "action": "live/page#show",
+      "constraints": []
+    },
+    {
+      "verb": "GET",
+      "path": "/live/r/:slug/invited-by/:username",
+      "requirements": {
+        "username": "[%\\w.\\-]+?"
+      },
+      "action": "live/page#show",
+      "constraints": []
+    },
+    {
       "verb": "PUT",
       "path": "/polls/vote(.:format)",
       "requirements": {},
@@ -19582,290 +21003,6 @@
       "path": "/polls/grouped_poll_results(.:format)",
       "requirements": {},
       "action": "discourse_poll/polls#grouped_poll_results",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/invite_agent(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#invite_agent",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/join(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#join",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/heartbeat(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#heartbeat",
-      "constraints": []
-    },
-    {
-      "verb": "DELETE",
-      "path": "/voice/rooms/:id/leave(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#leave",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/:id/participants(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#participants",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/signal(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#signal",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/:id/chat_session(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#chat_session",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/chat_session(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#ensure_chat_session",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/chat_message(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#chat_message",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/toggle_mute(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#toggle_mute",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/state(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#state",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/livekit_token(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#livekit_token",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/recording(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#start_recording",
-      "constraints": []
-    },
-    {
-      "verb": "DELETE",
-      "path": "/voice/rooms/:id/recording(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#stop_recording",
-      "constraints": []
-    },
-    {
-      "verb": "DELETE",
-      "path": "/voice/rooms/:id/kick(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#kick",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/flag(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#flag",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:id/request_to_speak(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#request_to_speak",
-      "constraints": []
-    },
-    {
-      "verb": "DELETE",
-      "path": "/voice/rooms/:id/request_to_speak(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#withdraw_request_to_speak",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/:room_id/memberships(.:format)",
-      "requirements": {},
-      "action": "voice/room_memberships#index",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:room_id/memberships(.:format)",
-      "requirements": {},
-      "action": "voice/room_memberships#create",
-      "constraints": []
-    },
-    {
-      "verb": "PATCH",
-      "path": "/voice/rooms/:room_id/memberships/:id(.:format)",
-      "requirements": {},
-      "action": "voice/room_memberships#update",
-      "constraints": []
-    },
-    {
-      "verb": "PUT",
-      "path": "/voice/rooms/:room_id/memberships/:id(.:format)",
-      "requirements": {},
-      "action": "voice/room_memberships#update",
-      "constraints": []
-    },
-    {
-      "verb": "DELETE",
-      "path": "/voice/rooms/:room_id/memberships/:id(.:format)",
-      "requirements": {},
-      "action": "voice/room_memberships#destroy",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/:room_id/invites/suggestions(.:format)",
-      "requirements": {},
-      "action": "voice/invites#suggestions",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms/:room_id/invites(.:format)",
-      "requirements": {},
-      "action": "voice/invites#create",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#index",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/rooms(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#create",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/new(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#new",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/:id/edit(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#edit",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/rooms/:id(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#show",
-      "constraints": []
-    },
-    {
-      "verb": "PATCH",
-      "path": "/voice/rooms/:id(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#update",
-      "constraints": []
-    },
-    {
-      "verb": "PUT",
-      "path": "/voice/rooms/:id(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#update",
-      "constraints": []
-    },
-    {
-      "verb": "DELETE",
-      "path": "/voice/rooms/:id(.:format)",
-      "requirements": {},
-      "action": "voice/rooms#destroy",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/calls(.:format)",
-      "requirements": {},
-      "action": "voice/calls#create",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/agents(.:format)",
-      "requirements": {},
-      "action": "voice/agents#index",
-      "constraints": []
-    },
-    {
-      "verb": "POST",
-      "path": "/voice/livekit/webhook(.:format)",
-      "requirements": {},
-      "action": "voice/livekit_webhooks#create",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/contacts(.:format)",
-      "requirements": {},
-      "action": "voice/contacts#index",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/chat_threads/:id(.:format)",
-      "requirements": {
-        "id": "\\d+"
-      },
-      "action": "voice/chat_threads#show",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/r/:slug",
-      "requirements": {},
-      "action": "voice/page#show",
-      "constraints": []
-    },
-    {
-      "verb": "GET",
-      "path": "/voice/r/:slug/invited-by/:username",
-      "requirements": {
-        "username": "[%\\w.\\-]+?"
-      },
-      "action": "voice/page#show",
       "constraints": []
     },
     {

@@ -1,5 +1,6 @@
 {
   "user": null,
+  "not_yet": "0a264785d1d (Discourse): a chat channel as the homepage (register_homepage, homepage_options); not ported",
   "setup": [
     "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, NULL, now(), now())",
     "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'shout', 2, NULL, TRUE, FALSE, NULL, now(), now())",

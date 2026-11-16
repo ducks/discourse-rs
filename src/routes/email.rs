@@ -293,19 +293,20 @@ pub async fn perform_unsubscribe(
     if !updated {
         return Ok(redirect_back(&headers, base_path));
     }
-    // The address, kept an hour for the page that confirms it.
+    // The address and the key's topic, kept an hour for the page that
+    // confirms it; the topic is no longer in the URL (e89438f6477).
     let cache_key = format!("unsub_{}", crate::accounts::random_hex());
+    let topic_id = unsubscribe::associated_topic(&mut conn, &found)
+        .await?
+        .map(|topic| topic.id);
     crate::owned_schema::cached_setex(
         &mut conn,
         &format!("_CACHE:{cache_key}"),
         3600,
-        owner.email.as_deref().unwrap_or(""),
+        &serde_json::json!({ "email": owner.email, "topic_id": topic_id }).to_string(),
     )
     .await?;
-    let mut location = format!("{base_path}/email/unsubscribed?key={cache_key}");
-    if let Some(topic) = unsubscribe::associated_topic(&mut conn, &found).await? {
-        location.push_str(&format!("&topic_id={}", topic.id));
-    }
+    let location = format!("{base_path}/email/unsubscribed?key={cache_key}");
     Ok(redirect(&headers, &location))
 }
 
@@ -321,9 +322,22 @@ pub async fn unsubscribed(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     refuse_untranslated(&settings)?;
-    let email = match crate::params::string(&params, "key") {
+    let confirmation = match crate::params::string(&params, "key") {
         Some(key) => crate::owned_schema::cached_get(&mut conn, &format!("_CACHE:{key}")).await?,
         None => None,
+    };
+    // A hash of the address and topic, or (from before e89438f6477) the
+    // address alone.
+    let (email, topic_id) = match confirmation
+        .as_deref()
+        .and_then(|c| serde_json::from_str::<serde_json::Value>(c).ok())
+        .filter(serde_json::Value::is_object)
+    {
+        Some(hash) => (
+            hash["email"].as_str().map(str::to_string),
+            hash["topic_id"].as_i64().map(|id| id as i32),
+        ),
+        None => (confirmation, None),
     };
     // User.find_by_email: any of a user's addresses, case-insensitively.
     let known = match &email {
@@ -340,13 +354,8 @@ pub async fn unsubscribed(
     if !known {
         return Ok(super::topics::not_found_response(&state));
     }
-    // Any topic_id given, "" too, says one was named.
-    let topic_id = params.get("topic_id").filter(|v| !v.is_null());
     let mut topic = None;
-    if let Some(id) = topic_id
-        .and_then(crate::params::scalar)
-        .and_then(|s| s.parse::<i32>().ok())
-    {
+    if let Some(id) = topic_id {
         let row: Option<unsubscribe::KeyTopic> = sqlx::query_as(
             "SELECT id, title, slug, category_id FROM topics WHERE id = $1 AND deleted_at IS NULL",
         )

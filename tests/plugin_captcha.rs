@@ -180,8 +180,8 @@ async fn site(db: &TestDb) -> (AppState, Shared) {
     set(&state, "discourse_captcha_provider", "none").await;
     set(&state, "hcaptcha_site_key", "site-key").await;
     set(&state, "hcaptcha_secret_key", "secret-key").await;
-    set(&state, "recaptcha_site_key", "site-key").await;
-    set(&state, "recaptcha_secret_key", "secret-key").await;
+    set(&state, "recaptcha_v2_site_key", "site-key").await;
+    set(&state, "recaptcha_v2_secret_key", "secret-key").await;
     (state, shared)
 }
 
@@ -237,7 +237,7 @@ async fn a_refused_hcaptcha_fails_registration() {
 async fn a_refused_recaptcha_fails_registration() {
     let db = TestDb::new().await;
     let (state, verify) = site(&db).await;
-    set(&state, "discourse_captcha_provider", "recaptcha").await;
+    set(&state, "discourse_captcha_provider", "recaptcha_v2").await;
     answer(&verify, 200, "{\"success\":false}");
     let reply = sign_up_with(&state, "recaptcha", "token-from-reCaptcha").await;
     assert_eq!(reply.json()["success"], false);
@@ -252,7 +252,7 @@ async fn a_refused_recaptcha_fails_registration() {
 async fn a_missing_token_fails_registration_for_either_provider() {
     let db = TestDb::new().await;
     let (state, verify) = site(&db).await;
-    for provider in ["hcaptcha", "recaptcha"] {
+    for provider in ["hcaptcha", "recaptcha_v2"] {
         set(&state, "discourse_captcha_provider", provider).await;
         let reply = Browser::new(&state).sign_up().await;
         assert_eq!(reply.json()["success"], false, "{provider}");
@@ -276,7 +276,7 @@ async fn a_verified_hcaptcha_lets_registration_through() {
 async fn a_verified_recaptcha_lets_registration_through() {
     let db = TestDb::new().await;
     let (state, _) = site(&db).await;
-    set(&state, "discourse_captcha_provider", "recaptcha").await;
+    set(&state, "discourse_captcha_provider", "recaptcha_v2").await;
     let reply = sign_up_with(&state, "recaptcha", "token-from-reCaptcha").await;
     assert_eq!(reply.json()["success"], true, "{}", reply.body);
 }
@@ -310,7 +310,7 @@ async fn registration_is_ungated_while_off_or_without_a_provider() {
 async fn a_provider_without_its_keys_blocks_registration() {
     let db = TestDb::new().await;
     let (state, _) = site(&db).await;
-    for provider in ["hcaptcha", "recaptcha"] {
+    for provider in ["hcaptcha", "recaptcha_v2"] {
         set(&state, "discourse_captcha_provider", provider).await;
         set(&state, &format!("{provider}_site_key"), "").await;
         set(&state, &format!("{provider}_secret_key"), "").await;
@@ -331,9 +331,9 @@ async fn a_provider_without_its_keys_blocks_registration() {
 async fn provider_errors_and_bad_answers_fail_registration() {
     for (provider, status, body) in [
         ("hcaptcha", 500, "Internal Server Error"),
-        ("recaptcha", 503, "Service Unavailable"),
+        ("recaptcha_v2", 503, "Service Unavailable"),
         ("hcaptcha", 200, "not valid json"),
-        ("recaptcha", 200, "not valid json"),
+        ("recaptcha_v2", 200, "not valid json"),
         (
             "hcaptcha",
             200,
@@ -371,7 +371,11 @@ async fn a_token_is_used_once() {
 async fn create_keeps_the_token_for_two_minutes() {
     let db = TestDb::new().await;
     let (state, _) = site(&db).await;
-    for provider in ["hcaptcha", "recaptcha"] {
+    // reCAPTCHA v2 keeps its token under recaptcha_token.
+    for (provider, token_key) in [
+        ("hcaptcha", "hcaptcha_token"),
+        ("recaptcha_v2", "recaptcha_token"),
+    ] {
         set(&state, "discourse_captcha_provider", provider).await;
         let mut browser = Browser::new(&state);
         let reply = browser
@@ -386,7 +390,7 @@ async fn create_keeps_the_token_for_two_minutes() {
             "SELECT value, extract(epoch FROM expires_at - clock_timestamp())::float8 \
              FROM discourse_rs.server_sessions WHERE key LIKE '%' || $1",
         )
-        .bind(format!("{provider}_token"))
+        .bind(token_key)
         .fetch_one(&db.pool)
         .await
         .unwrap();
@@ -403,7 +407,7 @@ async fn create_keeps_the_token_for_two_minutes() {
 async fn create_wants_a_token() {
     let db = TestDb::new().await;
     let (state, _) = site(&db).await;
-    for provider in ["hcaptcha", "recaptcha"] {
+    for provider in ["hcaptcha", "recaptcha_v2"] {
         set(&state, "discourse_captcha_provider", provider).await;
         let path = format!("/captcha/{provider}/create.json");
         let mut browser = Browser::new(&state);
@@ -434,7 +438,7 @@ async fn create_is_not_found_for_another_provider_none_or_the_plugin_off() {
                 .status
         }
     };
-    set(&state, "discourse_captcha_provider", "recaptcha").await;
+    set(&state, "discourse_captcha_provider", "recaptcha_v2").await;
     assert_eq!(status("hcaptcha").await, StatusCode::NOT_FOUND);
     set(&state, "discourse_captcha_provider", "hcaptcha").await;
     assert_eq!(status("recaptcha").await, StatusCode::NOT_FOUND);
@@ -488,7 +492,11 @@ async fn problems(state: &AppState) -> Vec<String> {
 
 #[tokio::test]
 async fn the_problem_checks_report_a_provider_without_its_keys() {
-    for provider in ["hcaptcha", "recaptcha"] {
+    // ProblemCheck::RecaptchaConfiguration checks reCAPTCHA v2.
+    for (provider, check) in [
+        ("hcaptcha", "hcaptcha_configuration"),
+        ("recaptcha_v2", "recaptcha_configuration"),
+    ] {
         let db = TestDb::new().await;
         let (state, _) = site(&db).await;
         set(&state, "discourse_captcha_provider", provider).await;
@@ -501,7 +509,7 @@ async fn the_problem_checks_report_a_provider_without_its_keys() {
             set(&state, &secret_key, secret).await;
             assert_eq!(
                 problems(&state).await,
-                vec![format!("{provider}_configuration:1")],
+                vec![format!("{check}:1")],
                 "{provider} site {site:?} secret {secret:?}"
             );
         }
@@ -521,8 +529,7 @@ async fn the_problem_checks_report_a_provider_without_its_keys() {
                 .is_empty()
         );
         assert_eq!(
-            discourse_rs::plugins::problem_check(&settings, &format!("{provider}_configuration"))
-                .unwrap(),
+            discourse_rs::plugins::problem_check(&settings, check).unwrap(),
             Some(false)
         );
     }
@@ -605,7 +612,7 @@ async fn the_signup_form_carries_the_selected_providers_widget() {
     assert!(page[connector..].contains("</form>"));
     assert!(!page.contains("data-provider=\"recaptcha\""));
 
-    set(&state, "discourse_captcha_provider", "recaptcha").await;
+    set(&state, "discourse_captcha_provider", "recaptcha_v2").await;
     let page = signup_page(&state).await;
     assert!(page.contains("data-provider=\"recaptcha\" data-site-key=\"site-key\""));
     assert!(!page.contains("data-provider=\"hcaptcha\""));

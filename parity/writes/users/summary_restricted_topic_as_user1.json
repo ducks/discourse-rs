@@ -11,8 +11,8 @@
       "path": "/user_actions.json?username=user0&filter=4,5"
     }
   ],
-  "started_at": "2026-10-07T18:27:25.554956",
-  "transaction_started_at": "2026-10-07T18:27:24.489546",
+  "started_at": "2026-11-16T00:03:12.042636",
+  "transaction_started_at": "2026-11-16T00:03:11.188891",
   "responses": [
     {
       "status": 200,
@@ -26,7 +26,7 @@
             "posts_count": 5,
             "category_id": 4,
             "like_count": 1,
-            "created_at": "2026-09-30T07:28:28.864Z",
+            "created_at": "2026-11-15T19:19:53.917Z",
             "has_accepted_answer": false
           }
         ],
@@ -45,6 +45,42 @@
             "badge_grouping_id": 4,
             "system": true,
             "slug": "basic",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 40,
+            "name": "First Mention",
+            "description": "Mentioned a user in a post",
+            "grant_count": 1,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "at",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "slug": "first-mention",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 11,
+            "name": "First Like",
+            "description": "Liked a post",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "slug": "first-like",
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 3
@@ -113,7 +149,7 @@
             {
               "post_number": 5,
               "like_count": 0,
-              "created_at": "2026-10-01T15:39:51.834Z",
+              "created_at": "2026-11-15T19:20:01.206Z",
               "topic_id": 35
             }
           ],
@@ -140,17 +176,35 @@
           "badges": [
             {
               "id": 2,
-              "granted_at": "2026-09-30T06:20:02.086Z",
-              "created_at": "2026-09-30T06:20:02.086Z",
+              "granted_at": "2026-11-15T19:18:11.383Z",
+              "created_at": "2026-11-15T19:18:11.383Z",
               "count": 1,
               "badge_id": 1,
               "user_id": 2,
               "granted_by_id": -1
             },
             {
-              "id": 16,
-              "granted_at": "2026-09-30T07:28:30.313Z",
-              "created_at": "2026-09-30T07:28:37.803Z",
+              "id": 19,
+              "granted_at": "2026-11-15T19:20:01.206Z",
+              "created_at": "2026-11-15T19:20:32.866Z",
+              "count": 1,
+              "badge_id": 40,
+              "user_id": 2,
+              "granted_by_id": -1
+            },
+            {
+              "id": 15,
+              "granted_at": "2026-11-15T19:20:01.402Z",
+              "created_at": "2026-11-15T19:20:32.791Z",
+              "count": 1,
+              "badge_id": 11,
+              "user_id": 2,
+              "granted_by_id": -1
+            },
+            {
+              "id": 17,
+              "granted_at": "2026-11-15T19:19:55.302Z",
+              "created_at": "2026-11-15T19:20:32.813Z",
               "count": 1,
               "badge_id": 5,
               "user_id": 2,
@@ -183,7 +237,7 @@
           {
             "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
             "action_type": 5,
-            "created_at": "2026-10-01T15:39:51.834Z",
+            "created_at": "2026-11-15T19:20:01.206Z",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "acting_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "slug": "parity-fixture-replies-and-posters",
@@ -212,7 +266,7 @@
           {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "action_type": 4,
-            "created_at": "2026-09-30T07:28:28.864Z",
+            "created_at": "2026-11-15T19:19:53.917Z",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "acting_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "slug": "parity-fixture-replies-and-posters",
@@ -248,33 +302,33 @@
       "updated": [
         {
           "before": {
-            "id": 124,
+            "id": 14,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "9FB5Vceg8Tu/MYZVr7cRsgf3lec=",
-            "created_at": "2026-10-07T18:27:24.851376",
-            "rotated_at": "2026-10-07T18:27:24.851122",
-            "updated_at": "2026-10-07T18:27:24.851376",
+            "auth_token": "gRXKgeKz7o8qhKGQlCOr24Kff5o=",
+            "created_at": "2026-11-16T00:03:11.566725",
+            "rotated_at": "2026-11-16T00:03:11.565839",
+            "updated_at": "2026-11-16T00:03:11.566725",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "9FB5Vceg8Tu/MYZVr7cRsgf3lec=",
+            "prev_auth_token": "gRXKgeKz7o8qhKGQlCOr24Kff5o=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 124,
-            "seen_at": "2026-10-07T18:27:25.561255",
+            "id": 14,
+            "seen_at": "2026-11-16T00:03:12.04866",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "9FB5Vceg8Tu/MYZVr7cRsgf3lec=",
-            "created_at": "2026-10-07T18:27:24.851376",
-            "rotated_at": "2026-10-07T18:27:24.851122",
-            "updated_at": "2026-10-07T18:27:24.851376",
+            "auth_token": "gRXKgeKz7o8qhKGQlCOr24Kff5o=",
+            "created_at": "2026-11-16T00:03:11.566725",
+            "rotated_at": "2026-11-16T00:03:11.565839",
+            "updated_at": "2026-11-16T00:03:11.566725",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "9FB5Vceg8Tu/MYZVr7cRsgf3lec=",
+            "prev_auth_token": "gRXKgeKz7o8qhKGQlCOr24Kff5o=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -284,12 +338,13 @@
     }
   },
   "jobs": [],
+  "next_ids": {},
   "setup": [
     "UPDATE topics SET category_id = 3 WHERE id = 41"
   ],
   "recorded_from": {
     "case": "baf07f5c4f849a0edd1295c8ec9133ec95cbbc5b301564897b05aba94d3b7793",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

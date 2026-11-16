@@ -749,6 +749,25 @@ impl Users<'_> {
         }
         let s = self.settings;
         u.insert("can_edit".into(), json!(can_edit));
+        // can_edit_avatar? and can_pick_avatar_source?(user, "custom")
+        // (Discourse 2b6dd368623): the system user may always upload, others
+        // in uploaded_avatars_allowed_groups.
+        let can_edit_avatar = can_edit
+            && !s.get("auth_overrides_avatar")?.truthy()
+            && !s.get("discourse_connect_overrides_avatar")?.truthy();
+        u.insert("can_edit_avatar".into(), json!(can_edit_avatar));
+        let can_upload_avatar = !g.is_anonymous()
+            && can_edit_avatar
+            && (user.id == -1
+                || crate::routes::user_avatar_writes::user_in_any_groups(
+                    &mut *self.conn,
+                    s,
+                    user.id,
+                    &s.group_ids("uploaded_avatars_allowed_groups")?,
+                )
+                .await
+                .map_err(UsersError::App)?);
+        u.insert("can_upload_avatar".into(), json!(can_upload_avatar));
         // can_edit_username?
         let username_period = s.get("username_change_period")?.to_i();
         let can_edit_username = if s.get("auth_overrides_username")?.truthy() {
@@ -840,7 +859,46 @@ impl Users<'_> {
             }
         }
         if can_edit {
-            let system_avatar = avatar::system_avatar_template(self.urls, &user.username)?;
+            // User.default_template (2b6dd368623): default_avatars first.
+            let system_avatar = avatar::default_template(s, self.urls, &user.username)?;
+            // associated_account_avatars and selected_user_associated_account_id
+            // (Discourse 2b6dd368623), private: the user's connected accounts
+            // of enabled authenticators that kept an avatar upload.
+            let enabled: Vec<&str> = crate::auth::enabled(s)?.iter().map(|p| p.name).collect();
+            let accounts: Vec<(i64, String, i32)> = sqlx::query_as(
+                "SELECT a.id, a.provider_name, a.avatar_upload_id FROM user_associated_accounts a \
+                 INNER JOIN uploads ON uploads.id = a.avatar_upload_id \
+                 WHERE a.user_id = $1 AND a.provider_name = ANY($2) ORDER BY a.id",
+            )
+            .bind(user.id)
+            .bind(&enabled)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            let mut account_avatars = Vec::new();
+            for (id, name, upload_id) in accounts {
+                account_avatars.push(json!({
+                    "id": id,
+                    "name": name,
+                    "upload_id": upload_id,
+                    "avatar_template": avatar::class_avatar_template(
+                        self.urls,
+                        &user.username,
+                        Some(upload_id)
+                    )?,
+                }));
+            }
+            let selected: Option<Option<i64>> = sqlx::query_scalar(
+                "SELECT selected_user_associated_account_id FROM user_avatars WHERE user_id = $1",
+            )
+            .bind(user.id)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+            let mut avatar_keys = avatar_keys;
+            avatar_keys.push(("associated_account_avatars", json!(account_avatars)));
+            avatar_keys.push((
+                "selected_user_associated_account_id",
+                json!(selected.flatten()),
+            ));
             self.private()
                 .private_block(user, &system_avatar, &avatar_keys, &mut u)
                 .await?;
@@ -1944,7 +2002,9 @@ impl Users<'_> {
 
     /// `UserProfileView.add(profile_id, ip, viewer_id)`: one view per
     /// profile per day per viewer (logged in) or address (anonymous), as
-    /// Rails' redis key gates it; bumps `user_profiles.views`.
+    /// the redis key `user-profile-view:<profile>:<date>:<viewer>` gates it
+    /// for user_profile_view_duration_hours (an expiring key here, not the
+    /// views already in the table); bumps `user_profiles.views`.
     pub async fn track_view(&mut self, user: &User, ip: &str) -> Result<(), UsersError> {
         let Some(profile_id) = user.profile_id else {
             return Ok(());
@@ -1952,22 +2012,20 @@ impl Users<'_> {
         let hours = self
             .settings
             .get("user_profile_view_duration_hours")?
-            .to_i()
-            .max(1);
+            .to_i();
         let viewer = self.guardian.user_id();
-        let seen: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_profile_views \
-             WHERE user_profile_id = $1 \
-             AND (($4::int IS NULL AND ip_address = $2::inet AND user_id IS NULL) OR ($4::int IS NOT NULL AND user_id = $4)) \
-             AND viewed_at::date = now()::date AND viewed_at >= now() - ($3 * interval '1 hour'))",
-        )
-        .bind(profile_id)
-        .bind(ip)
-        .bind(hours as f64)
-        .bind(viewer)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if seen {
+        if viewer.is_some_and(|id| id < 1) {
+            return Ok(());
+        }
+        let today: chrono::NaiveDate = sqlx::query_scalar("SELECT now()::date")
+            .fetch_one(&mut *self.conn)
+            .await?;
+        let who = match viewer {
+            Some(id) => format!("user-{id}"),
+            None => format!("ip-{ip}"),
+        };
+        let key = format!("user-profile-view:{profile_id}:{today}:{who}");
+        if !crate::owned_schema::set_once(&mut *self.conn, &key, hours * 3600).await? {
             return Ok(());
         }
         let inserted = sqlx::query(

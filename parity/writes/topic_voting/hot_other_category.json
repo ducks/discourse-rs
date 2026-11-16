@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-10-09T07:12:37.511497",
-  "transaction_started_at": "2026-10-09T07:12:36.142806",
+  "started_at": "2026-11-15T23:55:47.321977",
+  "transaction_started_at": "2026-11-15T23:55:46.626354",
   "responses": [
     {
       "status": 200,
@@ -51,10 +51,10 @@
               "reply_count": 0,
               "highest_post_number": 1,
               "image_url": null,
-              "created_at": "2026-09-30T07:28:29.325Z",
-              "last_posted_at": "2026-09-30T07:28:29.358Z",
+              "created_at": "2026-11-15T19:19:54.397Z",
+              "last_posted_at": "2026-11-15T19:19:54.472Z",
               "bumped": true,
-              "bumped_at": "2026-09-30T07:28:29.358Z",
+              "bumped_at": "2026-11-15T19:19:54.472Z",
               "archetype": "regular",
               "unseen": false,
               "pinned": true,
@@ -96,10 +96,10 @@
               "reply_count": 0,
               "highest_post_number": 1,
               "image_url": null,
-              "created_at": "2026-07-25T05:58:16.038Z",
+              "created_at": "2026-11-03T05:07:12.815Z",
               "last_posted_at": null,
               "bumped": true,
-              "bumped_at": "2026-07-25T05:58:16.038Z",
+              "bumped_at": "2026-11-03T05:07:12.815Z",
               "archetype": "regular",
               "unseen": false,
               "pinned": true,
@@ -139,6 +139,7 @@
   ],
   "changes": {},
   "jobs": [],
+  "next_ids": {},
   "setup": [
     "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
     "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (41, 3, false, now() - interval '2 hours', now()), (41, 4, false, now() - interval '3 hours', now()), (5, 4, false, now() - interval '100 hours', now()), (35, 3, true, now() - interval '1 hour', now())",
@@ -146,7 +147,7 @@
   ],
   "recorded_from": {
     "case": "4c2b95885ba18b8d224b995eddf1d75887ef8a180a5fa6bdb249f56e333e7d09",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

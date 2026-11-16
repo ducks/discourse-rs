@@ -39,9 +39,6 @@ pub struct PostSettings {
     pub read_time_word_count: i64,
     pub show_topic_map_in_topics_without_replies: bool,
     pub show_bottom_topic_map: bool,
-    /// TopicProgress#hugeNumberOfPosts: from this many posts on, the
-    /// progress bar shows the reader's post alone.
-    pub short_progress_text_threshold: i64,
     /// `tagging_enabled` and `topic_featured_link_enabled`: the fullscreen
     /// timeline's title block.
     pub tagging_enabled: bool,
@@ -119,7 +116,6 @@ impl PostSettings {
                 "show_topic_map_in_topics_without_replies",
             )?,
             show_bottom_topic_map: flag("show_bottom_topic_map")?,
-            short_progress_text_threshold: settings.get("short_progress_text_threshold")?.to_i(),
             tagging_enabled: settings.get("tagging_enabled")?.truthy(),
             topic_featured_link_enabled: settings.get("topic_featured_link_enabled")?.truthy(),
             post_menu: list("post_menu")?,
@@ -3754,17 +3750,14 @@ fn fullscreen_title(cx: &PostContext, view: &Value, url: &str) -> String {
     out
 }
 
-/// TopicProgress: the reader's post and the topic's count, its bar
+/// TopicProgress: the reader's post and the topic's count (always both
+/// since Discourse 0b38dbfd731 dropped short_progress_text_threshold), its bar
 /// filled as far as they have scrolled (topic.js keeps both current, and
 /// shows the back button while the reader is above their last read post:
 /// showBackButton). A tap expands it into the fullscreen timeline, from
 /// the template beside it.
 fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> String {
     let title = escape(&t(cx.list, "topic.progress.title"));
-    // hugeNumberOfPosts: the count and its slash are hidden.
-    let huge = i64::try_from(stream.len()).unwrap_or(i64::MAX)
-        >= cx.settings.short_progress_text_threshold;
-    let hidden = if huge { " class=\"hidden\"" } else { "" };
     let back = match (
         view["last_read_post_id"].as_i64(),
         view["last_read_post_number"].as_i64(),
@@ -3778,7 +3771,7 @@ fn topic_progress(cx: &PostContext, stream: &[i64], view: &Value, url: &str) -> 
     // TopicProgress yields the admin menu before its bar.
     let admin = topic_admin_trigger(cx, view, "");
     format!(
-        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\">{admin}<nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"{back}><div class=\"nums\"><span>1</span><span{hidden}>/</span><span{hidden}>{}</span></div><div class=\"bg\"></div></nav></div><template class=\"topic-timeline-fullscreen\">{}</template></div>",
+        "<div class=\"with-topic-progress topic-navigation\">{}<div id=\"topic-progress-wrapper\">{admin}<nav aria-label=\"{title}\" id=\"topic-progress\" style=\"--progress-bg-width: 0%\" title=\"{title}\" data-stream=\"{}\"{back}><div class=\"nums\"><span>1</span><span>/</span><span>{}</span></div><div class=\"bg\"></div></nav></div><template class=\"topic-timeline-fullscreen\">{}</template></div>",
         no_answer(cx, view),
         escape(&serde_json::to_string(stream).unwrap_or_default()),
         stream.len(),
@@ -4849,7 +4842,6 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
-            short_progress_text_threshold: 10000,
             tagging_enabled: true,
             topic_featured_link_enabled: true,
             post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
@@ -5136,7 +5128,6 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
-            short_progress_text_threshold: 10000,
             tagging_enabled: true,
             topic_featured_link_enabled: true,
             post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"

@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-10-16T04:46:19.080689",
-  "transaction_started_at": "2026-10-16T04:46:17.761816",
+  "started_at": "2026-11-15T22:59:39.53405",
+  "transaction_started_at": "2026-11-15T22:59:38.73444",
   "responses": [
     {
       "status": 200,
@@ -30,11 +30,11 @@
             "email": "friend@example.com",
             "domain": null,
             "moderator": false,
-            "created_at": "2026-10-14T04:46:17.761816",
+            "created_at": "2026-11-13T22:59:38.73444",
             "deleted_at": null,
-            "expires_at": "2026-12-15T04:46:17.761816",
+            "expires_at": "2027-01-14T22:59:38.73444",
             "invite_key": "Fixture901",
-            "updated_at": "2026-10-14T04:46:17.761816",
+            "updated_at": "2026-11-13T22:59:38.73444",
             "description": null,
             "email_token": "0123456789abcdef0123456789abcdef",
             "deleted_by_id": null,
@@ -51,11 +51,11 @@
             "email": "friend@example.com",
             "domain": null,
             "moderator": false,
-            "created_at": "2026-10-14T04:46:17.761816",
+            "created_at": "2026-11-13T22:59:38.73444",
             "deleted_at": null,
-            "expires_at": "2027-01-14T04:46:19.098853",
+            "expires_at": "2027-02-13T22:59:39.547508",
             "invite_key": "Fixture901",
-            "updated_at": "2026-10-16T04:46:19.098798",
+            "updated_at": "2026-11-15T22:59:39.547491",
             "description": null,
             "email_token": "0123456789abcdef0123456789abcdef",
             "deleted_by_id": null,
@@ -75,33 +75,33 @@
       "updated": [
         {
           "before": {
-            "id": 358,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
-            "created_at": "2026-10-16T04:46:18.406389",
-            "rotated_at": "2026-10-16T04:46:18.404506",
-            "updated_at": "2026-10-16T04:46:18.406389",
+            "auth_token": "hgZL/deRQmKg0FhczBkCRFKx6lM=",
+            "created_at": "2026-11-15T22:59:39.046562",
+            "rotated_at": "2026-11-15T22:59:39.045793",
+            "updated_at": "2026-11-15T22:59:39.046562",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
+            "prev_auth_token": "hgZL/deRQmKg0FhczBkCRFKx6lM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 358,
-            "seen_at": "2026-10-16T04:46:19.087895",
+            "id": 14,
+            "seen_at": "2026-11-15T22:59:39.53981",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
-            "created_at": "2026-10-16T04:46:18.406389",
-            "rotated_at": "2026-10-16T04:46:18.404506",
-            "updated_at": "2026-10-16T04:46:18.406389",
+            "auth_token": "hgZL/deRQmKg0FhczBkCRFKx6lM=",
+            "created_at": "2026-11-15T22:59:39.046562",
+            "rotated_at": "2026-11-15T22:59:39.045793",
+            "updated_at": "2026-11-15T22:59:39.046562",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "9cQ+Of/9ua4cv92OHtkiNrJCO+w=",
+            "prev_auth_token": "hgZL/deRQmKg0FhczBkCRFKx6lM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -129,7 +129,7 @@
   ],
   "recorded_from": {
     "case": "ffe7bd00e17231287155649c57d834242d9703ec959b74c9342b2fb4579961b9",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

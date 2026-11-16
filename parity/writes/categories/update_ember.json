@@ -71,8 +71,8 @@
       }
     }
   ],
-  "started_at": "2026-10-16T02:43:18.853827",
-  "transaction_started_at": "2026-10-16T02:43:16.566121",
+  "started_at": "2026-11-15T22:29:54.46951",
+  "transaction_started_at": "2026-11-15T22:29:53.673372",
   "responses": [
     {
       "status": 200,
@@ -88,7 +88,7 @@
           "emoji": "blue_book",
           "slug": "general",
           "topic_count": 3,
-          "post_count": 6,
+          "post_count": 1,
           "position": 3,
           "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
           "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -126,6 +126,7 @@
               "title": "discussion",
               "description": "A standard category with all the essentials for conversation.",
               "icon": "memo",
+              "svg_icon": "comment",
               "available": true,
               "visible": true,
               "configuration_schema": {}
@@ -143,6 +144,48 @@
             "trust_level_2",
             "trust_level_3",
             "trust_level_4"
+          ],
+          "permission_groups": [
+            {
+              "id": 1,
+              "name": "admins"
+            },
+            {
+              "id": 0,
+              "name": "everyone"
+            },
+            {
+              "id": 5,
+              "name": "logged_in_users"
+            },
+            {
+              "id": 2,
+              "name": "moderators"
+            },
+            {
+              "id": 3,
+              "name": "staff"
+            },
+            {
+              "id": 10,
+              "name": "trust_level_0"
+            },
+            {
+              "id": 11,
+              "name": "trust_level_1"
+            },
+            {
+              "id": 12,
+              "name": "trust_level_2"
+            },
+            {
+              "id": 13,
+              "name": "trust_level_3"
+            },
+            {
+              "id": 14,
+              "name": "trust_level_4"
+            }
           ],
           "allowed_tags": [],
           "allowed_tag_groups": [],
@@ -175,6 +218,7 @@
               "title": "discussion",
               "description": "A standard category with all the essentials for conversation.",
               "icon": "memo",
+              "svg_icon": "comment",
               "available": true,
               "visible": true,
               "configuration_schema": {}
@@ -185,6 +229,7 @@
               "title": "events",
               "description": "Where members can find and discuss upcoming events on a shared calendar.",
               "icon": "spiral_calendar",
+              "svg_icon": "calendar-days",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -341,6 +386,7 @@
               "title": "support",
               "description": "Where members can ask questions and mark replies as solutions.",
               "icon": "person_raising_hand",
+              "svg_icon": "circle-question",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -496,6 +542,7 @@
               "title": "ideas",
               "description": "Where members can submit ideas and vote on the ones they want most.",
               "icon": "bulb",
+              "svg_icon": "lightbulb",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -701,25 +748,25 @@
             "email_in": null,
             "position": 3,
             "topic_id": 3,
-            "posts_day": 5,
-            "created_at": "2026-07-25T05:58:16.309528",
+            "posts_day": 0,
+            "created_at": "2026-11-03T05:07:13.024318",
             "name_lower": "general",
-            "post_count": 6,
-            "posts_week": 5,
-            "posts_year": 6,
+            "post_count": 1,
+            "posts_week": 0,
+            "posts_year": 1,
             "sort_order": null,
             "style_type": 2,
             "text_color": "FFFFFF",
-            "topics_day": 2,
-            "updated_at": "2026-10-01T07:04:33.522762",
+            "topics_day": 0,
+            "updated_at": "2026-11-15T19:19:55.139326",
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
-            "posts_month": 5,
+            "posts_month": 1,
             "topic_count": 3,
-            "topics_week": 2,
-            "topics_year": 3,
+            "topics_week": 0,
+            "topics_year": 1,
             "allow_badges": true,
             "default_view": null,
-            "topics_month": 2,
+            "topics_month": 1,
             "latest_post_id": 52,
             "sort_ascending": null,
             "topic_template": null,
@@ -764,25 +811,25 @@
             "email_in": null,
             "position": 3,
             "topic_id": 3,
-            "posts_day": 5,
-            "created_at": "2026-07-25T05:58:16.309528",
+            "posts_day": 0,
+            "created_at": "2026-11-03T05:07:13.024318",
             "name_lower": "general",
-            "post_count": 6,
-            "posts_week": 5,
-            "posts_year": 6,
+            "post_count": 1,
+            "posts_week": 0,
+            "posts_year": 1,
             "sort_order": "activity",
             "style_type": 2,
             "text_color": "FFFFFF",
-            "topics_day": 2,
-            "updated_at": "2026-10-16T02:43:18.975432",
+            "topics_day": 0,
+            "updated_at": "2026-11-15T22:29:54.520471",
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
-            "posts_month": 5,
+            "posts_month": 1,
             "topic_count": 3,
-            "topics_week": 2,
-            "topics_year": 3,
+            "topics_week": 0,
+            "topics_year": 1,
             "allow_badges": true,
             "default_view": "latest",
-            "topics_month": 2,
+            "topics_month": 1,
             "latest_post_id": 52,
             "sort_ascending": null,
             "topic_template": null,
@@ -824,33 +871,33 @@
       "updated": [
         {
           "before": {
-            "id": 257,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
-            "created_at": "2026-10-16T02:43:17.252658",
-            "rotated_at": "2026-10-16T02:43:17.244917",
-            "updated_at": "2026-10-16T02:43:17.252658",
+            "auth_token": "RRuHbDTawIDATnJ6wJnl6KWUC18=",
+            "created_at": "2026-11-15T22:29:53.987445",
+            "rotated_at": "2026-11-15T22:29:53.98645",
+            "updated_at": "2026-11-15T22:29:53.987445",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
+            "prev_auth_token": "RRuHbDTawIDATnJ6wJnl6KWUC18=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 257,
-            "seen_at": "2026-10-16T02:43:18.868077",
+            "id": 14,
+            "seen_at": "2026-11-15T22:29:54.475589",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
-            "created_at": "2026-10-16T02:43:17.252658",
-            "rotated_at": "2026-10-16T02:43:17.244917",
-            "updated_at": "2026-10-16T02:43:17.252658",
+            "auth_token": "RRuHbDTawIDATnJ6wJnl6KWUC18=",
+            "created_at": "2026-11-15T22:29:53.987445",
+            "rotated_at": "2026-11-15T22:29:53.98645",
+            "updated_at": "2026-11-15T22:29:53.987445",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "PSua7ybigg/bmrj2298tFupS5LM=",
+            "prev_auth_token": "RRuHbDTawIDATnJ6wJnl6KWUC18=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -861,7 +908,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 26,
           "context": "/c/general/4",
@@ -871,9 +918,10 @@
           "topic_id": null,
           "new_value": "activity",
           "admin_only": true,
-          "created_at": "2026-10-16T02:43:19.050983",
+          "created_at": "2026-11-15T22:29:54.535568",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-16T02:43:19.050983",
+          "updated_at": "2026-11-15T22:29:54.535568",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": null,
@@ -882,7 +930,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 26,
           "context": "/c/general/4",
@@ -892,9 +940,10 @@
           "topic_id": null,
           "new_value": "t",
           "admin_only": true,
-          "created_at": "2026-10-16T02:43:19.054546",
+          "created_at": "2026-11-15T22:29:54.536805",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-16T02:43:19.054546",
+          "updated_at": "2026-11-15T22:29:54.536805",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": null,
@@ -903,7 +952,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 70,
           "email": null,
           "action": 26,
           "context": "/c/general/4",
@@ -913,9 +962,10 @@
           "topic_id": null,
           "new_value": "4",
           "admin_only": true,
-          "created_at": "2026-10-16T02:43:19.05754",
+          "created_at": "2026-11-15T22:29:54.537995",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-16T02:43:19.05754",
+          "updated_at": "2026-11-15T22:29:54.537995",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": null,
@@ -924,7 +974,7 @@
           "target_user_id": null
         },
         {
-          "id": 77,
+          "id": 71,
           "email": null,
           "action": 26,
           "context": "/c/general/4",
@@ -934,9 +984,10 @@
           "topic_id": null,
           "new_value": "latest",
           "admin_only": true,
-          "created_at": "2026-10-16T02:43:19.060356",
+          "created_at": "2026-11-15T22:29:54.539125",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-16T02:43:19.060356",
+          "updated_at": "2026-11-15T22:29:54.539125",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": null,
@@ -959,11 +1010,11 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "5521a0cdb6208c775817c052887e6b4dbf7dd40cb80bf7237f393fa9866d2afb",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

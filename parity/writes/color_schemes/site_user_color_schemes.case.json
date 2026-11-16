@@ -1,10 +1,14 @@
 {
   "user": "user1",
+  "not_yet": "0a264785d1d (Discourse): a chat channel as the homepage (register_homepage, homepage_options); not ported",
   "setup": [
     "UPDATE color_schemes SET user_selectable = TRUE WHERE id IN (13, 16)"
   ],
   "requests": [
-    {"method": "GET", "path": "/site.json"}
+    {
+      "method": "GET",
+      "path": "/site.json"
+    }
   ],
   "ignore": [
     "/responses/0/body/markdown_additional_options",

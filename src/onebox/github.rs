@@ -143,6 +143,19 @@ fn domain(link: &str) -> Result<String, Fail> {
     ))
 }
 
+/// `URI(link).path.split("/")[1, 2].join("/")`: the org and repository a
+/// GitHub header names (d1a61ada908).
+fn repository(link: &str) -> Result<String, Fail> {
+    let uri = RubyUri::parse(link).ok_or_else(|| raised("URI::InvalidURIError"))?;
+    Ok(uri
+        .path
+        .split('/')
+        .skip(1)
+        .take(2)
+        .collect::<Vec<_>>()
+        .join("/"))
+}
+
 fn t(ctx: &Ctx, key: &str) -> Value {
     ctx.i18n.t(key).map_or(Value::Null, |s| json!(s))
 }
@@ -206,6 +219,8 @@ async fn issue<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Valu
     let user_id = super::embed_engines::rs(at(&user, "id")?)?;
     let mut data = Map::new();
     data.insert("link".into(), json!(url));
+    data.insert("layout_class".into(), json!("github-onebox"));
+    data.insert("repository".into(), json!(repository(&link)?));
     data.insert("title".into(), at(&result, "title")?.clone());
     data.insert("body".into(), body);
     data.insert("excerpt".into(), excerpt);
@@ -223,7 +238,14 @@ async fn issue<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Valu
     data.insert("domain".into(), json!(domain(&link)?));
     data.insert(
         "i18n".into(),
-        json!({ "opened": t(ctx, "onebox.github.opened"), "closed": t(ctx, "onebox.github.closed") }),
+        json!({
+            "opened": t(ctx, "onebox.github.opened"),
+            "closed": t(ctx, "onebox.github.closed"),
+            "header": {
+                "open_issue": t(ctx, "onebox.github.header.open_issue"),
+                "closed_issue": t(ctx, "onebox.github.header.closed_issue"),
+            },
+        }),
     );
     data.insert("is_private".into(), at(&repo_json, "private")?.clone());
     // created_at etc. come in the hash's order, the title before them.
@@ -231,6 +253,8 @@ async fn issue<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Valu
         &mut data,
         &[
             "link",
+            "layout_class",
+            "repository",
             "title",
             "body",
             "excerpt",
@@ -310,10 +334,15 @@ async fn commit<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Val
     time_fields(&mut result, "committed_at", Some(&parse_time(&date)?))?;
     let link = link(url)?;
     result.insert("link".into(), json!(link));
+    result.insert("layout_class".into(), json!("github-onebox"));
+    result.insert("repository".into(), json!(format!("{org}/{repo}")));
     result.insert("domain".into(), json!(domain(&link)?));
     result.insert(
         "i18n".into(),
-        json!({ "committed": t(ctx, "onebox.github.committed") }),
+        json!({
+            "committed": t(ctx, "onebox.github.committed"),
+            "header": { "commit": t(ctx, "onebox.github.header.commit") },
+        }),
     );
     Ok(Value::Object(result))
 }
@@ -332,7 +361,14 @@ async fn repo<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Value
         Value::Null => return Err(raised("NoMethodError: raw is nil")),
         _ => return Err(Unsupported("GitHub API values of another shape").into()),
     };
-    result.insert("link".into(), json!(link(url)?));
+    let link = link(url)?;
+    result.insert("link".into(), json!(link));
+    result.insert("layout_class".into(), json!("github-onebox"));
+    result.insert("repository".into(), json!(repository(&link)?));
+    result.insert(
+        "i18n".into(),
+        json!({ "header": { "repository": t(ctx, "onebox.github.header.repository") } }),
+    );
     let full_name = super::embed_engines::rs(result.get("full_name").unwrap_or(&Value::Null))?;
     let mut title = format!("GitHub - {full_name}");
     let description = match result.get("description") {
@@ -400,12 +436,23 @@ async fn gist<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Value
         },
     };
     let truncated = files.len() > 3;
+    let link = link(url)?;
+    let user = RubyUri::parse(&link)
+        .ok_or_else(|| raised("URI::InvalidURIError"))?
+        .path
+        .split('/')
+        .nth(1)
+        .unwrap_or_default()
+        .to_string();
     Ok(json!({
         "title": "gist.github.com",
-        "link": link(url)?,
+        "link": link,
+        "repository": format!("gist.github.com/{user}"),
+        "layout_class": "github-onebox",
         "gist_files": files.into_iter().take(3).collect::<Vec<_>>(),
         "truncated_files?": truncated,
         "i18n": {
+            "header": { "gist": t(ctx, "onebox.github.header.gist") },
             "truncated_file": t(ctx, "onebox.github.truncated_file"),
             "more_than_three_files": t(ctx, "onebox.github.more_than_three_files"),
             "show_original": t(ctx, "onebox.github.show_original"),
@@ -505,15 +552,7 @@ async fn pull_request<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Resu
     result.insert("link".into(), json!(link));
     let status = pr_status(&raw, &api, &org, ctx, fetch).await?;
     let status_name = status.as_ref().map(|(s, _)| s.clone());
-    result.insert("pr_status".into(), json!(status_name));
-    let key = status_name
-        .clone()
-        .filter(|s| !s.is_empty())
-        .unwrap_or("default".into());
-    result.insert(
-        "pr_status_title".into(),
-        t(ctx, &format!("onebox.github.pr_title.{key}")),
-    );
+    result.insert("pr_status".into(), json!(status_name.clone()));
     let timestamp = match status.as_ref().map(|(_, t)| t) {
         Some(t) if !t.is_null() => t.clone(),
         _ => result.get("created_at").cloned().unwrap_or(Value::Null),
@@ -598,6 +637,25 @@ async fn pull_request<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Resu
             }
         }
     }
+    // The header's class and repository, and a PR's status (d1a61ada908).
+    let mut layout_class = "github-onebox".to_string();
+    if truthy(result.get("pr").unwrap_or(&Value::Null))
+        && let Some(status) = &status_name
+    {
+        layout_class.push_str(&format!(" --github-{status}"));
+        let mut data = Map::new();
+        data.insert(status.clone(), json!(true));
+        data.insert(
+            "label".into(),
+            t(ctx, &format!("onebox.github.pr_status.{status}")),
+        );
+        result.insert("pr_status_data".into(), Value::Object(data));
+    }
+    result.insert("layout_class".into(), json!(layout_class));
+    result.insert(
+        "repository".into(),
+        json!(format!("{link_org}/{link_repo}")),
+    );
     result.insert("number".into(), json!(number));
     let n = |k: &str| super::embed_engines::rs(raw.get(k).unwrap_or(&Value::Null));
     let summary = ctx
@@ -612,17 +670,19 @@ async fn pull_request<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Resu
             ],
         )
         .unwrap_or_default();
-    let label_key = status_name
-        .filter(|s| !s.is_empty())
-        .unwrap_or("open".into());
     result.insert(
         "i18n".into(),
         json!({
+            "header": {
+                "pull_request": t(ctx, "onebox.github.header.pull_request"),
+                "comment": t(ctx, "onebox.github.header.comment"),
+                "review": t(ctx, "onebox.github.header.review"),
+                "commit": t(ctx, "onebox.github.header.commit"),
+            },
             "opened": t(ctx, "onebox.github.opened"),
             "commit_by": t(ctx, "onebox.github.commit_by"),
             "comment_by": t(ctx, "onebox.github.comment_by"),
             "review_by": t(ctx, "onebox.github.review_by"),
-            "status_date_label": t(ctx, &format!("onebox.github.status_date.{label_key}")),
             "pr_summary": summary,
         }),
     );
@@ -706,6 +766,22 @@ async fn actions<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Result<Va
     };
     let mut data = Map::new();
     data.insert("link".into(), json!(url));
+    // The status header (d1a61ada908).
+    data.insert(
+        "layout_class".into(),
+        json!(format!("github-onebox --github-{status}")),
+    );
+    data.insert("repository".into(), json!(format!("{org}/{repo}")));
+    data.insert(
+        "i18n".into(),
+        json!({ "header": {
+            "success": t(ctx, "onebox.github.header.success"),
+            "failure": t(ctx, "onebox.github.header.failure"),
+            "pending": t(ctx, "onebox.github.header.pending"),
+            "unknown": t(ctx, "onebox.github.header.unknown"),
+            "check_run": t(ctx, "onebox.github.header.check_run"),
+        }}),
+    );
     data.insert("title".into(), title);
     data.insert("name".into(), at(&result, "name")?.clone());
     data.insert("run_number".into(), at(&result, "run_number")?.clone());
@@ -988,6 +1064,10 @@ async fn blob<F: Fetch>(
     };
     let i18n = if github {
         json!({
+            "header": {
+                "binary_file": t(ctx, "onebox.github.header.binary_file"),
+                "file": t(ctx, "onebox.github.header.file"),
+            },
             "binary_file": t(ctx, "onebox.github.binary_file"),
             "truncated_file": t(ctx, "onebox.github.truncated_file"),
             "show_original": t(ctx, "onebox.github.show_original"),
@@ -999,7 +1079,7 @@ async fn blob<F: Fetch>(
             "show_original": t(ctx, "onebox.gitlab.show_original"),
         })
     };
-    Ok(json!({
+    let mut data = json!({
         "title": sanitize_default(&m.file)?,
         "link": link,
         "i18n": i18n,
@@ -1021,7 +1101,14 @@ async fn blob<F: Fetch>(
             m.org_or_user,
             m.repo
         ),
-    }))
+    });
+    // GithubBlobOnebox#data: the header's repository and class
+    // (d1a61ada908).
+    if github {
+        data["repository"] = json!(format!("{}/{}", m.org_or_user, m.repo));
+        data["layout_class"] = json!("github-onebox");
+    }
+    Ok(data)
 }
 
 /// The GitHub engines' and GitlabBlobOnebox's previews: the Layout, as

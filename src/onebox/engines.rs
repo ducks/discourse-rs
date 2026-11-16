@@ -388,6 +388,33 @@ fn partial(name: &str) -> Option<&'static str> {
         "github/github_body" => Some(include_str!(
             "../../vendor/discourse/lib/onebox/templates/github/github_body.mustache"
         )),
+        "github/repository" => Some(include_str!(
+            "../../vendor/discourse/lib/onebox/templates/github/repository.mustache"
+        )),
+        _ => None,
+    }
+}
+
+/// `<template>_header.mustache` where the template path has one (the
+/// GitHub engines' status headers, d1a61ada908).
+fn header_template(name: &str) -> Option<&'static str> {
+    macro_rules! header {
+        ($file:literal) => {
+            Some(include_str!(concat!(
+                "../../vendor/discourse/lib/onebox/templates/",
+                $file
+            )))
+        };
+    }
+    match name {
+        "githubactions" => header!("githubactions_header.mustache"),
+        "githubblob" => header!("githubblob_header.mustache"),
+        "githubcommit" => header!("githubcommit_header.mustache"),
+        "githubfolder" => header!("githubfolder_header.mustache"),
+        "githubgist" => header!("githubgist_header.mustache"),
+        "githubissue" => header!("githubissue_header.mustache"),
+        "githubpullrequest" => header!("githubpullrequest_header.mustache"),
+        "githubrepo" => header!("githubrepo_header.mustache"),
         _ => None,
     }
 }
@@ -429,6 +456,11 @@ pub(super) fn layout(name: &str, view: &str, record: &serde_json::Value) -> Stri
         "metadata_2_label": record["metadata_2_label"],
         "metadata_2_value": record["metadata_2_value"],
         "subname": name,
+        // Layout#header: the engine's header template rendered with the
+        // record, nil without one.
+        "header": header_template(name)
+            .map(|t| crate::mustache::render_with_partials(t, record, &partial)),
+        "layout_class": record["layout_class"],
         "view": crate::mustache::render_with_partials(view, record, &partial),
     });
     crate::mustache::render(LAYOUT, &details)

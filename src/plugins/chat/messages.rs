@@ -1522,8 +1522,8 @@ impl Context<'_> {
     /// message, nor notify_user to a bot, or by
     /// a viewer who can't send personal messages) when the viewer may
     /// flag the message. Rails also compares the viewer with the
-    /// serialized user, which never matches. A type left out is a nil in
-    /// its place (`next` inside `map`).
+    /// serialized user, which never matches. A type left out is dropped
+    /// (`filter_map`).
     fn available_flags(&self, s: &Shared, m: &MessageRow, author: Option<&UserRow>) -> Vec<Value> {
         // can_flag_chat_message?
         let Some(author) = author else {
@@ -1539,12 +1539,12 @@ impl Context<'_> {
         }
         s.flag_types
             .iter()
-            .map(|t| {
-                let notify = t == "notify_moderators" || t == "notify_user";
-                let skipped = (s.direct_message && notify)
-                    || (t == "notify_user" && (author.id <= 0 || !s.can_message));
-                if skipped { Value::Null } else { json!(t) }
+            .filter(|t| {
+                let notify = *t == "notify_moderators" || *t == "notify_user";
+                !((s.direct_message && notify)
+                    || (*t == "notify_user" && (author.id <= 0 || !s.can_message)))
             })
+            .map(|t| json!(t))
             .collect()
     }
 }

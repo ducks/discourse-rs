@@ -824,7 +824,9 @@ async fn twitter_status<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Re
         LazyLock::new(|| regex::Regex::new(r"(?is)“(.+?)”").unwrap());
     static SCREEN: LazyLock<regex::Regex> =
         LazyLock::new(|| regex::Regex::new(r"\(@([^\)\(]*)\) on X").unwrap());
-    let tweet = get("description").map(|d| QUOTES.replace_all(&d, "$1").into_owned());
+    // Escaped (e01201a75f1).
+    let tweet = get("description")
+        .map(|d| crate::email::notification::html_escape(&QUOTES.replace_all(&d, "$1")));
     let title = get("title");
     let screen_name = title
         .as_deref()
@@ -882,7 +884,8 @@ async fn threads<F: Fetch>(url: &str, fetch: &mut F) -> Result<Value, Fail> {
     let rest: Vec<&str> = description.split(". ").skip(1).collect();
     let description_text = MENTION
         .replace_all(
-            &rest.join(". "),
+            // linkify_mentions(ERB::Util.html_escape(text)) (e01201a75f1)
+            &crate::email::notification::html_escape(&rest.join(". ")),
             "<a href='https://www.threads.net/@$1'>@$1</a>",
         )
         .into_owned();

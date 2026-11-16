@@ -153,8 +153,9 @@ async fn categories_index_lists_top_level_categories_with_featured_topics() {
     let json: Value = serde_json::from_str(&body).unwrap();
     let list = json["category_list"]["categories"].as_array().unwrap();
     let ids: Vec<i64> = list.iter().map(|c| c["id"].as_i64().unwrap()).collect();
-    // Ordered by latest featured activity; Staff hidden; subcategory folded in.
-    assert_eq!(ids, vec![4, 2, 1]);
+    // Ordered by latest featured activity; Staff hidden; subcategory folded
+    // in. No Uncategorized: Discourse a9f8c119c71 deletes the unused seed.
+    assert_eq!(ids, vec![4, 2]);
     assert_eq!(list[0]["subcategory_ids"], serde_json::json!([34]));
     assert_eq!(list[0]["topics_all_time"], 4);
     assert_eq!(list[0]["topics"].as_array().unwrap().len(), 3);

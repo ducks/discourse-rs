@@ -2,80 +2,12 @@
   "name": "api_keys_unused",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-12T22:40:07.023966",
-  "transaction_started_at": "2026-10-12T22:40:06.265806",
+  "started_at": "2026-11-15T23:26:20.974446",
+  "transaction_started_at": "2026-11-15T23:26:20.380857",
   "responses": [],
-  "changes": {
-    "api_keys": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 9501,
-            "hidden": false,
-            "user_id": null,
-            "key_hash": "h9501",
-            "created_at": "2026-08-13T22:40:06.265806",
-            "revoked_at": null,
-            "scope_mode": 0,
-            "updated_at": "2026-08-13T22:40:06.265806",
-            "allowed_ips": null,
-            "description": "old",
-            "last_used_at": "2026-09-02T22:40:06.265806",
-            "created_by_id": 1,
-            "truncated_key": "aaaa"
-          },
-          "after": {
-            "id": 9501,
-            "hidden": false,
-            "user_id": null,
-            "key_hash": "h9501",
-            "created_at": "2026-08-13T22:40:06.265806",
-            "revoked_at": "2026-10-12T22:40:07.026994",
-            "scope_mode": 0,
-            "updated_at": "2026-10-12T22:40:07.027295",
-            "allowed_ips": null,
-            "description": "old",
-            "last_used_at": "2026-09-02T22:40:06.265806",
-            "created_by_id": 1,
-            "truncated_key": "aaaa"
-          }
-        }
-      ]
-    },
-    "user_histories": {
-      "inserted": [
-        {
-          "id": 74,
-          "email": null,
-          "action": 81,
-          "context": "Automatically revoked, last activity more than 30 days ago",
-          "details": null,
-          "post_id": null,
-          "subject": "aaaa",
-          "topic_id": null,
-          "new_value": "revoked_at: 2026-10-12 22:40:07 UTC",
-          "admin_only": true,
-          "created_at": "2026-10-12T22:40:07.028274",
-          "ip_address": null,
-          "updated_at": "2026-10-12T22:40:07.028274",
-          "category_id": null,
-          "custom_type": null,
-          "reviewable_id": null,
-          "acting_user_id": -1,
-          "previous_value": "revoked_at: ",
-          "target_user_id": null
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    }
-  },
+  "changes": {},
   "jobs": [],
-  "next_ids": {
-    "user_histories": 74
-  },
+  "next_ids": {},
   "settings": {
     "revoke_api_keys_unused_days": 30
   },
@@ -92,7 +24,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "e511ef5c58c1a8a9c3eb965e91b2d3adb6b7b3d637bc54f561987ae53c11c7a0",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

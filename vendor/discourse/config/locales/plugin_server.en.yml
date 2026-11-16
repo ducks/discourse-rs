@@ -189,6 +189,172 @@ en:
         title: "Set Topic Timer"
         description: "Set a topic timer on a topic"
 
+--- # plugins/blog/config/locales/server.en.yml
+en:
+  site_settings:
+    blog_contributor_groups: Groups that can write and submit their own blog drafts. Also grant these groups access to the private drafts category. This does not grant forum staff privileges.
+    blog_editor_groups: Groups that can edit and submit any blog draft they can see. Also grant access to the private drafts category. Publication requires the publisher role.
+    blog_publisher_groups: Groups that can approve, publish, withdraw, and schedule blog revisions they can see. Publishers may approve their own work. Also grant access to the private drafts category and permission to create topics in the public blog category. Administrators always retain access.
+    blog_enabled: "A blog built on your community. Write and review articles with your editorial team, publish them under /blog with their own design, and let readers discuss each article in a linked topic. Configure the blog and drafts categories after enabling it."
+    blog_url:
+      Serve the blog from its own HTTPS origin, without a trailing slash
+      or path, instead of /blog on this site. It must differ from the discussion hostname. Configure this hostname
+      as an alias of this site at the proxy and database connection.
+    blog_category:
+      The single public category whose explicitly published
+      topics appear on the blog. Subcategories are not included. A topic is never
+      published merely by being in this category.
+    blog_drafts_category:
+      A separate private category for editorial drafts.
+      Restrict membership to editors. Publishing copies only the approved article into a separate discussion in {{setting:blog_category}}. Editorial topics and replies stay private.
+      Upload URLs are not private when secure uploads are disabled.
+    blog_title:
+      The blog name displayed in navigation, page titles, and
+      feeds.
+    blog_description:
+      A short description for the homepage, feed, and search
+      engines.
+    blog_about: Markdown content for the blog About page.
+    blog_path_format:
+      The address template for new articles, such as /{year}/{month}/{slug}. Use
+      {year}, {month}, {day}, {slug} and {id}, including {slug} or {id}. Until an
+      article is first published, an address the editor has not typed follows its
+      title and its UTC publication date. Published articles keep their addresses.
+    blog_posts_per_page:
+      Number of articles shown on each homepage or archive
+      page.
+  activerecord:
+    attributes:
+      blog/publication:
+        canonical_url: Canonical URL
+        co_author_ids: Co-authors
+  blog:
+    home: Home
+    continue_reading: Continue reading
+    posted_by: Posted by
+    permalink: Permalink
+    comments: Comments
+    twitter_updates: Twitter updates
+    on_social: On social
+    community_activity: Community activity
+    online_content: Online content
+    recent_questions: Recent questions
+    recent_answers: Recent answers
+    syndication: Syndication
+    time_ago: "%{time} ago"
+    discussion_load_error: "The inline discussion could not load. Refresh this page to try again, or use Open in the community above."
+    lightbox:
+      close: Close image
+      dialog: Enlarged article image
+      open: View image
+      open_with_description: "View image: %{description}"
+      original: Open original
+    skip_content: Skip to content
+    navigation: Blog navigation
+    archive: Archive
+    about: About
+    community: Community
+    rss: RSS
+    preview: Preview
+    preview_notice:
+      Only authorized editors can see this preview. Save publication
+      settings before previewing changes.
+    back_to_editor: Back to the topic
+    editor: Write in the community
+    footer: Written in Discourse. Open for conversation.
+    from_the_blog: Notes from the community
+    tagged: Filed under %{tag}
+    author: Author
+    author_separator: ", "
+    last_author_separator: " and "
+    search: Search
+    search_placeholder: Search article titles and excerpts
+    featured: Featured
+    reading_time:
+      one: "%{count} min read"
+      other: "%{count} min read"
+    replies:
+      one: "%{count} reply"
+      other: "%{count} replies"
+    empty_title: Nothing here yet
+    empty_body: New stories will appear here when they are published.
+    pagination: Article pages
+    newer: Newer articles
+    older: Older articles
+    all_articles: All articles
+    updated: Updated %{date}
+    view_topic: View in the community
+    discussion: The conversation
+    open_discussion: Open in the community
+    discussion_closed:
+      This conversation is closed to new replies. You can still read
+      the discussion below.
+    discussion_description:
+      Have a thought or a question? Join the discussion below
+      with your community account.
+    join_community: Join the community
+    not_found_title: This page is not available
+    not_found_body: It may have moved, returned to drafts, or not been published yet.
+    errors:
+      private_site:
+        The blog requires a public site with secure uploads disabled.
+        Draft text stays private, but uploaded files are not access-controlled without
+        secure uploads.
+      anonymous_uploads: "The blog requires anonymous upload downloads. Disable prevent_anons_from_downloading_files before publishing or sharing reviews."
+      category: Choose one public Blog category in the blog site settings.
+      drafts_category:
+        Choose a separate private drafts category accessible only to configured editorial groups or staff, distinct from the core shared drafts category.
+      published_page:
+        Unpublish this topic from page publishing before publishing
+        it on the blog.
+      path_taken: is reserved or already belongs to another article
+      co_authors_invalid: "must be up to %{count} different active users, not including the article's author"
+      canonical_url_invalid: must be a full http or https address
+      path_format: "Start the format with / and include {slug} or {id}. Only {year}, {month}, {day}, {slug} and {id} can be used, and the first segment cannot be a reserved blog address such as /tag."
+      future_date:
+        must be today or earlier. Use the schedule controls to release
+        an article in the future.
+      color: "Use exactly six hexadecimal digits, without a # prefix."
+    latest_stories: Latest stories
+    explore_archive: Explore the archive
+    customizations_disabled:
+      Custom CSS and JavaScript are disabled for this page
+      view.
+    themes:
+      sample_article: Example article (no public article selected)
+      sample_body: Publish an article to see its real content in this reference.
+      preview_diagnostic: "%{template}, line %{line}: %{message}"
+      template_invalid: "Provide a valid Liquid template of at most 65,536 bytes."
+      template_parse_error: "Invalid Liquid template: %{error}"
+      default: Default
+      descriptions:
+        default: The clean, quiet reading layout built into the blog.
+        broadsheet: An editorial newspaper layout with serif headlines and a numbered story grid.
+        discourse-blog: Rounded cards on a soft lavender canvas with a featured lead story.
+      invalid: "Provide a name (up to 100 characters), six-digit hexadecimal colors, and CSS/JavaScript of at most 65,536 bytes each."
+      limit: You can save up to 30 blog themes. Delete an unused theme first.
+      stale: This theme has changed. Reload it and review the latest draft before continuing.
+      active_delete: Activate another theme before deleting this one.
+      repository_invalid: Use a public HTTPS Git repository URL without credentials, query parameters, or fragments.
+      archive_invalid: "The ZIP file is invalid, has too many files, or contains oversized theme files."
+      manifest_invalid: The theme must contain a valid blog-theme.json manifest (version 1 or 2).
+      file_too_large: "%{file} exceeds the allowed file size."
+      preview: "Theme preview: %{name}"
+      preview_notice: This preview is visible only through this temporary preview link. The live blog has not changed.
+      exit_preview: Exit preview
+    review:
+      page_title: Draft review
+      javascript_required: Enable JavaScript to read this shared draft and leave feedback.
+      unavailable: This review link has expired, was revoked, or is no longer available.
+      limit: This draft already has 20 active review links. Revoke one before creating another.
+      feedback_limit: This review has reached its feedback limit. Contact the editor for a new review link.
+    editorial:
+      access_lost: Scheduled publication stopped because publisher access or article eligibility changed. Check permissions and the private source, then schedule again.
+      private_source: Editorial topics must stay in their private drafts category. Publish an approved revision instead.
+      stale: This revision is no longer the current submitted or approved revision. Reload and review it again.
+      approval_required: Approve a submitted revision before publishing or scheduling it.
+      schedule_time: Choose a publication time at least one minute ahead and within the next year.
+
 --- # plugins/boards/config/locales/server.en.yml
 en:
   discourse_workflows:
@@ -199,12 +365,12 @@ en:
         invalid_params: "Could not create board column: %{errors}"
         failed: "Could not create the board column."
       create_board:
-        forbidden: "The workflow execution user does not have permission to create boards."
+        forbidden: "Could not create board: %{policy_reason}"
         invalid_params: "Could not create board: %{errors}"
         acl_failed: "Could not create the board's access permissions. Check the selected groups and permissions."
         failed: "Could not create the board."
   site_settings:
-    boards_enabled: "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control"
+    boards_enabled: "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='%{base_path}/boards'>/boards</a> to get started."
     boards_manage_board_allowed_groups: "Groups allowed to create and configure boards."
   access_control_list:
     errors:
@@ -219,6 +385,7 @@ en:
       slug_unavailable: "That board slug is already in use. Please choose another slug."
       board_not_found: "Board not found"
       board_read_forbidden: "You do not have permission to view this board"
+      board_create_forbidden: "You do not have permission to create boards"
       board_write_forbidden: "You do not have permission to modify this board"
       board_manage_forbidden: "You do not have permission to manage this board"
       column_not_found: "Column not found"
@@ -258,10 +425,9 @@ en:
     chat_separate_sidebar_mode: "Show separate sidebar modes for forum and chat."
     chat_enabled: "Enable chat."
     chat_pinned_messages: "Enable pinned messages in chat channels."
-    enable_new_chat_reactions_popup: "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience."
     enable_public_channels: "Enable public channels based on categories."
-    chat_allowed_groups: "Users in these groups can chat, except anonymous users who can only view chat when added to this setting. Note that admins and moderators can always access chat."
-    chat_channel_retention_days: "Chat messages in regular channels will be retained for this many days. Set to '0' to retain messages forever."
+    chat_allowed_groups: "Users in these groups can chat, except anonymous users who can only view chat when added to this setting. Adding anonymous users also lets search engines index public channels. Note that admins and moderators can always access chat."
+    chat_channel_retention_days: "Chat messages in regular channels will be retained for this many days. Set to '0' to retain messages forever. When anonymous users can view chat, deleted messages also drop out of search engine results over time, so short retention limits how much chat history can be found through search."
     chat_dm_retention_days: "Chat messages in personal chat channels will be retained for this many days. Set to '0' to retain messages forever."
     chat_auto_silence_duration: "Number of minutes that users will be silenced for when they exceed the chat message creation rate limit. Set to '0' to disable auto-silencing."
     chat_allowed_messages_for_trust_level_0: "Number of messages that trust level 0 users is allowed to send in 30 seconds. Set to '0' to disable limit."
@@ -278,6 +444,7 @@ en:
     chat_pinning_messages_allowed_groups: "Users in these groups are allowed to pin chat messages in channels that they can access. Note that admins and moderators can always pin chat messages. Any member of a group chat or DM can pin messages there."
     max_mentions_per_chat_message: "Maximum number of @name notifications a user can use in a chat message."
     chat_max_direct_message_users: "Users cannot add more than this number of other users when creating a new direct message. Set to 0 to only allow messages to oneself. Staff are exempt from this setting."
+    chat_homepage_channel: "The channel people land on when {{setting:default_homepage}} is set to a chat channel. People who cannot access the channel see the first item in {{setting:top_menu}} instead, including anonymous visitors, unless {{setting:chat_allowed_groups}} includes anonymous users."
     chat_allow_archiving_channels: "Allow staff to archive messages to a topic when closing a channel."
     chat_editing_grace_period: "For (n) seconds after sending a chat, editing will not display the (edited) tag by the chat message."
     chat_editing_grace_period_max_diff_low_trust: "Maximum number of character changes allowed in chat editing grace period, if more changed display the (edited) tag by the chat message (trust level 0 and 1)."
@@ -313,7 +480,27 @@ en:
         Visit the channel at %{channel_url} to retry.
 
   chat:
+    design_wizard_homepage_name: "Chat"
+    design_wizard_homepage_description: "Open the %{channel} channel when members visit your homepage."
     deleted_chat_username: deleted
+    crawler:
+      directory_title: "Chat channels"
+      nav_title: "Chat"
+      last_activity: "Last activity"
+      retention_notice:
+        one: "Messages older than %{count} day are deleted, except pinned messages."
+        other: "Messages older than %{count} days are deleted, except pinned messages."
+      messages_count:
+        one: "%{count} message"
+        other: "%{count} messages"
+      members_count:
+        one: "%{count} member"
+        other: "%{count} members"
+      thread_title: "Thread in %{channel}"
+      channel_day_title: "%{channel} – %{date}"
+      thread_replies:
+        one: "%{count} reply"
+        other: "%{count} replies"
     errors:
       users_cant_be_added_to_channel: "Users can't be added to this channel."
       user_cant_be_removed_from_channel: "User can't be removed from this channel"
@@ -513,13 +700,30 @@ en:
       default_deny_label: "Deny"
     errors:
       send_chat_message:
-        invalid_params: "Invalid params: %{errors}"
+        invalid_params: "The message is invalid: %{errors}"
         channel_not_found: "Channel not found: %{channel_id}"
-        failed: "Failed to send chat message."
+        channel_blocked: "Can't post in channel %{channel_id}: %{reason}"
+        failed: "Couldn't send the chat message (failed step: %{step})."
+        recipient_blank: "No recipient usernames were given."
+        recipient_staged: "'%{username}' is a staged user and can't use chat."
+        recipient_suspended: "'%{username}' is suspended and can't receive direct messages."
+        recipient_inactive: "'%{username}' hasn't activated their account yet."
+        recipient_chat_disabled: "'%{username}' has disabled chat in their preferences."
+        recipient_cannot_chat: "'%{username}' can't use chat because they aren't in a group allowed by the 'chat allowed groups' setting."
+        sender_anonymous: "Chat messages can't be sent anonymously. Choose a user as the sender."
+        sender_chat_disabled: "Sender '%{sender}' has disabled chat in their preferences."
+        sender_cannot_chat: "Sender '%{sender}' can't use chat because they aren't in a group allowed by the 'chat allowed groups' setting."
+        sender_cannot_create_dm: "Sender '%{sender}' isn't allowed to send direct messages (see the 'direct message enabled groups' setting)."
+        sender_dms_disabled: "Sender '%{sender}' has disabled personal messages in their preferences."
+        sender_cannot_post: "Sender '%{sender}' isn't allowed to post in channel %{channel_id}."
+        sender_not_member: "Sender '%{sender}' isn't a member of channel %{channel_id}. Join the channel as that user first."
+        user_blocked: "'%{sender}' can't send a direct message to '%{username}': %{reason}"
+        group_blocked: "'%{sender}' can't send a group direct message to %{usernames}: %{reason}"
       chat_approval:
         channel_not_found: "Chat message failed: channel %{channel_id} not found."
         invalid_params: "Chat message failed: %{errors}"
-        failed: "Chat message failed: %{steps}"
+        channel_blocked: "Chat message failed: can't post in channel %{channel_id}: %{reason}"
+        failed_step: "Chat message failed (failed step: %{step})."
         timeout_must_be_positive: "Timeout minutes must be greater than 0."
         invalid_timeout_action: "Invalid timeout action: %{action}."
         buttons_required: "At least one chat approval button is required."
@@ -530,6 +734,15 @@ en:
         button_value_too_long: "Chat approval button %{position} value must be %{max} characters or fewer."
         button_style_invalid: "Chat approval button %{position} style must be one of: %{styles}."
         button_icon_too_long: "Chat approval button %{position} icon must be %{max} characters or fewer."
+    hints:
+      send_chat_message:
+        self_message: "Sender and recipient are both '%{username}', so the message was posted to their personal chat."
+        preferences_bypassed: "'%{username}' doesn't accept direct messages from '%{sender}', but the message was delivered because the sender is staff."
+    logs:
+      send_chat_message:
+        sent_to_channel: "Item %{item_index}: '%{sender}' sent message %{message_id} to channel %{channel_id}."
+        sent_to_user: "Item %{item_index}: '%{sender}' sent message %{message_id} to '%{username}'."
+        sent_to_group: "Item %{item_index}: '%{sender}' sent message %{message_id} to the group direct message with %{usernames}."
 
   reviewable_score_types:
     needs_review:
@@ -816,11 +1029,13 @@ en:
         max_prompt_tokens: "Context window"
   dashboard:
     problem:
+      ai_spam_scan_errors: "AI spam detection could not scan posts because its AI model failed to respond. Check for model configuration, provider availability, or credit issues. <a href='%{base_path}/admin/plugins/discourse-ai/ai-spam'>Review spam detection settings</a>."
       ai_llm_status:
         one: "<a href='%{base_path}/admin/plugins/discourse-ai/ai-llms/%{target}/edit'>%{model_name}</a> needs attention. In the past hour, it failed to respond %{failed_calls} out of %{total_calls} times."
         other: "<a href='%{base_path}/admin/plugins/discourse-ai/ai-llms/%{target}/edit'>%{model_name}</a> needs attention. Over the last %{count} hours, it failed to respond %{failed_calls} out of %{total_calls} times."
       ai_credit_soft_limit: "%{model_name} has only %{percentage_remaining}% of credits remaining. Credits will reset at %{reset_date}. <a href='%{url}'>View AI models</a>"
       ai_credit_hard_limit: "You have run out of AI credits for %{model_name}. AI features will be unavailable until %{reset_date}. <a href='%{url}'>View AI models</a>"
+      ai_ask_ai_external_source: "Ask AI skipped its external source <a href='%{base_path}/admin/plugins/discourse-ai/ai-tools/%{target}/edit'>%{tool_name}</a> in %{skipped} of its last %{searches} searches over the past %{hours} hours: %{timed_out} took longer than the external source wait, %{failed} failed, and %{busy} were skipped because too many searches were still waiting on external sources."
       ai_image_caption_agent: "AI image captions are enabled, but the selected image caption agent is not ready: %{reason}. <a href='%{url}'>Review the image caption agent</a>."
       ai_image_caption_agent_reasons:
         agent_missing: "the selected agent does not exist"
@@ -881,7 +1096,7 @@ en:
     ai_ask_ai_report_recipient_groups: "Groups that receive automatic weekly report PMs and can be included in manual report PMs. Reports include users’ questions. Leave empty to keep automatic reports on the dashboard only."
     discourse_ai_enabled: "Enable the discourse AI plugin."
     enable_ai_bot_starred_conversations: "Allow users to star AI bot conversations and show them in a Starred sidebar section."
-    ai_default_llm_model: "The default LLM model to use for all AI features"
+    ai_default_llm_model: "The default language model for AI features and agents that don't specify their own"
     ai_artifact_security: "The AI artifact system generates IFRAMEs with runnable code. Strict mode forces an extra click to run code. Lax mode runs code immediately. Hybrid mode allows user to supply data-ai-artifact-autorun to show right away. Disabled mode disables the artifact system."
     ai_toxicity_enabled: "Enable the toxicity module."
     ai_toxicity_inference_service_api_endpoint: "URL where the API is running for the toxicity module"
@@ -897,15 +1112,20 @@ en:
     ai_toxicity_flag_threshold_sexual_explicit: "Sexual Explicit"
     ai_toxicity_groups_bypass: "Users on those groups will not have their posts classified by the toxicity module."
 
-    ai_sentiment_enabled: "Enable the sentiment module."
+    ai_sentiment_enabled: "Classify posts as positive, neutral, or negative."
+    ai_sentiment_emotion_enabled: "Classify the emotions expressed in posts."
     ai_sentiment_inference_service_api_endpoint: "URL where the API is running for the sentiment module"
     ai_sentiment_inference_service_api_key: "API key for the sentiment API"
     ai_sentiment_model_configs: "Classification model endpoints to use for inference. Sentiment classifies posts as positive, neutral, or negative. Emotion classifies posts across supported emotion labels."
     ai_sentiment_models: "Classification model endpoints to use for inference. Sentiment classifies posts as positive, neutral, or negative. Emotion classifies posts across supported emotion labels."
     ai_sentiment_sentiment_classification_strategy: "Sentiment classification backend."
-    ai_sentiment_sentiment_agent: "Agent to use for sentiment classification when the sentiment backend is agent."
+    ai_sentiment_sentiment_agent: "Agent for sentiment classification."
+    ai_sentiment_sentiment_decision_model: "Decision model for sentiment classification. Changing it does not reclassify existing results."
+    ai_sentiment_emotion_decision_model: "Decision model for emotion classification. Scores are distributed across 28 emotions. Changing it does not reclassify existing results."
     ai_sentiment_emotion_classification_strategy: "Emotion classification backend."
-    ai_sentiment_emotion_agent: "Agent to use for emotion classification when the emotion backend is agent."
+    ai_sentiment_emotion_agent: "Agent for emotion classification."
+    ai_sentiment_backfill_maximum_posts_per_hour: "Approximate hourly post limit for the 5-minute scan. Each enabled classifier may incur a request per post. Refusals may be retried. 0 stops scheduled scanning, including new posts; edited posts are checked separately."
+    ai_sentiment_backfill_post_max_age_days: "Only scan posts created within this many days. 0 means today, not unlimited history."
 
     ai_nsfw_detection_enabled: "Enable the NSFW module."
     ai_nsfw_inference_service_api_endpoint: "URL where the API is running for the NSFW module"
@@ -957,11 +1177,12 @@ en:
     ai_admin_dashboard_highlights_category_scope: "Choose which categories AI highlights can use. Include and exclude options use {{setting:ai_admin_dashboard_highlights_categories}}. Personal messages are always excluded."
     ai_admin_dashboard_highlights_categories: "Categories used when the AI highlights category scope is set to <strong>include</strong> or <strong>exclude</strong>."
     ai_summarization_enabled: "Enable the summarize feature"
+    ai_summaries_for_crawlers: "Include AI topic summaries in public HTML topic pages served to search engines and other crawlers, and in the Markdown version of those pages. Requires {{setting:ai_summarization_enabled}} and {{setting:ai_summary_backfill_maximum_topics_per_hour}} above 0, so summaries stay up to date."
     ai_summarization_agent: "Agent to use for summarize feature"
     ai_pm_summarization_allowed_groups: "Groups allowed to create and view summaries in PMs."
     ai_summary_gists_enabled: "Generate brief summaries of latest replies in topics automatically"
     ai_summary_gists_agent: "Agent used to generate brief topic summaries. Gist generation always uses the built-in final-summary tool; other tools and structured response formats configured on the agent are ignored."
-    ai_summary_backfill_maximum_topics_per_hour: "Number of topic summaries to backfill per hour. Each localized gist counts toward this limit."
+    ai_summary_backfill_maximum_topics_per_hour: "Number of topic summaries to backfill per hour. Each localized gist counts toward this limit. Must be above 0 to turn on {{setting:ai_summaries_for_crawlers}}."
 
     ai_bot_enabled: "Enable the AI Bot module."
     ai_bot_enabled_llms: "LLMs available to select for AI bot conversations"
@@ -979,13 +1200,23 @@ en:
     ai_ask_ai_enabled: "Enable Ask AI in search"
     ai_ask_ai_summary_detail: "Choose how much detail to include in Ask AI summaries."
     ai_ask_ai_related_count: "Set the maximum number of related discussions Ask AI selects and shows with each answer."
+    enable_ai_combined_search: "Pressing enter in the header search answers with AI and shows keyword results together as tabs, opening on the one the search most likely wants. Follow-up questions continue on a full page."
+    ai_ask_ai_search_intent_decision_model: "Experimental: decision model that judges whether a search wants an AI answer or keyword results, to choose which tab the combined search opens on. Search queries are sent to this model's provider. Leave blank to judge from how the query is written."
     ai_ask_ai_agent: "Agent that selects sources and writes Ask AI answers."
     ai_ask_ai_query_rewriter_agent: "Agent used to prepare separate keyword and semantic queries for Ask AI. If this agent or its model is unavailable, Ask AI searches with the user's original query."
     ai_ask_ai_follow_up_agent: "Agent used when a user wants to follow up an Ask AI result. The selected agent must be enabled, allow personal messages, and be available to the user."
+    ai_ask_ai_keyword_search_enabled: "Search the forum by keyword for Ask AI answers."
+    ai_ask_ai_semantic_search_enabled: "Search the forum semantically for Ask AI answers. Requires embeddings."
+    ai_ask_ai_search_categories: "Only search these categories, and their subcategories, for Ask AI answers. Personal messages are still searched when asked for. Leave empty to search all categories."
+    ai_ask_ai_endorsed_reply_groups: "Also give Ask AI one reply from each topic without an accepted answer. Replies the topic's author liked rank first, then the author's own follow-ups that others liked, then replies members of these groups liked. Staff on communities where they like posts freely may want a narrower group. Leave empty to turn this off."
+    ai_ask_ai_search_max_age_days: "Only search posts created in this many days for Ask AI answers. Set to 0 to search posts of any age."
+    ai_ask_ai_external_sources: "Custom tools Ask AI searches alongside the forum. Each is called with the user's query and must return a list of results, each with a title, an http(s) url, and optionally a blurb, content and published_at. Queries are sent to whatever services the tools call."
+    ai_ask_ai_external_sources_timeout: "Seconds Ask AI waits for its external sources, all searched at once, before answering without the ones still running. Counts towards the 20 seconds an Ask AI request may take, so a longer wait leaves less time to write the answer."
     ai_ask_ai_allowed_groups: "Groups allowed to use Ask AI and its follow-up handoff. The Ask AI agent's permissions, the follow-up agent's permissions, and normal topic, category, and personal-message visibility still apply. Semantic personal-message search requires {{setting:ai_embeddings_generate_for_pms}}. Content visible to an allowed user, including restricted topics and personal messages, may be sent to the configured LLM provider."
 
     ai_google_custom_search_api_key: "API key for the Google Custom Search API see: https://developers.google.com/custom-search"
     ai_google_custom_search_cx: "CX for Google Custom Search API"
+    ai_google_custom_search_url: "Endpoint for the Google Custom Search API. Change it only to use a service that serves the same API."
 
     ai_discord_search_enabled: "Enables the Discord search feature"
     ai_discord_app_id: "The ID of the Discord application you would like to connect Discord search to"
@@ -995,6 +1226,8 @@ en:
     ai_discord_allowed_guilds: "Discord guilds (servers) where the bot is allowed to search"
 
     ai_translation_enabled: "Enable the AI translation feature"
+    ai_dsa_classification_decision_model: "Choose the model used to suggest community rules and categories during DSA classification. Leave blank to disable suggestions."
+    ai_translation_locale_detector_decision_model: "Decision model that detects the language of content before it is translated. Content in a language it cannot place confidently is left to the locale detector agent. Leave blank to detect every language with the agent."
     ai_translation_category_scope: "Choose which categories AI translation can use. Include and exclude options use {{setting:ai_translation_categories}}. Personal messages are controlled by {{setting:ai_translation_personal_messages}}."
     ai_translation_categories: "Categories used when the AI translation category scope is set to <strong>include</strong> or <strong>exclude</strong>."
     ai_translation_personal_messages: "Controls which personal messages are translated. 'none' disables PM translation. 'group' translates only group PMs. 'all' translates all PMs."
@@ -1017,93 +1250,93 @@ en:
       description: "This report provides sentiment analysis for posts, grouped by category, with positive, negative, and neutral scores for each post and category."
     overall_sentiment:
       title: "Overall sentiment"
-      description: "The chart compares the number of posts classified as either positive or negative. These are calculated when positive or negative scores > the set threshold score. This means neutral posts are not shown. Personal messages (PMs) are also excluded. Depending on the selected sentiment classification method, posts are classified with either the configured sentiment classification model ('cardiffnlp/twitter-roberta-base-sentiment-latest') or the configured sentiment classification agent."
+      description: "The chart shows the number of positive posts minus the number of negative posts each day. Posts count as positive or negative when their respective score exceeds the threshold. Neutral posts and personal messages (PMs) are excluded. Scores come from the selected sentiment classification backend."
       xaxis: "Positive(%)"
       yaxis: "Date"
     emotion_admiration:
       title: 🤩 Admiration
-      description: "Posts classified with the emotion admiration via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion admiration using the selected emotion classification backend."
     emotion_amusement:
       title: 😄 Amusement
-      description: "Posts classified with the emotion amusement via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion amusement using the selected emotion classification backend."
     emotion_anger:
       title: 😠 Anger
-      description: "Posts classified with the emotion anger via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion anger using the selected emotion classification backend."
     emotion_annoyance:
       title: 😒 Annoyance
-      description: "Posts classified with the emotion annoyance via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion annoyance using the selected emotion classification backend."
     emotion_approval:
       title: 👍 Approval
-      description: "Posts classified with the emotion approval via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion approval using the selected emotion classification backend."
     emotion_caring:
       title: 🤗 Caring
-      description: "Posts classified with the emotion caring via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion caring using the selected emotion classification backend."
     emotion_confusion:
       title: 😕 Confusion
-      description: "Posts classified with the emotion confusion via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion confusion using the selected emotion classification backend."
     emotion_curiosity:
       title: 🤔 Curiosity
-      description: "Posts classified with the emotion curiosity via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion curiosity using the selected emotion classification backend."
     emotion_desire:
       title: 😍 Desire
-      description: "Posts classified with the emotion desire via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion desire using the selected emotion classification backend."
     emotion_disappointment:
       title: 😞 Disappointment
-      description: "Posts classified with the emotion disappointment via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion disappointment using the selected emotion classification backend."
     emotion_disapproval:
       title: 👎 Disapproval
-      description: "Posts classified with the emotion disapproval via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion disapproval using the selected emotion classification backend."
     emotion_disgust:
       title: 🤢 Disgust
-      description: "Posts classified with the emotion disgust via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion disgust using the selected emotion classification backend."
     emotion_embarrassment:
       title: 😳 Embarrassment
-      description: "Posts classified with the emotion embarrassment via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion embarrassment using the selected emotion classification backend."
     emotion_excitement:
       title: 🤪 Excitement
-      description: "Posts classified with the emotion excitement via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion excitement using the selected emotion classification backend."
     emotion_fear:
       title: 😨 Fear
-      description: "Posts classified with the emotion fear via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion fear using the selected emotion classification backend."
     emotion_gratitude:
       title: 🙏 Gratitude
-      description: "Posts classified with the emotion gratitude via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion gratitude using the selected emotion classification backend."
     emotion_grief:
       title: 😢 Grief
-      description: "Posts classified with the emotion grief via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion grief using the selected emotion classification backend."
     emotion_joy:
       title: 😊 Joy
-      description: "Posts classified with the emotion joy via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion joy using the selected emotion classification backend."
     emotion_love:
       title: ❤️ Love
-      description: "Posts classified with the emotion love via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion love using the selected emotion classification backend."
     emotion_nervousness:
       title: 😰 Nervousness
-      description: "Posts classified with the emotion nervousness via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion nervousness using the selected emotion classification backend."
     emotion_neutral:
       title: 😐 Neutral
-      description: "Posts classified with the emotion neutral via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion neutral using the selected emotion classification backend."
     emotion_optimism:
       title: 🌟 Optimism
-      description: "Posts classified with the emotion optimism via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion optimism using the selected emotion classification backend."
     emotion_pride:
       title: 🦁 Pride
-      description: "Posts classified with the emotion pride via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion pride using the selected emotion classification backend."
     emotion_realization:
       title: 💡 Realization
-      description: "Posts classified with the emotion realization via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion realization using the selected emotion classification backend."
     emotion_relief:
       title: 😌 Relief
-      description: "Posts classified with the emotion relief via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion relief using the selected emotion classification backend."
     emotion_remorse:
       title: 😔 Remorse
-      description: "Posts classified with the emotion remorse via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion remorse using the selected emotion classification backend."
     emotion_sadness:
       title: 😭 Sadness
-      description: "Posts classified with the emotion sadness via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion sadness using the selected emotion classification backend."
     emotion_surprise:
       title: 😲 Surprise
-      description: "Posts classified with the emotion surprise via AI, using the model 'SamLowe/roberta-base-go_emotions'."
+      description: "Posts classified with the emotion surprise using the selected emotion classification backend."
 
   discourse_ai:
     ask_ai_reports:
@@ -1118,6 +1351,8 @@ en:
       view_dashboard: "Explore all subjects and questions on the dashboard"
       disclaimer: "AI-generated observations describe the questions asked, not the quality or helpfulness of their answers. Suggested follow-ups are possibilities to investigate, not confirmed gaps. Questions can appear in multiple subjects."
     ai_artifact:
+      share_version_conflict: "This link already publishes a different version. Refresh and choose Update pinned version to change it."
+      uploads_cannot_be_shared: "This artifact references uploads that may be private. Remove the upload references before publishing a standalone link."
       errors:
         max_keys_exceeded:
           one: "You can only have %{count} key in the artifact."
@@ -1129,6 +1364,7 @@ en:
       change_description: "Change Description"
       copied: "Copied to clipboard"
     unknown_model: "Unknown AI model"
+    multiple_models: "Multiple models"
 
     discourse_workflows:
       ai_agent:
@@ -1138,13 +1374,18 @@ en:
           llm_not_found: "LLM model with id %{llm_model_id} not found"
           no_llm_configured: "No LLM is configured for agent '%{agent}'. Select an LLM model or configure an agent/site default LLM."
           uploads_not_sent: "Agent '%{agent}' did not receive every upload"
-          upload_not_found: "Upload %{upload_id} was not found"
-          upload_not_visible: "%{username} cannot see upload %{upload_id}"
-          agent_cannot_see_images: "Upload %{upload_id} is an image and agent '%{agent}' has vision disabled"
-          llm_cannot_see_images: "Upload %{upload_id} is an image and LLM '%{llm}' has vision disabled"
-          llm_cannot_read_documents: "Upload %{upload_id} is a document and LLM '%{llm}' accepts no attachments"
-          unsupported_image_format: "Upload %{upload_id} is not a supported image format (%{formats})"
-          upload_skipped: "Upload %{upload_id} (%{filename}) was not sent: %{message}"
+      classify:
+        errors:
+          decision_model_not_found: "Decision model with id %{id} not found"
+          classify_failed: "Decision model '%{decision_model}' could not answer: %{error}"
+      uploads:
+        not_found: "Upload %{upload_id} was not found"
+        not_visible: "%{username} cannot see upload %{upload_id}"
+        agent_cannot_see_images: "Upload %{upload_id} is an image and agent '%{agent}' has vision disabled"
+        llm_cannot_see_images: "Upload %{upload_id} is an image and LLM '%{llm}' has vision disabled"
+        llm_cannot_read_documents: "Upload %{upload_id} is a document and LLM '%{llm}' accepts no attachments"
+        unsupported_image_format: "Upload %{upload_id} is not a supported image format (%{formats})"
+        skipped: "Upload %{upload_id} (%{filename}) was not sent: %{message}"
 
     tools:
       custom_name: "%{name} (custom)"
@@ -1160,9 +1401,13 @@ en:
         image_generation_custom:
           name: "Custom"
         image_generation_openai:
-          name: "OpenAI"
+          name: "GPT Image 2.6 Flare"
+        image_generation_openai_sunburst:
+          name: "GPT Image 2.6 Sunburst"
         image_generation_gemini:
-          name: "Nano Banana"
+          name: "Nano Banana 2.1"
+        image_generation_gemini_pro:
+          name: "Nano Banana Pro"
         image_generation_flux:
           name: "FLUX 1.1 Pro"
         image_generation_flux2:
@@ -1198,6 +1443,17 @@ en:
         invalid_response: "The MCP server returned an invalid response."
         request_failed: "The MCP server request failed with status %{status}."
         session_expired: "The MCP session expired."
+        unsupported_protocol_version: "Unsupported MCP protocol version: %{version}"
+        no_supported_version: "No supported MCP protocol version advertised"
+        modern_request_rejected: "Modern MCP request rejected"
+        invalid_discovery_response: "Invalid MCP server/discover response"
+        missing_protocol_version: "Missing MCP protocol version in initialize response"
+        tool_unavailable: "MCP tool definition unavailable: %{name}"
+        invalid_tool_schema: "Invalid MCP tool input schema"
+        invalid_header_annotation: "Invalid x-mcp-header annotation"
+        unsupported_schema_reference: "Unsupported MCP tool schema reference"
+        invalid_header_value: "Invalid MCP header value"
+        invalid_annotated_argument: "Invalid MCP annotated tool argument"
         timeout: "The MCP server request timed out."
         oauth_authorization_required: "OAuth authorization is required before this MCP server can be used. Connect it to %{issuer} from the admin UI."
         oauth_discovery_failed: "Unable to discover OAuth authorization details for this MCP server."
@@ -1246,6 +1502,9 @@ en:
         llm_missing: "The AI image caption agent must use an LLM."
         llm_vision_disabled: "The AI image caption agent must use a vision-capable LLM."
     ask_ai:
+      external_sources:
+        invalid_output: "Ask AI sources must return a list of results."
+        invalid_result: "Result %{position} needs a title and an http(s) url."
       configuration:
         agent_missing: "Select an existing agent for Ask AI follow-ups."
         agent_disabled: "The Ask AI follow-up agent must be enabled."
@@ -1272,6 +1531,9 @@ en:
         other_content_in_pm: "Personal messages containing posts from other people cannot be shared publicly"
         failed_to_share: "Failed to share the conversation"
         conversation_deleted: "Conversation share deleted successfully"
+    dsa_classification:
+      suggestion_failed: "The AI could not suggest a classification. Choose one yourself or try again."
+      credit_limit_exceeded: "The AI has used all of today's credits for classification suggestions. Choose a classification yourself."
     spam_detection:
       flag_reason: "Flagged as spam by <a href='%{url}'>Discourse AI</a>"
       silence_reason: "User silenced automatically by <a href='%{url}'>Discourse AI</a>"
@@ -1280,8 +1542,15 @@ en:
       bot_user_update_failed: "Failed to update the spam scanning bot user"
       configuration_missing: "The AI spam detection configuration is missing. Add configuration in the 'Admin > Plugins > Discourse AI > Spam' before enabling."
       logging_subject: "Spam detection"
+      model_missing: "Select an LLM or a decision model for spam detection."
+      decision_reason: "The decision model rated this post %{probability}% likely to be spam."
+      decision_refused: "The decision model did not answer, so the post was not flagged."
 
     ai_bot:
+      sources:
+        historical: "Discourse AI"
+        spam_detection: "Spam detection"
+        plugin_disabled: "AI plugin disabled"
       search_discourse_navigation:
         not_allowed: "You are not allowed to search administration destinations."
         invalid_query: "Enter a search query between 1 and %{max} characters."
@@ -1319,9 +1588,27 @@ en:
       ai_users: "AI users"
       ai_users_bio: "Automatic group of AI bot accounts"
       errors:
-        invalid_agent_id: "The specified AI agent does not exist or you do not have access to it"
+        agent_required: "Select an AI agent before sending your message"
+        agent_recipient_mismatch: "The selected AI agent does not match the conversation recipient"
+        agent_unavailable: "The selected AI agent is no longer available"
+        ambiguous_agent: "The conversation recipient matches more than one AI agent"
+        ambiguous_model: "Select a model to continue this conversation"
+        bot_disabled: "AI bot conversations are disabled"
+        bot_not_allowed: "You are not allowed to use AI bot conversations"
         cannot_send_pm_to_agent: "You cannot send personal messages to this AI agent"
+        cannot_send_pm_to_model: "Language models cannot be personal message recipients. Select an AI agent instead."
+        invalid_agent_id: "The specified AI agent does not exist or you do not have access to it"
+        invalid_agent_modality: "The selected AI agent cannot be used in this conversation"
+        invalid_model_id: "The specified AI model is invalid"
+        model_conflicts_with_agent: "This AI agent is locked to a different model"
+        model_not_selectable: "The selected AI model is not available"
+        model_recipient_api_retired: "Models no longer have usernames. Select an AI agent as the conversation recipient."
+        model_unavailable: "The selected AI model is no longer available"
+        no_model_available: "No language model is configured for this AI agent"
+        no_user_for_agent: "The selected AI agent has no conversation user"
+        target_unavailable: "You can no longer reply in this conversation"
       reply_error: "Sorry, it looks like our system encountered an unexpected issue while trying to reply.\n\n[details='Error details']\n%{details}\n[/details]"
+      context_preparation_error: "I could not safely prepare this conversation without losing history (%{reason}). Please retry. If this persists, start a new conversation with the needed context, reduce the latest request or tool output, or use a model with a larger context window."
       default_pm_prefix: "[Untitled AI bot PM]"
       thinking: "Thinking"
       tool_pending_approval: "This action requires approval:"
@@ -1345,17 +1632,97 @@ en:
         agent_not_allowed: "The requested subagent is not allowed."
         unavailable_agent: "The requested subagent is unavailable or inaccessible."
         missing_model: "The requested subagent has no available language model."
-        call_limit: "The delegation call limit has been reached."
         completion_limit: "The delegation completion limit has been reached."
-        token_limit: "The delegation token budget has been reached."
+        token_limit: "The shared turn work allowance or child work allocation has been reached."
         cancelled: "The delegated task was cancelled."
         execution_failed: "The delegated task failed."
         approval_unavailable: "Tools requiring approval are unavailable in delegated runs."
       chat_tool_approval:
+        enable_mcp_theme_access_title: "Let AI apps build themes"
+        enable_mcp_theme_access_details: "Apps you connect to %{mcp_url}, such as Claude or ChatGPT, will be able to create and edit themes, including their JavaScript, as the administrator who connects them. Their changes take effect straight away and aren't checked the way the Admin Assistant's are. Apps you've already connected will ask you to approve the new access. You can turn the theme tools off again under [MCP capabilities](%{settings_url})."
+        enable_mcp_theme_access_question: "Do you want to let AI apps build themes?"
+        create_tag_title: "Create tag: %{name}"
+        create_tag_question: "Do you want to create this tag?"
+        create_category_title: "Create category: %{name}"
+        create_category_question: "Do you want to create this category?"
+        save_appearance_title:
+          palettes: "Save palettes: %{name}"
+          existing_palettes: "Use palettes: %{name}"
+          theme: "Save theme: %{name}"
+        save_appearance_details:
+          palettes: "Saves these colors without changing the site, so you can preview them first."
+          existing_palettes: "Saves the choice of these palettes, which the site already has, without changing the site, so you can preview them first."
+          theme: "Saves a new theme based on Foundation, core's default design, without making it the default theme, so you can preview it first."
+        save_appearance_question: "Do you want to save this?"
+        activate_appearance_title: "Make live: %{name}"
+        activate_appearance_details: "Everyone sees this as soon as you approve it. [Preview it first](%{preview_url}). You can switch back afterwards."
+        activate_appearance_question: "Do you want to make this live?"
+        revert_appearance_title: "Switch back from: %{name}"
+        revert_appearance_details: "Restores how the site looked before %{name} went live."
+        revert_appearance_question: "Do you want to switch back?"
+        topic_status_label: "Changing status:"
+        topic_visibility_label: "Changing visibility:"
+        topic_solution_label: "Changing solution:"
+        topic_states:
+          open: "Open"
+          closed: "Closed"
+          active: "Active"
+          deleted: "Deleted"
+          listed: "Listed"
+          unlisted: "Unlisted"
+        no_solution: "No solution"
+        solution_post: "Post #%{number}"
+        mark_solution_question: "Do you want to mark %{post} as a solution?"
+        unmark_solution_question: "Do you want to remove %{post} as a solution?"
+        silence_title: "Silence user: @%{username}"
+        silence_question: "Do you want to silence this user?"
+        suspend_title: "Suspend user: @%{username}"
+        duration_label: "Duration:"
+        user_duration:
+          one: "%{count} day"
+          other: "%{count} days"
+        suspend_question: "Do you want to suspend this user?"
+        user_message: "Message to user"
+        post_states:
+          locked: "Locked"
+          unlocked: "Unlocked"
+        posts_destination_label: "Changing destination:"
+        posts_label: "Posts"
+        category_label: "Category"
+        post_title: "Editing post: %{post}"
+        post_reference: "%{topic} · post #%{number}"
+        post_content_label: "Changing content:"
+        post_topic_title_label: "Changing topic title:"
+        topic_title: "Editing topic: %{topic}"
+        topic_category_label: "Changing category:"
+        topic_tags_label: "Changing tags:"
+        no_tags: "No tags"
+        tag_title: "Editing tag: %{tag}"
+        setting_title: "Changing site setting: %{setting}"
+        setting_change_label: "Changing value:"
+        category_title: "Editing category: %{category}"
+        category_change_label:
+          name: "Changing name:"
+          description: "Changing description:"
+          color: "Changing color:"
+          text_color: "Changing text color:"
+        category_summary: "Edit category %{fields}"
+        category_fields:
+          name: "name"
+          description: "description"
+          color: "color"
+          text_color: "text color"
+        approve_label: "Yes"
+        reject_label: "No"
+        question: "Do you want to make this change?"
+        category_question: "Do you want to make this change to %{category}?"
+        category_change: "Changing `%{field}` from %{before} → %{after}"
+        empty_value: "Empty"
         approved: "Approved by @%{username}."
         rejected: "Rejected by @%{username}."
         failed: "Could not complete the action: %{error}"
         unexpected_error: "an unexpected error occurred"
+        details_shortened: "These details were shortened to fit in chat."
       agents:
         forced_default_llm_required: "Select a default language model before requiring this agent to always use it."
         bot_user_unsupported: "This agent is used internally by a feature and cannot have a bot user"
@@ -1583,6 +1950,8 @@ en:
           name: "Code execution (native)"
           help: "Lets the model write and run Python code in the provider's sandbox, when the agent is forced to a supported Gemini LLM."
       tool_summary:
+        theme_app_handoff: "Checking how to build themes with an AI app"
+        enable_mcp_theme_access: "Let AI apps build themes"
         load_discourse_website_page: "Load Discourse website page"
         read_artifact: "Read a web artifact"
         search_uploaded_documents: "Search uploaded documents"
@@ -1634,7 +2003,13 @@ en:
         search_settings: "Searching site settings"
         search_discourse_navigation: "Searching site navigation"
         read_site_setting: "Read site setting"
+        list_upcoming_changes: "List upcoming changes"
         change_site_setting: "Change site setting"
+        generate_appearance_change: "Building palettes"
+        save_appearance_change: "Save appearance change"
+        activate_appearance_change: "Make appearance change live"
+        revert_appearance_change: "Switch back from appearance change"
+        list_appearance_changes: "List appearance changes"
         dall_e: "Generate image"
         search_meta_discourse: "Search Meta Discourse"
         javascript_evaluator: "Evaluate JavaScript"
@@ -1643,6 +2018,8 @@ en:
         researcher: "Researching"
         researcher_dry_run: "Preparing research"
       tool_help:
+        theme_app_handoff: "Explain how to build themes with an AI app through the MCP server"
+        enable_mcp_theme_access: "Let AI apps build themes through the MCP server"
         load_discourse_website_page: "Load a named page from the official Discourse website"
         read_artifact: "Read a web artifact using the AI Bot"
         search_uploaded_documents: "Search documents uploaded to this agent"
@@ -1696,7 +2073,13 @@ en:
         search_settings: "Search site settings"
         search_discourse_navigation: "Find verified links to available pages on this site"
         read_site_setting: "Read the current value of a site setting"
+        list_upcoming_changes: "List available upcoming changes and their rollout state"
         change_site_setting: "Change the value of a site setting"
+        generate_appearance_change: "Build readable palettes and pick fonts from brand colors or a website"
+        save_appearance_change: "Save palettes or a new theme without making them live"
+        activate_appearance_change: "Make saved palettes or a saved theme live"
+        revert_appearance_change: "Switch back from a live appearance change"
+        list_appearance_changes: "List the appearance changes saved on this site"
         dall_e: "Generate image using DALL-E 3"
         search_meta_discourse: "Search Meta Discourse"
         javascript_evaluator: "Evaluate JavaScript"
@@ -1728,7 +2111,7 @@ en:
         create_tag: "Creating tag '%{name}'"
         edit_tag: "Editing tag '%{name}' (%{fields})"
         create_category: "Creating category '%{name}'"
-        edit_category: "Editing category %{category_id} (%{fields})"
+        edit_category: "Editing %{fields} for %{category_name}"
         change_topic_category: "Moving topic %{topic_id} to category %{category_id}"
         set_topic_timer: "Setting %{timer_type} timer on topic %{topic_id} (%{duration_hours}h)"
         set_slow_mode: "Setting slow mode on topic %{topic_id} (%{slow_mode_seconds}s)"
@@ -1781,12 +2164,16 @@ en:
           one: "Found %{count} destination"
           other: "Found %{count} destinations"
         read_site_setting: "Reading site setting %{setting_name}"
+        list_upcoming_changes: "Listing upcoming changes"
         change_site_setting: "Changing site setting %{setting_name} to '%{value}'"
+        generate_appearance_change: "Built palettes"
+        list_appearance_changes: "Listed appearance changes"
       discoveries:
         errors:
           invalid_query: "Enter a search query between 1 and %{max} characters."
           invalid_request_id: "The discovery request ID is invalid."
           request_conflict: "This discovery request ID is already being used for another query."
+          deferred_answer_unavailable: "This search's answer was already requested."
           processing_failed: "Ask AI could not complete this search."
           temporarily_unavailable: "Ask AI is busy right now. Try again shortly."
           credits_unavailable: "Ask AI is unavailable until AI credits reset."
@@ -2011,6 +2398,10 @@ en:
           invalid_value: "Invalid value: %{error}"
           failed: "Failed to change the site setting."
         success: "Site setting %{setting_name} has been changed to '%{value}'."
+      list_upcoming_changes:
+        errors:
+          not_allowed: "Only administrators can view upcoming changes."
+          failed: "Upcoming changes could not be loaded."
       read_site_setting:
         errors:
           not_allowed: "You are not allowed to read site settings."
@@ -2022,6 +2413,135 @@ en:
         errors:
           page_not_found: "The Discourse website page '%{page_name}' is not available."
           fetch_failed: "The '%{page_name}' page from the official Discourse website could not be loaded."
+
+    appearance_authoring:
+      not_allowed: "Only administrators can change how the site looks."
+      unavailable: "Changing how the site looks isn't available here."
+      themes_unavailable: "Creating new themes isn't available on this site. I can change the current theme's colors and fonts instead."
+      name_required: "Give the palettes or theme a short name."
+      brand_color_required: "Give a brand color, or the website to take colors from."
+      invalid_color: "Use hex colors, such as #635bff. These aren't valid: %{colors}"
+      unknown_font: "%{font} isn't available. Available fonts: %{fonts}"
+      website_unreadable: "I couldn't read %{url}. Ask the administrator for their brand colors instead."
+      website_rate_limited: "Too many website lookups. Try again later."
+      no_brand_color_found: "%{domain} doesn't use a clear brand color. Ask the administrator which color to use."
+      confirm_brand_color: "These are the likeliest brand colors on %{domain}. Ask the administrator which one is their brand color."
+      theme_not_editable: "The current theme's colors can't be changed."
+      palettes_unavailable: "New color palettes can't be created on this site."
+      palettes_missing: "The palettes for that change were deleted."
+      invalid_draft: "This appearance draft is invalid or has expired. Generate it again."
+      draft_used: "This appearance draft has already been saved."
+      requester_not_admin: "Only drafts requested by an administrator can be saved."
+      approval_required: "This change needs an administrator's approval."
+      not_found: "That appearance change doesn't exist."
+      already_live: "That appearance change is already live."
+      not_live: "That appearance change isn't live."
+      cannot_restore: "What that change replaced no longer exists, so the site can't switch back to it."
+      failed: "The change couldn't be made."
+      saved: "Saved without changing the site. Share the preview link, then ask whether to make it live. Fonts change when it goes live."
+      live: "%{name} is live."
+      switched_back: "Switched back from %{name}."
+      palettes_target: "New palettes for the current theme, %{theme}"
+      existing_palettes_target: "The %{palette} palettes, the closest of the ones %{theme} can use"
+      already_closest: "%{theme} already uses %{palette}, the closest of the palettes it can use, so its colors don't need to change. Fonts can still change through the base_font and heading_font settings."
+      new_theme_target: "A new theme based on Foundation, core's default design"
+      new_theme_target_with_layout_change: "A new theme based on Foundation, core's default design. The site uses %{theme} now, so its layout will change too."
+      default_theme: "Default theme"
+      colors:
+        light:
+          tertiary: "Links and buttons"
+          header_background: "Header"
+          quaternary: "Accent"
+        dark:
+          tertiary: "Links and buttons (dark mode)"
+          header_background: "Header (dark mode)"
+      fonts:
+        base_font: "Body font"
+        heading_font: "Heading font"
+
+    mcp_theme_access:
+      not_allowed: "Only administrators can let AI apps build themes."
+      unavailable: "Building themes with AI apps isn't available here."
+      themes_unavailable: "New themes can't be created on this site, so AI apps can't build them either."
+      server_locked: "A global setting keeps the MCP server off, so it can't be turned on here."
+      already_enabled: "AI apps can already build themes on this site."
+      approval_required: "This change needs an administrator's approval."
+      failed: "The change couldn't be made."
+      enabled: "AI apps can now build themes on this site. Connect an app to the MCP server to start."
+      enabled_except_blocked: "The rest is turned on, but AI apps can't build themes yet. These theme tools are blocked in an emergency: %{tools}. An administrator can unblock them under MCP capabilities: %{url}"
+      "on": "On"
+      "off": "Off"
+      none: "none"
+      request_placeholder: "(describe what you want)"
+      blocked_tool: "%{tool} is blocked in an emergency. An administrator can unblock it under MCP capabilities: %{url}"
+      changes:
+        server: "MCP server"
+        tools: "Tools apps can use"
+        admin_scopes: "Administrators' access"
+      setup:
+        server: "Turn on the MCP server."
+        tools: "Let apps use these theme tools: %{tools}."
+        admin_scopes: "Give administrators theme access."
+      starter_message: |-
+        I'm an administrator of the Discourse site %{site_url}. Use its MCP server to build a theme. Its current default theme is "%{theme}".
+
+        What I want: %{request}
+
+        Please:
+        - Create a new theme or theme component rather than changing the default theme, and don't make it the default.
+        - Use Discourse's CSS custom properties and palette colors, such as var(--tertiary), instead of hard-coded colors, so dark mode keeps working.
+        - Tell me the theme's ID when it's saved, so I can preview it at %{site_url}/admin/themes/ID/preview before making it live.
+      built_in:
+        welcome_banner: "A welcome banner above the topic list: %{base_url}/admin/config/interface"
+        sidebar_sections: "Custom sidebar sections and links, from the sidebar's + button"
+        banner_topic: "A banner topic shown to everyone, from a topic's admin wrench menu"
+        global_notice: "A notice across the top of every page: %{base_url}/admin/site_settings/category/all_results?filter=global_notice"
+        theme_components: "Ready-made theme components, such as custom header links: %{base_url}/admin/config/customize/components"
+
+    mcp_app_setup:
+      none: "none"
+      notes:
+        approved_domains: "Apps can only sign in from approved domains (%{domains}). If an app's sign-in page says the page is private, add its domain, for example claude.ai or chatgpt.com, under MCP settings: %{settings_url}"
+        pre_registered_only: "Apps can only sign in once an administrator registers them, under MCP clients: %{clients_url}"
+      apps:
+        claude:
+          name: "Claude (web or desktop)"
+          steps: |-
+            1. In Claude, go to Settings, then Connectors, then Add custom connector.
+            2. Name it "%{name}" and paste %{url}
+            3. Click Add, then Connect. Your site opens; sign in if asked and click Approve.
+            On a Claude Team or Enterprise plan, an owner has to add the connector for your organization first.
+        chatgpt:
+          name: "ChatGPT"
+          steps: |-
+            1. In ChatGPT, go to Settings, then Security and login, and turn on Developer mode.
+            2. Add a connector named "%{name}" with the URL %{url}
+            3. Connect it. Your site opens; sign in if asked and click Approve.
+            A workspace administrator can turn developer mode off for everyone.
+        claude_code:
+          name: "Claude Code"
+          steps: |-
+            1. Run: claude mcp add --transport http my-community %{url}
+            2. Run: claude mcp login my-community
+            3. Your site opens; sign in if asked and click Approve.
+        codex:
+          name: "Codex"
+          steps: |-
+            1. Run: codex mcp add my-community --url %{url} --oauth-client-registration cimd
+            2. Your site opens; sign in if asked and click Approve.
+            Check the connection with: codex mcp list
+        cursor:
+          name: "Cursor"
+          steps: |-
+            1. Add this to ~/.cursor/mcp.json: {"mcpServers": {"my-community": {"url": "%{url}"}}}
+            2. Turn the server on in Cursor's MCP settings.
+            3. Your site opens; sign in if asked and click Approve.
+        vscode:
+          name: "Visual Studio Code"
+          steps: |-
+            1. Open the Command Palette and run "MCP: Add Server".
+            2. Choose HTTP and paste %{url}
+            3. Your site opens; sign in if asked and click Approve.
 
     reviewables:
       ai_tool_action:
@@ -2039,6 +2559,9 @@ en:
         execution_error_unknown: "an unexpected error occurred"
 
     summarization:
+      published_summary_heading: "AI-generated summary"
+      configuration:
+        backfill_required: "Set 'ai summary backfill maximum topics per hour' above 0 first, so summaries shown to crawlers stay up to date."
       configuration_hint:
         one: "Configure the `%{setting}` setting first."
         other: "Configure these settings first: %{settings}"
@@ -2066,12 +2589,16 @@ en:
         agent_user_required: "The Discord search agent must have an associated user before Discord agent mode can be enabled."
 
     llm:
+      user_association_is_legacy_only: "can only be retained or cleared for an existing model"
       configuration:
         create_llm: "You need to setup an LLM before enabling this feature"
         disable_modules_first: "You must disable these modules first: %{settings}"
         set_llm_first: "Set %{setting} first"
         model_unreachable: "We couldn't get a response from this model. Check your settings first."
         empty_response: "The model returned an empty response."
+        test_timeout:
+          one: "The model didn't respond within %{count} second. The provider may be overloaded; try again later."
+          other: "The model didn't respond within %{count} seconds. The provider may be overloaded; try again later."
         invalid_seeded_model: "You can't use this model with this feature"
         invalid_agent_response_format: "The selected agent must have a response format with a boolean field names \"spam\""
         must_select_model: "You must select a LLM first"
@@ -2095,13 +2622,31 @@ en:
       cannot_edit_builtin: "You can't edit a built-in model."
       secret_required: "A credential must be selected"
       secret_not_found: "The selected credential does not exist"
+      missing_provider_param: "%{param} can't be blank"
       configuration:
         disable_embeddings: "You have to disable 'ai embeddings enabled' first."
         choose_model: "Set 'ai embeddings selected model' first."
         model_test_failed: "We failed to generate a test embedding with this model. Check it's correctly configured."
 
+    decision_models:
+      custom_headers:
+        invalid_format: "must be an array of header name and value pairs"
+        too_many: "cannot contain more than %{count} entries"
+        unsupported_provider: "are only supported for System One and TypeSafe models"
+        invalid_name: "must have valid HTTP names of at most %{name_length} characters"
+        invalid_value: "must have printable ASCII values of at most %{value_length} characters"
+        reserved_name: "cannot override reserved transport or authentication headers"
+        duplicate_name: "must have unique names (case-insensitive)"
+      secret_not_found: "The selected credential does not exist"
+      invalid_url: "must be an http:// or https:// URL, or an srv:// URL without a port"
+      delete_failed_spam: "This decision model is used for spam detection. Choose another model in the spam settings first."
+      test_refused: "The decision model declined to answer the test question."
+      test_image_not_read: "The decision model did not recognise the test image. Untick \"Supports image input\" if it cannot read images."
+      credit_limit_exceeded: "%{model_name} has used all of today's AI credits. Credits reset in %{reset_time}."
+      cannot_modify_seeded: "Pre-configured decision models cannot be edited or deleted."
+
     secrets:
-      delete_failed_in_use: "This credential is currently in use by one or more LLMs, embeddings, or tools and cannot be deleted."
+      delete_failed_in_use: "This credential is currently in use by one or more LLMs, embeddings, decision models, or tools and cannot be deleted."
 
     llm_models:
       missing_provider_param: "%{param} can't be blank"
@@ -2305,10 +2850,25 @@ en:
 
 --- # plugins/discourse-captcha/config/locales/server.en.yml
 en:
+  discourse_captcha:
+    configuration_test:
+      v3_success: "Your reCAPTCHA v3 keys work. This test scored %{score}, meeting the signup threshold of %{threshold}."
+      v3_low_score: "Your reCAPTCHA v3 keys work, but this test scored %{score}, below the signup threshold of %{threshold}."
+      success: "Verification succeeded. Your saved CAPTCHA keys work on this site."
+      errors:
+        not_configured: "Select a CAPTCHA provider and save both keys in Settings before testing."
+        configuration_changed: "The CAPTCHA configuration changed. Reload this page and try again."
+        invalid_secret: "The CAPTCHA provider rejected the secret key. Check the saved secret key in Settings."
+        key_mismatch: "The site key and secret key do not match. Check that both keys belong to the same configuration with your provider."
+        invalid_response: "The CAPTCHA response was invalid. Start a new test and try again."
+        expired: "The challenge expired or has already been verified. Start a new test and complete it again."
+        unavailable: "Could not contact the CAPTCHA provider or it returned an unexpected response. Try again later."
+        verification_failed: "The CAPTCHA provider rejected the challenge. Check your saved keys and provider configuration, then try again."
   dashboard:
     problem:
       hcaptcha_configuration: "There is a problem with your hCaptcha `site_key` or `secret_key` configuration"
       recaptcha_configuration: "There is a problem with your ReCaptcha `site_key` or `secret_key` configuration"
+      recaptcha_v3_configuration: "There is a problem with your ReCaptcha v3 `site_key` or `secret_key` configuration"
 
   admin:
     site_settings:
@@ -2320,8 +2880,11 @@ en:
     discourse_captcha_provider: "Choose a Captcha provider. This requires you to own an account of the chosen provider"
     hcaptcha_site_key: "hCaptcha Site Key from your <a target='blank' href='https://hcaptcha.com'>hcaptcha.com</a> account"
     hcaptcha_secret_key: "hCaptcha Secret Key from your <a target='blank' href='https://hcaptcha.com'>hcaptcha.com</a> account"
-    recaptcha_site_key: "ReCaptcha Site Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account"
-    recaptcha_secret_key: "ReCaptcha Secret Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account"
+    recaptcha_v2_site_key: "ReCaptcha v2 Site Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account. Used only when the captcha provider is set to reCaptcha v2."
+    recaptcha_v2_secret_key: "ReCaptcha v2 Secret Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account. Used only when the captcha provider is set to reCaptcha v2."
+    recaptcha_v3_site_key: "ReCaptcha v3 Site Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account"
+    recaptcha_v3_secret_key: "ReCaptcha v3 Secret Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account"
+    recaptcha_v3_score_threshold: "The minimum score a reCaptcha v3 challenge must reach for a signup to be accepted. Lower values are more permissive, higher values provide stronger bot protection."
 
   captcha_verification_failed: "Captcha verification failed"
   captcha_not_configured: "Captcha is enabled but not properly configured. Please contact the site administrator."
@@ -2695,6 +3258,24 @@ en:
         run_sql: "Ran SQL query"
         submit_query: "Submitted generated query %{name}"
   discourse_data_explorer:
+    admin_assistant:
+      generating: "Generating and testing a query draft"
+      create_summary: "Save this Data Explorer query?"
+      not_allowed: "Only administrators can create Data Explorer queries."
+      invalid_request: "The query request is empty or too long. Please provide a shorter description."
+      invalid_draft: "This query draft reference is invalid, unavailable, or expired. Please generate a new draft."
+      incomplete_draft: "The generated query draft is missing its name or SQL. Please generate a new draft."
+      requester_not_admin: "The administrator who requested this query no longer has admin access. Please request a new draft from an admin account."
+      approval_required: "Saving this query requires human approval."
+      draft_used: "This query draft has already been used or is being saved. Please generate a new draft."
+      generation_failed: "The query could not be generated. Please try again or refine your request."
+      creation_failed: "The query could not be saved. No query was created."
+      availability:
+        available: "Data Explorer query creation is available. Saving requires explicit approval."
+        restricted: "Data Explorer query creation is unavailable on this site."
+        disabled: "Data Explorer or Discourse AI is disabled. An administrator needs to enable the required plugins before creating queries."
+        generation_disabled: "AI query generation is disabled. An administrator needs to enable it before creating queries through chat."
+        unconfigured: "Data Explorer's query-generation AI model is not configured or usable."
     mcp:
       query_failed: "The query could not be run: %{message}"
       query_not_found: "Query not found"
@@ -2703,10 +3284,11 @@ en:
       error_no_sql_returned: "AI did not return a valid SQL query. Please try again or write the query manually."
     errors:
       default_tag_reserved: "The default tag is reserved for system queries."
+      custom_tag_reserved: "The custom tag is reserved for user-created queries."
       tag_contains_comma: "Tags cannot contain commas."
       tag_too_long: "A tag can have at most %{max} characters."
       tool_not_allowed: "You are not allowed to use this tool"
-      too_many_tags: "A query can have at most %{max} tags."
+      too_many_tags: "A query can have at most %{max} tags, not counting automatic tags."
     discourse_workflows:
       sql_action:
         no_query_selected: "No query selected."
@@ -2850,6 +3432,7 @@ en:
     event_participation_buttons: "List of event participation buttons users can use."
     sidebar_show_upcoming_events: "Show upcoming events link in the sidebar under 'More'."
     calendar_first_day_of_week: "Set the first day of the week for calendar display. Options are Saturday, Sunday, or Monday."
+    calendar_upcoming_events_default_category: "Category for new events created from the upcoming events calendar. If empty or the member cannot create topics in this category, uses {{setting:default_composer_category}}."
     enable_events_category_type_setup: "Enables the Events category type option during category creation setup."
     enable_improved_event_reminders: "Lets members choose whether event reminders are sent as personal messages, notifications, or not at all."
     livestream_allowed_hosts: "Hosts that can be used as an event livestream."
@@ -2907,6 +3490,12 @@ en:
     livestream:
       chat:
         topic_reference_message: "This channel is for the event [%{title}](%{url}) — visit the topic for details and to RSVP."
+        transcript_heading: "Chat transcript"
+        transcript_heading_dated: "Chat transcript for %{date}"
+        transcript_edit_reason: "Added the livestream chat transcript"
+        transcript_earlier_messages:
+          one: "%{count} earlier message is in the [chat channel](%{url})."
+          other: "%{count} earlier messages are in the [chat channel](%{url})."
       zoom:
         frame_title: "Zoom webinar"
         frame_join: "Join webinar"
@@ -2919,6 +3508,7 @@ en:
     holiday_status:
       description: "On holiday"
   discourse_post_event:
+    zoom_guest: "Guest"
     event_excerpt:
       summary: "📅 %{summary}"
       separator: " · "
@@ -2926,6 +3516,21 @@ en:
       date_with_timezone: "%{date} (%{timezone})"
       date_format: "%B %-d, %Y"
       datetime_format: "%B %-d, %Y %-I:%M %p"
+    filter:
+      description:
+        event: "Show topics with an event"
+        event_any_of: "Show topics with an event in any of the specified states (comma-separated)"
+        exclude_event: "Exclude topics with an event in the specified state"
+        event_any: "Show topics with an event"
+        event_upcoming: "Show topics with an event that hasn't started yet"
+        event_ongoing: "Show topics with an event that is happening now"
+        event_past: "Show topics with an event that has ended"
+        event_after: "Show topics with an event starting on or after a date (YYYY-MM-DD)"
+        event_before: "Show topics with an event starting before a date (YYYY-MM-DD)"
+        event_attending: "Show topics with an event a user is going to"
+        event_attending_me: "Events you're going to"
+        order_event_start: "Sort by event start date (latest first)"
+        order_event_start_asc: "Sort by event start date (soonest first)"
     notifications:
       before_event_reminder: "%{title} is about to start."
       after_event_reminder: "%{title} has ended."
@@ -2951,6 +3556,7 @@ en:
           invalid_recurrence: "Recurrence must be one of: %{recurrences}."
           invalid_timezone: "Timezone not recognized."
           invalid_url: "URL must be a valid web address."
+          invalid_recording_url: "Recording must be a valid web address."
           acting_user_not_allowed_to_create_event: "Current user is not allowed to create events."
           acting_user_not_allowed_to_act_on_this_event: "Current user is not allowed to act on this event."
           invalid_allowed_groups: "Invalid allowed groups."
@@ -2968,6 +3574,8 @@ en:
             length: "Event URL is limited to %{maximum} characters."
           location:
             length: "Event location is limited to %{maximum} characters."
+          recording:
+            length: "Event recording link is limited to %{maximum} characters."
   discourse_push_notifications:
     popup:
       event_reminder: "Event Reminder"
@@ -3005,6 +3613,7 @@ en:
       gamification_score:
         invalid_points: "Points must be a non-zero whole number, got: %{points}"
         invalid_date: "Invalid date: %{date}"
+        invalid_category: "Category not found: %{category_id}"
 
 --- # plugins/discourse-github/config/locales/server.en.yml
 en:
@@ -3026,8 +3635,6 @@ en:
     errors:
       invalid_badge_repo: "You must provide a GitHub URL or the repository name in the format github_user/repository_name"
       invalid_badge_repo_value: "'%{repo}' is not a valid GitHub URL or repository name. Use the format github_user/repository_name."
-      invalid_github_linkback_access_token: "You must provide a valid GitHub linkback access token which has access to the badge repositories you have provided."
-      invalid_github_linkback_access_token_for_repo: "The GitHub linkback access token could not access the '%{repo}' repository. Make sure the token is valid and that the repository name is correct and accessible."
 
   github_linkback:
     commit_template: |
@@ -3042,34 +3649,11 @@ en:
       This issue has been mentioned on **%{title}**. There might be relevant details there:
 
       %{post_url}
-  github_commits_populator:
-    errors:
-      repository_identifier_invalid_pm_title: "Action required for discourse-github plugin"
-      repository_identifier_invalid_pm: |
-        A repository specified in the discourse-github plugin is invalid:
-        %{repo_name}
-
-        They should be specified as `user/repo`.
-
-        Badges will not be awarded until the name is corrected in
-        <a href="%{base_path}/admin/site_settings/category/plugins?filter=GitHub">discourse-github Site Settings</a>
-        and "github_badges_enabled" is turned back on.
-      repository_not_found_pm_title: "Action required for discourse-github plugin"
-      repository_not_found_pm: |
-        A repository specified in the discourse-github plugin returned a "Not Found"
-        error: %{repo_name}
-
-        Badges will not be awarded until the name is corrected in
-        <a href="%{base_path}/admin/site_settings/category/plugins?filter=GitHub">discourse-github Site Settings</a>
-        and "github_badges_enabled" is turned back on.
-      invalid_octokit_credentials_pm_title: "Action required for discourse-github plugin"
-      invalid_octokit_credentials_pm: |
-        The GitHub credentials provided to the discourse-github plugin are invalid. The "github badges enabled\ site
-        setting has been disabled, and commits will no longer be populated until the issue is resolved.
-
-        Check your "github linkback access token" site setting to ensure the token is correct and has permission to all
-        repos via
-        <a href="%{base_path}/admin/site_settings/category/plugins?filter=GitHub">discourse-github Site Settings</a>.
+  dashboard:
+    problem:
+      github_linkback_access_token_invalid: "GitHub rejected the {{setting:github_linkback_access_token}}. Generate a new token and update the setting."
+      github_badges_repo_not_found: "The GitHub repository <code>%{repo}</code> in {{setting:github_badges_repos}} doesn't exist or the {{setting:github_linkback_access_token}} can't access it, so its contributions aren't counted for badges."
+      github_badges_repo_moved: "The GitHub repository <code>%{repo}</code> has moved to <code>%{new_name}</code>. Update {{setting:github_badges_repos}} to use the new name."
 
 --- # plugins/discourse-graphviz/config/locales/server.en.yml
 en:
@@ -3682,9 +4266,11 @@ en:
     openid_connect_authorize_parameters: "URL parameters which will be included in the redirect from /auth/oidc to the IDP's authorize endpoint"
     openid_connect_overrides_email: "On every login, override the user's email using the openid-connect value. Works the same as the {{setting:auth_overrides_email}} setting, but is specific to OpenID Connect logins."
     openid_connect_claims: "Explicitly define the claims for use with providers that don't pass data back based on scopes. (JSON)"
-    openid_connect_groups_claim: "The name of the claim in the OIDC token that contains the user's groups as an array of strings. Leave blank to disable group syncing."
+    openid_connect_groups_claim: "The name of the claim in the userinfo response or ID token that contains the user's groups as an array of strings or a comma-separated string. For string values, surrounding whitespace and empty entries are ignored. Use an array if group names contain commas. Leave blank to disable group syncing."
     openid_connect_user_field_mappings: "Map OIDC claims onto Discourse user fields. Each entry pairs an OIDC claim name with the numeric ID of a Discourse user field."
     openid_connect_match_by_email: "Use email address to match OpenID Connect authentications to existing Discourse user accounts."
+    openid_connect_email_verified_claim_fallback: "Value to use for email_verified when the provider omits the claim."
+    openid_connect_email_claim: "The claim containing the user's email address. Defaults to email. Only select a claim containing an email address verified by your identity provider, as it can link users to existing accounts."
     openid_connect_use_pkce: "Enable Proof Key for Code Exchange (PKCE) for OpenID Connect authentication."
     openid_connect_mtls_client_cert: "X.509 client certificate for mTLS client authentication with the OIDC provider. To enable mTLS, {{setting:openid_connect_mtls_client_key}} must also be set."
     openid_connect_mtls_client_key: "X.509 private key for the mTLS client certificate. To enable mTLS, {{setting:openid_connect_mtls_client_cert}} must also be set."
@@ -3910,6 +4496,9 @@ en:
   discourse_reactions:
     errors:
       reaction_unavailable: "Reaction is not available"
+    discourse_workflows:
+      post_reaction:
+        cannot_react: "%{username} can't react to this post."
   site_settings:
     discourse_reactions_like_icon: "Defines the icon used for the main reaction button. This should be a <a href='https://fontawesome.com/v6/search?o=r&m=free' target='_blank'>Font Awesome</a> icon name, not an emoji name."
     discourse_reactions_reaction_for_like: "Defines the reaction associated to the Like action. Historical Like records will not be changed if this setting changes, it is <strong>strongly recommended</strong> that this setting is never changed."
@@ -3918,7 +4507,7 @@ en:
     discourse_reactions_enabled_reactions: "Defines a list of enabled reactions, any emoji is allowed here."
     discourse_reactions_desaturated_reaction_panel: "Reduces visual noise of reactions by displaying them desaturated until hover."
     discourse_reactions_excluded_from_like: "Reactions that do not count as a Like. Any reactions that are not on this list will count as a Like for badges, reporting, and other purposes."
-    discourse_reactions_like_sync_enabled: "If this is enabled, historical reactions will have their matching Like records created, except those reactions defined in {{setting:discourse_reactions_excluded_from_like}}. This sync will happen on a regular basis in the background, and also when you change {{setting:discourse_reactions_excluded_from_like}}."
+    discourse_reactions_like_sync_enabled: "If this is enabled, historical reactions will have their matching Like records created, except those reactions defined in {{setting:discourse_reactions_excluded_from_like}}. This sync will happen daily in the background, and also when you change {{setting:discourse_reactions_excluded_from_like}} or enable this setting."
     discourse_reactions_allow_any_emoji: "If this is enabled, will add a button allowing users to select any emoji in the reactions picker. Members will be allowed to choose any emoji, including custom emoji, for reactions. To limit available reactions, use the {{setting:emoji_deny_list}} site setting."
     enable_discourse_reactions_by_default: "Changes the default value for the {{setting:discourse_reactions_enabled}} setting from disabled to enabled when this upcoming change is enabled."
     errors:
@@ -4196,15 +4785,39 @@ en:
           attributes:
             error_workflow_id:
               cannot_be_self: "cannot be set to the workflow itself"
+        discourse_workflows/variable:
+          attributes:
+            type_options:
+              enum_choices_required: "must include at least one choice for an enum field"
   discourse_workflows:
+    admin_assistant:
+      generating: "Generating and validating an unpublished workflow draft"
+      generating_progress: "Generating the workflow. This can take a few minutes."
+      create_summary: "Save this workflow as an unpublished draft?"
+      not_allowed: "Only administrators who can manage workflows can create workflows."
+      invalid_request: "The workflow request is empty, contains a secret, or is too long. Please provide a shorter description without secrets."
+      invalid_draft: "This workflow draft reference is invalid, unavailable, or expired. Please generate a new draft."
+      incomplete_draft: "The generated workflow draft is incomplete. Please generate a new draft."
+      invalid_graph: "The generated workflow graph is no longer valid. Please generate a new draft."
+      secret_draft: "Workflow drafts cannot contain raw secrets or embedded credentials. Store credentials separately and generate a new draft that references them safely."
+      requester_not_admin: "The administrator who requested this workflow no longer has permission to manage workflows. Please request a new draft from an authorized administrator."
+      approval_required: "Saving this workflow requires human approval."
+      draft_used: "This workflow draft has already been used or is being saved. Please generate a new draft."
+      generation_failed: "The workflow could not be generated and validated. Please try again or refine your request."
+      clarification_required: "More information is needed before the workflow can be generated."
+      creation_failed: "The workflow could not be saved. No workflow was created."
+      availability:
+        available: "Workflow creation is available. Saving requires explicit approval."
+        restricted: "Workflow creation is unavailable on this site."
+        disabled: "Workflow authoring or Discourse AI is disabled. An administrator needs to enable the required features before creating workflows."
+        unconfigured: "The workflow-authoring AI model is not configured or usable."
     ai:
       default_code_node_name: "Code"
       error_agent_not_configured: "The workflow authoring agent is not configured."
+      error_credit_limit_exceeded: "This site has used all of today's AI credits. Try again after %{reset_time}."
       error_invalid_mode: "Invalid AI workflow authoring mode."
       error_invalid_patch: "The AI proposal did not pass workflow validation: %{errors}"
       error_invalid_response: "AI returned an invalid response."
-      error_invalid_script: "The AI generated Code node JavaScript that did not pass validation. Regenerate the proposal or ask the assistant to fix the script."
-      error_invalid_script_with_errors: "The AI generated Code node JavaScript that did not pass validation: %{errors}. Regenerate the proposal or ask the assistant to fix the script."
       error_message_required: "Enter a prompt for the workflow assistant."
       error_message_too_long: "The workflow assistant prompt is too long."
       error_no_operations: "The AI response did not include any workflow patch operations."
@@ -4212,6 +4825,9 @@ en:
       error_proposal_not_ready: "This AI proposal is not ready to apply."
       error_stale_proposal: "The workflow changed after this AI proposal was generated. Regenerate the proposal."
       clarification_message: "Choose answers so the assistant can continue drafting the workflow."
+      how_to_proceed:
+        question: "%{problem} How should the assistant proceed?"
+        fix: "Fix the problems and try again"
       tool_call_proposal_message: "The assistant drafted a workflow patch and the server validated it."
       tool_call_proposal_summary:
         one: "The assistant drafted one workflow patch operation. Review it before applying."
@@ -4237,7 +4853,23 @@ en:
       too_many_tags: "A workflow can have at most %{max} tags."
       tag_too_long: "Tags can have at most %{max} characters."
       tag_contains_comma: "Tags cannot contain commas."
+      workflow_variable:
+        invalid_value: "is not valid for this field's type"
+        incompatible_value_for_new_type: "has a current value that is not valid for the new type. Update or clear the value first."
       approval_timed_out: "Approval timed out"
+      run_timed_out:
+        one: "Execution ran for more than %{count} minute without pausing"
+        other: "Execution ran for more than %{count} minutes without pausing"
+      queue_timed_out:
+        one: "Execution was queued for more than %{count} minute without starting"
+        other: "Execution was queued for more than %{count} minutes without starting"
+      rate_limited:
+        global:
+          one: "This workflow wasn't run because %{count} workflow execution already started in the last minute across all workflows, which is the most allowed. Runs will go through again once fewer workflow executions have started in the last minute."
+          other: "This workflow wasn't run because %{count} workflow executions already started in the last minute across all workflows, which is the most allowed. Runs will go through again once fewer workflow executions have started in the last minute."
+        per_workflow:
+          one: "This workflow wasn't run because it already started %{count} execution in the last minute, which is the most allowed for a single workflow. Later runs will go through again once the last minute has fewer executions. If it's triggered this often on purpose, reduce how often its trigger fires, for example by filtering events earlier."
+          other: "This workflow wasn't run because it already started %{count} executions in the last minute, which is the most allowed for a single workflow. Later runs will go through again once the last minute has fewer executions. If it's triggered this often on purpose, reduce how often its trigger fires, for example by filtering events earlier."
       step_execution:
         not_executable: "This node cannot be executed as a single step."
         waiting_not_supported: "Nodes that wait for a response cannot run during a step execution. Run the workflow or pin data past them first."
@@ -4273,6 +4905,13 @@ en:
       unknown_operation: "Unknown operation: %{operation}."
       actor:
         blank: "The user for '%{field}' resolved to a blank value."
+        not_found: "No user found with username '%{username}'."
+        id_not_found: "No user found with ID %{id}."
+        restricted:
+          staged: "The user '%{username}' is a staged user and can't perform actions."
+          silenced: "The user '%{username}' is silenced."
+          suspended: "The user '%{username}' is suspended."
+          inactive: "The user '%{username}' hasn't activated their account."
       item:
         inconsistent_format_title: "Inconsistent item format"
         inconsistent_format: "Every returned item must use the same format."
@@ -4282,6 +4921,7 @@ en:
         invalid_filter: "Invalid topic filter: %{fragments}."
       post:
         topic_closed_or_archived: "Cannot create a post in a closed or archived topic."
+        whisper_not_allowed: "%{username} cannot whisper. Check the whispers allowed groups site setting."
         edit_failed: "Failed to edit post."
         invalid_filter: "Invalid post filter: %{fragments}."
       flag_post:
@@ -4316,6 +4956,13 @@ en:
       modal:
         no_target_user: "No target user is available for the modal."
         user_not_found: "User '%{username}' not found."
+      composer_paused:
+        too_many_phrases: "A composer trigger can have at most %{max} phrases."
+        phrase_too_long: "The phrase '%{phrase}' is longer than %{max} characters."
+        invalid_phrase: "The phrase '%{phrase}' is invalid, matches any text, or could take too long to match."
+      composer_message:
+        no_user: "No user is available to show the composer message to."
+        no_composer: "Composer messages need a workflow started by the composer trigger."
       topic_tags:
         unknown_mode: "Unknown tag mode: %{mode}."
         no_tag_names: "No tag names provided."
@@ -4375,6 +5022,9 @@ en:
         invalid_query: "Invalid query: %{errors}"
         invalid_row: "Invalid row: %{errors}"
         filter_required: "Filter must not be empty"
+        no_columns_to_insert: "Cannot insert a row without any column values."
+        empty_column_expression: "Column '%{column}' has an empty expression."
+        invalid_columns: "Columns must be an object of column names to values, got '%{value}'."
       workflow_version:
         referenced_by_workflow: "Cannot delete a workflow version that is still referenced as the current or active version."
       workflow_call:
@@ -4392,10 +5042,12 @@ en:
       destroy_context: "Deleted by a workflow"
     flag_post:
       flagged_by_workflow: "Flagged by the '%{workflow_name}' workflow."
+      flagged_by_agent: "Flagged following review by '%{agent_name}' in the '%{workflow_name}' workflow."
     user:
       check_email_context: "Workflow user node"
     flag_user:
       flagged_by_workflow: "Flagged by the '%{workflow_name}' workflow."
+      flagged_by_agent: "Flagged following review by '%{agent_name}' in the '%{workflow_name}' workflow."
     pin_data:
       errors:
         unsupported_node: "Only nodes with a single output can have pinned data."
@@ -4419,41 +5071,60 @@ en:
           name: "Workflow author"
           description: "Builds and edits Discourse workflows from natural language"
       tool_help:
-        workflow_node_catalog: "Lists available workflow nodes and their configuration schema"
+        workflow_node_catalog: "Returns the configuration schema of workflow node types"
         workflow_ai_agent_catalog: "Lists existing Discourse AI agents that workflow drafts can reuse"
-        workflow_graph_context: "Describes the current workflow graph"
+        workflow_node_details: "Describes nodes in the current workflow, including recorded output"
         workflow_validate_patch: "Dry-runs and validates workflow patch operations"
         workflow_ask_questions: "Asks the workflow admin to choose clarification answers"
         workflow_authoring_result: "Returns the final workflow authoring result"
         workflow_resolve_entity: "Resolves Discourse names to workflow parameter values"
         search_chat_channels: "Searches chat channel names and IDs for workflow parameters"
         search_chat_integration_channels: "Searches external chat integration channel labels and IDs for workflow parameters"
-        workflow_script_context: "Returns context for writing workflow Code node JavaScript"
-        workflow_validate_script: "Validates workflow Code node JavaScript"
+        workflow_validate_script: "Runs workflow Code node JavaScript with test data"
+        data_table_schema: "Lists workflow data tables with their columns"
+        data_table_query: "Reads rows from a workflow data table"
+        data_table_write: "Inserts, updates, upserts or deletes workflow data table rows"
       tool_summary:
         workflow_node_catalog: "Reading workflow node catalog"
         workflow_ai_agent_catalog: "Reading AI agent catalog"
-        workflow_graph_context: "Reading workflow graph"
+        workflow_node_details: "Reading workflow nodes"
         workflow_validate_patch: "Validating workflow patch"
         workflow_ask_questions: "Asking clarification questions"
         workflow_authoring_result: "Returning workflow authoring result"
         workflow_resolve_entity: "Resolving Discourse entities"
         search_chat_channels: "Searching chat channels"
         search_chat_integration_channels: "Searching external chat integration channels"
-        workflow_script_context: "Loading script context"
-        workflow_validate_script: "Validating script"
+        workflow_validate_script: "Testing script"
+        data_table_schema: "Reading data table schema"
+        data_table_query: "Querying data table"
+        data_table_write: "Writing to data table"
       tool_description:
         workflow_node_catalog: "Read workflow node catalog"
         workflow_ai_agent_catalog: "Read AI agent catalog"
-        workflow_graph_context: "Read workflow graph"
+        workflow_node_details: "Read workflow nodes"
         workflow_validate_patch: "Validated workflow patch"
         workflow_ask_questions: "Asked clarification questions"
         workflow_authoring_result: "Returned workflow authoring result"
         workflow_resolve_entity: "Resolved Discourse entities"
         search_chat_channels: "Searched chat channels"
         search_chat_integration_channels: "Searched external chat integration channels"
-        workflow_script_context: "Loaded script context"
-        workflow_validate_script: "Validated script"
+        workflow_validate_script: "Tested script"
+        data_table_schema: "Read data table schema"
+        data_table_query: "Queried data table"
+        data_table_write: "Wrote to data table"
+      tool_options:
+        data_table_schema:
+          allowed_tables:
+            name: "Allowed tables"
+            description: "Comma-separated data table names or ids this agent may use. Leave empty to allow all tables."
+        data_table_query:
+          allowed_tables:
+            name: "Allowed tables"
+            description: "Comma-separated data table names or ids this agent may use. Leave empty to allow all tables."
+        data_table_write:
+          allowed_tables:
+            name: "Allowed tables"
+            description: "Comma-separated data table names or ids this agent may use. Leave empty to allow all tables."
   reviewables:
     reasons:
       workflow_flagged_user: "A workflow added this user to the review queue."
@@ -4461,6 +5132,8 @@ en:
 --- # plugins/discourse-zendesk-plugin/config/locales/server.en.yml
 en:
   site_settings:
+    zendesk_create_ticket_allowed_groups: "Groups allowed to create Zendesk tickets from topics they can access."
+    zendesk_view_ticket_allowed_groups: "Groups allowed to view Zendesk ticket links on topics they can access. Zendesk controls access to the ticket itself."
     zendesk_jobs_api_token: "Deprecated: Zendesk will permanently deactivate API tokens on April 30, 2027. Configure {{setting:zendesk_oauth_client_id}} and {{setting:zendesk_oauth_client_secret}} to use OAuth instead."
     zendesk_oauth_client_id: "The unique client ID provided by your Zendesk application, used for the authentication process."
     zendesk_oauth_client_secret: "Client secret of your Zendesk application."
@@ -4473,6 +5146,277 @@ en:
   site_settings:
     enable_markdown_footnotes: enable footnote markdown on this site
     display_footnotes_inline: enable inline expansion of footnotes
+
+--- # plugins/live/config/locales/server.en.yml
+en:
+  site_settings:
+    live_verbose_logging: "Log Live diagnostic information and warnings in server logs and browser consoles. Disabled by default. Logs exclude credentials, transcripts, signaling payloads, and raw error details."
+    live_enabled: "Live brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required."
+    live_allowed_groups: "Groups that can access live rooms."
+    live_create_room_allowed_groups: "Groups that can create new live rooms."
+    live_direct_calls_allowed_groups: "Groups that can start a direct call with another user from their user card or profile. Empty disables direct calls. Callers also need to be in {{setting:live_allowed_groups}}; anyone with live room access can receive a call."
+    live_max_rooms_per_user: "Maximum number of live rooms a single user can own. Temporary rooms created automatically by other features do not count."
+    live_max_invites_per_day: "Maximum number of live room invite notifications a single user can send per day. Repeated invites to the same person in the same room don't notify again (and don't count) until a day has passed."
+    live_ephemeral_room_ttl_minutes: "Minutes a temporary room (created automatically by another feature, such as a direct call) can sit empty before it is deleted. Rooms with people in them are never deleted."
+    live_participant_ttl_seconds: "Seconds to keep active speaker presence in Redis before automatic cleanup. Client heartbeat refreshes every 10 seconds."
+    live_max_room_participants: "Maximum number of people who can be in a live room at the same time. A room's own participant limit can lower this, but never raise it."
+    live_auto_status_enabled: "Automatically set user status when they join a live room (e.g. '🎙️ In Watercooler'). Requires the 'enable user status' site setting."
+    live_mesh_privacy_warning_enabled: "Warn users before they join a peer-to-peer live room that other participants may be able to see their IP address, with an option to not show the warning again on that device. Calls hosted on a LiveKit server never show the warning."
+    live_badges_enabled: "Enable Live badges when {{setting:live_enabled}} is enabled. Grants badges for live room milestones like time spent, rooms visited, and connections made. Toggling this enables or disables every badge in the Live group at once. Requires {{setting:live_analytics_enabled}}, which records the sessions the badges are computed from."
+    live_analytics_enabled: "Record who joined which live room and when, and how long people spent in a room together. Powers the admin Live statistics, the contacts and companions suggestions, and every Live badge."
+    live_session_retention_days: "Days to keep live session and time-together history before it is deleted. Badges already earned are never taken away, but progress toward badges that accumulate over time (hours in Live, days in a room, people met) only counts history within this window."
+    live_idle_threshold_minutes: "Minutes of inactivity before a live room participant is marked as idle. Set to 0 to disable."
+    live_afk_auto_mute_threshold_minutes: "Minutes of inactivity before a live room participant is automatically muted. Set to 0 to disable."
+    live_afk_disconnect_threshold_minutes: "Minutes of inactivity before a live room participant is automatically disconnected. Set to 0 to disable."
+    live_video_allowed_groups: "Groups whose members can share their camera in live rooms. Leave empty to turn camera video off site-wide. Rooms can individually opt out of all media via their room settings, and stage room listeners can never publish."
+    live_screen_share_allowed_groups: "Groups whose members can share their screen in live rooms. Leave empty to turn screen sharing off site-wide. Rooms can individually opt out of all media via their room settings, and stage room listeners can never publish."
+    live_local_recording_allowed_groups: "Groups whose members can record calls to their own device. The recording happens entirely in the browser and is saved as a file on the recorder's device; nothing is uploaded. Other participants see a recording indicator while it runs. Leave empty to turn local recording off."
+    live_video_max_publishers: "Maximum number of participants who can share video or their screen at the same time in a room. On peer-to-peer rooms, higher values increase CPU and bandwidth load for everyone watching; on rooms using a LiveKit media server, they mainly increase load on that server."
+    live_video_background_blur_enabled: "Allow participants to blur their camera background. Segmentation runs on the publisher's device via MediaPipe, which increases CPU/GPU load while their camera is on."
+    live_subtitles_enabled: "Allow participants to turn on live subtitles for other people's speech. Transcription runs entirely on the viewer's device via an NVIDIA Parakeet speech-to-text model (less than 0.5 GB, downloaded on first use, WebGPU required); no audio leaves the browser."
+    live_stt_model_base_url: "Optional base URL for a self-hosted mirror of the subtitles models. When blank, the model files are downloaded on first use from Discourse's HuggingFace repository (Discourse/Discourse-STT). A mirror must keep that repository's folder layout and file names, reachable by browsers with CORS allowed — see docs/subtitles-model-mirror.md in the plugin."
+    live_max_voice_quality: "Highest microphone audio quality participants may choose in their voice settings. Standard is the browser's speech default (~32 kbps); high (~64 kbps) and maximum (~128 kbps) improve fidelity for good microphones at the cost of bandwidth."
+    live_max_camera_quality: "Highest camera quality participants may choose in their video settings. Standard captures at 720p; high captures at 1080p; maximum additionally stops automatic quality reduction as viewer count grows on peer-to-peer rooms, which multiplies the sender's upload bandwidth and CPU use."
+    live_max_screen_share_quality: "Highest screen share quality participants may choose in their video settings. Standard targets 15 fps at a modest bitrate; high allows 30 fps at a higher bitrate; maximum allows 60 fps at a very high bitrate ceiling, letting fast connections share high-resolution screens at full quality."
+    live_chat_enabled: "Allow live rooms to be linked to a chat channel. Each chat session opens a thread in that channel; messages are real chat messages, so participants can also follow along in the chat UI."
+    live_stun_servers: "STUN server URIs (stun:host:port), separated by |, used by peer-to-peer live rooms for NAT traversal. Can be left empty when {{setting:live_turn_secret_servers}} is configured, as long as that TURN server also answers unauthenticated STUN Binding requests; some browsers only discover their public address that way."
+    live_turn_servers: "TURN server URIs (turn:host:port or turns:host:port), separated by |, used to relay call traffic when a direct connection cannot be established. Authenticated with {{setting:live_turn_username}} and {{setting:live_turn_credential}}; for servers supporting short-lived credentials, use {{setting:live_turn_secret_servers}} instead."
+    live_turn_username: "Static username for the TURN servers in {{setting:live_turn_servers}}."
+    live_turn_credential: "Static password for the TURN servers in {{setting:live_turn_servers}}."
+    live_turn_secret: "Shared secret used to mint short-lived TURN credentials for the servers in {{setting:live_turn_secret_servers}} (TURN REST API, coturn's use-auth-secret mode). Must match the secret configured on those TURN servers."
+    live_turn_secret_servers: "TURN server URIs (turn:host:port or turns:host:port), separated by |, that authenticate with short-lived per-user credentials derived from {{setting:live_turn_secret}} instead of a static username and password, so credentials cannot be reused by third parties."
+    live_livekit_agent_enabled: "Allow members of {{setting:live_livekit_agent_invite_allowed_groups}} to invite a LiveKit Cloud agent to public live rooms. Creates the livekit_agent_bot account. Requires configured LiveKit Cloud credentials."
+    live_livekit_agent_invite_allowed_groups: "Groups that can invite a LiveKit Cloud agent to a public live room they can join. Admins are always included. Members also need to be in {{setting:live_allowed_groups}}; room managers can kick an agent regardless of this setting."
+    live_livekit_url: "WebSocket URL (wss://, or ws:// outside production) of a self-hosted LiveKit server. Together with the API key and secret, lets live rooms use it as their media server (SFU) instead of the peer-to-peer mesh. The server must be reachable at a public address."
+    live_livekit_api_key: "API key of the LiveKit server."
+    live_livekit_api_secret: "API secret of the LiveKit server, used to sign short-lived room access tokens."
+    live_livekit_room_policy: "Which rooms use the LiveKit media server instead of the peer-to-peer mesh. Changes never affect calls already in progress — each room switches when its next call starts."
+    live_livekit_room_prefix: "Namespace prefix for room names on the LiveKit server. Leave empty to use the site's database name."
+    live_livekit_mesh_fallback: "When a LiveKit access token cannot be issued and the room is empty, start the call on the peer-to-peer mesh instead of failing the join. Off by default because silent degradation can hide a LiveKit outage."
+    live_livekit_recording_enabled: "Allow room moderators to record calls that run on the LiveKit media server. LiveKit Cloud requires {{setting:live_livekit_recording_s3_bucket}}. Self-hosted Egress can use its own storage configuration. Recordings are not Discourse uploads.<br><br>Configure a webhook in LiveKit pointing to <code>https://YOUR-FORUM/live/livekit/webhook</code>, replacing YOUR-FORUM with this site's hostname. Use the same API key as {{setting:live_livekit_api_key}} and include <code>egress_ended</code> events so recording statuses and download notifications update when recordings finish."
+    live_livekit_recording_filepath: "Filepath passed to LiveKit Egress for recordings. Supports LiveKit's template placeholders such as {room_name}, {room_id}, {time} and {utc}; the file extension is added automatically."
+    live_livekit_recording_s3_bucket: "Dedicated S3 bucket for live recordings, without a path. Set the recording credentials and region before saving this setting. Use {{setting:live_livekit_recording_filepath}} for a folder prefix. Leave empty to use self-hosted Egress storage. Discourse upload storage settings are not used."
+    live_livekit_recording_s3_region: "AWS region of the recording bucket, such as us-east-1. Required unless {{setting:live_livekit_recording_s3_endpoint}} is set."
+    live_livekit_recording_s3_access_key_id: "S3 access key for the recording bucket. Sent to the configured LiveKit server over HTTPS when starting a recording. Use credentials with write access limited to the recording location."
+    live_livekit_recording_s3_secret_access_key: "S3 secret key for the recording bucket. Sent only to the configured LiveKit server over HTTPS, never to participants."
+    live_livekit_recording_s3_endpoint: "Optional HTTPS endpoint for S3-compatible recording storage, without a path or trailing slash. Leave empty for AWS S3. Custom endpoints use path-style bucket addressing."
+    errors:
+      live_livekit_agent_requires_cloud: "Configure a LiveKit Cloud URL, API key, and API secret before enabling the agent."
+      live_livekit_agent_username_taken: "The username livekit_agent_bot is already in use. Rename that account before enabling the agent."
+      live_livekit_recording_s3_requires_credentials: "Set the recording S3 access key and secret key before setting a recording bucket."
+      live_livekit_recording_s3_requires_region: "Set the recording S3 region or a custom endpoint before setting a recording bucket."
+      live_livekit_recording_s3_requires_wss: "Use a wss:// LiveKit URL before configuring S3 recording storage so storage credentials are sent over HTTPS."
+      live_turn_secret_servers_requires_secret: "Set live_turn_secret before adding TURN servers that use short-lived credentials."
+      live_livekit_policy_requires_url: "Set live_livekit_url to a valid wss:// URL before enabling a LiveKit room policy."
+      live_livekit_url_invalid: "The LiveKit URL must be a ws:// or wss:// URL with a hostname and no embedded credentials."
+      live_livekit_url_requires_wss: "The LiveKit URL must use wss:// in production."
+      live_livekit_policy_requires_api_key: "Set live_livekit_api_key before enabling a LiveKit room policy."
+      live_livekit_policy_requires_api_secret: "Set live_livekit_api_secret before enabling a LiveKit room policy."
+  live:
+    defaults:
+      watercooler_description: "Join for casual drop-in voice chats with other community members."
+    chat:
+      default_thread_title: "Voice chat in %{room}"
+      default_thread_opener: "In %{room} - %{message}"
+    onebox:
+      inline_to_room: "Live: %{room_name}"
+      room_type:
+        open: "Live room"
+        stage: "Live stage"
+    user_status:
+      in_room: "In %{room_name}"
+      in_private_room: "In a live room"
+      afk_in_room: "AFK in %{room_name}"
+      afk_in_private_room: "AFK in a live room"
+    errors:
+      not_enabled: "Live rooms are disabled."
+      not_authorized: "You are not allowed to perform that action for this room."
+      room_limit: "You reached the maximum number of rooms you can create."
+      missing_payload: "Signal payload is required."
+      participant_session_required: "Your call session has expired. Rejoin the room to start a new one."
+      room_full: "This room is full."
+      invalid_signal: "The signal payload is malformed or exceeds the allowed size."
+      state_change_required: "A state change is required."
+      ephemeral_room_limit: "You have too many ongoing calls. End one before starting another."
+      cannot_call_user: "Sorry, you cannot call that user."
+      cannot_kick_self: "You cannot kick yourself from the room."
+      cannot_kick_creator: "You cannot kick the room creator."
+      listeners_cannot_unmute: "Listeners cannot unmute in a Stage room."
+      video_not_allowed: "You are not allowed to share your camera in this room."
+      screen_share_not_allowed: "You are not allowed to share your screen in this room."
+      local_recording_not_allowed: "You are not allowed to record calls in this room."
+      video_publisher_limit: "The maximum number of simultaneous video streams for this room has been reached."
+      chat_unavailable: "Chat is not available for this room."
+      chat_requires_presence: "Join the live room to use its chat."
+      flag_target_never_joined: "That user has not joined this room."
+      flag_already_handled: "Thanks, we have already been notified about this user and are looking into it."
+      chat_threading_disabled: "The linked chat channel no longer has threading enabled, so a chat session can't be started."
+      livekit_unavailable: "The live server is unavailable. Contact your site administrator."
+      agent_dispatch_forbidden: "The agent can only join an ongoing LiveKit call in a public room. Check the agent settings and make sure a human is present."
+      agent_dispatch_failed: "LiveKit could not confirm the agent invitation. Check the agent's deployment and the server logs before trying again."
+      agent_list_failed: "LiveKit could not list the deployed agents. Enter the agent's dispatch name instead."
+      livekit_room_instance_ended: "This call has ended. Rejoin the room to start a new one."
+      livekit_no_signaling: "This room's call uses a media server; peer-to-peer signaling is disabled."
+      recording_unavailable: "Recording is not available for this call."
+      recording_already_active: "This call is already being recorded."
+      recording_not_active: "This call is not being recorded."
+      recording_failed: "The recording could not be started. Contact your site administrator."
+      recording_stop_failed: "The recording could not be stopped. Please try again."
+    reviewable_score_types:
+      notify_moderators:
+        pm_title: "A live room participant requires staff attention"
+        pm_body: "@%{username} in the live room [%{room_name}](%{link}) requires staff attention:\n\n%{message}"
+    reviewables:
+      actions:
+        agree_and_keep:
+          title: "Agree"
+          description: "Agree with the flag."
+        agree_and_suspend:
+          title: "Suspend user"
+          description: "Agree with the flag and suspend the user."
+        agree_and_silence:
+          title: "Silence user"
+          description: "Agree with the flag and silence the user."
+        disagree:
+          title: "Disagree"
+          description: "Disagree with the flag."
+        ignore:
+          title: "Ignore flag"
+          description: "Remove the flag from the queue without taking action."
+    invite_notification:
+      title: "%{username} invited you to %{room_name}"
+      excerpt: "Join the live room %{room_name}"
+    call_notification:
+      title: "%{username} is calling you"
+      excerpt: "Join %{room_name} to answer"
+    call:
+      room_name: "📞 %{caller} + %{callee}"
+    recording_ready_pm:
+      title: "Your recording of %{room_name} is ready"
+      body_with_link: |
+        Your recording of the live room **%{room_name}** (%{duration}) is ready:
+
+        [Download the recording](%{link})
+
+        Anyone with this link can access the recording — share it carefully.
+      body_with_path: |
+        Your recording of the live room **%{room_name}** (%{duration}) has finished.
+
+        It is stored on the recording server at:
+
+        `%{filepath}`
+
+        Ask your site administrator for access.
+      unknown_duration: "unknown duration"
+  badges:
+    mic_check:
+      name: "Mic Check"
+      description: "Completed your first voice chat session."
+      long_description: "Awarded after spending at least 30 seconds in a live room with another person."
+    rookie:
+      name: "Rookie"
+      description: "Spent 1 hour in voice chat."
+      long_description: "Awarded for accumulating 1 hour of total live time."
+    chatterbox:
+      name: "Chatterbox"
+      description: "Spent 10 hours in voice chat."
+      long_description: "Awarded for accumulating 10 hours of total live time."
+    silver_tongue:
+      name: "Silver Tongue"
+      description: "Spent 100 hours in voice chat."
+      long_description: "Awarded for accumulating 100 hours of total live time."
+    icebreaker:
+      name: "Icebreaker"
+      description: "Joined a room full of strangers."
+      long_description: "Awarded for joining a live room where you had no prior co-presence history with anyone."
+    social_butterfly:
+      name: "Social Butterfly"
+      description: "Chatted with 10 different people."
+      long_description: "Awarded for achieving co-presence with 10 or more distinct users."
+    life_of_the_party:
+      name: "Life of the Party"
+      description: "Chatted with 50 different people."
+      long_description: "Awarded for achieving co-presence with 50 or more distinct users."
+    familiar_face:
+      name: "Familiar Face"
+      description: "Spent 2 hours chatting with the same person."
+      long_description: "Awarded for achieving co-presence with one specific user for 2 or more hours total."
+    inner_circle:
+      name: "Inner Circle"
+      description: "Spent 10 hours chatting with the same person."
+      long_description: "Awarded for achieving co-presence with one specific user for 10 or more hours total."
+    partners_in_crime:
+      name: "Partners in Crime"
+      description: "Spent 50 hours chatting with the same person."
+      long_description: "Awarded for achieving co-presence with one specific user for 50 or more hours total."
+    explorer:
+      name: "Explorer"
+      description: "Joined 5 different live rooms."
+      long_description: "Awarded for joining 5 different live rooms."
+    nomad:
+      name: "Nomad"
+      description: "Joined 20 different live rooms."
+      long_description: "Awarded for joining 20 different live rooms."
+    omnipresent:
+      name: "Omnipresent"
+      description: "Joined 50 different live rooms."
+      long_description: "Awarded for joining 50 different live rooms."
+    patron:
+      name: "Patron"
+      description: "Visited the same room on 10 different days."
+      long_description: "Awarded for joining the same live room on 10 distinct days."
+    barfly:
+      name: "Barfly"
+      description: "Visited the same room on 30 different days."
+      long_description: "Awarded for joining the same live room on 30 distinct days."
+    the_mayor:
+      name: "The Mayor"
+      description: "Visited the same room on 100 different days."
+      long_description: "Awarded for joining the same live room on 100 distinct days."
+    host:
+      name: "Host"
+      description: "Created your first live room."
+      long_description: "Awarded for creating your first live room."
+    crowd_puller:
+      name: "Crowd Puller"
+      description: "A room you created reached 50 total joins."
+      long_description: "Awarded when a live room you created accumulates 50 or more total joins."
+    master_of_ceremonies:
+      name: "Master of Ceremonies"
+      description: "A room you created reached 500 total joins."
+      long_description: "Awarded when a live room you created accumulates 500 or more total joins."
+    plus_one:
+      name: "Plus One"
+      description: "Someone joined a live room through your invite."
+      long_description: "Awarded the first time a person you invited joins a live room through your invite."
+    connector:
+      name: "Connector"
+      description: "10 people joined live rooms through your invites."
+      long_description: "Awarded when 10 different people join live rooms through your invites."
+    people_magnet:
+      name: "People Magnet"
+      description: "50 people joined live rooms through your invites."
+      long_description: "Awarded when 50 different people join live rooms through your invites."
+    night_owl:
+      name: "Night Owl"
+      description: "Chatted between midnight and 5 AM."
+      long_description: "Awarded for participating in a live session between midnight and 5 AM in your local timezone."
+    early_bird:
+      name: "Early Bird"
+      description: "Chatted between 5 AM and 9 AM."
+      long_description: "Awarded for participating in a live session between 5 AM and 9 AM in your local timezone."
+    packed_house:
+      name: "Packed House"
+      description: "Was in a room when it hit max capacity."
+      long_description: "Awarded for being in a live room at the exact moment it reaches maximum capacity."
+    weekend_warrior:
+      name: "Weekend Warrior"
+      description: "Spent 5 hours chatting on weekends."
+      long_description: "Awarded for accumulating 5 or more hours of voice chat on weekends."
+    marathoner:
+      name: "Marathoner"
+      description: "Spent 4 hours in a single live session with company."
+      long_description: "Awarded for a single continuous live session with 4 or more hours spent while at least one other person was in the room."
 
 --- # plugins/poll/config/locales/server.en.yml
 en:
@@ -4567,266 +5511,4 @@ en:
     styleguide_enabled: 'Enable a "/styleguide" path to aid in styling of Discourse'
     styleguide_admin_only: "Limits visibility of the styleguide to admins"
     styleguide_allowed_groups: "Limits visibility of the styleguide to members of the provided groups"
-
---- # plugins/voice/config/locales/server.en.yml
-en:
-  site_settings:
-    voice_verbose_logging: "Log voice diagnostic information and warnings in server logs and browser consoles. Disabled by default. Logs exclude credentials, transcripts, signaling payloads, and raw error details."
-    voice_enabled: "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required."
-    voice_allowed_groups: "Groups that can access voice rooms."
-    voice_create_room_allowed_groups: "Groups that can create new voice rooms."
-    voice_direct_calls_allowed_groups: "Groups that can start a direct call with another user from their user card or profile. Empty disables direct calls. Callers also need to be in {{setting:voice_allowed_groups}}; anyone with voice room access can receive a call."
-    voice_max_rooms_per_user: "Maximum number of voice rooms a single user can own. Temporary rooms created automatically by other features do not count."
-    voice_max_invites_per_day: "Maximum number of voice room invite notifications a single user can send per day. Repeated invites to the same person in the same room don't notify again (and don't count) until a day has passed."
-    voice_ephemeral_room_ttl_minutes: "Minutes a temporary room (created automatically by another feature, such as a direct call) can sit empty before it is deleted. Rooms with people in them are never deleted."
-    voice_participant_ttl_seconds: "Seconds to keep active speaker presence in Redis before automatic cleanup. Client heartbeat refreshes every 10 seconds."
-    voice_max_room_participants: "Maximum number of people who can be in a voice room at the same time. A room's own participant limit can lower this, but never raise it."
-    voice_auto_status_enabled: "Automatically set user status when they join a voice room (e.g. '🎙️ In Watercooler'). Requires the 'enable user status' site setting."
-    voice_mesh_privacy_warning_enabled: "Warn users before they join a peer-to-peer voice room that other participants may be able to see their IP address, with an option to not show the warning again on that device. Calls hosted on a LiveKit server never show the warning."
-    voice_badges_enabled: "Enable voice chat badges when {{setting:voice_enabled}} is enabled. Grants badges for voice room milestones like time spent, rooms visited, and connections made. Toggling this enables or disables every badge in the Voice group at once. Requires {{setting:voice_analytics_enabled}}, which records the sessions the badges are computed from."
-    voice_analytics_enabled: "Record who joined which voice room and when, and how long people spent in a room together. Powers the admin voice statistics, the contacts and companions suggestions, and every voice badge."
-    voice_session_retention_days: "Days to keep voice session and time-together history before it is deleted. Badges already earned are never taken away, but progress toward badges that accumulate over time (hours in voice, days in a room, people met) only counts history within this window."
-    voice_idle_threshold_minutes: "Minutes of inactivity before a voice room participant is marked as idle. Set to 0 to disable."
-    voice_afk_auto_mute_threshold_minutes: "Minutes of inactivity before a voice room participant is automatically muted. Set to 0 to disable."
-    voice_afk_disconnect_threshold_minutes: "Minutes of inactivity before a voice room participant is automatically disconnected. Set to 0 to disable."
-    voice_video_enabled: "Enable camera video and screen sharing in voice rooms. Rooms can individually opt out via their room settings."
-    voice_video_max_publishers: "Maximum number of participants who can share video or their screen at the same time in a room. On peer-to-peer rooms, higher values increase CPU and bandwidth load for everyone watching; on rooms using a LiveKit media server, they mainly increase load on that server."
-    voice_video_background_blur_enabled: "Allow participants to blur their camera background. Segmentation runs on the publisher's device via MediaPipe, which increases CPU/GPU load while their camera is on."
-    voice_subtitles_enabled: "Allow participants to turn on live subtitles for other people's speech. Transcription runs entirely on the viewer's device via an NVIDIA Parakeet speech-to-text model (~2.5 GB, downloaded on first use, WebGPU required); no audio leaves the browser."
-    voice_stt_model_base_url: "Optional base URL for a self-hosted mirror of the subtitles model. When blank, the model files are downloaded on first use from Discourse's HuggingFace repository (Discourse/parakeet-tdt-0.6b-v3-onnx). A mirror must serve the same four files under their original names, reachable by browsers with CORS allowed — see docs/subtitles-model-mirror.md in the plugin."
-    voice_max_voice_quality: "Highest microphone audio quality participants may choose in their voice settings. Standard is the browser's speech default (~32 kbps); high (~64 kbps) and maximum (~128 kbps) improve fidelity for good microphones at the cost of bandwidth."
-    voice_max_camera_quality: "Highest camera quality participants may choose in their video settings. Standard captures at 720p; high captures at 1080p; maximum additionally stops automatic quality reduction as viewer count grows on peer-to-peer rooms, which multiplies the sender's upload bandwidth and CPU use."
-    voice_max_screen_share_quality: "Highest screen share quality participants may choose in their video settings. Standard targets 15 fps at a modest bitrate; high allows 30 fps at a higher bitrate; maximum allows 60 fps at a very high bitrate ceiling, letting fast connections share high-resolution screens at full quality."
-    voice_chat_enabled: "Allow voice rooms to be linked to a chat channel. Each chat session opens a thread in that channel; messages are real chat messages, so participants can also follow along in the chat UI."
-    voice_stun_servers: "STUN server URIs (stun:host:port), separated by |, used by peer-to-peer voice rooms for NAT traversal. Can be left empty when {{setting:voice_turn_secret_servers}} is configured — clients then discover their public address through the TURN server itself."
-    voice_turn_servers: "TURN server URIs (turn:host:port or turns:host:port), separated by |, used to relay voice traffic when a direct connection cannot be established. Authenticated with {{setting:voice_turn_username}} and {{setting:voice_turn_credential}}; for servers supporting short-lived credentials, use {{setting:voice_turn_secret_servers}} instead."
-    voice_turn_username: "Static username for the TURN servers in {{setting:voice_turn_servers}}."
-    voice_turn_credential: "Static password for the TURN servers in {{setting:voice_turn_servers}}."
-    voice_turn_secret: "Shared secret used to mint short-lived TURN credentials for the servers in {{setting:voice_turn_secret_servers}} (TURN REST API, coturn's use-auth-secret mode). Must match the secret configured on those TURN servers."
-    voice_turn_secret_servers: "TURN server URIs (turn:host:port or turns:host:port), separated by |, that authenticate with short-lived per-user credentials derived from {{setting:voice_turn_secret}} instead of a static username and password, so credentials cannot be reused by third parties."
-    voice_livekit_agent_enabled: "Allow members of {{setting:voice_livekit_agent_invite_allowed_groups}} to invite a LiveKit Cloud agent to public voice rooms. Creates the livekit_agent_bot account. Requires configured LiveKit Cloud credentials."
-    voice_livekit_agent_invite_allowed_groups: "Groups that can invite a LiveKit Cloud agent to a public voice room they can join. Admins are always included. Members also need to be in {{setting:voice_allowed_groups}}; room managers can kick an agent regardless of this setting."
-    voice_livekit_url: "WebSocket URL (wss://, or ws:// outside production) of a self-hosted LiveKit server. Together with the API key and secret, lets voice rooms use it as their media server (SFU) instead of the peer-to-peer mesh. The server must be reachable at a public address."
-    voice_livekit_api_key: "API key of the LiveKit server."
-    voice_livekit_api_secret: "API secret of the LiveKit server, used to sign short-lived room access tokens."
-    voice_livekit_room_policy: "Which rooms use the LiveKit media server instead of the peer-to-peer mesh. Changes never affect calls already in progress — each room switches when its next call starts."
-    voice_livekit_room_prefix: "Namespace prefix for room names on the LiveKit server. Leave empty to use the site's database name."
-    voice_livekit_mesh_fallback: "When a LiveKit access token cannot be issued and the room is empty, start the call on the peer-to-peer mesh instead of failing the join. Off by default because silent degradation can hide a LiveKit outage."
-    voice_livekit_recording_enabled: "Allow room moderators to record calls that run on the LiveKit media server. LiveKit Cloud requires {{setting:voice_livekit_recording_s3_bucket}}. Self-hosted Egress can use its own storage configuration. Recordings are not Discourse uploads.<br><br>Configure a webhook in LiveKit pointing to <code>https://YOUR-FORUM/voice/livekit/webhook</code>, replacing YOUR-FORUM with this site's hostname. Use the same API key as {{setting:voice_livekit_api_key}} and include <code>egress_ended</code> events so recording statuses and download notifications update when recordings finish."
-    voice_livekit_recording_filepath: "Filepath passed to LiveKit Egress for recordings. Supports LiveKit's template placeholders such as {room_name}, {room_id}, {time} and {utc}; the file extension is added automatically."
-    voice_livekit_recording_s3_bucket: "Dedicated S3 bucket for voice recordings, without a path. Set the recording credentials and region before saving this setting. Use {{setting:voice_livekit_recording_filepath}} for a folder prefix. Leave empty to use self-hosted Egress storage. Discourse upload storage settings are not used."
-    voice_livekit_recording_s3_region: "AWS region of the recording bucket, such as us-east-1. Required unless {{setting:voice_livekit_recording_s3_endpoint}} is set."
-    voice_livekit_recording_s3_access_key_id: "S3 access key for the recording bucket. Sent to the configured LiveKit server over HTTPS when starting a recording. Use credentials with write access limited to the recording location."
-    voice_livekit_recording_s3_secret_access_key: "S3 secret key for the recording bucket. Sent only to the configured LiveKit server over HTTPS, never to participants."
-    voice_livekit_recording_s3_endpoint: "Optional HTTPS endpoint for S3-compatible recording storage, without a path or trailing slash. Leave empty for AWS S3. Custom endpoints use path-style bucket addressing."
-    errors:
-      voice_livekit_agent_requires_cloud: "Configure a LiveKit Cloud URL, API key, and API secret before enabling the agent."
-      voice_livekit_agent_username_taken: "The username livekit_agent_bot is already in use. Rename that account before enabling the agent."
-      voice_livekit_recording_s3_requires_credentials: "Set the recording S3 access key and secret key before setting a recording bucket."
-      voice_livekit_recording_s3_requires_region: "Set the recording S3 region or a custom endpoint before setting a recording bucket."
-      voice_livekit_recording_s3_requires_wss: "Use a wss:// LiveKit URL before configuring S3 recording storage so storage credentials are sent over HTTPS."
-      voice_turn_secret_servers_requires_secret: "Set voice_turn_secret before adding TURN servers that use short-lived credentials."
-      voice_livekit_policy_requires_url: "Set voice_livekit_url to a valid wss:// URL before enabling a LiveKit room policy."
-      voice_livekit_url_invalid: "The LiveKit URL must be a ws:// or wss:// URL with a hostname and no embedded credentials."
-      voice_livekit_url_requires_wss: "The LiveKit URL must use wss:// in production."
-      voice_livekit_policy_requires_api_key: "Set voice_livekit_api_key before enabling a LiveKit room policy."
-      voice_livekit_policy_requires_api_secret: "Set voice_livekit_api_secret before enabling a LiveKit room policy."
-  voice:
-    defaults:
-      watercooler_description: "Join for casual drop-in voice chats with other community members."
-    chat:
-      default_thread_title: "Voice chat in %{room}"
-      default_thread_opener: "In %{room} - %{message}"
-    user_status:
-      in_room: "In %{room_name}"
-      in_private_room: "In a voice room"
-      afk_in_room: "AFK in %{room_name}"
-      afk_in_private_room: "AFK in a voice room"
-    errors:
-      not_enabled: "Voice rooms are disabled."
-      not_authorized: "You are not allowed to perform that action for this room."
-      room_limit: "You reached the maximum number of rooms you can create."
-      missing_payload: "Signal payload is required."
-      participant_session_required: "Your call session has expired. Rejoin the room to start a new one."
-      room_full: "This room is full."
-      invalid_signal: "The signal payload is malformed or exceeds the allowed size."
-      state_change_required: "A state change is required."
-      ephemeral_room_limit: "You have too many ongoing calls. End one before starting another."
-      cannot_call_user: "Sorry, you cannot call that user."
-      cannot_kick_self: "You cannot kick yourself from the room."
-      cannot_kick_creator: "You cannot kick the room creator."
-      listeners_cannot_unmute: "Listeners cannot unmute in a Stage room."
-      video_not_allowed: "Video is not enabled in this room."
-      video_publisher_limit: "The maximum number of simultaneous video streams for this room has been reached."
-      chat_unavailable: "Chat is not available for this room."
-      chat_requires_presence: "Join the voice room to use its chat."
-      flag_target_never_joined: "That user has not joined this room."
-      flag_already_handled: "Thanks, we have already been notified about this user and are looking into it."
-      chat_threading_disabled: "The linked chat channel no longer has threading enabled, so a chat session can't be started."
-      livekit_unavailable: "The voice server is unavailable. Contact your site administrator."
-      agent_dispatch_forbidden: "The agent can only join an ongoing LiveKit call in a public room. Check the agent settings and make sure a human is present."
-      agent_dispatch_failed: "LiveKit could not confirm the agent invitation. Check the agent's deployment and the server logs before trying again."
-      agent_list_failed: "LiveKit could not list the deployed agents. Enter the agent's dispatch name instead."
-      livekit_room_instance_ended: "This call has ended. Rejoin the room to start a new one."
-      livekit_no_signaling: "This room's call uses a media server; peer-to-peer signaling is disabled."
-      recording_unavailable: "Recording is not available for this call."
-      recording_already_active: "This call is already being recorded."
-      recording_not_active: "This call is not being recorded."
-      recording_failed: "The recording could not be started. Contact your site administrator."
-      recording_stop_failed: "The recording could not be stopped. Please try again."
-    reviewable_score_types:
-      notify_moderators:
-        pm_title: "A voice room participant requires staff attention"
-        pm_body: "@%{username} in the voice room [%{room_name}](%{link}) requires staff attention:\n\n%{message}"
-    reviewables:
-      actions:
-        agree_and_keep:
-          title: "Agree"
-          description: "Agree with the flag."
-        agree_and_suspend:
-          title: "Suspend user"
-          description: "Agree with the flag and suspend the user."
-        agree_and_silence:
-          title: "Silence user"
-          description: "Agree with the flag and silence the user."
-        disagree:
-          title: "Disagree"
-          description: "Disagree with the flag."
-        ignore:
-          title: "Ignore flag"
-          description: "Remove the flag from the queue without taking action."
-    invite_notification:
-      title: "%{username} invited you to %{room_name}"
-      excerpt: "Join the voice room %{room_name}"
-    call_notification:
-      title: "%{username} is calling you"
-      excerpt: "Join %{room_name} to answer"
-    call:
-      room_name: "📞 %{caller} + %{callee}"
-    recording_ready_pm:
-      title: "Your recording of %{room_name} is ready"
-      body_with_link: |
-        Your recording of the voice room **%{room_name}** (%{duration}) is ready:
-
-        [Download the recording](%{link})
-
-        Anyone with this link can access the recording — share it carefully.
-      body_with_path: |
-        Your recording of the voice room **%{room_name}** (%{duration}) has finished.
-
-        It is stored on the recording server at:
-
-        `%{filepath}`
-
-        Ask your site administrator for access.
-      unknown_duration: "unknown duration"
-  badges:
-    mic_check:
-      name: "Mic Check"
-      description: "Completed your first voice chat session."
-      long_description: "Awarded after spending at least 30 seconds in a voice room with another person."
-    rookie:
-      name: "Rookie"
-      description: "Spent 1 hour in voice chat."
-      long_description: "Awarded for accumulating 1 hour of total voice time."
-    chatterbox:
-      name: "Chatterbox"
-      description: "Spent 10 hours in voice chat."
-      long_description: "Awarded for accumulating 10 hours of total voice time."
-    silver_tongue:
-      name: "Silver Tongue"
-      description: "Spent 100 hours in voice chat."
-      long_description: "Awarded for accumulating 100 hours of total voice time."
-    icebreaker:
-      name: "Icebreaker"
-      description: "Joined a room full of strangers."
-      long_description: "Awarded for joining a voice room where you had no prior co-presence history with anyone."
-    social_butterfly:
-      name: "Social Butterfly"
-      description: "Chatted with 10 different people."
-      long_description: "Awarded for achieving co-presence with 10 or more distinct users."
-    life_of_the_party:
-      name: "Life of the Party"
-      description: "Chatted with 50 different people."
-      long_description: "Awarded for achieving co-presence with 50 or more distinct users."
-    familiar_face:
-      name: "Familiar Face"
-      description: "Spent 2 hours chatting with the same person."
-      long_description: "Awarded for achieving co-presence with one specific user for 2 or more hours total."
-    inner_circle:
-      name: "Inner Circle"
-      description: "Spent 10 hours chatting with the same person."
-      long_description: "Awarded for achieving co-presence with one specific user for 10 or more hours total."
-    partners_in_crime:
-      name: "Partners in Crime"
-      description: "Spent 50 hours chatting with the same person."
-      long_description: "Awarded for achieving co-presence with one specific user for 50 or more hours total."
-    explorer:
-      name: "Explorer"
-      description: "Joined 5 different voice rooms."
-      long_description: "Awarded for joining 5 different voice rooms."
-    nomad:
-      name: "Nomad"
-      description: "Joined 20 different voice rooms."
-      long_description: "Awarded for joining 20 different voice rooms."
-    omnipresent:
-      name: "Omnipresent"
-      description: "Joined 50 different voice rooms."
-      long_description: "Awarded for joining 50 different voice rooms."
-    patron:
-      name: "Patron"
-      description: "Visited the same room on 10 different days."
-      long_description: "Awarded for joining the same voice room on 10 distinct days."
-    barfly:
-      name: "Barfly"
-      description: "Visited the same room on 30 different days."
-      long_description: "Awarded for joining the same voice room on 30 distinct days."
-    the_mayor:
-      name: "The Mayor"
-      description: "Visited the same room on 100 different days."
-      long_description: "Awarded for joining the same voice room on 100 distinct days."
-    host:
-      name: "Host"
-      description: "Created your first voice room."
-      long_description: "Awarded for creating your first voice room."
-    crowd_puller:
-      name: "Crowd Puller"
-      description: "A room you created reached 50 total joins."
-      long_description: "Awarded when a voice room you created accumulates 50 or more total joins."
-    master_of_ceremonies:
-      name: "Master of Ceremonies"
-      description: "A room you created reached 500 total joins."
-      long_description: "Awarded when a voice room you created accumulates 500 or more total joins."
-    plus_one:
-      name: "Plus One"
-      description: "Someone joined a voice room through your invite."
-      long_description: "Awarded the first time a person you invited joins a voice room through your invite."
-    connector:
-      name: "Connector"
-      description: "10 people joined voice rooms through your invites."
-      long_description: "Awarded when 10 different people join voice rooms through your invites."
-    people_magnet:
-      name: "People Magnet"
-      description: "50 people joined voice rooms through your invites."
-      long_description: "Awarded when 50 different people join voice rooms through your invites."
-    night_owl:
-      name: "Night Owl"
-      description: "Chatted between midnight and 5 AM."
-      long_description: "Awarded for participating in a voice session between midnight and 5 AM in your local timezone."
-    early_bird:
-      name: "Early Bird"
-      description: "Chatted between 5 AM and 9 AM."
-      long_description: "Awarded for participating in a voice session between 5 AM and 9 AM in your local timezone."
-    packed_house:
-      name: "Packed House"
-      description: "Was in a room when it hit max capacity."
-      long_description: "Awarded for being in a voice room at the exact moment it reaches maximum capacity."
-    weekend_warrior:
-      name: "Weekend Warrior"
-      description: "Spent 5 hours chatting on weekends."
-      long_description: "Awarded for accumulating 5 or more hours of voice chat on weekends."
-    marathoner:
-      name: "Marathoner"
-      description: "Spent 4 hours in a single voice session with company."
-      long_description: "Awarded for a single continuous voice session with 4 or more hours spent while at least one other person was in the room."
 

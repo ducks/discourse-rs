@@ -265,14 +265,64 @@
     "receiver": "<img src=\"https://www.discourse.org/logo.svg\" height=\"100\" width=\"200\">"
   },
   {
-    "html": "converts <h",
-    "markdown": "converts",
-    "receiver": "converts"
+    "html": "converts <h1>",
+    "markdown": "converts#",
+    "receiver": "converts#"
   },
   {
-    "html": "<h",
-    "markdown": "",
-    "receiver": ""
+    "html": "<h1>Header 1</h1>",
+    "markdown": "# Header 1",
+    "receiver": "# Header 1"
+  },
+  {
+    "html": "converts <h2>",
+    "markdown": "converts##",
+    "receiver": "converts##"
+  },
+  {
+    "html": "<h2>Header 2</h2>",
+    "markdown": "## Header 2",
+    "receiver": "## Header 2"
+  },
+  {
+    "html": "converts <h3>",
+    "markdown": "converts###",
+    "receiver": "converts###"
+  },
+  {
+    "html": "<h3>Header 3</h3>",
+    "markdown": "### Header 3",
+    "receiver": "### Header 3"
+  },
+  {
+    "html": "converts <h4>",
+    "markdown": "converts####",
+    "receiver": "converts####"
+  },
+  {
+    "html": "<h4>Header 4</h4>",
+    "markdown": "#### Header 4",
+    "receiver": "#### Header 4"
+  },
+  {
+    "html": "converts <h5>",
+    "markdown": "converts#####",
+    "receiver": "converts#####"
+  },
+  {
+    "html": "<h5>Header 5</h5>",
+    "markdown": "##### Header 5",
+    "receiver": "##### Header 5"
+  },
+  {
+    "html": "converts <h6>",
+    "markdown": "converts######",
+    "receiver": "converts######"
+  },
+  {
+    "html": "<h6>Header 6</h6>",
+    "markdown": "###### Header 6",
+    "receiver": "###### Header 6"
   },
   {
     "html": "converts <br>",
@@ -293,6 +343,76 @@
     "html": "<p>Before<br>\nInside<br>After</p>",
     "markdown": "Before\nInside\nAfter",
     "receiver": "Before\nInside\nAfter"
+  },
+  {
+    "html": "splits every inline ancestor around <br>",
+    "markdown": "splits every inline ancestor around",
+    "receiver": "splits every inline ancestor around"
+  },
+  {
+    "html": "<div><span><b>a<br>b</b></span></div>",
+    "markdown": "**a**\n**b**",
+    "receiver": "**a**\n**b**"
+  },
+  {
+    "html": "hoists <br> out of deeply nested inline elements in bounded time",
+    "markdown": "hoists\nout of deeply nested inline elements in bounded time",
+    "receiver": "hoists\nout of deeply nested inline elements in bounded time"
+  },
+  {
+    "html": "<div>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "a<br>b<br>c<br>d<span>",
+    "markdown": "a\nb\nc\nd",
+    "receiver": "a\nb\nc\nd"
+  },
+  {
+    "html": "hoists many <br> out of a single inline element in linear time",
+    "markdown": "hoists many\nout of a single inline element in linear time",
+    "receiver": "hoists many\nout of a single inline element in linear time"
+  },
+  {
+    "html": "<div><span>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "a<br>",
+    "markdown": "a",
+    "receiver": "a"
+  },
+  {
+    "html": "hoists many <br> out of deeply nested inline elements in bounded time",
+    "markdown": "hoists many\nout of deeply nested inline elements in bounded time",
+    "receiver": "hoists many\nout of deeply nested inline elements in bounded time"
+  },
+  {
+    "html": "<span>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<br>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<div><b>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<i>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "line<br>",
+    "markdown": "line",
+    "receiver": "line"
   },
   {
     "html": "converts <hr>",

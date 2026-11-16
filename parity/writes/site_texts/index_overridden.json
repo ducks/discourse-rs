@@ -27,8 +27,8 @@
       "path": "/admin/customize/site_texts.json?locale=en"
     }
   ],
-  "started_at": "2026-10-14T14:30:09.613424",
-  "transaction_started_at": "2026-10-14T14:30:07.681955",
+  "started_at": "2026-11-15T23:37:18.38627",
+  "transaction_started_at": "2026-11-15T23:37:17.571537",
   "responses": [
     {
       "status": 200,
@@ -132,6 +132,16 @@
             "can_revert": false
           },
           {
+            "id": "blog.discussion",
+            "value": "The conversation",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
             "id": "embed.loading",
             "value": "Loading Discussion…",
             "status": "up_to_date",
@@ -172,8 +182,58 @@
             "can_revert": false
           },
           {
+            "id": "blog.open_discussion",
+            "value": "Open in the community",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.public_discussion",
+            "value": "Public discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.panel.discussion.live",
+            "value": "Live on the blog",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
             "id": "llms_txt.links.latest.label",
             "value": "Latest discussions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.panel.discussion.not_live",
+            "value": "Not on the blog",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.panel.discussion.edit_privately",
+            "value": "Edit privately",
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -202,6 +262,16 @@
             "can_revert": false
           },
           {
+            "id": "js.blog.panel.unpublished_notice",
+            "value": "The public discussion stays open",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
             "id": "llms_txt.links.categories.note",
             "value": "Browse public discussion categories",
             "status": "up_to_date",
@@ -220,6 +290,16 @@
             "interpolation_keys": [
               "count"
             ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.panel.discussion.intro_not_live",
+            "value": "This topic is not on the blog.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
             "overridden": false,
             "can_revert": false
           },
@@ -258,6 +338,16 @@
             "can_revert": false
           },
           {
+            "id": "js.blog.panel.unpublish_hint",
+            "value": "Remove from the blog; the discussion stays public",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
             "id": "create_linked_topic.small_action_post_raw",
             "value": "Continue discussion at %{new_title}.",
             "status": "up_to_date",
@@ -272,16 +362,6 @@
           {
             "id": "js.discourse_ai.discobot_discoveries.sources.related_discussions",
             "value": "Related topics",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "js.composer.title_placeholder",
-            "value": "What is this discussion about in one brief sentence?",
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -320,6 +400,16 @@
             "interpolation_keys": [
               "sources"
             ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.panel.discussion.intro",
+            "value": "This is the public discussion, replies here will appear on the blog.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
             "overridden": false,
             "can_revert": false
           },
@@ -364,8 +454,38 @@
             "can_revert": false
           },
           {
+            "id": "blog.discussion_closed",
+            "value": "This conversation is closed to new replies. You can still read the discussion below.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.blog.admin.layout_content",
+            "value": "The rendered page and discussion. Use once inside the layout’s main element.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
             "id": "meta_category_description",
             "value": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "blog.discussion_description",
+            "value": "Have a thought or a question? Join the discussion below with your community account.",
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -427,8 +547,8 @@
             "can_revert": false
           },
           {
-            "id": "groups.default_descriptions.moderators",
-            "value": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "id": "js.blog.panel.discussion.no_working_copy",
+            "value": "Edit privately to prepare changes in a private working copy without touching this topic.",
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -437,8 +557,28 @@
             "can_revert": false
           },
           {
-            "id": "js.admin_onboarding_banner.start_posting.predefined_topics_description",
-            "value": "Pick from a collection of conversation starters to get discussions going",
+            "id": "blog.discussion_load_error",
+            "value": "The inline discussion could not load. Refresh this page to try again, or use Open in the community above.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.blog.panel.publish_correction_confirm",
+            "value": "Replace the live article with the current draft? The article keeps its URL and public discussion.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "groups.default_descriptions.moderators",
+            "value": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -487,158 +627,6 @@
           {
             "id": "admin_js.admin.user.delete_confirm",
             "value": "It is generally preferable to anonymize users rather than deleting them, to avoid removing content from existing discussions.",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "js.topic.slow_mode_update.description",
-            "value": "To promote thoughtful discussion in fast moving or contentious discussions, users must wait before posting again in this topic.",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "post_action_types.off_topic.description",
-            "value": "This post is not relevant to the current discussion as defined by the title and first post, and should probably be moved elsewhere.",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "cannot_edit_on_slow_mode",
-            "value": "This topic is in slow mode. To encourage thoughtful, considered discussion, editing old posts in this topic is not currently allowed during slow mode.",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "discourse_narrative_bot.advanced_user_narrative.delete.reply",
-            "value": "Whoa! :boom:\n\nTo preserve continuity of discussions, deletes aren’t immediate, so the post will be removed after some time.",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "badges.great_topic.long_description",
-            "value": "This badge is granted when your topic gets 50 likes. You kicked off a fascinating conversation and the community loved the lively discussion that resulted!\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "badges.nice_share.long_description",
-            "value": "This badge is granted for sharing a link that was clicked by 25 unique outside visitors. Thanks for spreading the word about our discussions, and this community.\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "site_settings.ai_toxicity_flag_threshold_toxicity",
-            "value": "Toxicity: a rude, disrespectful, or unreasonable comment that is somewhat likely to make you leave a discussion or give up on sharing your perspective",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "badges.hot_link.long_description",
-            "value": "This badge is granted when a link you shared gets 300 clicks. Thanks for posting a fascinating link that drove the conversation forward and illuminated the discussion!\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "assign_mailer.text_body_template",
-            "value": "Hey, %{assignee_name} **assigned** you to a discussion\n> **%{topic_title}**\n>\n> %{topic_excerpt}\n\nIf you're interested, click the link below:\n[%{topic_link}](%{topic_link})\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [
-              "assignee_name",
-              "topic_excerpt",
-              "topic_link",
-              "topic_title"
-            ],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "badges.licensed.long_description",
-            "value": "This badge is granted upon successful completion of the interactive advanced user tutorial. You’ve mastered the advanced tools of discussion — and now you’re fully licensed!\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "badges.certified.long_description",
-            "value": "This badge is granted upon successful completion of the interactive new user tutorial. You’ve taken the initiative to learn the basic tools of discussion, and now you're certified!\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "site_settings.ai_toxicity_flag_threshold_severe_toxicity",
-            "value": "Severe Toxicity: a very hateful, aggressive, or disrespectful comment that is very likely to make you leave a discussion or give up on sharing your perspective",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "invite_mailer.text_body_template",
-            "value": "%{inviter_name} invited you to a discussion\n\n> **%{topic_title}**\n>\n> %{topic_excerpt}\n\nat\n\n> %{site_title} -- %{site_description}\n\nIf you're interested, click the link below:\n\n%{invite_link}\n",
-            "status": "up_to_date",
-            "old_default": null,
-            "new_default": null,
-            "interpolation_keys": [
-              "invite_link",
-              "inviter_name",
-              "site_description",
-              "site_title",
-              "topic_excerpt",
-              "topic_title"
-            ],
-            "overridden": false,
-            "can_revert": false
-          },
-          {
-            "id": "badges.good_share.long_description",
-            "value": "This badge is granted for sharing a link that was clicked by 300 unique outside visitors. Good work! You’ve shown off a great discussion to a bunch of new people and helped this community grow.\n",
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -1026,33 +1014,33 @@
       "updated": [
         {
           "before": {
-            "id": 112,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
-            "created_at": "2026-10-14T14:30:08.722482",
-            "rotated_at": "2026-10-14T14:30:08.719376",
-            "updated_at": "2026-10-14T14:30:08.722482",
+            "auth_token": "hWxZAz4M9rJS3F7VE5rHpqT3yxQ=",
+            "created_at": "2026-11-15T23:37:17.928961",
+            "rotated_at": "2026-11-15T23:37:17.928018",
+            "updated_at": "2026-11-15T23:37:17.928961",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
+            "prev_auth_token": "hWxZAz4M9rJS3F7VE5rHpqT3yxQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 112,
-            "seen_at": "2026-10-14T14:30:09.624586",
+            "id": 14,
+            "seen_at": "2026-11-15T23:37:18.390454",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
-            "created_at": "2026-10-14T14:30:08.722482",
-            "rotated_at": "2026-10-14T14:30:08.719376",
-            "updated_at": "2026-10-14T14:30:08.722482",
+            "auth_token": "hWxZAz4M9rJS3F7VE5rHpqT3yxQ=",
+            "created_at": "2026-11-15T23:37:17.928961",
+            "rotated_at": "2026-11-15T23:37:17.928018",
+            "updated_at": "2026-11-15T23:37:17.928961",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
+            "prev_auth_token": "hWxZAz4M9rJS3F7VE5rHpqT3yxQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1072,7 +1060,7 @@
   ],
   "recorded_from": {
     "case": "f0bba5e92cd378ccbd272108607bf5020bc1aef323d9f5b807696eec6f3b9e76",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

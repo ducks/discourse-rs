@@ -941,16 +941,6 @@ fn now_json() -> Value {
     )
 }
 
-/// `AdminDashboardIndexData.fetch_cached_stats`
-pub async fn index_data(conn: &mut PgConnection) -> Result<Value, AppError> {
-    cached_stats(
-        conn,
-        &format!("index-dashboard-data-{SCHEMA_VERSION}"),
-        || json!({ "updated_at": now_json() }),
-    )
-    .await
-}
-
 /// `AdminDashboardGeneralData.fetch_cached_stats`
 pub async fn general_data(conn: &mut PgConnection) -> Result<Value, AppError> {
     cached_stats(conn, &format!("general-dashboard-data-{SCHEMA_VERSION}"), || {
@@ -1009,12 +999,10 @@ async fn system(
         }
         Some(other) => other,
     };
-    let updated = index_data(conn).await?;
     Ok(json!({
         "version": version,
         "storage": storage,
         "discourse_updated_at": last_commit_date(),
-        "dashboard_updated_at": updated.get("updated_at").cloned().unwrap_or(Value::Null),
     }))
 }
 

@@ -601,6 +601,13 @@ const PLUGINS: &[AdminPlugin] = &[
         "wand-magic-sparkles",
     ),
     plugin(
+        "blog",
+        "blog.admin.title",
+        "Blog",
+        "blog_enabled",
+        "pen-to-square",
+    ),
+    plugin(
         "boards",
         "admin.site_settings.categories.boards",
         "Boards",
@@ -670,6 +677,13 @@ const PLUGINS: &[AdminPlugin] = &[
         "Lazy videos",
         "lazy_videos_enabled",
         "bed",
+    ),
+    plugin(
+        "live",
+        "live.admin.title",
+        "Live",
+        "live_enabled",
+        "microphone-lines",
     ),
     plugin(
         "discourse-local-dates",
@@ -817,13 +831,6 @@ const PLUGINS: &[AdminPlugin] = &[
         "User notes",
         "user_notes_enabled",
         "pen-to-square",
-    ),
-    plugin(
-        "voice",
-        "voice.admin.title",
-        "Voice",
-        "voice_enabled",
-        "microphone-lines",
     ),
     plugin(
         "discourse-workflows",

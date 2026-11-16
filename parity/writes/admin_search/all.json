@@ -7,8 +7,8 @@
       "path": "/admin/search/all.json"
     }
   ],
-  "started_at": "2026-10-17T11:32:48.114148",
-  "transaction_started_at": "2026-10-17T11:32:45.399136",
+  "started_at": "2026-11-15T21:47:15.461679",
+  "transaction_started_at": "2026-11-15T21:47:04.233937",
   "responses": [
     {
       "status": 200,
@@ -348,7 +348,7 @@
           {
             "setting": "company_name",
             "humanized_name": "Company name",
-            "description": "Name of your company or organization. If left blank, no boilerplate Terms of Service or Privacy Notice will be provided.",
+            "description": "Name of your company or organization.",
             "keywords": [],
             "category": "required",
             "primary_area": "about"
@@ -386,7 +386,7 @@
             "primary_area": null,
             "upload": {
               "original_filename": "discourse-logo-sketch.png",
-              "human_filesize": "165 KB",
+              "human_filesize": "68.2 KB",
               "width": 1858,
               "height": 512
             }
@@ -400,7 +400,7 @@
             "primary_area": null,
             "upload": {
               "original_filename": "discourse-logo-sketch-small.png",
-              "human_filesize": "61.2 KB",
+              "human_filesize": "27.2 KB",
               "width": 512,
               "height": 512
             }
@@ -832,6 +832,14 @@
             "primary_area": "notifications"
           },
           {
+            "setting": "push_notification_trusted_hosts",
+            "humanized_name": "Push notification trusted hosts",
+            "description": "Push services whose subscriptions are delivered immediately and tolerate temporary outages. Subdomains are included. Subscriptions on other hosts are limited to two per user, delivered one at a time across the site, and removed after two failed or slow deliveries.",
+            "keywords": [],
+            "category": "basic",
+            "primary_area": "notifications"
+          },
+          {
             "setting": "short_title",
             "humanized_name": "Short title",
             "description": "The short title will be used on the user's home screen, launcher, or other places where space may be limited. It should be limited to 12 characters. Note that changing this title may send a prompt to users of the PWA asking them to either update or uninstall the app.",
@@ -898,7 +906,7 @@
           {
             "setting": "about_page_hidden_groups",
             "humanized_name": "About page hidden groups",
-            "description": "Do not show members of specific groups on the /about page.",
+            "description": "Do not show admins or moderators who are also members of these specific groups on the /about page.",
             "keywords": [],
             "category": "basic",
             "primary_area": "group_permissions"
@@ -1115,6 +1123,14 @@
             "setting": "google_oauth2_hd_groups",
             "humanized_name": "Google OAuth2 HD groups",
             "description": "Retrieve users' Google groups on the hosted domain on authentication. Retrieved Google groups can be used to grant automatic Discourse group membership (see group settings). For more information, see <a target=\"_blank\" href=\"https://meta.discourse.org/t/226850\">this Meta topic</a>.",
+            "keywords": [],
+            "category": "login",
+            "primary_area": "authenticators"
+          },
+          {
+            "setting": "google_oauth2_hd_groups_allowed",
+            "humanized_name": "Google OAuth2 HD groups allowed",
+            "description": "Only allow users who belong to at least one of these Google groups to log in with Google. Enter each group's ID or email address. Requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=google_oauth2_hd\" data-setting-name=\"google_oauth2_hd\" data-setting-area=\"authenticators\" data-setting-category=\"login\">Google OAuth2 HD</a>, <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=google_oauth2_hd_groups_service_account_admin_email\" data-setting-name=\"google_oauth2_hd_groups_service_account_admin_email\" data-setting-area=\"authenticators\" data-setting-category=\"login\">Google OAuth2 HD groups service account admin email</a>, and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=google_oauth2_hd_groups_service_account_json\" data-setting-name=\"google_oauth2_hd_groups_service_account_json\" data-setting-area=\"authenticators\" data-setting-category=\"login\">Google OAuth2 HD groups service account JSON</a>. Group lookup failures deny login. Leave blank to allow any user in the hosted domain.",
             "keywords": [],
             "category": "login",
             "primary_area": "authenticators"
@@ -2515,14 +2531,6 @@
             "primary_area": "posts_and_topics"
           },
           {
-            "setting": "short_progress_text_threshold",
-            "humanized_name": "Short progress text threshold",
-            "description": "After the number of posts in a topic goes above this number, the progress bar will only show the current post number. If you change the progress bar's width, you may need to change this value.",
-            "keywords": [],
-            "category": "posting",
-            "primary_area": "posts_and_topics"
-          },
-          {
             "setting": "default_code_lang",
             "humanized_name": "Default code lang",
             "description": "Default programming language syntax highlighting applied to markdown code blocks (auto, text, ruby, python etc.). This value must also be present in the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=highlighted_languages\" data-setting-name=\"highlighted_languages\" data-setting-area=\"posts_and_topics\" data-setting-category=\"posting\">Highlighted languages</a> site setting.",
@@ -3581,7 +3589,7 @@
           {
             "setting": "aws_sns_topic_arn_allowlist",
             "humanized_name": "AWS sns topic ARN allowlist",
-            "description": "SNS topic ARNs allowed to send Amazon SES bounce webhook notifications.",
+            "description": "SNS topics allowed to send Amazon SES bounce notifications to this site's AWS webhook endpoint. In Amazon SNS → Topics, copy the full Topic ARN configured for bounce notifications in Amazon SES, for example: arn:aws:sns:eu-west-1:123456789012:DiscourseBounces. Add each ARN as a separate entry. Leave empty if you do not use SNS for bounce notifications. <a href='https://docs.aws.amazon.com/ses/latest/dg/configure-sns-notifications.html'>Setup instructions</a>.",
             "keywords": [],
             "category": "email",
             "primary_area": null
@@ -4295,7 +4303,7 @@
           {
             "setting": "allow_all_users_to_flag_illegal_content",
             "humanized_name": "Allow all users to flag illegal content",
-            "description": "Anonymous users will see information that they have to e-mail administrators to report illegal content. This setting takes precedence over <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=flag_post_allowed_groups\" data-setting-name=\"flag_post_allowed_groups\" data-setting-area=\"flags\" data-setting-category=\"trust\">Flag post allowed groups</a>.",
+            "description": "Let anyone report illegal content, including trust level 0 and silenced users. Anonymous users will see information that they have to e-mail administrators to report illegal content. This setting takes precedence over <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=flag_post_allowed_groups\" data-setting-name=\"flag_post_allowed_groups\" data-setting-area=\"flags\" data-setting-category=\"trust\">Flag post allowed groups</a>.",
             "keywords": [],
             "category": "trust",
             "primary_area": "flags"
@@ -6976,30 +6984,6 @@
             "primary_area": "categories_and_tags"
           },
           {
-            "setting": "dashboard_hidden_reports",
-            "humanized_name": "Dashboard hidden reports",
-            "description": "Allow to hide the specified reports from the dashboard.",
-            "keywords": [],
-            "category": "dashboard",
-            "primary_area": "reports"
-          },
-          {
-            "setting": "dashboard_visible_tabs",
-            "humanized_name": "Dashboard visible tabs",
-            "description": "Choose which dashboard tabs are visible.",
-            "keywords": [],
-            "category": "dashboard",
-            "primary_area": "reports"
-          },
-          {
-            "setting": "dashboard_general_tab_activity_metrics",
-            "humanized_name": "Dashboard general tab activity metrics",
-            "description": "Choose reports to be displayed as activity metrics on the general tab.",
-            "keywords": [],
-            "category": "dashboard",
-            "primary_area": "reports"
-          },
-          {
             "setting": "site_traffic_explorer_event_limit",
             "humanized_name": "Site traffic explorer event limit",
             "description": "Controls the maximum number of recent pageviews the Site Traffic Explorer processes. Higher limits cover more traffic but may take longer to load or time out on lower-resource database servers.",
@@ -7024,6 +7008,38 @@
             "primary_area": null
           },
           {
+            "setting": "dsa_reporting_enabled",
+            "humanized_name": "DSA reporting enabled",
+            "description": "Enable EU Digital Services Act (DSA) reporting and moderation tools. Requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=dsa_community_rules\" data-setting-name=\"dsa_community_rules\" data-setting-area=\"experimental\" data-setting-category=\"experimental\">DSA community rules</a>.",
+            "keywords": [],
+            "category": "experimental",
+            "primary_area": "experimental"
+          },
+          {
+            "setting": "dsa_notice_group",
+            "humanized_name": "DSA notice group",
+            "description": "Group receiving illegal content reports and reporter contact details. Defaults to admins.",
+            "keywords": [],
+            "category": "experimental",
+            "primary_area": "experimental"
+          },
+          {
+            "setting": "dsa_community_rules",
+            "humanized_name": "DSA community rules",
+            "description": "Define rules from your Terms of Service or community guidelines. Each rule’s reference and explanation are included in DSA statements of reasons when selected by a moderator.",
+            "keywords": [],
+            "category": "experimental",
+            "primary_area": "experimental"
+          },
+          {
+            "setting": "dsa_moderation_appeal_email",
+            "humanized_name": "DSA moderation appeal email",
+            "description": "Email address shown in moderation emails and system messages when DSA reporting is enabled. Leave blank to omit appeal instructions from those messages.",
+            "keywords": [],
+            "category": "experimental",
+            "primary_area": "experimental"
+          },
+          {
             "setting": "enable_rich_text_paste",
             "humanized_name": "Enable rich text paste",
             "description": "Enable automatic HTML to Markdown conversion when pasting text into the composer.",
@@ -7039,6 +7055,105 @@
             "category": "plugins",
             "primary_area": null,
             "plugin": "automation"
+          },
+          {
+            "setting": "blog_url",
+            "humanized_name": "Blog URL",
+            "description": "Serve the blog from its own HTTPS origin, without a trailing slash or path, instead of /blog on this site. It must differ from the discussion hostname. Configure this hostname as an alias of this site at the proxy and database connection.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_category",
+            "humanized_name": "Blog category",
+            "description": "The single public category whose explicitly published topics appear on the blog. Subcategories are not included. A topic is never published merely by being in this category.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_drafts_category",
+            "humanized_name": "Blog drafts category",
+            "description": "A separate private category for editorial drafts. Restrict membership to editors. Publishing copies only the approved article into a separate discussion in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=blog_category\" data-setting-name=\"blog_category\" data-setting-category=\"blog\" data-setting-plugin=\"blog\">Blog category</a>. Editorial topics and replies stay private. Upload URLs are not private when secure uploads are disabled.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_title",
+            "humanized_name": "Blog title",
+            "description": "The blog name displayed in navigation, page titles, and feeds.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_description",
+            "humanized_name": "Blog description",
+            "description": "A short description for the homepage, feed, and search engines.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_about",
+            "humanized_name": "Blog about",
+            "description": "Markdown content for the blog About page.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_path_format",
+            "humanized_name": "Blog path format",
+            "description": "The address template for new articles, such as /{year}/{month}/{slug}. Use {year}, {month}, {day}, {slug} and {id}, including {slug} or {id}. Until an article is first published, an address the editor has not typed follows its title and its UTC publication date. Published articles keep their addresses.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_posts_per_page",
+            "humanized_name": "Blog posts per page",
+            "description": "Number of articles shown on each homepage or archive page.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_contributor_groups",
+            "humanized_name": "Blog contributor groups",
+            "description": "Groups that can write and submit their own blog drafts. Also grant these groups access to the private drafts category. This does not grant forum staff privileges.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_editor_groups",
+            "humanized_name": "Blog editor groups",
+            "description": "Groups that can edit and submit any blog draft they can see. Also grant access to the private drafts category. Publication requires the publisher role.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
+          },
+          {
+            "setting": "blog_publisher_groups",
+            "humanized_name": "Blog publisher groups",
+            "description": "Groups that can approve, publish, withdraw, and schedule blog revisions they can see. Publishers may approve their own work. Also grant access to the private drafts category and permission to create topics in the public blog category. Administrators always retain access.",
+            "keywords": [],
+            "category": "blog",
+            "primary_area": null,
+            "plugin": "blog"
           },
           {
             "setting": "boards_manage_board_allowed_groups",
@@ -7070,7 +7185,7 @@
           {
             "setting": "chat_allowed_groups",
             "humanized_name": "Chat allowed groups",
-            "description": "Users in these groups can chat, except anonymous users who can only view chat when added to this setting. Note that admins and moderators can always access chat.",
+            "description": "Users in these groups can chat, except anonymous users who can only view chat when added to this setting. Adding anonymous users also lets search engines index public channels. Note that admins and moderators can always access chat.",
             "keywords": [],
             "category": "chat",
             "primary_area": "group_permissions",
@@ -7088,7 +7203,7 @@
           {
             "setting": "chat_channel_retention_days",
             "humanized_name": "Chat channel retention days",
-            "description": "Chat messages in regular channels will be retained for this many days. Set to '0' to retain messages forever.",
+            "description": "Chat messages in regular channels will be retained for this many days. Set to '0' to retain messages forever. When anonymous users can view chat, deleted messages also drop out of search engine results over time, so short retention limits how much chat history can be found through search.",
             "keywords": [],
             "category": "chat",
             "primary_area": null,
@@ -7155,6 +7270,15 @@
             "keywords": [],
             "category": "chat",
             "primary_area": "flags",
+            "plugin": "chat"
+          },
+          {
+            "setting": "chat_homepage_channel",
+            "humanized_name": "Chat homepage channel",
+            "description": "The channel people land on when <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=default_homepage\" data-setting-name=\"default_homepage\" data-setting-area=\"interface\" data-setting-category=\"basic\">Default homepage</a> is set to a chat channel. People who cannot access the channel see the first item in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=top_menu\" data-setting-name=\"top_menu\" data-setting-area=\"interface\" data-setting-category=\"basic\">Top menu</a> instead, including anonymous visitors, unless <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=chat_allowed_groups\" data-setting-name=\"chat_allowed_groups\" data-setting-area=\"group_permissions\" data-setting-category=\"chat\" data-setting-plugin=\"chat\">Chat allowed groups</a> includes anonymous users.",
+            "keywords": [],
+            "category": "chat",
+            "primary_area": "interface",
             "plugin": "chat"
           },
           {
@@ -8573,7 +8697,7 @@
           {
             "setting": "ai_default_llm_model",
             "humanized_name": "AI default LLM model",
-            "description": "The default LLM model to use for all AI features",
+            "description": "The default language model for AI features and agents that don't specify their own",
             "keywords": [],
             "category": "discourse_ai",
             "primary_area": null,
@@ -8582,10 +8706,19 @@
           {
             "setting": "ai_sentiment_enabled",
             "humanized_name": "AI sentiment enabled",
-            "description": "Enable the sentiment module.",
+            "description": "Classify posts as positive, neutral, or negative.",
             "keywords": [],
             "category": "discourse_ai",
-            "primary_area": null,
+            "primary_area": "ai-features/sentiment",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_sentiment_emotion_enabled",
+            "humanized_name": "AI sentiment emotion enabled",
+            "description": "Classify the emotions expressed in posts.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/sentiment",
             "plugin": "discourse-ai"
           },
           {
@@ -8603,16 +8736,25 @@
             "description": "Sentiment classification backend.",
             "keywords": [],
             "category": "discourse_ai",
-            "primary_area": null,
+            "primary_area": "ai-features/sentiment",
             "plugin": "discourse-ai"
           },
           {
             "setting": "ai_sentiment_sentiment_agent",
             "humanized_name": "AI sentiment sentiment agent",
-            "description": "Agent to use for sentiment classification when the sentiment backend is agent.",
+            "description": "Agent for sentiment classification.",
             "keywords": [],
             "category": "discourse_ai",
-            "primary_area": null,
+            "primary_area": "ai-features/sentiment",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_sentiment_sentiment_decision_model",
+            "humanized_name": "AI sentiment sentiment decision model",
+            "description": "Decision model for sentiment classification. Changing it does not reclassify existing results.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/sentiment",
             "plugin": "discourse-ai"
           },
           {
@@ -8621,16 +8763,43 @@
             "description": "Emotion classification backend.",
             "keywords": [],
             "category": "discourse_ai",
-            "primary_area": null,
+            "primary_area": "ai-features/sentiment",
             "plugin": "discourse-ai"
           },
           {
             "setting": "ai_sentiment_emotion_agent",
             "humanized_name": "AI sentiment emotion agent",
-            "description": "Agent to use for emotion classification when the emotion backend is agent.",
+            "description": "Agent for emotion classification.",
             "keywords": [],
             "category": "discourse_ai",
-            "primary_area": null,
+            "primary_area": "ai-features/sentiment",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_sentiment_emotion_decision_model",
+            "humanized_name": "AI sentiment emotion decision model",
+            "description": "Decision model for emotion classification. Scores are distributed across 28 emotions. Changing it does not reclassify existing results.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/sentiment",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_sentiment_backfill_maximum_posts_per_hour",
+            "humanized_name": "AI sentiment backfill maximum posts per hour",
+            "description": "Approximate hourly post limit for the 5-minute scan. Each enabled classifier may incur a request per post. Refusals may be retried. 0 stops scheduled scanning, including new posts; edited posts are checked separately.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/sentiment",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_sentiment_backfill_post_max_age_days",
+            "humanized_name": "AI sentiment backfill post max age days",
+            "description": "Only scan posts created within this many days. 0 means today, not unlimited history.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/sentiment",
             "plugin": "discourse-ai"
           },
           {
@@ -8664,6 +8833,15 @@
             "setting": "ai_google_custom_search_cx",
             "humanized_name": "AI Google custom search CX",
             "description": "CX for Google Custom Search API",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": null,
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_google_custom_search_url",
+            "humanized_name": "AI Google custom search URL",
+            "description": "Endpoint for the Google Custom Search API. Change it only to use a service that serves the same API.",
             "keywords": [],
             "category": "discourse_ai",
             "primary_area": null,
@@ -9021,6 +9199,15 @@
             "plugin": "discourse-ai"
           },
           {
+            "setting": "ai_summaries_for_crawlers",
+            "humanized_name": "AI summaries for crawlers",
+            "description": "Include AI topic summaries in public HTML topic pages served to search engines and other crawlers, and in the Markdown version of those pages. Requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=ai_summarization_enabled\" data-setting-name=\"ai_summarization_enabled\" data-setting-area=\"ai-features/summarization\" data-setting-category=\"discourse_ai\" data-setting-plugin=\"discourse-ai\">AI summarization enabled</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=ai_summary_backfill_maximum_topics_per_hour\" data-setting-name=\"ai_summary_backfill_maximum_topics_per_hour\" data-setting-area=\"ai-features/summarization\" data-setting-category=\"discourse_ai\" data-setting-plugin=\"discourse-ai\">AI summary backfill maximum topics per hour</a> above 0, so summaries stay up to date.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/summarization",
+            "plugin": "discourse-ai"
+          },
+          {
             "setting": "ai_pm_summarization_allowed_groups",
             "humanized_name": "AI PM summarization allowed groups",
             "description": "Groups allowed to create and view summaries in PMs.",
@@ -9059,7 +9246,7 @@
           {
             "setting": "ai_summary_backfill_maximum_topics_per_hour",
             "humanized_name": "AI summary backfill maximum topics per hour",
-            "description": "Number of topic summaries to backfill per hour. Each localized gist counts toward this limit.",
+            "description": "Number of topic summaries to backfill per hour. Each localized gist counts toward this limit. Must be above 0 to turn on <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=ai_summaries_for_crawlers\" data-setting-name=\"ai_summaries_for_crawlers\" data-setting-area=\"ai-features/summarization\" data-setting-category=\"discourse_ai\" data-setting-plugin=\"discourse-ai\">AI summaries for crawlers</a>.",
             "keywords": [],
             "category": "discourse_ai",
             "primary_area": "ai-features/summarization",
@@ -9246,6 +9433,15 @@
             "plugin": "discourse-ai"
           },
           {
+            "setting": "ai_ask_ai_search_intent_decision_model",
+            "humanized_name": "AI ask AI search intent decision model",
+            "description": "Experimental: decision model that judges whether a search wants an AI answer or keyword results, to choose which tab the combined search opens on. Search queries are sent to this model's provider. Leave blank to judge from how the query is written.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
             "setting": "ai_ask_ai_agent",
             "humanized_name": "AI ask AI agent",
             "description": "Agent that selects sources and writes Ask AI answers.",
@@ -9267,6 +9463,69 @@
             "setting": "ai_ask_ai_follow_up_agent",
             "humanized_name": "AI ask AI follow up agent",
             "description": "Agent used when a user wants to follow up an Ask AI result. The selected agent must be enabled, allow personal messages, and be available to the user.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_keyword_search_enabled",
+            "humanized_name": "AI ask AI keyword search enabled",
+            "description": "Search the forum by keyword for Ask AI answers.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_semantic_search_enabled",
+            "humanized_name": "AI ask AI semantic search enabled",
+            "description": "Search the forum semantically for Ask AI answers. Requires embeddings.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_search_categories",
+            "humanized_name": "AI ask AI search categories",
+            "description": "Only search these categories, and their subcategories, for Ask AI answers. Personal messages are still searched when asked for. Leave empty to search all categories.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_search_max_age_days",
+            "humanized_name": "AI ask AI search max age days",
+            "description": "Only search posts created in this many days for Ask AI answers. Set to 0 to search posts of any age.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_endorsed_reply_groups",
+            "humanized_name": "AI ask AI endorsed reply groups",
+            "description": "Also give Ask AI one reply from each topic without an accepted answer. Replies the topic's author liked rank first, then the author's own follow-ups that others liked, then replies members of these groups liked. Staff on communities where they like posts freely may want a narrower group. Leave empty to turn this off.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_external_sources",
+            "humanized_name": "AI ask AI external sources",
+            "description": "Custom tools Ask AI searches alongside the forum. Each is called with the user's query and must return a list of results, each with a title, an http(s) url, and optionally a blurb, content and published_at. Queries are sent to whatever services the tools call.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/search",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_ask_ai_external_sources_timeout",
+            "humanized_name": "AI ask AI external sources timeout",
+            "description": "Seconds Ask AI waits for its external sources, all searched at once, before answering without the ones still running. Counts towards the 20 seconds an Ask AI request may take, so a longer wait leaves less time to write the answer.",
             "keywords": [],
             "category": "discourse_ai",
             "primary_area": "ai-features/search",
@@ -9363,6 +9622,15 @@
             "plugin": "discourse-ai"
           },
           {
+            "setting": "ai_dsa_classification_decision_model",
+            "humanized_name": "AI DSA classification decision model",
+            "description": "Choose the model used to suggest community rules and categories during DSA classification. Leave blank to disable suggestions.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": null,
+            "plugin": "discourse-ai"
+          },
+          {
             "setting": "ai_translation_enabled",
             "humanized_name": "AI translation enabled",
             "description": "Enable the AI translation feature",
@@ -9375,6 +9643,15 @@
             "setting": "ai_translation_locale_detector_agent",
             "humanized_name": "AI translation locale detector agent",
             "description": "",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/translation",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_translation_locale_detector_decision_model",
+            "humanized_name": "AI translation locale detector decision model",
+            "description": "Decision model that detects the language of content before it is translated. Content in a language it cannot place confidently is left to the locale detector agent. Leave blank to detect every language with the agent.",
             "keywords": [],
             "category": "discourse_ai",
             "primary_area": "ai-features/translation",
@@ -9456,6 +9733,15 @@
             "setting": "ai_translation_backfill_start_date",
             "humanized_name": "AI translation backfill start date",
             "description": "The UTC date from which historical posts and topics will be sent for translation backfilling. Leave blank to disable backfilling. New content will continue to be translated.",
+            "keywords": [],
+            "category": "discourse_ai",
+            "primary_area": "ai-features/translation",
+            "plugin": "discourse-ai"
+          },
+          {
+            "setting": "ai_translation_verbose_logs",
+            "humanized_name": "AI translation verbose logs",
+            "description": "",
             "keywords": [],
             "category": "discourse_ai",
             "primary_area": "ai-features/translation",
@@ -9894,18 +10180,45 @@
             "plugin": "discourse-captcha"
           },
           {
-            "setting": "recaptcha_site_key",
-            "humanized_name": "Recaptcha site key",
-            "description": "ReCaptcha Site Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account",
+            "setting": "recaptcha_v2_site_key",
+            "humanized_name": "Recaptcha v2 site key",
+            "description": "ReCaptcha v2 Site Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account. Used only when the captcha provider is set to reCaptcha v2.",
             "keywords": [],
             "category": "discourse_captcha",
             "primary_area": null,
             "plugin": "discourse-captcha"
           },
           {
-            "setting": "recaptcha_secret_key",
-            "humanized_name": "Recaptcha secret key",
-            "description": "ReCaptcha Secret Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account",
+            "setting": "recaptcha_v2_secret_key",
+            "humanized_name": "Recaptcha v2 secret key",
+            "description": "ReCaptcha v2 Secret Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account. Used only when the captcha provider is set to reCaptcha v2.",
+            "keywords": [],
+            "category": "discourse_captcha",
+            "primary_area": null,
+            "plugin": "discourse-captcha"
+          },
+          {
+            "setting": "recaptcha_v3_site_key",
+            "humanized_name": "Recaptcha v3 site key",
+            "description": "ReCaptcha v3 Site Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account",
+            "keywords": [],
+            "category": "discourse_captcha",
+            "primary_area": null,
+            "plugin": "discourse-captcha"
+          },
+          {
+            "setting": "recaptcha_v3_secret_key",
+            "humanized_name": "Recaptcha v3 secret key",
+            "description": "ReCaptcha v3 Secret Key from your <a target='blank' href='https://www.google.com/recaptcha'>ReCaptcha</a> account",
+            "keywords": [],
+            "category": "discourse_captcha",
+            "primary_area": null,
+            "plugin": "discourse-captcha"
+          },
+          {
+            "setting": "recaptcha_v3_score_threshold",
+            "humanized_name": "Recaptcha v3 score threshold",
+            "description": "The minimum score a reCaptcha v3 challenge must reach for a signup to be accepted. Lower values are more permissive, higher values provide stronger bot protection.",
             "keywords": [],
             "category": "discourse_captcha",
             "primary_area": null,
@@ -10671,6 +10984,15 @@
             "setting": "calendar_upcoming_events_default_view",
             "humanized_name": "Calendar upcoming events default view",
             "description": "",
+            "keywords": [],
+            "category": "discourse_events",
+            "primary_area": null,
+            "plugin": "discourse-events"
+          },
+          {
+            "setting": "calendar_upcoming_events_default_category",
+            "humanized_name": "Calendar upcoming events default category",
+            "description": "Category for new events created from the upcoming events calendar. If empty or the member cannot create topics in this category, uses <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=default_composer_category\" data-setting-name=\"default_composer_category\" data-setting-area=\"posts_and_topics\" data-setting-category=\"uncategorized\">Default composer category</a>.",
             "keywords": [],
             "category": "discourse_events",
             "primary_area": null,
@@ -11793,9 +12115,27 @@
             "plugin": "discourse-openid-connect"
           },
           {
+            "setting": "openid_connect_email_verified_claim_fallback",
+            "humanized_name": "OpenID Connect email verified claim fallback",
+            "description": "Value to use for email_verified when the provider omits the claim.",
+            "keywords": [],
+            "category": "discourse_openid_connect",
+            "primary_area": "oidc",
+            "plugin": "discourse-openid-connect"
+          },
+          {
+            "setting": "openid_connect_email_claim",
+            "humanized_name": "OpenID Connect email claim",
+            "description": "The claim containing the user's email address. Defaults to email. Only select a claim containing an email address verified by your identity provider, as it can link users to existing accounts.",
+            "keywords": [],
+            "category": "discourse_openid_connect",
+            "primary_area": "oidc",
+            "plugin": "discourse-openid-connect"
+          },
+          {
             "setting": "openid_connect_groups_claim",
             "humanized_name": "OpenID Connect groups claim",
-            "description": "The name of the claim in the OIDC token that contains the user's groups as an array of strings. Leave blank to disable group syncing.",
+            "description": "The name of the claim in the userinfo response or ID token that contains the user's groups as an array of strings or a comma-separated string. For string values, surrounding whitespace and empty entries are ignored. Use an array if group names contain commas. Leave blank to disable group syncing.",
             "keywords": [],
             "category": "discourse_openid_connect",
             "primary_area": "oidc",
@@ -12337,6 +12677,15 @@
             "plugin": "discourse-solved"
           },
           {
+            "setting": "enable_solved_shared_issues",
+            "humanized_name": "Enable solved shared issues",
+            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "keywords": [],
+            "category": "discourse_solved",
+            "primary_area": null,
+            "plugin": "discourse-solved"
+          },
+          {
             "setting": "discourse_subscriptions_enabled",
             "humanized_name": "Discourse subscriptions enabled",
             "description": "Enable the Discourse Subscriptions plugin.",
@@ -12688,6 +13037,24 @@
             "plugin": "discourse-zendesk-plugin"
           },
           {
+            "setting": "zendesk_create_ticket_allowed_groups",
+            "humanized_name": "Zendesk create ticket allowed groups",
+            "description": "Groups allowed to create Zendesk tickets from topics they can access.",
+            "keywords": [],
+            "category": "discourse_zendesk",
+            "primary_area": null,
+            "plugin": "discourse-zendesk-plugin"
+          },
+          {
+            "setting": "zendesk_view_ticket_allowed_groups",
+            "humanized_name": "Zendesk view ticket allowed groups",
+            "description": "Groups allowed to view Zendesk ticket links on topics they can access. Zendesk controls access to the ticket itself.",
+            "keywords": [],
+            "category": "discourse_zendesk",
+            "primary_area": null,
+            "plugin": "discourse-zendesk-plugin"
+          },
+          {
             "setting": "zendesk_jobs_api_token",
             "humanized_name": "Zendesk jobs API token",
             "description": "Deprecated: Zendesk will permanently deactivate API tokens on April 30, 2027. Configure <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=zendesk_oauth_client_id\" data-setting-name=\"zendesk_oauth_client_id\" data-setting-category=\"discourse_zendesk\" data-setting-plugin=\"discourse-zendesk-plugin\">Zendesk OAUTH client ID</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=zendesk_oauth_client_secret\" data-setting-name=\"zendesk_oauth_client_secret\" data-setting-category=\"discourse_zendesk\" data-setting-plugin=\"discourse-zendesk-plugin\">Zendesk OAUTH client secret</a> to use OAuth instead.",
@@ -12805,6 +13172,447 @@
             "plugin": "footnote"
           },
           {
+            "setting": "live_verbose_logging",
+            "humanized_name": "Live verbose logging",
+            "description": "Log Live diagnostic information and warnings in server logs and browser consoles. Disabled by default. Logs exclude credentials, transcripts, signaling payloads, and raw error details.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_allowed_groups",
+            "humanized_name": "Live allowed groups",
+            "description": "Groups that can access live rooms.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_create_room_allowed_groups",
+            "humanized_name": "Live create room allowed groups",
+            "description": "Groups that can create new live rooms.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_direct_calls_allowed_groups",
+            "humanized_name": "Live direct calls allowed groups",
+            "description": "Groups that can start a direct call with another user from their user card or profile. Empty disables direct calls. Callers also need to be in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_allowed_groups\" data-setting-name=\"live_allowed_groups\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live allowed groups</a>; anyone with live room access can receive a call.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_max_rooms_per_user",
+            "humanized_name": "Live max rooms per user",
+            "description": "Maximum number of live rooms a single user can own. Temporary rooms created automatically by other features do not count.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_max_invites_per_day",
+            "humanized_name": "Live max invites per day",
+            "description": "Maximum number of live room invite notifications a single user can send per day. Repeated invites to the same person in the same room don't notify again (and don't count) until a day has passed.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_ephemeral_room_ttl_minutes",
+            "humanized_name": "Live ephemeral room ttl minutes",
+            "description": "Minutes a temporary room (created automatically by another feature, such as a direct call) can sit empty before it is deleted. Rooms with people in them are never deleted.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_participant_ttl_seconds",
+            "humanized_name": "Live participant ttl seconds",
+            "description": "Seconds to keep active speaker presence in Redis before automatic cleanup. Client heartbeat refreshes every 10 seconds.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_max_room_participants",
+            "humanized_name": "Live max room participants",
+            "description": "Maximum number of people who can be in a live room at the same time. A room's own participant limit can lower this, but never raise it.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_stun_servers",
+            "humanized_name": "Live stun servers",
+            "description": "STUN server URIs (stun:host:port), separated by |, used by peer-to-peer live rooms for NAT traversal. Can be left empty when <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_secret_servers\" data-setting-name=\"live_turn_secret_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn secret servers</a> is configured, as long as that TURN server also answers unauthenticated STUN Binding requests; some browsers only discover their public address that way.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_turn_servers",
+            "humanized_name": "Live turn servers",
+            "description": "TURN server URIs (turn:host:port or turns:host:port), separated by |, used to relay call traffic when a direct connection cannot be established. Authenticated with <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_username\" data-setting-name=\"live_turn_username\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn username</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_credential\" data-setting-name=\"live_turn_credential\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn credential</a>; for servers supporting short-lived credentials, use <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_secret_servers\" data-setting-name=\"live_turn_secret_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn secret servers</a> instead.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_turn_username",
+            "humanized_name": "Live turn username",
+            "description": "Static username for the TURN servers in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_servers\" data-setting-name=\"live_turn_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn servers</a>.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_turn_credential",
+            "humanized_name": "Live turn credential",
+            "description": "Static password for the TURN servers in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_servers\" data-setting-name=\"live_turn_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn servers</a>.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_turn_secret",
+            "humanized_name": "Live turn secret",
+            "description": "Shared secret used to mint short-lived TURN credentials for the servers in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_secret_servers\" data-setting-name=\"live_turn_secret_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn secret servers</a> (TURN REST API, coturn's use-auth-secret mode). Must match the secret configured on those TURN servers.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_turn_secret_servers",
+            "humanized_name": "Live turn secret servers",
+            "description": "TURN server URIs (turn:host:port or turns:host:port), separated by |, that authenticate with short-lived per-user credentials derived from <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_turn_secret\" data-setting-name=\"live_turn_secret\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live turn secret</a> instead of a static username and password, so credentials cannot be reused by third parties.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_url",
+            "humanized_name": "Live livekit URL",
+            "description": "WebSocket URL (wss://, or ws:// outside production) of a self-hosted LiveKit server. Together with the API key and secret, lets live rooms use it as their media server (SFU) instead of the peer-to-peer mesh. The server must be reachable at a public address.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_api_key",
+            "humanized_name": "Live livekit API key",
+            "description": "API key of the LiveKit server.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_api_secret",
+            "humanized_name": "Live livekit API secret",
+            "description": "API secret of the LiveKit server, used to sign short-lived room access tokens.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_room_policy",
+            "humanized_name": "Live livekit room policy",
+            "description": "Which rooms use the LiveKit media server instead of the peer-to-peer mesh. Changes never affect calls already in progress — each room switches when its next call starts.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_room_prefix",
+            "humanized_name": "Live livekit room prefix",
+            "description": "Namespace prefix for room names on the LiveKit server. Leave empty to use the site's database name.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_mesh_fallback",
+            "humanized_name": "Live livekit mesh fallback",
+            "description": "When a LiveKit access token cannot be issued and the room is empty, start the call on the peer-to-peer mesh instead of failing the join. Off by default because silent degradation can hide a LiveKit outage.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_agent_enabled",
+            "humanized_name": "Live livekit agent enabled",
+            "description": "Allow members of <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_livekit_agent_invite_allowed_groups\" data-setting-name=\"live_livekit_agent_invite_allowed_groups\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live livekit agent invite allowed groups</a> to invite a LiveKit Cloud agent to public live rooms. Creates the livekit_agent_bot account. Requires configured LiveKit Cloud credentials.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_agent_invite_allowed_groups",
+            "humanized_name": "Live livekit agent invite allowed groups",
+            "description": "Groups that can invite a LiveKit Cloud agent to a public live room they can join. Admins are always included. Members also need to be in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_allowed_groups\" data-setting-name=\"live_allowed_groups\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live allowed groups</a>; room managers can kick an agent regardless of this setting.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_enabled",
+            "humanized_name": "Live livekit recording enabled",
+            "description": "Allow room moderators to record calls that run on the LiveKit media server. LiveKit Cloud requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_livekit_recording_s3_bucket\" data-setting-name=\"live_livekit_recording_s3_bucket\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live livekit recording S3 bucket</a>. Self-hosted Egress can use its own storage configuration. Recordings are not Discourse uploads.<br><br>Configure a webhook in LiveKit pointing to <code>https://YOUR-FORUM/live/livekit/webhook</code>, replacing YOUR-FORUM with this site's hostname. Use the same API key as <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_livekit_api_key\" data-setting-name=\"live_livekit_api_key\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live livekit API key</a> and include <code>egress_ended</code> events so recording statuses and download notifications update when recordings finish.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_filepath",
+            "humanized_name": "Live livekit recording filepath",
+            "description": "Filepath passed to LiveKit Egress for recordings. Supports LiveKit's template placeholders such as {room_name}, {room_id}, {time} and {utc}; the file extension is added automatically.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_s3_region",
+            "humanized_name": "Live livekit recording S3 region",
+            "description": "AWS region of the recording bucket, such as us-east-1. Required unless <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_livekit_recording_s3_endpoint\" data-setting-name=\"live_livekit_recording_s3_endpoint\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live livekit recording S3 endpoint</a> is set.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_s3_access_key_id",
+            "humanized_name": "Live livekit recording S3 access key ID",
+            "description": "S3 access key for the recording bucket. Sent to the configured LiveKit server over HTTPS when starting a recording. Use credentials with write access limited to the recording location.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_s3_secret_access_key",
+            "humanized_name": "Live livekit recording S3 secret access key",
+            "description": "S3 secret key for the recording bucket. Sent only to the configured LiveKit server over HTTPS, never to participants.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_s3_endpoint",
+            "humanized_name": "Live livekit recording S3 endpoint",
+            "description": "Optional HTTPS endpoint for S3-compatible recording storage, without a path or trailing slash. Leave empty for AWS S3. Custom endpoints use path-style bucket addressing.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_livekit_recording_s3_bucket",
+            "humanized_name": "Live livekit recording S3 bucket",
+            "description": "Dedicated S3 bucket for live recordings, without a path. Set the recording credentials and region before saving this setting. Use <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_livekit_recording_filepath\" data-setting-name=\"live_livekit_recording_filepath\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live livekit recording filepath</a> for a folder prefix. Leave empty to use self-hosted Egress storage. Discourse upload storage settings are not used.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_video_allowed_groups",
+            "humanized_name": "Live video allowed groups",
+            "description": "Groups whose members can share their camera in live rooms. Leave empty to turn camera video off site-wide. Rooms can individually opt out of all media via their room settings, and stage room listeners can never publish.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_screen_share_allowed_groups",
+            "humanized_name": "Live screen share allowed groups",
+            "description": "Groups whose members can share their screen in live rooms. Leave empty to turn screen sharing off site-wide. Rooms can individually opt out of all media via their room settings, and stage room listeners can never publish.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_local_recording_allowed_groups",
+            "humanized_name": "Live local recording allowed groups",
+            "description": "Groups whose members can record calls to their own device. The recording happens entirely in the browser and is saved as a file on the recorder's device; nothing is uploaded. Other participants see a recording indicator while it runs. Leave empty to turn local recording off.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_video_max_publishers",
+            "humanized_name": "Live video max publishers",
+            "description": "Maximum number of participants who can share video or their screen at the same time in a room. On peer-to-peer rooms, higher values increase CPU and bandwidth load for everyone watching; on rooms using a LiveKit media server, they mainly increase load on that server.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_video_background_blur_enabled",
+            "humanized_name": "Live video background blur enabled",
+            "description": "Allow participants to blur their camera background. Segmentation runs on the publisher's device via MediaPipe, which increases CPU/GPU load while their camera is on.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_subtitles_enabled",
+            "humanized_name": "Live subtitles enabled",
+            "description": "Allow participants to turn on live subtitles for other people's speech. Transcription runs entirely on the viewer's device via an NVIDIA Parakeet speech-to-text model (less than 0.5 GB, downloaded on first use, WebGPU required); no audio leaves the browser.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_stt_model_base_url",
+            "humanized_name": "Live stt model base URL",
+            "description": "Optional base URL for a self-hosted mirror of the subtitles models. When blank, the model files are downloaded on first use from Discourse's HuggingFace repository (Discourse/Discourse-STT). A mirror must keep that repository's folder layout and file names, reachable by browsers with CORS allowed — see docs/subtitles-model-mirror.md in the plugin.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_max_voice_quality",
+            "humanized_name": "Live max voice quality",
+            "description": "Highest microphone audio quality participants may choose in their voice settings. Standard is the browser's speech default (~32 kbps); high (~64 kbps) and maximum (~128 kbps) improve fidelity for good microphones at the cost of bandwidth.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_max_camera_quality",
+            "humanized_name": "Live max camera quality",
+            "description": "Highest camera quality participants may choose in their video settings. Standard captures at 720p; high captures at 1080p; maximum additionally stops automatic quality reduction as viewer count grows on peer-to-peer rooms, which multiplies the sender's upload bandwidth and CPU use.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_max_screen_share_quality",
+            "humanized_name": "Live max screen share quality",
+            "description": "Highest screen share quality participants may choose in their video settings. Standard targets 15 fps at a modest bitrate; high allows 30 fps at a higher bitrate; maximum allows 60 fps at a very high bitrate ceiling, letting fast connections share high-resolution screens at full quality.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_idle_threshold_minutes",
+            "humanized_name": "Live idle threshold minutes",
+            "description": "Minutes of inactivity before a live room participant is marked as idle. Set to 0 to disable.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_afk_auto_mute_threshold_minutes",
+            "humanized_name": "Live afk auto mute threshold minutes",
+            "description": "Minutes of inactivity before a live room participant is automatically muted. Set to 0 to disable.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_afk_disconnect_threshold_minutes",
+            "humanized_name": "Live afk disconnect threshold minutes",
+            "description": "Minutes of inactivity before a live room participant is automatically disconnected. Set to 0 to disable.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_auto_status_enabled",
+            "humanized_name": "Live auto status enabled",
+            "description": "Automatically set user status when they join a live room (e.g. '🎙️ In Watercooler'). Requires the 'enable user status' site setting.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_mesh_privacy_warning_enabled",
+            "humanized_name": "Live mesh privacy warning enabled",
+            "description": "Warn users before they join a peer-to-peer live room that other participants may be able to see their IP address, with an option to not show the warning again on that device. Calls hosted on a LiveKit server never show the warning.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_badges_enabled",
+            "humanized_name": "Live badges enabled",
+            "description": "Enable Live badges when <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_enabled\" data-setting-name=\"live_enabled\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live enabled</a> is enabled. Grants badges for live room milestones like time spent, rooms visited, and connections made. Toggling this enables or disables every badge in the Live group at once. Requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=live_analytics_enabled\" data-setting-name=\"live_analytics_enabled\" data-setting-category=\"plugins\" data-setting-plugin=\"live\">Live analytics enabled</a>, which records the sessions the badges are computed from.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_analytics_enabled",
+            "humanized_name": "Live analytics enabled",
+            "description": "Record who joined which live room and when, and how long people spent in a room together. Powers the admin Live statistics, the contacts and companions suggestions, and every Live badge.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_session_retention_days",
+            "humanized_name": "Live session retention days",
+            "description": "Days to keep live session and time-together history before it is deleted. Badges already earned are never taken away, but progress toward badges that accumulate over time (hours in Live, days in a room, people met) only counts history within this window.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
+            "setting": "live_chat_enabled",
+            "humanized_name": "Live chat enabled",
+            "description": "Allow live rooms to be linked to a chat channel. Each chat session opens a thread in that channel; messages are real chat messages, so participants can also follow along in the chat UI.",
+            "keywords": [],
+            "category": "plugins",
+            "primary_area": null,
+            "plugin": "live"
+          },
+          {
             "setting": "poll_enabled",
             "humanized_name": "Poll enabled",
             "description": "Allow polls?",
@@ -12904,429 +13712,6 @@
             "plugin": "styleguide"
           },
           {
-            "setting": "voice_verbose_logging",
-            "humanized_name": "Voice verbose logging",
-            "description": "Log voice diagnostic information and warnings in server logs and browser consoles. Disabled by default. Logs exclude credentials, transcripts, signaling payloads, and raw error details.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_allowed_groups",
-            "humanized_name": "Voice allowed groups",
-            "description": "Groups that can access voice rooms.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_create_room_allowed_groups",
-            "humanized_name": "Voice create room allowed groups",
-            "description": "Groups that can create new voice rooms.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_direct_calls_allowed_groups",
-            "humanized_name": "Voice direct calls allowed groups",
-            "description": "Groups that can start a direct call with another user from their user card or profile. Empty disables direct calls. Callers also need to be in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_allowed_groups\" data-setting-name=\"voice_allowed_groups\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice allowed groups</a>; anyone with voice room access can receive a call.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_max_rooms_per_user",
-            "humanized_name": "Voice max rooms per user",
-            "description": "Maximum number of voice rooms a single user can own. Temporary rooms created automatically by other features do not count.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_max_invites_per_day",
-            "humanized_name": "Voice max invites per day",
-            "description": "Maximum number of voice room invite notifications a single user can send per day. Repeated invites to the same person in the same room don't notify again (and don't count) until a day has passed.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_ephemeral_room_ttl_minutes",
-            "humanized_name": "Voice ephemeral room ttl minutes",
-            "description": "Minutes a temporary room (created automatically by another feature, such as a direct call) can sit empty before it is deleted. Rooms with people in them are never deleted.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_participant_ttl_seconds",
-            "humanized_name": "Voice participant ttl seconds",
-            "description": "Seconds to keep active speaker presence in Redis before automatic cleanup. Client heartbeat refreshes every 10 seconds.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_max_room_participants",
-            "humanized_name": "Voice max room participants",
-            "description": "Maximum number of people who can be in a voice room at the same time. A room's own participant limit can lower this, but never raise it.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_stun_servers",
-            "humanized_name": "Voice stun servers",
-            "description": "STUN server URIs (stun:host:port), separated by |, used by peer-to-peer voice rooms for NAT traversal. Can be left empty when <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_secret_servers\" data-setting-name=\"voice_turn_secret_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn secret servers</a> is configured — clients then discover their public address through the TURN server itself.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_turn_servers",
-            "humanized_name": "Voice turn servers",
-            "description": "TURN server URIs (turn:host:port or turns:host:port), separated by |, used to relay voice traffic when a direct connection cannot be established. Authenticated with <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_username\" data-setting-name=\"voice_turn_username\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn username</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_credential\" data-setting-name=\"voice_turn_credential\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn credential</a>; for servers supporting short-lived credentials, use <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_secret_servers\" data-setting-name=\"voice_turn_secret_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn secret servers</a> instead.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_turn_username",
-            "humanized_name": "Voice turn username",
-            "description": "Static username for the TURN servers in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_servers\" data-setting-name=\"voice_turn_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn servers</a>.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_turn_credential",
-            "humanized_name": "Voice turn credential",
-            "description": "Static password for the TURN servers in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_servers\" data-setting-name=\"voice_turn_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn servers</a>.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_turn_secret",
-            "humanized_name": "Voice turn secret",
-            "description": "Shared secret used to mint short-lived TURN credentials for the servers in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_secret_servers\" data-setting-name=\"voice_turn_secret_servers\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn secret servers</a> (TURN REST API, coturn's use-auth-secret mode). Must match the secret configured on those TURN servers.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_turn_secret_servers",
-            "humanized_name": "Voice turn secret servers",
-            "description": "TURN server URIs (turn:host:port or turns:host:port), separated by |, that authenticate with short-lived per-user credentials derived from <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_turn_secret\" data-setting-name=\"voice_turn_secret\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice turn secret</a> instead of a static username and password, so credentials cannot be reused by third parties.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_url",
-            "humanized_name": "Voice livekit URL",
-            "description": "WebSocket URL (wss://, or ws:// outside production) of a self-hosted LiveKit server. Together with the API key and secret, lets voice rooms use it as their media server (SFU) instead of the peer-to-peer mesh. The server must be reachable at a public address.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_api_key",
-            "humanized_name": "Voice livekit API key",
-            "description": "API key of the LiveKit server.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_api_secret",
-            "humanized_name": "Voice livekit API secret",
-            "description": "API secret of the LiveKit server, used to sign short-lived room access tokens.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_room_policy",
-            "humanized_name": "Voice livekit room policy",
-            "description": "Which rooms use the LiveKit media server instead of the peer-to-peer mesh. Changes never affect calls already in progress — each room switches when its next call starts.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_room_prefix",
-            "humanized_name": "Voice livekit room prefix",
-            "description": "Namespace prefix for room names on the LiveKit server. Leave empty to use the site's database name.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_mesh_fallback",
-            "humanized_name": "Voice livekit mesh fallback",
-            "description": "When a LiveKit access token cannot be issued and the room is empty, start the call on the peer-to-peer mesh instead of failing the join. Off by default because silent degradation can hide a LiveKit outage.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_agent_enabled",
-            "humanized_name": "Voice livekit agent enabled",
-            "description": "Allow members of <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_livekit_agent_invite_allowed_groups\" data-setting-name=\"voice_livekit_agent_invite_allowed_groups\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice livekit agent invite allowed groups</a> to invite a LiveKit Cloud agent to public voice rooms. Creates the livekit_agent_bot account. Requires configured LiveKit Cloud credentials.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_agent_invite_allowed_groups",
-            "humanized_name": "Voice livekit agent invite allowed groups",
-            "description": "Groups that can invite a LiveKit Cloud agent to a public voice room they can join. Admins are always included. Members also need to be in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_allowed_groups\" data-setting-name=\"voice_allowed_groups\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice allowed groups</a>; room managers can kick an agent regardless of this setting.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_enabled",
-            "humanized_name": "Voice livekit recording enabled",
-            "description": "Allow room moderators to record calls that run on the LiveKit media server. LiveKit Cloud requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_livekit_recording_s3_bucket\" data-setting-name=\"voice_livekit_recording_s3_bucket\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice livekit recording S3 bucket</a>. Self-hosted Egress can use its own storage configuration. Recordings are not Discourse uploads.<br><br>Configure a webhook in LiveKit pointing to <code>https://YOUR-FORUM/voice/livekit/webhook</code>, replacing YOUR-FORUM with this site's hostname. Use the same API key as <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_livekit_api_key\" data-setting-name=\"voice_livekit_api_key\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice livekit API key</a> and include <code>egress_ended</code> events so recording statuses and download notifications update when recordings finish.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_filepath",
-            "humanized_name": "Voice livekit recording filepath",
-            "description": "Filepath passed to LiveKit Egress for recordings. Supports LiveKit's template placeholders such as {room_name}, {room_id}, {time} and {utc}; the file extension is added automatically.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_s3_region",
-            "humanized_name": "Voice livekit recording S3 region",
-            "description": "AWS region of the recording bucket, such as us-east-1. Required unless <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_livekit_recording_s3_endpoint\" data-setting-name=\"voice_livekit_recording_s3_endpoint\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice livekit recording S3 endpoint</a> is set.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_s3_access_key_id",
-            "humanized_name": "Voice livekit recording S3 access key ID",
-            "description": "S3 access key for the recording bucket. Sent to the configured LiveKit server over HTTPS when starting a recording. Use credentials with write access limited to the recording location.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_s3_secret_access_key",
-            "humanized_name": "Voice livekit recording S3 secret access key",
-            "description": "S3 secret key for the recording bucket. Sent only to the configured LiveKit server over HTTPS, never to participants.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_s3_endpoint",
-            "humanized_name": "Voice livekit recording S3 endpoint",
-            "description": "Optional HTTPS endpoint for S3-compatible recording storage, without a path or trailing slash. Leave empty for AWS S3. Custom endpoints use path-style bucket addressing.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_livekit_recording_s3_bucket",
-            "humanized_name": "Voice livekit recording S3 bucket",
-            "description": "Dedicated S3 bucket for voice recordings, without a path. Set the recording credentials and region before saving this setting. Use <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_livekit_recording_filepath\" data-setting-name=\"voice_livekit_recording_filepath\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice livekit recording filepath</a> for a folder prefix. Leave empty to use self-hosted Egress storage. Discourse upload storage settings are not used.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_video_enabled",
-            "humanized_name": "Voice video enabled",
-            "description": "Enable camera video and screen sharing in voice rooms. Rooms can individually opt out via their room settings.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_video_max_publishers",
-            "humanized_name": "Voice video max publishers",
-            "description": "Maximum number of participants who can share video or their screen at the same time in a room. On peer-to-peer rooms, higher values increase CPU and bandwidth load for everyone watching; on rooms using a LiveKit media server, they mainly increase load on that server.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_video_background_blur_enabled",
-            "humanized_name": "Voice video background blur enabled",
-            "description": "Allow participants to blur their camera background. Segmentation runs on the publisher's device via MediaPipe, which increases CPU/GPU load while their camera is on.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_subtitles_enabled",
-            "humanized_name": "Voice subtitles enabled",
-            "description": "Allow participants to turn on live subtitles for other people's speech. Transcription runs entirely on the viewer's device via an NVIDIA Parakeet speech-to-text model (~2.5 GB, downloaded on first use, WebGPU required); no audio leaves the browser.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_stt_model_base_url",
-            "humanized_name": "Voice stt model base URL",
-            "description": "Optional base URL for a self-hosted mirror of the subtitles model. When blank, the model files are downloaded on first use from Discourse's HuggingFace repository (Discourse/parakeet-tdt-0.6b-v3-onnx). A mirror must serve the same four files under their original names, reachable by browsers with CORS allowed — see docs/subtitles-model-mirror.md in the plugin.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_max_voice_quality",
-            "humanized_name": "Voice max voice quality",
-            "description": "Highest microphone audio quality participants may choose in their voice settings. Standard is the browser's speech default (~32 kbps); high (~64 kbps) and maximum (~128 kbps) improve fidelity for good microphones at the cost of bandwidth.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_max_camera_quality",
-            "humanized_name": "Voice max camera quality",
-            "description": "Highest camera quality participants may choose in their video settings. Standard captures at 720p; high captures at 1080p; maximum additionally stops automatic quality reduction as viewer count grows on peer-to-peer rooms, which multiplies the sender's upload bandwidth and CPU use.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_max_screen_share_quality",
-            "humanized_name": "Voice max screen share quality",
-            "description": "Highest screen share quality participants may choose in their video settings. Standard targets 15 fps at a modest bitrate; high allows 30 fps at a higher bitrate; maximum allows 60 fps at a very high bitrate ceiling, letting fast connections share high-resolution screens at full quality.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_idle_threshold_minutes",
-            "humanized_name": "Voice idle threshold minutes",
-            "description": "Minutes of inactivity before a voice room participant is marked as idle. Set to 0 to disable.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_afk_auto_mute_threshold_minutes",
-            "humanized_name": "Voice afk auto mute threshold minutes",
-            "description": "Minutes of inactivity before a voice room participant is automatically muted. Set to 0 to disable.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_afk_disconnect_threshold_minutes",
-            "humanized_name": "Voice afk disconnect threshold minutes",
-            "description": "Minutes of inactivity before a voice room participant is automatically disconnected. Set to 0 to disable.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_auto_status_enabled",
-            "humanized_name": "Voice auto status enabled",
-            "description": "Automatically set user status when they join a voice room (e.g. '🎙️ In Watercooler'). Requires the 'enable user status' site setting.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_mesh_privacy_warning_enabled",
-            "humanized_name": "Voice mesh privacy warning enabled",
-            "description": "Warn users before they join a peer-to-peer voice room that other participants may be able to see their IP address, with an option to not show the warning again on that device. Calls hosted on a LiveKit server never show the warning.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_badges_enabled",
-            "humanized_name": "Voice badges enabled",
-            "description": "Enable voice chat badges when <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_enabled\" data-setting-name=\"voice_enabled\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice enabled</a> is enabled. Grants badges for voice room milestones like time spent, rooms visited, and connections made. Toggling this enables or disables every badge in the Voice group at once. Requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=voice_analytics_enabled\" data-setting-name=\"voice_analytics_enabled\" data-setting-category=\"plugins\" data-setting-plugin=\"voice\">Voice analytics enabled</a>, which records the sessions the badges are computed from.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_analytics_enabled",
-            "humanized_name": "Voice analytics enabled",
-            "description": "Record who joined which voice room and when, and how long people spent in a room together. Powers the admin voice statistics, the contacts and companions suggestions, and every voice badge.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_session_retention_days",
-            "humanized_name": "Voice session retention days",
-            "description": "Days to keep voice session and time-together history before it is deleted. Badges already earned are never taken away, but progress toward badges that accumulate over time (hours in voice, days in a room, people met) only counts history within this window.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
-            "setting": "voice_chat_enabled",
-            "humanized_name": "Voice chat enabled",
-            "description": "Allow voice rooms to be linked to a chat channel. Each chat session opens a thread in that channel; messages are real chat messages, so participants can also follow along in the chat UI.",
-            "keywords": [],
-            "category": "plugins",
-            "primary_area": null,
-            "plugin": "voice"
-          },
-          {
             "setting": "data_explorer_query_generation_agent",
             "humanized_name": "Data explorer query generation agent",
             "description": "",
@@ -13348,8 +13733,8 @@
             "id": -1,
             "name": "Foundation",
             "description": "The classic Discourse theme that is well-suited to customization for your community’s specific needs.",
-            "created_at": "2026-07-25T05:58:16.654Z",
-            "updated_at": "2026-07-25T05:58:21.435Z",
+            "created_at": "2026-11-03T05:07:13.429Z",
+            "updated_at": "2026-11-03T05:07:17.750Z",
             "default": true,
             "component": false
           },
@@ -13357,8 +13742,8 @@
             "id": -2,
             "name": "Horizon",
             "description": "A simple, beautiful theme that improves the out of the box experience for Discourse sites.",
-            "created_at": "2026-07-25T05:58:17.711Z",
-            "updated_at": "2026-07-25T05:58:20.756Z",
+            "created_at": "2026-11-03T05:07:14.271Z",
+            "updated_at": "2026-11-03T05:07:17.343Z",
             "component": false
           }
         ],
@@ -13598,13 +13983,14 @@
           {
             "setting": "boards_enabled",
             "humanized_name": "Boards enabled",
-            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control",
-            "value": false,
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='/boards'>/boards</a> to get started.",
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/411418",
               "requires_plugin_enabled": false,
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -13613,43 +13999,18 @@
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/boards/images/upcoming_changes/boards_enabled.png",
+                "url": "http://localhost:3042/plugins/boards/images/upcoming_changes/boards_enabled.png",
                 "width": 1250,
                 "height": 851
               },
-              "enabled_for": "no_one"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.639Z"
             },
             "plugin": "Boards",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
               "boards_manage_board_allowed_groups"
-            ],
-            "depends_on_met": true,
-            "overriding_defaults": false,
-            "groups": null
-          },
-          {
-            "setting": "chat_pinned_messages",
-            "humanized_name": "Chat pinned messages",
-            "description": "Enable pinned messages in chat channels.",
-            "value": true,
-            "upcoming_change": {
-              "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/397571",
-              "impact_type": "feature",
-              "impact_role": "all_members",
-              "allow_enabled_for": null,
-              "body_class": null,
-              "permanent_warning": true,
-              "hide_settings": null,
-              "enabled_for": "everyone"
-            },
-            "plugin": "Chat",
-            "depends_on": [],
-            "depends_on_humanized_names": [],
-            "dependents": [
-              "chat_pinning_messages_allowed_groups"
             ],
             "depends_on_met": true,
             "overriding_defaults": false,
@@ -13663,6 +14024,7 @@
             "upcoming_change": {
               "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/402705",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -13671,30 +14033,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
-            },
-            "depends_on": [],
-            "depends_on_humanized_names": [],
-            "dependents": [],
-            "depends_on_met": true,
-            "overriding_defaults": false,
-            "groups": null
-          },
-          {
-            "setting": "dashboard_improvements",
-            "humanized_name": "Dashboard improvements",
-            "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
-            "value": true,
-            "upcoming_change": {
-              "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/404528",
-              "impact_type": "feature",
-              "impact_role": "admins",
-              "allow_enabled_for": null,
-              "body_class": null,
-              "permanent_warning": true,
-              "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.642Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13711,13 +14051,15 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.646Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13730,22 +14072,24 @@
             "setting": "enable_composer_redesign",
             "humanized_name": "Enable composer redesign",
             "description": "Enable the redesigned composer.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "body_class": true,
               "learn_more_url": "https://meta.discourse.org/t/-/407849",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_composer_redesign.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_composer_redesign.png",
                 "width": 1620,
                 "height": 1544
               },
-              "enabled_for": "no_one"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.647Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13760,15 +14104,17 @@
             "description": "Let members choose which buttons appear in their composer toolbar, from their interface preferences.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412749",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.648Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13787,19 +14133,21 @@
               "learn_more_url": "https://meta.discourse.org/t/-/407100",
               "requires_plugin_enabled": false,
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
-              "impact_role": "admins",
+              "impact_role": "staff",
               "allow_enabled_for": [
                 "everyone"
               ],
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
+                "url": "http://localhost:3042/plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
                 "width": 1200,
                 "height": 687
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.650Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -13817,6 +14165,7 @@
             "upcoming_change": {
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/411435",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -13825,7 +14174,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.652Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13842,6 +14192,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/407727",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "admins",
               "allow_enabled_for": null,
@@ -13849,11 +14200,12 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_invite_modal_with_roles.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_invite_modal_with_roles.png",
                 "width": 700,
                 "height": 410
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.657Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13871,6 +14223,7 @@
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/407068",
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -13879,11 +14232,12 @@
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_local_logins_via_code.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_local_logins_via_code.png",
                 "width": 806,
                 "height": 730
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.659Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -13901,22 +14255,22 @@
             "groups": null
           },
           {
-            "setting": "enable_markdown_endpoints",
-            "humanized_name": "Enable markdown endpoints",
-            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "setting": "enable_main_outlet_grid_layout_change",
+            "humanized_name": "Enable main outlet grid layout change",
+            "description": "Place the composer inside the main layout grid so themes can position it in a grid column, and use a narrower sidebar.",
             "value": true,
             "upcoming_change": {
               "status": "beta",
-              "learn_more_url": "https://meta.discourse.org/t/-/413006",
-              "impact_type": "feature",
+              "body_class": true,
+              "learn_more_url": "https://meta.discourse.org/t/-/414357",
+              "group_setting": null,
+              "impact_type": "other",
               "impact_role": "all_members",
-              "allow_enabled_for": [
-                "everyone"
-              ],
-              "body_class": null,
+              "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.660Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -13926,27 +14280,50 @@
             "groups": null
           },
           {
-            "setting": "enable_solved_shared_issues",
-            "humanized_name": "Enable solved shared issues",
-            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "setting": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
             "value": true,
             "upcoming_change": {
               "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/402498",
+              "learn_more_url": "https://meta.discourse.org/t/-/413006",
               "permanent_warning": false,
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.662Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "enable_new_reordering_controls",
+            "humanized_name": "Enable new reordering controls",
+            "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/414613",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
+              "permanent_warning": true,
               "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
-                "width": 1200,
-                "height": 330
-              },
-              "enabled_for": "everyone"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.667Z"
             },
-            "plugin": "Solved",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
@@ -13962,6 +14339,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/404728",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
@@ -13969,17 +14347,48 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_unified_new.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_unified_new.png",
                 "width": 1112,
                 "height": 436
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.671Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": true,
+            "groups": null
+          },
+          {
+            "setting": "enable_user_menu_mentions_tab",
+            "humanized_name": "Enable user menu mentions tab",
+            "description": "Add a Mentions tab to the user menu that shows direct @username mentions separately from replies and group mentions.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/415579",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3042/images/upcoming_changes/enable_user_menu_mentions_tab.png",
+                "width": 391,
+                "height": 442
+              },
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.673Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
             "groups": null
           },
           {
@@ -13990,6 +14399,7 @@
             "upcoming_change": {
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/402273",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -13998,7 +14408,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.675Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14015,6 +14426,7 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/409316",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -14023,7 +14435,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.677Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14031,6 +14444,53 @@
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
+          },
+          {
+            "setting": "live_enabled",
+            "humanized_name": "Live enabled",
+            "description": "Live brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/411337",
+              "requires_plugin_enabled": false,
+              "permanent_warning": false,
+              "group_setting": "live_allowed_groups",
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3042/plugins/live/images/upcoming_changes/live_enabled.png",
+                "width": 752,
+                "height": 407
+              },
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.678Z"
+            },
+            "plugin": "Live",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [
+              "live_allowed_groups",
+              "live_create_room_allowed_groups",
+              "live_direct_calls_allowed_groups",
+              "live_video_allowed_groups",
+              "live_screen_share_allowed_groups",
+              "live_local_recording_allowed_groups",
+              "live_badges_enabled"
+            ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": "anonymous_users,logged_in_users",
+            "group_setting": {
+              "setting": "live_allowed_groups",
+              "value": "4|5",
+              "mandatory_values": null,
+              "disallowed_groups": "0",
+              "requires_confirmation": null
+            }
           },
           {
             "setting": "modernize_foundation_theme",
@@ -14041,12 +14501,14 @@
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/395331",
               "body_class": true,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.680Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14063,13 +14525,15 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/410419",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.681Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14086,6 +14550,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/406373",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -14097,7 +14562,8 @@
                 "allow_uncategorized_topics",
                 "suppress_uncategorized_badge"
               ],
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.682Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14114,13 +14580,40 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/395099",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.684Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "review_queue_consistent_answers",
+            "humanized_name": "Review queue consistent answers",
+            "description": "Frame every review queue question so \"Yes\" always means there is a problem, and label reviewed items \"Problem confirmed\" or \"No problem found\" for every type.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/417015",
+              "group_setting": null,
+              "impact_type": "other",
+              "impact_role": "moderators",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.686Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14137,13 +14630,15 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/413150",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -14153,40 +14648,30 @@
             "groups": null
           },
           {
-            "setting": "voice_enabled",
-            "humanized_name": "Voice enabled",
-            "description": "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "setting": "update_whispers_allowed_groups_default",
+            "humanized_name": "Update whispers allowed groups default",
+            "description": "We are updating the default for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=whispers_allowed_groups\" data-setting-name=\"whispers_allowed_groups\" data-setting-area=\"group_permissions\" data-setting-category=\"basic\">Whispers allowed groups</a> setting to allow staff to post whispers by default. If you have previously changed this setting, your configuration will not change unless you reset the setting.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
-              "learn_more_url": "https://meta.discourse.org/t/-/411337",
-              "requires_plugin_enabled": false,
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/414354",
               "permanent_warning": false,
-              "impact_type": "feature",
-              "impact_role": "all_members",
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "staff",
               "allow_enabled_for": [
                 "everyone"
               ],
               "body_class": null,
               "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/voice/images/upcoming_changes/voice_enabled.png",
-                "width": 752,
-                "height": 407
-              },
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.690Z"
             },
-            "plugin": "Voice",
             "depends_on": [],
             "depends_on_humanized_names": [],
-            "dependents": [
-              "voice_allowed_groups",
-              "voice_create_room_allowed_groups",
-              "voice_direct_calls_allowed_groups",
-              "voice_badges_enabled"
-            ],
+            "dependents": [],
             "depends_on_met": true,
-            "overriding_defaults": false,
+            "overriding_defaults": true,
             "groups": null
           }
         ]
@@ -14194,153 +14679,39 @@
     }
   ],
   "changes": {
-    "uploads": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": -5,
-            "url": "/images/discourse-logo-sketch.png",
-            "etag": null,
-            "sha1": "_abaabe41348866838adb7a011cdd530175a53df",
-            "width": null,
-            "height": null,
-            "origin": null,
-            "secure": false,
-            "user_id": -1,
-            "animated": null,
-            "filesize": 169105,
-            "extension": "png",
-            "created_at": "2026-07-25T05:58:08.318954",
-            "updated_at": "2026-07-25T05:58:08.318954",
-            "retain_hours": null,
-            "original_sha1": null,
-            "dominant_color": "9C9D9D",
-            "thumbnail_width": null,
-            "thumbnail_height": null,
-            "original_filename": "discourse-logo-sketch.png",
-            "verification_status": 1,
-            "access_control_post_id": null,
-            "security_last_changed_at": null,
-            "security_last_changed_reason": null
-          },
-          "after": {
-            "id": -5,
-            "url": "/images/discourse-logo-sketch.png",
-            "etag": null,
-            "sha1": "_abaabe41348866838adb7a011cdd530175a53df",
-            "width": 1858,
-            "height": 512,
-            "origin": null,
-            "secure": false,
-            "user_id": -1,
-            "animated": null,
-            "filesize": 169105,
-            "extension": "png",
-            "created_at": "2026-07-25T05:58:08.318954",
-            "updated_at": "2026-07-25T05:58:08.318954",
-            "retain_hours": null,
-            "original_sha1": null,
-            "dominant_color": "9C9D9D",
-            "thumbnail_width": 690,
-            "thumbnail_height": 190,
-            "original_filename": "discourse-logo-sketch.png",
-            "verification_status": 1,
-            "access_control_post_id": null,
-            "security_last_changed_at": null,
-            "security_last_changed_reason": null
-          }
-        },
-        {
-          "before": {
-            "id": -6,
-            "url": "/images/discourse-logo-sketch-small.png",
-            "etag": null,
-            "sha1": "_129430568242d1b7f853bb13ebea28b3f6af4e7",
-            "width": null,
-            "height": null,
-            "origin": null,
-            "secure": false,
-            "user_id": -1,
-            "animated": null,
-            "filesize": 62655,
-            "extension": "png",
-            "created_at": "2026-07-25T05:58:08.322592",
-            "updated_at": "2026-07-25T05:58:08.322592",
-            "retain_hours": null,
-            "original_sha1": null,
-            "dominant_color": "A3A3A4",
-            "thumbnail_width": null,
-            "thumbnail_height": null,
-            "original_filename": "discourse-logo-sketch-small.png",
-            "verification_status": 1,
-            "access_control_post_id": null,
-            "security_last_changed_at": null,
-            "security_last_changed_reason": null
-          },
-          "after": {
-            "id": -6,
-            "url": "/images/discourse-logo-sketch-small.png",
-            "etag": null,
-            "sha1": "_129430568242d1b7f853bb13ebea28b3f6af4e7",
-            "width": 512,
-            "height": 512,
-            "origin": null,
-            "secure": false,
-            "user_id": -1,
-            "animated": null,
-            "filesize": 62655,
-            "extension": "png",
-            "created_at": "2026-07-25T05:58:08.322592",
-            "updated_at": "2026-07-25T05:58:08.322592",
-            "retain_hours": null,
-            "original_sha1": null,
-            "dominant_color": "A3A3A4",
-            "thumbnail_width": 500,
-            "thumbnail_height": 500,
-            "original_filename": "discourse-logo-sketch-small.png",
-            "verification_status": 1,
-            "access_control_post_id": null,
-            "security_last_changed_at": null,
-            "security_last_changed_reason": null
-          }
-        }
-      ]
-    },
     "user_auth_tokens": {
       "inserted": [],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 452,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "kGkEyGr39VEzcpiSJQ/VqbzS1b0=",
-            "created_at": "2026-10-17T11:32:46.448516",
-            "rotated_at": "2026-10-17T11:32:46.444423",
-            "updated_at": "2026-10-17T11:32:46.448516",
+            "auth_token": "YwvZC9AaIFEdB/DU7BsSlLvONAc=",
+            "created_at": "2026-11-15T21:47:10.282749",
+            "rotated_at": "2026-11-15T21:47:10.265555",
+            "updated_at": "2026-11-15T21:47:10.282749",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "kGkEyGr39VEzcpiSJQ/VqbzS1b0=",
+            "prev_auth_token": "YwvZC9AaIFEdB/DU7BsSlLvONAc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 452,
-            "seen_at": "2026-10-17T11:32:48.120982",
+            "id": 14,
+            "seen_at": "2026-11-15T21:47:15.474043",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "kGkEyGr39VEzcpiSJQ/VqbzS1b0=",
-            "created_at": "2026-10-17T11:32:46.448516",
-            "rotated_at": "2026-10-17T11:32:46.444423",
-            "updated_at": "2026-10-17T11:32:46.448516",
+            "auth_token": "YwvZC9AaIFEdB/DU7BsSlLvONAc=",
+            "created_at": "2026-11-15T21:47:10.282749",
+            "rotated_at": "2026-11-15T21:47:10.265555",
+            "updated_at": "2026-11-15T21:47:10.282749",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "kGkEyGr39VEzcpiSJQ/VqbzS1b0=",
+            "prev_auth_token": "YwvZC9AaIFEdB/DU7BsSlLvONAc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -14353,10 +14724,10 @@
         {
           "id": 1,
           "name": "last_visited_upcoming_changes_at",
-          "value": "2026-10-17T11:32:48Z",
+          "value": "2026-11-15T21:47:15Z",
           "user_id": 1,
-          "created_at": "2026-10-17T11:32:48.521152",
-          "updated_at": "2026-10-17T11:32:48.521152"
+          "created_at": "2026-11-15T21:47:15.966129",
+          "updated_at": "2026-11-15T21:47:15.966129"
         }
       ],
       "deleted": [],
@@ -14369,7 +14740,7 @@
   },
   "recorded_from": {
     "case": "8f58648b5a130fc4b29e4081e4de27d8d6a92bdf9a0a495fec3cef7590bcb1bb",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -179,7 +179,38 @@
   ],
   "ignore": [
     "/responses/*/body/sections/*/data/storage/backups/free_bytes",
-    "/responses/*/body/sections/*/data/storage/uploads/free_bytes",
-    "/responses/*/body/sections/*/data/dashboard_updated_at"
+    "/responses/*/body/sections/*/data/storage/uploads/free_bytes"
+  ],
+  "unordered_responses": [
+    {
+      "path": "/responses/0/body/sections/3/data/activity_by_category/rows",
+      "ties": [
+        "share"
+      ]
+    },
+    {
+      "path": "/responses/1/body/sections/3/data/activity_by_category/rows",
+      "ties": [
+        "share"
+      ]
+    },
+    {
+      "path": "/responses/9/body/sections/3/data/activity_by_category/rows",
+      "ties": [
+        "share"
+      ]
+    },
+    {
+      "path": "/responses/16/body/sections/3/data/activity_by_category/rows",
+      "ties": [
+        "share"
+      ]
+    },
+    {
+      "path": "/responses/18/body/sections/3/data/activity_by_category/rows",
+      "ties": [
+        "share"
+      ]
+    }
   ]
 }

@@ -907,7 +907,7 @@ async fn the_members_list_offers_adding_members_to_a_direct_message() {
     let mut user1 = Client::logged_in(st.clone(), "user1").await;
     let item = |count: i64| {
         format!(
-            "<ul class=\"c-channel-members__list\"><li class=\"c-channel-members__list-item -add-member\" role=\"button\" tabindex=\"0\" data-memberships-count=\"{count}\"><svg class=\"fa d-icon d-icon-plus svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#plus\"></use></svg><span>Add Member</span></li><li class=\"c-channel-members__list-item -member\""
+            "<ul class=\"c-channel-members__list\"><li class=\"c-channel-members__list-item -add-member\" role=\"button\" tabindex=\"0\" data-memberships-count=\"{count}\"><svg class=\"fa d-icon d-icon-plus svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#plus\"></use></svg><span>Add member</span></li><li class=\"c-channel-members__list-item -member\""
         )
     };
     async fn members(client: &mut Client, id: i64) -> String {

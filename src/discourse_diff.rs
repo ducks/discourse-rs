@@ -564,9 +564,12 @@ fn tokenize_node(node: &Handle, tokens: &mut Vec<String>) {
 }
 
 /// `HtmlTokenizer#characters`: whitespace after a tag joins the tag;
-/// text is `scan(/\W|\w+[ \t]*/)`.
+/// text is `scan(/\W|\w+[ \t]*/)`. `blank?` is fast_blank's on the
+/// reference: ASCII whitespace only, so a no-break space is text.
 fn characters(text: &str, tokens: &mut Vec<String>) {
-    if text.chars().all(char::is_whitespace)
+    if text
+        .chars()
+        .all(|c| matches!(c, ' ' | '\t' | '\n' | '\r' | '\x0b' | '\x0c'))
         && let Some(last) = tokens.last_mut().filter(|t| t.starts_with('<'))
     {
         last.push_str(text);

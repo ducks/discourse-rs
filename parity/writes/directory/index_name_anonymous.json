@@ -19,8 +19,8 @@
       }
     }
   ],
-  "started_at": "2026-10-15T16:18:54.661995",
-  "transaction_started_at": "2026-10-15T16:18:52.18128",
+  "started_at": "2026-11-15T22:43:09.14317",
+  "transaction_started_at": "2026-11-15T22:43:08.390871",
   "responses": [
     {
       "status": 200,
@@ -28,13 +28,13 @@
         "directory_items": [
           {
             "id": 2,
-            "likes_received": 1,
-            "likes_given": 1,
-            "topic_count": 2,
-            "post_count": 1,
+            "likes_received": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "post_count": 0,
             "topics_entered": 0,
             "posts_read": 0,
-            "days_visited": 1,
+            "days_visited": 0,
             "time_read": 0,
             "user": {
               "id": 2,
@@ -46,13 +46,13 @@
           },
           {
             "id": 3,
-            "likes_received": 1,
-            "likes_given": 1,
-            "topic_count": 1,
-            "post_count": 1,
+            "likes_received": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "post_count": 0,
             "topics_entered": 0,
             "posts_read": 0,
-            "days_visited": 1,
+            "days_visited": 0,
             "time_read": 0,
             "user": {
               "id": 3,
@@ -67,7 +67,7 @@
             "likes_received": 0,
             "likes_given": 0,
             "topic_count": 0,
-            "post_count": 1,
+            "post_count": 0,
             "topics_entered": 0,
             "posts_read": 0,
             "days_visited": 0,
@@ -114,11 +114,11 @@
             "id": 1,
             "likes_received": 0,
             "likes_given": 0,
-            "topic_count": 1,
-            "post_count": 1,
+            "topic_count": 0,
+            "post_count": 0,
             "topics_entered": 0,
             "posts_read": 0,
-            "days_visited": 1,
+            "days_visited": 0,
             "time_read": 0,
             "user": {
               "id": 1,
@@ -150,7 +150,7 @@
   ],
   "recorded_from": {
     "case": "5aaa52c1da9b3106274847d7cdb9662f3137dfcff03c486d54c8106a9dc4f8e2",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

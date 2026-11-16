@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-03T16:04:24.538148",
-  "transaction_started_at": "2026-10-03T16:04:23.362181",
+  "started_at": "2026-11-15T22:47:09.751591",
+  "transaction_started_at": "2026-11-15T22:47:08.971409",
   "responses": [
     {
       "status": 200,
@@ -61,7 +61,7 @@
             "draft_key": "topic_35",
             "revisions": 2,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-10-03T16:04:23.362181"
+            "updated_at": "2026-11-15T22:47:08.971409"
           }
         }
       ]
@@ -72,33 +72,33 @@
       "updated": [
         {
           "before": {
-            "id": 86,
+            "id": 14,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
-            "created_at": "2026-10-03T16:04:23.754436",
-            "rotated_at": "2026-10-03T16:04:23.754189",
-            "updated_at": "2026-10-03T16:04:23.754436",
+            "auth_token": "lyFjVGen3oiX951MSaa4gMmL3Tg=",
+            "created_at": "2026-11-15T22:47:09.294394",
+            "rotated_at": "2026-11-15T22:47:09.293476",
+            "updated_at": "2026-11-15T22:47:09.294394",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
+            "prev_auth_token": "lyFjVGen3oiX951MSaa4gMmL3Tg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 86,
-            "seen_at": "2026-10-03T16:04:24.547348",
+            "id": 14,
+            "seen_at": "2026-11-15T22:47:09.757106",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
-            "created_at": "2026-10-03T16:04:23.754436",
-            "rotated_at": "2026-10-03T16:04:23.754189",
-            "updated_at": "2026-10-03T16:04:23.754436",
+            "auth_token": "lyFjVGen3oiX951MSaa4gMmL3Tg=",
+            "created_at": "2026-11-15T22:47:09.294394",
+            "rotated_at": "2026-11-15T22:47:09.293476",
+            "updated_at": "2026-11-15T22:47:09.294394",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
+            "prev_auth_token": "lyFjVGen3oiX951MSaa4gMmL3Tg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -108,13 +108,16 @@
     }
   },
   "jobs": [],
+  "next_ids": {
+    "draft_sequences": 1
+  },
   "setup": [
     "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
     "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
   ],
   "recorded_from": {
     "case": "cd22f443ea83ca58fd62b90f91a6a889db17eb5391b6e11e08580db58188072e",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

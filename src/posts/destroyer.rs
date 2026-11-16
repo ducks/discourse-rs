@@ -681,9 +681,13 @@ async fn finish(
     Ok(())
 }
 
+/// `PostDestroyer::TOPIC_CLOSED_BY_AUTHOR_DELETION`
+const TOPIC_CLOSED_BY_AUTHOR_DELETION: &str = "topic_closed_by_author_deletion";
+
 /// `PostDestroyer#mark_for_deletion`: the raw replaced through PostRevisor
 /// (outside a transaction, as Rails does), then the post marked
-/// user-deleted and, for a first post, its topic closed.
+/// user-deleted and, for a first post of an open topic, its topic closed
+/// and the post marked as having closed it (7c47e8d7fd0).
 async fn mark_for_deletion(
     pool: &PgPool,
     ctx: &Ctx<'_>,
@@ -729,10 +733,33 @@ async fn mark_for_deletion(
         .await?;
     // The post's links: refused above, so none to destroy.
     if post.is_first_post() {
-        sqlx::query("UPDATE topics SET closed = TRUE WHERE id = $1")
+        let closed = sqlx::query("UPDATE topics SET closed = TRUE WHERE id = $1 AND NOT closed")
             .bind(post.topic_id)
             .execute(&mut *tx)
-            .await?;
+            .await?
+            .rows_affected();
+        if closed == 1 {
+            // upsert_custom_fields(TOPIC_CLOSED_BY_AUTHOR_DELETION => true)
+            let updated = sqlx::query(
+                "UPDATE post_custom_fields SET value = 't', updated_at = clock_timestamp() \
+                 WHERE post_id = $1 AND name = $2",
+            )
+            .bind(post.id)
+            .bind(TOPIC_CLOSED_BY_AUTHOR_DELETION)
+            .execute(&mut *tx)
+            .await?
+            .rows_affected();
+            if updated == 0 {
+                sqlx::query(
+                    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
+                     VALUES ($1, $2, 't', clock_timestamp(), clock_timestamp())",
+                )
+                .bind(post.id)
+                .bind(TOPIC_CLOSED_BY_AUTHOR_DELETION)
+                .execute(&mut *tx)
+                .await?;
+            }
+        }
     }
     tx.commit().await?;
     Ok(())
@@ -1478,7 +1505,9 @@ async fn staff_recover_topic_in(
     if embedded {
         return Err(Unsupported("recovering an embedded topic (TopicEmbed#recover!)").into());
     }
-    if s.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+    if s.get("boards_enabled").is_ok_and(|v| v.truthy())
+        && crate::plugins::boards_to_sync(&mut *conn).await?
+    {
         return Err(Unsupported("the boards plugin's topic_recovered sync").into());
     }
     let Some(author) = post.user_id else {

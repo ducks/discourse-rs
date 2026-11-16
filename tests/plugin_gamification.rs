@@ -136,6 +136,30 @@ async fn setup() -> (TestDb, AppState) {
     (db, st)
 }
 
+/// The seed's own activity moved two months back: it is as recent as the
+/// seed, so on the day the seed is made it would score for today and
+/// within any recent window.
+async fn age_seed_activity(db: &TestDb) {
+    for table in [
+        "posts",
+        "topics",
+        "post_actions",
+        "reviewables",
+        "invites",
+        "discourse_reactions_reaction_users",
+        "discourse_solved_topic_answers",
+        "chat_messages",
+        "chat_message_reactions",
+    ] {
+        exec(
+            db,
+            &format!("UPDATE {table} SET created_at = created_at - interval '60 days'"),
+        )
+        .await;
+    }
+    exec(db, "UPDATE user_visits SET visited_at = visited_at - 60").await;
+}
+
 async fn settings(st: &AppState, conn: &mut sqlx::PgConnection) -> SiteSettings {
     SiteSettings::load(conn, &st.site_setting_defs, &st.config.globals)
         .await
@@ -911,6 +935,7 @@ async fn leaderboard_score_on(db: &TestDb, lb: i64, user_id: i32, date: &str) ->
 #[tokio::test]
 async fn update_scores_for_today_scores_today_and_generates_positions() {
     let (db, st) = setup().await;
+    age_seed_activity(&db).await;
     fabricate_user(&db, 101, "user", "").await;
     fabricate_user(&db, 102, "second", "").await;
     // a reply in a topic of the user's, and a topic of theirs
@@ -1066,6 +1091,7 @@ async fn position_jobs_generate_refresh_update_and_delete() {
 #[tokio::test]
 async fn recalculate_scores_job_recalculates_and_tells_the_admin() {
     let (db, st) = setup().await;
+    age_seed_activity(&db).await;
     fabricate_user(&db, 101, "user", "").await;
     let lb = fabricate_leaderboard(&db, "leaderboard1", &[]).await;
     fabricate_topic(&db, 101, Some(4), "").await;
@@ -1095,6 +1121,7 @@ async fn recalculate_scores_job_recalculates_and_tells_the_admin() {
 /// a staged, an anonymized, a suspended and a once suspended user, each
 /// with a visit two days ago, and four leaderboards.
 async fn leaderboard_world(db: &TestDb, st: &AppState) -> [i64; 4] {
+    age_seed_activity(db).await;
     exec(db, "DELETE FROM user_visits").await;
     exec(
         db,

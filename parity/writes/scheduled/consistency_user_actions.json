@@ -2,18 +2,426 @@
   "name": "consistency_user_actions",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-13T02:34:02.95409",
-  "transaction_started_at": "2026-10-13T02:34:02.137929",
+  "started_at": "2026-11-15T23:27:16.621799",
+  "transaction_started_at": "2026-11-15T23:27:15.847586",
   "responses": [],
   "changes": {
+    "group_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 11,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 10,
+            "created_at": "2026-11-03T05:07:59.74266",
+            "updated_at": "2026-11-03T05:07:59.74266",
+            "first_unread_pm_at": "2026-11-03T05:07:59.53259",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 11,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 10,
+            "created_at": "2026-11-03T05:07:59.74266",
+            "updated_at": "2026-11-03T05:07:59.74266",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 14,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 1,
+            "created_at": "2026-11-03T05:07:59.833677",
+            "updated_at": "2026-11-03T05:07:59.833677",
+            "first_unread_pm_at": "2026-11-03T05:07:59.833677",
+            "notification_level": 2
+          },
+          "after": {
+            "id": 14,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 1,
+            "created_at": "2026-11-03T05:07:59.833677",
+            "updated_at": "2026-11-03T05:07:59.833677",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 2
+          }
+        },
+        {
+          "before": {
+            "id": 18,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 3,
+            "created_at": "2026-11-03T05:07:59.833677",
+            "updated_at": "2026-11-03T05:07:59.833677",
+            "first_unread_pm_at": "2026-11-03T05:07:59.833677",
+            "notification_level": 2
+          },
+          "after": {
+            "id": 18,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 3,
+            "created_at": "2026-11-03T05:07:59.833677",
+            "updated_at": "2026-11-03T05:07:59.833677",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 2
+          }
+        },
+        {
+          "before": {
+            "id": 19,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 11,
+            "created_at": "2026-11-03T05:07:59.960501",
+            "updated_at": "2026-11-03T05:07:59.960501",
+            "first_unread_pm_at": "2026-11-03T05:07:59.92584",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 19,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 11,
+            "created_at": "2026-11-03T05:07:59.960501",
+            "updated_at": "2026-11-03T05:07:59.960501",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 20,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 12,
+            "created_at": "2026-11-03T05:07:59.974341",
+            "updated_at": "2026-11-03T05:07:59.974341",
+            "first_unread_pm_at": "2026-11-03T05:07:59.92584",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 20,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 12,
+            "created_at": "2026-11-03T05:07:59.974341",
+            "updated_at": "2026-11-03T05:07:59.974341",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 21,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 13,
+            "created_at": "2026-11-03T05:07:59.98744",
+            "updated_at": "2026-11-03T05:07:59.98744",
+            "first_unread_pm_at": "2026-11-03T05:07:59.92584",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 21,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 13,
+            "created_at": "2026-11-03T05:07:59.98744",
+            "updated_at": "2026-11-03T05:07:59.98744",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 22,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 14,
+            "created_at": "2026-11-03T05:08:00.00371",
+            "updated_at": "2026-11-03T05:08:00.00371",
+            "first_unread_pm_at": "2026-11-03T05:07:59.92584",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 22,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 14,
+            "created_at": "2026-11-03T05:08:00.00371",
+            "updated_at": "2026-11-03T05:08:00.00371",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 23,
+            "owner": false,
+            "user_id": 2,
+            "group_id": 10,
+            "created_at": "2026-11-03T05:08:00.247582",
+            "updated_at": "2026-11-03T05:08:00.247582",
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 23,
+            "owner": false,
+            "user_id": 2,
+            "group_id": 10,
+            "created_at": "2026-11-03T05:08:00.247582",
+            "updated_at": "2026-11-03T05:08:00.247582",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 24,
+            "owner": false,
+            "user_id": 2,
+            "group_id": 11,
+            "created_at": "2026-11-03T05:08:00.346634",
+            "updated_at": "2026-11-03T05:08:00.346634",
+            "first_unread_pm_at": "2026-11-03T05:08:00.280841",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 24,
+            "owner": false,
+            "user_id": 2,
+            "group_id": 11,
+            "created_at": "2026-11-03T05:08:00.346634",
+            "updated_at": "2026-11-03T05:08:00.346634",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 25,
+            "owner": false,
+            "user_id": 3,
+            "group_id": 10,
+            "created_at": "2026-11-03T05:08:00.537378",
+            "updated_at": "2026-11-03T05:08:00.537378",
+            "first_unread_pm_at": "2026-11-03T05:08:00.403916",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 25,
+            "owner": false,
+            "user_id": 3,
+            "group_id": 10,
+            "created_at": "2026-11-03T05:08:00.537378",
+            "updated_at": "2026-11-03T05:08:00.537378",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 26,
+            "owner": false,
+            "user_id": 3,
+            "group_id": 11,
+            "created_at": "2026-11-03T05:08:00.594226",
+            "updated_at": "2026-11-03T05:08:00.594226",
+            "first_unread_pm_at": "2026-11-03T05:08:00.570587",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 26,
+            "owner": false,
+            "user_id": 3,
+            "group_id": 11,
+            "created_at": "2026-11-03T05:08:00.594226",
+            "updated_at": "2026-11-03T05:08:00.594226",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 27,
+            "owner": false,
+            "user_id": 3,
+            "group_id": 12,
+            "created_at": "2026-11-03T05:08:00.607537",
+            "updated_at": "2026-11-03T05:08:00.607537",
+            "first_unread_pm_at": "2026-11-03T05:08:00.570587",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 27,
+            "owner": false,
+            "user_id": 3,
+            "group_id": 12,
+            "created_at": "2026-11-03T05:08:00.607537",
+            "updated_at": "2026-11-03T05:08:00.607537",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 67,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 2,
+            "created_at": "2026-11-15T19:35:26.665121",
+            "updated_at": "2026-11-15T19:35:26.665121",
+            "first_unread_pm_at": "2026-11-15T19:35:26.665121",
+            "notification_level": 2
+          },
+          "after": {
+            "id": 67,
+            "owner": false,
+            "user_id": 1,
+            "group_id": 2,
+            "created_at": "2026-11-15T19:35:26.665121",
+            "updated_at": "2026-11-15T19:35:26.665121",
+            "first_unread_pm_at": "2026-11-15T23:17:16.72263",
+            "notification_level": 2
+          }
+        }
+      ]
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 13,
+            "name": "trust_level_3",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 3",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-11-03T05:07:09.42686",
+            "flair_icon": null,
+            "updated_at": "2026-11-03T05:07:09.429184",
+            "user_count": 3,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 13,
+            "name": "trust_level_3",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 3",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-11-03T05:07:09.42686",
+            "flair_icon": null,
+            "updated_at": "2026-11-03T05:07:09.429184",
+            "user_count": 2,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
     "user_actions": {
       "inserted": [],
       "deleted": [
         {
           "id": 9501,
           "user_id": 3,
-          "created_at": "2026-10-13T02:34:02.137929",
-          "updated_at": "2026-10-13T02:34:02.137929",
+          "created_at": "2026-11-15T23:27:15.847586",
+          "updated_at": "2026-11-15T23:27:15.847586",
           "action_type": 1,
           "acting_user_id": 3,
           "target_post_id": 46,
@@ -23,8 +431,8 @@
         {
           "id": 9502,
           "user_id": 3,
-          "created_at": "2026-10-13T02:34:02.137929",
-          "updated_at": "2026-10-13T02:34:02.137929",
+          "created_at": "2026-11-15T23:27:15.847586",
+          "updated_at": "2026-11-15T23:27:15.847586",
           "action_type": 5,
           "acting_user_id": 3,
           "target_post_id": 36,
@@ -33,6 +441,174 @@
         }
       ],
       "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:08:00.230026",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:08:00.103863",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:08:00.230026",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-15T23:17:16.716691",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-11-15T23:17:16.720862",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "reset_bounce_score_after": null
+          }
+        },
+        {
+          "before": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:08:00.524419",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:08:00.403916",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-11-03T05:08:00.403916",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:54.128447",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:08:00.524419",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-15T19:20:01.293353",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-11-15T19:20:00.614942",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:54.128447",
+            "reset_bounce_score_after": null
+          }
+        },
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:07:59.663488",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:07:59.53259",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-11-03T05:07:59.53259",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:54.283624",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:07:59.663488",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-15T19:20:01.293353",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-11-15T23:17:16.720862",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:54.283624",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
     }
   },
   "jobs": [],
@@ -50,7 +626,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "f15e00caf2d5c608e1e29611f69e4c5547f65cd88604fd4a99c57072f742e831",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

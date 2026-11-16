@@ -419,7 +419,8 @@ pub async fn revise(
     // before_save: cooked for a changed raw, cooked as the author's post
     // with the editor as last editor.
     let raw_changed = new_raw != post.raw;
-    let cooked = if raw_changed {
+    // The old raw cooked as PostAnalyzer cooks it, for alert_users(old_raw).
+    let (cooked, old_cooked) = if raw_changed {
         let omit = match post.user_id {
             Some(uid) => omit_nofollow(&mut conn, ctx, uid).await?,
             None => false,
@@ -438,10 +439,25 @@ pub async fn revise(
             },
         )
         .await?;
+        let old_cooked = if post.raw.trim().is_empty() {
+            None
+        } else {
+            Some(
+                pretty_text::cook(
+                    ctx.host,
+                    &post.raw,
+                    &MarkdownOptions {
+                        topic_id: Some(i64::from(post.topic_id)),
+                        ..Default::default()
+                    },
+                )
+                .await?,
+            )
+        };
         conn = pool.acquire().await?;
-        cooked
+        (cooked, old_cooked)
     } else {
-        post.cooked.clone()
+        (post.cooked.clone(), None)
     };
     let base_path = ctx.config.globals.relative_url_root().to_string();
     let analysis = validate::analyze_stripped(
@@ -939,8 +955,29 @@ pub async fn revise(
     crate::plugins::assign::lifecycle::post_saved(&mut tx, ctx, post.id).await?;
     // ... and to discourse-narrative-bot: the author's edit.
     crate::plugins::narrative_bot::post_edited(&mut tx, s, post.id).await?;
+    // alert_users(old_raw) (Discourse 1cb76a9fd1d): the mentions the edit
+    // added, which alone are notified.
     if editor_user.id != -1 {
-        crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
+        let added_mentions: Vec<String> = match &old_cooked {
+            Some(old) => {
+                let chat = crate::plugins::chat::enabled(s)?;
+                let before = validate::analyze_stripped(old, &base_path, chat)?.mention_names;
+                analysis
+                    .mention_names
+                    .iter()
+                    .filter(|m| !before.contains(m))
+                    .cloned()
+                    .collect()
+            }
+            None if raw_changed => analysis.mention_names.clone(),
+            None => Vec::new(),
+        };
+        crate::jobs::enqueue(
+            &mut tx,
+            "post_alert",
+            json!({"post_id": post.id, "added_mentions": added_mentions}),
+        )
+        .await?;
     }
     // publish_changes: reload_topic when the topic changed.
     let mut publish = serde_json::Map::new();

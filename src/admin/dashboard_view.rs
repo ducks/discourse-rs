@@ -2026,28 +2026,19 @@ impl Dashboard<'_> {
                 .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
                 .map(|d| d.to_utc())
         };
-        let discourse = date("discourse_updated_at");
-        let dashboard = date("dashboard_updated_at");
-        if discourse.is_none() && dashboard.is_none() {
+        let Some(discourse) = date("discourse_updated_at") else {
             return String::new();
-        }
+        };
         let mut out = format!(
             "<div class=\"db-section__row-block db-system__block --status\"><div class=\"db-section__row-block-header\"><h3 class=\"db-section__header\">{} {}</h3></div>",
             icon("clock", Some("db-system__block-icon")),
             escape(&t(i18n, &format!("{prefix}.status")))
         );
-        for (at, label) in [
-            (discourse, "discourse_updated"),
-            (dashboard, "dashboard_updated"),
-        ] {
-            if let Some(at) = at {
-                out.push_str(&format!(
-                    "<div class=\"db-system__headline\"><div class=\"db-system__value\">{}</div><div class=\"db-system__label\">{}</div></div>",
-                    crate::user_profile_view::age_medium(self.list, at, true),
-                    escape(&t(i18n, &format!("{prefix}.{label}")))
-                ));
-            }
-        }
+        out.push_str(&format!(
+            "<div class=\"db-system__headline\"><div class=\"db-system__value\">{}</div><div class=\"db-system__label\">{}</div></div>",
+            crate::user_profile_view::age_medium(self.list, discourse, true),
+            escape(&t(i18n, &format!("{prefix}.discourse_updated")))
+        ));
         out.push_str(&format!(
             "<div class=\"db-system__footer\"><a class=\"db-system__link\" href=\"{}/admin/whats-new\">{}</a></div></div>",
             self.admin.base_path,

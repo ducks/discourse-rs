@@ -1,5 +1,6 @@
 {
   "user": null,
+  "not_yet": "2b6dd368623 (Discourse): connected accounts keep their avatars (UserAvatar.retrieve_for_associated_account); not ported",
   "settings": {
     "auth_require_interaction": false,
     "github_client_id": "ghclient1",
@@ -14,21 +15,29 @@
   "remote": {
     "/gh/login/oauth/access_token": {
       "status": 200,
-      "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
       "body": "access_token=gh-token-1&scope=user%3Aemail&token_type=bearer"
     },
     "/gh-api/user": {
       "status": 200,
-      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
       "body": "{\"id\":1001,\"login\":\"octo\",\"name\":\"Octo Cat\",\"avatar_url\":\"http://fixtures.localhost:8099/octo.png\",\"html_url\":\"https://github.com/octo\",\"blog\":\"\",\"email\":null,\"publicRepos\":3}"
     },
     "/gh-api/user/emails": {
       "status": 200,
-      "headers": {"Content-Type": "application/json; charset=utf-8"},
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
       "body": "[{\"email\":\"octo@blocked.example\",\"primary\":true,\"verified\":true,\"visibility\":\"public\"},{\"email\":\"octo.second@example.com\",\"primary\":false,\"verified\":false,\"visibility\":null},{\"email\":\"Octo.Third@example.com\",\"primary\":false,\"verified\":true,\"visibility\":null}]"
     }
   },
-  "keep_headers": ["Location"],
+  "keep_headers": [
+    "Location"
+  ],
   "requests": [
     {
       "method": "GET",
@@ -38,7 +47,10 @@
       "method": "GET",
       "path": "/auth/github/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     },
-    {"method": "GET", "path": "/session/hp.json"},
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
     {
       "method": "POST",
       "path": "/u.json",

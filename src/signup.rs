@@ -119,20 +119,13 @@ pub(crate) async fn username_format_error(
     let words = matches.join(", ");
     let one = matches.len() == 1;
     let key = if one { "one" } else { "other" };
-    // The key is newer than the vendored server.en.yml: Rails' English
-    // until the locales are vendored again.
+    let key = format!("user.username.contains_blocked_words.{key}");
     Ok(Some(
         i18n.t_with(
-            &format!("user.username.contains_blocked_words.{key}"),
+            &key,
             &[("count", &matches.len().to_string()), ("words", &words)],
         )
-        .unwrap_or_else(|| {
-            if one {
-                format!("contains the blocked word '{words}'")
-            } else {
-                format!("contains blocked words: {words}")
-            }
-        }),
+        .unwrap_or_else(|| format!("Translation missing: en.{key}")),
     ))
 }
 
@@ -663,9 +656,9 @@ pub async fn insert_user(
         .bind(user_id)
         .execute(&mut *conn)
         .await?;
-    // set_random_avatar: one of selectable_avatars (the uploads that
-    // exist), with the avatar row that holds it.
-    let mut avatar_id: Option<i32> = None;
+    // UserAvatar.assign_random_to_user (2b6dd368623): one of
+    // selectable_avatars (the uploads that exist) as the user's uploaded
+    // avatar, referenced by the user.
     if settings
         .get("selectable_avatars_random_on_signup")?
         .truthy()
@@ -689,22 +682,13 @@ pub async fn insert_user(
                 .bind(upload_id)
                 .execute(&mut *conn)
                 .await?;
-            let id: i32 = sqlx::query_scalar(
-                "INSERT INTO user_avatars (user_id, custom_upload_id, created_at, updated_at) \
-                 VALUES ($1, $2, clock_timestamp(), clock_timestamp()) RETURNING id",
-            )
-            .bind(user_id)
-            .bind(upload_id)
-            .fetch_one(&mut *conn)
-            .await?;
             crate::upload_references::ensure_exist(
                 &mut *conn,
-                "UserAvatar",
-                id.into(),
+                "User",
+                user_id.into(),
                 Some(upload_id.into()),
             )
             .await?;
-            avatar_id = Some(id);
         }
     }
     let joined = ensure_in_trust_level_group(&mut *conn, payloads, user_id, trust_level).await?;
@@ -719,18 +703,13 @@ pub async fn insert_user(
     for (key, value) in custom_fields {
         crate::user_fields::save_custom_field(&mut *conn, user_id, key, value).await?;
     }
-    let avatar_id: i32 = match avatar_id {
-        Some(id) => id,
-        None => {
-            sqlx::query_scalar(
-                "INSERT INTO user_avatars (user_id, created_at, updated_at) VALUES ($1, clock_timestamp(), clock_timestamp()) \
-                 RETURNING id",
-            )
-            .bind(user_id)
-            .fetch_one(&mut *conn)
-            .await?
-        }
-    };
+    let avatar_id: i32 = sqlx::query_scalar(
+        "INSERT INTO user_avatars (user_id, created_at, updated_at) VALUES ($1, clock_timestamp(), clock_timestamp()) \
+         RETURNING id",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
     if settings.get("automatically_download_gravatars")?.truthy() {
         enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
     }

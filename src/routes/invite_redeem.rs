@@ -246,10 +246,21 @@ async fn redeem_in(
             .fetch_optional(&mut *conn)
             .await?;
     let (inviter_admin, inviter_staff) = inviter_staff.unwrap_or((false, false));
-    if invite.moderator && inviter_staff && !user_is_moderator(&mut *conn, user_id).await? {
-        crate::roles::grant_moderation(&mut *conn, &state.i18n, user_id).await?;
+    let admin_grantable = admin_invite_grantable(&mut *conn, s, &invite, inviter_admin).await?;
+    // The grant is logged (fd5cdeade8f), unless the admin grant below logs it.
+    if invite.moderator && inviter_staff && !admin_grantable {
+        if !user_is_moderator(&mut *conn, user_id).await? {
+            crate::roles::grant_moderation(&mut *conn, &state.i18n, user_id).await?;
+        }
+        crate::roles::log(
+            &mut *conn,
+            invite.invited_by_id,
+            user_id,
+            crate::roles::GRANT_MODERATION,
+        )
+        .await?;
     }
-    if admin_invite_grantable(&mut *conn, s, &invite, inviter_admin).await? {
+    if admin_grantable {
         if !user_is_moderator(&mut *conn, user_id).await? {
             crate::roles::grant_moderation(&mut *conn, &state.i18n, user_id).await?;
         }
@@ -1368,14 +1379,8 @@ pub(crate) async fn show_info(
         info.insert("email".into(), json!(user_email));
         info.insert("username".into(), json!(user.username));
     }
-    crate::session::server::set(
-        &mut *conn,
-        session_id,
-        "invite-key",
-        &json!(invite.invite_key),
-        crate::session::server::EXPIRY_SECONDS,
-    )
-    .await?;
+    // The page no longer keeps the invite for a DiscourseConnect login; its
+    // Continue button posts to /invites/:id/sso (74c7b46a973).
     Ok(Some(Shown::Info(Value::Object(info))))
 }
 
@@ -1688,6 +1693,79 @@ async fn accept_page(
         response.headers_mut().insert("x-discourse-username", value);
     }
     Ok(response)
+}
+
+/// POST /invites/:id/sso: InvitesController#sso (74c7b46a973), the invite
+/// kept in the server session for the DiscourseConnect round trip, then
+/// on to /session/sso; an invite that cannot be redeemed goes back to its
+/// page.
+pub async fn sso(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    // The route only takes the HTML format.
+    if id.contains('.') {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = params::parse(uri.query(), &headers, &body);
+    let pairs: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    if !super::session::csrf_ok(&state, &headers, &pairs, uri.path(), "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // ensure_invites_allowed, ensure_new_registrations_allowed
+    if !invites_allowed(&s)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if !s.get("allow_new_registrations")?.truthy() && guardian.is_anonymous() {
+        return Err(Unsupported("an invite's sso with registrations closed (no_ember)").into());
+    }
+    if !s.get("enable_discourse_connect")?.truthy() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    let limiter = RateLimiter::new(None, &format!("invites-show-{ip}"), 100, 60);
+    if limiter
+        .performed(&state.pool, state.config.rate_limits)
+        .await?
+        .is_err()
+    {
+        return Err(Unsupported("the invite sso rate limit").into());
+    }
+    let Some(invite) = Invite::find_by_key(&mut conn, &id).await? else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let root = state.config.globals.relative_url_root().to_string();
+    if !invite.redeemable(&mut conn).await? {
+        return Ok(super::user_activity::found(
+            &headers,
+            format!("{root}/invites/{}", invite.invite_key),
+        ));
+    }
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_id = session.server_session_id();
+    crate::session::server::set(
+        &mut conn,
+        &session_id,
+        super::discourse_connect::INVITE_KEY,
+        &json!(invite.invite_key),
+        crate::session::server::EXPIRY_SECONDS,
+    )
+    .await?;
+    let cookies: Vec<String> = session.set_cookie(&state, &s)?.into_iter().collect();
+    with_cookies(
+        super::user_activity::found(&headers, format!("{root}/session/sso")),
+        &cookies,
+    )
 }
 
 /// GET /invites/:id: InvitesController#show, the invite's info as JSON
@@ -2245,6 +2323,9 @@ pub async fn verify_login_code(
                 .split('|')
                 .filter_map(|g| g.parse().ok())
                 .collect();
+            // can_edit_avatar (46851346109): no login provider owning it.
+            let can_edit_avatar = !s.get("auth_overrides_avatar")?.truthy()
+                && !s.get("discourse_connect_overrides_avatar")?.truthy();
             tx.commit().await?;
             return Ok(Json(json!({
                 "username_required": true,
@@ -2253,6 +2334,7 @@ pub async fn verify_login_code(
                 "trust_level": trust_level,
                 "avatar_template": avatar_template,
                 "can_upload_avatar": group_ids.iter().any(|g| allowed.contains(g)),
+                "can_edit_avatar": can_edit_avatar,
             }))
             .into_response());
         };

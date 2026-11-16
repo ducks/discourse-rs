@@ -407,7 +407,7 @@ async fn rss(
         "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\" xmlns:discourse=\"http://www.discourse.org/\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n  <channel>\n    <title>{}</title>\n    <link>{}</link>\n    <description><![CDATA[{}]]></description>\n",
         erb_escape(title),
         erb_escape(link),
-        erb_escape(description)
+        rss_cdata(description)
     );
     // @badge.user_badges.first.present?
     let any: bool =
@@ -454,15 +454,21 @@ async fn rss(
                 by_username.ok_or(Unsupported("a badge feed's grant by a missing user"))?;
             out.push_str(&format!(
                 "        <item>\n          <title><![CDATA[{}]]></title>\n          <discourse:grantedAt>{}</discourse:grantedAt>\n          <discourse:grantedBy><![CDATA[{}]]></discourse:grantedBy>\n          <guid>{}</guid>\n        </item>\n",
-                erb_escape(&who(&username, name.as_deref())),
+                rss_cdata(&who(&username, name.as_deref())),
                 granted_at.and_utc().format("%a, %d %b %Y %H:%M:%S +0000"),
-                erb_escape(&who(&by_username, by_name.as_deref())),
+                rss_cdata(&who(&by_username, by_name.as_deref())),
                 erb_escape(&format!("{link}?username={username}"))
             ));
         }
     }
     out.push_str("  </channel>\n</rss>\n");
     Ok(out)
+}
+
+/// `ApplicationHelper#rss_cdata` (821e9e2f9f9): unescaped, with any CDATA
+/// terminator split across two sections.
+pub(crate) fn rss_cdata(value: &str) -> String {
+    value.replace("]]>", "]]]]><![CDATA[>")
 }
 
 /// The badge's page: badges/show drawn from the badge and its grants

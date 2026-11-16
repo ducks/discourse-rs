@@ -137,8 +137,9 @@ async fn hidden_profiles_follow_the_anonymous_rules() {
 
 /// UserSummary#top_categories plucks the categories without an ORDER BY
 /// and sorts them by posts and topics with a stable sort, so ties keep the
-/// table's order: the seed stores Sub General (34) before General (4),
-/// where an id order put General first.
+/// table's order: the seed stores General (4) before Sub General (34)
+/// (as an id order would too since the seed was re-taken at Discourse
+/// 9daeae2a7; the old seed stored Sub General first).
 #[tokio::test]
 async fn top_categories_ties_keep_the_tables_order() {
     let db = TestDb::new().await;
@@ -156,12 +157,12 @@ async fn top_categories_ties_keep_the_tables_order() {
             )
         })
         .collect();
-    assert_eq!(top, [(34, 1, 0), (4, 0, 1)]);
+    assert_eq!(top, [(4, 0, 1), (34, 1, 0)]);
     let (_, _, html) = get(&db.pool, "/u/user1/summary").await;
     let section = &html[html.find("top-categories-section").unwrap()..];
     let sub = section.find(r#"href="/c/general/sub-general/34""#).unwrap();
     let general = section.find(r#"href="/c/general/4""#).unwrap();
-    assert!(sub < general);
+    assert!(general < sub);
 }
 
 #[tokio::test]

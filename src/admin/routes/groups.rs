@@ -352,11 +352,9 @@ pub async fn create(
         .await?;
     }
     gw::after_save(&mut tx, id, &row, None).await?;
-    // GroupActionLogger#log_group_creation
+    // GroupActionLogger#log_group_creation: the group_users as inserted.
     let acting = guardian.user_id().unwrap_or_default();
-    let mut logged = members.clone();
-    logged.sort_by_key(|(u, _)| *u);
-    for (user_id, owner) in &logged {
+    for (user_id, owner) in &members {
         if *owner {
             sqlx::query(
                 "INSERT INTO group_histories (group_id, acting_user_id, target_user_id, action, created_at, updated_at) \
@@ -889,57 +887,40 @@ pub async fn add_owners(
         .await?
         .ok_or(Unsupported("a group gone"))?;
     let acting = guardian.user_id().unwrap_or_default();
-    for (user_id, _) in &users {
-        let member: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM group_users WHERE group_id = $1 AND user_id = $2)",
-        )
-        .bind(group.id)
-        .bind(user_id)
-        .fetch_one(&mut *tx)
-        .await?;
-        if !member {
+    // GroupOwnerManager#add (1d2bdfbc89b): the members added first, then
+    // everyone made an owner and logged, then a job for the messages.
+    let user_ids: Vec<i32> = users.iter().map(|(id, _)| *id).collect();
+    let members: Vec<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM group_users WHERE group_id = $1 AND user_id = ANY($2)",
+    )
+    .bind(group.id)
+    .bind(&user_ids)
+    .fetch_all(&mut *tx)
+    .await?;
+    for user_id in &user_ids {
+        if !members.contains(user_id) {
             group_manager::add_many(&mut tx, &cx, &mgr_group, &[*user_id], false).await?;
             group_manager::log_many(&mut tx, group.id, acting, &[*user_id], ADD_USER_TO_GROUP)
                 .await?;
         }
-        sqlx::query("UPDATE group_users SET owner = TRUE WHERE group_id = $1 AND user_id = $2")
-            .bind(group.id)
-            .bind(user_id)
-            .execute(&mut *tx)
-            .await?;
+    }
+    sqlx::query("UPDATE group_users SET owner = TRUE WHERE group_id = $1 AND user_id = ANY($2)")
+        .bind(group.id)
+        .bind(&user_ids)
+        .execute(&mut *tx)
+        .await?;
+    for user_id in &user_ids {
         log_owner(&mut tx, group.id, acting, *user_id, MAKE_USER_GROUP_OWNER).await?;
     }
-    tx.commit().await?;
-    if notify {
-        let full_name: Option<String> =
-            sqlx::query_scalar("SELECT full_name FROM groups WHERE id = $1")
-                .bind(group.id)
-                .fetch_one(&state.pool)
-                .await?;
-        let name_full_preferred = full_name
-            .filter(|f| !f.trim().is_empty())
-            .unwrap_or_else(|| group.name.clone());
-        let ctx = crate::posting::Ctx {
-            host: &req.host,
-            settings: &req.settings,
-            config: &state.config,
-            i18n: &state.i18n,
-            bus: &state.bus,
-        };
-        for (user_id, _) in &users {
-            crate::system_message::create_from_system_user(
-                &state.pool,
-                &ctx,
-                *user_id,
-                "user_added_to_group_as_owner",
-                &[
-                    ("group_name".to_string(), name_full_preferred.clone()),
-                    ("group_path".to_string(), format!("/g/{}", group.name)),
-                ],
-            )
-            .await?;
-        }
+    if notify && !user_ids.is_empty() {
+        crate::jobs::enqueue(
+            &mut tx,
+            "notify_users_added_to_group",
+            json!({ "user_ids": user_ids, "group_id": group.id, "owner": true }),
+        )
+        .await?;
     }
+    tx.commit().await?;
     let usernames: Vec<String> = users.into_iter().map(|(_, n)| n).collect();
     Ok(Json(json!({ "success": "OK", "usernames": usernames })).into_response())
 }
@@ -1075,10 +1056,18 @@ pub async fn set_primary(
     {
         return Ok(crate::routes::search::invalid_access(&state));
     }
+    // Members only take the group as primary, and only those with it as
+    // primary lose it (e1fa13fa1d0).
     let primary = params::string(&req.p, "primary").as_deref() == Some("true");
-    sqlx::query("UPDATE users SET primary_group_id = $2 WHERE id = ANY($1)")
+    let sql = if primary {
+        "UPDATE users SET primary_group_id = $2 WHERE id = ANY($1) \
+         AND id IN (SELECT user_id FROM group_users WHERE group_id = $2)"
+    } else {
+        "UPDATE users SET primary_group_id = NULL WHERE id = ANY($1) AND primary_group_id = $2"
+    };
+    sqlx::query(sql)
         .bind(&users)
-        .bind(primary.then_some(group.id))
+        .bind(group.id)
         .execute(&mut *tx)
         .await?;
     tx.commit().await?;

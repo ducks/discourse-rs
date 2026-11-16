@@ -266,6 +266,7 @@ pub async fn page(
                 Some((category_id, no_subcategories == Some(1), tag_id))
             }),
         mobile: crate::mobile::mobile_view(),
+        bypassed: crate::plugins::chat::list_bypass::current(),
         sidebar: params
             .sidebar
             .filter(|_| user_id.is_some())
@@ -354,6 +355,9 @@ struct Live {
     chat: Option<crate::sidebar::Active>,
     /// Whether the page draws chat's sidebar sections (not on admin pages).
     chat_sections: bool,
+    /// The chat lists' bypassed filters as the stream's request had them:
+    /// the stream is polled after the request's task-local scope ends.
+    bypassed: crate::plugins::chat::list_bypass::Bypassed,
     chat_channels: Vec<String>,
     /// Chat's chrome last sent.
     sent_chat: Option<String>,
@@ -564,7 +568,8 @@ async fn handle_batch(
         push_browse_more(live, last).await?;
     }
     if chat {
-        chat_chrome(live, last).await?;
+        let bypassed = live.bypassed;
+        crate::plugins::chat::list_bypass::scope(bypassed, chat_chrome(live, last)).await?;
     }
     Ok(())
 }

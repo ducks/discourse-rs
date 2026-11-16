@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_deleted_post",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-12T21:11:17.92147",
-  "transaction_started_at": "2026-10-12T21:11:16.657396",
+  "started_at": "2026-11-15T23:26:36.358623",
+  "transaction_started_at": "2026-11-15T23:26:35.593053",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,11 +16,11 @@
             "name": "Parity fixture: reminder sent",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-10-01T22:32:02.441836",
-            "updated_at": "2026-10-01T22:32:02.468854",
-            "reminder_at": "2026-10-12T21:06:16.657396",
+            "created_at": "2026-11-15T19:20:04.875632",
+            "updated_at": "2026-11-15T19:20:04.927149",
+            "reminder_at": "2026-11-15T23:21:35.593053",
             "bookmarkable_id": 52,
-            "reminder_set_at": "2026-10-11T21:11:16.657396",
+            "reminder_set_at": "2026-11-14T23:26:35.593053",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 0
@@ -30,13 +30,13 @@
             "name": "Parity fixture: reminder sent",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-10-01T22:32:02.441836",
-            "updated_at": "2026-10-12T21:11:17.940728",
-            "reminder_at": "2026-10-12T21:06:16.657396",
+            "created_at": "2026-11-15T19:20:04.875632",
+            "updated_at": "2026-11-15T23:26:36.363983",
+            "reminder_at": "2026-11-15T23:21:35.593053",
             "bookmarkable_id": 52,
             "reminder_set_at": null,
             "bookmarkable_type": "Post",
-            "reminder_last_sent_at": "2026-10-12T21:11:17.939503",
+            "reminder_last_sent_at": "2026-11-15T23:26:36.363121",
             "auto_delete_preference": 0
           }
         }
@@ -58,7 +58,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "e03b97f1b606712af26da21e821a4169e23be9148990f017835df32f7e72cb66",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

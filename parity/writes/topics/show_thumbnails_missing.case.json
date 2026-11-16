@@ -14,5 +14,8 @@
   ],
   "run_jobs": [
     "generate_topic_thumbnails"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks"
   ]
 }

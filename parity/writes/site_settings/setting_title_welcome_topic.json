@@ -17,8 +17,8 @@
       }
     }
   ],
-  "started_at": "2026-10-17T05:37:04.190524",
-  "transaction_started_at": "2026-10-17T05:37:03.058399",
+  "started_at": "2026-11-15T23:36:42.787288",
+  "transaction_started_at": "2026-11-15T23:36:41.784404",
   "responses": [
     {
       "status": 204,
@@ -38,9 +38,10 @@
           "number": 2,
           "post_id": 6,
           "user_id": -1,
-          "created_at": "2026-10-17T05:37:05.339588",
-          "updated_at": "2026-10-17T05:37:05.521819",
-          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Welcome to Discourse! :wave:'\n- 'Welcome to Duck Pond! :wave:'\nraw:\n- |-\n  We are so glad you joined us.\n\n\n\n  Here are some things you can do to get started:\n\n  :speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n  :open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n  :handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n  > If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).\n- |-\n  We are so glad you joined us.\n\n  > ## Duck Pond\n  >\n  > Quack\n\n\n  Here are some things you can do to get started:\n\n  :speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n  :open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n  :handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n  > If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).\ncooked:\n- |-\n  <p>We are so glad you joined us.</p>\n  <p>Here are some things you can do to get started:</p>\n  <p><img src=\"/images/emoji/twitter/speaking_head.png?v=15\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n  <p><img src=\"/images/emoji/twitter/open_book.png?v=15\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n  <p><img src=\"/images/emoji/twitter/handshake.png?v=15\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n  <blockquote>\n  <p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n  </blockquote>\n- |-\n  <p>We are so glad you joined us.</p>\n  <blockquote>\n  <h2>Duck Pond</h2>\n  <p>Quack</p>\n  </blockquote>\n  <p>Here are some things you can do to get started:</p>\n  <p><img src=\"/images/emoji/twitter/speaking_head.png?v=15\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n  <p><img src=\"/images/emoji/twitter/open_book.png?v=15\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n  <p><img src=\"/images/emoji/twitter/handshake.png?v=15\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n  <blockquote>\n  <p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n  </blockquote>\n"
+          "unlisted": false,
+          "created_at": "2026-11-15T23:36:43.880382",
+          "updated_at": "2026-11-15T23:36:44.045998",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Welcome to Discourse! :wave:'\n- 'Welcome to Duck Pond! :wave:'\nraw:\n- |-\n  We are so glad you joined us.\n\n\n\n  Here are some things you can do to get started:\n\n  :speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n  :open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n  :handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n  > If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).\n- |-\n  We are so glad you joined us.\n\n  > ## Duck Pond\n  >\n  > Quack\n\n\n  Here are some things you can do to get started:\n\n  :speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n  :open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n  :handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n  > If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).\ncooked:\n- |-\n  <p>We are so glad you joined us.</p>\n  <p>Here are some things you can do to get started:</p>\n  <p><img src=\"/images/emoji/twitter/speaking_head.png?v=16\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n  <p><img src=\"/images/emoji/twitter/open_book.png?v=16\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n  <p><img src=\"/images/emoji/twitter/handshake.png?v=16\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n  <blockquote>\n  <p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n  </blockquote>\n- |-\n  <p>We are so glad you joined us.</p>\n  <blockquote>\n  <h2>Duck Pond</h2>\n  <p>Quack</p>\n  </blockquote>\n  <p>Here are some things you can do to get started:</p>\n  <p><img src=\"/images/emoji/twitter/speaking_head.png?v=16\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n  <p><img src=\"/images/emoji/twitter/open_book.png?v=16\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n  <p><img src=\"/images/emoji/twitter/handshake.png?v=16\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n  <blockquote>\n  <p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n  </blockquote>\n"
         }
       ],
       "deleted": [],
@@ -56,7 +57,7 @@
             "post_id": 6,
             "version": 5,
             "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
-            "search_data": "'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'ad':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A",
+            "search_data": "'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'add':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A",
             "private_message": false
           },
           "after": {
@@ -64,7 +65,7 @@
             "post_id": 6,
             "version": 5,
             "raw_data": "We are so glad you joined us. Duck Pond Quack Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
-            "search_data": "'/about':139 '/c/site-feedback/2':132 '/faq':116 '/latest':65 '/my/preferences/account':43 'ad':32 'admin':142 'alreadi':70 'appreci':88 'ask':55,99,130 'book':58 'brows':66 'comment':94 'communiti':63,117 'contact':140 'contribut':92 'd':51 'discuss':67,106 'duck':3A,14 'entertain':81 'feedback':103,137 'feel':127 'find':75 'free':128 'full':135 'general':6B 'get':25,59 'glad':10 'guidelin':118 'handshak':91 'happen':71 'head':28 'heart':84 'help':122 'inform':36,79 'interest':41,78 'introduc':29 'join':12 'know':61 'like':52 'need':121 'new':111 'offer':102 'one':48 'open':57 'perspect':98 'pictur':34 'pleas':113 'pond':4A,15 'post':77 'profil':45 'quack':16 'question':100 'repli':108 'review':114 'share':95 'show':86 'site':136 'speak':27 'squar':134 'square-ful':133 'start':26,110 'suggest':126 'support':90 'thing':20,49 'topic':112 'us':13 'use':82 'wave':5A 'welcom':1A",
+            "search_data": "'/about':139 '/c/site-feedback/2':132 '/faq':116 '/latest':65 '/my/preferences/account':43 'add':32 'admin':142 'alreadi':70 'appreci':88 'ask':55,99,130 'book':58 'brows':66 'comment':94 'communiti':63,117 'contact':140 'contribut':92 'd':51 'discuss':67,106 'duck':3A,14 'entertain':81 'feedback':103,137 'feel':127 'find':75 'free':128 'full':135 'general':6B 'get':25,59 'glad':10 'guidelin':118 'handshak':91 'happen':71 'head':28 'heart':84 'help':122 'inform':36,79 'interest':41,78 'introduc':29 'join':12 'know':61 'like':52 'need':121 'new':111 'offer':102 'one':48 'open':57 'perspect':98 'pictur':34 'pleas':113 'pond':4A,15 'post':77 'profil':45 'quack':16 'question':100 'repli':108 'review':114 'share':95 'show':86 'site':136 'speak':27 'squar':134 'square-ful':133 'start':26,110 'suggest':126 'support':90 'thing':20,49 'topic':112 'us':13 'use':82 'wave':5A 'welcom':1A",
             "private_message": false
           }
         }
@@ -81,25 +82,25 @@
             "wiki": false,
             "reads": 1,
             "score": 0.2,
-            "cooked": "<p>We are so glad you joined us.</p>\n<p>Here are some things you can do to get started:</p>\n<p><img src=\"/images/emoji/twitter/speaking_head.png?v=15\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src=\"/images/emoji/twitter/open_book.png?v=15\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n<p><img src=\"/images/emoji/twitter/handshake.png?v=15\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n</blockquote>",
+            "cooked": "<p>We are so glad you joined us.</p>\n<p>Here are some things you can do to get started:</p>\n<p><img src=\"/images/emoji/twitter/speaking_head.png?v=16\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src=\"/images/emoji/twitter/open_book.png?v=16\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n<p><img src=\"/images/emoji/twitter/handshake.png?v=16\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n</blockquote>",
             "hidden": false,
             "locale": null,
             "user_id": -1,
             "version": 1,
-            "baked_at": "2026-07-25T05:58:28.405399",
+            "baked_at": "2026-11-03T05:07:24.525444",
             "topic_id": 5,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-07-25T05:58:28.405469",
+            "created_at": "2026-11-03T05:07:24.525483",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-07-25T05:58:28.405469",
+            "updated_at": "2026-11-03T05:07:24.525483",
             "word_count": 129,
             "action_code": null,
             "cook_method": 1,
@@ -119,7 +120,7 @@
             "last_editor_id": -1,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-07-25T05:58:28.4437",
+            "last_version_at": "2026-11-03T05:07:24.563848",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -136,25 +137,25 @@
             "wiki": false,
             "reads": 1,
             "score": 0.2,
-            "cooked": "<p>We are so glad you joined us.</p>\n<blockquote>\n<h2>Duck Pond</h2>\n<p>Quack</p>\n</blockquote>\n<p>Here are some things you can do to get started:</p>\n<p><img src=\"/images/emoji/twitter/speaking_head.png?v=15\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src=\"/images/emoji/twitter/open_book.png?v=15\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n<p><img src=\"/images/emoji/twitter/handshake.png?v=15\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n</blockquote>",
+            "cooked": "<p>We are so glad you joined us.</p>\n<blockquote>\n<h2>Duck Pond</h2>\n<p>Quack</p>\n</blockquote>\n<p>Here are some things you can do to get started:</p>\n<p><img src=\"/images/emoji/twitter/speaking_head.png?v=16\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src=\"/images/emoji/twitter/open_book.png?v=16\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n<p><img src=\"/images/emoji/twitter/handshake.png?v=16\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n</blockquote>",
             "hidden": false,
             "locale": null,
             "user_id": -1,
             "version": 2,
-            "baked_at": "2026-10-17T05:37:05.506554",
+            "baked_at": "2026-11-15T23:36:44.030744",
             "topic_id": 5,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-07-25T05:58:28.405469",
+            "created_at": "2026-11-03T05:07:24.525483",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 2,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-17T05:37:05.506707",
+            "updated_at": "2026-11-15T23:36:44.030898",
             "word_count": 132,
             "action_code": null,
             "cook_method": 1,
@@ -174,7 +175,7 @@
             "last_editor_id": -1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-10-17T05:37:04.233277",
+            "last_version_at": "2026-11-15T23:36:42.859643",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -195,16 +196,16 @@
           "name": "title",
           "value": "Duck Pond",
           "data_type": 1,
-          "created_at": "2026-10-17T05:37:04.209449",
-          "updated_at": "2026-10-17T05:37:04.209449"
+          "created_at": "2026-11-15T23:36:42.801842",
+          "updated_at": "2026-11-15T23:36:42.801842"
         },
         {
           "id": 38,
           "name": "site_description",
           "value": "Quack",
           "data_type": 1,
-          "created_at": "2026-10-17T05:37:05.425375",
-          "updated_at": "2026-10-17T05:37:05.425375"
+          "created_at": "2026-11-15T23:36:43.961368",
+          "updated_at": "2026-11-15T23:36:43.961368"
         }
       ],
       "deleted": [],
@@ -220,14 +221,14 @@
             "version": 4,
             "raw_data": "Welcome to Discourse! :wave: We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/prefere",
             "topic_id": 5,
-            "search_data": "'/my/prefere':38B 'ad':27B 'discours':3A 'get':20B 'glad':8B 'head':23B 'inform':31B 'interest':36B 'introduc':24B 'join':10B 'pictur':29B 'speak':22B 'start':21B 'thing':15B 'us':11B 'wave':4A 'welcom':1A"
+            "search_data": "'/my/prefere':38B 'add':27B 'discours':3A 'get':20B 'glad':8B 'head':23B 'inform':31B 'interest':36B 'introduc':24B 'join':10B 'pictur':29B 'speak':22B 'start':21B 'thing':15B 'us':11B 'wave':4A 'welcom':1A"
           },
           "after": {
             "locale": "en",
             "version": 4,
             "raw_data": "Welcome to Duck Pond! :wave: We are so glad you joined us. Duck Pond Quack Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interest",
             "topic_id": 5,
-            "search_data": "'ad':31B 'duck':3A,13B 'get':24B 'glad':9B 'head':27B 'inform':35B 'interest':40B 'introduc':28B 'join':11B 'pictur':33B 'pond':4A,14B 'quack':15B 'speak':26B 'start':25B 'thing':19B 'us':12B 'wave':5A 'welcom':1A"
+            "search_data": "'add':31B 'duck':3A,13B 'get':24B 'glad':9B 'head':27B 'inform':35B 'interest':40B 'introduc':28B 'join':11B 'pictur':33B 'pond':4A,14B 'quack':15B 'speak':26B 'start':25B 'thing':19B 'us':12B 'wave':5A 'welcom':1A"
           }
         }
       ]
@@ -251,13 +252,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-07-25T05:58:28.405469",
-            "pinned_at": "2026-07-25T05:58:28.497598",
-            "created_at": "2026-07-25T05:58:28.320452",
+            "bumped_at": "2026-11-03T05:07:24.525483",
+            "pinned_at": "2026-11-03T05:07:24.620656",
+            "created_at": "2026-11-03T05:07:24.494283",
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-07-25T05:58:28.468713",
+            "updated_at": "2026-11-03T05:07:24.585988",
             "word_count": 129,
             "category_id": 4,
             "external_id": null,
@@ -270,7 +271,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-07-25T05:58:28.405469",
+            "last_posted_at": "2026-11-03T05:07:24.525483",
             "image_upload_id": null,
             "pinned_globally": true,
             "reviewable_score": 0,
@@ -303,13 +304,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-07-25T05:58:28.405469",
-            "pinned_at": "2026-07-25T05:58:28.497598",
-            "created_at": "2026-07-25T05:58:28.320452",
+            "bumped_at": "2026-11-03T05:07:24.525483",
+            "pinned_at": "2026-11-03T05:07:24.620656",
+            "created_at": "2026-11-03T05:07:24.494283",
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-10-17T05:37:05.511607",
+            "updated_at": "2026-11-15T23:36:44.036245",
             "word_count": 132,
             "category_id": 4,
             "external_id": null,
@@ -322,7 +323,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-07-25T05:58:28.405469",
+            "last_posted_at": "2026-11-03T05:07:24.525483",
             "image_upload_id": null,
             "pinned_globally": true,
             "reviewable_score": 0,
@@ -350,33 +351,33 @@
       "updated": [
         {
           "before": {
-            "id": 381,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yQ2hX+bIY7AQjgDkG75FHy2pD/o=",
-            "created_at": "2026-10-17T05:37:03.529783",
-            "rotated_at": "2026-10-17T05:37:03.528838",
-            "updated_at": "2026-10-17T05:37:03.529783",
+            "auth_token": "B6H7u+OBFzPbqapvqo9NrrmSpiU=",
+            "created_at": "2026-11-15T23:36:42.315091",
+            "rotated_at": "2026-11-15T23:36:42.31427",
+            "updated_at": "2026-11-15T23:36:42.315091",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "yQ2hX+bIY7AQjgDkG75FHy2pD/o=",
+            "prev_auth_token": "B6H7u+OBFzPbqapvqo9NrrmSpiU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 381,
-            "seen_at": "2026-10-17T05:37:04.196437",
+            "id": 14,
+            "seen_at": "2026-11-15T23:36:42.79263",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yQ2hX+bIY7AQjgDkG75FHy2pD/o=",
-            "created_at": "2026-10-17T05:37:03.529783",
-            "rotated_at": "2026-10-17T05:37:03.528838",
-            "updated_at": "2026-10-17T05:37:03.529783",
+            "auth_token": "B6H7u+OBFzPbqapvqo9NrrmSpiU=",
+            "created_at": "2026-11-15T23:36:42.315091",
+            "rotated_at": "2026-11-15T23:36:42.31427",
+            "updated_at": "2026-11-15T23:36:42.315091",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "yQ2hX+bIY7AQjgDkG75FHy2pD/o=",
+            "prev_auth_token": "B6H7u+OBFzPbqapvqo9NrrmSpiU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -387,7 +388,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 3,
           "context": null,
@@ -397,9 +398,10 @@
           "topic_id": null,
           "new_value": "Duck Pond",
           "admin_only": true,
-          "created_at": "2026-10-17T05:37:05.399277",
+          "created_at": "2026-11-15T23:36:43.934538",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T05:37:05.399277",
+          "updated_at": "2026-11-15T23:36:43.934538",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -408,7 +410,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 3,
           "context": null,
@@ -418,9 +420,10 @@
           "topic_id": null,
           "new_value": "Quack",
           "admin_only": true,
-          "created_at": "2026-10-17T05:37:05.552981",
+          "created_at": "2026-11-15T23:36:44.075554",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T05:37:05.552981",
+          "updated_at": "2026-11-15T23:36:44.075554",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -460,11 +463,11 @@
   "next_ids": {
     "post_revisions": 1,
     "site_settings": 37,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "1e882b6d8897b9b1f393c742a2973f647a23b7492fd85716253341044232e3a7",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

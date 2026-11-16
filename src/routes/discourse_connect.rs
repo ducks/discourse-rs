@@ -152,8 +152,13 @@ struct SsoErrorPage {
 
 /// `render_sso_error(text:, status:)`: session/sso_login.html.erb in the
 /// no_ember layout (the text is HTML).
+/// `SessionController::DISCOURSE_CONNECT_INVITE_KEY`: the server session's
+/// invite, which only InvitesController#sso writes (74c7b46a973).
+pub(crate) const INVITE_KEY: &str = "discourse-connect-invite-key";
+
 /// `validate_invitation!(sso)`: the invite the server session kept from
-/// the invite page, or the Invite::ValidationFailed message.
+/// the invite page's Continue, forgotten once read so a failure leaves
+/// later logins alone, or the Invite::ValidationFailed message.
 async fn validate_invitation(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
@@ -161,11 +166,12 @@ async fn validate_invitation(
     session_id: &str,
     sso: &discourse_connect::Sso,
 ) -> Result<Result<Option<crate::invites::Invite>, String>, AppError> {
-    let key = match crate::session::server::get(&mut *conn, session_id, "invite-key").await? {
-        Some(serde_json::Value::String(key)) => key,
-        Some(serde_json::Value::Null) | None => return Ok(Ok(None)),
+    let key = match crate::session::server::get(&mut *conn, session_id, INVITE_KEY).await? {
+        Some(serde_json::Value::String(key)) if !key.trim().is_empty() => key,
+        Some(serde_json::Value::String(_) | serde_json::Value::Null) | None => return Ok(Ok(None)),
         Some(other) => other.to_string(),
     };
+    crate::session::server::delete(&mut *conn, session_id, INVITE_KEY).await?;
     let urls = crate::url::Urls {
         config: &state.config,
         settings,
@@ -193,15 +199,13 @@ async fn validate_invitation(
 }
 
 /// `redeem_invitation(invite, sso, user)`: InviteRedeemer for the
-/// DiscourseConnect user, then the session's invite forgotten. Err is
+/// DiscourseConnect user. Err is
 /// the page's text: Invite::UserExists's message, or invite_redeem_failed
 /// for the RecordInvalid and RecordNotSaved it rescues.
-#[allow(clippy::too_many_arguments)]
 async fn redeem_invitation(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
     settings: &SiteSettings,
-    session_id: &str,
     sso: &discourse_connect::Sso,
     invite: &crate::invites::Invite,
     user_id: i32,
@@ -226,7 +230,6 @@ async fn redeem_invitation(
             t(state, "discourse_connect.invite_redeem_failed")
         }));
     }
-    crate::session::server::delete(&mut *conn, session_id, "invite-key").await?;
     Ok(Ok(()))
 }
 
@@ -478,17 +481,8 @@ pub async fn sso_login(
     };
     if settings.get("must_approve_users")?.truthy() && !user.approved {
         if let Some(invite) = &invite
-            && let Err(text) = redeem_invitation(
-                &mut tx,
-                &state,
-                &settings,
-                &session_id,
-                &sso,
-                invite,
-                user_id,
-                &ip,
-            )
-            .await?
+            && let Err(text) =
+                redeem_invitation(&mut tx, &state, &settings, &sso, invite, user_id, &ip).await?
         {
             tx.commit().await?;
             return sso_error(&state, &settings, &uri, 412, &text).await;
@@ -507,17 +501,8 @@ pub async fn sso_login(
         )
         .await;
     } else if let Some(invite) = &invite {
-        if let Err(text) = redeem_invitation(
-            &mut tx,
-            &state,
-            &settings,
-            &session_id,
-            &sso,
-            invite,
-            user_id,
-            &ip,
-        )
-        .await?
+        if let Err(text) =
+            redeem_invitation(&mut tx, &state, &settings, &sso, invite, user_id, &ip).await?
         {
             tx.commit().await?;
             return sso_error(&state, &settings, &uri, 412, &text).await;

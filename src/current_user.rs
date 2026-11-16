@@ -756,6 +756,10 @@ pub async fn serialize(
         "grouped_unread_notifications".into(),
         Value::Object(grouped_json),
     );
+    out.insert(
+        "available_notification_types".into(),
+        json!(crate::notifications::available_types(&mut *conn, uid).await?),
+    );
 
     out.extend(sidebar_fields(conn, settings, &g, user, tagging).await?);
     out.insert(
@@ -863,6 +867,26 @@ pub async fn serialize(
     }
     if user.admin && can_run_design_wizard(&mut *conn, settings).await? {
         out.insert("can_run_design_wizard".into(), json!(true));
+    }
+    // boards' keys, before chat's (plugins load in name order); boards is
+    // on by default since Discourse 7d003898b28. Its board ACLs aren't
+    // ported: with no open board, none can be seen or edited.
+    if settings.get("boards_enabled")?.truthy() {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        out.insert(
+            "can_manage_boards".into(),
+            json!(guardian.in_setting_groups(settings, "boards_manage_board_allowed_groups")?),
+        );
+        let open: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM discourse_kanban_boards WHERE NOT archived)",
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+        if open {
+            return Err(crate::Unsupported("board ACLs on the current user (boards)").into());
+        }
+        out.insert("can_edit_any_boards".into(), json!(false));
+        out.insert("can_see_any_boards".into(), json!(false));
     }
     // chat's keys.
     if crate::plugins::chat::enabled(settings)? {

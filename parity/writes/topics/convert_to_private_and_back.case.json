@@ -12,5 +12,8 @@
         "category_id": "34"
       }
     }
-  ]
+  ],
+  "unordered": {
+    "user_actions": ["id"]
+  }
 }

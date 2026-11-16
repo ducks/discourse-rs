@@ -7,8 +7,8 @@
       "path": "/chat/api/channels.json?chatable_type=Category&chatable_id=3"
     }
   ],
-  "started_at": "2026-10-09T18:05:21.469159",
-  "transaction_started_at": "2026-10-09T18:05:20.502357",
+  "started_at": "2026-11-15T22:31:55.857087",
+  "transaction_started_at": "2026-11-15T22:31:55.040266",
   "responses": [
     {
       "status": 200,
@@ -27,7 +27,7 @@
               "emoji": "thought_balloon",
               "slug": "site-feedback",
               "topic_count": 1,
-              "post_count": 1,
+              "post_count": 0,
               "position": 1,
               "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
               "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
@@ -99,7 +99,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:21+00:00",
+              "created_at": "2026-11-15T22:31:55+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -121,7 +121,7 @@
               "emoji": "blue_book",
               "slug": "general",
               "topic_count": 3,
-              "post_count": 6,
+              "post_count": 1,
               "position": 3,
               "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
               "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -193,7 +193,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:21+00:00",
+              "created_at": "2026-11-15T22:31:55+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -215,7 +215,7 @@
               "emoji": null,
               "slug": "sub-general",
               "topic_count": 1,
-              "post_count": 1,
+              "post_count": 0,
               "position": 4,
               "description": null,
               "description_text": null,
@@ -271,10 +271,11 @@
             "current_user_membership": {
               "following": true,
               "muted": true,
+              "muted_until": null,
               "notification_level": "never",
               "chat_channel_id": 3,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-10-08T19:05:20.502Z",
+              "last_viewed_at": "2026-11-14T23:31:55.040Z",
               "last_viewed_pins_at": null,
               "starred": true,
               "has_unseen_pins": false
@@ -301,7 +302,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:21+00:00",
+              "created_at": "2026-11-15T22:31:55+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -324,33 +325,33 @@
       "updated": [
         {
           "before": {
-            "id": 395,
+            "id": 14,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "VeBoNomer/bTT3+zo8wGWSZOeMQ=",
-            "created_at": "2026-10-09T18:05:20.868166",
-            "rotated_at": "2026-10-09T18:05:20.867921",
-            "updated_at": "2026-10-09T18:05:20.868166",
+            "auth_token": "JjCo6aNMser9OA9iRtb2mbA3Zdk=",
+            "created_at": "2026-11-15T22:31:55.346883",
+            "rotated_at": "2026-11-15T22:31:55.345958",
+            "updated_at": "2026-11-15T22:31:55.346883",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "VeBoNomer/bTT3+zo8wGWSZOeMQ=",
+            "prev_auth_token": "JjCo6aNMser9OA9iRtb2mbA3Zdk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 395,
-            "seen_at": "2026-10-09T18:05:21.487701",
+            "id": 14,
+            "seen_at": "2026-11-15T22:31:55.867696",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "VeBoNomer/bTT3+zo8wGWSZOeMQ=",
-            "created_at": "2026-10-09T18:05:20.868166",
-            "rotated_at": "2026-10-09T18:05:20.867921",
-            "updated_at": "2026-10-09T18:05:20.868166",
+            "auth_token": "JjCo6aNMser9OA9iRtb2mbA3Zdk=",
+            "created_at": "2026-11-15T22:31:55.346883",
+            "rotated_at": "2026-11-15T22:31:55.345958",
+            "updated_at": "2026-11-15T22:31:55.346883",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "VeBoNomer/bTT3+zo8wGWSZOeMQ=",
+            "prev_auth_token": "JjCo6aNMser9OA9iRtb2mbA3Zdk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -368,7 +369,7 @@
   ],
   "recorded_from": {
     "case": "cc9d7ef111b710c9832017ab09f2c3dc38b1e0b211ef7af80c2cc7081a80f929",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

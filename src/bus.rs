@@ -197,6 +197,7 @@ pub async fn publish_notifications_state(
         "seen_notification_id": seen,
         "all_unread_notifications_count": all_unread,
         "grouped_unread_notifications": grouped,
+        "available_notification_types": crate::notifications::available_types(&mut *conn, user_id).await?,
         "new_personal_messages_notifications_count": new_pms,
     });
     bus.publish(

@@ -18,5 +18,9 @@
       "path": "/t/parity-fixture-replies-and-posters/35/3.json",
       "params": {}
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks",
+    "/responses/1/body/bookmarks"
   ]
 }

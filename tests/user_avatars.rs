@@ -392,7 +392,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
     let config = proxy_config("http://127.0.0.1:1", &dir);
     // discobot's avatar, upload 35 (its gravatar) in the seed.
     let original =
-        dir.join("public/uploads/default/original/1X/e57ad2811b8c56c0101bc97841c44e29be36fe60.png");
+        dir.join("public/uploads/default/original/1X/fefde1dafd8c529f488f2e7671a631f59823fd89.png");
     std::fs::create_dir_all(original.parent().unwrap()).unwrap();
     std::fs::copy(
         concat!(env!("CARGO_MANIFEST_DIR"), "/parity/writes/files/small.png"),

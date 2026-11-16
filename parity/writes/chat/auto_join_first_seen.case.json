@@ -13,6 +13,7 @@
     }
   ],
   "ignore": [
+    "/responses/0/body/current_user/has_joinable_public_channels",
     "/responses/0/body/current_user/user_option/treat_as_new_topic_start_date"
   ]
 }

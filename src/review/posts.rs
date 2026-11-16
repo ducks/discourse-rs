@@ -1091,8 +1091,10 @@ async fn delete_author(
     .fetch_optional(&mut *conn)
     .await?;
     let flag_reason = match score_type {
-        // flag_reasons.needs_approval wants a base_path it isn't given.
-        None | Some(NEEDS_APPROVAL) => ctx.t("flag_reasons.spam"),
+        None => ctx.t("flag_reasons.spam"),
+        // flag_reasons.needs_approval, given no base_path, keeps its
+        // placeholder as Rails' I18n.t leaves it.
+        Some(NEEDS_APPROVAL) => ctx.t("flag_reasons.needs_approval"),
         Some(_) => {
             return Err(Unsupported("the account_deleted email for a flag's reason").into());
         }

@@ -1,4 +1,4 @@
-$primary: #002B36 !default; $secondary: #FCF6E1 !default; $tertiary: #0088cc !default; $quaternary: #e45735 !default; $header_background: #FCF6E1 !default; $header_primary: #002B36 !default; $highlight: #F2F481 !default; $danger: #e45735 !default; $success: #009900 !default; $love: #fa6c8d !default; $primary_very_low: #F0ECD7 !default; $primary_low: #D6D8C7 !default; $primary_low_mid: #A4AFA5 !default; $primary_medium: #7E918C !default; $primary_high: #4C6869 !default; $primary-50: #F0EBDA !default; $primary-100: #DAD8CA !default; $primary-200: #B2B9B3 !default; $primary-300: #839496 !default; $primary-400: #76898C !default; $primary-500: #697F83 !default; $primary-600: #627A7E !default; $primary-700: #556F74 !default; $primary-800: #415F66 !default; $primary-900: #21454E !default; $secondary_low: #325458 !default; $secondary_medium: #6C8280 !default; $secondary_high: #97A59D !default; $secondary_very_high: #E8E6D3 !default; $tertiary_low: #D6E6DE !default; $tertiary_medium: #7EBFD7 !default; $tertiary_high: #329ED0 !default; $highlight_low: #FDF9AD !default; $highlight_medium: #E3D0A3 !default; $highlight_high: #BCAA7F !default; $danger_low: #F8D9C2 !default; $success_low: #CFE5B9 !default; $success_medium: #4CB544 !default; $love_low: #FCDDD2 !default; $selected: #E8E6D3 !default; $hover: #F0EBDA !default;  $public_image_path: "http://localhost:3048/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
+$primary: #002B36 !default; $secondary: #FCF6E1 !default; $tertiary: #0088cc !default; $quaternary: #e45735 !default; $header_background: #FCF6E1 !default; $header_primary: #002B36 !default; $highlight: #F2F481 !default; $danger: #e45735 !default; $success: #009900 !default; $love: #fa6c8d !default; $primary_very_low: #F0ECD7 !default; $primary_low: #D6D8C7 !default; $primary_low_mid: #A4AFA5 !default; $primary_medium: #7E918C !default; $primary_high: #4C6869 !default; $primary-50: #F0EBDA !default; $primary-100: #DAD8CA !default; $primary-200: #B2B9B3 !default; $primary-300: #839496 !default; $primary-400: #76898C !default; $primary-500: #697F83 !default; $primary-600: #627A7E !default; $primary-700: #556F74 !default; $primary-800: #415F66 !default; $primary-900: #21454E !default; $secondary_low: #325458 !default; $secondary_medium: #6C8280 !default; $secondary_high: #97A59D !default; $secondary_very_high: #E8E6D3 !default; $tertiary_low: #D6E6DE !default; $tertiary_medium: #7EBFD7 !default; $tertiary_high: #329ED0 !default; $highlight_low: #FDF9AD !default; $highlight_medium: #E3D0A3 !default; $highlight_high: #BCAA7F !default; $danger_low: #F8D9C2 !default; $success_low: #CFE5B9 !default; $success_medium: #4CB544 !default; $love_low: #FCDDD2 !default; $selected: #E8E6D3 !default; $hover: #F0EBDA !default;  $public_image_path: "http://localhost:3042/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
 
 
 // Color definitions from chat
@@ -42,10 +42,9 @@ $primary: #002B36 !default; $secondary: #FCF6E1 !default; $tertiary: #0088cc !de
 }
 
 
-// Body font definition
 @font-face {
   font-family: 'Inter';
-  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
   font-weight: 100 900;
 }
 
@@ -58,10 +57,9 @@ html {
   --font-family: Inter, Arial, sans-serif;
 }
 
-// Heading font definition
 @font-face {
   font-family: 'Inter';
-  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
   font-weight: 100 900;
 }
 
@@ -76,12 +74,12 @@ h1, h2, h3, h4, h5, h6 {
 
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url("http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
   font-weight: 400;
 }
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url("http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
   font-weight: 700;
 }
 

@@ -1,4 +1,4 @@
-$primary: #ffffff !default; $secondary: #1a1a1a !default; $tertiary: #6568e6 !default; $quaternary: #e45735 !default; $header_background: #1a1a1a !default; $header_primary: #ffffff !default; $highlight: #ffff4d !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default; $selected: #3b3e56 !default; $hover: #333548 !default; $tertiary-med-or-tertiary: #6568e6 !default;  $public_image_path: "http://localhost:3048/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
+$primary: #ffffff !default; $secondary: #1a1a1a !default; $tertiary: #6568e6 !default; $quaternary: #e45735 !default; $header_background: #1a1a1a !default; $header_primary: #ffffff !default; $highlight: #ffff4d !default; $danger: #c80001 !default; $success: #090 !default; $love: #fa6c8d !default; $selected: #3b3e56 !default; $hover: #333548 !default; $tertiary-med-or-tertiary: #6568e6 !default;  $public_image_path: "http://localhost:3042/images";  @import "common/foundation/variables"; @import "common/foundation/mixins"; @import "color_definitions";
 
 
 // Color definitions from chat
@@ -42,10 +42,9 @@ $primary: #ffffff !default; $secondary: #1a1a1a !default; $tertiary: #6568e6 !de
 }
 
 
-// Body font definition
 @font-face {
   font-family: 'Inter';
-  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
   font-weight: 100 900;
 }
 
@@ -58,10 +57,9 @@ html {
   --font-family: Inter, Arial, sans-serif;
 }
 
-// Heading font definition
 @font-face {
   font-family: 'Inter';
-  src: url("http://localhost:3048/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/InterVariable.woff2?v=0.0.19") format("woff2");
   font-weight: 100 900;
 }
 
@@ -76,12 +74,12 @@ h1, h2, h3, h4, h5, h6 {
 
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url("http://localhost:3048/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/JetBrainsMono-Regular.woff2?v=0.0.19") format("woff2");
   font-weight: 400;
 }
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url("http://localhost:3048/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
+  src: url("http://localhost:3042/fonts/JetBrainsMono-Bold.woff2?v=0.0.19") format("woff2");
   font-weight: 700;
 }
 

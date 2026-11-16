@@ -115,8 +115,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T21:44:49.017823",
-  "transaction_started_at": "2026-10-14T21:44:46.304408",
+  "started_at": "2026-11-15T23:45:10.727382",
+  "transaction_started_at": "2026-11-15T23:45:09.911594",
   "responses": [
     {
       "status": 201,
@@ -139,8 +139,8 @@
           "id": 1,
           "name": "With assets",
           "description": null,
-          "created_at": "2026-10-14T21:44:49.197Z",
-          "updated_at": "2026-10-14T21:44:49.197Z",
+          "created_at": "2026-11-15T23:45:10.793Z",
+          "updated_at": "2026-11-15T23:45:10.793Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -148,6 +148,7 @@
           "auto_update": true,
           "remote_theme_id": null,
           "settings": [],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -224,8 +225,8 @@
           "id": 1,
           "name": "With assets",
           "description": null,
-          "created_at": "2026-10-14T21:44:49.197Z",
-          "updated_at": "2026-10-14T21:44:49.197Z",
+          "created_at": "2026-11-15T23:45:10.793Z",
+          "updated_at": "2026-11-15T23:45:10.793Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -233,6 +234,7 @@
           "auto_update": true,
           "remote_theme_id": null,
           "settings": [],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -317,8 +319,8 @@
           "id": 1,
           "name": "With assets",
           "description": null,
-          "created_at": "2026-10-14T21:44:49.197Z",
-          "updated_at": "2026-10-14T21:44:49.197Z",
+          "created_at": "2026-11-15T23:45:10.793Z",
+          "updated_at": "2026-11-15T23:45:10.793Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -326,6 +328,7 @@
           "auto_update": true,
           "remote_theme_id": null,
           "settings": [],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -432,7 +435,7 @@
     "theme_fields": {
       "inserted": [
         {
-          "id": 170,
+          "id": 164,
           "name": "header",
           "error": null,
           "value": "<p>assets</p>",
@@ -440,13 +443,13 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": null,
-          "created_at": "2026-10-14T21:44:49.217714",
-          "updated_at": "2026-10-14T21:44:49.217714",
+          "created_at": "2026-11-15T23:45:10.800373",
+          "updated_at": "2026-11-15T23:45:10.800373",
           "value_baked": "<p>assets</p>",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
         {
-          "id": 171,
+          "id": 165,
           "name": "hero",
           "error": null,
           "value": "",
@@ -454,8 +457,8 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": 36,
-          "created_at": "2026-10-14T21:44:49.642682",
-          "updated_at": "2026-10-14T21:44:49.642682",
+          "created_at": "2026-11-15T23:45:10.943043",
+          "updated_at": "2026-11-15T23:45:10.943043",
           "value_baked": null,
           "compiler_version": "0"
         }
@@ -492,8 +495,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-10-14T21:44:49.197417",
-          "updated_at": "2026-10-14T21:44:49.197417",
+          "created_at": "2026-11-15T23:45:10.793891",
+          "updated_at": "2026-11-15T23:45:10.793891",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -508,11 +511,11 @@
     "upload_references": {
       "inserted": [
         {
-          "id": 37,
-          "target_id": 171,
+          "id": 39,
+          "target_id": 165,
           "upload_id": 36,
-          "created_at": "2026-10-14T21:44:49.647804",
-          "updated_at": "2026-10-14T21:44:49.647858",
+          "created_at": "2026-11-15T23:45:10.944534",
+          "updated_at": "2026-11-15T23:45:10.944543",
           "target_type": "ThemeField"
         }
       ],
@@ -534,8 +537,8 @@
           "animated": null,
           "filesize": 48867,
           "extension": "png",
-          "created_at": "2026-10-14T21:44:49.069436",
-          "updated_at": "2026-10-14T21:44:49.08231",
+          "created_at": "2026-11-15T23:45:10.745699",
+          "updated_at": "2026-11-15T23:45:10.749223",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -557,33 +560,33 @@
       "updated": [
         {
           "before": {
-            "id": 134,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
-            "created_at": "2026-10-14T21:44:46.96008",
-            "rotated_at": "2026-10-14T21:44:46.953452",
-            "updated_at": "2026-10-14T21:44:46.96008",
+            "auth_token": "4mpjcrCX01qQ+x1krU33WIBdl6s=",
+            "created_at": "2026-11-15T23:45:10.290522",
+            "rotated_at": "2026-11-15T23:45:10.289721",
+            "updated_at": "2026-11-15T23:45:10.290522",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
+            "prev_auth_token": "4mpjcrCX01qQ+x1krU33WIBdl6s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 134,
-            "seen_at": "2026-10-14T21:44:49.030623",
+            "id": 14,
+            "seen_at": "2026-11-15T23:45:10.73461",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
-            "created_at": "2026-10-14T21:44:46.96008",
-            "rotated_at": "2026-10-14T21:44:46.953452",
-            "updated_at": "2026-10-14T21:44:46.96008",
+            "auth_token": "4mpjcrCX01qQ+x1krU33WIBdl6s=",
+            "created_at": "2026-11-15T23:45:10.290522",
+            "rotated_at": "2026-11-15T23:45:10.289721",
+            "updated_at": "2026-11-15T23:45:10.290522",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ai6r/jBAKXfQRdDAse2iaOQ3vLo=",
+            "prev_auth_token": "4mpjcrCX01qQ+x1krU33WIBdl6s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -594,7 +597,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 4,
           "context": null,
@@ -602,11 +605,12 @@
           "post_id": null,
           "subject": "With assets",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"With assets\",\"description\":null,\"created_at\":\"2026-10-14T21:44:49.197Z\",\"updated_at\":\"2026-10-14T21:44:49.197Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cp\\u003eassets\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"banner\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/banner.png\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"With assets\",\"description\":null,\"created_at\":\"2026-11-15T23:45:10.793Z\",\"updated_at\":\"2026-11-15T23:45:10.793Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cp\\u003eassets\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"banner\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/banner.png\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-10-14T21:44:49.360971",
+          "created_at": "2026-11-15T23:45:10.857287",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T21:44:49.360971",
+          "updated_at": "2026-11-15T23:45:10.857287",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -615,7 +619,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 4,
           "context": null,
@@ -625,9 +629,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"With assets\",\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cp\\u003eassets\\u003c/p\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"hero\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/hero.png\"}]}",
           "admin_only": true,
-          "created_at": "2026-10-14T21:44:49.915649",
+          "created_at": "2026-11-15T23:45:10.995848",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T21:44:49.915649",
+          "updated_at": "2026-11-15T23:45:10.995848",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -645,7 +650,7 @@
           "id": 36,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-10-14T21:44:49.097298"
+          "created_at": "2026-11-15T23:45:10.752643"
         }
       ],
       "deleted": [],
@@ -654,17 +659,17 @@
   },
   "jobs": [],
   "next_ids": {
-    "theme_fields": 169,
+    "theme_fields": 163,
     "theme_modifier_sets": 3,
     "themes": 1,
-    "upload_references": 36,
+    "upload_references": 38,
     "uploads": 36,
-    "user_histories": 74,
+    "user_histories": 68,
     "user_uploads": 36
   },
   "recorded_from": {
     "case": "8a09099c9fd84c6c6b1b763934b52406294754682af814501383a3a5387e6cf1",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

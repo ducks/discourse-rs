@@ -113,6 +113,30 @@ struct Stub {
 const STUB_COLUMNS: &str = "id, key, original_filename, status, created_by_id, upload_type, \
                             filesize, external_upload_identifier";
 
+/// `find_external_upload_stub` (d1360425fb8): a stub keyed outside its
+/// store's temporary folder (`temp/<temporary_folder_prefix>/`) is none.
+fn in_temporary_folder(
+    state: &AppState,
+    settings: &SiteSettings,
+    stub: &Stub,
+) -> Result<bool, AppError> {
+    let sample = if stub.upload_type == "backup" {
+        match BackupStore::create(&state.config, settings)? {
+            BackupStore::External(store) => store.temporary_upload_path("x"),
+            BackupStore::Local(_) => return Ok(false),
+        }
+    } else {
+        match FileStore::for_site(&state.config, settings)?.as_external() {
+            Some(store) => store.temporary_upload_path("x"),
+            // Only S3 takes direct uploads.
+            None => return Ok(false),
+        }
+    };
+    // temp/<prefix>/<hex>/<hex>: the folder is all but the last two parts.
+    let folder = sample.rsplitn(3, '/').nth(2).unwrap_or_default();
+    Ok(stub.key.starts_with(&format!("{folder}/")))
+}
+
 /// `ExternalUploadStub.find_by(unique_identifier:, created_by:)`: a value
 /// that is no uuid finds nothing, as ActiveRecord casts it to nil.
 async fn stub_by_identifier(
@@ -511,6 +535,9 @@ pub async fn complete_external_upload(
     let Some(stub) = stub_by_identifier(&mut conn, &text(&identifier), req.user_id).await? else {
         return Ok(super::topics::not_found_response(&state));
     };
+    if !in_temporary_folder(&state, &req.settings, &stub)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
     drop(conn);
     complete_via_manager(&state, &req, &headers, Controller::Uploads, stub).await
 }
@@ -727,6 +754,9 @@ pub async fn batch_presign_multipart_parts(
     let Some(stub) = stub_by_identifier(&mut conn, &text(&identifier), req.user_id).await? else {
         return Ok(super::topics::not_found_response(state));
     };
+    if !in_temporary_folder(state, &req.settings, &stub)? {
+        return Ok(super::topics::not_found_response(state));
+    }
     drop(conn);
     let target = match stub_target(state, &req.settings, &stub).await? {
         Ok(target) => target,
@@ -777,6 +807,9 @@ pub async fn abort_multipart(
     let Some(stub) = stub else {
         return Ok(Json(json!({ "success": "OK" })).into_response());
     };
+    if !in_temporary_folder(state, &req.settings, &stub)? {
+        return Ok(Json(json!({ "success": "OK" })).into_response());
+    }
     if stub.created_by_id != req.user_id {
         return Ok(super::topics::not_found_response(state));
     }
@@ -842,6 +875,9 @@ pub async fn complete_multipart(
     let Some(stub) = stub_by_identifier(&mut conn, &text(&identifier), req.user_id).await? else {
         return Ok(super::topics::not_found_response(state));
     };
+    if !in_temporary_folder(state, &req.settings, &stub)? {
+        return Ok(super::topics::not_found_response(state));
+    }
     drop(conn);
     let target = match stub_target(state, &req.settings, &stub).await? {
         Ok(target) => target,

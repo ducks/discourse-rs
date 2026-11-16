@@ -29,6 +29,7 @@ const COMPUTED_CLIENT_SETTINGS: &[&str] = &[
     "available_locales",
     "available_content_localization_locales",
     "require_invite_code",
+    "site_logo_dimensions",
     "site_logo_url",
     "site_logo_small_url",
     "site_mobile_logo_url",

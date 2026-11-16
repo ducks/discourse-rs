@@ -1,5 +1,6 @@
 //! The admin reports index (admin-reports.gjs with AdminReports): the
-//! reports from /admin/reports.json less dashboard_hidden_reports, in
+//! reports from /admin/reports.json (all of them since Discourse
+//! 58f631dfb0b dropped dashboard_hidden_reports), in
 //! their groups (REPORT_GROUPS, then the other core reports, then each
 //! plugin's), under DFilterControls' text filter and group menu.
 
@@ -167,7 +168,7 @@ pub struct Filters<'a> {
 }
 
 /// The page under the admin reports header.
-pub fn index(cx: &AdminCx, reports: &[Value], hidden: &[&str], f: &Filters) -> String {
+pub fn index(cx: &AdminCx, reports: &[Value], f: &Filters) -> String {
     let i18n = cx.i18n;
     let title = t(i18n, "admin.config.reports.title");
     let mut out = PageHeader {
@@ -188,11 +189,7 @@ pub fn index(cx: &AdminCx, reports: &[Value], hidden: &[&str], f: &Filters) -> S
         tabs: Some(String::new()),
     }
     .render(cx);
-    // filterReports
-    let visible: Vec<&Value> = reports
-        .iter()
-        .filter(|r| !hidden.contains(&s(&r["type"])))
-        .collect();
+    let visible: Vec<&Value> = reports.iter().collect();
     let all_groups = group_reports(i18n, &visible);
     // The URL's group, when it is one of the options.
     let group = if all_groups.iter().any(|g| g.key == f.group) {

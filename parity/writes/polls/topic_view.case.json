@@ -7,6 +7,12 @@
     "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
   ],
   "requests": [
-    { "method": "GET", "path": "/t/35.json" }
+    {
+      "method": "GET",
+      "path": "/t/35.json"
+    }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks"
   ]
 }

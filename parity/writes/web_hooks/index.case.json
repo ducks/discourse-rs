@@ -15,5 +15,9 @@
     {"method": "GET", "path": "/admin/api/web_hooks/9002.json"},
     {"method": "GET", "path": "/admin/api/web_hooks/9001/edit.json"},
     {"method": "GET", "path": "/admin/api/web_hooks/9999.json"}
+  ],
+  "unordered_responses": [
+    "/responses/2/body/web_hook/group_ids",
+    "/responses/2/body/web_hook/tags"
   ]
 }

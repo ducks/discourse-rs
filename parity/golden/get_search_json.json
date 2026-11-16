@@ -1,6 +1,7 @@
 {
   "request": "GET /search.json",
   "source": "http://127.0.0.1:3042",
+  "recorded_at": "2026-11-15T21:22:25.628210046+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"grouped_search_result\":null}"
