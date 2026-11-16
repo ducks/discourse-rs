@@ -11,8 +11,15 @@ in
 
 let
   rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+  # PostgreSQL 18 from the nixpkgs flake.lock pins (nixos-26.05): Discourse
+  # requires 18, and an older <nixpkgs> channel has no postgresql_18.
+  lockedNixpkgs = (builtins.fromJSON (builtins.readFile ./flake.lock)).nodes.nixpkgs.locked;
+  postgresPkgs = import (fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/${lockedNixpkgs.rev}.tar.gz";
+    sha256 = lockedNixpkgs.narHash;
+  }) { inherit (pkgs.stdenv.hostPlatform) system; };
   postgres = import ./nix/postgres.nix {
-    inherit pkgs;
+    inherit pkgs postgresPkgs;
     port = 5442;
   };
   # `make browser-test`: Playwright and its browsers.
