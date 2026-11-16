@@ -20,11 +20,17 @@ pub(super) fn rs(v: &Value) -> Result<String, Fail> {
     Ok(ruby_to_s(v)?)
 }
 
-/// `og.title_attr`
+/// `ERB::Util.html_escape(value)`: what `#{value}` interpolates, escaped
+/// (external metadata, Discourse e01201a75f1).
+pub(super) fn h(v: &Value) -> Result<String, Fail> {
+    Ok(crate::email::notification::html_escape(&rs(v)?))
+}
+
+/// `og.title_attr`, the title escaped (e01201a75f1).
 pub(super) fn title_attr(n: &Normalizer) -> Result<String, Fail> {
     Ok(match n.value("title")? {
         Value::Null => String::new(),
-        t => format!("title='{}'", rs(&t)?),
+        t => format!("title='{}'", h(&t)?),
     })
 }
 
@@ -47,8 +53,8 @@ pub(super) fn secure_image_url(n: &Normalizer) -> Result<String, Fail> {
         return Err(Unsupported("opaque image URIs").into());
     }
     uri.scheme = Some("https".into());
-    let s = uri.to_s();
-    Ok(s)
+    // normalize_url_for_output (e01201a75f1).
+    Ok(super::normalize_url_for_output(&uri.to_s()))
 }
 
 fn default_port(scheme: Option<&str>) -> Option<u16> {
@@ -225,8 +231,8 @@ async fn mixcloud_placeholder<F: Fetch>(
         "          <aside class=\"onebox mixcloud-preview\">\n            <article class=\"onebox-body\">\n              <img src=\"{}\">\n              <div class=\"video-icon\"></div>\n              <div class=\"mixcloud-text\">\n                <h3><a href=\"{}\" target=\"_blank\" rel=\"nofollow ugc noopener\">{}</a></h3>\n                <h4>{}</h4>\n              </div>\n            </article>\n          </aside>\n",
         rs(&o.value("image")?)?,
         rs(&o.value("url")?)?,
-        rs(&o.value("title")?)?,
-        rs(&o.value("author_name")?)?
+        h(&o.value("title")?)?,
+        h(&o.value("author_name")?)?
     )))
 }
 
@@ -239,10 +245,11 @@ async fn spotify_placeholder<F: Fetch>(
     if super::generic::blank(&thumb) {
         return Ok(None);
     }
-    let title = rs(&o.value("title")?)?;
     Ok(Some(format!(
-        "<img src='{}' title='{title}' alt='{title}' height='{}' width='{}'>",
+        "<img src='{}' {} alt='{}' height='{}' width='{}'>",
         rs(&thumb)?,
+        title_attr(&o)?,
+        h(&o.value("title")?)?,
         rs(&o.value("thumbnail_height")?)?,
         rs(&o.value("thumbnail_width")?)?
     )))
@@ -257,11 +264,11 @@ async fn wistia<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Result<Option<Str
         return Ok(Some(html));
     };
     Ok(Some(format!(
-        "<iframe\n  src=\"{}\"\n  width=\"{}\"\n  height=\"{}\"\n  title=\"{}\"\n  frameborder=\"0\"\n  allowfullscreen\n></iframe>\n",
+        "<iframe\n  src=\"{}\"\n  width=\"{}\"\n  height=\"{}\"\n  {}\n  frameborder=\"0\"\n  allowfullscreen\n></iframe>\n",
         &c[1],
         rs(&o.value("width")?)?,
         rs(&o.value("height")?)?,
-        rs(&o.value("title")?)?
+        title_attr(&o)?
     )))
 }
 
@@ -308,9 +315,9 @@ async fn tiktok_placeholder<F: Fetch>(
     let w = int_of(&o.value("thumbnail_width")?, "thumbnail_width")?;
     let h = int_of(&o.value("thumbnail_height")?, "thumbnail_height")?;
     Ok(Some(format!(
-        "          <img\n            src=\"{}\"\n            title=\"{}\"\n            style=\"\n              max-width: {}px;\n              max-height: {}px;\"\n          >\n",
+        "          <img\n            src=\"{}\"\n            {}\n            style=\"\n              max-width: {}px;\n              max-height: {}px;\"\n          >\n",
         rs(&o.value("thumbnail_url")?)?,
-        rs(&o.value("title")?)?,
+        title_attr(&o)?,
         w.div_euclid(2),
         h.div_euclid(2)
     )))
@@ -370,8 +377,9 @@ async fn cloud_app<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Result<Option<
         )));
     }
     Ok(Some(format!(
-        "          <a href='{}' target='_blank' rel='noopener'>\n            {title}\n          </a>\n",
-        rs(&og.value("url")?)?
+        "          <a href='{}' target='_blank' rel='noopener'>\n            {}\n          </a>\n",
+        rs(&og.value("url")?)?,
+        crate::email::notification::html_escape(&title)
     )))
 }
 
@@ -386,7 +394,7 @@ async fn flickr<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Result<Option<Str
         return Ok(Some(format!(
             "          <div class='onebox flickr-album'>\n            <a href='{escaped}' target='_blank' rel='noopener'>\n              <span class='outer-box' style='max-width:{}px'>\n                <span class='inner-box'>\n                  <span class='album-title'>[Album] {}</span>\n                </span>\n              </span>\n              <img src='{}' {} height='{}' width='{}'>\n            </a>\n          </div>\n",
             rs(&og.value("image_width")?)?,
-            rs(&og.value("title")?)?,
+            h(&og.value("title")?)?,
             secure_image_url(&og)?,
             title_attr(&og)?,
             rs(&og.value("image_height")?)?,
@@ -414,8 +422,8 @@ async fn google_photos<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Result<Opt
         return Ok(Some(format!(
             "          <aside class=\"onebox google-photos\">\n            <header class=\"source\">\n              <img src=\"{}\" class=\"site-icon\" width=\"16\" height=\"16\">\n              <a href=\"{escaped}\" target=\"_blank\" rel=\"nofollow ugc noopener\">{}</a>\n            </header>\n            <article class=\"onebox-body\">\n              <h3><a href=\"{escaped}\" target=\"_blank\" rel=\"nofollow ugc noopener\">{}</a></h3>\n              <div class=\"aspect-image-full-size\">\n                <a href=\"{escaped}\" target=\"_blank\" rel=\"nofollow ugc noopener\" class=\"image-wrapper\">\n                  <img src=\"{}\" class=\"scale-image\"/>\n                  <span class=\"video-icon\"></span>\n                </a>\n              </div>\n            </article>\n          </aside>\n",
             r("favicon")?,
-            r("site_name")?,
-            rs(&og.value("title")?)?,
+            h(raw.get("site_name").unwrap_or(&Value::Null))?,
+            h(&og.value("title")?)?,
             secure_image_url(&og)?
         )));
     }
@@ -428,7 +436,7 @@ async fn google_photos<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Result<Opt
         return Ok(Some(format!(
             "          <div class='onebox google-photos-album'>\n            <a href='{escaped}' target='_blank' rel='noopener'>\n              <span class='outer-box' style='width:{}px'>\n                <span class='inner-box'>\n                  <span class='album-title'>{}</span>\n                </span>\n              </span>\n              <img src='{}' {} height='{}' width='{}'>\n            </a>\n          </div>\n",
             rs(&og.value("image_width")?)?,
-            helpers_truncate(&album_title, 80),
+            crate::email::notification::html_escape(&helpers_truncate(&album_title, 80)),
             secure_image_url(&og)?,
             title_attr(&og)?,
             rs(&og.value("image_height")?)?,
@@ -493,7 +501,7 @@ async fn imgur<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Result<Option<Stri
         return Ok(Some(format!(
             "            <div class='onebox imgur-album'>\n              <a href='{escaped}' target='_blank' rel='noopener'>\n                <span class='outer-box' style='width:{}px'>\n                  <span class='inner-box'>\n                    <span class='album-title'>[Album] {}</span>\n                  </span>\n                </span>\n                <img src='{}' {} height='{}' width='{}'>\n              </a>\n            </div>\n",
             rs(&og.value("image_width")?)?,
-            rs(&og.value("title")?)?,
+            h(&og.value("title")?)?,
             secure_image_url(&og)?,
             title_attr(&og)?,
             rs(&og.value("image_height")?)?,
@@ -538,9 +546,9 @@ async fn steam_placeholder<F: Fetch>(
     let og = e.opengraph(fetch).await?;
     Ok(Some(format!(
         "          <div style='width:100%; height:190px; background-color:#262626; color:#9e9e9e; margin:15px 0;'>\n            <div style='padding:10px'>\n              <h3 style='color:#fff; margin:10px 0 10px 5px;'>{}</h3>\n              <img src='{}' style='float:left; max-width:184px; margin:5px 15px 0 5px'/>\n              <p>{}</p>\n            </div>\n          </div>\n",
-        rs(&og.value("title")?)?,
+        h(&og.value("title")?)?,
         rs(&og.value("image")?)?,
-        rs(&og.value("description")?)?
+        h(&og.value("description")?)?
     )))
 }
 
@@ -1047,8 +1055,23 @@ async fn github_folder_data<F: Fetch>(e: &mut Embed<'_>, fetch: &mut F) -> Resul
         Value::String(t) => json!(helpers_truncate(&t, 250)),
         v => v,
     };
+    // The header (d1a61ada908): the org and repository of the url's path.
+    let repository = super::uri::RubyUri::parse(&e.url)
+        .map(|u| {
+            u.path
+                .split('/')
+                .skip(1)
+                .take(2)
+                .collect::<Vec<_>>()
+                .join("/")
+        })
+        .unwrap_or_default();
+    let folder = e.ctx.i18n.t("onebox.github.header.folder");
     Ok(json!({
         "link": e.url,
+        "layout_class": "github-onebox",
+        "repository": repository,
+        "i18n": { "header": { "folder": folder } },
         "title": title,
         "path": display_path,
         "description": description,

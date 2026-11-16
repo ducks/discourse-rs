@@ -29,6 +29,15 @@ FILES=(
   lib/onebox/templates/amazon.mustache
   lib/onebox/templates/discoursetopic.mustache
   lib/onebox/templates/github/github_body.mustache
+  lib/onebox/templates/github/repository.mustache
+  lib/onebox/templates/githubactions_header.mustache
+  lib/onebox/templates/githubblob_header.mustache
+  lib/onebox/templates/githubcommit_header.mustache
+  lib/onebox/templates/githubfolder_header.mustache
+  lib/onebox/templates/githubgist_header.mustache
+  lib/onebox/templates/githubissue_header.mustache
+  lib/onebox/templates/githubpullrequest_header.mustache
+  lib/onebox/templates/githubrepo_header.mustache
   lib/onebox/templates/githubactions.mustache
   lib/onebox/templates/githubblob.mustache
   lib/onebox/templates/githubcommit.mustache

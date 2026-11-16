@@ -21,6 +21,11 @@ use crate::pretty_text::select::{
     ancestors, element_children, is_element, parent, previous_elements, select, select_first,
 };
 
+/// `ERB::Util.html_escape`
+fn esc(s: &str) -> String {
+    crate::email::notification::html_escape(s)
+}
+
 const TEMPLATE: &str =
     include_str!("../../vendor/discourse/lib/onebox/templates/allowlistedgeneric.mustache");
 
@@ -937,6 +942,8 @@ impl Generic<'_> {
         };
         let width = first(["image_width", "thumbnail_width", "width"]);
         let height = first(["image_height", "thumbnail_height", "height"]);
+        // The metadata escaped (e01201a75f1).
+        let (alt, width, height) = (esc(&alt), esc(&width), esc(&height));
         Some(format!(
             "<img src='{src}' alt='{alt}' width='{width}' height='{height}' class='onebox'>"
         ))
@@ -947,9 +954,9 @@ impl Generic<'_> {
         let image = normalize_url_for_output(self.s("image").unwrap_or(""));
         format!(
             "          <video\n            title='{}'\n            width='{}'\n            height='{}'\n            style='max-width:100%'\n            poster='{image}'\n            controls=''\n          >\n            <source src='{video}'>\n          </video>\n",
-            self.value_s("title"),
-            self.value_s("video_width"),
-            self.value_s("video_height"),
+            esc(&self.value_s("title")),
+            esc(&self.value_s("video_width")),
+            esc(&self.value_s("video_height")),
         )
     }
 
@@ -961,8 +968,9 @@ impl Generic<'_> {
             self.value_s("player_width")
         };
         format!(
-            "<iframe src=\"{src}\"\n        width=\"{width}\"\n        height=\"{}\"\n        scrolling=\"no\"\n        frameborder=\"0\">\n</iframe>\n",
-            self.value_s("player_height")
+            "<iframe src=\"{src}\"\n        width=\"{}\"\n        height=\"{}\"\n        scrolling=\"no\"\n        frameborder=\"0\">\n</iframe>\n",
+            esc(&width),
+            esc(&self.value_s("player_height"))
         )
     }
 
